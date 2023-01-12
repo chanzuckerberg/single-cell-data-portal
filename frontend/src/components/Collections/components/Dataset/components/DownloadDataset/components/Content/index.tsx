@@ -2,7 +2,7 @@ import { Classes, Intent } from "@blueprintjs/core";
 import { FC, useEffect, useState } from "react";
 import { API } from "src/common/API";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
-import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import { DEFAULT_FETCH_OPTIONS, useAccessToken, withAuthorizationHeader } from "src/common/queries/common";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import CurlLink from "./components/CurlLink";
@@ -18,6 +18,15 @@ interface Props {
   name: string;
   dataAssets: Dataset["dataset_assets"];
 }
+
+const fetchDownloadLink = useAccessToken(async (url: string, token: string) => {
+  return await (
+    await fetch(
+      `${API_URL}${url}`,
+      withAuthorizationHeader({ ...DEFAULT_FETCH_OPTIONS, method: "POST" }, token)
+    )
+  ).json();
+});
 
 const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
   const [selectedFormat, setSelectedFormat] = useState<
@@ -66,12 +75,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
       const url = apiTemplateToUrl(API.DATASET_ASSET_DOWNLOAD_LINK, replace);
 
       try {
-        const result = await (
-          await fetch(`${API_URL}${url}`, {
-            ...DEFAULT_FETCH_OPTIONS,
-            method: "POST",
-          })
-        ).json();
+        const result = await fetchDownloadLink(url);
 
         const { file_size, presigned_url, file_name } = result;
 

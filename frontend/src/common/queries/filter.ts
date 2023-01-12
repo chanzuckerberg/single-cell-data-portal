@@ -12,7 +12,11 @@ import {
   buildExplicitOntologyTermId,
   buildInferredOntologyTermId,
 } from "src/common/hooks/useCategoryFilter/common/multiPanelOntologyUtils";
-import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import { 
+  DEFAULT_FETCH_OPTIONS,
+  useAccessToken,
+  withAuthorizationHeader,
+} from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
 import {
   COLLATOR_CASE_INSENSITIVE,
@@ -194,7 +198,7 @@ export function useFetchCollections(): UseQueryResult<
 > {
   return useQuery<Map<string, ProcessedCollectionResponse>>(
     [USE_COLLECTIONS_INDEX],
-    fetchCollections,
+    useAccessToken(fetchCollections),
     {
       ...DEFAULT_QUERY_OPTIONS,
     }
@@ -577,11 +581,14 @@ function expandPublicationDateValues(
  * @returns Promise that resolves to a map of collections keyed by collection ID - possible cached from previous
  * request - containing only ID, name and recency values.
  */
-async function fetchCollections(): Promise<
+async function fetchCollections(token: string): Promise<
   Map<string, ProcessedCollectionResponse>
 > {
   const collections = await (
-    await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
+    await fetch(
+      API_URL + API.COLLECTIONS_INDEX, 
+      withAuthorizationHeader(DEFAULT_FETCH_OPTIONS, token)
+    )
   ).json();
 
   // Calculate the number of months since publication for each collection.

@@ -9,7 +9,7 @@ import { API } from "../API";
 import { DatasetAsset, DatasetUploadStatus } from "../entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
 import { USE_COLLECTION } from "./collections";
-import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS } from "./common";
+import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS, useAccessToken, withAuthorizationHeader } from "./common";
 import { ENTITIES } from "./entities";
 
 export const USE_DATASET_STATUS = {
@@ -43,11 +43,11 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(dataset_id = ""): Promise<DatasetUploadStatus> {
+async function deleteDataset(dataset_id = "", token: string): Promise<DatasetUploadStatus> {
   if (!dataset_id) throw new Error("No dataset id provided");
 
   const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_id });
-  const response = await fetch(url, DELETE_FETCH_OPTIONS);
+  const response = await fetch(url, withAuthorizationHeader(DELETE_FETCH_OPTIONS, token));
 
   if (response.ok) return await response.json();
 
@@ -61,7 +61,7 @@ export function useDeleteDataset(collection_id = "") {
 
   const queryClient = useQueryClient();
 
-  return useMutation(deleteDataset, {
+  return useMutation(useAccessToken(deleteDataset), {
     onSuccess: (uploadStatus: DatasetUploadStatus) => {
       queryClient.invalidateQueries([USE_COLLECTION, collection_id]);
 
@@ -95,7 +95,7 @@ export function useFetchDatasetAssets(
 ): UseQueryResult<DatasetAsset[]> {
   return useQuery<DatasetAsset[]>(
     [USE_DATASETS_ASSETS, datasetId],
-    () => fetchDatasetAssets(datasetId),
+    useAccessToken((token: string) => fetchDatasetAssets(datasetId, token)),
     { enabled }
   );
 }
@@ -105,13 +105,13 @@ export function useFetchDatasetAssets(
  * @param datasetId - ID of dataset to fetch assets of.
  * @returns Promise that resolves to dataset metadata.
  */
-async function fetchDatasetAssets(datasetId: string): Promise<DatasetAsset[]> {
+async function fetchDatasetAssets(datasetId: string, token: string): Promise<DatasetAsset[]> {
   const { assets } = await (
     await fetch(
       apiTemplateToUrl(API_URL + API.DATASET_ASSETS, {
         dataset_id: datasetId,
       }),
-      DEFAULT_FETCH_OPTIONS
+      withAuthorizationHeader(DEFAULT_FETCH_OPTIONS, token),
     )
   ).json();
   return assets;

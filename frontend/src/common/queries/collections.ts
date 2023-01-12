@@ -1,4 +1,3 @@
-import { Auth0ContextInterface } from "@auth0/auth0-react";
 import {
   useMutation,
   UseMutationResult,
@@ -17,8 +16,9 @@ import { isTombstonedCollection } from "../utils/typeGuards";
 import {
   DEFAULT_FETCH_OPTIONS,
   DELETE_FETCH_OPTIONS,
-  CONTENT_TYPE_APPLICATION_JSON,
-  withAccessToken,
+  JSON_BODY_FETCH_OPTIONS,
+  useAccessToken,
+  withAuthorizationHeader,
 } from "./common";
 import { ENTITIES } from "./entities";
 
@@ -113,9 +113,12 @@ export type CollectionResponsesMap = Map<
   Map<VISIBILITY_TYPE, CollectionResponse>
 >;
 
-async function fetchCollections(): Promise<CollectionResponsesMap> {
+async function fetchCollections(token: string): Promise<CollectionResponsesMap> {
   const json = await (
-    await fetch(API_URL + API.COLLECTIONS, DEFAULT_FETCH_OPTIONS)
+    await fetch(
+      API_URL + API.COLLECTIONS,
+      withAuthorizationHeader(DEFAULT_FETCH_OPTIONS, token)
+    )
   ).json();
 
   const collectionsMap: CollectionResponsesMap = new Map();
@@ -131,7 +134,7 @@ async function fetchCollections(): Promise<CollectionResponsesMap> {
 }
 
 export function useCollections(): UseQueryResult<CollectionResponsesMap> {
-  return useQuery([USE_COLLECTIONS], fetchCollections);
+  return useQuery([USE_COLLECTIONS], useAccessToken(fetchCollections));
 }
 
 export const USE_COLLECTION = {
@@ -228,7 +231,7 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
 export function useCollection({
   id = "",
 }: {
-  id?: string;
+  id?: string,
 }): UseQueryResult<Collection | TombstonedCollection | null> {
   const { data: collections } = useCollections();
   const queryFn = fetchCollection(collections);
@@ -246,15 +249,15 @@ export async function createCollection(
   payload: string,
   token: string,
 ): Promise<CollectionCreateResponse> {
-  const response = await fetch(`${API_URL}${API.CREATE_COLLECTION}`, {
-    ...DEFAULT_FETCH_OPTIONS,
-    headers: {
-      ...CONTENT_TYPE_APPLICATION_JSON,
-      "Authorization": `Bearer ${token}`,
-    },
-    body: payload,
-    method: "POST",
-  });
+  const response = await fetch(
+    `${API_URL}${API.CREATE_COLLECTION}`, 
+    withAuthorizationHeader({
+      ...DEFAULT_FETCH_OPTIONS,
+      ...JSON_BODY_FETCH_OPTIONS,
+      body: payload,
+      method: "POST",
+    }, token)
+  );
 
   const json = await response.json();
 
@@ -273,10 +276,10 @@ export async function createCollection(
   };
 }
 
-export function useCreateCollection(getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"]) {
+export function useCreateCollection() {
   const queryClient = useQueryClient();
 
-  return useMutation(withAccessToken(getAccessTokenSilently, createCollection), {
+  return useMutation(useAccessToken(createCollection), {
     onSuccess: () => {
       queryClient.invalidateQueries([USE_COLLECTIONS]);
     },
