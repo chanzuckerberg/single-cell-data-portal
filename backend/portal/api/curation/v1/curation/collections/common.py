@@ -94,7 +94,7 @@ def reshape_for_curation_api(
             # If it's an unpublished, unrevised collection, then collection_url will point to the permalink
             # (aka the link to the canonical_id) and the collection_id will point to version_id.
             # Also, revision_of should be None, and the datasets should expose the canonical url
-            collection_id = collection_version.version_id
+            collection_id = collection_version.collection_id
             collection_url = f"{get_collections_base_url()}/collections/{collection_version.collection_id}"
             revision_of = None
             use_canonical_url = True
