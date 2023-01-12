@@ -214,6 +214,22 @@ def curation_access_token_func_lenient(token: str) -> dict:
         return {}
 
 
+def portal_access_token_func(token):
+    return assert_authorized_token(token, CorporaAuthConfig().api_audience)
+
+
+def portal_access_token_func_lenient(token: str) -> dict:
+    """
+    Lenient version that allows endpoints to work even if authentication fails.
+    Use this for endpoints that also require public access, so if users end up with a bad token,
+    they won't be locked out.
+    """
+    try:
+        return assert_authorized_token(token, CorporaAuthConfig().api_audience)
+    except Exception:
+        return {}
+
+
 def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
     """Function used by connexion in the securitySchemes.
 
