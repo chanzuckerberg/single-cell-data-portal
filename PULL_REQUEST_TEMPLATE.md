@@ -13,6 +13,11 @@
 - remove
 - modify
 
-## QA steps (optional)
+## Reason for Change
+- If its in the issue, link the issue, otherwise state value/impact
+
+
+## QA steps
+- Either list QA steps or reasoning you feel QA is unnecessary
 
 ## Notes for Reviewer
