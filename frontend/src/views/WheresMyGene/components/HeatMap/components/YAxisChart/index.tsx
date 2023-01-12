@@ -165,6 +165,8 @@ const CellTypeButton = ({
     formattedString !== total_count.toString() ? "+" : ""
   }`;
 
+  const cellType = deserializeCellTypeMetadata(metadata);
+
   return (
     <FlexRowJustified>
       <FlexRow>
@@ -177,18 +179,20 @@ const CellTypeButton = ({
         >
           {name}
         </CellTypeButtonStyle>
-        {!FMG_EXCLUDE_TISSUES.includes(tissue) && (
+        {!FMG_EXCLUDE_TISSUES.includes(tissue) && 
+          cellType && cellType.total_count > 25 && (
           <InfoButtonWrapper
             style={{
               paddingTop: "3px",
               cursor: "pointer",
             }}
             onClick={() => {
-              const cellType = deserializeCellTypeMetadata(metadata);
-              generateMarkerGenes(cellType, tissueID);
-              track(EVENTS.WMG_FMG_INFO_CLICKED, {
-                combination: `${cellType.name}, ${tissue}}`,
-              });
+              if (cellType) {
+                generateMarkerGenes(cellType, tissueID);
+                track(EVENTS.WMG_FMG_INFO_CLICKED, {
+                  combination: `${cellType.name}, ${tissue}}`,
+                });
+              }
             }}
           >
             <StyledImage
