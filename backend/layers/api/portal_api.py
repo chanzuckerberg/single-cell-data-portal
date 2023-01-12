@@ -30,6 +30,7 @@ from backend.layers.business.exceptions import (
     CollectionVersionException,
     DatasetInWrongStatusException,
     DatasetNotFoundException,
+    InvalidMetadataException,
     InvalidURIException,
     MaxFileSizeExceededException,
 )
@@ -220,7 +221,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
 
     is_tombstoned = collection.canonical_collection.tombstoned
 
-    return remove_none(
+    response = remove_none(
         {
             "access_type": access_type,
             "contact_email": collection.metadata.contact_email,
@@ -245,6 +246,10 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         }
     )
+
+    # Always return consortia
+    response["consortia"] = collection.metadata.consortia
+    return response
 
 
 def lookup_collection(collection_id: str):
@@ -340,11 +345,12 @@ def create_collection(body: dict, user: str):
         body["contact_name"],
         body["contact_email"],
         [_link_from_request(node) for node in body.get("links", [])],
+        body.get("consortia", []),
     )
 
     try:
         version = get_business_logic().create_collection(user, curator_name, metadata)
-    except CollectionCreationException as ex:
+    except (InvalidMetadataException, CollectionCreationException) as ex:
         raise InvalidParametersHTTPException(detail=ex.errors)
 
     return make_response(jsonify({"collection_id": version.collection_id.id}), 201)
@@ -427,9 +433,13 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
         body.get("contact_name"),
         body.get("contact_email"),
         update_links,
+        body.get("consortia"),
     )
 
-    get_business_logic().update_collection_version(version.version_id, payload)
+    try:
+        get_business_logic().update_collection_version(version.version_id, payload)
+    except InvalidMetadataException as ex:
+        raise InvalidParametersHTTPException(detail=ex.errors)
 
     # Requires strong consistency w.r.t. the operation above - if not available, the update needs
     # to be done in memory

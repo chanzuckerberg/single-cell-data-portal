@@ -114,6 +114,7 @@ def reshape_for_curation_api(
         revised_at = None
     response = dict(
         collection_url=collection_url,
+        consortia=collection_version.metadata.consortia,
         contact_email=collection_version.metadata.contact_email,
         contact_name=collection_version.metadata.contact_name,
         created_at=collection_version.created_at,
@@ -228,6 +229,7 @@ class EntityColumns:
         "links",
         "datasets",
         "revising_in",
+        "consortia",
     ]
 
     link_cols = [
