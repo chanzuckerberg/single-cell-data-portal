@@ -1,2 +1,0 @@
-{"levelname": "INFO", "asctime": "2023-01-11T23:57:57.011Z", "name": "backend.layers.processing.downloader", "message": "Setting up download.", "lineno": 118, "pathname": "/single-cell-data-portal/backend/layers/processing/downloader.py"}
-{"levelname": "INFO", "asctime": "2023-01-11T23:57:57.011Z", "name": "backend.layers.processing.downloader", "message": "file_size: 20", "lineno": 119, "pathname": "/single-cell-data-portal/backend/layers/processing/downloader.py"}
