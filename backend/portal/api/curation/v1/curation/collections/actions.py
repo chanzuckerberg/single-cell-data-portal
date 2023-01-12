@@ -5,7 +5,7 @@ from backend.common.utils.http_exceptions import ForbiddenHTTPException, Invalid
 from backend.layers.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionQueryFilter
-from backend.layers.business.exceptions import CollectionCreationException
+from backend.layers.business.exceptions import CollectionCreationException, InvalidMetadataException
 from backend.layers.common import doi
 from backend.layers.common.entities import CollectionMetadata, Link
 from backend.portal.api.curation.v1.curation.collections.common import reshape_for_curation_api
@@ -58,10 +58,19 @@ def post(body: dict, user: str):
 
     # Build CollectionMetadata object
     links = [Link(link.get("link_name"), link["link_type"], link["link_url"]) for link in body.get("links", [])]
-    metadata = CollectionMetadata(body["name"], body["description"], body["contact_name"], body["contact_email"], links)
+    metadata = CollectionMetadata(
+        body["name"],
+        body["description"],
+        body["contact_name"],
+        body["contact_email"],
+        links,
+        body.get("consortia", []),
+    )
 
     try:
         version = get_business_logic().create_collection(user, "", metadata)
+    except InvalidMetadataException as ex:
+        errors.extend(ex.errors)
     except CollectionCreationException as ex:
         errors.extend(ex.errors)
     if errors:

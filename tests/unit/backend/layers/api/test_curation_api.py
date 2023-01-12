@@ -240,6 +240,7 @@ class TestPostCollection(BaseAPIPortalTest):
                     contact_name="",
                     contact_email="@email.com",
                     doi="10.111/not_curie_reference_format",
+                    consortia=["Not a valid consortia!"],
                 ),
                 [
                     {"name": "contact_email", "reason": "Invalid format."},
@@ -247,8 +248,9 @@ class TestPostCollection(BaseAPIPortalTest):
                     {"name": "name", "reason": "Cannot be blank."},
                     {"name": "contact_name", "reason": "Cannot be blank."},
                     {"name": "DOI", "reason": "DOI must be a CURIE reference."},
+                    {"name": "consortia", "reason": "Invalid consortia."},
                 ],
-                5,
+                6,
             ),
             (
                 dict(
@@ -832,6 +834,42 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual(new_doi, response.json["doi"])
+
+    def test__update_collection__consortia__OK(self):
+        initial_consortia = ["Consortia 1", "Consortia 2"]
+        new_consortia = ["Consortia 3"]
+        links = [
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
+        ]
+        collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertEqual(initial_consortia, original_collection["consortia"])
+        metadata = {"consortia": new_consortia}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(new_consortia, response.json["consortia"])
+
+    def test__remove_collection__consortia__OK(self):
+        initial_consortia = ["Consortia 1", "Consortia 2"]
+        new_consortia = []
+        links = [
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
+        ]
+        collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertEqual(initial_consortia, original_collection["consortia"])
+        metadata = {"consortia": new_consortia}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(new_consortia, response.json["consortia"])
 
     def test__update_collection__doi_is_not_CURIE_reference__BAD_REQUEST(self):
         links = [

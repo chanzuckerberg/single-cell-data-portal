@@ -102,6 +102,8 @@ class BusinessLogic(BusinessLogicInterface):
         """
 
         errors = []
+        # Check metadata is valid
+        collection_metadata.strip_fields()
         validation.verify_collection_metadata(collection_metadata, errors)
 
         # TODO: Maybe switch link.type to be an enum
@@ -115,7 +117,6 @@ class BusinessLogic(BusinessLogicInterface):
         if errors:
             raise CollectionCreationException(errors)
 
-        collection_metadata.strip_fields()
         created_version = self.database_provider.create_canonical_collection(owner, curator_name, collection_metadata)
 
         # TODO: can collapse with `create_canonical_collection`
@@ -210,6 +211,8 @@ class BusinessLogic(BusinessLogicInterface):
         # TODO: link.type should DEFINITELY move to an enum. pylance will help with the refactor
 
         errors = []
+
+        # Check metadata
         validation.verify_collection_metadata_update(body, errors)
 
         current_version = self.get_collection_version(version_id)
