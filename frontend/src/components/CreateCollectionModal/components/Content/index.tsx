@@ -107,7 +107,8 @@ const Content: FC<Props> = (props) => {
   const publishedID =
     data && "revision_of" in data ? data.revision_of : undefined;
 
-  const { mutateAsync: mutateCreateCollection } = useCreateCollection();
+  const { getAccessTokenSilently } = useAuth0();
+  const { mutateAsync: mutateCreateCollection } = useCreateCollection(getAccessTokenSilently);
   const { mutateAsync: mutateEditCollection } = useEditCollection(
     props.id,
     publishedID
