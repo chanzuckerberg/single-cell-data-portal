@@ -88,6 +88,9 @@ class MockOauthApp:
         return make_response(jsonify(data))
 
     def api_jwks(self):
+        """
+        Provide public key for the random 2048-bit local dev pem key
+        """
         data = {
             "alg": "RS256",
             "kty": "RSA",
@@ -127,6 +130,7 @@ def make_token(token_claims: dict, token_duration: int = 5, additional_scope: li
         iss="https://oidc.corporanet.local/",
     )
 
+    # Random 2048-bit pem key for local dev purposes only
     private_key_jwk = {
         "alg": "RS256",
         "kty": "RSA",
