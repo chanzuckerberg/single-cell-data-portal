@@ -19,7 +19,7 @@ paths:
         - collections
       summary: List published collections in Corpora
       security:
-        - cxguserCookieLenient: []
+        - cxguserAccessLenient: []
         - {}
       description: >-
         This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
@@ -70,7 +70,7 @@ paths:
         - collections
       summary: Create a collection
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
       description: >-
         Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
       operationId: backend.portal.api.portal_api.create_collection
@@ -126,7 +126,7 @@ paths:
         - collections
       summary: Get a collection's full details
       security:
-        - cxguserCookieLenient: []
+        - cxguserAccessLenient: []
         - {}
       description: >-
         This will return all datasets and associated attributes.
@@ -153,7 +153,7 @@ paths:
         - collections
       summary: Start a revision of a public collection,
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
         - {}
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
@@ -181,7 +181,7 @@ paths:
         - collections
       summary: Update a private collection's details
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
       description: >-
         Update a private collection's summary, links, contact info, and description details.
       operationId: backend.portal.api.portal_api.update_collection
@@ -228,7 +228,7 @@ paths:
         - collections
       summary: Delete a collection
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
@@ -250,8 +250,8 @@ paths:
       description: >-
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
-        - cxguserCookie: []
-      operationId: backend.portal.api.portal_api.upload_link
+        - cxguserAccess: []
+      operationId: backend.layers.api.portal_api.upload_link
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -297,8 +297,13 @@ paths:
         until the collection revision is published. The old datasets are available in the public collection until the
         collection revision is published.
       security:
+<<<<<<< HEAD:backend/portal/api/portal-api.yml
         - cxguserCookie: []
       operationId: backend.portal.api.portal_api.upload_relink
+=======
+        - cxguserAccess: []
+      operationId: backend.layers.api.portal_api.upload_relink
+>>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -338,13 +343,52 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
+<<<<<<< HEAD:backend/portal/api/portal-api.yml
+=======
+  /v1/collections/{collection_id}/genesets:
+    post:
+      tags:
+        - collections
+        - genesets
+      summary: Add genesets to a collection
+      security:
+        - cxguserAccess: []
+      description: >-
+        Add genesets to a private collection
+      operationId: backend.portal.api.app.v1.collections.collection_id.genesets.post
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                genesets:
+                  description: A list of genesets including their gene symbols and descriptions
+                  $ref: "#/components/schemas/user_defined_gene_sets"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/gene_set"
+        "400":
+          $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
+
+>>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
   /v1/collections/{collection_id}/publish:
     post:
       tags:
         - collections
       summary: Publish a collection
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
       description: >-
         Update status of specified collection to PUBLIC.  This will make it
         visible on the public sites.
@@ -429,7 +473,7 @@ paths:
         the data portal and removes associated artifacts
       operationId: backend.portal.api.portal_api.delete_dataset
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
@@ -533,6 +577,54 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+<<<<<<< HEAD:backend/portal/api/portal-api.yml
+=======
+  /v1/datasets/{dataset_id}/gene_sets:
+    post:
+      tags:
+        - datasets
+        - genesets
+      summary: Update links between a dataset and gene sets
+      security:
+        - cxguserAccess: []
+      description: >-
+        Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
+        collection owner and the dataset and gene sets must all belong to the same private collection
+      operationId: backend.portal.api.app.v1.datasets.dataset_id.gene_sets.post
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - add
+                - remove
+              properties:
+                add:
+                  type: array
+                  items:
+                    type: string
+                remove:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/gene_set"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+>>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
   /v1/datasets/{dataset_id}/status:
     get:
       tags:
@@ -540,7 +632,7 @@ paths:
       summary: Get the status of a dataset upload.
       operationId: backend.portal.api.portal_api.get_status
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
@@ -628,7 +720,7 @@ paths:
         Returns all public, non tombstoned datasets. This endpoint is meant to be used for displaying datasets
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
       security:
-        - cxguserCookieLenient: []
+        - cxguserAccessLenient: []
         - {}
       description: >-
         Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
@@ -703,6 +795,29 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
+<<<<<<< HEAD:backend/portal/api/portal-api.yml
+=======
+  /v1/genesets/{geneset_id}:
+    delete:
+      tags:
+        - genesets
+      summary: Delete a genese
+      security:
+        - cxguserAccess: []
+      description: >-
+        Delete a gene by set removing it from a collection and any data sets it was linked to.
+      operationId: backend.portal.api.app.v1.genesets.geneset_id.delete
+      parameters:
+        - $ref: "#/components/parameters/path_geneset_id"
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
+
+>>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
   /v1/login:
     get:
       tags:
@@ -738,7 +853,7 @@ paths:
       summary: retrieve user information if the user is logged in
       operationId: backend.portal.api.app.v1.authentication.userinfo
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
       responses:
         "200":
           description: OK
@@ -771,7 +886,11 @@ paths:
       summary: Delete the curator's API key -- for use with Data Portal UI
       operationId: backend.portal.api.app.v1.auth.keys.delete
       security:
+<<<<<<< HEAD:backend/portal/api/portal-api.yml
         - cxguserCookie: []
+=======
+        - cxguserAccess: [ ]
+>>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -783,7 +902,7 @@ paths:
       summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
       operationId: backend.portal.api.app.v1.auth.keys.get
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
       responses:
         "200":
           description: OK
@@ -798,7 +917,7 @@ paths:
         user's curator profile, replace it with the new key.
       operationId: backend.portal.api.app.v1.auth.keys.post
       security:
-        - cxguserCookie: []
+        - cxguserAccess: []
       responses:
         "201":
           description: Created
@@ -1191,13 +1310,23 @@ components:
           schema:
             $ref: "#/components/schemas/problem"
   securitySchemes:
-    cxguserCookie:
-      type: apiKey
-      in: cookie
-      name: cxguser
-      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.apikey_info_func
-    cxguserCookieLenient:
-      type: apiKey
-      in: cookie
-      name: cxguser
-      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.apikey_info_func_lenient
+#    cxguserCookie:
+#      type: apiKey
+#      in: cookie
+#      name: cxguser
+#      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.apikey_info_func
+#    cxguserCookieLenient:
+#      type: apiKey
+#      in: cookie
+#      name: cxguser
+#      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.apikey_info_func_lenient
+    cxguserAccess:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+      x-bearerInfoFunc: backend.portal.api.app.v1.authentication.portal_access_token_func
+    cxguserAccessLenient:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+      x-bearerInfoFunc: backend.portal.api.app.v1.authentication.portal_access_token_func_lenient
