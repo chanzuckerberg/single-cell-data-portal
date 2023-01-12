@@ -710,12 +710,12 @@ class TestGetCollectionID(BaseAPIPortalTest):
         res = self.app.get(f"/curation/v1/collections/{version_id}", headers=self.make_owner_header())
         self.assertEqual(status_code, res.status_code)
         if status_code == 200:
-            self.assertEqual(collection_version.version_id.id, res.json["id"])
+            self.assertEqual(collection_version.collection_id.id, res.json["id"])
 
         res = self.app.get(f"/curation/v1/collections/{collection_id}", headers=self.make_owner_header())
         self.assertEqual(status_code, res.status_code)
         if status_code == 200:
-            self.assertEqual(collection_version.version_id.id, res.json["id"])
+            self.assertEqual(collection_version.collection_id.id, res.json["id"])
 
     def test__get_collection_with_x_approximate_distribution_none__OK(self):
         metadata = copy.deepcopy(self.sample_dataset_metadata)
