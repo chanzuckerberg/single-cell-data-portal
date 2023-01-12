@@ -1,3 +1,4 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import { Classes, Intent } from "@blueprintjs/core";
 import { useRouter } from "next/router";
 import { FC, useEffect, useRef, useState } from "react";
@@ -107,7 +108,8 @@ const Content: FC<Props> = (props) => {
   const publishedID =
     data && "revision_of" in data ? data.revision_of : undefined;
 
-  const { mutateAsync: mutateCreateCollection } = useCreateCollection();
+  const { getAccessTokenSilently } = useAuth0();
+  const { mutateAsync: mutateCreateCollection } = useCreateCollection(getAccessTokenSilently);
   const { mutateAsync: mutateEditCollection } = useEditCollection(
     props.id,
     publishedID
