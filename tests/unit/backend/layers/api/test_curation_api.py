@@ -853,6 +853,24 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         self.assertEqual(new_consortia, response.json["consortia"])
 
+    def test__remove_collection__consortia__OK(self):
+        initial_consortia = ["Consortia 1", "Consortia 2"]
+        new_consortia = []
+        links = [
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
+        ]
+        collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertEqual(initial_consortia, original_collection["consortia"])
+        metadata = {"consortia": new_consortia}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(new_consortia, response.json["consortia"])
+
     def test__update_collection__doi_is_not_CURIE_reference__BAD_REQUEST(self):
         links = [
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
