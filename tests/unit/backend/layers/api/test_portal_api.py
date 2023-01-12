@@ -1774,7 +1774,7 @@ class TestDataset(BaseAPIPortalTest):
             expected_identifiers = {
                 "s3_uri": test_uri_0,
                 "dataset_id": public_dataset.dataset_version_id,
-                "collection_id": public_dataset.collection_id,
+                "collection_id": public_dataset.collection_version_id,
                 "collection_visibility": "PUBLIC",  # this is a published collection
                 "tombstoned": False,
             }
@@ -1793,7 +1793,7 @@ class TestDataset(BaseAPIPortalTest):
             expected_identifiers = {
                 "s3_uri": test_uri_1,
                 "dataset_id": private_dataset.dataset_version_id,
-                "collection_id": private_dataset.collection_id,
+                "collection_id": private_dataset.collection_version_id,
                 "collection_visibility": "PRIVATE",
                 "tombstoned": False,
             }
@@ -1813,6 +1813,137 @@ class TestDataset(BaseAPIPortalTest):
         response = self.app.get(test_url_404, headers)
         self.assertEqual(response.status_code, 404)
 
+    def test__explorer_portal_integration(self):
+        """
+        Tests the explorer <-> portal integration. It works like that:
+        1. Generate the explorer_url
+        2. Call the `get_dataset_identifiers` endpoint, retrieve `collection_id` and `dataset_id` from there
+        3. Call the GET /collections/:collection_id endpoint, locate the dataset
+        """
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+
+        with self.subTest("Dataset belonging to an unpublished collection"):
+
+            test_uri = "some_uri_0"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+            )
+            # In this case, explorer_url points to the canonical link
+            explorer_url = f"http://base.url/{dataset.dataset_id}.cxg/"
+            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+
+            returned_collection_id = response_data["collection_id"]
+            returned_dataset_id = response_data["dataset_id"]
+            test_url = f"/dp/v1/collections/{returned_collection_id}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+
+            datasets = response_data["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
+
+        
+        with self.subTest("Dataset belonging to a published collection"):
+
+            test_uri = "some_uri_1"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+                publish=True
+            )
+            # In this case, explorer_url points to the canonical link
+            explorer_url = f"http://base.url/{dataset.dataset_id}.cxg/"
+            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+
+            returned_collection_id = response_data["collection_id"]
+            returned_dataset_id = response_data["dataset_id"]
+            test_url = f"/dp/v1/collections/{returned_collection_id}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+
+            datasets = response_data["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
+
+        
+        with self.subTest("Dataset belonging to a revision of a published collection, not replaced"):
+
+            test_uri = "some_uri_2"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+                publish=True
+            )
+            self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
+
+            # In this case, explorer_url points to the versioned link
+            explorer_url = f"http://base.url/{dataset.dataset_version_id}.cxg/"
+            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+
+            returned_collection_id = response_data["collection_id"]
+            returned_dataset_id = response_data["dataset_id"]
+            test_url = f"/dp/v1/collections/{returned_collection_id}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+
+            datasets = response_data["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
+
+        with self.subTest("Dataset belonging to a revision of a published collection, replaced"):
+
+            test_uri = "some_uri_1"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+                publish=True
+            )
+            revision = self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
+            revised_dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+                collection_version=revision,
+                replace_dataset_version_id=DatasetVersionId(dataset.dataset_version_id),
+            )
+            self.assertEqual(revised_dataset.dataset_id, dataset.dataset_id)
+            self.assertNotEqual(revised_dataset.dataset_version_id, dataset.dataset_version_id)
+
+            # Retrieve the explorer url from the GET collections/:collection_id endpoint. This is the only way to force
+            # explorer_url to be exactly the same used by the portal to open the explorer url
+            test_url = f"/dp/v1/collections/{revision.version_id}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+            datasets = response_data["datasets"]
+            self.assertIn(revised_dataset.dataset_version_id, [dataset["id"] for dataset in datasets])
+            replaced_dataset = next(dataset for dataset in datasets if dataset["id"] == revised_dataset.dataset_version_id)
+            
+            explorer_url = replaced_dataset["dataset_deployments"][0]["url"]
+
+            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+
+            returned_collection_id = response_data["collection_id"]
+            returned_dataset_id = response_data["dataset_id"]
+            test_url = f"/dp/v1/collections/{returned_collection_id}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+
+            datasets = response_data["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
+        
 
 class TestDatasetCurators(BaseAPIPortalTest):
     def setUp(self):

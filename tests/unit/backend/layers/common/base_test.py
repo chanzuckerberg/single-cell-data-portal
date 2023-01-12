@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
     DatasetStatusGeneric,
     DatasetStatusKey,
     DatasetValidationStatus,
+    DatasetVersionId,
     Link,
     OntologyTermId,
 )
@@ -226,6 +227,7 @@ class BaseTest(unittest.TestCase):
         validation_message: str = None,
         artifacts: List[DatasetArtifactUpdate] = None,
         publish: bool = False,
+        replace_dataset_version_id: Optional[DatasetVersionId] = None,
     ) -> DatasetData:
         """
         Convenience method for generating a dataset. Also generates an unpublished collection if needed.
@@ -233,7 +235,7 @@ class BaseTest(unittest.TestCase):
         if not collection_version:
             collection_version = self.generate_unpublished_collection(owner)
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection_version.version_id, "http://fake.url", None, None
+            collection_version.version_id, "http://fake.url", None, replace_dataset_version_id
         )
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)

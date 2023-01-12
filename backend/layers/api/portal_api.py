@@ -672,12 +672,21 @@ def get_dataset_identifiers(url: str):
     # Retrieves the URI of the cxg artifact
     s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.CXG)
 
-    dataset_id = dataset.version_id.id
+    # Since the dataset version can appear in any collection, we'll look into all the versions.
+    # Find the most recent collection version that contains the dataset version id
+    all_versions = get_business_logic().get_collection_versions_from_canonical(dataset.collection_id)
+    collection_id, dataset_id = None, None
+    for version in reversed(list(all_versions)):
+        if dataset.version_id in [v.version_id for v in version.datasets]:
+            collection_id, dataset_id = version.version_id.id, dataset.version_id.id
+            
+    if not collection_id or not dataset_id:
+        raise NotFoundHTTPException()
 
     dataset_identifiers = {
         "s3_uri": s3_uri,
         "dataset_id": dataset_id,
-        "collection_id": dataset.collection_id.id,
+        "collection_id": collection_id,
         "collection_visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         "tombstoned": False,  # No longer applicable
     }
