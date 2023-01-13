@@ -1815,12 +1815,26 @@ class TestDataset(BaseAPIPortalTest):
 
     def test__explorer_portal_integration(self):
         """
-        Tests the explorer <-> portal integration. It works like that:
+        Tests the explorer <-> portal integration.
+        The steps carried out by this test are:
         1. Generate the explorer_url
         2. Call the `get_dataset_identifiers` endpoint, retrieve `collection_id` and `dataset_id` from there
         3. Call the GET /collections/:collection_id endpoint, locate the dataset
         """
         headers = {"host": "localhost", "Content-Type": "application/json"}
+
+        def _call_meta_endpoint(explorer_url):
+            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            return json.loads(response.data)
+
+        def _call_collections_endpoint(collection_id):
+            test_url = f"/dp/v1/collections/{collection_id}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            return json.loads(response.data)
+
 
         with self.subTest("Dataset belonging to an unpublished collection"):
 
@@ -1828,22 +1842,17 @@ class TestDataset(BaseAPIPortalTest):
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+                publish=False,
             )
             # In this case, explorer_url points to the canonical link
             explorer_url = f"http://base.url/{dataset.dataset_id}.cxg/"
-            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
-            response = self.app.get(test_url, headers)
-            self.assertEqual(response.status_code, 200)
-            response_data = json.loads(response.data)
+            meta_response = _call_meta_endpoint(explorer_url)
 
-            returned_collection_id = response_data["collection_id"]
-            returned_dataset_id = response_data["dataset_id"]
-            test_url = f"/dp/v1/collections/{returned_collection_id}"
-            response = self.app.get(test_url, headers)
-            self.assertEqual(response.status_code, 200)
-            response_data = json.loads(response.data)
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
 
-            datasets = response_data["datasets"]
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a published collection"):
@@ -1855,19 +1864,13 @@ class TestDataset(BaseAPIPortalTest):
             )
             # In this case, explorer_url points to the canonical link
             explorer_url = f"http://base.url/{dataset.dataset_id}.cxg/"
-            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
-            response = self.app.get(test_url, headers)
-            self.assertEqual(response.status_code, 200)
-            response_data = json.loads(response.data)
+            meta_response = _call_meta_endpoint(explorer_url)
 
-            returned_collection_id = response_data["collection_id"]
-            returned_dataset_id = response_data["dataset_id"]
-            test_url = f"/dp/v1/collections/{returned_collection_id}"
-            response = self.app.get(test_url, headers)
-            self.assertEqual(response.status_code, 200)
-            response_data = json.loads(response.data)
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
 
-            datasets = response_data["datasets"]
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, not replaced"):
@@ -1881,19 +1884,13 @@ class TestDataset(BaseAPIPortalTest):
 
             # In this case, explorer_url points to the versioned link
             explorer_url = f"http://base.url/{dataset.dataset_version_id}.cxg/"
-            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
-            response = self.app.get(test_url, headers)
-            self.assertEqual(response.status_code, 200)
-            response_data = json.loads(response.data)
+            meta_response = _call_meta_endpoint(explorer_url)
 
-            returned_collection_id = response_data["collection_id"]
-            returned_dataset_id = response_data["dataset_id"]
-            test_url = f"/dp/v1/collections/{returned_collection_id}"
-            response = self.app.get(test_url, headers)
-            self.assertEqual(response.status_code, 200)
-            response_data = json.loads(response.data)
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
 
-            datasets = response_data["datasets"]
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, replaced"):
@@ -1925,20 +1922,13 @@ class TestDataset(BaseAPIPortalTest):
             )
 
             explorer_url = replaced_dataset["dataset_deployments"][0]["url"]
+            meta_response = _call_meta_endpoint(explorer_url)
 
-            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
-            response = self.app.get(test_url, headers)
-            self.assertEqual(response.status_code, 200)
-            response_data = json.loads(response.data)
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
 
-            returned_collection_id = response_data["collection_id"]
-            returned_dataset_id = response_data["dataset_id"]
-            test_url = f"/dp/v1/collections/{returned_collection_id}"
-            response = self.app.get(test_url, headers)
-            self.assertEqual(response.status_code, 200)
-            response_data = json.loads(response.data)
-
-            datasets = response_data["datasets"]
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
 
