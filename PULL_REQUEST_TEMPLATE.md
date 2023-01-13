@@ -1,4 +1,3 @@
-- #TICKET_NUMBER
 
 ### Reviewers
 **Functional:** 
@@ -14,8 +13,8 @@
 - modify
 
 ## Reason for Change
-- If its in the issue, link the issue, otherwise state value/impact
-
+- #TICKET_NUMBER
+- If the reason for this PR's code changes are not clear in the issue, state value/impact
 
 ## QA steps
 - Either list QA steps or reasoning you feel QA is unnecessary
