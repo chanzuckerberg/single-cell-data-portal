@@ -10,6 +10,7 @@ from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionId,
+    CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetId,
@@ -29,13 +30,15 @@ class BusinessLogicInterface:
     def get_published_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
         pass
 
-    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
+    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         pass
 
     def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
         pass
 
-    def get_collection_version_from_canonical(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+    def get_collection_version_from_canonical(
+        self, collection_id: CollectionId
+    ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
     def create_collection(
