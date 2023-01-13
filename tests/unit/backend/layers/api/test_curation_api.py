@@ -952,35 +952,50 @@ class TestPatchCollectionID(BaseAPIPortalTest):
 
 
 class TestDeleteDataset(BaseAPIPortalTest):
-    def test__delete_dataset(self):
-        auth_credentials = [
+    def setUp(self):
+        super().setUp()
+        self.auth_credentials = [
             (self.make_super_curator_header, "super", 202),
             (self.make_owner_header, "owner", 202),
             (None, "none", 401),
             (self.make_not_owner_header, "not_owner", 403),
         ]
 
-        def _delete(collection_id, dataset_id):
-            test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}"
-            headers = auth() if callable(auth) else auth
-            return self.app.delete(test_url, headers=headers)
+    def _delete(self, auth, collection_id, dataset_id):
+        """
+        Helper method to call the delete endpoint
+        """
+        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}"
+        headers = auth() if callable(auth) else auth
+        return self.app.delete(test_url, headers=headers)
 
-        for auth, auth_description, expected_status_code in auth_credentials:
+    def test__delete_dataset_by_version_id(self):
+        """
+        Calling DELETE /collections/:collection_id/datasets/:dataset_id should work according to the
+        auth token passed and when using versioned ids
+        """
+        for auth, auth_description, expected_status_code in self.auth_credentials:
             with self.subTest(f"{auth_description} {expected_status_code}"):
-                # with version ids
                 dataset = self.generate_dataset(
                     statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
                     publish=False,
                 )
-                response = _delete(dataset.collection_version_id, dataset.dataset_version_id)
+                response = self._delete(auth, dataset.collection_version_id, dataset.dataset_version_id)
                 self.assertEqual(expected_status_code, response.status_code)
 
-                # with canonical ids
+    def test__delete_dataset_by_canonical_id(self):
+        """
+        Calling DELETE /collections/:collection_id/datasets/:dataset_id should work according to the
+        auth token passed and when using canonical ids. In this case, the unpublished collection
+        version will be looked up and used for deletion.
+        """
+        for auth, auth_description, expected_status_code in self.auth_credentials:
+            with self.subTest(f"{auth_description} {expected_status_code}"):
                 dataset = self.generate_dataset(
                     statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
                     publish=False,
                 )
-                response = _delete(dataset.collection_id, dataset.dataset_id)
+                response = self._delete(auth, dataset.collection_id, dataset.dataset_id)
                 self.assertEqual(expected_status_code, response.status_code)
 
 
