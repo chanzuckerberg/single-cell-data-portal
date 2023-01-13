@@ -79,13 +79,13 @@ def _get_collection_and_dataset(
         dataset_version = next(
             d for d in collection_version.datasets if d.version_id.id == dataset_id or d.dataset_id.id == dataset_id
         )
-    except Exception:
+    except StopIteration:
         raise ForbiddenHTTPException()
 
     return collection_version, dataset_version
 
 
-def delete(token_info: dict, collection_id: str, dataset_id: str = None):
+def delete(token_info: dict, collection_id: str, dataset_id: str):
     business_logic = get_business_logic()
     user_info = UserInfo(token_info)
 
