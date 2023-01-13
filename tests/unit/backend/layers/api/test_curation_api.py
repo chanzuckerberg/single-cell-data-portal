@@ -961,18 +961,29 @@ class TestDeleteDataset(BaseAPIPortalTest):
         ]
         for auth, auth_description, expected_status_code in auth_credentials:
             with self.subTest(f"{auth_description} {expected_status_code}"):
-                dataset = self.generate_dataset(
-                    statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
-                    publish=False,
-                )
+                with self.subTest("with version_ids"):
+                    dataset = self.generate_dataset(
+                        statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
+                        publish=False,
+                    )
 
-                test_url = (
-                    f"/curation/v1/collections/{dataset.collection_version_id}/datasets/"
-                    f"{dataset.dataset_version_id}"
-                )
-                headers = auth() if callable(auth) else auth
-                response = self.app.delete(test_url, headers=headers)
-                self.assertEqual(expected_status_code, response.status_code)
+                    test_url = (
+                        f"/curation/v1/collections/{dataset.collection_version_id}/datasets/"
+                        f"{dataset.dataset_version_id}"
+                    )
+                    headers = auth() if callable(auth) else auth
+                    response = self.app.delete(test_url, headers=headers)
+                    self.assertEqual(expected_status_code, response.status_code)
+                with self.subTest("with version_ids"):
+                    dataset = self.generate_dataset(
+                        statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
+                        publish=False,
+                    )
+
+                    test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/" f"{dataset.dataset_id}"
+                    headers = auth() if callable(auth) else auth
+                    response = self.app.delete(test_url, headers=headers)
+                    self.assertEqual(expected_status_code, response.status_code)
 
 
 class TestGetDatasets(BaseAPIPortalTest):
@@ -1191,17 +1202,31 @@ class TestPutLink(BaseAPIPortalTest):
         Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by the owner of the collection
         """
 
-        dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
-        )
-        body = {"link": self.good_link}
-        headers = self.make_owner_header()
-        response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
-            json=body,
-            headers=headers,
-        )
-        self.assertEqual(202, response.status_code)
+        with self.subTest("with version_ids"):
+            dataset = self.generate_dataset(
+                statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+            )
+            body = {"link": self.good_link}
+            headers = self.make_owner_header()
+            response = self.app.put(
+                f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
+                json=body,
+                headers=headers,
+            )
+            self.assertEqual(202, response.status_code)
+
+        with self.subTest("with collection_ids"):
+            dataset = self.generate_dataset(
+                statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+            )
+            body = {"link": self.good_link}
+            headers = self.make_owner_header()
+            response = self.app.put(
+                f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
+                json=body,
+                headers=headers,
+            )
+            self.assertEqual(202, response.status_code)
 
     def test__new_from_link__Super_Curator(self, *mocks):
         """
