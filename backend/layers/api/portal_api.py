@@ -650,7 +650,7 @@ def delete_dataset(dataset_id: str, token_info: dict):
 
 def get_dataset_identifiers(url: str):
     """
-    a.k.a. the meta endpoint
+    Return a set of dataset identifiers. This endpoint is meant to be used by single-cell-explorer.
     """
     try:
         path = urlparse(url).path
@@ -665,23 +665,26 @@ def get_dataset_identifiers(url: str):
     if dataset is None:
         raise NotFoundHTTPException()
 
+    # A dataset version can appear in multiple collections versions. This endpoint should:
+    # 1. Return the most recent published version that contains the dataset version (aka the mapped version)
+    # 2. If the version only appears in an unpublished version, return that one.
+
     collection = get_business_logic().get_collection_version_from_canonical(dataset.collection_id)
-    if collection is None:  # orphaned datasets
+    if collection is None:  # orphaned datasets - shouldn't happen, but we should return 404 just in case
         raise NotFoundHTTPException()
+
+    if dataset.version_id not in [d.version_id for d in collection.datasets]:
+        # If the dataset is not in the mapped collection version, it means the dataset belongs to the active
+        # unpublished version. We should return that one
+        collection = get_business_logic().get_unpublished_collection_version_from_canonical(dataset.collection_id)
+
+    if collection is None:  # again, orphaned datasets
+        raise NotFoundHTTPException()
+
+    collection_id, dataset_id = collection.version_id.id, dataset.version_id.id
 
     # Retrieves the URI of the cxg artifact
     s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.CXG)
-
-    # Since the dataset version can appear in any collection, we'll look into all the versions.
-    # Find the most recent collection version that contains the dataset version id
-    all_versions = get_business_logic().get_collection_versions_from_canonical(dataset.collection_id)
-    collection_id, dataset_id = None, None
-    for version in reversed(list(all_versions)):
-        if dataset.version_id in [v.version_id for v in version.datasets]:
-            collection_id, dataset_id = version.version_id.id, dataset.version_id.id
-
-    if not collection_id or not dataset_id:
-        raise NotFoundHTTPException()
 
     dataset_identifiers = {
         "s3_uri": s3_uri,
