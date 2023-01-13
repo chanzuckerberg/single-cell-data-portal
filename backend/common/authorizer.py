@@ -32,7 +32,9 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
     # If we're using an id_token (for userinfo), we need a difference audience, which gets passed in.
     # Otherwise use auth_config.api_audience
     use_audience = audience or auth_config.api_audience
+    print(f"\nGOING TO GET PUBLIC KEYS auth0 domain: {auth0_domain}\n")
     public_keys = get_public_keys(auth0_domain)
+    print("\nGOT PUBLIC KEYS\n")
     public_key = public_keys.get(unverified_header["kid"])
     if public_key:
         algorithms = ["RS256"]
@@ -43,6 +45,7 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
         if os.environ.get("IS_DOCKER_DEV") or (
             os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e"))
         ):
+            print("\n\nDOCKER DEV LOCAL\n\n")
             options = {"verify_signature": False, "verify_iss": False, "verify_at_hash": False}
         payload = jwt_decode(
             token, public_key, algorithms=algorithms, audience=use_audience, issuer=issuer, options=options

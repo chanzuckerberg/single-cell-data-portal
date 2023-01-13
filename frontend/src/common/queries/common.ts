@@ -18,8 +18,8 @@ export const JSON_BODY_FETCH_OPTIONS: RequestInit = {
 export function withAuthorizationHeader(
   options: RequestInit, token: string
 ): RequestInit {
-  const headers: any = options["headers"] || {};
-  headers["Authorization"] = `Bearer ${token}`;
+  options.headers = options.headers || {};
+  options.headers["Authorization"] = `Bearer ${token}`;
   return options;
 }
 

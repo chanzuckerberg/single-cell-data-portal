@@ -1,3 +1,4 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import { Dialog, IButtonProps } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import * as React from "react";
@@ -7,7 +8,6 @@ import { Collection } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
-import { useUserInfo } from "src/common/queries/auth";
 import { removeParams } from "src/common/utils/removeParams";
 import { StyledButton } from "./style";
 
@@ -39,7 +39,7 @@ const CreateCollection: FC<{
   const shouldModuleOpen = param?.toLowerCase() === BOOLEAN.TRUE;
 
   const [isOpen, setIsOpen] = useState(shouldModuleOpen);
-  const { data: userInfo, isLoading } = useUserInfo(isCurator);
+  const { isLoading, user: userInfo } = useAuth0();
 
   if (!isCurator || isLoading) {
     return null;

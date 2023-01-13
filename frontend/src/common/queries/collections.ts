@@ -1,3 +1,4 @@
+import { ConnectingAirportsOutlined } from "@mui/icons-material";
 import {
   useMutation,
   UseMutationResult,
@@ -255,6 +256,7 @@ export async function createCollection(
   payload: string,
   token: string,
 ): Promise<CollectionCreateResponse> {
+  console.log("Creating COllection");
   const response = await fetch(
     `${API_URL}${API.CREATE_COLLECTION}`, 
     withAuthorizationHeader({

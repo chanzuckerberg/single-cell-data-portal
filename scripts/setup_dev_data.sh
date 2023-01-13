@@ -12,7 +12,7 @@ export BACKEND_URL=https://backend.corporanet.local:5000
 # localstack below to localhost
 export LOCALSTACK_URL=http://localstack.corporanet.local:4566
 # How the backend can reach the OIDC idp
-export OIDC_INTERNAL_URL=http://oidc.corporanet.local
+export OIDC_INTERNAL_URL=https://oidc.corporanet.local
 # How a web browser can reach the OIDC idp
 export OIDC_BROWSER_URL=https://oidc.corporanet.local
 

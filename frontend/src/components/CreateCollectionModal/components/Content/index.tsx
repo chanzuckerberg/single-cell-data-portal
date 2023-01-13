@@ -1,9 +1,9 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import { Classes, Intent } from "@blueprintjs/core";
 import { useRouter } from "next/router";
 import { FC, useEffect, useRef, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection, COLLECTION_LINK_TYPE } from "src/common/entities";
-import { useUserInfo } from "src/common/queries/auth";
 import {
   formDataToObject,
   useCollection,
@@ -88,7 +88,7 @@ const Content: FC<Props> = (props) => {
   const [isValid, setIsValid] = useState(initialBooleanState);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { data: userInfo } = useUserInfo(true);
+  const { user: userInfo } = useAuth0();
   const [fieldValidation, setFieldValidation] = useState<{
     [key: string]: boolean;
   }>({

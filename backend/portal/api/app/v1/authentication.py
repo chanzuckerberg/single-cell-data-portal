@@ -215,6 +215,7 @@ def curation_access_token_func_lenient(token: str) -> dict:
 
 
 def portal_access_token_func(token):
+    print("\nusing regular access token func\n")
     return assert_authorized_token(token, CorporaAuthConfig().api_audience)
 
 
@@ -224,6 +225,7 @@ def portal_access_token_func_lenient(token: str) -> dict:
     Use this for endpoints that also require public access, so if users end up with a bad token,
     they won't be locked out.
     """
+    print("\n\nusing lenient func\n")
     try:
         return assert_authorized_token(token, CorporaAuthConfig().api_audience)
     except Exception:

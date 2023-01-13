@@ -1,3 +1,4 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import { AnchorButton } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import { Popper } from "@mui/material";
@@ -12,14 +13,13 @@ import { noop } from "src/common/constants/utils";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
-import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import { Left, LinkWrapper, MainWrapper, Nav, Right, Wrapper } from "./style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
-  const { data: userInfo } = useUserInfo(isCurator);
+  const { user: userInfo } = useAuth0();
   const { pathname } = useRouter();
   const isMyCollectionsShown = userInfo?.name && isCurator;
 
