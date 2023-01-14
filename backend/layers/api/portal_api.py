@@ -75,12 +75,15 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
     collections = []
     for c in itertools.chain(all_published_collections, all_owned_collections):
         collection = {
-            "id": c.version_id.id if c.published_at is None else c.collection_id.id,
             "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
             "owner": c.owner,
             "created_at": c.created_at,
         }
-        if c.published_at is None:
+        if c.published_at is not None or c.canonical_collection.originally_published_at is None:
+            collection["id"] = c.collection_id.id
+        else:
+            collection["id"] = c.version_id.id
+        if c.published_at is None and c.canonical_collection.originally_published_at is not None:
             collection["revision_of"] = c.collection_id.id
         collections.append(collection)
 
