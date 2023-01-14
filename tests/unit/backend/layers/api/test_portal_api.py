@@ -697,17 +697,16 @@ class TestCollection(BaseAPIPortalTest):
             collections = result.get("collections")
             self.assertIsNotNone(collections)
             ids = [collection.get("id") for collection in collections]
+
             self.assertIn(public_owned.collection_id.id, ids)
             self.assertNotIn(public_owned.version_id.id, ids)
             self.assertIn(public_not_owned.collection_id.id, ids)
-            self.assertIn(public_not_owned.version_id.id, ids)
+            self.assertNotIn(public_not_owned.version_id.id, ids)
             self.assertNotIn(private_owned.collection_id.id, ids)
             self.assertNotIn(private_owned.version_id.id, ids)
             self.assertNotIn(private_not_owned.collection_id.id, ids)
             self.assertNotIn(private_not_owned.version_id.id, ids)
-            self.assertNotIn(revision_owned.collection_id.id, ids)
             self.assertNotIn(revision_owned.version_id.id, ids)
-            self.assertNotIn(revision_not_owned.collection_id.id, ids)
             self.assertNotIn(revision_not_owned.version_id.id, ids)
 
         with self.subTest("auth"):
@@ -726,12 +725,14 @@ class TestCollection(BaseAPIPortalTest):
             self.assertNotIn(private_owned.version_id.id, ids)
             self.assertNotIn(private_not_owned.collection_id.id, ids)
             self.assertNotIn(private_not_owned.version_id.id, ids)
-            self.assertNotIn(revision_owned.collection_id.id, ids)
             self.assertIn(revision_owned.version_id.id, ids)
-            self.assertNotIn(revision_not_owned.collection_id.id, ids)
             self.assertNotIn(revision_not_owned.version_id.id, ids)
             self.assertTrue(
-                [collection for collection in collections if collection.get("revision_of") == public_owned.id][0]
+                [
+                    collection
+                    for collection in collections
+                    if collection.get("revision_of") == public_owned.collection_id.id
+                ][0]
             )
 
     # ✅
