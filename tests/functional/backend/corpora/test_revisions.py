@@ -68,7 +68,9 @@ class TestRevisions(BaseFunctionalTestCase):
         data = json.loads(res.content)
         canonical_collection_id = data["id"]
 
-        dataset_response = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()["datasets"][0]
+        dataset_response = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()[
+            "datasets"
+        ][0]
         dataset_id = dataset_response["id"]
         explorer_url = dataset_response["dataset_deployments"][0]["url"]
 
