@@ -73,15 +73,18 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
         )
 
     collections = []
-    for c in itertools.chain(all_published_collections, all_owned_collections):
+    for version in itertools.chain(all_published_collections, all_owned_collections):
         collection = {
-            "id": c.version_id.id if c.published_at is None else c.collection_id.id,
-            "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
-            "owner": c.owner,
-            "created_at": c.created_at,
+            "visibility": "PRIVATE" if version.published_at is None else "PUBLIC",
+            "owner": version.owner,
+            "created_at": version.created_at,
         }
-        if c.published_at is None:
-            collection["revision_of"] = c.collection_id.id
+        if version.is_unpublished_version():
+            collection["id"] = version.version_id.id
+        else:
+            collection["id"] = version.collection_id.id
+        if not version.is_published():
+            collection["revision_of"] = version.collection_id.id
         collections.append(collection)
 
     result = {"collections": collections}
@@ -199,13 +202,13 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
     """
     Converts a CollectionVersion to a format that can be used as an API response. The returned id
     """
-    if collection.canonical_collection.originally_published_at is not None and collection.published_at is None:
+    if collection.is_unpublished_version():
         # In this case, the collection version is a revision of an already published collection.
         # We should expose version_id as the collection_id
         revision_of = collection.collection_id.id
         collection_id = collection.version_id.id
         is_in_published_collection = False
-    elif collection.canonical_collection.originally_published_at is None and collection.published_at is None:
+    elif collection.is_initial_unpublished_version():
         # In this case, we're dealing with a freshly created collection - we should expose the canonical id here,
         # since the curators will circulate the permalink immediately. `revision_of` is also null.
         # We should also expose the canonical CXG link for each dataset
