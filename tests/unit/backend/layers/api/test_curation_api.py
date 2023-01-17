@@ -682,7 +682,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.business_logic.create_empty_dataset(collection_version.version_id)
         self._test_response(collection_version)
 
-
     def test__get_public_collection_with_auth_access_type_write__OK(self):
         """The Canonical Collection id should be returned"""
         collection_version = self.generate_published_collection()
