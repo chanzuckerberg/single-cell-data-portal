@@ -1,4 +1,3 @@
-import { ConnectingAirportsOutlined } from "@mui/icons-material";
 import {
   useMutation,
   UseMutationResult,
@@ -424,19 +423,19 @@ export function useDeleteCollection(
 export type PublishCollection = {
   id: Collection["id"];
   payload: string;
+  token: string;
 };
 
-async function publishCollection({ id, payload }: PublishCollection) {
+async function publishCollection({ id, payload, token }: PublishCollection) {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
   console.log("attempting to publish via API call");
-  const response = await fetch(url, {
-    ...DEFAULT_FETCH_OPTIONS,
-    headers: {
-      ...CONTENT_TYPE_APPLICATION_JSON
-    },
-    body: payload,
-    method: "POST",
-  });
+  const response = await fetch(url, withAuthorizationHeader({
+      ...DEFAULT_FETCH_OPTIONS,
+      ...JSON_BODY_FETCH_OPTIONS,
+      body: payload,
+      method: "POST",
+    }, token)
+  );
 
   if (!response.ok) {
     throw await response.json();
@@ -447,7 +446,7 @@ async function publishCollection({ id, payload }: PublishCollection) {
 export function usePublishCollection() {
   const queryClient = useQueryClient();
 
-  return useMutation(publishCollection, {
+  return useMutation(useAccessToken(publishCollection), {
     onSuccess: (id) => {
       console.log("Completed publish mutation");
       queryClient.invalidateQueries([USE_COLLECTIONS]);

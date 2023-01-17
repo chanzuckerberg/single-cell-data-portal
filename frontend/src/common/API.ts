@@ -9,12 +9,12 @@ export enum API {
   COLLECTIONS_INDEX = "/dp/v1/collections/index", // Filter-specific endpoint // djh
   COLLECTION = "/dp/v1/collections/{id}", // djh
   COLLECTION_UPLOAD_LINKS = "/dp/v1/collections/{id}/upload-links", // djh
-  COLLECTION_PUBLISH = "/dp/v1/collections/{id}/publish",
+  COLLECTION_PUBLISH = "/dp/v1/collections/{id}/publish", // djh
   CREATE_COLLECTION = "/dp/v1/collections", // djh
   LOG_IN = "/dp/v1/login",
   LOG_OUT = "/dp/v1/logout",
   USER_INFO = "/dp/v1/userinfo",
-  WMG_PRIMARY_FILTER_DIMENSIONS = "/wmg/v1/primary_filter_dimensions",
-  WMG_QUERY = "/wmg/v1/query",
-  WMG_MARKER_GENES = "/wmg/v1/markers",
+  WMG_PRIMARY_FILTER_DIMENSIONS = "/wmg/v1/primary_filter_dimensions", // djh
+  WMG_QUERY = "/wmg/v1/query", // djh
+  WMG_MARKER_GENES = "/wmg/v1/markers", // djh
 }
