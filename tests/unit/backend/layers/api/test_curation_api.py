@@ -8,6 +8,7 @@ from backend.common.corpora_orm import CollectionVisibility
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
 from backend.layers.common.entities import (
+    CollectionId,
     CollectionVersion,
     DatasetArtifactType,
     DatasetProcessingStatus,
@@ -225,6 +226,11 @@ class TestPostCollection(BaseAPIPortalTest):
         self.assertIn("id", response.json.keys())
         self.assertEqual(201, response.status_code)
 
+        # Check that the collection_id is the canonical collection ID
+        collection_id = response.json["id"]
+        version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertEqual(version.collection_id.id, collection_id)
+
     def test__create_collection__InvalidParameters(self):
         requests = [
             (
@@ -234,6 +240,7 @@ class TestPostCollection(BaseAPIPortalTest):
                     contact_name="",
                     contact_email="@email.com",
                     doi="10.111/not_curie_reference_format",
+                    consortia=["Not a valid consortia!"],
                 ),
                 [
                     {"name": "contact_email", "reason": "Invalid format."},
@@ -241,8 +248,9 @@ class TestPostCollection(BaseAPIPortalTest):
                     {"name": "name", "reason": "Cannot be blank."},
                     {"name": "contact_name", "reason": "Cannot be blank."},
                     {"name": "DOI", "reason": "DOI must be a CURIE reference."},
+                    {"name": "consortia", "reason": "Invalid consortia."},
                 ],
-                5,
+                6,
             ),
             (
                 dict(
@@ -349,11 +357,11 @@ class TestGetCollections(BaseAPIPortalTest):
 
     def test__get_collections_with_auth__OK_6(self):
         "revision_of contains None if the collection is unpublished"
-        unpublished_collection_id = self.generate_unpublished_collection()
+        self.generate_unpublished_collection()
         resp = self._test_response(visibility="PRIVATE", auth=True)
         self.assertEqual(1, len(resp))
         resp_collection = resp[0]
-        self.assertEqual(unpublished_collection_id.collection_id.id, resp_collection["revision_of"])
+        self.assertIsNone(resp_collection["revision_of"])
 
     def test__get_collections_no_auth_visibility_private__403(self):
         self._test_response(visibility="PRIVATE", status_code=403)
@@ -569,7 +577,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         expect_dataset["title"] = expect_dataset.pop("name")
         expect_dataset.update(
             **{
-                "explorer_url": f"/e/{dataset.version_id}.cxg/",
+                "explorer_url": f"/e/{dataset.dataset_id}.cxg/",
                 "id": dataset.dataset_id.id,
                 "processing_status": "INITIALIZED",
                 "revision": 0,
@@ -702,12 +710,12 @@ class TestGetCollectionID(BaseAPIPortalTest):
         res = self.app.get(f"/curation/v1/collections/{version_id}", headers=self.make_owner_header())
         self.assertEqual(status_code, res.status_code)
         if status_code == 200:
-            self.assertEqual(collection_version.version_id.id, res.json["id"])
+            self.assertEqual(collection_version.collection_id.id, res.json["id"])
 
         res = self.app.get(f"/curation/v1/collections/{collection_id}", headers=self.make_owner_header())
         self.assertEqual(status_code, res.status_code)
         if status_code == 200:
-            self.assertEqual(collection_version.version_id.id, res.json["id"])
+            self.assertEqual(collection_version.collection_id.id, res.json["id"])
 
     def test__get_collection_with_x_approximate_distribution_none__OK(self):
         metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -827,6 +835,42 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         self.assertEqual(new_doi, response.json["doi"])
 
+    def test__update_collection__consortia__OK(self):
+        initial_consortia = ["Consortia 1", "Consortia 2"]
+        new_consortia = ["Consortia 3"]
+        links = [
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
+        ]
+        collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertEqual(initial_consortia, original_collection["consortia"])
+        metadata = {"consortia": new_consortia}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(new_consortia, response.json["consortia"])
+
+    def test__remove_collection__consortia__OK(self):
+        initial_consortia = ["Consortia 1", "Consortia 2"]
+        new_consortia = []
+        links = [
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
+        ]
+        collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertEqual(initial_consortia, original_collection["consortia"])
+        metadata = {"consortia": new_consortia}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(new_consortia, response.json["consortia"])
+
     def test__update_collection__doi_is_not_CURIE_reference__BAD_REQUEST(self):
         links = [
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
@@ -908,26 +952,50 @@ class TestPatchCollectionID(BaseAPIPortalTest):
 
 
 class TestDeleteDataset(BaseAPIPortalTest):
-    def test__delete_dataset(self):
-        auth_credentials = [
+    def setUp(self):
+        super().setUp()
+        self.auth_credentials = [
             (self.make_super_curator_header, "super", 202),
             (self.make_owner_header, "owner", 202),
             (None, "none", 401),
             (self.make_not_owner_header, "not_owner", 403),
         ]
-        for auth, auth_description, expected_status_code in auth_credentials:
+
+    def _delete(self, auth, collection_id, dataset_id):
+        """
+        Helper method to call the delete endpoint
+        """
+        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}"
+        headers = auth() if callable(auth) else auth
+        return self.app.delete(test_url, headers=headers)
+
+    def test__delete_dataset_by_version_id(self):
+        """
+        Calling DELETE /collections/:collection_id/datasets/:dataset_id should work according to the
+        auth token passed and when using versioned ids
+        """
+        for auth, auth_description, expected_status_code in self.auth_credentials:
             with self.subTest(f"{auth_description} {expected_status_code}"):
                 dataset = self.generate_dataset(
                     statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
                     publish=False,
                 )
+                response = self._delete(auth, dataset.collection_version_id, dataset.dataset_version_id)
+                self.assertEqual(expected_status_code, response.status_code)
 
-                test_url = (
-                    f"/curation/v1/collections/{dataset.collection_version_id}/datasets/"
-                    f"{dataset.dataset_version_id}"
+    def test__delete_dataset_by_canonical_id(self):
+        """
+        Calling DELETE /collections/:collection_id/datasets/:dataset_id should work according to the
+        auth token passed and when using canonical ids. In this case, the unpublished collection
+        version will be looked up and used for deletion.
+        """
+        for auth, auth_description, expected_status_code in self.auth_credentials:
+            with self.subTest(f"{auth_description} {expected_status_code}"):
+                dataset = self.generate_dataset(
+                    statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
+                    publish=False,
                 )
-                headers = auth() if callable(auth) else auth
-                response = self.app.delete(test_url, headers=headers)
+                response = self._delete(auth, dataset.collection_id, dataset.dataset_id)
                 self.assertEqual(expected_status_code, response.status_code)
 
 
@@ -994,22 +1062,28 @@ class TestPostDataset(BaseAPIPortalTest):
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
-    def test_post_datasets_201(self):
+    def test_post_datasets_with_collection_201(self):
         collection = self.generate_unpublished_collection()
-        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
-        headers = self.make_owner_header()
-        response = self.app.post(test_url, headers=headers)
-        self.assertEqual(201, response.status_code)
-        self.assertTrue(response.json["id"])
+        test_ids = [(collection.version_id, "version_id"), (collection.collection_id, "canonical_collection_id")]
+        for test_id, test_name in test_ids:
+            test_url = f"/curation/v1/collections/{test_id}/datasets"
+            with self.subTest(test_name):
+                headers = self.make_owner_header()
+                response = self.app.post(test_url, headers=headers)
+                self.assertEqual(201, response.status_code)
+                self.assertTrue(response.json["id"])
 
     def test_post_datasets_super(self):
         collection = self.generate_unpublished_collection()
-        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
-        headers = self.make_super_curator_header()
-        response = self.app.post(test_url, headers=headers)
-        self.assertEqual(201, response.status_code)
+        test_ids = [(collection.version_id, "version_id"), (collection.collection_id, "canonical_collection_id")]
+        for test_id, test_name in test_ids:
+            test_url = f"/curation/v1/collections/{test_id}/datasets"
+            with self.subTest(test_name):
+                headers = self.make_super_curator_header()
+                response = self.app.post(test_url, headers=headers)
+                self.assertEqual(201, response.status_code)
 
-    def test_post_datasets_not_owner_201(self):
+    def test_post_datasets_not_owner_403(self):
         collection = self.generate_collection()
         test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_not_owner_header()
@@ -1141,17 +1215,27 @@ class TestPutLink(BaseAPIPortalTest):
         Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by the owner of the collection
         """
 
-        dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
-        )
-        body = {"link": self.good_link}
-        headers = self.make_owner_header()
-        response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
-            json=body,
-            headers=headers,
-        )
-        self.assertEqual(202, response.status_code)
+        def _test_create(collection_id, dataset_id):
+            body = {"link": self.good_link}
+            headers = self.make_owner_header()
+            response = self.app.put(
+                f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
+                json=body,
+                headers=headers,
+            )
+            self.assertEqual(202, response.status_code)
+
+        with self.subTest("with version_ids"):
+            dataset = self.generate_dataset(
+                statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+            )
+            _test_create(dataset.collection_version_id, dataset.dataset_version_id)
+
+        with self.subTest("with collection_ids"):
+            dataset = self.generate_dataset(
+                statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+            )
+            _test_create(dataset.collection_id, dataset.dataset_id)
 
     def test__new_from_link__Super_Curator(self, *mocks):
         """

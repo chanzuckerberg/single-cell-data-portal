@@ -41,6 +41,12 @@ class InvalidLinkException(BusinessException):
         super().__init__()
 
 
+class InvalidMetadataException(BusinessException):
+    def __init__(self, errors: Optional[List[str]] = None) -> None:
+        self.errors: Optional[List[str]] = errors
+        super().__init__()
+
+
 class CollectionVersionException(BusinessException):
     pass
 

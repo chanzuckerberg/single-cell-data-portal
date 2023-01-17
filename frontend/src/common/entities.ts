@@ -1,3 +1,5 @@
+import { CONSORTIA } from "src/components/CreateCollectionModal/components/Content/common/constants";
+
 export enum COLLECTION_LINK_TYPE {
   DOI = "DOI",
   RAW_DATA = "RAW_DATA",
@@ -75,6 +77,7 @@ export interface Author {
 
 export interface Collection {
   access_type: ACCESS_TYPE;
+  consortia: CONSORTIA[];
   contact_email: string;
   contact_name: string;
   description: string;

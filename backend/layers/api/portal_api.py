@@ -30,6 +30,7 @@ from backend.layers.business.exceptions import (
     CollectionVersionException,
     DatasetInWrongStatusException,
     DatasetNotFoundException,
+    InvalidMetadataException,
     InvalidURIException,
     MaxFileSizeExceededException,
 )
@@ -195,17 +196,32 @@ def _dataset_to_response(dataset: DatasetVersion, is_tombstoned: bool, is_in_pub
 
 
 def _collection_to_response(collection: CollectionVersionWithDatasets, access_type: str):
-    collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
-
+    """
+    Converts a CollectionVersion to a format that can be used as an API response. The returned id
+    """
     if collection.canonical_collection.originally_published_at is not None and collection.published_at is None:
+        # In this case, the collection version is a revision of an already published collection.
+        # We should expose version_id as the collection_id
         revision_of = collection.collection_id.id
-    else:
+        collection_id = collection.version_id.id
+        is_in_published_collection = False
+    elif collection.canonical_collection.originally_published_at is None and collection.published_at is None:
+        # In this case, we're dealing with a freshly created collection - we should expose the canonical id here,
+        # since the curators will circulate the permalink immediately. `revision_of` is also null.
+        # We should also expose the canonical CXG link for each dataset
+        # Note that this case is effectively equivalent to a published collection.
         revision_of = None
+        collection_id = collection.collection_id.id
+        is_in_published_collection = True
+    else:
+        # The last case is a published collection. We just return the canonical id and set revision_of to None
+        revision_of = None
+        collection_id = collection.collection_id.id
+        is_in_published_collection = True
 
     is_tombstoned = collection.canonical_collection.tombstoned
-    is_in_published_collection = collection.published_at is not None
 
-    return remove_none(
+    response = remove_none(
         {
             "access_type": access_type,
             "contact_email": collection.metadata.contact_email,
@@ -231,6 +247,20 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
         }
     )
 
+    # Always return consortia
+    response["consortia"] = collection.metadata.consortia
+    return response
+
+
+def lookup_collection(collection_id: str):
+    """
+    Look up a collection by either its version id or its canonical id
+    """
+    version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
+    if version is None:
+        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    return version
+
 
 def get_collection_details(collection_id: str, token_info: dict):
     """
@@ -244,9 +274,7 @@ def get_collection_details(collection_id: str, token_info: dict):
     3. A collection version with `collection_id` as the version_id (published or not)
     """
     # TODO: this logic might belong to the business layer?
-    version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
-    if version is None:
-        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None:
         raise ForbiddenHTTPException()
 
@@ -317,14 +345,15 @@ def create_collection(body: dict, user: str):
         body["contact_name"],
         body["contact_email"],
         [_link_from_request(node) for node in body.get("links", [])],
+        body.get("consortia", []),
     )
 
     try:
         version = get_business_logic().create_collection(user, curator_name, metadata)
-    except CollectionCreationException as ex:
+    except (InvalidMetadataException, CollectionCreationException) as ex:
         raise InvalidParametersHTTPException(detail=ex.errors)
 
-    return make_response(jsonify({"collection_id": version.version_id.id}), 201)
+    return make_response(jsonify({"collection_id": version.collection_id.id}), 201)
 
 
 # TODO: we should use a dataclass here
@@ -389,8 +418,7 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     """
 
     # Ensure that the version exists and the user is authorized to update it
-    # TODO: this should be extracted to a method, I think
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
@@ -405,13 +433,17 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
         body.get("contact_name"),
         body.get("contact_email"),
         update_links,
+        body.get("consortia"),
     )
 
-    get_business_logic().update_collection_version(CollectionVersionId(collection_id), payload)
+    try:
+        get_business_logic().update_collection_version(version.version_id, payload)
+    except InvalidMetadataException as ex:
+        raise InvalidParametersHTTPException(detail=ex.errors)
 
     # Requires strong consistency w.r.t. the operation above - if not available, the update needs
     # to be done in memory
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = get_business_logic().get_collection_version(version.version_id)
 
     response = _collection_to_response(version, "WRITE")
     return make_response(jsonify(response), 200)
@@ -421,13 +453,12 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     """
     Publishes a collection
     """
-
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
     try:
-        get_business_logic().publish_collection_version(CollectionVersionId(collection_id))
+        get_business_logic().publish_collection_version(version.version_id)
     except CollectionPublishException:
         raise ConflictException(detail="The collection must have a least one dataset.")
 
@@ -438,13 +469,13 @@ def publish_post(collection_id: str, body: object, token_info: dict):
 
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
 
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
     try:
         dataset_version_id, _ = get_business_logic().ingest_dataset(
-            CollectionVersionId(collection_id),
+            version.version_id,
             url,
             None,
             None if dataset_id is None else DatasetVersionId(dataset_id),
@@ -619,7 +650,7 @@ def delete_dataset(dataset_id: str, token_info: dict):
 
 def get_dataset_identifiers(url: str):
     """
-    a.k.a. the meta endpoint
+    Return a set of dataset identifiers. This endpoint is meant to be used by single-cell-explorer.
     """
     try:
         path = urlparse(url).path
@@ -634,19 +665,31 @@ def get_dataset_identifiers(url: str):
     if dataset is None:
         raise NotFoundHTTPException()
 
+    # A dataset version can appear in multiple collections versions. This endpoint should:
+    # 1. Return the most recent published version that contains the dataset version (aka the mapped version)
+    # 2. If the version only appears in an unpublished version, return that one.
+
     collection = get_business_logic().get_collection_version_from_canonical(dataset.collection_id)
-    if collection is None:  # orphaned datasets
+    if collection is None:  # orphaned datasets - shouldn't happen, but we should return 404 just in case
         raise NotFoundHTTPException()
+
+    if dataset.version_id not in [d.version_id for d in collection.datasets]:
+        # If the dataset is not in the mapped collection version, it means the dataset belongs to the active
+        # unpublished version. We should return that one
+        collection = get_business_logic().get_unpublished_collection_version_from_canonical(dataset.collection_id)
+
+    if collection is None:  # again, orphaned datasets
+        raise NotFoundHTTPException()
+
+    collection_id, dataset_id = collection.version_id.id, dataset.version_id.id
 
     # Retrieves the URI of the cxg artifact
     s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.CXG)
 
-    dataset_id = dataset.version_id.id
-
     dataset_identifiers = {
         "s3_uri": s3_uri,
         "dataset_id": dataset_id,
-        "collection_id": dataset.collection_id.id,
+        "collection_id": collection_id,
         "collection_visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         "tombstoned": False,  # No longer applicable
     }
