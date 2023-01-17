@@ -673,6 +673,15 @@ class TestGetCollectionID(BaseAPIPortalTest):
         collection_version = self.generate_unpublished_collection(add_datasets=0)
         self._test_response(collection_version)
 
+    def test_get_colletion_with_dataset_no_metadata(self):
+        """
+        GET collection should work when the collection has datasets with no metadata.
+        This happens when the dataset did not complete ingestion yet.
+        """
+        collection_version = self.generate_unpublished_collection(add_datasets=0)
+        self.business_logic.create_empty_dataset(collection_version.version_id)
+        self._test_response(collection_version)
+
     def test__get_public_collection_with_auth_access_type_write__OK(self):
         """The Canonical Collection id should be returned"""
         collection_version = self.generate_published_collection()

@@ -677,49 +677,67 @@ class TestCollection(BaseAPIPortalTest):
         for link in body["links"]:
             self.assertEqual(link["link_url"], link["link_url"].strip())
 
-    def test__list_collection__check_owner(self):
+    def test__list_collection__check_owner__no_auth(self):
 
         # Generate test collection
-        public_owned = self.generate_published_collection(owner="test_user_id").collection_id
-        private_owned = self.generate_unpublished_collection(owner="test_user_id").version_id
-        public_not_owned = self.generate_published_collection(owner="someone else").collection_id
-        private_not_owned = self.generate_unpublished_collection(owner="someone else").version_id
+        public_owned = self.generate_published_collection(owner="test_user_id")
+        private_owned = self.generate_unpublished_collection(owner="test_user_id")
+        public_not_owned = self.generate_published_collection(owner="someone else")
+        private_not_owned = self.generate_unpublished_collection(owner="someone else")
 
-        revision_not_owned = self.business_logic.create_collection_version(public_not_owned).version_id
-        revision_owned = self.business_logic.create_collection_version(public_owned).version_id
+        revision_not_owned = self.business_logic.create_collection_version(public_not_owned.collection_id)
+        revision_owned = self.business_logic.create_collection_version(public_owned.collection_id)
 
         path = "/dp/v1/collections"
-        with self.subTest("no auth"):
-            headers = {"host": "localhost", "Content-Type": "application/json"}
-            response = self.app.get(path, headers=headers)
-            self.assertEqual(200, response.status_code)
-            result = json.loads(response.data)
-            collections = result.get("collections")
-            self.assertIsNotNone(collections)
-            ids = [collection.get("id") for collection in collections]
-            self.assertIn(public_owned.id, ids)
-            self.assertIn(public_not_owned.id, ids)
-            self.assertNotIn(private_owned.id, ids)
-            self.assertNotIn(private_not_owned.id, ids)
-            self.assertNotIn(revision_owned.id, ids)
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        result = json.loads(response.data)
+        collections = result.get("collections")
+        self.assertIsNotNone(collections)
+        ids = [collection.get("id") for collection in collections]
 
-        with self.subTest("auth"):
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-            response = self.app.get(path, headers=headers)
-            self.assertEqual(200, response.status_code)
-            result = json.loads(response.data)
-            collections = result.get("collections")
-            self.assertIsNotNone(collections)
-            ids = [collection.get("id") for collection in collections]
-            self.assertIn(public_owned.id, ids)
-            self.assertIn(public_not_owned.id, ids)
-            self.assertIn(private_owned.id, ids)
-            self.assertNotIn(private_not_owned.id, ids)
-            self.assertNotIn(revision_not_owned.id, ids)
-            self.assertIn(revision_owned.id, ids)
-            self.assertTrue(
-                [collection for collection in collections if collection.get("revision_of") == public_owned.id][0]
-            )
+        self.assertIn(public_owned.collection_id.id, ids)
+        self.assertNotIn(public_owned.version_id.id, ids)
+        self.assertIn(public_not_owned.collection_id.id, ids)
+        self.assertNotIn(public_not_owned.version_id.id, ids)
+        self.assertNotIn(private_owned.collection_id.id, ids)
+        self.assertNotIn(private_owned.version_id.id, ids)
+        self.assertNotIn(private_not_owned.collection_id.id, ids)
+        self.assertNotIn(private_not_owned.version_id.id, ids)
+        self.assertNotIn(revision_owned.version_id.id, ids)
+        self.assertNotIn(revision_not_owned.version_id.id, ids)
+
+    def test__list_collection__check_owner__auth(self):
+        # Generate test collection
+        public_owned = self.generate_published_collection(owner="test_user_id")
+        private_owned = self.generate_unpublished_collection(owner="test_user_id")
+        public_not_owned = self.generate_published_collection(owner="someone else")
+        private_not_owned = self.generate_unpublished_collection(owner="someone else")
+
+        revision_not_owned = self.business_logic.create_collection_version(public_not_owned.collection_id)
+        revision_owned = self.business_logic.create_collection_version(public_owned.collection_id)
+
+        path = "/dp/v1/collections"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        result = json.loads(response.data)
+        collections = result.get("collections")
+        self.assertIsNotNone(collections)
+        ids = [collection.get("id") for collection in collections]
+        revision_ids = [collection.get("revision_of") for collection in collections if collection.get("revision_of")]
+        self.assertIn(public_owned.collection_id.id, ids)
+        self.assertNotIn(public_owned.version_id.id, ids)
+        self.assertIn(public_not_owned.collection_id.id, ids)
+        self.assertNotIn(public_not_owned.version_id.id, ids)
+        self.assertIn(private_owned.collection_id.id, ids)
+        self.assertNotIn(private_owned.version_id.id, ids)
+        self.assertNotIn(private_not_owned.collection_id.id, ids)
+        self.assertNotIn(private_not_owned.version_id.id, ids)
+        self.assertIn(revision_owned.version_id.id, ids)
+        self.assertNotIn(revision_not_owned.version_id.id, ids)
+        self.assertIn(public_owned.collection_id.id, revision_ids)
 
     # ✅
     def test__get_all_collections_for_index(self):
@@ -931,9 +949,9 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         response = self.app.get("/dp/v1/collections", headers=headers)
 
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
-        self.assertIn(private_collection.version_id.id, collection_ids)
+        self.assertIn(private_collection.collection_id.id, collection_ids)
         self.assertIn(public_collection.collection_id.id, collection_ids)
-        self.assertIn(collection_to_delete.version_id.id, collection_ids)
+        self.assertIn(collection_to_delete.collection_id.id, collection_ids)
 
         test_url = furl(
             path=f"/dp/v1/collections/{collection_to_delete.version_id.id}", query_params=dict(visibility="PRIVATE")
@@ -944,18 +962,19 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         # check not returned privately
         response = self.app.get("/dp/v1/collections", headers=headers)
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
-        self.assertIn(private_collection.version_id.id, collection_ids)
+        self.assertIn(private_collection.collection_id.id, collection_ids)
         self.assertIn(public_collection.collection_id.id, collection_ids)
-
         self.assertNotIn(collection_to_delete.version_id.id, collection_ids)
+        self.assertNotIn(collection_to_delete.collection_id.id, collection_ids)
 
         # check not returned publicly
         headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.get("/dp/v1/collections", headers=headers)
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
         self.assertIn(public_collection.collection_id.id, collection_ids)
-        self.assertNotIn(private_collection.version_id.id, collection_ids)
+        self.assertNotIn(private_collection.collection_id.id, collection_ids)
         self.assertNotIn(collection_to_delete.version_id.id, collection_ids)
+        self.assertNotIn(collection_to_delete.collection_id.id, collection_ids)
 
 
 class TestUpdateCollection(BaseAPIPortalTest):
