@@ -726,9 +726,7 @@ class TestCollection(BaseAPIPortalTest):
         collections = result.get("collections")
         self.assertIsNotNone(collections)
         ids = [collection.get("id") for collection in collections]
-        revision_ids = [
-            collection for collection in collections if collection.get("revision_of") == public_owned.collection_id.id
-        ]
+        revision_ids = [collection.get("revision_of") for collection in collections if collection.get("revision_of")]
         self.assertIn(public_owned.collection_id.id, ids)
         self.assertNotIn(public_owned.version_id.id, ids)
         self.assertIn(public_not_owned.collection_id.id, ids)
@@ -739,7 +737,7 @@ class TestCollection(BaseAPIPortalTest):
         self.assertNotIn(private_not_owned.version_id.id, ids)
         self.assertIn(revision_owned.version_id.id, ids)
         self.assertNotIn(revision_not_owned.version_id.id, ids)
-        self.assertTrue(revision_ids[0])
+        self.assertIn(public_owned.collection_id.id, revision_ids)
 
     # ✅
     def test__get_all_collections_for_index(self):

@@ -79,11 +79,11 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
             "owner": c.owner,
             "created_at": c.created_at,
         }
-        if c.published_at is not None or c.canonical_collection.originally_published_at is None:
-            collection["id"] = c.collection_id.id
-        else:
+        if c.is_unpublished_version():
             collection["id"] = c.version_id.id
-        if c.published_at is None and c.canonical_collection.originally_published_at is not None:
+        else:
+            collection["id"] = c.collection_id.id
+        if not c.is_published():
             collection["revision_of"] = c.collection_id.id
         collections.append(collection)
 
@@ -202,13 +202,13 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
     """
     Converts a CollectionVersion to a format that can be used as an API response. The returned id
     """
-    if collection.canonical_collection.originally_published_at is not None and collection.published_at is None:
+    if collection.is_unpublished_version():
         # In this case, the collection version is a revision of an already published collection.
         # We should expose version_id as the collection_id
         revision_of = collection.collection_id.id
         collection_id = collection.version_id.id
         is_in_published_collection = False
-    elif collection.canonical_collection.originally_published_at is None and collection.published_at is None:
+    elif collection.is_initial_unpublished_version():
         # In this case, we're dealing with a freshly created collection - we should expose the canonical id here,
         # since the curators will circulate the permalink immediately. `revision_of` is also null.
         # We should also expose the canonical CXG link for each dataset
