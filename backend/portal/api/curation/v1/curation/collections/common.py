@@ -187,11 +187,12 @@ def reshape_dataset_for_curation_api(
         ds["revision_of"] = None if is_published else dataset_version.canonical_dataset.dataset_version_id.id
         ds["revision"] = 0  # TODO this should be the number of times this dataset has been revised and published
         ds["title"] = ds.pop("name", None)
-        ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
         ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
-        if ds["x_approximate_distribution"]:
-            ds["x_approximate_distribution"] = ds["x_approximate_distribution"].upper()
+        if dataset_version.metadata is not None:
+            ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
+            if ds["x_approximate_distribution"]:
+                ds["x_approximate_distribution"] = ds["x_approximate_distribution"].upper()
         if status := dataset_version.status:
             if status.processing_status == DatasetProcessingStatus.FAILURE:
                 if status.validation_status == DatasetValidationStatus.INVALID:

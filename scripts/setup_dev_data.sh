@@ -103,7 +103,7 @@ snapshot_identifier='dummy-snapshot'
 wmg_bucket="wmg-test"
 wmg_config_secret_name="corpora/backend/test/wmg_config"
 python3 -m tests.unit.backend.wmg.fixtures.test_snapshot ${tmp_snapshot_dir}
-${local_aws} s3api create-bucket --bucket ${wmg_bucket} &>/dev/null || true
+${local_aws} s3api create-bsucket --bucket ${wmg_bucket} &>/dev/null || true
 ${local_aws} s3 sync --delete --quiet ${tmp_snapshot_dir} s3://${wmg_bucket}/$snapshot_identifier/
 echo $snapshot_identifier | ${local_aws} s3 cp --quiet - s3://${wmg_bucket}/latest_snapshot_identifier
 ${local_aws} secretsmanager create-secret --name ${wmg_config_secret_name} &>/dev/null || true
