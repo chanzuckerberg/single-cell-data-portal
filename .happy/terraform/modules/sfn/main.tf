@@ -162,13 +162,26 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Type": "Task",
         "InputPath": "$",
         "Resource": "${var.lambda_success_handler}",
-        "End": true
+        "End": true,
+        "Retry": [ {
+            "ErrorEquals": ["Lambda.AWSLambdaException"],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 3,
+            "BackoffRate": 2.0
+          }]
+        }
       },
       "HandleErrors": {
         "Type": "Task",
         "InputPath": "$",
         "Resource": "${var.lambda_error_handler}",
-        "End": true
+        "End": true,
+        "Retry": [ {
+            "ErrorEquals": ["Lambda.AWSLambdaException"],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 3,
+            "BackoffRate": 2.0
+        } ]
       }
     }
 }
