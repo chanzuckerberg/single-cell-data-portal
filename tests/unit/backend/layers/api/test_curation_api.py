@@ -1064,6 +1064,10 @@ class TestGetDatasets(BaseAPIPortalTest):
 
 
 class TestPostDataset(BaseAPIPortalTest):
+    """
+    Unit test for POST /datasets, which is used to add an empty dataset to a collection version
+    """
+
     def test_post_datasets_nonexistent_collection_403(self):
         non_existent_collection_id = str(uuid.uuid4())
         test_url = f"/curation/v1/collections/{non_existent_collection_id}/datasets"
@@ -1111,6 +1115,20 @@ class TestPostDataset(BaseAPIPortalTest):
         test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         response = self.app.post(test_url)
         self.assertEqual(401, response.status_code)
+
+    def test_post_datasets_returns_canonical_id(self):
+        """
+        POST /datasets returns the canonical dataset id on creation.
+        """
+        collection = self.generate_unpublished_collection()
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
+        headers = self.make_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(201, response.status_code)
+
+        looked_up_version = self.business_logic.get_collection_version(collection.version_id)
+        self.assertEqual(1, len(looked_up_version.datasets))
+        self.assertEqual(response.json["id"], looked_up_version.datasets[0].dataset_id.id)
 
 
 class TestPostRevision(BaseAPIPortalTest):
@@ -1173,13 +1191,14 @@ class TestPutLink(BaseAPIPortalTest):
         )
         body = {"link": self.good_link}
         headers = None
-        response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
-            json=body,
-            headers=headers,
-        )
+        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+            response = self.app.put(
+                f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{id}",
+                json=body,
+                headers=headers,
+            )
 
-        self.assertEqual(401, response.status_code)
+            self.assertEqual(401, response.status_code)
 
     def test__from_link__Not_Public(self, *mocks):
         """
@@ -1192,13 +1211,14 @@ class TestPutLink(BaseAPIPortalTest):
         )
         body = {"link": self.good_link}
         headers = self.make_owner_header()
-        response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
-            json=body,
-            headers=headers,
-        )
+        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+            response = self.app.put(
+                f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{id}",
+                json=body,
+                headers=headers,
+            )
 
-        self.assertEqual(403, response.status_code)
+            self.assertEqual(403, response.status_code)
 
     def test__from_link__Not_Owner(self, *mocks):
         """
@@ -1211,13 +1231,14 @@ class TestPutLink(BaseAPIPortalTest):
         )
         body = {"link": self.dummy_link}
         headers = self.make_not_owner_header()
-        response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
-            json=body,
-            headers=headers,
-        )
+        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+            response = self.app.put(
+                f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{id}",
+                json=body,
+                headers=headers,
+            )
 
-        self.assertEqual(403, response.status_code)
+            self.assertEqual(403, response.status_code)
 
     def test__new_from_link__OK(self, *mocks):
         """
