@@ -1027,10 +1027,44 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(dataset.dataset_id, response.json["id"])
 
     def test_get_dataset_shape(self):
-        dataset = self.generate_dataset(name="test")
-        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
+        # retrieve a private dataset
+        private_dataset = self.generate_dataset(name="test")
+        test_url = (
+            f"/curation/v1/collections/{private_dataset.collection_id}/datasets/{private_dataset.dataset_version_id}"
+        )
         response = self.app.get(test_url)
-        self.assertEqual("test", response.json["title"])
+        body = response.json
+        self.assertEqual("test", body["title"])
+        self.assertEqual(None, body["revision_of"])
+
+        # retrieve a public dataset
+        public_dataset = self.generate_dataset(name="test", publish=True)
+        test_url = (
+            f"/curation/v1/collections/{public_dataset.collection_id}/datasets/{public_dataset.dataset_version_id}"
+        )
+        response = self.app.get(test_url)
+        body = response.json
+        self.assertEqual("test", body["title"])
+        self.assertEqual(None, body["revision_of"])
+
+        # retrieve a revised dataset using dataset_id
+        collection_id = self.generate_published_collection().canonical_collection.id
+        version = self.generate_revision(collection_id)
+        dataset_version = self.generate_dataset(
+            collection_version=version, replace_dataset_version_id=version.datasets[0].version_id
+        )
+        test_url = (
+            f"/curation/v1/collections/{dataset_version.collection_id}/datasets/{dataset_version.dataset_version_id}"
+        )
+        response = self.app.get(test_url)
+        body = response.json
+        self.assertEqual(dataset_version.dataset_id, body["revision_of"])
+
+        # retrieve a revision using version_id
+        test_url = f"/curation/v1/collections/{dataset_version.collection_id}/datasets/{dataset_version.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+        self.assertEqual(None, body["revision_of"])
 
     def test_get_dataset_is_primary_data_shape(self):
         tests = [
