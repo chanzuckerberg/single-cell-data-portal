@@ -26,7 +26,6 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     CollectionVersionWithDatasets,
     DatasetVersion,
-    DatasetVersionId,
 )
 from backend.curation.api.v1.curation.collections.common import (
     get_infered_dataset_version,
@@ -51,38 +50,41 @@ def get(collection_id: str, dataset_id: str = None):
     # A canonical url should be only used in two cases:
     # 1. the collection version is unpublished but it's not a revision
     # 2. the collection version is published
-    use_canonical_url = (
-        collection_version.canonical_collection.originally_published_at is None
-        or collection_version.published_at is not None
-    )
+    use_canonical_url = collection_version.is_initial_unpublished_version() or collection_version.is_published()
 
-    response_body = reshape_dataset_for_curation_api(
-        version, collection_version.published_at is not None, use_canonical_url
-    )
+    response_body = reshape_dataset_for_curation_api(version, collection_version.is_published(), use_canonical_url)
     return make_response(jsonify(response_body), 200)
 
 
 def _get_collection_and_dataset(
-    business_logic: BusinessLogicInterface, collection_id: CollectionVersionId, dataset_id: DatasetVersionId
+    business_logic: BusinessLogicInterface, collection_id: str, dataset_id: str
 ) -> Tuple[CollectionVersionWithDatasets, DatasetVersion]:
-    dataset_version = business_logic.get_dataset_version(dataset_id)
-    if dataset_version is None:
+    """
+    Get collection and dataset by their ids. Will look up by both version and canonical id for both.
+    """
+
+    collection_version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+    if collection_version is None:
+        collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
+    if collection_version is None:
         raise ForbiddenHTTPException()
 
-    collection_version = business_logic.get_collection_version(collection_id)
-    if collection_version is None:
+    # Extract the dataset from the dataset list.
+    try:
+        dataset_version = next(
+            d for d in collection_version.datasets if d.version_id.id == dataset_id or d.dataset_id.id == dataset_id
+        )
+    except StopIteration:
         raise ForbiddenHTTPException()
 
     return collection_version, dataset_version
 
 
-def delete(token_info: dict, collection_id: str, dataset_id: str = None):
+def delete(token_info: dict, collection_id: str, dataset_id: str):
     business_logic = get_business_logic()
     user_info = UserInfo(token_info)
 
-    collection_version, dataset_version = _get_collection_and_dataset(
-        business_logic, CollectionVersionId(collection_id), DatasetVersionId(dataset_id)
-    )
+    collection_version, dataset_version = _get_collection_and_dataset(business_logic, collection_id, dataset_id)
 
     if not user_info.is_user_owner_or_allowed(collection_version.owner):
         raise ForbiddenHTTPException("Unauthorized")
@@ -105,9 +107,7 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
     url = body.get("url", body.get("link"))
     business_logic = get_business_logic()
 
-    collection_version, _ = _get_collection_and_dataset(
-        business_logic, CollectionVersionId(collection_id), DatasetVersionId(dataset_id)
-    )
+    collection_version, dataset_version = _get_collection_and_dataset(business_logic, collection_id, dataset_id)
 
     if not UserInfo(token_info).is_user_owner_or_allowed(collection_version.owner):
         raise ForbiddenHTTPException()
@@ -117,7 +117,7 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
             collection_version.version_id,
             url,
             None,
-            None if dataset_id is None else DatasetVersionId(dataset_id),
+            None if dataset_id is None else dataset_version.version_id,
         )
         return Response(status=202)
     except CollectionNotFoundException:

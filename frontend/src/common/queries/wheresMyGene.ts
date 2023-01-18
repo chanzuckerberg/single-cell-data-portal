@@ -251,7 +251,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   sex_terms: [],
 };
 
-interface RawDataset {
+export interface RawDataset {
   collection_id: string;
   collection_label: string;
   id: string;
