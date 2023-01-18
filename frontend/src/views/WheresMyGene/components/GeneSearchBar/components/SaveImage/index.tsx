@@ -2,7 +2,7 @@ import { Classes, Intent } from "@blueprintjs/core";
 import { FormControlLabel } from "@mui/material";
 import { InputRadio } from "czifui";
 import { toPng, toSvg } from "html-to-image";
-import { useCallback, useState } from "react";
+import { Dispatch, useCallback, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import {
@@ -11,10 +11,15 @@ import {
 } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
 import Modal from "src/components/common/Modal";
 import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
-import { CellType } from "src/views/WheresMyGene/common/types";
+import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
+import {
+  ECHART_AXIS_LABEL_COLOR_HEX,
+  ECHART_AXIS_LABEL_FONT_SIZE_PX,
+} from "../../../HeatMap/components/XAxisChart/style";
 import {
   getHeatmapHeight,
   getHeatmapWidth,
+  HEAT_MAP_BASE_CELL_PX,
   X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../../HeatMap/utils";
@@ -58,19 +63,27 @@ function base64URLToArrayBuffer(url: string) {
   return bytes.buffer;
 }
 
+interface Props {
+  selectedTissues: Array<string>;
+  selectedGenes: Array<string>;
+  selectedCellTypes: { [tissue: string]: CellType[] };
+  setIsDownloading: (isDownloading: boolean) => void;
+  setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
+}
+
 export default function SaveImage({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
   setIsDownloading,
-}: {
-  selectedTissues: Array<string>;
-  selectedGenes: Array<string>;
-  selectedCellTypes: { [tissue: string]: CellType[] };
-  setIsDownloading: (isDownloading: boolean) => void;
-}): JSX.Element {
+  setEchartsRendererMode,
+}: Props): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
-  const [fileType, setFileType] = useState<"png" | "svg">("png");
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  const [fileType, setFileType] = useState<"png" | "svg">("svg");
+  // const [fileType, setFileType] = useState<"png" | "svg">("png");
   const handleButtonClick = useCallback(() => {
     if (!isOpen) track(EVENTS.WMG_DOWNLOAD_CLICKED);
     setIsOpen(!isOpen);
@@ -78,6 +91,10 @@ export default function SaveImage({
 
   const handleDownload = useCallback(async () => {
     setIsDownloading(true);
+    setEchartsRendererMode("svg");
+
+    await new Promise((resolve) => setTimeout(resolve, 5 * 1000));
+
     try {
       const heatmapNode = document.getElementById("view") as HTMLCanvasElement;
       //(ashin): #3569 Get scrollTop to go back to place after downloading image
@@ -95,28 +112,40 @@ export default function SaveImage({
       const isPNG = fileType === "png";
       const convertHTMLtoImage = isPNG ? toPng : toSvg;
       const images = await Promise.all(
-        selectedTissues.map(async (tissue) => {
+        selectedTissues.map(async (tissueName) => {
+          const height = getHeatmapHeight(selectedCellTypes[tissueName]);
+
           const imageURL = await convertHTMLtoImage(heatmapNode, {
             backgroundColor: "white",
-            filter: screenshotFilter(tissue),
-            height:
-              getHeatmapHeight(selectedCellTypes[tissue]) +
-              X_AXIS_CHART_HEIGHT_PX +
-              120,
+            filter: screenshotFilter(tissueName),
+            height: height + X_AXIS_CHART_HEIGHT_PX + 120,
             pixelRatio: 4,
             width: heatmapNode.width,
           });
           // raw URI if only one tissue is selected
+
+          // DEBUG
+          // DEBUG
+          // DEBUG
+          // update logic here later
           const input =
             selectedTissues.length === 1
-              ? imageURL
+              ? processSvg({
+                  height,
+                  svg: decodeURIComponent(imageURL.split(",")[1]),
+                  tissueName,
+                })
               : isPNG // otherwise, convert to array buffer if PNG
               ? base64URLToArrayBuffer(imageURL)
-              : decodeURIComponent(imageURL.split(",")[1]);
+              : processSvg({
+                  height,
+                  svg: decodeURIComponent(imageURL.split(",")[1]),
+                  tissueName,
+                });
 
           return {
             input,
-            name: `${tissue}.${fileType}`,
+            name: `${tissueName}.${fileType}`,
           };
         })
       );
@@ -151,7 +180,15 @@ export default function SaveImage({
     }
 
     setIsDownloading(false);
-  }, [fileType, selectedCellTypes, selectedTissues, selectedGenes]);
+    setEchartsRendererMode("canvas");
+  }, [
+    fileType,
+    selectedCellTypes,
+    selectedTissues,
+    selectedGenes,
+    setIsDownloading,
+    setEchartsRendererMode,
+  ]);
 
   return (
     <>
@@ -211,4 +248,152 @@ export default function SaveImage({
       </Modal>
     </>
   );
+}
+
+function processSvg({
+  svg,
+  tissueName,
+  height,
+}: {
+  svg: string;
+  tissueName: Tissue;
+  height: number;
+}) {
+  const heatmapNode = new DOMParser().parseFromString(svg, "image/svg+xml");
+  const heatmapContainer = heatmapNode
+    .querySelector("foreignObject")
+    ?.querySelector("div");
+
+  console.log("-heatmapNode", heatmapNode);
+  console.log("-heatmapContainer", heatmapContainer);
+
+  renderDots({ heatmapContainer, tissueName });
+  renderYAxis({
+    heatmapContainer,
+    height,
+    tissueName,
+  });
+
+  return heatmapContainer?.innerHTML;
+}
+
+function renderDots({
+  heatmapContainer,
+  tissueName,
+}: {
+  heatmapContainer?: HTMLElement | null;
+  tissueName: Tissue;
+}) {
+  if (!heatmapContainer) return;
+
+  const chart = heatmapContainer
+    .querySelector(`#${tissueName}-chart`)
+    ?.querySelector("svg");
+
+  // This returns svg as string
+  console.log("-chart", chart?.parentElement?.innerHTML);
+}
+
+const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
+
+function renderYAxis({
+  heatmapContainer,
+  tissueName,
+  height,
+}: {
+  heatmapContainer?: HTMLElement | null;
+  tissueName: Tissue;
+  height: number;
+}) {
+  if (!heatmapContainer) return;
+
+  const yAxis = heatmapContainer.querySelector(`#${tissueName}-y-axis`);
+
+  const FONT_FAMILY = "sans-serif";
+
+  const svg = document.createElementNS(NAME_SPACE_URI, "svg");
+
+  const svgAttributes = {
+    height: `${height}px`,
+    width: `${Y_AXIS_CHART_WIDTH_PX}px`,
+  };
+
+  applyAttributes(svg, svgAttributes);
+
+  Array.from(
+    yAxis?.querySelectorAll("[data-test-id='cell-type-label-count']") || []
+  ).forEach((labelCount, index) => {
+    const label = labelCount.querySelector(
+      "[data-test-id='cell-type-label']"
+    )?.textContent;
+
+    const count = labelCount.querySelector(
+      "[data-test-id='cell-count']"
+    )?.textContent;
+
+    // group
+    const group = document.createElementNS(NAME_SPACE_URI, "g");
+
+    const groupAttributes = {
+      fill: ECHART_AXIS_LABEL_COLOR_HEX,
+      "font-family": FONT_FAMILY,
+      "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
+      /**
+       * (thuang): Add `HEAT_MAP_BASE_CELL_PX / 2` top margin, so we render the
+       * first label in the middle of the first cell
+       */
+      transform: `translate(0, ${
+        HEAT_MAP_BASE_CELL_PX / 2 + index * HEAT_MAP_BASE_CELL_PX
+      })`,
+    };
+
+    applyAttributes(group, groupAttributes);
+
+    // cellTypeLabel
+    const cellTypeLabel = document.createElementNS(NAME_SPACE_URI, "text");
+
+    const labelAttributes = {
+      x: 0,
+      y: 0,
+    };
+
+    applyAttributes(cellTypeLabel, labelAttributes);
+    cellTypeLabel.textContent = String(label);
+
+    // cellCount
+    const cellCount = document.createElementNS(NAME_SPACE_URI, "text");
+
+    const countAttributes = {
+      "text-anchor": "end",
+      x: Y_AXIS_CHART_WIDTH_PX,
+      y: 0,
+    };
+
+    applyAttributes(cellCount, countAttributes);
+
+    cellCount.textContent = String(count);
+
+    // append children
+    group.appendChild(cellTypeLabel);
+    group.appendChild(cellCount);
+
+    svg.appendChild(group);
+  });
+
+  // This returns svg as string
+  console.log("svg", svg);
+
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  open()?.document.body.appendChild(svg);
+}
+
+function applyAttributes(
+  node: SVGElement,
+  attributes: Record<string, string | number>
+) {
+  for (const [key, value] of Object.entries(attributes)) {
+    node.setAttribute(key, String(value));
+  }
 }

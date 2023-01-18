@@ -43,6 +43,7 @@ interface Props {
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
   isScaled: boolean;
+  echartsRendererMode: "svg" | "canvas";
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -59,6 +60,7 @@ export default memo(function Chart({
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
   isScaled,
+  echartsRendererMode,
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -112,14 +114,23 @@ export default memo(function Chart({
 
     setIsChartInitialized(true);
 
-    const chart = init(current, EMPTY_OBJECT, { useDirtyRect: true });
+    const chart = init(current, EMPTY_OBJECT, {
+      renderer: "svg",
+      // renderer: echartsRendererMode,
+      useDirtyRect: true,
+    });
 
     chart.getZr().on("mousemove", function (params) {
       throttledSetCurrentIndices(params, chart);
     });
 
     setChart(chart);
-  }, [ref, isChartInitialized, throttledSetCurrentIndices]);
+  }, [
+    ref,
+    isChartInitialized,
+    throttledSetCurrentIndices,
+    echartsRendererMode,
+  ]);
 
   // Update heatmap size
   useEffect(() => {

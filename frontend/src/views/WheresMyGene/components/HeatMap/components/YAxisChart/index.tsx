@@ -1,35 +1,35 @@
-import { memo, useContext, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { memo, useContext, useEffect, useMemo, useState } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
+import { SELECTED_STYLE } from "../../style";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
+  formatLabel,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
   Y_AXIS_CHART_WIDTH_PX,
-  formatLabel,
 } from "../../utils";
-import ReplaySVG from "./icons/replay.svg";
 import InfoSVG from "./icons/info-sign-icon.svg";
+import ReplaySVG from "./icons/replay.svg";
 import {
+  CellCountLabelStyle,
+  CellTypeButtonStyle,
   Container,
+  FlexRow,
+  FlexRowJustified,
+  InfoButtonWrapper,
   ResetImageWrapper,
+  StyledImage,
   TissueName,
   TissueWrapper,
   Wrapper,
-  StyledImage,
-  CellTypeButtonStyle,
-  CellCountLabelStyle,
-  FlexRowJustified,
-  FlexRow,
-  InfoButtonWrapper,
 } from "./style";
-import { SELECTED_STYLE } from "../../style";
-import { track } from "src/common/analytics";
-import { EVENTS } from "src/common/analytics/events";
 
 const MAX_DEPTH = 2;
 
@@ -122,6 +122,7 @@ export default memo(function YAxisChart({
                 tissueID={tissueID}
                 tissue={tissue}
                 generateMarkerGenes={generateMarkerGenes}
+                date-test-id="cell-type-label"
               />
             );
           })}
@@ -168,7 +169,7 @@ const CellTypeButton = ({
   const cellType = deserializeCellTypeMetadata(metadata);
 
   return (
-    <FlexRowJustified>
+    <FlexRowJustified data-test-id="cell-type-label-count">
       <FlexRow>
         <CellTypeButtonStyle
           active={active}
@@ -176,38 +177,42 @@ const CellTypeButton = ({
             setActive(!active);
             onClick();
           }}
+          data-test-id="cell-type-label"
         >
           {name}
         </CellTypeButtonStyle>
-        {!FMG_EXCLUDE_TISSUES.includes(tissue) && 
-          cellType && cellType.total_count > 25 && (
-          <InfoButtonWrapper
-            style={{
-              paddingTop: "3px",
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              if (cellType) {
-                generateMarkerGenes(cellType, tissueID);
-                track(EVENTS.WMG_FMG_INFO_CLICKED, {
-                  combination: `${cellType.name}, ${tissue}}`,
-                });
-              }
-            }}
-          >
-            <StyledImage
-              id={"marker-gene-button"}
-              src={InfoSVG.src}
-              width="10"
-              height="10"
-              alt={`display marker genes for ${
-                deserializeCellTypeMetadata(metadata).name
-              }`}
-            />
-          </InfoButtonWrapper>
-        )}
+        {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
+          cellType &&
+          cellType.total_count > 25 && (
+            <InfoButtonWrapper
+              style={{
+                cursor: "pointer",
+                paddingTop: "3px",
+              }}
+              onClick={() => {
+                if (cellType) {
+                  generateMarkerGenes(cellType, tissueID);
+                  track(EVENTS.WMG_FMG_INFO_CLICKED, {
+                    combination: `${cellType.name}, ${tissue}}`,
+                  });
+                }
+              }}
+            >
+              <StyledImage
+                id={"marker-gene-button"}
+                src={InfoSVG.src}
+                width="10"
+                height="10"
+                alt={`display marker genes for ${
+                  deserializeCellTypeMetadata(metadata).name
+                }`}
+              />
+            </InfoButtonWrapper>
+          )}
       </FlexRow>
-      <CellCountLabelStyle>{countString}</CellCountLabelStyle>
+      <CellCountLabelStyle data-test-id="cell-count">
+        {countString}
+      </CellCountLabelStyle>
     </FlexRowJustified>
   );
 };
