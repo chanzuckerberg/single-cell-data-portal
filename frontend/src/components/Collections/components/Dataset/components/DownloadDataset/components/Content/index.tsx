@@ -19,15 +19,6 @@ interface Props {
   dataAssets: Dataset["dataset_assets"];
 }
 
-const fetchDownloadLink = useAccessToken(async (url: string, token: string) => {
-  return await (
-    await fetch(
-      `${API_URL}${url}`,
-      withAuthorizationHeader({ ...DEFAULT_FETCH_OPTIONS, method: "POST" }, token)
-    )
-  ).json();
-});
-
 const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
   const [selectedFormat, setSelectedFormat] = useState<
     DATASET_ASSET_FORMAT | ""
@@ -36,6 +27,15 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
   const [fileName, setFileName] = useState<string>("");
   const [downloadLink, setDownloadLink] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const fetchDownloadLink = useAccessToken(async (url: string, token: string) => {
+    return await (
+      await fetch(
+        `${API_URL}${url}`,
+        withAuthorizationHeader({ ...DEFAULT_FETCH_OPTIONS, method: "POST" }, token)
+      )
+    ).json();
+  });
 
   useEffect(() => {
     if (!selectedFormat) return;
