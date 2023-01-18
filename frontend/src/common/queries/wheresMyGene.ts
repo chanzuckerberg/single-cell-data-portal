@@ -16,7 +16,7 @@ import {
 import { API } from "../API";
 import { ROUTES } from "../constants/routes";
 import { EMPTY_OBJECT } from "../constants/utils";
-import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS, useAccessToken, withAuthorizationHeader } from "./common";
+import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { get } from "src/common/featureFlags";
 import { BOOLEAN } from "src/common/localStorage/set";
@@ -51,11 +51,11 @@ export interface PrimaryFilterDimensionsResponse {
   tissues: OntologyTermsByOrganism;
 }
 
-export async function fetchPrimaryFilterDimensions(token: string): Promise<PrimaryFilterDimensionsResponse> {
+export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
   const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
 
   const response: RawPrimaryFilterDimensionsResponse = await (
-    await fetch(url, withAuthorizationHeader(DEFAULT_FETCH_OPTIONS, token))
+    await fetch(url, DEFAULT_FETCH_OPTIONS)
   ).json();
 
   return transformPrimaryFilterDimensions(response);
@@ -113,7 +113,7 @@ export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimens
 
   return useQuery<PrimaryFilterDimensionsResponse>(
     [USE_PRIMARY_FILTER_DIMENSIONS, currentSnapshotId],
-    useAccessToken(fetchPrimaryFilterDimensions),
+    fetchPrimaryFilterDimensions,
     {
       onSuccess(response) {
         if (!response || !dispatch) return;
@@ -184,24 +184,21 @@ interface QueryResponse {
 async function fetchQuery({
   query,
   signal,
-  token,
 }: {
   query: Query | null;
   signal?: AbortSignal;
-  token: string;
 }): Promise<QueryResponse | undefined> {
   if (!query) return;
 
   const url = API_URL + API.WMG_QUERY;
 
-  const response = await fetch(url, withAuthorizationHeader({
-      ...DEFAULT_FETCH_OPTIONS,
-      ...JSON_BODY_FETCH_OPTIONS,
-      body: JSON.stringify(query),
-      method: "POST",
-      signal,
-    }, token)
-  );
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(query),
+    method: "POST",
+    signal,
+  });
   const json: QueryResponse = await response.json();
 
   if (!response.ok) {
@@ -231,7 +228,7 @@ export function useWMGQuery(
 
   return useQuery(
     [USE_QUERY, query, currentSnapshotId],
-    useAccessToken(({ signal }: { signal: AbortSignal }, token: string) => fetchQuery({ query, signal, token})),
+    ({ signal }) => fetchQuery({ query, signal }),
     {
       enabled: Boolean(query),
       onSuccess(response) {
@@ -776,16 +773,15 @@ export async function fetchMarkerGenes({
   organismID,
   tissueID,
   test = "ttest",
-}: FetchMarkerGeneParams, token: string): Promise<MarkerGeneResponse> {
+}: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
   const url = API_URL + API.WMG_MARKER_GENES;
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
-  const response = await fetch(url, withAuthorizationHeader({
-      ...DEFAULT_FETCH_OPTIONS,
-      ...JSON_BODY_FETCH_OPTIONS,
-      body: JSON.stringify(body),
-      method: "POST",
-    }, token)
-  );
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(body),
+    method: "POST",
+  });
 
   const json: MarkerGeneResponse = await response.json();
 
@@ -834,13 +830,13 @@ export function useMarkerGenes({
 
   return useQuery(
     [USE_MARKER_GENES, cellTypeID, test],
-    useAccessToken(async (token: string) => {
+    async () => {
       const output = await fetchMarkerGenes({
         cellTypeID,
         organismID,
         tissueID,
         test,
-      }, token);
+      });
       const markerGenesIndexedByGeneName = Object.fromEntries(
         output.marker_genes.reduce(
           (newEntries, { gene_ontology_term_id, ...data }) => {
@@ -855,7 +851,7 @@ export function useMarkerGenes({
         )
       );
       return { ...output, marker_genes: markerGenesIndexedByGeneName };
-    }),
+    },
     {
       staleTime: Infinity,
     }
