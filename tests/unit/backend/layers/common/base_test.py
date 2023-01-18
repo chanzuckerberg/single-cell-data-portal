@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
+    CollectionId,
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionWithDatasets,
@@ -213,7 +214,7 @@ class BaseTest(unittest.TestCase):
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
 
-    def generate_revision(self, collection_id: str) -> CollectionVersionWithDatasets:
+    def generate_revision(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
         revision = self.business_logic.create_collection_version(collection_id)
         return self.business_logic.get_collection_version(revision.version_id)
 
