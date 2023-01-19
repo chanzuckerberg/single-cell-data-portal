@@ -9,6 +9,7 @@ import {
   MenuItem,
 } from "czifui";
 import { useCallback, useRef, useState } from "react";
+import { useAccessToken } from "src/common/queries/common";
 import {
   APIKeyResponse,
   generateCuratorAuthKey,
@@ -25,9 +26,9 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
   const apiKeyResponse = useRef({ id: apiKeyID ?? "" } as APIKeyResponse);
 
   const [isOpen, setIsOpen] = useState(false);
-  const handleOpen = useCallback(async () => {
+  const handleOpen = useCallback(useAccessToken(async ({}, token: string) => {
     try {
-      const data = await generateCuratorAuthKey();
+      const data = await generateCuratorAuthKey({}, token);
       if (!data?.key) throw new Error("No key returned");
       apiKeyResponse.current = data;
       setIsOpen(!isOpen);
@@ -37,7 +38,7 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
         message: "An error occurred while generating an API Key",
       });
     }
-  }, [isOpen]);
+  }), [isOpen]);
 
   const handleClose = useCallback(
     (_: DialogOnCloseParams[0], reason: DialogOnCloseParams[1]) => {
