@@ -10,6 +10,10 @@ info:
     ## For Examples
     * [Python Notebooks](https://github.com/chanzuckerberg/single-cell-curation/tree/main/notebooks/curation_api/python_raw)
     * [R Notebooks](https://github.com/chanzuckerberg/single-cell-curation/tree/main/notebooks/curation_api/R)
+    
+    ## Data Model
+    <!-- Data model diagram created via Lucid: https://lucid.app/lucidchart/8d085832-34f4-4413-9c1d-44e77d06e326/edit?invitationId=inv_ed354532-7256-4e0a-9ad0-b622905e5198&page=Vfzkzdv~I1fL# -->
+    <img src="/static/discover-api-data-model.png" width="50%"/>
 servers:
   - description: Production environment
     url: https://api.cellxgene.cziscience.com/
@@ -578,8 +582,12 @@ components:
       description: Collection metadata
       properties:
         collection_url:
-          description: The CELLxGENE Discover URL for the Collection.
+          description: |
+            The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision, 
+            in which case it points to the unpublished revision version.
           type: string
+        consortia:
+          $ref: "#/components/schemas/consortia"
         contact_email:
           $ref: "#/components/schemas/contact_email"
         contact_name:
@@ -621,6 +629,11 @@ components:
     collection_url:
       description: The CELLxGENE Discover URL for the Collection.
       type: string
+    consortia:
+      type: array
+      items:
+        type: string
+        description: The broader research groups which contributed to this collection of datasets.
     contact_email:
       description: The email of contact person for the Collection. Example email john.smith@email.com
       type: string
@@ -675,6 +688,8 @@ components:
       properties:
         collection_url:
           $ref: "#/components/schemas/collection_url"
+        consortia:
+          $ref: "#/components/schemas/consortia"
         contact_email:
           $ref: "#/components/schemas/contact_email"
         contact_name:
@@ -715,6 +730,8 @@ components:
       type: object
     collection_form_metadata:
       properties:
+        consortia:
+          $ref: "#/components/schemas/consortia"
         contact_email:
           $ref: "#/components/schemas/contact_email"
         contact_name:

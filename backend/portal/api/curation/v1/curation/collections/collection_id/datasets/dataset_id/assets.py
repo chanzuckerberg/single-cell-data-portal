@@ -1,12 +1,12 @@
 from flask import make_response, jsonify
 
 from backend.common.utils.http_exceptions import NotFoundHTTPException
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.providers import get_business_logic
 from backend.portal.api.curation.v1.curation.collections.common import (
+    allowed_dataset_asset_types,
     get_infered_collection_version_else_forbidden,
     get_infered_dataset_version,
 )
-from backend.layers.common.entities import DatasetArtifactType
 
 
 def get(collection_id: str, dataset_id=None):
@@ -25,7 +25,7 @@ def get(collection_id: str, dataset_id=None):
     asset_list = []
     error_flag = False
     for asset in assets:
-        if asset.type == DatasetArtifactType.CXG:
+        if asset.type not in allowed_dataset_asset_types:
             continue
         download_data = business_logic.get_dataset_artifact_download_data(dataset.version_id, asset.id)
         if download_data.file_size is None:

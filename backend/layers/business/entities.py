@@ -34,3 +34,4 @@ class CollectionMetadataUpdate:
     contact_name: Optional[str]
     contact_email: Optional[str]
     links: Optional[List[Link]]
+    consortia: Optional[List[str]]

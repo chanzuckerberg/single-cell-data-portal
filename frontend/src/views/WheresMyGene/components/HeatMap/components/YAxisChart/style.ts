@@ -1,6 +1,12 @@
 import Image from "next/image";
 import styled from "@emotion/styled";
-import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
+import {
+  HEAT_MAP_BASE_CELL_PX,
+  X_AXIS_CHART_HEIGHT_PX,
+  Y_AXIS_CHART_WIDTH_PX,
+} from "../../utils";
+import { ECHART_AXIS_LABEL_COLOR_HEX } from "../XAxisChart/style";
+import { SELECTED_STYLE } from "../../style";
 
 export const Y_AXIS_TISSUE_WIDTH_PX = 30;
 
@@ -37,6 +43,52 @@ export const Container = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
 `;
 
+export const CellTypeButtonStyle = styled.button`
+  height: ${HEAT_MAP_BASE_CELL_PX}px;
+  background-color: ${({ active }: { active: boolean }) =>
+    active ? SELECTED_STYLE.backgroundColor : "white"};
+  font: normal
+    ${({ active }: { active: boolean }) =>
+      active ? SELECTED_STYLE.fontWeight : "normal"}
+    ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
+  padding: ${({ active }: { active: boolean }) =>
+    active ? SELECTED_STYLE.padding : "unset"};
+  white-space: pre;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  color: ${ECHART_AXIS_LABEL_COLOR_HEX};
+  text-align: left;
+`;
+
+export const CellCountLabelStyle = styled.div`
+  height: ${HEAT_MAP_BASE_CELL_PX}px;
+  background-color: white;
+  font: normal normal ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
+  white-space: pre;
+  border: none;
+  color: ${ECHART_AXIS_LABEL_COLOR_HEX};
+  text-align: right;
+  padding-top: 3px;
+`;
+export const FlexRowJustified = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-left: 5px;
+  width: 100%;
+`;
+
+export const FlexRow = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+export const InfoButtonWrapper = styled.div`
+  padding-left: 2px;
+  cursor: pointer;
+`;
+
 export const ResetImageWrapper = styled.div`
   margin-top: 3px;
   cursor: pointer;
@@ -44,22 +96,9 @@ export const ResetImageWrapper = styled.div`
 
 function yAxisHeight({ height }: { height: number }) {
   return `
-    height: ${height - X_AXIS_CHART_HEIGHT_PX}px;
+    height: ${height}px;
   `;
 }
-
-function infoButtonCoords({ left, top }: { left: number; top: number }) {
-  return `
-    left: ${left}px;
-    top: ${top}px;
-  `;
-}
-
-export const InfoButtonWrapper = styled.div`
-  ${infoButtonCoords}
-  position: absolute;
-  cursor: pointer;
-`;
 
 export const StyledImage = styled(Image)`
   :hover {

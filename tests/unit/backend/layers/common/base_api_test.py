@@ -2,8 +2,7 @@ import base64
 import json
 import time
 import unittest
-from unittest.mock import Mock, patch
-from backend.layers.api.portal_api import PortalApi
+from unittest.mock import patch
 from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 from tests.unit.backend.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.layers.common.base_test import BaseTest
@@ -57,24 +56,25 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         self.mock.start()
 
         self.cloudfront_provider = CDNProviderInterface()
-        pa = PortalApi(self.business_logic, self.cloudfront_provider)
-
-        import backend.layers.api.router
-
-        backend.layers.api.router.portal_api = Mock(return_value=pa)
 
         from backend.api_server.app import app
 
         self.app = app.test_client(use_cookies=False)
 
-        # enable mocking of business logic for the curation API
-        self.mock_business_logic = patch("backend.layers.api.router._business_logic", new=self.business_logic)
+        # Mock all the dependencies of the API classes
+        self.mock_business_logic = patch("backend.layers.api.providers._business_logic", new=self.business_logic)
         self.mock_business_logic.start()
+
+        self.mock_cloudfront_provider = patch(
+            "backend.layers.api.providers._cloudfront_provider", new=self.cloudfront_provider
+        )
+        self.mock_cloudfront_provider.start()
 
     def tearDown(self):
         super().tearDown()
-        # disable mocking of business logic for the curation API
+        # Disable mocking of business logic and cloudfront provider
         self.mock_business_logic.stop()
+        self.mock_cloudfront_provider.stop()
 
     def get_cxguser_token(self, user="owner"):
         """

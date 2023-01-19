@@ -8,12 +8,20 @@ interface Props {
   chart: echarts.ECharts | null;
   chartProps: ChartProps | null;
   isScaled: boolean;
+  heatmapWidth: number;
+  heatmapHeight: number;
 }
 
-export function useUpdateChart({ chart, chartProps, isScaled }: Props): void {
+export function useUpdateChart({
+  chart,
+  chartProps,
+  isScaled,
+  heatmapWidth,
+  heatmapHeight,
+}: Props): void {
   const throttledUpdateChart = useMemo(() => {
     return throttle(
-      ({ chart, chartProps, isScaled }: Props) => {
+      ({ chart, chartProps, isScaled, heatmapWidth, heatmapHeight }: Props) => {
         if (!chart || !chartProps) {
           return;
         }
@@ -30,6 +38,8 @@ export function useUpdateChart({ chart, chartProps, isScaled }: Props): void {
             chartData,
             geneNames,
             isScaled,
+            heatmapWidth,
+            heatmapHeight,
           })
         );
       },
@@ -50,6 +60,15 @@ export function useUpdateChart({ chart, chartProps, isScaled }: Props): void {
       chart,
       chartProps,
       isScaled,
+      heatmapWidth,
+      heatmapHeight,
     });
-  }, [chart, chartProps, throttledUpdateChart, isScaled]);
+  }, [
+    chart,
+    chartProps,
+    throttledUpdateChart,
+    isScaled,
+    heatmapWidth,
+    heatmapHeight,
+  ]);
 }

@@ -7,10 +7,10 @@ from backend.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     MethodNotAllowedException,
 )
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate
-from backend.layers.business.exceptions import CollectionUpdateException
+from backend.layers.business.exceptions import CollectionUpdateException, InvalidMetadataException
 from backend.layers.common import doi
 from backend.layers.common.entities import Link
 from backend.portal.api.curation.v1.curation.collections.common import (
@@ -81,11 +81,14 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
         body.get("contact_name"),
         body.get("contact_email"),
         update_links,
+        body.get("consortia", []),
     )
 
     # Update the collection
     try:
         get_business_logic().update_collection_version(collection_version.version_id, collection_metadata)
+    except InvalidMetadataException as ex:
+        raise InvalidParametersHTTPException(ext=dict(invalid_parameters=ex.errors))
     except CollectionUpdateException as ex:
         errors.extend(ex.errors)
     if errors:

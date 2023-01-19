@@ -218,6 +218,11 @@ export function useWMGQuery(
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
 
+  query = clobberQueryIfSubsetOfPrev(query, [
+    "gene_ontology_term_ids",
+    "tissue_ontology_term_ids",
+  ]);
+
   return useQuery(
     [USE_QUERY, query, currentSnapshotId],
     ({ signal }) => fetchQuery({ query, signal }),
@@ -246,7 +251,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   sex_terms: [],
 };
 
-interface RawDataset {
+export interface RawDataset {
   collection_id: string;
   collection_label: string;
   id: string;
@@ -629,6 +634,37 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     sexes,
   ]);
 }
+let prevQuery: Query | null;
+
+function clobberQueryIfSubsetOfPrev(
+  query: Query | null,
+  filtersToCheck: (keyof Filter)[]
+): Query | null {
+  if (prevQuery == query) return prevQuery;
+  if (
+    !prevQuery ||
+    prevQuery?.include_filter_dims !== query?.include_filter_dims
+  ) {
+    prevQuery = query;
+    return query;
+  }
+  if (
+    (Object.entries(query.filter) as [keyof Filter, string[]][]).every(
+      ([key, value]) => {
+        //just check for equality on the filters we aren't checking for subsets
+        if (!filtersToCheck.includes(key))
+          return (
+            JSON.stringify(value) === JSON.stringify(prevQuery?.filter[key])
+          );
+        return value.every((elem) => prevQuery?.filter[key].includes(elem));
+      }
+    )
+  ) {
+    return prevQuery;
+  }
+  prevQuery = query;
+  return query;
+}
 
 function toEntity(item: RawOntologyTerm) {
   const [id, name] = Object.entries(item)[0];
@@ -732,7 +768,7 @@ export async function fetchMarkerGenes({
   cellTypeID,
   organismID,
   tissueID,
-  test = "binomtest",
+  test = "ttest",
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
   const url = API_URL + API.WMG_MARKER_GENES;
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
@@ -762,12 +798,10 @@ export interface MarkerGenesByCellType {
 
 export interface MarkerGeneResponse {
   marker_genes: {
-    // key is gene id from backend, but we convert to gene name
-    [key: string]: {
-      effect_size: number;
-      p_value: number;
-    };
-  };
+    gene_ontology_term_id: string;
+    effect_size: number;
+    p_value: number;
+  }[];
   snapshot_id: string;
 }
 
@@ -800,12 +834,12 @@ export function useMarkerGenes({
         test,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
-        [...Object.entries(output.marker_genes)].reduce(
-          (newEntries, [id, data]) => {
+        output.marker_genes.reduce(
+          (newEntries, { gene_ontology_term_id, ...data }) => {
             try {
-              newEntries.push([genesByID[id].name, data]);
+              newEntries.push([genesByID[gene_ontology_term_id].name, data]);
             } catch (e) {
-              console.log("could not find gene with id", id);
+              console.log("could not find gene with id", gene_ontology_term_id);
             }
             return newEntries;
           },

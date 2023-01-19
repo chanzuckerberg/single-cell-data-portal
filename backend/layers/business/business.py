@@ -102,6 +102,8 @@ class BusinessLogic(BusinessLogicInterface):
         """
 
         errors = []
+        # Check metadata is valid
+        collection_metadata.strip_fields()
         validation.verify_collection_metadata(collection_metadata, errors)
 
         # TODO: Maybe switch link.type to be an enum
@@ -115,7 +117,6 @@ class BusinessLogic(BusinessLogicInterface):
         if errors:
             raise CollectionCreationException(errors)
 
-        collection_metadata.strip_fields()
         created_version = self.database_provider.create_canonical_collection(owner, curator_name, collection_metadata)
 
         # TODO: can collapse with `create_canonical_collection`
@@ -213,6 +214,8 @@ class BusinessLogic(BusinessLogicInterface):
         # TODO: link.type should DEFINITELY move to an enum. pylance will help with the refactor
 
         errors = []
+
+        # Check metadata
         validation.verify_collection_metadata_update(body, errors)
 
         current_version = self.get_collection_version(version_id)
@@ -537,3 +540,26 @@ class BusinessLogic(BusinessLogicInterface):
         that belongs to the most recently published collection
         """
         return self.database_provider.get_dataset_mapped_version(dataset_id)
+
+    def _get_collection_and_dataset(
+        self, collection_id: str, dataset_id: str
+    ) -> Tuple[CollectionVersionWithDatasets, DatasetVersion]:
+        """
+        Get collection and dataset by their ids. Will look up by both version and canonical id for both.
+        """
+
+        collection_version = self.get_collection_version_from_canonical(CollectionId(collection_id))
+        if collection_version is None:
+            collection_version = self.get_collection_version(CollectionVersionId(collection_id))
+        if collection_version is None:
+            raise CollectionNotFoundException()
+
+        # Extract the dataset from the dataset list.
+        try:
+            dataset_version = next(
+                d for d in collection_version.datasets if d.version_id.id == dataset_id or d.dataset_id.id == dataset_id
+            )
+        except StopIteration:
+            raise DatasetNotFoundException()
+
+        return collection_version, dataset_version
