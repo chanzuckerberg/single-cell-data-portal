@@ -168,8 +168,7 @@ resource "aws_sfn_state_machine" "state_machine" {
             "IntervalSeconds": 1,
             "MaxAttempts": 3,
             "BackoffRate": 2.0
-          }]
-        }
+        } ]
       },
       "HandleErrors": {
         "Type": "Task",
