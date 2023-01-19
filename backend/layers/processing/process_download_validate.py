@@ -35,7 +35,7 @@ class ProcessDownloadValidate(ProcessingLogic):
     5. Persist the dataset metadata on the database
     6. Determine if a Seurat conversion is possible (it is not if the X matrix has more than 2**32-1 nonzero values)
     If this step completes successfully, ProcessCxg and ProcessSeurat will start in parallel.
-    If this step fails, the handle_failures lambda will be invoked
+    If this step fails, the handle_failures lambda will be invoked.
     """
 
     downloader: Downloader
