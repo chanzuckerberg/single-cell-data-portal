@@ -1,4 +1,5 @@
 import itertools
+from datetime import datetime
 from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 
@@ -147,14 +148,24 @@ def remove_none(body: dict):
 
 
 # Note: `metadata` can be none while the dataset is uploading
-def _dataset_to_response(dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False):
+def _dataset_to_response(
+    dataset: DatasetVersion, is_tombstoned: bool, is_in_revision: bool = False, revision_created_at: datetime = None
+):
     dataset_id = dataset.version_id.id
     # Only return `dataset_deployments` if a CXG artifact is available. This is to prevent the "Explore"
     # button to show up while a dataset upload is in progress
     if any(a for a in dataset.artifacts if a.type == DatasetArtifactType.CXG):
-        dataset_deployments = [{"url": explorer_url.generate(dataset, is_in_published_collection)}]
+        use_canonical = False if is_in_revision else True
+        dataset_deployments = [{"url": explorer_url.generate(dataset, use_canonical=use_canonical)}]
     else:
         dataset_deployments = []
+
+    published = False
+    if dataset.canonical_dataset.published_at:
+        published = True
+        # If dataset is an update of a published dataset and in an unpublished revision, it isn't published
+        if is_in_revision and revision_created_at and dataset.created_at > revision_created_at:
+            published = False
     return remove_none(
         {
             "assay": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.assay),
@@ -179,7 +190,7 @@ def _dataset_to_response(dataset: DatasetVersion, is_tombstoned: bool, is_in_pub
             "name": "" if dataset.metadata is None else dataset.metadata.name,
             "organism": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.organism),
             "processing_status": _dataset_processing_status_to_response(dataset.status, dataset.version_id.id),
-            "published": True,  # TODO
+            "published": published,
             "published_at": dataset.canonical_dataset.published_at,
             "revision": 0,  # TODO this is the progressive revision number. I don't think we'll need this
             "schema_version": None if dataset.metadata is None else dataset.metadata.schema_version,
@@ -190,7 +201,10 @@ def _dataset_to_response(dataset: DatasetVersion, is_tombstoned: bool, is_in_pub
             "suspension_type": None if dataset.metadata is None else dataset.metadata.suspension_type,
             "tissue": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.tissue),
             "tombstone": is_tombstoned,
-            "updated_at": dataset.created_at,  # Legacy: datasets can't be updated anymore
+            "updated": True
+            if is_in_revision and dataset.canonical_dataset.published_at and published is False
+            else None,
+            "updated_at": dataset.created_at,
             "x_approximate_distribution": None
             if dataset.metadata is None
             else dataset.metadata.x_approximate_distribution,
@@ -207,7 +221,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
         # We should expose version_id as the collection_id
         revision_of = collection.collection_id.id
         collection_id = collection.version_id.id
-        is_in_published_collection = False
+        is_in_revision = True
     elif collection.is_initial_unpublished_version():
         # In this case, we're dealing with a freshly created collection - we should expose the canonical id here,
         # since the curators will circulate the permalink immediately. `revision_of` is also null.
@@ -215,12 +229,12 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
         # Note that this case is effectively equivalent to a published collection.
         revision_of = None
         collection_id = collection.collection_id.id
-        is_in_published_collection = True
+        is_in_revision = False
     else:
         # The last case is a published collection. We just return the canonical id and set revision_of to None
         revision_of = None
         collection_id = collection.collection_id.id
-        is_in_published_collection = True
+        is_in_revision = False
 
     is_tombstoned = collection.canonical_collection.tombstoned
 
@@ -234,7 +248,10 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "data_submission_policy_version": "1.0",  # TODO
             "datasets": [
                 _dataset_to_response(
-                    ds, is_tombstoned=is_tombstoned, is_in_published_collection=is_in_published_collection
+                    ds,
+                    is_tombstoned=is_tombstoned,
+                    is_in_revision=is_in_revision,
+                    revision_created_at=collection.created_at,
                 )
                 for ds in collection.datasets
             ],
@@ -627,8 +644,7 @@ def get_datasets_index():
         )
         enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
         enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
-        # In this context, datasets always belong to published collections
-        payload["explorer_url"] = explorer_url.generate(dataset, is_published=True)
+        payload["explorer_url"] = explorer_url.generate(dataset)
         response.append(payload)
 
     return make_response(jsonify(response), 200)
