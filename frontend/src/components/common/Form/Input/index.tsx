@@ -11,6 +11,7 @@ import {
 } from "react";
 import {
   FormLabelText,
+  Optional,
   StyledFormLabel,
 } from "src/components/common/Form/common/style";
 import { DEBOUNCE_TIME_MS } from "../../../CreateCollectionModal/components/Content/common/constants";
@@ -99,7 +100,7 @@ const Input: FC<Props> = ({
       >
         <FormLabelText>
           <span>{text}</span>
-          {optionalField && <i>(optional)</i>}
+          {optionalField && <Optional>(optional)</Optional>}
         </FormLabelText>
         <InputGroup
           // (thuang): `autoComplete="off"` and `type="search"` are needed to stop autofill

@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
+    CollectionId,
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionWithDatasets,
@@ -16,6 +17,7 @@ from backend.layers.common.entities import (
     DatasetStatusGeneric,
     DatasetStatusKey,
     DatasetValidationStatus,
+    DatasetVersionId,
     Link,
     OntologyTermId,
 )
@@ -70,7 +72,7 @@ class BaseTest(unittest.TestCase):
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
-            cls.database_provider._drop_schema("persistence_schema")
+            cls.database_provider._drop_schema()
 
     def setUp(self):
         super().setUp()
@@ -85,8 +87,17 @@ class BaseTest(unittest.TestCase):
         mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
         mock_config.start()
 
+        from backend.layers.common import validation
+
+        validation.valid_consortia = {
+            "Consortia 1",
+            "Consortia 2",
+            "Consortia 3",
+            "Consortia 4",
+        }
+
         if self.run_as_integration:
-            self.database_provider._create_schema("persistence_schema")
+            self.database_provider._create_schema()
         else:
             self.database_provider = DatabaseProviderMock()
 
@@ -124,7 +135,12 @@ class BaseTest(unittest.TestCase):
         )
 
         self.sample_collection_metadata = CollectionMetadata(
-            "test_collection", "described", "john doe", "john.doe@email.com", []
+            "test_collection",
+            "described",
+            "john doe",
+            "john.doe@email.com",
+            [],
+            ["Consortia 1", "Consortia 2"],
         )
 
         self.business_logic = BusinessLogic(
@@ -134,7 +150,7 @@ class BaseTest(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         if self.run_as_integration:
-            self.database_provider._drop_schema("persistence_schema")
+            self.database_provider._drop_schema()
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -198,7 +214,7 @@ class BaseTest(unittest.TestCase):
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
 
-    def generate_revision(self, collection_id: str) -> CollectionVersionWithDatasets:
+    def generate_revision(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
         revision = self.business_logic.create_collection_version(collection_id)
         return self.business_logic.get_collection_version(revision.version_id)
 
@@ -212,6 +228,7 @@ class BaseTest(unittest.TestCase):
         validation_message: str = None,
         artifacts: List[DatasetArtifactUpdate] = None,
         publish: bool = False,
+        replace_dataset_version_id: Optional[DatasetVersionId] = None,
     ) -> DatasetData:
         """
         Convenience method for generating a dataset. Also generates an unpublished collection if needed.
@@ -219,7 +236,7 @@ class BaseTest(unittest.TestCase):
         if not collection_version:
             collection_version = self.generate_unpublished_collection(owner)
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection_version.version_id, "http://fake.url", None, None
+            collection_version.version_id, "http://fake.url", None, replace_dataset_version_id
         )
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -257,9 +274,6 @@ class BaseTest(unittest.TestCase):
             collection_version.collection_id.id,
             [a.id for a in artifact_ids],
         )
-
-    def _generate_id(self):
-        return DatabaseProviderMock._generate_id()
 
     def remove_timestamps(self, body: dict, remove: typing.List[str] = None) -> dict:
         # TODO: implement as needed

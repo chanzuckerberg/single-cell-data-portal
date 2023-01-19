@@ -16,7 +16,7 @@
 5. In the generated file, update the `Revision ID` and the `revision` (used by Alembic) to include the migration count.
    For example `Revision ID: a8cd0dc08805` becomes `Revision ID: 18_a8cd0dc08805` and `revision = "a8cd0dc08805"` becomes `revision = "18_a8cd0dc08805"`
 6. [Test your migration](#test-a-migration)
-7. Check that [corpora_orm.py](../common/corpora_orm.py) matches up with your changes.
+7. Check that [orm.py](../layers/persistence/orm.py) matches up with your changes.
 8. Once you've completed the changes, create a PR to get the functions reviewed.
 9. Once the PR is merged, migrations will be run as part of the deployment process to each env.
 10. [Connect to Remote RDS](#connect-to-remote-rds) to single-cell-dev
@@ -29,7 +29,7 @@ DEPLOYMENT_STAGE=test make db/migrate
 
 ## How to autogenerate migration script
 
-1. Make changes to the ORM class(es) in [corpora_orm.py](../common/corpora_orm.py)
+1. Make changes to the ORM class(es) in [orm.py](../layers/persistence/orm.py)
 2. [Connect to Remote RDS](#connect-to-remote-rds). Note, generally, you would be connecting to prod
    (`AWS_PROFILE=single-cell-prod DEPLOYMENT_STAGE=prod`) since we want to generate
    a migration from the database schema currently deployed in prod. However, if there are migrations haven't been
@@ -50,8 +50,7 @@ AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} CORPORA_L
 
 The following steps will test that a migration script works on a local database using data downloaded from a deployed database.
 
-1. [Connect to Remote RDS](#connect-to-remote-rds)
-2. Open a new terminal and using the same values for `AWS_PROFILE` and `DEPLOYMENT_STAGE`, download the remote dev database schema:
+1. Open a new terminal and using the same values for `AWS_PROFILE` and `DEPLOYMENT_STAGE`, download the remote dev database schema:
 
 ```shell
 cd $REPO_ROOT/backend
@@ -60,15 +59,15 @@ AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} make db/d
 
 This will download the database to `$REPO_ROOT/backend/corpora_dev.sqlc`.
 
-3. The tunnel to dev should close automatically (but worth verifying `ps ax | grep ssh`)
-4. Start the local database environment:
+2. The tunnel to dev should close automatically (but worth verifying `ps ax | grep ssh`)
+3. Start the local database environment:
 
 ```shell
 cd $REPO_ROOT
 make local-start
 ```
 
-5. Import the remote database schema into your local database:
+4. Import the remote database schema into your local database:
 
 ```shell
 cd $REPO_ROOT/backend
@@ -85,7 +84,7 @@ You may need to run this a few times, until there are no significant errors.
 
 - Note: `pg_restore: error: could not execute query: ERROR: role "rdsadmin" does not exist` is not a significant error
 
-6. Run the migration test:
+5. Run the migration test:
 
 ```shell
 AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE=test make db/test_migration
@@ -99,7 +98,7 @@ This test will:
 1. Dump the schema (after)
 1. Compare the before vs after schemas. These should be identical if the database migration's `upgrade()` and `downgrade()` functions were implemented correctly.
 
-If there are no differences then the test passed. If the test didn't pass, make adjustments to your migration script and restart from step 5. Repeat until there are no errors.
+If there are no differences then the test passed. If the test didn't pass, make adjustments to your migration script and restart from step 4. Repeat until there are no errors.
 
 ## Connect to Remote RDS
 
@@ -116,4 +115,4 @@ AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} make db/t
 This command opens an SSH tunnel from `localhost:5432` to the RDS connection endpoint via the _bastion_ server.
 The local port `5432` is fixed and encoded in the DB connection string stored in
 [AWS Secrets Manager](https://us-west-2.console.aws.amazon.com/secretsmanager/home?region=us-west-2#!/listSecrets/)
-in the secret named `corpora/backend/${DEPLOYMENT_STAGE}/database_local`.
+in the secret named `corpora/backend/${DEPLOYMENT_STAGE}/database`.

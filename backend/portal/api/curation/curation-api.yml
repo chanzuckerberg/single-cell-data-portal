@@ -582,8 +582,12 @@ components:
       description: Collection metadata
       properties:
         collection_url:
-          description: The CELLxGENE Discover URL for the Collection.
+          description: |
+            The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision, 
+            in which case it points to the unpublished revision version.
           type: string
+        consortia:
+          $ref: "#/components/schemas/consortia"
         contact_email:
           $ref: "#/components/schemas/contact_email"
         contact_name:
@@ -625,6 +629,11 @@ components:
     collection_url:
       description: The CELLxGENE Discover URL for the Collection.
       type: string
+    consortia:
+      type: array
+      items:
+        type: string
+        description: The broader research groups which contributed to this collection of datasets.
     contact_email:
       description: The email of contact person for the Collection. Example email john.smith@email.com
       type: string
@@ -679,6 +688,8 @@ components:
       properties:
         collection_url:
           $ref: "#/components/schemas/collection_url"
+        consortia:
+          $ref: "#/components/schemas/consortia"
         contact_email:
           $ref: "#/components/schemas/contact_email"
         contact_name:
@@ -719,6 +730,8 @@ components:
       type: object
     collection_form_metadata:
       properties:
+        consortia:
+          $ref: "#/components/schemas/consortia"
         contact_email:
           $ref: "#/components/schemas/contact_email"
         contact_name:
