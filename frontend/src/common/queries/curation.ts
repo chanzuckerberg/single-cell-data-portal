@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import { DEFAULT_FETCH_OPTIONS } from "./common";
+import { DEFAULT_FETCH_OPTIONS, useAccessToken, withAuthorizationHeader } from "./common";
 import { ENTITIES } from "./entities";
 
 export interface APIKeyResponse {
@@ -14,11 +14,12 @@ export const USE_CURATOR_AUTH_KEY = {
   id: "apiKey",
 };
 
-export async function generateCuratorAuthKey(): Promise<APIKeyResponse | null> {
-  const response = await fetch(API_URL + API.CURATOR_AUTH_KEY, {
-    ...DEFAULT_FETCH_OPTIONS,
-    method: "POST",
-  });
+export async function generateCuratorAuthKey({}, token: string): Promise<APIKeyResponse | null> {
+  const response = await fetch(API_URL + API.CURATOR_AUTH_KEY, withAuthorizationHeader({
+      ...DEFAULT_FETCH_OPTIONS,
+      method: "POST",
+    }, token)
+  );
 
   const result = await response.json();
 
@@ -29,10 +30,10 @@ export async function generateCuratorAuthKey(): Promise<APIKeyResponse | null> {
   return result;
 }
 
-async function fetchAuthKeyID(): Promise<APIKeyResponse | null> {
+async function fetchAuthKeyID({}, token: string): Promise<APIKeyResponse | null> {
   const response = await fetch(
     API_URL + API.CURATOR_AUTH_KEY,
-    DEFAULT_FETCH_OPTIONS
+    withAuthorizationHeader(DEFAULT_FETCH_OPTIONS, token)
   );
 
   const result = await response.json();
@@ -45,5 +46,5 @@ async function fetchAuthKeyID(): Promise<APIKeyResponse | null> {
 }
 
 export function useCuratorAuthKeyID(): UseQueryResult<APIKeyResponse | null> {
-  return useQuery([USE_CURATOR_AUTH_KEY], fetchAuthKeyID);
+  return useQuery([USE_CURATOR_AUTH_KEY], useAccessToken(fetchAuthKeyID));
 }

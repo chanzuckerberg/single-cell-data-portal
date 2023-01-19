@@ -1,5 +1,5 @@
 export enum API {
-  CURATOR_AUTH_KEY = "/dp/v1/auth/key",
+  CURATOR_AUTH_KEY = "/dp/v1/auth/key", // djh
   DATASET = "/dp/v1/datasets/{dataset_id}", // djh
   DATASET_ASSETS = "/dp/v1/datasets/{dataset_id}/assets", // djh
   DATASET_ASSET_DOWNLOAD_LINK = "/dp/v1/datasets/{dataset_id}/asset/{asset_id}", // djh
@@ -13,7 +13,7 @@ export enum API {
   CREATE_COLLECTION = "/dp/v1/collections", // djh
   LOG_IN = "/dp/v1/login",
   LOG_OUT = "/dp/v1/logout",
-  USER_INFO = "/dp/v1/userinfo",
+  USER_INFO = "/dp/v1/userinfo", // deprecated
   WMG_PRIMARY_FILTER_DIMENSIONS = "/wmg/v1/primary_filter_dimensions", // djh
   WMG_QUERY = "/wmg/v1/query", // djh
   WMG_MARKER_GENES = "/wmg/v1/markers", // djh
