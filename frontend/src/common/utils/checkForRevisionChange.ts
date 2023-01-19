@@ -16,6 +16,7 @@ const IGNORED_COLLECTION_FIELDS = [
   "datasets",
   "genesets",
   "links",
+  "consortia",
 ] as Array<keyof Collection>;
 const IGNORED_DATASET_FIELDS = [
   "created_at",
@@ -113,6 +114,10 @@ export default function checkForRevisionChange(
   if (publishedCollection.links.length !== revision.links.length) return true;
   //Check links for differences
   if (checkListForChanges(revision.links, publishedCollection.links))
+    return true;
+  //Check consortia for differences
+  if (publishedCollection.consortia.length !== revision.consortia.length) return true;
+  if (checkListForChanges(revision.consortia, publishedCollection.consortia))
     return true;
 
   if (
