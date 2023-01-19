@@ -201,7 +201,9 @@ def _dataset_to_response(
             "suspension_type": None if dataset.metadata is None else dataset.metadata.suspension_type,
             "tissue": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.tissue),
             "tombstone": is_tombstoned,
-            "updated": True if is_in_revision and published is False else None,
+            "updated": True
+            if is_in_revision and dataset.canonical_dataset.published_at and published is False
+            else None,
             "updated_at": dataset.created_at,
             "x_approximate_distribution": None
             if dataset.metadata is None
