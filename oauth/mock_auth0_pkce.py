@@ -7,7 +7,7 @@ from urllib.parse import quote
 # seconds until the token expires
 from jose import jwt, jws
 
-
+KID = "dummy_kid"
 TOKEN_EXPIRES = 5 * 60  # seconds (5 minutes)
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
@@ -92,18 +92,20 @@ class MockOauthApp:
         Provide public key for the random 2048-bit local dev pem key
         """
         data = {
+            "kid": KID,
             "alg": "RS256",
             "kty": "RSA",
             "n": "2tdYgAV6t32HTM_uWdHbyE2CstNBjHVp_tU2qh5MQaf5HQk-ag9aVcQjM39odvZK-XBHbWeTWg7V1-dEqmDBZrRinwzRicB41a"
                  "58Q1fyG4_11KXVN0KQJEqEw3PQszV8DD-oQjA7CkdX5M_YIL9ydl-ij03qHdLM5IIv4VTCbszYqPFdeSkwPWiyGU2TmPdxmkir"
                  "YiU2EZ38-8XNKZCbm4B43km08dwyevHYyEGIppyCV4-33Bu38sI7jzuBpCmB3Xa3np8MQhWyg_dVVtO738K0-En2B43nB7v0Rs"
                  "lqlguYvZ_lNS37UXIJNQej2X3VBzi_S4upYE4sDlyGLRGygQ",
-            "e": "AQAB"
+            "e": "AQAB",
         }
         return make_response(jsonify(dict(keys=[data])))
 
 
 class MockOauthServer:
+
     def __init__(self, additional_scope=None, token_duration=TOKEN_EXPIRES):
         self.process = None
         self.port = None
@@ -118,7 +120,7 @@ def make_token(token_claims: dict, token_duration: int = 5, additional_scope: li
     now = time.time()
     issued_at = now
     expires_at = now + token_duration
-    headers = dict(alg="RS256")
+    headers = dict(alg="RS256", kid=KID)
     token_claims.update(
         exp=expires_at,
         iat=issued_at,

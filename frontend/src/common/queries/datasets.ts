@@ -34,7 +34,7 @@ export function useDatasetStatus(
 ): UseQueryResult<DatasetUploadStatus> {
   return useQuery<DatasetUploadStatus>(
     [USE_DATASET_STATUS, dataset_id],
-    useAccessToken((token: string) => fetchDatasetStatus(dataset_id, token)),
+    useAccessToken(({}, token: string) => fetchDatasetStatus(dataset_id, token)),
     { enabled: shouldFetch, refetchInterval: REFETCH_INTERVAL_MS }
   );
 }
@@ -96,7 +96,7 @@ export function useFetchDatasetAssets(
 ): UseQueryResult<DatasetAsset[]> {
   return useQuery<DatasetAsset[]>(
     [USE_DATASETS_ASSETS, datasetId],
-    useAccessToken((token: string) => fetchDatasetAssets(datasetId, token)),
+    useAccessToken(({}, token: string) => fetchDatasetAssets(datasetId, token)),
     { enabled }
   );
 }

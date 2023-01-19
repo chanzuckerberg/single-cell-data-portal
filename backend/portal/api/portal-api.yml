@@ -1310,16 +1310,6 @@ components:
           schema:
             $ref: "#/components/schemas/problem"
   securitySchemes:
-#    cxguserCookie:
-#      type: apiKey
-#      in: cookie
-#      name: cxguser
-#      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.apikey_info_func
-#    cxguserCookieLenient:
-#      type: apiKey
-#      in: cookie
-#      name: cxguser
-#      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.apikey_info_func_lenient
     cxguserAccess:
       bearerFormat: JWT
       scheme: bearer

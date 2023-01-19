@@ -20,6 +20,7 @@ def jwt_decode(*args, **kwargs) -> dict:
 
 def get_unverified_header(token: str) -> dict:
     try:
+        print(f"token is {token}", flush=True)
         return jwt.get_unverified_header(token)
     except JWTError:
         raise UnauthorizedError(detail="Unable to parse authentication token.")

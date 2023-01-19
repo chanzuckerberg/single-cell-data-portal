@@ -113,7 +113,7 @@ export type CollectionResponsesMap = Map<
   Map<VISIBILITY_TYPE, CollectionResponse>
 >;
 
-async function fetchCollections(token: string): Promise<CollectionResponsesMap> {
+async function fetchCollections({}, token: string): Promise<CollectionResponsesMap> {
   const json = await (
     await fetch(
       API_URL + API.COLLECTIONS,
@@ -244,7 +244,7 @@ export function useCollection({
 
   return useQuery<Collection | TombstonedCollection | null>(
     [USE_COLLECTION, id, collections],
-    useAccessToken((token: string) => queryFn(id, token)),
+    useAccessToken(({}, token: string) => queryFn(id, token)),
     {
       enabled: !!collections,
     }
@@ -350,12 +350,10 @@ export function useCollectionUploadLinks(id: string) {
 }
 
 async function deleteCollection({
-  collectionID,
-  token,
+  collectionID
 }: {
   collectionID: Collection["id"];
-  token: string;
-}) {
+}, token: string) {
   const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
     id: collectionID,
   });
@@ -423,10 +421,9 @@ export function useDeleteCollection(
 export type PublishCollection = {
   id: Collection["id"];
   payload: string;
-  token: string;
 };
 
-async function publishCollection({ id, payload, token }: PublishCollection) {
+async function publishCollection({ id, payload }: PublishCollection, token: string) {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
   console.log("attempting to publish via API call");
   const response = await fetch(url, withAuthorizationHeader({
@@ -458,12 +455,10 @@ export function usePublishCollection() {
 const editCollection = async function ({
   id,
   payload,
-  token,
 }: {
   id: string;
   payload: string;
-  token: string;
-}): Promise<CollectionEditResponse> {
+}, token: string): Promise<CollectionEditResponse> {
   idError(id);
 
   if (!payload) {
@@ -584,14 +579,12 @@ export function useCreateRevision(callback: (id: Collection["id"]) => void) {
 export interface ReuploadLink {
   payload: string;
   collectionId: string;
-  token: string;
 }
 
 const reuploadDataset = async function ({
   payload,
   collectionId,
-  token,
-}: ReuploadLink) {
+}: ReuploadLink, token: string) {
   if (!payload) {
     throw Error("No payload given");
   }

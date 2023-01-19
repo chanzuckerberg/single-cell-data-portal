@@ -215,6 +215,10 @@ def curation_access_token_func_lenient(token: str) -> dict:
 
 
 def portal_access_token_func(token):
+    """Function used by connexion in the securitySchemes.
+    :params token:  A string representation of the token
+    :return: The token dictionary.
+    """
     print("\nusing regular access token func\n")
     return assert_authorized_token(token, CorporaAuthConfig().api_audience)
 
@@ -228,32 +232,6 @@ def portal_access_token_func_lenient(token: str) -> dict:
     print("\n\nusing lenient func\n")
     try:
         return assert_authorized_token(token, CorporaAuthConfig().api_audience)
-    except Exception:
-        return {}
-
-
-def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:
-    """Function used by connexion in the securitySchemes.
-
-    The return dictionary must contains a "sub" key.
-
-    :params tokenstr:  A string representation of the token
-    :params required_scopes: List of required scopes (currently not used).
-    :return: The token dictionary.
-    """
-    token = decode_token(tokenstr)
-    payload = check_token(token)
-    return payload
-
-
-def apikey_info_func_lenient(tokenstr: str, required_scopes: list) -> dict:
-    """
-    Lenient version that allows endpoints to work even if authentication fails.
-    Use this for endpoints that also require public access, so if users end up with a bad token,
-    they won't be locked out.
-    """
-    try:
-        return apikey_info_func(tokenstr, required_scopes)
     except Exception:
         return {}
 

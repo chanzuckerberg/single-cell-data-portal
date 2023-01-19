@@ -581,7 +581,7 @@ function expandPublicationDateValues(
  * @returns Promise that resolves to a map of collections keyed by collection ID - possible cached from previous
  * request - containing only ID, name and recency values.
  */
-async function fetchCollections(token: string): Promise<
+async function fetchCollections({}, token: string): Promise<
   Map<string, ProcessedCollectionResponse>
 > {
   const collections = await (
