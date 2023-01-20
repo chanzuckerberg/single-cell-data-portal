@@ -620,6 +620,20 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertDictEqual(expected_body, res_body)  # Confirm dict has been packaged in list
         self.assertEqual(json.dumps(expected_body, sort_keys=True), json.dumps(res_body))
 
+    def test__get_public_collection_verify_consortia_sorted__OK_1(self):
+        collection_metadata = copy.deepcopy(self.sample_collection_metadata)
+        collection_metadata.consortia = ["Consortia 3", "Consortia 1", "Consortia 2"]
+        collection_version = self.generate_unpublished_collection(metadata=collection_metadata)
+        self.assertEqual(collection_version.metadata.consortia, sorted(collection_metadata.consortia))
+
+    def test__get_public_collection_verify_consortia_sorted__OK_2(self):
+        collection_metadata = copy.deepcopy(self.sample_collection_metadata)
+        collection_metadata.consortia = ["Consortia 3", "Consortia 1", "Consortia 2"]
+        collection_version = self.generate_unpublished_collection(metadata=collection_metadata)
+
+        res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
+        self.assertEqual(res.json["consortia"], sorted(collection_metadata.consortia))
+
     def test__get_private_collection__OK(self):
         collection_version = self.generate_unpublished_collection()
         self._test_response(collection_version)
