@@ -437,6 +437,14 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     Updates a collection
     """
 
+    errors = []
+    doi_url = None
+    if doi_node := doi.get_doi_link_node(body, errors):
+        if doi_url := doi.portal_get_normalized_doi_url(doi_node, errors):
+            doi_node["link_url"] = doi_url
+    if errors:
+        raise InvalidParametersHTTPException(detail=errors)  # TODO: rewrite this exception?
+
     # Ensure that the version exists and the user is authorized to update it
     version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
@@ -459,6 +467,8 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     try:
         get_business_logic().update_collection_version(version.version_id, payload)
     except InvalidMetadataException as ex:
+        raise InvalidParametersHTTPException(detail=ex.errors)
+    except CollectionUpdateException as ex:
         raise InvalidParametersHTTPException(detail=ex.errors)
 
     # Requires strong consistency w.r.t. the operation above - if not available, the update needs
