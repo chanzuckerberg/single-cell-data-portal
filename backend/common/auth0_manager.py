@@ -59,8 +59,8 @@ class Auth0ManagementSession:
     def get_auth0_management_token(self, domain: str) -> str:
         # Generate management token
         payload = dict(
-            client_id=self.config.client_id,
-            client_secret=self.config.client_secret,
+            client_id=self.config.curator_app_client_id,
+            client_secret=self.config.curator_app_client_secret,
             grant_type="client_credentials",
             audience=f"https://{domain}/api/v2/",
         )
