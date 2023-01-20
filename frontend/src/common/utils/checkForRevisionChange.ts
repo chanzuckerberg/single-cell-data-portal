@@ -10,13 +10,10 @@ const IGNORED_COLLECTION_FIELDS = [
   "updated_at",
   "revisioning_in",
   "revision_of",
-  "id",
   "revision_diff",
   "published_at",
   "datasets",
   "genesets",
-  "links",
-  "consortia",
 ] as Array<keyof Collection>;
 const IGNORED_DATASET_FIELDS = [
   "created_at",
@@ -35,6 +32,40 @@ function checkListForChanges(
   publishedList: Array<unknown>
 ): boolean {
   return !isEmpty(xorWith(revisedList, publishedList, isEqual));
+}
+
+function checkCollectionKeyForDifference(
+  collectionKey: keyof Collection,
+  revisedCollection: Collection,
+  publishedCollection: Collection
+) {
+  if (publishedCollection[collectionKey] instanceof Array) {
+    // entry is an array
+    if (
+      checkListForChanges(
+        publishedCollection[collectionKey] as Array<unknown>,
+        revisedCollection[collectionKey] as Array<unknown>
+      )
+    ) {
+      console.log(collectionKey);
+      return true;
+    }
+  } else if (
+    // entry is an object
+    publishedCollection[collectionKey] instanceof Object
+  ) {
+    if (!isEqual(publishedCollection[collectionKey], revisedCollection[collectionKey])) {
+      console.log(collectionKey);
+      return true;
+    }
+  } else if (
+    // scalar value
+    publishedCollection[collectionKey] !== revisedCollection[collectionKey]
+  ) {
+     console.log(collectionKey)
+    return true;
+  }
+  return false;
 }
 
 function checkDatasetKeyForDifference(
@@ -65,6 +96,7 @@ function checkDatasetKeyForDifference(
     // scalar value
     publishedDataset[datasetKey] !== revisedDataset[datasetKey]
   ) {
+    console.log(datasetKey)
     return true;
   }
   return false;
@@ -78,6 +110,7 @@ function checkDatasetsForChanges(
   // Check dataset fields for differences
   return Array.from(publishedDatasets.values()).some((publishedDataset) => {
     const revisedDataset = revisedDatasets.get(publishedDataset.id) as Dataset;
+    if (revisedDataset == undefined) return true;
     let datasetKey = "" as keyof Dataset;
     for (datasetKey in publishedDataset) {
       if (IGNORED_DATASET_FIELDS.includes(datasetKey)) {
@@ -104,22 +137,18 @@ export default function checkForRevisionChange(
   // Check collection fields for differences
   let collectionKey = "" as keyof Collection;
   for (collectionKey in publishedCollection) {
-    if (
-      !IGNORED_COLLECTION_FIELDS.includes(collectionKey) &&
-      publishedCollection[collectionKey] !== revision[collectionKey]
-    ) {
-      return true;
+    if (IGNORED_COLLECTION_FIELDS.includes(collectionKey)) {
+      continue;
     }
+    if (
+      checkCollectionKeyForDifference(
+        collectionKey,
+        revision,
+        publishedCollection
+      )
+    )
+      return true;
   }
-  if (publishedCollection.links.length !== revision.links.length) return true;
-  //Check links for differences
-  if (checkListForChanges(revision.links, publishedCollection.links))
-    return true;
-  //Check consortia for differences
-  if (publishedCollection.consortia.length !== revision.consortia.length) return true;
-  if (checkListForChanges(revision.consortia, publishedCollection.consortia))
-    return true;
-
   if (
     checkDatasetsForChanges(revision.datasets, publishedCollection.datasets)
   ) {
