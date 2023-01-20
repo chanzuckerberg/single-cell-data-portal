@@ -223,13 +223,13 @@ class CollectionMetadata:
         if self.consortia is not None:
             self.consortia = [consortium.strip() for consortium in self.consortia]
 
-    def sortConsortia(self):
+    def sort_consortia(self):
         if self.consortia is not None:
-            self.consortia = sorted(self.consortia)
+            self.consortia.sort()
 
     def sanitize(self):
         self.strip_fields()
-        self.sortConsortia()
+        self.sort_consortia()
 
 
 @dataclass
