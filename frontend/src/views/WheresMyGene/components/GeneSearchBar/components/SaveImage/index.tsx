@@ -157,7 +157,7 @@ export default function SaveImage({
         heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
       }
 
-      const link = document.createElement("a");
+      const link = document.createElement("a"); 
 
       if (images.length > 1) {
         const { downloadZip } = await import("client-zip");
@@ -267,12 +267,41 @@ function processSvg({
   console.log("-heatmapNode", heatmapNode);
   console.log("-heatmapContainer", heatmapContainer);
 
-  renderDots({ heatmapContainer, tissueName });
-  renderYAxis({
+  const dotsSvg = renderDots({ heatmapContainer, tissueName });
+  const yAxisSvg = renderYAxis({
     heatmapContainer,
     height,
     tissueName,
   });
+
+  const svgWidth = yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value;
+  const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
+
+  finalSvg.setAttribute("height", String(dotsSvg!.height.baseVal.value));
+  finalSvg.setAttribute("width", String(svgWidth));
+  finalSvg.setAttribute("xmlns", NAME_SPACE_URI);
+  finalSvg.setAttribute("version", "1.1");
+  finalSvg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+
+  // Positioning
+  yAxisSvg?.setAttribute("y", "5");
+  dotsSvg?.setAttribute("x", String(yAxisSvg!.width.baseVal.value));
+
+  finalSvg.append(yAxisSvg!);
+  finalSvg.append(dotsSvg!);
+  
+  // (ashin-czi): Fixes SVG string breaking when encountering a "#" character
+  const finalSvgString = finalSvg.outerHTML.replace(/#/g, "%23");
+  
+
+  // Temporary download snippet
+  const link = document.createElement("a");
+  link.href = `data:image/svg+xml,${finalSvgString}`;
+  link.download = `CELLxGENE_gene_expression.svg`;
+  link.click();
+  link.remove();
+
+  open()?.document.body.append(finalSvg!);
 
   return heatmapContainer?.innerHTML;
 }
@@ -290,8 +319,14 @@ function renderDots({
     .querySelector(`#${tissueName}-chart`)
     ?.querySelector("svg");
 
+  // Cleanup as style attributes aren't used in SVG files
+  chart!.parentElement?.removeAttribute("style");
+  chart!.removeAttribute("style");
+
   // This returns svg as string
   console.log("-chart", chart?.parentElement?.innerHTML);
+
+  return chart;
 }
 
 const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
@@ -315,10 +350,31 @@ function renderYAxis({
 
   const svgAttributes = {
     height: `${height}px`,
-    width: `${Y_AXIS_CHART_WIDTH_PX}px`,
+    width: `${Y_AXIS_CHART_WIDTH_PX + 60}px`, // Adds padding for current tissue label
   };
 
   applyAttributes(svg, svgAttributes);
+
+  // Container for tissue label
+  const tissueLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
+
+  const tissueLabelText = document.createElementNS(NAME_SPACE_URI, "text");
+  tissueLabelText.textContent = tissueName;
+  tissueLabelText.setAttribute("transform", "translate(35, 40) rotate(270)");
+  tissueLabelText.setAttribute("font-family", "Inter, sans-serif");
+  tissueLabelText.setAttribute("font-size", "14px");
+  tissueLabelText.setAttribute("font-weight", "bold");
+
+  const tissueLabelRect = document.createElementNS(NAME_SPACE_URI, "rect");
+  tissueLabelRect.setAttribute("x", "40");
+  tissueLabelRect.setAttribute("width", "5");
+  tissueLabelRect.setAttribute("height", height + "");
+  
+  tissueLabelContainer.append(tissueLabelText);
+  tissueLabelContainer.append(tissueLabelRect);
+
+  // cell type names container group
+  const cellTypeNamesContainer = document.createElementNS(NAME_SPACE_URI, "g");
 
   Array.from(
     yAxis?.querySelectorAll("[data-test-id='cell-type-label-count']") || []
@@ -342,7 +398,7 @@ function renderYAxis({
        * (thuang): Add `HEAT_MAP_BASE_CELL_PX / 2` top margin, so we render the
        * first label in the middle of the first cell
        */
-      transform: `translate(0, ${
+      transform: `translate(50, ${
         HEAT_MAP_BASE_CELL_PX / 2 + index * HEAT_MAP_BASE_CELL_PX
       })`,
     };
@@ -377,16 +433,21 @@ function renderYAxis({
     group.appendChild(cellTypeLabel);
     group.appendChild(cellCount);
 
-    svg.appendChild(group);
+    cellTypeNamesContainer.appendChild(group);
   });
 
+  svg.append(tissueLabelContainer);
+  svg.append(cellTypeNamesContainer);
+
   // This returns svg as string
-  console.log("svg", svg);
+  console.log("svg", svg.innerHTML);
 
   // DEBUG
   // DEBUG
   // DEBUG
-  open()?.document.body.appendChild(svg);
+  // open()?.document.body.appendChild(svg);
+
+  return svg;
 }
 
 function applyAttributes(
