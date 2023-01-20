@@ -107,8 +107,12 @@ def reshape_for_curation_api(
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
+    # check if the new published at is different from the original published at.
     published_version = business_logic.get_published_collection_version(collection_version.canonical_collection.id)
-    if published_version is not None:
+    if (
+        collection_version.is_published()
+        and collection_version.published_at != collection_version.canonical_collection.originally_published_at
+    ):
         revised_at = published_version.published_at
     else:
         revised_at = None
@@ -183,7 +187,11 @@ def reshape_dataset_for_curation_api(
 
         ds["dataset_assets"] = assets
         ds["processing_status_detail"] = dataset_version.status.validation_message
-        ds["revised_at"] = dataset_version.canonical_dataset.revised_at
+        _published_at = dataset_version.canonical_dataset.published_at
+        if _published_at and _published_at < dataset_version.created_at:
+            ds["revised_at"] = dataset_version.created_at
+        else:
+            ds["revised_at"] = None
         ds["revision_of"] = (
             None
             if dataset_version.canonical_dataset.dataset_version_id == dataset_version.version_id

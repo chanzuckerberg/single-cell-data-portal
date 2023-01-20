@@ -36,6 +36,9 @@ class BaseAuthAPITest(unittest.TestCase):
     def make_not_owner_header(self):
         return {"Authorization": "Bearer " + "not_owner", "Content-Type": "application/json"}
 
+    def make_not_auth_header(self):
+        return {"Content-Type": "application/json"}
+
     def _mock_assert_authorized_token(self, token: str, audience: str = None):
         if token == "owner":
             return {"sub": "test_user_id", "email": "fake_user@email.com", "scope": []}
