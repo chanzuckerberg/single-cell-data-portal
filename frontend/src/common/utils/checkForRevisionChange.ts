@@ -47,7 +47,6 @@ function checkCollectionKeyForDifference(
         revisedCollection[collectionKey] as Array<unknown>
       )
     ) {
-      console.log(collectionKey);
       return true;
     }
   } else if (
@@ -55,14 +54,12 @@ function checkCollectionKeyForDifference(
     publishedCollection[collectionKey] instanceof Object
   ) {
     if (!isEqual(publishedCollection[collectionKey], revisedCollection[collectionKey])) {
-      console.log(collectionKey);
       return true;
     }
   } else if (
     // scalar value
     publishedCollection[collectionKey] !== revisedCollection[collectionKey]
   ) {
-     console.log(collectionKey)
     return true;
   }
   return false;
@@ -81,7 +78,6 @@ function checkDatasetKeyForDifference(
         revisedDataset[datasetKey] as Array<unknown>
       )
     ) {
-      console.log(datasetKey);
       return true;
     }
   } else if (
@@ -89,14 +85,12 @@ function checkDatasetKeyForDifference(
     publishedDataset[datasetKey] instanceof Object
   ) {
     if (!isEqual(publishedDataset[datasetKey], revisedDataset[datasetKey])) {
-      console.log(datasetKey);
       return true;
     }
   } else if (
     // scalar value
     publishedDataset[datasetKey] !== revisedDataset[datasetKey]
   ) {
-    console.log(datasetKey)
     return true;
   }
   return false;
@@ -110,7 +104,7 @@ function checkDatasetsForChanges(
   // Check dataset fields for differences
   return Array.from(publishedDatasets.values()).some((publishedDataset) => {
     const revisedDataset = revisedDatasets.get(publishedDataset.id) as Dataset;
-    if (revisedDataset == undefined) return true;
+    if (revisedDataset === undefined) return true;
     let datasetKey = "" as keyof Dataset;
     for (datasetKey in publishedDataset) {
       if (IGNORED_DATASET_FIELDS.includes(datasetKey)) {
