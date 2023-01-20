@@ -1,4 +1,5 @@
 import itertools
+from datetime import datetime
 from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 
@@ -73,15 +74,18 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
         )
 
     collections = []
-    for c in itertools.chain(all_published_collections, all_owned_collections):
+    for version in itertools.chain(all_published_collections, all_owned_collections):
         collection = {
-            "id": c.version_id.id if c.published_at is None else c.collection_id.id,
-            "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
-            "owner": c.owner,
-            "created_at": c.created_at,
+            "visibility": "PRIVATE" if version.published_at is None else "PUBLIC",
+            "owner": version.owner,
+            "created_at": version.created_at,
         }
-        if c.published_at is None:
-            collection["revision_of"] = c.collection_id.id
+        if version.is_unpublished_version():
+            collection["id"] = version.version_id.id
+        else:
+            collection["id"] = version.collection_id.id
+        if not version.is_published():
+            collection["revision_of"] = version.collection_id.id
         collections.append(collection)
 
     result = {"collections": collections}
@@ -144,14 +148,24 @@ def remove_none(body: dict):
 
 
 # Note: `metadata` can be none while the dataset is uploading
-def _dataset_to_response(dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False):
+def _dataset_to_response(
+    dataset: DatasetVersion, is_tombstoned: bool, is_in_revision: bool = False, revision_created_at: datetime = None
+):
     dataset_id = dataset.version_id.id
     # Only return `dataset_deployments` if a CXG artifact is available. This is to prevent the "Explore"
     # button to show up while a dataset upload is in progress
     if any(a for a in dataset.artifacts if a.type == DatasetArtifactType.CXG):
-        dataset_deployments = [{"url": explorer_url.generate(dataset, is_in_published_collection)}]
+        use_canonical = False if is_in_revision else True
+        dataset_deployments = [{"url": explorer_url.generate(dataset, use_canonical=use_canonical)}]
     else:
         dataset_deployments = []
+
+    published = False
+    if dataset.canonical_dataset.published_at:
+        published = True
+        # If dataset is an update of a published dataset and in an unpublished revision, it isn't published
+        if is_in_revision and revision_created_at and dataset.created_at > revision_created_at:
+            published = False
     return remove_none(
         {
             "assay": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.assay),
@@ -176,7 +190,7 @@ def _dataset_to_response(dataset: DatasetVersion, is_tombstoned: bool, is_in_pub
             "name": "" if dataset.metadata is None else dataset.metadata.name,
             "organism": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.organism),
             "processing_status": _dataset_processing_status_to_response(dataset.status, dataset.version_id.id),
-            "published": True,  # TODO
+            "published": published,
             "published_at": dataset.canonical_dataset.published_at,
             "revision": 0,  # TODO this is the progressive revision number. I don't think we'll need this
             "schema_version": None if dataset.metadata is None else dataset.metadata.schema_version,
@@ -187,7 +201,10 @@ def _dataset_to_response(dataset: DatasetVersion, is_tombstoned: bool, is_in_pub
             "suspension_type": None if dataset.metadata is None else dataset.metadata.suspension_type,
             "tissue": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.tissue),
             "tombstone": is_tombstoned,
-            "updated_at": dataset.created_at,  # Legacy: datasets can't be updated anymore
+            "updated": True
+            if is_in_revision and dataset.canonical_dataset.published_at and published is False
+            else None,
+            "updated_at": dataset.created_at,
             "x_approximate_distribution": None
             if dataset.metadata is None
             else dataset.metadata.x_approximate_distribution,
@@ -199,25 +216,25 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
     """
     Converts a CollectionVersion to a format that can be used as an API response. The returned id
     """
-    if collection.canonical_collection.originally_published_at is not None and collection.published_at is None:
+    if collection.is_unpublished_version():
         # In this case, the collection version is a revision of an already published collection.
         # We should expose version_id as the collection_id
         revision_of = collection.collection_id.id
         collection_id = collection.version_id.id
-        is_in_published_collection = False
-    elif collection.canonical_collection.originally_published_at is None and collection.published_at is None:
+        is_in_revision = True
+    elif collection.is_initial_unpublished_version():
         # In this case, we're dealing with a freshly created collection - we should expose the canonical id here,
         # since the curators will circulate the permalink immediately. `revision_of` is also null.
         # We should also expose the canonical CXG link for each dataset
         # Note that this case is effectively equivalent to a published collection.
         revision_of = None
         collection_id = collection.collection_id.id
-        is_in_published_collection = True
+        is_in_revision = False
     else:
         # The last case is a published collection. We just return the canonical id and set revision_of to None
         revision_of = None
         collection_id = collection.collection_id.id
-        is_in_published_collection = True
+        is_in_revision = False
 
     is_tombstoned = collection.canonical_collection.tombstoned
 
@@ -231,7 +248,10 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "data_submission_policy_version": "1.0",  # TODO
             "datasets": [
                 _dataset_to_response(
-                    ds, is_tombstoned=is_tombstoned, is_in_published_collection=is_in_published_collection
+                    ds,
+                    is_tombstoned=is_tombstoned,
+                    is_in_revision=is_in_revision,
+                    revision_created_at=collection.created_at,
                 )
                 for ds in collection.datasets
             ],
@@ -417,6 +437,14 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     Updates a collection
     """
 
+    errors = []
+    doi_url = None
+    if doi_node := doi.get_doi_link_node(body, errors):
+        if doi_url := doi.portal_get_normalized_doi_url(doi_node, errors):
+            doi_node["link_url"] = doi_url
+    if errors:
+        raise InvalidParametersHTTPException(detail=errors)  # TODO: rewrite this exception?
+
     # Ensure that the version exists and the user is authorized to update it
     version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
@@ -439,6 +467,8 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     try:
         get_business_logic().update_collection_version(version.version_id, payload)
     except InvalidMetadataException as ex:
+        raise InvalidParametersHTTPException(detail=ex.errors)
+    except CollectionUpdateException as ex:
         raise InvalidParametersHTTPException(detail=ex.errors)
 
     # Requires strong consistency w.r.t. the operation above - if not available, the update needs
@@ -624,8 +654,7 @@ def get_datasets_index():
         )
         enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
         enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
-        # In this context, datasets always belong to published collections
-        payload["explorer_url"] = explorer_url.generate(dataset, is_published=True)
+        payload["explorer_url"] = explorer_url.generate(dataset)
         response.append(payload)
 
     return make_response(jsonify(response), 200)
@@ -650,7 +679,7 @@ def delete_dataset(dataset_id: str, token_info: dict):
 
 def get_dataset_identifiers(url: str):
     """
-    a.k.a. the meta endpoint
+    Return a set of dataset identifiers. This endpoint is meant to be used by single-cell-explorer.
     """
     try:
         path = urlparse(url).path
@@ -665,19 +694,31 @@ def get_dataset_identifiers(url: str):
     if dataset is None:
         raise NotFoundHTTPException()
 
+    # A dataset version can appear in multiple collections versions. This endpoint should:
+    # 1. Return the most recent published version that contains the dataset version (aka the mapped version)
+    # 2. If the version only appears in an unpublished version, return that one.
+
     collection = get_business_logic().get_collection_version_from_canonical(dataset.collection_id)
-    if collection is None:  # orphaned datasets
+    if collection is None:  # orphaned datasets - shouldn't happen, but we should return 404 just in case
         raise NotFoundHTTPException()
+
+    if dataset.version_id not in [d.version_id for d in collection.datasets]:
+        # If the dataset is not in the mapped collection version, it means the dataset belongs to the active
+        # unpublished version. We should return that one
+        collection = get_business_logic().get_unpublished_collection_version_from_canonical(dataset.collection_id)
+
+    if collection is None:  # again, orphaned datasets
+        raise NotFoundHTTPException()
+
+    collection_id, dataset_id = collection.version_id.id, dataset.version_id.id
 
     # Retrieves the URI of the cxg artifact
     s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.CXG)
 
-    dataset_id = dataset.version_id.id
-
     dataset_identifiers = {
         "s3_uri": s3_uri,
         "dataset_id": dataset_id,
-        "collection_id": dataset.collection_id.id,
+        "collection_id": collection_id,
         "collection_visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         "tombstoned": False,  # No longer applicable
     }

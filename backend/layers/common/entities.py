@@ -223,6 +223,14 @@ class CollectionMetadata:
         if self.consortia is not None:
             self.consortia = [consortium.strip() for consortium in self.consortia]
 
+    def sort_consortia(self):
+        if self.consortia is not None:
+            self.consortia.sort()
+
+    def sanitize(self):
+        self.strip_fields()
+        self.sort_consortia()
+
 
 @dataclass
 class CanonicalCollection:
@@ -243,6 +251,37 @@ class CollectionVersionBase:
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
+
+    def is_published(self) -> bool:
+        """
+        This collection version has been published.
+        TODO: After old API code is removed consider moving closer to API layer
+        """
+        if self.published_at is not None:
+            return True
+        else:
+            return False
+
+    def is_unpublished_version(self) -> bool:
+        """
+        The collection has been published, and this is a unpublished version of the collection.
+        TODO: After old API code is removed consider moving closer to API layer
+        """
+        if self.canonical_collection.originally_published_at is not None and not self.is_published():
+            return True
+        else:
+            return False
+
+    def is_initial_unpublished_version(self) -> bool:
+        """
+        The collection is unpublished, this version is unpublished, and no previous versions have been
+        published.
+        TODO: After old API code is removed consider moving closer to API layer
+        """
+        if not self.is_published() and self.canonical_collection.originally_published_at is None:
+            return True
+        else:
+            return False
 
 
 @dataclass
