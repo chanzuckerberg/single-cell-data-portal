@@ -223,6 +223,14 @@ class CollectionMetadata:
         if self.consortia is not None:
             self.consortia = [consortium.strip() for consortium in self.consortia]
 
+    def sortConsortia(self):
+        if self.consortia is not None:
+            self.consortia = sorted(self.consortia)
+
+    def sanitize(self):
+        self.strip_fields()
+        self.sortConsortia()
+
 
 @dataclass
 class CanonicalCollection:
