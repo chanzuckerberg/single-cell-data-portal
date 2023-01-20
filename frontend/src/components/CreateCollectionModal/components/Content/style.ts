@@ -1,6 +1,7 @@
 import { Classes, Divider, H4 } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import { PT_TEXT_COLOR } from "src/components/common/theme";
+import { DropdownForm } from "src/components/common/Form/Dropdown/style";
 
 export const Form = styled.form`
   margin: 0;
@@ -13,9 +14,10 @@ export const CollectionDetail = styled.div`
   grid-template-columns: 1fr 1fr;
   margin-bottom: 24px;
 
-  /* Collection name and description field */
+  /* Collection name and description field, and consortia dropdown */
   [for="description"],
-  [for="name"] {
+  [for="name"],
+  ${DropdownForm} {
     grid-column: 1 / -1; /* span the grid column specification */
   }
 `;
