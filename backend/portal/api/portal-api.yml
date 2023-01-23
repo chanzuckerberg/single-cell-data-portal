@@ -1,0 +1,1203 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: Chan Zuckerberg Initiative cellxgene Data Portal API
+  description: >-
+    This API is under development, and subject frequent breaking changes without notice. Users are encouraged to use the
+    https://cellxgene.cziscience.com to access the cellxgene Data Portal.
+servers:
+  - description: Production environment
+    url: https://api.cellxgene.cziscience.com/
+  - description: Development environment
+    url: https://api.cellxgene.dev.single-cell.czi.technology
+  - description: Staging environment
+    url: https://api.cellxgene.staging.single-cell.czi.technology
+paths:
+  /v1/collections:
+    get:
+      tags:
+        - collections
+      summary: List published collections in Corpora
+      security:
+        - cxguserCookieLenient: []
+        - {}
+      description: >-
+        This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
+        a filter, then only collections that meet the status criteria will be outputted.
+      operationId: backend.portal.api.portal_api.get_collections_list
+      parameters:
+        - $ref: "#/components/parameters/query_user_id"
+        - name: from_date
+          in: query
+          schema:
+            type: integer
+          description: The date after which collections should have been created. In seconds since epoch.
+        - name: to_date
+          in: query
+          description: The date before which collections should have been created. In seconds since epoch.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - collections
+                properties:
+                  collections:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - created_at
+                      properties:
+                        id:
+                          $ref: "#/components/schemas/collection_id"
+                        created_at:
+                          type: number
+                  from_date:
+                    type: integer
+                  to_date:
+                    type: integer
+        "400":
+          $ref: "#/components/responses/400"
+    post:
+      tags:
+        - collections
+      summary: Create a collection
+      security:
+        - cxguserCookie: []
+      description: >-
+        Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
+      operationId: backend.portal.api.portal_api.create_collection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - name
+                - description
+                - contact_name
+                - contact_email
+              properties:
+                name:
+                  type: string
+                  description: name of the collection
+                description:
+                  type: string
+                  description: description of the collection
+                contact_name:
+                  type: string
+                  description: name of the primary person of contact for the collection
+                contact_email:
+                  type: string
+                  description: email of contact person for the collection
+                curator_name:
+                  type: string
+                  description: name of the curator of the collection.
+                links:
+                  $ref: "#/components/schemas/links"
+                consortia:
+                  $ref: "#/components/schemas/consortia"
+      responses:
+        "201":
+          description: A new collection has been created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collection_id:
+                    $ref: "#/components/schemas/collection_id"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+
+  /v1/collections/{collection_id}:
+    get:
+      tags:
+        - collections
+      summary: Get a collection's full details
+      security:
+        - cxguserCookieLenient: []
+        - {}
+      description: >-
+        This will return all datasets and associated attributes.
+      operationId: backend.portal.api.portal_api.get_collection_details
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/collection"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "410":
+          description: Gone
+    post:
+      tags:
+        - collections
+      summary: Start a revision of a public collection,
+      security:
+        - cxguserCookie: []
+        - {}
+      description: >-
+        This will return a private version of the public collection with all datasets and assoicated attributes of the
+        public collection.
+      operationId: backend.portal.api.portal_api.post_collection_revision
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "201":
+          description: A new collection revision has been created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/collection"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "409":
+          $ref: "#/components/responses/409"
+    put:
+      tags:
+        - collections
+      summary: Update a private collection's details
+      security:
+        - cxguserCookie: []
+      description: >-
+        Update a private collection's summary, links, contact info, and description details.
+      operationId: backend.portal.api.portal_api.update_collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: name of the collection
+                description:
+                  type: string
+                  description: description of the collection
+                contact_name:
+                  type: string
+                  description: name of the primary person of contact for the collection
+                contact_email:
+                  type: string
+                  description: email of contact person for the collection
+                curator_name:
+                  type: string
+                  description: name of the curator of the collection
+                links:
+                  $ref: "#/components/schemas/links"
+                consortia:
+                  $ref: "#/components/schemas/consortia"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/collection"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+    delete:
+      tags:
+        - collections
+      summary: Delete a collection
+      security:
+        - cxguserCookie: []
+      description: >-
+        Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
+        deployments.
+      operationId: backend.portal.api.portal_api.delete_collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "401":
+          $ref: "#/components/responses/401"
+
+  /v1/collections/{collection_id}/upload-links:
+    post:
+      summary: Start a dataset upload
+      tags:
+        - collections
+        - datasets
+      description: >-
+        An authenticated user can upload a file from a shared link to add a dataset into their collection.
+      security:
+        - cxguserCookie: []
+      operationId: backend.portal.api.portal_api.upload_link
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  description: The shared link generated by dropbox linking to a dataset.
+                  type: string
+              required:
+                - url
+      responses:
+        "202":
+          description: The upload request was accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_id:
+                    type: string
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "409":
+          $ref: "#/components/responses/409"
+        "413":
+          $ref: "#/components/responses/413"
+    put:
+      summary: Replace an existing dataset.
+      tags:
+        - collections
+        - datasets
+      description: >-
+        An authenticated user can upload a file from a shared link to replace an existing dataset in their collection.
+
+        The existing dataset must be in an error state or completely uploaded before a replacement can be attempted.
+        Once the upload of the replacement dataset is complete, the previous version of the dataset is removed and is
+        no longer available for downloading through this collection. The replacement datasets are not publicly available
+        until the collection revision is published. The old datasets are available in the public collection until the
+        collection revision is published.
+      security:
+        - cxguserCookie: []
+      operationId: backend.portal.api.portal_api.upload_relink
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  description: The shared link generated by dropbox linking to a dataset.
+                  type: string
+                id:
+                  $ref: "#/components/schemas/dataset_id"
+              required:
+                - url
+                - id
+      responses:
+        "202":
+          description: The upload request was accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_id:
+                    type: string
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "405":
+          $ref: "#/components/responses/405"
+        "413":
+          $ref: "#/components/responses/413"
+
+  /v1/collections/{collection_id}/publish:
+    post:
+      tags:
+        - collections
+      summary: Publish a collection
+      security:
+        - cxguserCookie: []
+      description: >-
+        Update status of specified collection to PUBLIC.  This will make it
+        visible on the public sites.
+
+        If publishing modification to a previously published collection, this will replace the old collection with the new
+        published collection. The old collection will no longer be accessible.
+      operationId: backend.portal.api.portal_api.publish_post
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data_submission_policy_version:
+                  type: string
+                  description: Which data submission policy was the collection submitted under
+      responses:
+        "202":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collection_id:
+                    $ref: "#/components/schemas/collection_id"
+                  visibility:
+                    $ref: "#/components/schemas/visibility"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/collections/index:
+    get:
+      tags:
+        - collections
+      summary: >-
+        Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
+        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      operationId: backend.portal.api.portal_api.get_collection_index
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - name
+                  properties:
+                    id:
+                      $ref: "#/components/schemas/collection_id"
+                    name:
+                      type: string
+                    publisher_metadata:
+                      $ref: "#/components/schemas/publisher_metadata"
+                    published_at:
+                      type: number
+                    revised_at:
+                      type: number
+                    consortia:
+                      $ref: "#/components/schemas/consortia"
+        "400":
+          $ref: "#/components/responses/400"
+
+  /v1/datasets/{dataset_id}:
+    delete:
+      tags:
+        - datasets
+      summary: Delete a dataset
+      description: >-
+        Cancels the in process upload of a dataset to the data portal and cleans up (removes) any artifacts created
+        in the upload process. If the dataset has already been uploaded and converted, this endpoint deletes it from
+        the data portal and removes associated artifacts
+      operationId: backend.portal.api.portal_api.delete_dataset
+      security:
+        - cxguserCookie: []
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
+
+  /v1/datasets/meta:
+    get:
+      tags:
+        - datasets
+      summary: Given an explorer url return information identifying the dataset it represents
+      description: >-
+        Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
+        Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
+        the associated parent collection ID.
+      operationId: backend.portal.api.portal_api.get_dataset_identifiers
+      parameters:
+        - in: query
+          required: true
+          name: url
+          schema:
+            type: string
+          description: The url used to access this dataset in the explorer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/dataset_identifiers"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/datasets/{dataset_id}/assets:
+    get:
+      tags:
+        - datasets
+      summary: Dataset assets
+      description: >-
+        Return a list of all the dataset's assets
+      operationId: backend.portal.api.portal_api.get_dataset_assets
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/datasets/{dataset_id}/asset/{asset_id}:
+    post:
+      tags:
+        - datasets
+      summary: Request to download a dataset
+      description: >-
+        Request to download a file which on success will generate a pre-signed URL to download the dataset.
+      operationId: backend.portal.api.portal_api.post_dataset_asset
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+        - name: asset_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_id:
+                    $ref: "#/components/schemas/dataset_id"
+                  presigned_url:
+                    type: string
+                  file_name:
+                    type: string
+                  file_size:
+                    type: number
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/datasets/{dataset_id}/status:
+    get:
+      tags:
+        - datasets
+      summary: Get the status of a dataset upload.
+      operationId: backend.portal.api.portal_api.get_status
+      security:
+        - cxguserCookie: []
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_id:
+                    $ref: "#/components/schemas/dataset_id"
+                  processing_status:
+                    type: string
+                    enum: [INITIALIZED, PENDING, SUCCESS, FAILURE]
+                  upload_status:
+                    type: string
+                    enum:
+                      [
+                        WAITING,
+                        UPLOADING,
+                        UPLOADED,
+                        FAILED,
+                        CANCEL_PENDING,
+                        CANCELED,
+                        NA,
+                      ]
+                  upload_message:
+                    type: string
+                  upload_progress:
+                    type: number
+                  validation_status:
+                    type: string
+                    enum: [VALIDATING, VALID, INVALID, NA]
+                  validation_message:
+                    type: string
+                  h5ad_status:
+                    type: string
+                    enum:
+                      [
+                        CONVERTING,
+                        CONVERTED,
+                        UPLOADING,
+                        UPLOADED,
+                        SKIPPED,
+                        FAILED,
+                        NA,
+                      ]
+                  cxg_status:
+                    type: string
+                    enum:
+                      [
+                        CONVERTING,
+                        CONVERTED,
+                        UPLOADING,
+                        UPLOADED,
+                        SKIPPED,
+                        FAILED,
+                        NA,
+                      ]
+                  rds_status:
+                    type: string
+                    enum:
+                      [
+                        CONVERTING,
+                        CONVERTED,
+                        UPLOADING,
+                        UPLOADED,
+                        SKIPPED,
+                        FAILED,
+                        NA,
+                      ]
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/datasets/index:
+    get:
+      tags:
+        - datasets
+      summary: >-
+        Returns all public, non tombstoned datasets. This endpoint is meant to be used for displaying datasets
+        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      security:
+        - cxguserCookieLenient: []
+        - {}
+      description: >-
+        Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
+        for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      operationId: backend.portal.api.portal_api.get_datasets_index
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    collection_id:
+                      type: string
+                    assay:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    tissue:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    tissue_ancestors:
+                      type: array
+                      items:
+                        type: string
+                    disease:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    sex:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    self_reported_ethnicity:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    organism:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    development_stage:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    development_stage_ancestors:
+                      type: array
+                      items:
+                        type: string
+                    cell_count:
+                      type: integer
+                    cell_type:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    cell_type_ancestors:
+                      type: array
+                      items:
+                        type: string
+                    mean_genes_per_cell:
+                      type: number
+                    is_primary_data:
+                      $ref: "#/components/schemas/is_primary_data"
+                    donor_id:
+                      type: array
+                      items:
+                        type: string
+                    suspension_type:
+                      type: array
+                      items:
+                        type: string
+                    schema_version:
+                      type: string
+                    explorer_url:
+                      type: string
+                    published_at:
+                      type: number
+                    revised_at:
+                      type: number
+        "400":
+          $ref: "#/components/responses/400"
+
+  /v1/login:
+    get:
+      tags:
+        - authentication
+      summary: login to the system
+      operationId: backend.portal.api.app.v1.authentication.login
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/logout:
+    get:
+      tags:
+        - authentication
+      summary: logout of the system
+      operationId: backend.portal.api.app.v1.authentication.logout
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/userinfo:
+    get:
+      tags:
+        - authentication
+      summary: retrieve user information if the user is logged in
+      operationId: backend.portal.api.app.v1.authentication.userinfo
+      security:
+        - cxguserCookie: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userinfo"
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/oauth2/callback:
+    get:
+      tags:
+        - authentication
+      summary: callback function from auth server after login
+      operationId: backend.portal.api.app.v1.authentication.oauth2_callback
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
+  /v1/auth/key:
+    delete:
+      summary: Delete the curator's API key -- for use with Data Portal UI
+      operationId: backend.portal.api.app.v1.auth.keys.delete
+      security:
+        - cxguserCookie: []
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+    get:
+      summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
+      operationId: backend.portal.api.app.v1.auth.keys.get
+      security:
+        - cxguserCookie: []
+      responses:
+        "200":
+          description: OK
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+    post:
+      summary: Generate the curator's API key -- for use with Data Portal UI
+      description: >-
+        Generate and return a curator API key for the user. If there is already a key associated with the
+        user's curator profile, replace it with the new key.
+      operationId: backend.portal.api.app.v1.auth.keys.post
+      security:
+        - cxguserCookie: []
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+        "401":
+          $ref: "#/components/responses/401"
+        "400":
+          $ref: "#/components/responses/400"
+
+  /v1/deployed_version:
+    get:
+      summary: Returns version information
+      operationId: backend.portal.api.app.v1.version.get
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+
+components:
+  schemas:
+    user_id:
+      description: A unique identifier of a logged in User of Corpora.
+      type: string
+    userinfo:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/user_id"
+        name:
+          description: The user's name
+          type: string
+        email:
+          description: The user's email
+          type: string
+    collection_id:
+      description: A unique identifier of a Collection.
+      type: string
+    dataset_id:
+      description: A unique identifier of a Dataset.
+      type: string
+    visibility:
+      description: >-
+        Determines the visibility of the collection, that will either make the collection visible on the public
+        sites or only viewable through obfuscated URLs.
+      type: string
+      enum: [PUBLIC, PRIVATE]
+    distribution:
+      description: >-
+        Cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately
+        calculate statistical properties of the data. This field enables the curator to override this heuristic
+        and specify the data distribution explicitly.
+      type: string
+      enum: [COUNT, NORMAL]
+    is_primary_data:
+      description: >-
+        Describes whether cellular observations for this dataset are all canonical (PRIMARY),
+        all non-canonical (SECONDARY), or contain a mixture (BOTH).
+      type: string
+      enum: [PRIMARY, SECONDARY, BOTH]
+    links:
+      type: array
+      items:
+        type: object
+        additionalProperties: false
+        required:
+          - link_url
+          - link_type
+        properties:
+          link_name:
+            type: string
+          link_url:
+            type: string
+          link_type:
+            type: string
+            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
+    consortia:
+      type: array
+      items:
+        type: string
+        description: |
+          The broader research groups which contributed to this collection of datasets. Allowed consortia are:
+
+          | Valid consortia |
+          | ---------- |
+          | Allen Institute for Brain Science   | 
+          | BRAIN Initiative  |
+          | CZ Biohub  |
+          | CZI Neurodegeneration Challenge Network  |
+          | CZI Single-Cell Biology  |
+          | European Union’s Horizon 2020  |
+          | GenitoUrinary Development Molecular Anatomy Project (GUDMAP)  |
+          | Gut Cell Atlas  |
+          | Human BioMolecular Atlas Program (HuBMAP)  |
+          | Human Pancreas Analysis Program (HPAP) |
+          | Human Tumor Atlas Network (HTAN)  |
+          | Kidney Precision Medicine Project (KPMP)  |
+          | LungMAP  |
+          | SEA-AD  |
+          | Wellcome HCA Strategic Science Support  |
+    collection:
+      type: object
+      required:
+        - name
+        - description
+        - id
+        - visibility
+        - links
+        - datasets
+        - consortia
+        - created_at
+        - updated_at
+        - data_submission_policy_version
+      properties:
+        access_type:
+          type: string
+          enum: [READ, WRITE]
+        created_at:
+          type: number
+        updated_at:
+          type: number
+        description:
+          type: string
+        name:
+          type: string
+        id:
+          $ref: "#/components/schemas/collection_id"
+        visibility:
+          $ref: "#/components/schemas/visibility"
+        links:
+          $ref: "#/components/schemas/links"
+        consortia:
+          $ref: "#/components/schemas/consortia"
+        contact_name:
+          type: string
+        contact_email:
+          type: string
+        curator_name:
+          type: string
+        data_submission_policy_version:
+          type: string
+        publisher_metadata:
+          $ref: "#/components/schemas/publisher_metadata"
+        datasets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset"
+    publisher_metadata:
+      type: object
+      required:
+        - authors
+        - is_preprint
+        - journal
+        - published_year
+      properties:
+        authors:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              given:
+                type: string
+              family:
+                type: string
+        is_preprint:
+          type: boolean
+        journal:
+          type: string
+        published_day:
+          type: number
+        published_month:
+          type: number
+        published_year:
+          type: number
+
+    ontology_element:
+      type: object
+      properties:
+        ontology_term_id:
+          type: string
+        label:
+          type: string
+    ontology_element_array:
+      type: array
+      items:
+        $ref: "#/components/schemas/ontology_element"
+    dataset:
+      type: object
+      required:
+        - id
+        - name
+        - revision
+        - collection_id
+      properties:
+        id:
+          $ref: "#/components/schemas/dataset_id"
+        assay:
+          $ref: "#/components/schemas/ontology_element_array"
+        tissue:
+          $ref: "#/components/schemas/ontology_element_array"
+        disease:
+          $ref: "#/components/schemas/ontology_element_array"
+        sex:
+          $ref: "#/components/schemas/ontology_element_array"
+        self_reported_ethnicity:
+          $ref: "#/components/schemas/ontology_element_array"
+        organism:
+          $ref: "#/components/schemas/ontology_element_array"
+        development_stage:
+          $ref: "#/components/schemas/ontology_element_array"
+        name:
+          type: string
+        revision:
+          type: integer
+        dataset_deployments:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+        dataset_assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset_asset"
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        is_primary_data:
+          $ref: "#/components/schemas/is_primary_data"
+        cell_type:
+          $ref: "#/components/schemas/ontology_element_array"
+        cell_count:
+          type: integer
+        X_approximate_distribution:
+          $ref: "#/components/schemas/distribution"
+        donor_id:
+          type: array
+          items:
+            type: string
+        suspension_type:
+          type: array
+          items:
+            type: string
+        schema_version:
+          type: string
+        tombstone:
+          type: boolean
+    dataset_asset:
+      type: object
+      properties:
+        id:
+          type: string
+        dataset_id:
+          type: string
+        filetype:
+          type: string
+          enum: [RAW_H5AD, H5AD, RDS, CXG]
+        filename:
+          type: string
+        s3_uri:
+          type: string
+    gene_set:
+      type: object
+      properties:
+        name:
+          type: string
+        id":
+          type: string
+        description:
+          type: string
+        linked_datasets:
+          type: array
+          items:
+            type: string
+    problem:
+      type: object
+      description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+    dataset_identifiers:
+      type: object
+      description: Information for identifying and accessing a datatset
+      required:
+        - dataset_id
+        - collection_id
+        - tombstoned
+      properties:
+        dataset_id:
+          type: string
+        collection_id:
+          type: string
+        explorer_s3_uri:
+          type: string
+        tombstoned:
+          type: boolean
+
+  parameters:
+    path_collection_id:
+      name: collection_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/collection_id"
+    path_dataset_id:
+      name: dataset_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/dataset_id"
+    path_filename:
+      name: filename
+      description: The name of a file to add, remove, or download.
+      in: path
+      required: true
+      schema:
+        type: string
+    query_user_id:
+      name: user_id
+      description: an ID that represents the user.
+      in: query
+      schema:
+        $ref: "#/components/schemas/user_id"
+    query_visibility:
+      name: visibility
+      in: query
+      schema:
+        $ref: "#/components/schemas/visibility"
+        default: PUBLIC
+
+  responses:
+    200:
+      description: OK.
+    201:
+      description: Created.
+    202:
+      description: Accepted
+    204:
+      description: No Content
+    400:
+      description: Invalid parameter.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    401:
+      description: Failed to authenticate.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    403:
+      description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    404:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    405:
+      description: Method not allowed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    409:
+      description: File conflict.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    413:
+      description: Exceed File Size Limit
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+  securitySchemes:
+    cxguserCookie:
+      type: apiKey
+      in: cookie
+      name: cxguser
+      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.apikey_info_func
+    cxguserCookieLenient:
+      type: apiKey
+      in: cookie
+      name: cxguser
+      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.apikey_info_func_lenient
