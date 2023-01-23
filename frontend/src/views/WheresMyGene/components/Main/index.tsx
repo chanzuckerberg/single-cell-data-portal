@@ -370,7 +370,6 @@ export default function WheresMyGene(): JSX.Element {
 
           {shouldShowHeatMap ? (
             <HeatMap
-              cellTypeSortBy={sortBy.cellTypes}
               geneSortBy={sortBy.genes}
               selectedTissues={selectedTissues}
               isScaled={isScaled}

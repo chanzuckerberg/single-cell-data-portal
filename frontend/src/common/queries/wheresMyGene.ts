@@ -491,7 +491,7 @@ function transformCellTypeGeneExpressionSummaryData(
 interface TermIdLabels {
   cell_types: {
     [tissueID: string]: {
-      [id: string]: { name: string; depth: number; total_count: number };
+      [id: string]: { name: string; total_count: number };
     };
   };
   genes: { [id: string]: string };
@@ -516,16 +516,14 @@ export function useTermIdLabels(): {
     const returnCellTypes: TermIdLabels["cell_types"] = {};
     Object.entries(cell_types).forEach(([tissueID, cell_types]) => {
       const result: {
-        [id: string]: { name: string; depth: number; total_count: number };
+        [id: string]: { name: string; total_count: number };
       } = {};
       for (const {
         cell_type_ontology_term_id,
         cell_type,
-        depth,
         total_count,
       } of cell_types) {
         result[cell_type_ontology_term_id] = {
-          depth,
           name: cell_type,
           total_count,
         };
