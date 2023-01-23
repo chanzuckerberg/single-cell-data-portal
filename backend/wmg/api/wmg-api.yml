@@ -398,7 +398,6 @@ paths:
                           type: number
                           format: float
                           maxLength: 4
-                          minimum: 0.0
 
 components:
   schemas:
