@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -211,6 +211,7 @@ class CollectionMetadata:
     contact_name: str
     contact_email: str
     links: List[Link]
+    consortia: List[str] = field(default_factory=list)
 
     def strip_fields(self):
         self.name = self.name.strip()
@@ -219,6 +220,16 @@ class CollectionMetadata:
         self.contact_email = self.contact_email.strip()
         for link in self.links:
             link.strip_fields()
+        if self.consortia is not None:
+            self.consortia = [consortium.strip() for consortium in self.consortia]
+
+    def sort_consortia(self):
+        if self.consortia is not None:
+            self.consortia.sort()
+
+    def sanitize(self):
+        self.strip_fields()
+        self.sort_consortia()
 
 
 @dataclass
@@ -240,6 +251,37 @@ class CollectionVersionBase:
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
+
+    def is_published(self) -> bool:
+        """
+        This collection version has been published.
+        TODO: After old API code is removed consider moving closer to API layer
+        """
+        if self.published_at is not None:
+            return True
+        else:
+            return False
+
+    def is_unpublished_version(self) -> bool:
+        """
+        The collection has been published, and this is a unpublished version of the collection.
+        TODO: After old API code is removed consider moving closer to API layer
+        """
+        if self.canonical_collection.originally_published_at is not None and not self.is_published():
+            return True
+        else:
+            return False
+
+    def is_initial_unpublished_version(self) -> bool:
+        """
+        The collection is unpublished, this version is unpublished, and no previous versions have been
+        published.
+        TODO: After old API code is removed consider moving closer to API layer
+        """
+        if not self.is_published() and self.canonical_collection.originally_published_at is None:
+            return True
+        else:
+            return False
 
 
 @dataclass

@@ -13,15 +13,19 @@ import {
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import {
   StyledDefaultButton,
-  StyledPrimaryMinimalButton,
   StyledPrimaryButton,
+  StyledPrimaryMinimalButton,
 } from "src/components/common/Button/common/style";
 import { Value } from "src/components/common/Form/common/constants";
 import Input from "src/components/common/Form/Input";
 import TextArea from "src/components/common/Form/TextArea";
-import { isLinkTypeDOI } from "src/components/CreateCollectionModal/components/Content/common/utils";
+import {
+  buildConsortiaOptions,
+  isLinkTypeDOI,
+  sortConsortia,
+} from "src/components/CreateCollectionModal/components/Content/common/utils";
 import { getDOIPath } from "src/views/Collection/utils";
-import { INVALID_DOI_ERROR_MESSAGE } from "./common/constants";
+import { CONSORTIA, INVALID_DOI_ERROR_MESSAGE } from "./common/constants";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import {
@@ -32,6 +36,10 @@ import {
   FormDivider,
   Title,
 } from "./style";
+import Dropdown, {
+  Value as DropdownValue,
+} from "src/components/common/Form/Dropdown";
+import { DefaultDropdownMenuOption } from "czifui";
 
 const REQUIRED_FIELD_TEXT = "Required";
 
@@ -107,7 +115,21 @@ const Content: FC<Props> = (props) => {
 
   // Null / tombstone checking is type safety netting.  We shouldn't be getting to these lines/cases since we can't open the modal if the collection is tombstoned/doesn't exist.
   if (isTombstonedCollection(data)) data = null;
-  const { name, description, contact_email, contact_name } = data || {};
+  const {
+    name,
+    description,
+    contact_email,
+    contact_name,
+    consortia: collectionConsortia,
+  } = data || {};
+
+  const [consortia, setConsortia] = useState<DefaultDropdownMenuOption[]>([]);
+
+  useEffect(() => {
+    if (collectionConsortia) {
+      setConsortia(buildConsortiaOptions(collectionConsortia));
+    }
+  }, [collectionConsortia]);
 
   const [links, setLinks] = useState<Link[]>(
     data?.links.map((link, index) => {
@@ -191,6 +213,18 @@ const Content: FC<Props> = (props) => {
               placeholder={REQUIRED_FIELD_TEXT}
               defaultValue={contact_email}
               syncValidation={[requiredValidator, emailValidation]}
+            />
+            <Dropdown
+              // To maintain Dialog component focus, the consortia menu Popper component should be
+              // rendered under the DOM hierarchy of the Dropdown component and therefore the Dialog component.
+              disablePortal
+              label="Select Consortia"
+              multiple
+              onChange={handleConsortiaChange}
+              optionalField
+              options={buildConsortiaOptions(Object.values(CONSORTIA))}
+              text="Consortia"
+              value={consortia}
             />
           </CollectionDetail>
           {/* Collection links */}
@@ -280,12 +314,15 @@ const Content: FC<Props> = (props) => {
 
     const payload = formDataToObject(formData);
 
+    const payloadConsortia = consortia.map(({ name }) => name);
+
     const payloadLinks = links.map(({ linkType, url, linkName: name }) => ({
       link_name: name,
       link_type: linkType,
       link_url: url,
     }));
 
+    payload.consortia = payloadConsortia;
     payload.links = payloadLinks;
     payload.curator_name = userInfo?.name;
     return payload;
@@ -347,6 +384,14 @@ const Content: FC<Props> = (props) => {
     }
 
     onClose();
+  }
+
+  /**
+   * Handles change to selection of consortia.
+   * @param selectedConsortia - Selected consortia.
+   */
+  function handleConsortiaChange(selectedConsortia: DropdownValue) {
+    setConsortia(sortConsortia(selectedConsortia));
   }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {

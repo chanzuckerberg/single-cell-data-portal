@@ -42,7 +42,7 @@ Environment variables are set using the command `export <name>=<value>`. For exa
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `DEPLOYMENT_STAGE`  | Specifies an app deployment stage for tasks such as deployments and functional tests. The `test` value implies local Docker development environment (and should probably be renamed `local`). | `test`, `dev`, `staging`, `prod`      |
 | `AWS_PROFILE`       | Specifies the profile used to interact with AWS resources via the awscli.                                                                                                                     | `single-cell-dev`, `single-cell-prod` |
-| `CORPORA_LOCAL_DEV` | Flag: If this variable is set to any value, the app will look for the database on **localhost:5432** and will use the aws secret `corpora/backend/\${DEPLOYMENT_STAGE}/database_local`.       | Any                                   |
+| `CORPORA_LOCAL_DEV` | Flag: If this variable is set to any value, the app will look for the database on **localhost:5432** and will use the aws secret `corpora/backend/\${DEPLOYMENT_STAGE}/database`.       | Any                                   |
 
 ### Database Procedures
 

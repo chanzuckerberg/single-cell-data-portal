@@ -5,8 +5,8 @@ import sys
 from typing import Tuple, Optional
 from urllib.parse import unquote_plus
 from backend.layers.business.business import BusinessLogic
+from backend.layers.business.exceptions import CollectionNotFoundException, DatasetNotFoundException
 from backend.layers.persistence.persistence import DatabaseProvider
-from backend.layers.common.entities import CollectionVersionId, DatasetVersionId
 from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
@@ -67,21 +67,20 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
             raise CorporaException(f"Missing Collection ID and/or Dataset ID for {key=}")
         logger.debug(parsed)
 
-        collection_version_id = CollectionVersionId(parsed["collection_id"])
-        dataset_version_id = DatasetVersionId(parsed["dataset_id"])
+        collection_id = parsed["collection_id"]
+        dataset_id = parsed["dataset_id"]
 
-        version = get_business_logic().get_collection_version(collection_version_id)
-        if version is None:
+        business_logic = get_business_logic()
+        try:
+            collection_version, dataset_version = business_logic._get_collection_and_dataset(collection_id, dataset_id)
+        except CollectionNotFoundException:
             raise NonExistentCollectionException(f"Collection {parsed['collection_id']} does not exist")
+        except DatasetNotFoundException:
+            raise NonExistentDatasetException(f"No Dataset with {dataset_id=} in Collection {collection_id}")
 
-        if dataset_version_id not in [d.version_id for d in version.datasets]:
-            raise NonExistentDatasetException(
-                f"No Dataset with {dataset_version_id=} in Collection {collection_version_id}"
-            )
+        collection_owner = collection_version.owner
 
-        collection_owner = version.owner
-
-        logger.info(dict(collection_owner=collection_owner, dataset_id=dataset_version_id))
+        logger.info(dict(collection_owner=collection_owner, dataset_id=dataset_id))
         if parsed["username"] == "super":
             pass
         elif parsed["username"] != collection_owner:
@@ -93,10 +92,10 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         s3_uri = f"s3://{bucket}/{key}"
 
         get_business_logic().ingest_dataset(
-            collection_version_id=collection_version_id,
+            collection_version_id=collection_version.version_id,
             url=s3_uri,
             file_size=size,
-            existing_dataset_version_id=dataset_version_id,
+            existing_dataset_version_id=dataset_version.version_id,
         )
 
 
