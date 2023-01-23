@@ -18,10 +18,10 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
-from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
-from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
+from backend.curation.api.v1.curation.collections.common import EntityColumns
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
+from tests.unit.backend.layers.api.fixture import generate_mock_publisher_metadata
 
 
 class TestAsset(BaseAPIPortalTest):
@@ -149,7 +149,7 @@ class TestDeleteCollection(BaseAPIPortalTest):
 
 class TestS3Credentials(BaseAPIPortalTest):
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
-    @patch("backend.portal.api.curation.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
+    @patch("backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock, mock_config: Mock):
         def mock_config_fn(name):
             if name == "curator_role_arn":
@@ -619,6 +619,20 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.maxDiff = None
         self.assertDictEqual(expected_body, res_body)  # Confirm dict has been packaged in list
         self.assertEqual(json.dumps(expected_body, sort_keys=True), json.dumps(res_body))
+
+    def test__get_public_collection_verify_consortia_sorted__OK_1(self):
+        collection_metadata = copy.deepcopy(self.sample_collection_metadata)
+        collection_metadata.consortia = ["Consortia 3", "Consortia 1", "Consortia 2"]
+        collection_version = self.generate_unpublished_collection(metadata=collection_metadata)
+        self.assertEqual(collection_version.metadata.consortia, sorted(collection_metadata.consortia))
+
+    def test__get_public_collection_verify_consortia_sorted__OK_2(self):
+        collection_metadata = copy.deepcopy(self.sample_collection_metadata)
+        collection_metadata.consortia = ["Consortia 3", "Consortia 1", "Consortia 2"]
+        collection_version = self.generate_unpublished_collection(metadata=collection_metadata)
+
+        res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
+        self.assertEqual(res.json["consortia"], sorted(collection_metadata.consortia))
 
     def test__get_private_collection__OK(self):
         collection_version = self.generate_unpublished_collection()
@@ -1354,8 +1368,8 @@ class TestPutLink(BaseAPIPortalTest):
 
 
 class TestAuthToken(BaseAPIPortalTest):
-    @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
-    @patch("backend.portal.api.curation.v1.curation.auth.token.auth0_management_session")
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.auth0_management_session")
     def test__post_token__201(self, auth0_management_session: Mock, CorporaAuthConfig: Mock):
         test_secret = "password1234"
         test_email = "user@email.com"
@@ -1370,7 +1384,7 @@ class TestAuthToken(BaseAPIPortalTest):
         self.assertEqual("OK", token)
         auth0_management_session.get_user_api_key_identity.assert_called_once_with(test_user_id)
 
-    @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
     def test__post_token__401(self, CorporaAuthConfig):
         test_secret = "password1234"
         test_user_id = "test_user_id"
@@ -1379,8 +1393,8 @@ class TestAuthToken(BaseAPIPortalTest):
         response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
         self.assertEqual(401, response.status_code)
 
-    @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
-    @patch("backend.portal.api.curation.v1.curation.auth.token.auth0_management_session")
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.auth0_management_session")
     def test__post_token__404(self, auth0_management_session, CorporaAuthConfig):
         test_secret = "password1234"
         test_user_id = "test_user_id"

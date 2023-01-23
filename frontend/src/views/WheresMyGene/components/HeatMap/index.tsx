@@ -50,7 +50,6 @@ interface Props {
   scaledMeanExpressionMin: number;
   isLoadingAPI: boolean;
   isScaled: boolean;
-  cellTypeSortBy: SORT_BY;
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
   echartsRendererMode: "svg" | "canvas";
@@ -68,7 +67,6 @@ export default memo(function HeatMap({
   scaledMeanExpressionMin,
   isLoadingAPI,
   isScaled,
-  cellTypeSortBy,
   geneSortBy,
   selectedOrganismId,
   echartsRendererMode,
@@ -113,11 +111,11 @@ export default memo(function HeatMap({
   });
 
   const sortedCellTypesByTissueName = useSortedCellTypesByTissueName({
-    cellTypeSortBy,
     genes,
     selectedCellTypes: cellTypes,
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
   });
+
 
   const geneNameToIndex = useMemo(() => {
     const result: { [key: string]: number } = {};
@@ -162,7 +160,6 @@ export default memo(function HeatMap({
         <YAxisWrapper>
           {selectedTissues.map((tissue) => {
             const tissueCellTypes = getTissueCellTypes({
-              cellTypeSortBy,
               cellTypes,
               sortedCellTypesByTissueName,
               tissue,
@@ -187,7 +184,6 @@ export default memo(function HeatMap({
         <ChartWrapper ref={chartWrapperRef}>
           {selectedTissues.map((tissue) => {
             const tissueCellTypes = getTissueCellTypes({
-              cellTypeSortBy,
               cellTypes,
               sortedCellTypesByTissueName,
               tissue,
@@ -230,24 +226,16 @@ export default memo(function HeatMap({
 });
 
 function getTissueCellTypes({
-  cellTypes,
   sortedCellTypesByTissueName,
   tissue,
-  cellTypeSortBy,
 }: {
   cellTypes: { [tissue: Tissue]: CellType[] };
   sortedCellTypesByTissueName: { [tissue: string]: CellType[] };
   tissue: Tissue;
-  cellTypeSortBy: SORT_BY;
 }) {
-  const tissueCellTypes = cellTypes[tissue];
   const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
 
-  return (
-    (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY
-      ? tissueCellTypes
-      : sortedTissueCellTypes) || EMPTY_ARRAY
-  );
+  return sortedTissueCellTypes || EMPTY_ARRAY;
 }
 
 function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {
