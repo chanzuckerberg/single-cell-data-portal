@@ -12,6 +12,7 @@ from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.summary_cubes.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,8 @@ def transform(
     """
     Build the summary cube with rankit expression sum & sum of squares, nnz
     (num cells with non zero expression) values for each gene for each possible
-    group of cell attributes (cube row).
+    group of cell attributes (cube row). All values are aggregated across the
+    descendants of the cell type in each group (row).
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -38,6 +40,12 @@ def transform(
     cube_nnz_thr = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr)
+
+    cell_types = list(cube_index.index.get_level_values("cell_type_ontology_term_id").astype("str"))
+    cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr = rollup_across_cell_type_descendants(
+        cell_types, [cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr]
+    )
+
     return cube_index, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr
 
 
