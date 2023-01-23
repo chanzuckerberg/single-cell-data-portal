@@ -131,6 +131,7 @@ class Auth0ManagementSession:
                 audience=self.config.curation_audience,
             ),
         )
+        print(f"djh successful post for access token")
         response.raise_for_status()
         return response.json()
 
