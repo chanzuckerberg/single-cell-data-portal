@@ -45,7 +45,7 @@ def aggregate_across_cell_type_descendants(cell_types, arrays_to_sum):
         if flag:
             summed = summed[:, None]
         for i, children in enumerate(descendants):
-            summed[i] += array[indexer[children]].sum(0)
+            summed[i] += array[indexer[children]].sum(axis=0)
         if flag:
             summed = summed.flatten()
         summed_arrays.append(summed)
