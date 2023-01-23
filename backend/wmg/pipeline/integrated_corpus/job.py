@@ -48,7 +48,11 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     """
     with tiledb.scope_ctx(create_ctx()):
         dataset_count = len(os.listdir(dataset_directory))
-        dataset_gene_mapping = {}
+        if os.path.exists(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json"):
+            dataset_gene_mapping = json.load(open(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json", "r"))
+        else:
+            dataset_gene_mapping = {}
+
         for index, dataset in enumerate(os.listdir(dataset_directory)):
             logger.info(f"Processing dataset {index + 1} of {dataset_count}")
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"

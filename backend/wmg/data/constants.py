@@ -23,7 +23,8 @@ INCLUDED_ASSAYS = {
     "EFO:0010010": "CEL-seq2",
 }
 
-CL_BASIC_PERMANENT_URL = "https://github.com/obophenotype/cell-ontology/releases/latest/download/cl-basic.obo"
+CL_BASIC_PERMANENT_URL_PRONTO = "https://github.com/obophenotype/cell-ontology/releases/latest/download/cl-basic.obo"
+CL_BASIC_PERMANENT_URL_OWL = "https://github.com/obophenotype/cell-ontology/releases/latest/download/cl-basic.owl"
 
 # disease ontolgoy term id for normal cells
 NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID = "PATO:0000461"
