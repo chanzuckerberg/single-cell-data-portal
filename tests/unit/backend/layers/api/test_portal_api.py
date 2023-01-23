@@ -1,7 +1,6 @@
 import dataclasses
 import itertools
 import json
-import unittest
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
@@ -12,7 +11,6 @@ from backend.layers.common.entities import (
 )
 from backend.layers.common.entities import (
     CollectionId,
-    CollectionLinkType,
     DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetUploadStatus,
@@ -25,24 +23,12 @@ from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
 from furl import furl
 
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
-from backend.portal.api.collections_common import verify_collection_body
 from tests.unit.backend.layers.common.base_test import (
     DatasetArtifactUpdate,
     DatasetStatusUpdate,
 )
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
-
-
-def generate_mock_publisher_metadata(journal_override=None):
-    return {
-        "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
-        "published_year": 2021,
-        "published_month": 11,
-        "published_day": 10,
-        "published_at": 1636520400.0,
-        "journal": journal_override or "Nature",
-        "is_preprint": False,
-    }
+from tests.unit.backend.layers.api.fixture import generate_mock_publisher_metadata
 
 
 class TestCollection(BaseAPIPortalTest):
@@ -1357,81 +1343,6 @@ class TestCollectionsCurators(BaseAPIPortalTest):
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(204, response.status_code)
-
-
-# TODO: 💛 Not an API test, but still valuable. Figure out where to put it. Maybe create a test_validation.py?
-class TestVerifyCollection(unittest.TestCase):
-    def test_empty_body(self):
-        body = dict()
-        errors = []
-        verify_collection_body(body, errors)
-        self.assertFalse(errors)
-
-    def test_blank_fields(self):
-        errors = []
-        body = dict(name="", contact_name="", description="", contact_email="")
-        verify_collection_body(body, errors)
-        error_message = "Cannot be blank."
-        self.assertIn({"name": "description", "reason": error_message}, errors)
-        self.assertIn({"name": "name", "reason": error_message}, errors)
-        self.assertIn({"name": "contact_name", "reason": error_message}, errors)
-        self.assertIn({"name": "contact_email", "reason": error_message}, errors)
-
-    def test_invalid_characters_in_field(self):
-        invalid_strings = [b"\x00some data", b"text\x1f", b"text\x01", b"\x7ftext"]
-        for test_string in invalid_strings:
-            with self.subTest(test_string):
-                errors = []
-                string = test_string.decode(encoding="utf-8")
-                body = dict(name=string, contact_name=string, description=string, contact_email="email@email.com")
-                verify_collection_body(body, errors)
-                error_message = "Invalid characters detected."
-                self.assertEqual(1, len(errors))
-                self.assertIn({"name": "name", "reason": error_message}, errors)
-
-    def test_invalid_email(self):
-        bad_emails = ["@.", "email@.", "@place.com", "email@.com", "email@place."]
-        body = dict()
-
-        for email in bad_emails:
-            with self.subTest(email):
-                body["contact_email"] = email
-                errors = []
-                verify_collection_body(body, errors)
-                self.assertEqual([{"name": "contact_email", "reason": "Invalid format."}], errors)
-
-    def test_OK(self):
-        body = dict(name="something", contact_name="a name", description="description", contact_email="email@place.com")
-        errors = []
-        verify_collection_body(body, errors)
-        self.assertFalse(errors)
-
-    def test__link__INVALID(self):
-        test_urls = ["://", "google", ".com", "google.com", "https://"]
-        for link_type in CollectionLinkType:
-            if link_type.name == "DOI":
-                continue
-            for test_url in test_urls:
-                link_body = [{"link_type": link_type.name, "link_url": test_url}]
-                with self.subTest(link_body):
-                    errors = []
-                    body = dict(links=link_body)
-                    verify_collection_body(body, errors)
-                    expected_error = [dict(reason="Invalid URL.", name="links[0]", value=link_body[0]["link_url"])]
-                    self.assertEqual(expected_error, errors)
-
-    def test__link__OK(self):
-        test_urls = ["https://www.google.com", "http://somewhere.org/path/?abcd=123"]
-        for link_type in CollectionLinkType:
-            if link_type.name == "DOI":
-                continue
-            for test_url in test_urls:
-                link_body = [{"link_type": link_type.name, "link_url": test_url}]
-                with self.subTest(link_body):
-                    errors = []
-                    body = dict(links=link_body)
-                    verify_collection_body(body, errors)
-                    self.assertFalse(errors)
 
 
 # TODO: these tests all require the generation of a dataset

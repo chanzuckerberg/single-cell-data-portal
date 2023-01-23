@@ -18,7 +18,7 @@ class BaseAuthAPITest(unittest.TestCase):
         self.mock_assert_authorized_token.start()
 
         self.mock_config = patch(
-            "backend.portal.api.curation.v1.curation.collections.common.get_collections_base_url",
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
             return_value="https://frontend.corporanet.local:3000",
         )
         self.mock_config.start()
@@ -62,11 +62,11 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         self.app = app.test_client(use_cookies=False)
 
         # Mock all the dependencies of the API classes
-        self.mock_business_logic = patch("backend.layers.api.providers._business_logic", new=self.business_logic)
+        self.mock_business_logic = patch("backend.portal.api.providers._business_logic", new=self.business_logic)
         self.mock_business_logic.start()
 
         self.mock_cloudfront_provider = patch(
-            "backend.layers.api.providers._cloudfront_provider", new=self.cloudfront_provider
+            "backend.portal.api.providers._cloudfront_provider", new=self.cloudfront_provider
         )
         self.mock_cloudfront_provider.start()
 
