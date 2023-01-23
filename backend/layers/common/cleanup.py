@@ -1,5 +1,5 @@
 from backend.layers.business.entities import CollectionMetadataUpdate
-from backend.layers.common.entities import CollectionMetadata, Link
+from backend.layers.common.entities import CollectionMetadata
 from typing import Union
 
 
