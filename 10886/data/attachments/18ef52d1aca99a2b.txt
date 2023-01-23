@@ -1,0 +1,5 @@
+{'host': 'localhost', 'Content-Type': 'application/json', 'Authorization': 'Bearer super'}
+
+using regular access token func
+
+b'{\n  "dataset_id": "d4d49e23-cb7e-4c6e-80a9-d63376a24773"\n}\n'
