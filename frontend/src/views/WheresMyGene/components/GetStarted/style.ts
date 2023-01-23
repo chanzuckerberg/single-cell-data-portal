@@ -10,7 +10,6 @@ export const Header = styled.h1`
 `;
 
 interface WrapperProps {
-  fmg: boolean;
   isHidden: boolean;
 }
 // (seve): grid should handle the width for us if we set to 100%, but we
@@ -22,10 +21,8 @@ export const Wrapper = styled.div`
 
   display: ${({ isHidden }: WrapperProps) => (isHidden ? "none" : "flex")};
 
-  width: ${({ fmg }: WrapperProps) =>
-    fmg
-      ? `calc(96vw - ${EXPANDED_WIDTH_PX + CELL_INFO_SIDEBAR_WIDTH_PX}px)`
-      : `calc(96vw - ${EXPANDED_WIDTH_PX}px)`};
+  width: calc(96vw - ${EXPANDED_WIDTH_PX + CELL_INFO_SIDEBAR_WIDTH_PX}px);
+
   height: calc(85vh - ${HEADER_HEIGHT_PX}px);
 `;
 

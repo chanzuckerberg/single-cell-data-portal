@@ -1,5 +1,5 @@
+import { createFilterOptions } from "@mui/material";
 import {
-  ComplexFilter,
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
@@ -7,7 +7,6 @@ import {
 } from "czifui";
 import isEqual from "lodash/isEqual";
 import {
-  Fragment,
   memo,
   ReactElement,
   useCallback,
@@ -20,6 +19,7 @@ import {
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   FilterDimensions,
+  RawDataset,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { DispatchContext, StateContext } from "../../common/store";
@@ -27,7 +27,11 @@ import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
 import Organism from "../GeneSearchBar/components/Organism";
 import Sort from "./components/Sort";
-import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
+import {
+  StyledComplexFilter,
+  StyledComplexFilterInputDropdown,
+  Wrapper,
+} from "./style";
 
 /**
  * NOTE(thuang): Update this count to match the amount of filters we render,
@@ -35,8 +39,13 @@ import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
  */
 const FILTERS_COUNT = 4;
 
-const MenuSelectProps = {
+const filterOptions = createFilterOptions({
+  stringify: (option: RawDataset) => `${option.label} ${option.collection_label}`,
+});
+
+const DropdownMenuProps = {
   getOptionSelected,
+  filterOptions
 };
 
 export interface Props {
@@ -88,6 +97,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     const newAvailableFilters = {
       datasets: rawDatasets.map((dataset) => ({
         ...dataset,
+        details: dataset.collection_label,
         name: dataset.label,
       })),
       development_stage_terms: rawDevelopmentStages,
@@ -180,8 +190,9 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     <TooltipWrapper>
       <Wrapper>
         <div>
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
+            search
             label="Dataset"
             options={datasets as unknown as DefaultMenuSelectOption[]}
             onChange={handleDatasetsChange}
@@ -189,10 +200,10 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Disease"
             options={disease_terms}
@@ -201,10 +212,10 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Self-Reported Ethnicity"
             options={self_reported_ethnicity_terms}
@@ -213,10 +224,10 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Sex"
             options={sex_terms}
@@ -225,7 +236,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
         </div>
@@ -238,13 +249,15 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   );
 
   function TooltipWrapper({ children }: { children: ReactElement }) {
-    const Wrapper = areFiltersDisabled ? Tooltip : Fragment;
+    if (areFiltersDisabled) {
+      return (
+        <Tooltip title="Please select an organism, tissue and at least one gene to use these filters.">
+          {children}
+        </Tooltip>
+      );
+    }
 
-    return (
-      <Wrapper title="Please select an organism, tissue and at least one gene to use these filters.">
-        {children}
-      </Wrapper>
-    );
+    return <>{children}</>;
   }
 });
 

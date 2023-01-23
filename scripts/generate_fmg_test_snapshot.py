@@ -1,6 +1,8 @@
 import sys
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
-import os, json, tiledb
+import os
+import json
+import tiledb
 
 test_tissue = "UBERON:0002048"
 test_organism = "NCBITaxon:9606"

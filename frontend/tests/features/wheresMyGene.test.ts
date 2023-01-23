@@ -13,6 +13,7 @@ const CELL_TYPE_LABELS_ID = "cell-type-labels";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
+const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 
 const { describe, skip } = test;
 
@@ -178,12 +179,14 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const sourceDataList = await page.$("[class*=MuiList-root]");
+        const sourceDataList = await page.$(SOURCE_DATA_LIST_SELECTOR);
+
         if (!sourceDataList) throw Error("no source data displayed");
 
         const sourceDataListItems = await sourceDataList?.$$(
           ".MuiListItem-root"
         );
+
         expect(sourceDataListItems?.length).toBeGreaterThan(0);
 
         await page.mouse.click(0, 0);
@@ -209,7 +212,9 @@ describe("Where's My Gene", () => {
         await clickUntilOptionsShowUp(getDatasetSelector, page);
         await selectFirstOption(page);
         await clickUntilSidebarShowsUp(getSourceDataButton, page);
-        const sourceDataListAfter = await page.$("[class*=MuiList-root]");
+
+        const sourceDataListAfter = await page.$(SOURCE_DATA_LIST_SELECTOR);
+
         if (!sourceDataListAfter)
           throw Error(
             "no source data displayed after selecting dataset filter"
@@ -218,7 +223,8 @@ describe("Where's My Gene", () => {
         const sourceDataListAfterItems = await sourceDataListAfter?.$$(
           ".MuiListItem-root"
         );
-        expect(sourceDataListAfterItems?.length).toBe(2);
+
+        expect(sourceDataListAfterItems?.length).toBeGreaterThan(0);
       },
       { page }
     );
@@ -238,7 +244,7 @@ describe("Where's My Gene", () => {
     const GENE_COUNT = 3;
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const texts = await page.getByRole("menuitem").allTextContents()
+    const texts = await page.getByRole("option").allTextContents();
     const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(TISSUE_COUNT, page);
 
@@ -246,12 +252,12 @@ describe("Where's My Gene", () => {
     await selectFirstNOptions(GENE_COUNT, page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
     const beforeCellTypeNames = await getNames(
-      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
       page
     );
 
@@ -274,12 +280,12 @@ describe("Where's My Gene", () => {
     await selectNthOption(2, page);
 
     const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
     const afterCellTypeNames = await getNames(
-      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
       page
     );
 
@@ -307,13 +313,13 @@ describe("Where's My Gene", () => {
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const texts = await page.getByRole("menuitem").allTextContents()
-    const tissueName = texts[0].replace(/\s+/g, "-");    
+    const texts = await page.getByRole("option").allTextContents();
+    const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(1, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstNOptions(3, page);
-    
+
     await tryUntil(
       async () => {
         const canvases = await page.$$("canvas");
@@ -323,11 +329,11 @@ describe("Where's My Gene", () => {
     );
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
     const beforeCellTypeNames = await getNames(
-      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
       page
     );
 
@@ -340,11 +346,11 @@ describe("Where's My Gene", () => {
         await page.keyboard.press("Backspace");
 
         const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} text`,
+          `${getTestID(GENE_LABELS_ID)} button`,
           page
         );
         const afterCellTypeNames = await getNames(
-          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
           page
         );
 
@@ -353,12 +359,7 @@ describe("Where's My Gene", () => {
         // (thuang): Sometimes when API response is slow, we'll not capture all the
         // cell type names, so a sanity check that we expect at least 100 names
         expect(beforeCellTypeNames.length).toBeGreaterThan(100);
-
-        // (thuang): We need to half the cellTypeName count, because it's grabbing
-        // Cell Count text elements as well.
-        expect(afterCellTypeNames.length / 2).toBe(
-          beforeCellTypeNames.length / 2 - 1
-        );
+        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length-1);
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
@@ -384,7 +385,7 @@ describe("Where's My Gene", () => {
     await tryUntil(
       async () => {
         const afterCellTypeNames = await getNames(
-          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
           page
         );
 
@@ -423,7 +424,6 @@ describe("Where's My Gene", () => {
 
 async function getNames(selector: string, page: Page): Promise<string[]> {
   const geneLabelsLocator = await page.locator(selector);
-
   await tryUntil(
     async () => {
       const names = await geneLabelsLocator.allTextContents();

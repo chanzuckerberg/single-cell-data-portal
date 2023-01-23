@@ -1,25 +1,11 @@
-import unittest
-
-from backend.common.utils.db_session import DBSessionMaker
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
-from tests.unit.backend.fixtures.test_db import DatabaseManager
+from backend.layers.common.entities import CollectionVersion
+from tests.unit.backend.layers.common.base_api_test import NewBaseTest
 
 
-class DataPortalTestCase(GenerateDataMixin, unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.reinitialize_database()  # danieljhegeman -- use clean db for each test case; negligible time cost
-        DatabaseManager.initialize_db()
-
-    def setUp(self):
-        super().setUp()
-        self.session = DBSessionMaker().session()
-
-    def tearDown(self) -> None:
-        self.session.close()
-        super().tearDown()
-
-    @staticmethod
-    def reinitialize_database():
-        DatabaseManager.is_initialized = False
+class DataPortalTestCase(NewBaseTest):
+    def generate_collection(self, **params) -> CollectionVersion:
+        visibility = params.pop("visibility", "PUBLIC")
+        if visibility == "PUBLIC":
+            return self.generate_published_collection(**params)
+        else:
+            return self.generate_unpublished_collection(**params)

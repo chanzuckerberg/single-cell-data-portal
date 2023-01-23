@@ -32,9 +32,7 @@ import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import CellInfoBar from "../CellInfoSideBar";
-import {
-  CELL_INFO_SIDEBAR_WIDTH_PX,
-} from "../CellInfoSideBar/style";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
@@ -44,7 +42,8 @@ import InfoPanel from "../InfoPanel";
 import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
-import { SideBarLabel, StyledSidebarDrawer } from "./style";
+import ScreenTint from "../ScreenTint";
+import { BetaWrapper, SideBarLabel, StyledSidebarDrawer } from "./style";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -272,6 +271,8 @@ export default function WheresMyGene(): JSX.Element {
 
   const [forceOpen, setForceOpen] = useState(false);
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const usePrevious = <T,>(value: T): T | undefined => {
     const ref = useRef<T>();
     useEffect(() => {
@@ -343,10 +344,9 @@ export default function WheresMyGene(): JSX.Element {
               selectedTissues={selectedTissues}
               isScaled={isScaled}
               handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
+              setIsDownloading={setIsDownloading}
             />
           </Top>
-
-          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
 
           <GetStarted
             tissueSelected={hasSelectedTissues}
@@ -365,6 +365,8 @@ export default function WheresMyGene(): JSX.Element {
           >
             <InfoPanel />
           </StyledSidebarDrawer>
+
+          {isDownloading && <ScreenTint />}
 
           {shouldShowHeatMap ? (
             <HeatMap
@@ -388,6 +390,9 @@ export default function WheresMyGene(): JSX.Element {
             ""
           )}
         </Wrapper>
+        <BetaWrapper>
+          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+        </BetaWrapper>
       </View>
     </>
   );

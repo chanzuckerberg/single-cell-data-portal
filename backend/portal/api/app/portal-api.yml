@@ -24,7 +24,7 @@ paths:
       description: >-
         This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
-      operationId: backend.portal.api.app.v1.collections.actions.get
+      operationId: backend.layers.api.portal_api.get_collections_list
       parameters:
         - $ref: "#/components/parameters/query_user_id"
         - name: from_date
@@ -73,7 +73,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
-      operationId: backend.portal.api.app.v1.collections.actions.post
+      operationId: backend.layers.api.portal_api.create_collection
       requestBody:
         content:
           application/json:
@@ -103,6 +103,8 @@ paths:
                   description: name of the curator of the collection.
                 links:
                   $ref: "#/components/schemas/links"
+                consortia:
+                  $ref: "#/components/schemas/consortia"
       responses:
         "201":
           description: A new collection has been created.
@@ -119,23 +121,6 @@ paths:
           $ref: "#/components/responses/401"
 
   /v1/collections/{collection_id}:
-    delete:
-      tags:
-        - collections
-      summary: Delete a collection
-      security:
-        - cxguserCookie: [ ]
-      description: >-
-        Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
-        deployments.
-      operationId: backend.portal.api.app.v1.collections.collection_id.actions.delete
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-      responses:
-        "204":
-          $ref: "#/components/responses/204"
-        "401":
-          $ref: "#/components/responses/401"
     get:
       tags:
         - collections
@@ -145,7 +130,7 @@ paths:
         - {}
       description: >-
         This will return all datasets and associated attributes.
-      operationId: backend.portal.api.app.v1.collections.collection_id.actions.get
+      operationId: backend.layers.api.portal_api.get_collection_details
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -173,7 +158,7 @@ paths:
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
-      operationId: backend.portal.api.app.v1.collections.collection_id.actions.post
+      operationId: backend.layers.api.portal_api.post_collection_revision
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -199,7 +184,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Update a private collection's summary, links, contact info, and description details.
-      operationId: backend.portal.api.app.v1.collections.collection_id.actions.put
+      operationId: backend.layers.api.portal_api.update_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -225,6 +210,8 @@ paths:
                   description: name of the curator of the collection
                 links:
                   $ref: "#/components/schemas/links"
+                consortia:
+                  $ref: "#/components/schemas/consortia"
       responses:
         "200":
           description: OK
@@ -236,6 +223,23 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
+    delete:
+      tags:
+        - collections
+      summary: Delete a collection
+      security:
+        - cxguserCookie: []
+      description: >-
+        Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
+        deployments.
+      operationId: backend.layers.api.portal_api.delete_collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "401":
+          $ref: "#/components/responses/401"
 
   /v1/collections/{collection_id}/upload-links:
     post:
@@ -247,7 +251,7 @@ paths:
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserCookie: []
-      operationId: backend.portal.api.app.v1.collections.collection_id.upload_links.post
+      operationId: backend.layers.api.portal_api.upload_link
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -294,7 +298,7 @@ paths:
         collection revision is published.
       security:
         - cxguserCookie: []
-      operationId: backend.portal.api.app.v1.collections.collection_id.upload_links.put
+      operationId: backend.layers.api.portal_api.upload_relink
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -383,7 +387,7 @@ paths:
 
         If publishing modification to a previously published collection, this will replace the old collection with the new
         published collection. The old collection will no longer be accessible.
-      operationId: backend.portal.api.app.v1.collections.collection_id.publish.post
+      operationId: backend.layers.api.portal_api.publish_post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -421,7 +425,7 @@ paths:
       summary: >-
         Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.portal.api.app.v1.collections.index.get
+      operationId: backend.layers.api.portal_api.get_collection_index
       responses:
         "200":
           description: OK
@@ -445,6 +449,8 @@ paths:
                       type: number
                     revised_at:
                       type: number
+                    consortia:
+                      $ref: "#/components/schemas/consortia"
         "400":
           $ref: "#/components/responses/400"
 
@@ -457,7 +463,7 @@ paths:
         Cancels the in process upload of a dataset to the data portal and cleans up (removes) any artifacts created
         in the upload process. If the dataset has already been uploaded and converted, this endpoint deletes it from
         the data portal and removes associated artifacts
-      operationId: backend.portal.api.app.v1.datasets.dataset_id.actions.delete
+      operationId: backend.layers.api.portal_api.delete_dataset
       security:
         - cxguserCookie: []
       parameters:
@@ -481,7 +487,7 @@ paths:
         Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
         Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
         the associated parent collection ID.
-      operationId: backend.portal.api.app.v1.datasets.meta.get
+      operationId: backend.layers.api.portal_api.get_dataset_identifiers
       parameters:
         - in: query
           required: true
@@ -508,7 +514,7 @@ paths:
       summary: Dataset assets
       description: >-
         Return a list of all the dataset's assets
-      operationId: backend.portal.api.app.v1.datasets.dataset_id.assets.get
+      operationId: backend.layers.api.portal_api.get_dataset_assets
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
@@ -532,7 +538,7 @@ paths:
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: backend.portal.api.app.v1.datasets.dataset_id.asset.asset_id.post
+      operationId: backend.layers.api.portal_api.post_dataset_asset
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
         - name: asset_id
@@ -613,7 +619,7 @@ paths:
       tags:
         - datasets
       summary: Get the status of a dataset upload.
-      operationId: backend.portal.api.app.v1.datasets.dataset_id.status.get
+      operationId: backend.layers.api.portal_api.get_status
       security:
         - cxguserCookie: []
       parameters:
@@ -630,7 +636,7 @@ paths:
                     $ref: "#/components/schemas/dataset_id"
                   processing_status:
                     type: string
-                    enum: [PENDING, SUCCESS, FAILURE]
+                    enum: [INITIALIZED, PENDING, SUCCESS, FAILURE]
                   upload_status:
                     type: string
                     enum:
@@ -708,7 +714,7 @@ paths:
       description: >-
         Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
         for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.portal.api.app.v1.datasets.index.get
+      operationId: backend.layers.api.portal_api.get_datasets_index
       responses:
         "200":
           description: OK
@@ -977,6 +983,30 @@ components:
           link_type:
             type: string
             enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
+    consortia:
+      type: array
+      items:
+        type: string
+        description: |
+          The broader research groups which contributed to this collection of datasets. Allowed consortia are:
+
+          | Valid consortia |
+          | ---------- |
+          | Allen Institute for Brain Science   | 
+          | BRAIN Initiative  |
+          | CZ Biohub  |
+          | CZI Neurodegeneration Challenge Network  |
+          | CZI Single-Cell Biology  |
+          | European Union’s Horizon 2020  |
+          | GenitoUrinary Development Molecular Anatomy Project (GUDMAP)  |
+          | Gut Cell Atlas  |
+          | Human BioMolecular Atlas Program (HuBMAP)  |
+          | Human Pancreas Analysis Program (HPAP) |
+          | Human Tumor Atlas Network (HTAN)  |
+          | Kidney Precision Medicine Project (KPMP)  |
+          | LungMAP  |
+          | SEA-AD  |
+          | Wellcome HCA Strategic Science Support  |
     collection:
       type: object
       required:
@@ -986,6 +1016,7 @@ components:
         - visibility
         - links
         - datasets
+        - consortia
         - created_at
         - updated_at
         - data_submission_policy_version
@@ -1007,6 +1038,8 @@ components:
           $ref: "#/components/schemas/visibility"
         links:
           $ref: "#/components/schemas/links"
+        consortia:
+          $ref: "#/components/schemas/consortia"
         contact_name:
           type: string
         contact_email:
@@ -1140,7 +1173,7 @@ components:
           type: string
         filetype:
           type: string
-          enum: [H5AD, RDS, CXG]
+          enum: [RAW_H5AD, H5AD, RDS, CXG]
         filename:
           type: string
         s3_uri:

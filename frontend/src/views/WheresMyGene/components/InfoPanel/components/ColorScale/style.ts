@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyXxxs, getColors, getFontWeights } from "czifui";
+import { Dropdown, fontBodyXxxs, getColors, getFontWeights } from "czifui";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -28,3 +28,7 @@ export const FlexDiv = styled.div`
   padding-top: 4px;
   padding-left: 4px;
 `;
+
+export const StyledDropdown = styled(Dropdown)`
+  width: 100%;
+` as typeof Dropdown;

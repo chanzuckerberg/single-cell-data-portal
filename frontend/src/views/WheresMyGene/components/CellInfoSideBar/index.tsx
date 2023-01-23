@@ -1,5 +1,17 @@
-import { Button, Icon } from "czifui";
-import React, { useCallback, useContext } from "react";
+import {
+  Button,
+  CellBasic,
+  CellHeader,
+  Icon,
+  Table,
+  TableHeader,
+  TableRow,
+  Tooltip,
+} from "czifui";
+import React, { useCallback, useContext, useState } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { ROUTES } from "src/common/constants/routes";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
 import { DispatchContext, State } from "../../common/store";
@@ -7,23 +19,29 @@ import { addSelectedGenes } from "../../common/store/actions";
 import {
   ButtonContainer,
   CopyGenesButton,
-  StyledHTMLTable,
+  GeneCellHeader,
+  GeneHeaderWrapper,
+  StyledIconImage,
+  StyledMarkerGeneHeader,
+  StyledTooltip,
   TissueName,
   TooltipButton,
 } from "./style";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 export interface CellInfoBarProps {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
   tissueName: string;
 }
+
 function CellInfoSideBar({
   cellInfoCellType,
   tissueName,
 }: CellInfoBarProps): JSX.Element | null {
   const urlParams = new URLSearchParams(window.location.search);
-  let testType: "ttest" | undefined = undefined;
+  let testType: "binomtest" | undefined = undefined;
 
-  if (urlParams.get("test") === "ttest") {
-    testType = "ttest";
+  if (urlParams.get("test") === "binomtest") {
+    testType = "binomtest";
   }
   const { isLoading, data } = useMarkerGenes({
     cellTypeID: cellInfoCellType.cellType.id,
@@ -38,13 +56,23 @@ function CellInfoSideBar({
     if (!data) return;
     const genes = Object.keys(data.marker_genes);
     navigator.clipboard.writeText(genes.join(", "));
+    track(EVENTS.WMG_FMG_COPY_GENES_CLICKED);
   }, [data]);
 
   const handleDisplayGenes = useCallback(() => {
     if (!data || !dispatch) return;
     const genes = Object.keys(data.marker_genes);
     dispatch(addSelectedGenes(genes));
+    track(EVENTS.WMG_FMG_ADD_GENES_CLICKED);
   }, [data, dispatch]);
+
+  const [hoverStartTime, setHoverStartTime] = useState(0);
+
+  const handleHoverEnd = useCallback(() => {
+    if (Date.now() - hoverStartTime > 2 * 1000) {
+      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER);
+    }
+  }, [hoverStartTime]);
 
   if (isLoading || !data) return null;
 
@@ -54,16 +82,47 @@ function CellInfoSideBar({
       <TissueName>{tissueName}</TissueName>
       <ButtonContainer>
         <div>
-          <TooltipButton
-            endIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
-            onClick={handleCopyGenes}
-            sdsStyle="minimal"
-            sdsType="secondary"
-            isAllCaps={false}
-            style={{ fontWeight: "500" }}
+          <StyledMarkerGeneHeader>Marker Genes</StyledMarkerGeneHeader>
+          <Tooltip
+            sdsStyle="dark"
+            placement="bottom"
+            width="default"
+            className="fmg-tooltip-icon"
+            arrow={true}
+            title={
+              <StyledTooltip>
+                <div>
+                  Marker genes are highly and uniquely expressed in the cell
+                  type relative to all other cell types.
+                </div>
+                <br />
+                <div>
+                  <a
+                    href={ROUTES.FMG_DOCS}
+                    rel="noopener"
+                    target="_blank"
+                    onClick={() => {
+                      handleHoverEnd();
+                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED);
+                    }}
+                  >
+                    Click to read more about the identification method.
+                  </a>
+                </div>
+              </StyledTooltip>
+            }
           >
-            Marker Genes
-          </TooltipButton>
+            <TooltipButton
+              sdsStyle="minimal"
+              sdsType="secondary"
+              isAllCaps={false}
+              style={{ fontWeight: "500" }}
+              onMouseEnter={() => setHoverStartTime(Date.now())}
+              onMouseLeave={handleHoverEnd}
+            >
+              <StyledIconImage src={questionMarkIcon} />
+            </TooltipButton>
+          </Tooltip>
           <BetaChip label="Beta" size="small" />
         </div>
         <Button
@@ -77,10 +136,10 @@ function CellInfoSideBar({
           Add to Dot Plot
         </Button>
       </ButtonContainer>
-      <StyledHTMLTable condensed bordered={false}>
-        <thead>
-          <tr>
-            <td>
+      <Table>
+        <TableHeader>
+          <GeneCellHeader hideSortIcon>
+            <GeneHeaderWrapper>
               Gene{" "}
               <CopyGenesButton
                 onClick={handleCopyGenes}
@@ -91,21 +150,28 @@ function CellInfoSideBar({
               >
                 Copy
               </CopyGenesButton>
-            </td>
-            <td>P-value</td>
-            <td>Effect Size</td>
-          </tr>
-        </thead>
+            </GeneHeaderWrapper>
+          </GeneCellHeader>
+          <CellHeader hideSortIcon horizontalAlign="right">
+            Marker Score
+          </CellHeader>
+        </TableHeader>
         <tbody>
           {Object.entries(data.marker_genes).map((gene) => (
-            <tr key={gene[0]}>
-              <td>{gene[0]}</td>
-              <td>{gene[1].p_value.toPrecision(4)}</td>
-              <td>{gene[1].effect_size.toPrecision(4)}</td>
-            </tr>
+            <TableRow key={gene[0]}>
+              <CellBasic
+                shouldShowTooltipOnHover={false}
+                primaryText={gene[0]}
+              />
+              <CellBasic
+                shouldShowTooltipOnHover={false}
+                horizontalAlign="right"
+                primaryText={gene[1].effect_size.toPrecision(4)}
+              />
+            </TableRow>
           ))}
         </tbody>
-      </StyledHTMLTable>
+      </Table>
     </div>
   );
 }

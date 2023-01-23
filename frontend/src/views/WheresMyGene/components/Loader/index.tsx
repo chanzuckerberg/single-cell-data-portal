@@ -1,9 +1,10 @@
 import { LoadingIndicator } from "czifui";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
 import { Wrapper } from "./style";
 
 export default function Loader(): JSX.Element {
   return (
-    <Wrapper>
+    <Wrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
       <LoadingIndicator sdsStyle="tag" />
     </Wrapper>
   );

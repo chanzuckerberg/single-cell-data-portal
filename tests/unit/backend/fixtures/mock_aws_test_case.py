@@ -11,10 +11,10 @@ from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.common.entities import DatasetAsset, Dataset
 from tests.unit.backend.fixtures import config
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.api_server.base_api_test import BaseAPITest
 
 
-class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
+class CorporaTestCaseUsingMockAWS(BaseAPITest):
     CORPORA_TEST_CONFIG = config.CORPORA_TEST_CONFIG
 
     def setUp(self):

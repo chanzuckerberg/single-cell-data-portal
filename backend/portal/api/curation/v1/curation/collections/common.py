@@ -1,167 +1,226 @@
-import re
-import typing
-
-from sqlalchemy.orm import Session
+from dataclasses import asdict
+from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
-from backend.common.utils.regex import CURIE_REFERENCE_REGEX
-from backend.portal.api.app.v1.authorization import is_user_owner_or_allowed
 from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import (
-    CollectionVisibility,
-    DbCollectionLink,
     DbCollection,
+    DbCollectionLink,
     DbDataset,
-    DbDatasetProcessingStatus,
     DbDatasetArtifact,
-    DatasetArtifactFileType,
-    ProcessingStatus,
-    Base,
-    IsPrimaryData,
-    ProjectLinkType,
-    ValidationStatus,
+    DbDatasetProcessingStatus,
+)
+from backend.common.utils.http_exceptions import ForbiddenHTTPException
+from backend.layers.api.explorer_url import generate as generate_explorer_url
+from backend.layers.api.providers import get_business_logic
+from backend.layers.auth.user_info import UserInfo
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionVersion,
+    CollectionVersionId,
+    CollectionVersionWithDatasets,
+    DatasetArtifactType,
+    DatasetId,
+    DatasetProcessingStatus,
+    DatasetValidationStatus,
+    DatasetVersion,
+    DatasetVersionId,
+    Link,
+    OntologyTermId,
 )
 
-
-DATASET_ONTOLOGY_ELEMENTS = (
-    "sex",
-    "self_reported_ethnicity",
-    "development_stage",
-    "cell_type",
-    "tissue",
-    "assay",
-    "disease",
-    "organism",
-)
-
-DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
-    "tissue",
-    "assay",
-    "disease",
-    "organism",
-)
+allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)
 
 
-def curation_get_normalized_doi_url(doi: str, errors: list) -> typing.Optional[str]:
-    # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
-    if not re.match(CURIE_REFERENCE_REGEX, doi):
-        errors.append({"name": ProjectLinkType.DOI.value, "reason": "DOI must be a CURIE reference."})
-        return None
-    return f"https://doi.org/{doi}"
+def get_collections_base_url():
+    return CorporaConfig().collections_base_url
 
 
-def extract_doi_from_links(collection: dict):
+def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]]:
     """
-    Pull out the DOI from the 'links' array and return it along with the altered links array
-    :param collection: the Collection
-    :return: None
+    Pull out the DOI from the 'links' list and return it along with the altered links array
+    :param links: a list of links.
+    :return: the DOI link and the remaining links
     """
-    doi, resp_links = None, []
-    for link in collection.get("links", []):
-        if link["link_type"] == ProjectLinkType.DOI:
-            doi = urlparse(link["link_url"]).path.strip("/")
+    doi, dict_links = None, []
+    for link in links:
+        if link.type == "DOI":
+            doi = urlparse(link.uri).path.strip("/")
         else:
-            resp_links.append(link)
-
-    return doi, resp_links
+            dict_links.append(dict(link_name=link.name, link_url=link.uri, link_type=link.type))
+    return doi, dict_links
 
 
 def reshape_for_curation_api(
-    db_session: Session, collection: DbCollection, token_info: dict, preview: bool = False
+    collection_version: Union[CollectionVersion, CollectionVersionWithDatasets],
+    user_info: UserInfo,
+    preview: bool = False,
 ) -> dict:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
-    :param db_session: the db Session
     :param collection: the Collection being returned in the API response
-    :param token_info: user access token
+    :param user_info:
     :param preview: boool - whether the dataset is in preview form or not.
-    :return: whether or not the Collection should be included in the response per ownership/access rules
+    :return: the response.
     """
-    entity_columns = EntityColumns.columns_for_collections if preview else EntityColumns.columns_for_collection_id
-    resp_collection = collection.to_dict_keep(entity_columns)
-    resp_collection["processing_status"] = add_collection_level_processing_status(collection)
+    business_logic = get_business_logic()
+    is_published = collection_version.published_at is not None
+    # get collection attributes based on published status
+    if is_published:
+        # Published
+        collection_id = collection_version.collection_id
+        collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
+        revision_of = None
+        if not user_info.is_user_owner_or_allowed(collection_version.owner):
+            _revising_in = None
+        else:
+            _revising_in = business_logic.get_unpublished_collection_version_from_canonical(
+                collection_version.collection_id
+            )
+        revising_in = _revising_in.version_id.id if _revising_in else None
+        use_canonical_id = True
+    else:
+        # Unpublished - need to determine if it's a revision or first time collection
+        # For that, we look at whether the canonical collection is published
+        is_revision = collection_version.canonical_collection.originally_published_at is not None
+        if is_revision:
+            # If it's a revision, both collection_id and collection_url need to point to the version_id,
+            # and datasets should expose the private url (based on version_id)
+            collection_id = collection_version.version_id
+            collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
+            revision_of = collection_version.collection_id.id
+            use_canonical_id = False
+        else:
+            # If it's an unpublished, unrevised collection, then collection_url will point to the permalink
+            # (aka the link to the canonical_id) and the collection_id will point to version_id.
+            # Also, revision_of should be None, and the datasets should expose the canonical url
+            collection_id = collection_version.collection_id
+            collection_url = f"{get_collections_base_url()}/collections/{collection_version.collection_id}"
+            revision_of = None
+            use_canonical_id = True
+        revising_in = None
 
-    owner = resp_collection.pop("owner")  # Don't actually want to return 'owner' in response
-    resp_collection["revising_in"] = get_revising_in(db_session, collection, token_info, owner)
-    resp_collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection.id}"
-    if datasets := resp_collection.get("datasets"):
-        resp_collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
+    # get collection dataset attributes
+    response_datasets = reshape_datasets_for_curation_api(
+        collection_version.datasets, is_published, use_canonical_id, preview
+    )
 
-    resp_collection["doi"], resp_collection["links"] = extract_doi_from_links(resp_collection)
+    # build response
+    doi, links = extract_doi_from_links(collection_version.metadata.links)
+    published_version = business_logic.get_published_collection_version(collection_version.canonical_collection.id)
+    if published_version is not None:
+        revised_at = published_version.published_at
+    else:
+        revised_at = None
+    response = dict(
+        collection_url=collection_url,
+        consortia=collection_version.metadata.consortia,
+        contact_email=collection_version.metadata.contact_email,
+        contact_name=collection_version.metadata.contact_name,
+        created_at=collection_version.created_at,
+        curator_name=collection_version.curator_name,
+        datasets=response_datasets,
+        description=collection_version.metadata.description,
+        doi=doi,
+        id=collection_id.id,
+        links=links,
+        name=collection_version.metadata.name,
+        processing_status=get_collection_level_processing_status(collection_version.datasets),
+        published_at=collection_version.canonical_collection.originally_published_at,
+        publisher_metadata=collection_version.publisher_metadata,
+        revised_at=revised_at,
+        revising_in=revising_in,
+        revision_of=revision_of,
+        visibility=get_visibility(collection_version),
+    )
+    return response
 
-    return resp_collection
 
-
-def get_revising_in(
-    db_session: Session, collection: DbCollection, token_info: dict, owner: str
-) -> typing.Optional[str]:
-    """
-    If the Collection is public AND the user is authorized use a database call to populate 'revising_in' attribute.
-    None -> 1) revision does not exist, 2) the Collection is private, or 3) the user is not authorized
-    "<revision_id>" -> user is authorized and revision exists
-    :param db_session: the db Session
-    :param collection: the Collection
-    :param token_info: the user's access token info
-    :param owner: the owner of the Collection
-    :return: None
-    """
-    if collection.visibility == CollectionVisibility.PUBLIC and is_user_owner_or_allowed(token_info, owner):
-        if result := db_session.query(DbCollection.id).filter(DbCollection.revision_of == collection.id).one_or_none():
-            return result.id
-    return None
-
-
-def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False) -> typing.List[dict]:
+def reshape_datasets_for_curation_api(
+    datasets: List[Union[DatasetVersionId, DatasetVersion]],
+    is_published: bool,
+    use_canonical_id: bool,
+    preview: bool = False,
+) -> List[dict]:
     active_datasets = []
-    for dataset in datasets:
-        if dataset.get("tombstone"):
-            continue  # Remove tombstoned Datasets
-        active_datasets.append(reshape_dataset_for_curation_api(dataset, preview))
+    for dv in datasets:
+        dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
+        active_datasets.append(
+            reshape_dataset_for_curation_api(dataset_version, is_published, use_canonical_id, preview)
+        )
     return active_datasets
 
 
-def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
-    if artifacts := dataset.pop("artifacts", []):
-        dataset["dataset_assets"] = []
-        for asset in artifacts:
-            if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
-                dataset["dataset_assets"].append(asset)
-    if processing_status := dataset.pop("processing_status", None):
-        if processing_status["processing_status"] == ProcessingStatus.FAILURE:
-            if processing_status["validation_status"] == ValidationStatus.INVALID:
-                dataset["processing_status_detail"] = processing_status["validation_message"]
-                dataset["processing_status"] = "VALIDATION_FAILURE"
+def reshape_dataset_for_curation_api(
+    dataset_version: DatasetVersion, is_published: bool, use_canonical_id: bool, preview=False
+) -> dict:
+    ds = dict()
+
+    # Determine what columns to include from the dataset
+    if preview:
+        columns = EntityColumns.dataset_metadata_preview_cols
+    else:
+        columns = EntityColumns.dataset_metadata_cols
+
+    # Get dataset metadata fields.
+    # Metadata can be None if the dataset isn't still fully processed, so we account for that
+    if dataset_version.metadata is not None:
+        for column in columns:
+            col = getattr(dataset_version.metadata, column)
+            if isinstance(col, OntologyTermId):
+                col = [asdict(col)]
+            elif isinstance(col, list) and len(col) != 0 and isinstance(col[0], OntologyTermId):
+                col = [asdict(i) for i in col]
+            ds[column] = col
+
+    # Get none preview specific dataset fields
+    if not preview:
+        # get dataset asset attributes
+        assets = []
+        for artifact in dataset_version.artifacts:
+            if artifact.type in allowed_dataset_asset_types:
+                assets.append(dict(filetype=artifact.type.upper(), filename=artifact.uri.split("/")[-1]))
+
+        ds["dataset_assets"] = assets
+        ds["processing_status_detail"] = dataset_version.status.validation_message
+        ds["revised_at"] = dataset_version.canonical_dataset.revised_at
+        ds["revision_of"] = (
+            None
+            if dataset_version.canonical_dataset.dataset_version_id == dataset_version.version_id
+            else dataset_version.dataset_id.id
+        )
+        ds["revision"] = 0  # TODO this should be the number of times this dataset has been revised and published
+        ds["title"] = ds.pop("name", None)
+        ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_id)
+        ds["tombstone"] = False  # TODO this will always be false. Remove in the future
+        if dataset_version.metadata is not None:
+            ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
+            if ds["x_approximate_distribution"]:
+                ds["x_approximate_distribution"] = ds["x_approximate_distribution"].upper()
+        if status := dataset_version.status:
+            if status.processing_status == DatasetProcessingStatus.FAILURE:
+                if status.validation_status == DatasetValidationStatus.INVALID:
+                    ds["processing_status_detail"] = status.validation_message
+                    ds["processing_status"] = "VALIDATION_FAILURE"
+                else:
+                    ds["processing_status"] = "PIPELINE_FAILURE"
             else:
-                dataset["processing_status"] = "PIPELINE_FAILURE"
-        else:
-            dataset["processing_status"] = processing_status["processing_status"]
-    dataset_ontology_elements = DATASET_ONTOLOGY_ELEMENTS_PREVIEW if preview else DATASET_ONTOLOGY_ELEMENTS
-    for ontology_element in dataset_ontology_elements:
-        if dataset_ontology_element := dataset.get(ontology_element):
-            if not isinstance(dataset_ontology_element, list):
-                # Package in array
-                dataset[ontology_element] = [dataset_ontology_element]
-        else:
-            dataset[ontology_element] = []
-
-    if not preview:  # Add these fields only to full (and not preview) Dataset metadata response
-        dataset["revision_of"] = dataset.pop("original_id", None)
-        dataset["title"] = dataset.pop("name", None)
-        if value := dataset.pop("is_primary_data", None):
-            dataset["is_primary_data"] = is_primary_data_mapping.get(value, [])
-
-    return dataset
+                ds["processing_status"] = status.processing_status
+    if use_canonical_id:
+        ds["id"] = dataset_version.dataset_id.id
+    else:
+        ds["id"] = dataset_version.version_id.id
+    return ds
 
 
 is_primary_data_mapping = {
-    IsPrimaryData.PRIMARY: [True],
-    IsPrimaryData.SECONDARY: [False],
-    IsPrimaryData.BOTH: [True, False],
+    "PRIMARY": [True],
+    "SECONDARY": [False],
+    "BOTH": [True, False],
 }
 
 
 class EntityColumns:
-
     collections_cols = [
         "id",
         "name",
@@ -176,11 +235,11 @@ class EntityColumns:
         "description",
         "publisher_metadata",
         "revision_of",
-        "tombstone",
         "owner",  # Needed for determining view permissions
         "links",
         "datasets",
         "revising_in",
+        "consortia",
     ]
 
     link_cols = [
@@ -189,35 +248,27 @@ class EntityColumns:
         "link_type",
     ]
 
-    dataset_preview_cols = [
-        "id",
+    dataset_metadata_preview_cols = [
         "tissue",
         "assay",
         "disease",
         "organism",
-        "tombstone",
         "suspension_type",
     ]
 
-    dataset_cols = [
-        *dataset_preview_cols,
-        "original_id",
+    dataset_metadata_cols = [
+        *dataset_metadata_preview_cols,
         "name",
-        "revision",
-        "revised_at",
         "is_primary_data",
-        "artifacts",
         "sex",
         "self_reported_ethnicity",
         "development_stage",
-        "explorer_url",
         "cell_type",
         "cell_count",
         "x_approximate_distribution",
         "batch_condition",
         "mean_genes_per_cell",
         "schema_version",
-        "processing_status",
         "donor_id",
     ]
 
@@ -231,60 +282,73 @@ class EntityColumns:
     columns_for_collections = {
         DbCollectionLink: link_cols,
         DbCollection: collections_cols,
-        DbDataset: dataset_preview_cols,
+        DbDataset: dataset_metadata_preview_cols,
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
 
     columns_for_collection_id = {
         DbCollectionLink: link_cols,
         DbCollection: collections_cols,
-        DbDataset: dataset_cols,
+        DbDataset: dataset_metadata_cols,
         DbDatasetArtifact: dataset_asset_cols,
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
 
     columns_for_dataset = {
-        DbDataset: dataset_cols,
+        DbDataset: dataset_metadata_cols,
         DbDatasetArtifact: dataset_asset_cols,
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
 
 
-def list_collections_curation(
-    session: Session, collection_columns: typing.Dict[Base, typing.List[str]], visibility: str = None
-) -> typing.List[dict]:
-    """
-    Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
-    return *all* Collections that are *not* tombstoned.
-    :param session: the SQLAlchemy session
-    :param collection_columns: the list of columns to be returned (see usage by TransformingBase::to_dict_keep)
-    :param visibility: the CollectionVisibility string name
-    @return: a list of dict representations of Collections
-    """
-    filters = [DbCollection.tombstone == False]  # noqa
-    if visibility == CollectionVisibility.PUBLIC.name:
-        filters.append(DbCollection.visibility == CollectionVisibility.PUBLIC)
-    elif visibility == CollectionVisibility.PRIVATE.name:
-        filters.append(DbCollection.visibility == CollectionVisibility.PRIVATE)
-
-    resp_collections = []
-    for collection in session.query(DbCollection).filter(*filters).all():
-        resp_collection = collection.to_dict_keep(collection_columns)
-        resp_collection["processing_status"] = add_collection_level_processing_status(collection)
-        resp_collections.append(resp_collection)
-    return resp_collections
+def get_visibility(collection_version: CollectionVersion) -> str:
+    return "PUBLIC" if collection_version.published_at else "PRIVATE"
 
 
-def add_collection_level_processing_status(collection: DbCollection) -> str:
-    # Add a Collection-level processing status
-    if not collection.datasets:  # Return None if the collection has no datasets.
+def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> str:
+    if not datasets:  # Return None if no datasets.
         return None
-    return_status = ProcessingStatus.SUCCESS
-    for dataset in collection.datasets:
-        if processing_status := dataset.processing_status:
-            status = processing_status.processing_status
-            if status in (ProcessingStatus.PENDING, ProcessingStatus.INITIALIZED):
-                return_status = ProcessingStatus.PENDING
-            elif status == ProcessingStatus.FAILURE:
-                return status
+
+    return_status = DatasetProcessingStatus.SUCCESS
+    for dv in datasets:
+        version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
+        status = version.status.processing_status
+        if status:
+            if status in (DatasetProcessingStatus.PENDING, DatasetProcessingStatus.INITIALIZED):
+                return_status = DatasetProcessingStatus.PENDING
+            elif status == DatasetProcessingStatus.FAILURE:
+                return_status = status
     return return_status
+
+
+def get_infered_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
+    """
+    Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion.
+    :param collection_id: identifies the collection version
+    :return: The CollectionVersion if it exists.
+    """
+    version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
+    if version is None:
+        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    if version is None:
+        version = get_business_logic().get_unpublished_collection_version_from_canonical(CollectionId(collection_id))
+    if version is None or version.canonical_collection.tombstoned is True:
+        raise ForbiddenHTTPException()
+    return version
+
+
+def get_infered_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
+    """
+    Infer the dataset version from either a DatasetId or a DatasetVersionId and return the DatasetVersion.
+    :param dataset_id: identifies the dataset version
+    :return: The DatasetVersion if it exists.
+    """
+    version = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
+    if version is None:
+        version = get_business_logic().get_dataset_version_from_canonical(DatasetId(dataset_id))
+    return version
+
+
+def is_owner_or_allowed_else_forbidden(collection_version, user_info):
+    if not user_info.is_user_owner_or_allowed(collection_version.owner):
+        raise ForbiddenHTTPException()

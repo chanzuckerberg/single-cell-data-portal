@@ -1,7 +1,4 @@
 import { useEffect, useState } from "react";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
-import { BOOLEAN } from "src/common/localStorage/set";
 import Step from "./components/Step";
 import {
   ColumnOne,
@@ -29,11 +26,10 @@ export default function GetStarted({
   if (!tissueHasLoadedOnce && tissueSelected && !isLoading) {
     tissueHasLoadedOnce = true;
   }
-  if (!geneHasLoadedOnce && geneSelected && !isLoading) {
+  if (!geneHasLoadedOnce && geneSelected) {
     geneHasLoadedOnce = true;
   }
 
-  const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -42,10 +38,7 @@ export default function GetStarted({
   if (isClient)
     return (
       isClient && (
-        <Wrapper
-          isHidden={tissueHasLoadedOnce && geneHasLoadedOnce}
-          fmg={isMarkerGenes}
-        >
+        <Wrapper isHidden={tissueHasLoadedOnce && geneHasLoadedOnce}>
           <ColumnOne isHidden={tissueHasLoadedOnce}>
             <StyledStepOne>
               <Step step={1} details="Add Tissues" />
