@@ -619,7 +619,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
         tissue_ontology_term_ids,
       },
       include_filter_dims: true,
-      is_rollup: get("dag") === BOOLEAN.TRUE,
+      is_rollup: get("is_rollup") === BOOLEAN.TRUE,
     };
   }, [
     selectedGenes,
