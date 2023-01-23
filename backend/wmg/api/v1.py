@@ -31,7 +31,9 @@ def primary_filter_dimensions():
 
 def query():
     request = connexion.request.json
-    is_rollup = request["rollup"]
+    is_rollup = request.get("is_rollup", True)
+    include_filter_dims = request.get("include_filter_dims", False)
+
     criteria = WmgQueryCriteria(**request["filter"])
 
     snapshot: WmgSnapshot = load_snapshot()
@@ -40,8 +42,6 @@ def query():
     expression_summary = q.expression_summary(criteria)
     cell_counts = q.cell_counts(criteria)
     dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
-
-    include_filter_dims = request.get("include_filter_dims", False)
 
     response_filter_dims_values = (
         build_filter_dims_values(criteria, snapshot, expression_summary) if include_filter_dims else {}

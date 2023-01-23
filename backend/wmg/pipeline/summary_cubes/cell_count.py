@@ -1,7 +1,6 @@
 import logging
 
 import pandas as pd
-import numpy as np
 import tiledb
 
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
