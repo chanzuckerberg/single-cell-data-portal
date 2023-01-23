@@ -114,7 +114,6 @@ export default memo(function HeatMap({
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
   });
 
-  console.log(sortedCellTypesByTissueName);
 
   const geneNameToIndex = useMemo(() => {
     const result: { [key: string]: number } = {};
