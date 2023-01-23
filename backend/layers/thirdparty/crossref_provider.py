@@ -144,6 +144,9 @@ class CrossrefProvider(CrossrefProviderInterface):
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
     def fetch_preprint_published_doi(self, doi):
+        """
+        Given a preprint DOI, returns the DOI of the published paper, if available.
+        """
 
         res = self._fetch_crossref_payload(doi)
         message = res.json()["message"]

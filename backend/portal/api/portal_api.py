@@ -93,6 +93,9 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
 
 
 def _dataset_processing_status_to_response(status: DatasetStatus, dataset_id: str):
+    """
+    Converts a DatasetStatus object to an object compliant to the API specifications
+    """
     return {
         "created_at": 0,  # NA
         "cxg_status": status.cxg_status or "NA",
@@ -110,6 +113,9 @@ def _dataset_processing_status_to_response(status: DatasetStatus, dataset_id: st
 
 # TODO: use remove_none
 def _link_to_response(link: Link):
+    """
+    Converts a Link object to an object compliant to the API specifications
+    """
     response = {
         "link_type": link.type,
         "link_url": link.uri,
@@ -120,6 +126,9 @@ def _link_to_response(link: Link):
 
 
 def _dataset_asset_to_response(dataset_artifact: DatasetArtifact, dataset_id: str):
+    """
+    Converts a DatasetArtifact object to an object compliant to the API specifications
+    """
     return {
         "created_at": 0,
         "dataset_id": dataset_id,
@@ -133,6 +142,9 @@ def _dataset_asset_to_response(dataset_artifact: DatasetArtifact, dataset_id: st
 
 
 def _ontology_term_id_to_response(ontology_term_id: OntologyTermId):
+    """
+    Converts an OntologyTermId object to an object compliant to the API specifications
+    """
     return {
         "label": ontology_term_id.label,
         "ontology_term_id": ontology_term_id.ontology_term_id,
@@ -140,10 +152,18 @@ def _ontology_term_id_to_response(ontology_term_id: OntologyTermId):
 
 
 def _ontology_term_ids_to_response(ontology_term_ids: List[OntologyTermId]):
+    """
+    Converts a list of OntologyTermId objects to an object compliant to the API specifications.
+    This is useful because dataset metadata contain all the possible values for that ontology
+    that exist in the dataset proper.
+    """
     return [_ontology_term_id_to_response(otid) for otid in ontology_term_ids]
 
 
 def remove_none(body: dict):
+    """
+    Removes the values of an object that are None
+    """
     return {k: v for k, v in body.items() if v is not None}
 
 
@@ -151,6 +171,9 @@ def remove_none(body: dict):
 def _dataset_to_response(
     dataset: DatasetVersion, is_tombstoned: bool, is_in_revision: bool = False, revision_created_at: datetime = None
 ):
+    """
+    Converts a DatasetVersion object to an object compliant to the API specifications
+    """
     dataset_id = dataset.version_id.id
     # Only return `dataset_deployments` if a CXG artifact is available. This is to prevent the "Explore"
     # button to show up while a dataset upload is in progress
@@ -214,7 +237,7 @@ def _dataset_to_response(
 
 def _collection_to_response(collection: CollectionVersionWithDatasets, access_type: str):
     """
-    Converts a CollectionVersion to a format that can be used as an API response. The returned id
+    Converts a CollectionVersion object to an object compliant to the API specifications
     """
     if collection.is_unpublished_version():
         # In this case, the collection version is a revision of an already published collection.
@@ -434,7 +457,7 @@ def delete_collection(collection_id: str, token_info: dict):
 
 def update_collection(collection_id: str, body: dict, token_info: dict):
     """
-    Updates a collection
+    Updates a collection using the fields specified in `body`
     """
 
     errors = []
@@ -534,11 +557,19 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
 # TODO: those two methods should probably be collapsed into one
 # TODO: not quite sure what's the difference between url and link - investigate
 def upload_link(collection_id: str, body: dict, token_info: dict):
+    """
+    Triggers a dataset ingestion using the link provided in the `body` object.
+    This method is used to generate a new dataset.
+    """
     dataset_id = upload_from_link(collection_id, token_info, body["url"])
     return make_response({"dataset_id": dataset_id.id}, 202)
 
 
 def upload_relink(collection_id: str, body: dict, token_info: dict):
+    """
+    Triggers a dataset ingestion using the link provided in the `body` object.
+    This method is used to replace a new existing dataset.
+    """
     dataset_id = upload_from_link(
         collection_id,
         token_info,
@@ -583,7 +614,6 @@ def post_dataset_asset(dataset_id: str, asset_id: str):
 def get_dataset_assets(dataset_id: str):
     """
     Returns a list of all the artifacts registered to a dataset.
-    TODO: not sure where this is used and what the response should be
     """
 
     artifacts = []
