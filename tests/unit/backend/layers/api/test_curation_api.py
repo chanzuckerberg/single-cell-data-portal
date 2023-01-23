@@ -824,7 +824,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.assertEqual(collection.publisher_metadata, response.json["publisher_metadata"])
 
     def test__update_collection_strip_string_fields(self):
-        links = [Link("name", "RAW_DATA", "http://test_link.place")]
+        links = [Link("   name ", "RAW_DATA", "http://test_link.place")]
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata())
         collection = self.generate_unpublished_collection(links=links)
         collection_id = collection.collection_id
@@ -848,9 +848,19 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         )
 
         self.assertEqual(200, response.status_code)
+        self.assertEqual(new_name.strip(), response.json["name"])
+        self.assertEqual(new_description.strip(), response.json["description"])
+        self.assertEqual(new_contact_name.strip(), response.json["contact_name"])
+        self.assertEqual(new_contact_email.strip(), response.json["contact_email"])
+        self.assertEqual(
+            [{"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"}],
+            response.json["links"],
+        )
+        self.assertEqual(collection.publisher_metadata, response.json["publisher_metadata"])
 
         response = self.app.get(f"curation/v1/collections/{collection_id}")
 
+        self.assertEqual(200, response.status_code)
         self.assertEqual(new_name.strip(), response.json["name"])
         self.assertEqual(new_description.strip(), response.json["description"])
         self.assertEqual(new_contact_name.strip(), response.json["contact_name"])

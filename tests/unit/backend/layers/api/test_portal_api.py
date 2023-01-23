@@ -1018,6 +1018,41 @@ class TestUpdateCollection(BaseAPIPortalTest):
         for field in test_fields:
             self.assertEqual(expected_body[field], actual_body[field])
 
+    def test__update_collection_strip_string_fields__OK(self):
+        collection = self.generate_unpublished_collection()
+        test_fields = [
+            "name",
+            "description",
+            "contact_name",
+            "contact_email",
+            "links",
+            "consortia",
+        ]
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        # Update the collection
+        new_body = {
+            "name": "collection name    ",
+            "description": "    This is a test collection",
+            "contact_name": "   person human",
+            "contact_email": "  person@human.com  ",
+            "links": [{"link_name": " DOI Link ", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["  Consortia 1   "],
+        }
+        data = json.dumps(new_body)
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
+
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+        self.assertEqual(new_body["name"].strip(), actual_body["name"])
+        self.assertEqual(new_body["description"].strip(), actual_body["description"])
+        self.assertEqual(new_body["contact_name"].strip(), actual_body["contact_name"])
+        self.assertEqual(new_body["contact_email"].strip(), actual_body["contact_email"])
+        self.assertEqual(["Consortia 1"], actual_body["consortia"])
+        self.assertEqual(
+            [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}], actual_body["links"]
+        )
+
     def test__update_collection_partial__OK(self):
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
