@@ -6,7 +6,6 @@ gunicorn[gevent] >=20.1.0, <21.0.0
 numba # required for where's my gene
 numpy==1.21.2  # required for where's my gene
 pandas==1.4.3 # required for where's my gene
-pronto==2.4.4
 psutil>=5.9.0
 psycopg2-binary>=2.8.5
 pyarrow>=1.0 # required for where's my gene

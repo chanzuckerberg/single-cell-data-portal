@@ -1,7 +1,7 @@
-from pronto import Ontology
+import owlready2
 import pandas as pd
 import numpy as np
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL
+from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
 
 
 def find_descendants_per_cell_type(cell_types):
@@ -18,12 +18,16 @@ def find_descendants_per_cell_type(cell_types):
     descendants_per_cell_type : list
         List of lists of descendants for each cell type in the input list.
     """
-    onto = Ontology(CL_BASIC_PERMANENT_URL)
+    onto = owlready2.get_ontology(CL_BASIC_PERMANENT_URL_OWL)
+    onto.load()
+
     descendants_per_cell_type = []
     for cell_type in cell_types:
-        try:
-            descendants = list(onto[cell_type].subclasses().to_set().ids)
-        except KeyError:
+        cell_type_iri = cell_type.replace(":", "_")
+        entity = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
+        if entity:
+            descendants = [i.name.replace("_", ":") for i in entity.descendants()]
+        else:
             descendants = [cell_type]
         descendants_per_cell_type.append(descendants)
     return descendants_per_cell_type
