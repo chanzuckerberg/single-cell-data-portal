@@ -987,7 +987,26 @@ components:
       type: array
       items:
         type: string
-        description: The broader research groups which contributed to this collection of datasets.
+        description: |
+          The broader research groups which contributed to this collection of datasets. Allowed consortia are:
+
+          | Valid consortia |
+          | ---------- |
+          | Allen Institute for Brain Science   | 
+          | BRAIN Initiative  |
+          | CZ Biohub  |
+          | CZI Neurodegeneration Challenge Network  |
+          | CZI Single-Cell Biology  |
+          | European Union’s Horizon 2020  |
+          | GenitoUrinary Development Molecular Anatomy Project (GUDMAP)  |
+          | Gut Cell Atlas  |
+          | Human BioMolecular Atlas Program (HuBMAP)  |
+          | Human Pancreas Analysis Program (HPAP) |
+          | Human Tumor Atlas Network (HTAN)  |
+          | Kidney Precision Medicine Project (KPMP)  |
+          | LungMAP  |
+          | SEA-AD  |
+          | Wellcome HCA Strategic Science Support  |
     collection:
       type: object
       required:

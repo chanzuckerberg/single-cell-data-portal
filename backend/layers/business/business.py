@@ -101,9 +101,10 @@ class BusinessLogic(BusinessLogicInterface):
         retrieve publisher metadata from Crossref and add it to the collection.
         """
 
-        errors = []
+        collection_metadata.sanitize()
+
         # Check metadata is valid
-        collection_metadata.strip_fields()
+        errors = []
         validation.verify_collection_metadata(collection_metadata, errors)
 
         # TODO: Maybe switch link.type to be an enum

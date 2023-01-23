@@ -374,6 +374,30 @@ class TestCollection(BaseAPIPortalTest):
 
         self.assertEqual(400, response.status_code)
 
+    def test__post_collection_sorts_consortia(self):
+        test_url = furl(path="/dp/v1/collections")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "10.1016/foo", "link_type": "DOI"},
+            ],
+            "consortia": ["Consortia 3", "Consortia 1"],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            data=json_data,
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = json.loads(response.data)["collection_id"]
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertEqual(collection.metadata.consortia, sorted(data["consortia"]))
+
     # ✅
     def test__post_collection_normalizes_doi(self):
         test_url = furl(path="/dp/v1/collections")
@@ -1204,7 +1228,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id}",
-            data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "http://doi.org/456", "link_type": "DOI"}]}),
+            data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "10.1234/5678", "link_type": "DOI"}]}),
             headers=headers,
         )
         self.assertEqual(200, response.status_code)
