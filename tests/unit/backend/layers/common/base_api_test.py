@@ -95,3 +95,11 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
             ).encode("utf8")
         ).decode("utf8")
         return f"cxguser={cxguser}"
+
+    def get_mock_cxguser_token(self, user="owner"):
+        """
+        Generated an auth token for testing.
+        :param user: the type of use the token will simulate.
+        :return:
+        """
+        return f"Bearer {user}"

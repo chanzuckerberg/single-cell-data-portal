@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - "*"
+      - "nayib/fix-auth-tests"
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
