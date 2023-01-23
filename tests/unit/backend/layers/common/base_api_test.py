@@ -76,26 +76,6 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         self.mock_business_logic.stop()
         self.mock_cloudfront_provider.stop()
 
-    def get_cxguser_token(self, user="owner"):
-        """
-        Generated an auth token for testing.
-        :param user: the type of use the token will simulate.
-        :return:
-        """
-        cxguser = base64.b64encode(
-            json.dumps(
-                {
-                    "access_token": user,
-                    "refresh_token": f"random-{time.time()}",
-                    "scope": "openid profile email offline",
-                    "expires_in": TOKEN_EXPIRES,
-                    "token_type": "Bearer",
-                    "expires_at": TOKEN_EXPIRES,
-                }
-            ).encode("utf8")
-        ).decode("utf8")
-        return f"cxguser={cxguser}"
-
     def get_mock_cxguser_token(self, user="owner"):
         """
         Generated an auth token for testing.
