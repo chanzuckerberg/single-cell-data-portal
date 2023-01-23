@@ -114,8 +114,9 @@ export const GeneSideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
     justify-content: space-between;
     padding: 0;
     width: 100%;
-    font-weight: 800;
+    font-weight: 600;
     font-size: 20px;
     line-height: 24px;
+    align-items: flex-start;
   }
 `;

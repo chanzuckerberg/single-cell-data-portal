@@ -1,4 +1,4 @@
-import { Drawer } from "@blueprintjs/core";
+import { Classes, Drawer } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import { CommonThemeProps, getFontWeights } from "czifui";
 
