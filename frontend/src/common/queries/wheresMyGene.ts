@@ -18,6 +18,8 @@ import { ROUTES } from "../constants/routes";
 import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
+import { get } from "src/common/featureFlags";
+import { BOOLEAN } from "src/common/localStorage/set";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -617,6 +619,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
         tissue_ontology_term_ids,
       },
       include_filter_dims: true,
+      is_rollup: get("is_rollup") === BOOLEAN.TRUE,
     };
   }, [
     selectedGenes,
