@@ -89,5 +89,6 @@ def get_public_keys(openid_provider: str):
     keys = get_auth0_session_with_retry(verify_cert).get(get_openid_config(openid_provider)["jwks_uri"]).json()["keys"]
     print(f"\nGOT KEYS\n")
     import pprint
+
     pprint.pprint(keys)
     return {key["kid"]: key for key in keys}

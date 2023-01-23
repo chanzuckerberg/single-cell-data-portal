@@ -318,7 +318,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -333,7 +337,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -354,7 +362,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
 
@@ -401,7 +413,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -429,7 +445,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
@@ -452,7 +472,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
@@ -474,7 +498,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
@@ -499,7 +527,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -522,7 +554,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -549,7 +585,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -610,7 +650,11 @@ class TestCollection(BaseAPIPortalTest):
         data = json.dumps({"name": "bkjbjbjmbjm"})
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=data,
         )
         self.assertEqual(400, response.status_code)
@@ -618,7 +662,11 @@ class TestCollection(BaseAPIPortalTest):
     # ✅
     def test__can_retrieve_created_collection(self):
         test_url = furl(path="/dp/v1/collections")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         data = {
             "name": "another collection name",
             "description": "This is a test collection",
@@ -654,7 +702,11 @@ class TestCollection(BaseAPIPortalTest):
 
     def test__create_collection_strip_string_fields(self):
         test_url = furl(path="/dp/v1/collections")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         data = {
             "name": "   another collection name   ",
             "description": "    This is a test collection  ",
@@ -729,7 +781,11 @@ class TestCollection(BaseAPIPortalTest):
         revision_owned = self.business_logic.create_collection_version(public_owned.collection_id)
 
         path = "/dp/v1/collections"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
         result = json.loads(response.data)
@@ -760,7 +816,11 @@ class TestCollection(BaseAPIPortalTest):
         private_collection = self.generate_unpublished_collection()
 
         tombstone_url = furl(path=f"/dp/v1/collections/{collection_to_tombstone.collection_id}")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(tombstone_url.url, headers=headers)
         self.assertEqual(204, response.status_code)
 
@@ -833,7 +893,11 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         # Generate test collection
         collection = self.generate_unpublished_collection()
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 200)
@@ -853,7 +917,11 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         revision = self.generate_revision(collection.collection_id)
         dataset = self.generate_dataset(collection_version=revision)
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         test_private_url = furl(path=f"/dp/v1/collections/{revision.version_id}")
         test_public_url = furl(path=f"/dp/v1/collections/{collection.collection_id}")
         response = self.app.get(test_private_url.url, headers=headers)
@@ -884,7 +952,11 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         collection = self.generate_published_collection()
 
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
@@ -892,7 +964,11 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         """Published collections are tombstoned."""
         # Generate the public collection
         collection = self.generate_published_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         test_public_url = furl(
             path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PUBLIC")
         )
@@ -929,7 +1005,11 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         test_private_url = furl(
             path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PRIVATE")
         )
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_private_url.url, headers=headers)
         self.assertEqual(response.status_code, 204)
 
@@ -940,14 +1020,22 @@ class TestCollectionDeletion(BaseAPIPortalTest):
     def test_delete_collection__not_owner(self):
         collection = self.generate_unpublished_collection(owner="not_test_user_id")
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__does_not_exist(self):
         fake_id = CollectionId()
         test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PRIVATE"))
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
@@ -955,7 +1043,11 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         private_collection = self.generate_unpublished_collection()
         public_collection = self.generate_published_collection()
         collection_to_delete = self.generate_unpublished_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.get("/dp/v1/collections", headers=headers)
 
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
@@ -1000,7 +1092,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
             "links",
             "consortia",
         ]
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         # Update the collection
         expected_body = {
@@ -1047,7 +1143,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     def test__update_collection_partial__OK(self):
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         payload = {
             "name": "new collection name",
@@ -1075,14 +1175,22 @@ class TestUpdateCollection(BaseAPIPortalTest):
     # ✅
     def test__update_collection__403(self):
         collection = self.generate_unpublished_collection(owner="someone else")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         data = json.dumps({"name": "new name"})
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test__update_collection_consortia(self):
         collection = self.generate_unpublished_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         # Change Consortia
         payload = {
@@ -1103,7 +1211,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     def test__remove_collection_consortia(self):
         collection = self.generate_unpublished_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         # Remove Consortia
         payload = {
@@ -1124,7 +1236,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     def test__remove_all_collection_consortia(self):
         collection = self.generate_unpublished_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         # Remove All Consortia
         payload = {
@@ -1145,7 +1261,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     def test__add_new_collection_consortia(self):
         collection = self.generate_unpublished_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         # Add Consortia
         payload = {
@@ -1166,7 +1286,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     def test__update_with_invalid_collection_consortia(self):
         collection = self.generate_unpublished_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         # Invalid Consortia
         payload = {
@@ -1183,7 +1307,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
     # ✅
     def test__update_collection_links__OK(self):
         collection = self.generate_unpublished_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         # add links
         links = [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}]
@@ -1238,7 +1366,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
         # From now on, Crossref will return `New Journal`
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("New Journal"))
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id}",
             data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "10.1234/5678", "link_type": "DOI"}]}),
@@ -1267,7 +1399,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
         # From now on, Crossref will return `New Journal`
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("New Journal"))
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         # We're passing an empty links object, therefore the DOI is deleted
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id}",
@@ -1296,7 +1432,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
         # From now on, Crossref will return `New Journal`
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("New Journal"))
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         # Note that the DOI is the same as the original
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id}",
@@ -1441,7 +1581,11 @@ class TestDataset(BaseAPIPortalTest):
         )
         # TODO: why do we need processing_status_id? we can probably remove
         test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/status")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
@@ -1464,7 +1608,11 @@ class TestDataset(BaseAPIPortalTest):
             owner="someone_else",
         )
         test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/status")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(403, response.status_code)
 
@@ -1476,7 +1624,11 @@ class TestDataset(BaseAPIPortalTest):
         public_dataset = self.generate_dataset(publish=True)
 
         test_url = furl(path="/dp/v1/datasets/index")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -1539,7 +1691,11 @@ class TestDataset(BaseAPIPortalTest):
 
         test_url = furl(path="/dp/v1/datasets/index")
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -1627,7 +1783,11 @@ class TestDataset(BaseAPIPortalTest):
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)]
         )
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_url, headers=headers)
 
         self.assertEqual(response.status_code, 202)
@@ -1638,7 +1798,11 @@ class TestDataset(BaseAPIPortalTest):
         )
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 202)
 
@@ -1646,7 +1810,11 @@ class TestDataset(BaseAPIPortalTest):
     def test__cancel_dataset_download__dataset_does_not_exist(self):
         fake_id = DatasetVersionId()
         test_url = f"/dp/v1/datasets/{fake_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
@@ -1655,7 +1823,11 @@ class TestDataset(BaseAPIPortalTest):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)]
         )
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         # check dataset in collection
         collection_url = furl(path=f"/dp/v1/collections/{dataset.collection_version_id}")
@@ -1688,7 +1860,11 @@ class TestDataset(BaseAPIPortalTest):
 
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_url, headers=headers)
 
         self.assertEqual(response.status_code, 202)
@@ -1706,7 +1882,11 @@ class TestDataset(BaseAPIPortalTest):
         )
 
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(405, response.status_code)
         self.assertEqual("Cannot delete a public Dataset", json.loads(response.data)["detail"])
@@ -1720,7 +1900,11 @@ class TestDataset(BaseAPIPortalTest):
         )
 
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
@@ -1997,7 +2181,11 @@ class TestRevision(BaseAPIPortalTest):
 
         # Starts a revision
         path = f"/dp/v1/collections/{published_collection.collection_id.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.post(path, headers=headers)
         self.assertEqual(201, response.status_code)
         response_post_json = json.loads(response.data)
@@ -2039,7 +2227,11 @@ class TestRevision(BaseAPIPortalTest):
 
         # Starts a revision
         path = f"/dp/v1/collections/{published_collection.collection_id.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.post(path, headers=headers)
         self.assertEqual(201, response.status_code)
         response_post_json = json.loads(response.data)
@@ -2057,7 +2249,11 @@ class TestRevision(BaseAPIPortalTest):
         test_url = f"/dp/v1/collections/{published_collection.collection_id.id}"
 
         # Start a revision
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
 
@@ -2071,7 +2267,11 @@ class TestRevision(BaseAPIPortalTest):
         Start a revision on a non-existing collection.
         """
         fake_collection_id = CollectionId()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.post(f"/dp/v1/collections/{fake_collection_id}", headers=headers)
         self.assertEqual(403, response.status_code)
 
@@ -2083,7 +2283,11 @@ class TestRevision(BaseAPIPortalTest):
         published_collection = self.generate_published_collection(owner="someone_else", add_datasets=2)
         test_url = f"/dp/v1/collections/{published_collection.collection_id.id}"
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
@@ -2096,7 +2300,11 @@ class TestDeleteRevision(BaseAPIPortalTest):
         Convenience method for creating a revision on the fly
         """
         path = f"/dp/v1/collections/{collection_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token(user)}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(user),
+        }
         response = self.app.post(path, headers=headers)
         response_post_json = json.loads(response.data)
         print(response_post_json)
@@ -2113,19 +2321,31 @@ class TestDeleteRevision(BaseAPIPortalTest):
 
         # Delete the revision
         path = f"/dp/v1/collections/{revision_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         resp = self.app.delete(path, headers=headers)
         self.assertEqual(204, resp.status_code)
 
         # Cannot get the revision
         path = f"/dp/v1/collections/{revision_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         resp = self.app.get(path, headers=headers)
         self.assertEqual(403, resp.status_code)
 
         # Verify that the published collection still has two datasets
         path = f"/dp/v1/collections/{published_collection.collection_id.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         resp = self.app.get(path, headers=headers)
         self.assertEqual(200, resp.status_code)
         resp_json = json.loads(resp.data)
@@ -2142,7 +2362,11 @@ class TestDeleteRevision(BaseAPIPortalTest):
 
         # Delete the revision
         path = f"/dp/v1/collections/{revision_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         resp = self.app.delete(path, headers=headers)
         self.assertEqual(403, resp.status_code)
 
@@ -2172,7 +2396,11 @@ class TestPublishRevision(BaseAPIPortalTest):
         unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
 
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
         response = self.app.post(path, headers=headers, data=json.dumps(body))
 
@@ -2211,7 +2439,11 @@ class TestPublishRevision(BaseAPIPortalTest):
 
         # Publish the revision with the deleted dataset
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
 
         response = self.app.post(path, headers=headers, data=json.dumps(body))
@@ -2240,7 +2472,11 @@ class TestPublishRevision(BaseAPIPortalTest):
 
         # Publish the revision with the deleted dataset
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(409, response.status_code)
@@ -2470,7 +2706,11 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
     def test__link__202(self):
         collection = self.generate_unpublished_collection()
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         body = {"url": self.good_link}
 
         test_url = furl(path=path)
@@ -2493,7 +2733,11 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
     def test__link_not_owner__403(self):
         collection = self.generate_unpublished_collection(owner="someone else")
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
@@ -2509,7 +2753,11 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
         with self.subTest("Unsupported Provider"):
             # Mocks the URI validator so that it return invalid
             self.uri_provider.validate = Mock(return_value=False)
-            headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+            headers = {
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            }
             body = {"url": "https://test_url.com"}
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
@@ -2521,7 +2769,11 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
             self.uri_provider.get_file_info.side_effect = FileInfoException(
                 "The URL provided causes an error with Dropbox."
             )
-            headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+            headers = {
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            }
             body = {"url": self.dummy_link}
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
@@ -2534,7 +2786,11 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(40 * 2**30, "file.h5ad"))
         collection = self.generate_unpublished_collection()
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
@@ -2545,7 +2801,11 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
     def test__link_fake_collection__403(self):
         fake_id = CollectionId()
         path = f"/dp/v1/collections/{fake_id}/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         body = {"url": self.good_link}
 
         test_url = furl(path=path)
@@ -2556,7 +2816,11 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
     def test_link_public_collection__403(self):
         collection = self.generate_published_collection()
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Authorization": self.get_mock_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
         body = {"url": self.good_link}
 
         test_url = furl(path=path)
