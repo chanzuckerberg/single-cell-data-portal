@@ -1,13 +1,4 @@
-import {
-  Button,
-  CellBasic,
-  CellHeader,
-  Icon,
-  Table,
-  TableHeader,
-  TableRow,
-  Tooltip,
-} from "czifui";
+import { Button, Icon, Tooltip } from "czifui";
 import React, { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -19,8 +10,7 @@ import { addSelectedGenes } from "../../common/store/actions";
 import {
   ButtonContainer,
   CopyGenesButton,
-  GeneCellHeader,
-  GeneHeaderWrapper,
+  StyledHTMLTable,
   StyledIconImage,
   StyledMarkerGeneHeader,
   StyledTooltip,
@@ -136,10 +126,10 @@ function CellInfoSideBar({
           Add to Dot Plot
         </Button>
       </ButtonContainer>
-      <Table>
-        <TableHeader>
-          <GeneCellHeader hideSortIcon>
-            <GeneHeaderWrapper>
+      <StyledHTMLTable condensed bordered={false}>
+        <thead>
+          <tr>
+            <td>
               Gene{" "}
               <CopyGenesButton
                 onClick={handleCopyGenes}
@@ -150,28 +140,19 @@ function CellInfoSideBar({
               >
                 Copy
               </CopyGenesButton>
-            </GeneHeaderWrapper>
-          </GeneCellHeader>
-          <CellHeader hideSortIcon horizontalAlign="right">
-            Marker Score
-          </CellHeader>
-        </TableHeader>
+            </td>
+            <td>Marker Score</td>
+          </tr>
+        </thead>
         <tbody>
           {Object.entries(data.marker_genes).map((gene) => (
-            <TableRow key={gene[0]}>
-              <CellBasic
-                shouldShowTooltipOnHover={false}
-                primaryText={gene[0]}
-              />
-              <CellBasic
-                shouldShowTooltipOnHover={false}
-                horizontalAlign="right"
-                primaryText={gene[1].effect_size.toPrecision(4)}
-              />
-            </TableRow>
+            <tr key={gene[0]}>
+              <td>{gene[0]}</td>
+              <td>{gene[1].effect_size.toPrecision(4)}</td>
+            </tr>
           ))}
         </tbody>
-      </Table>
+      </StyledHTMLTable>
     </div>
   );
 }
