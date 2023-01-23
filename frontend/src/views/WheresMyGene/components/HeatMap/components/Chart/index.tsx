@@ -334,7 +334,7 @@ export default memo(function Chart({
         height={heatmapHeight}
         width={heatmapWidth}
         ref={ref}
-        id={`${tissue}-chart`}
+        id={`${tissue.replace(/\s+/g, "-")}-chart`}
       />
     </Tooltip>
   );

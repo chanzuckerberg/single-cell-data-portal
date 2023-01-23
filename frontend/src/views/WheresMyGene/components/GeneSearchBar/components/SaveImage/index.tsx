@@ -115,12 +115,14 @@ export default function SaveImage({
         selectedTissues.map(async (tissueName) => {
           const height = getHeatmapHeight(selectedCellTypes[tissueName]);
 
+          tissueName = tissueName.replace(/\s+/g, "-");
+
           const imageURL = await convertHTMLtoImage(heatmapNode, {
             backgroundColor: "white",
             filter: screenshotFilter(tissueName),
             height: height + X_AXIS_CHART_HEIGHT_PX + 120,
             pixelRatio: 4,
-            width: heatmapNode.width,
+            width: heatmapNode.width, 
           });
           // raw URI if only one tissue is selected
 
