@@ -103,6 +103,8 @@ paths:
                   description: name of the curator of the collection.
                 links:
                   $ref: "#/components/schemas/links"
+                consortia:
+                  $ref: "#/components/schemas/consortia"
       responses:
         "201":
           description: A new collection has been created.
@@ -208,6 +210,8 @@ paths:
                   description: name of the curator of the collection
                 links:
                   $ref: "#/components/schemas/links"
+                consortia:
+                  $ref: "#/components/schemas/consortia"
       responses:
         "200":
           description: OK
@@ -445,6 +449,8 @@ paths:
                       type: number
                     revised_at:
                       type: number
+                    consortia:
+                      $ref: "#/components/schemas/consortia"
         "400":
           $ref: "#/components/responses/400"
 
@@ -977,6 +983,30 @@ components:
           link_type:
             type: string
             enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
+    consortia:
+      type: array
+      items:
+        type: string
+        description: |
+          The broader research groups which contributed to this collection of datasets. Allowed consortia are:
+
+          | Valid consortia |
+          | ---------- |
+          | Allen Institute for Brain Science   | 
+          | BRAIN Initiative  |
+          | CZ Biohub  |
+          | CZI Neurodegeneration Challenge Network  |
+          | CZI Single-Cell Biology  |
+          | European Union’s Horizon 2020  |
+          | GenitoUrinary Development Molecular Anatomy Project (GUDMAP)  |
+          | Gut Cell Atlas  |
+          | Human BioMolecular Atlas Program (HuBMAP)  |
+          | Human Pancreas Analysis Program (HPAP) |
+          | Human Tumor Atlas Network (HTAN)  |
+          | Kidney Precision Medicine Project (KPMP)  |
+          | LungMAP  |
+          | SEA-AD  |
+          | Wellcome HCA Strategic Science Support  |
     collection:
       type: object
       required:
@@ -986,6 +1016,7 @@ components:
         - visibility
         - links
         - datasets
+        - consortia
         - created_at
         - updated_at
         - data_submission_policy_version
@@ -1007,6 +1038,8 @@ components:
           $ref: "#/components/schemas/visibility"
         links:
           $ref: "#/components/schemas/links"
+        consortia:
+          $ref: "#/components/schemas/consortia"
         contact_name:
           type: string
         contact_email:

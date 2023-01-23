@@ -251,7 +251,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   sex_terms: [],
 };
 
-interface RawDataset {
+export interface RawDataset {
   collection_id: string;
   collection_label: string;
   id: string;
@@ -768,7 +768,7 @@ export async function fetchMarkerGenes({
   cellTypeID,
   organismID,
   tissueID,
-  test = "binomtest",
+  test = "ttest",
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
   const url = API_URL + API.WMG_MARKER_GENES;
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);

@@ -75,6 +75,20 @@ class TestDatasetSubmissions(BaseTest):
         dataset_submissions_handler(s3_event, None)
         mock_ingest.assert_called()
 
+    def test__upload_update_by_dataset_canonical_id__OK(self):
+        """
+        Processing starts when an update of a dataset is uploaded using canonical ids
+
+        """
+        version = self.generate_unpublished_collection()
+        _, dataset_id = self.business_logic.create_empty_dataset(version.version_id)
+
+        mock_ingest = self.business_logic.ingest_dataset = Mock()
+
+        s3_event = create_s3_event(key=f"{self.user_name}/{version.collection_id}/{dataset_id}")
+        dataset_submissions_handler(s3_event, None)
+        mock_ingest.assert_called()
+
 
 def create_s3_event(bucket_name: str = "some_bucket", key: str = "", size: int = 0) -> dict:
     """

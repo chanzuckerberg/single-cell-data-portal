@@ -115,4 +115,4 @@ AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} make db/t
 This command opens an SSH tunnel from `localhost:5432` to the RDS connection endpoint via the _bastion_ server.
 The local port `5432` is fixed and encoded in the DB connection string stored in
 [AWS Secrets Manager](https://us-west-2.console.aws.amazon.com/secretsmanager/home?region=us-west-2#!/listSecrets/)
-in the secret named `corpora/backend/${DEPLOYMENT_STAGE}/database_local`.
+in the secret named `corpora/backend/${DEPLOYMENT_STAGE}/database`.
