@@ -327,19 +327,21 @@ def migrate_redesign_read(ctx):
                     artifact_ids.append(record_artifact.id)
                     artifacts.append(artifact)
 
-                dataset_version = {
-                    "version_id": dataset_version_id,
-                    "dataset_id": record_dataset.id,
-                    "collection_id": collection_id,
-                    "metadata": dataset_metadata,
-                    "artifacts": artifact_ids,
-                    "status": strip_prefixes_dict(status),
-                    "created_at": record_dataset.created_at,
-                }
+                if not record_dataset.tombstone:
 
-                dataset_ids.append(dataset_version_id)
-                datasets.append(dataset)
-                dataset_versions.append(dataset_version)
+                    dataset_version = {
+                        "version_id": dataset_version_id,
+                        "dataset_id": record_dataset.id,
+                        "collection_id": collection_id,
+                        "metadata": dataset_metadata,
+                        "artifacts": artifact_ids,
+                        "status": strip_prefixes_dict(status),
+                        "created_at": record_dataset.created_at,
+                    }
+
+                    dataset_ids.append(dataset_version_id)
+                    datasets.append(dataset)
+                    dataset_versions.append(dataset_version)
 
             version = {
                 "version_id": version_id,
@@ -418,7 +420,7 @@ def migrate_redesign_write(ctx):
         CollectionVersionTable as CollectionVersionRow,
         DatasetTable as DatasetRow,
         DatasetVersionTable as DatasetVersionRow,
-        DatasetArtifactTabel as DatasetArtifactRow,
+        DatasetArtifactTable as DatasetArtifactRow,
     )
 
     database_pass = os.getenv("PGPASSWORD")
@@ -429,6 +431,12 @@ def migrate_redesign_write(ctx):
     # Uncomment for local
     # database_uri = f"postgresql://postgres:secret@localhost"
     engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
+
+    from sqlalchemy.schema import CreateSchema
+    from backend.layers.persistence.orm import metadata
+
+    engine.execute(CreateSchema("persistence_schema"))
+    metadata.create_all(bind=engine)
 
     with Session(engine) as session:
 
