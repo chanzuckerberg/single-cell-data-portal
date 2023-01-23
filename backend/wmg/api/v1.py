@@ -31,6 +31,7 @@ def primary_filter_dimensions():
 
 def query():
     request = connexion.request.json
+    is_rollup = request["rollup"]
     criteria = WmgQueryCriteria(**request["filter"])
 
     snapshot: WmgSnapshot = load_snapshot()
@@ -48,7 +49,7 @@ def query():
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
-            expression_summary=build_expression_summary(dot_plot_matrix_df),
+            expression_summary=build_expression_summary(dot_plot_matrix_df, is_rollup),
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                 cell_types=build_ordered_cell_types_by_tissue(
@@ -166,17 +167,23 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
     return response_filter_dims_values
 
 
-def build_expression_summary(query_result: DataFrame) -> dict:
+def build_expression_summary(query_result: DataFrame, is_rollup: bool) -> dict:
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
+    # is_rollup is a flag to indicate whether the expressions should be rolled up or not
     structured_result: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
     for row in query_result.itertuples(index=False):
+        nnz = row.nnz_rollup if is_rollup else row.nnz
+        sum = row.sum_rollup if is_rollup else row.sum
+        n_cells_cell_type = row.n_cells_cell_type_rollup if is_rollup else row.n_cells_cell_type
+        n_cells_tissue = row.n_cells_tissue_rollup if is_rollup else row.n_cells_tissue
+
         structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id].append(
             dict(
                 id=row.cell_type_ontology_term_id,
-                n=row.nnz,
-                me=row.sum / row.nnz,
-                pc=row.nnz / row.n_cells_cell_type,
-                tpc=row.nnz / row.n_cells_tissue,
+                n=nnz,
+                me=sum / nnz,
+                pc=nnz / n_cells_cell_type,
+                tpc=nnz / n_cells_tissue,
             )
         )
     return structured_result
@@ -188,7 +195,7 @@ def agg_cell_type_counts(cell_counts: DataFrame) -> DataFrame:
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=True
     ).sum()
     cell_counts_cell_type_agg.rename(
-        columns={"n_total_cells": "n_cells_cell_type", "n_total_cells_raw": "n_cells_cell_type_raw"}, inplace=True
+        columns={"n_total_cells": "n_cells_cell_type", "n_total_cells_rollup": "n_cells_cell_type_rollup"}, inplace=True
     )
     return cell_counts_cell_type_agg
 
@@ -197,7 +204,7 @@ def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
     # Aggregate cube data by tissue
     cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).sum()
     cell_counts_tissue_agg.rename(
-        columns={"n_total_cells": "n_cells_tissue", "n_total_cells_raw": "n_cells_tissue_raw"}, inplace=True
+        columns={"n_total_cells": "n_cells_tissue", "n_total_cells_rollup": "n_cells_tissue_rollup"}, inplace=True
     )
     return cell_counts_tissue_agg
 

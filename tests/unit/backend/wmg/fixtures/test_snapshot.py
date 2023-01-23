@@ -83,8 +83,8 @@ def random_expression_summary_values(coords):
     return {
         "nnz": randint(size=len(coords), low=0, high=100),
         "sum": random(size=len(coords)) * 10,
-        "nnz_raw": randint(size=len(coords), low=0, high=100),
-        "sum_raw": random(size=len(coords)) * 10,
+        "nnz_rollup": randint(size=len(coords), low=0, high=100),
+        "sum_rollup": random(size=len(coords)) * 10,
     }
 
 
@@ -92,8 +92,8 @@ def all_ones_expression_summary_values(coords):
     return {
         "nnz": np.ones(len(coords)),
         "sum": np.ones(len(coords)),
-        "nnz_raw": np.ones(len(coords)),
-        "sum_raw": np.ones(len(coords)),
+        "nnz_rollup": np.ones(len(coords)),
+        "sum_rollup": np.ones(len(coords)),
     }
 
 
@@ -274,7 +274,7 @@ def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callab
     with tiledb.open(cube_dir, mode="w") as cube:
         logical_attr_values: Dict[str, list] = {
             "n_cells": cell_counts_fn(coords),
-            "n_cells_raw": cell_counts_fn(coords),
+            "n_cells_rollup": cell_counts_fn(coords),
         }
         assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cell_counts_logical_attrs])
 
