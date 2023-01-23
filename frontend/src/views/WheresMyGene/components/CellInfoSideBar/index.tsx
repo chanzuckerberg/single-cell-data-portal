@@ -92,7 +92,7 @@ function CellInfoSideBar({
                     rel="noopener"
                     target="_blank"
                     onClick={() => {
-                      handleHoverEnd();
+                      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER);
                       track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED);
                     }}
                   >
