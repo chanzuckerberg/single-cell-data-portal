@@ -466,7 +466,6 @@ def _post_process_stats(
             if is_colinear:
                 break
         are_colinear.append(is_colinear)
-    are_colinear = np.invert(np.array(are_colinear))
 
     zero_out = nnz.flatten() < min_num_expr_cells
     effects[:, zero_out] = 0
