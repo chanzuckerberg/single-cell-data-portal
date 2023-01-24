@@ -115,6 +115,7 @@ export default function SaveImage({
         selectedTissues.map(async (tissueName) => {
           const height = getHeatmapHeight(selectedCellTypes[tissueName]);
 
+          // Handles if whitespace is in the tissue name for the element ID
           tissueName = tissueName.replace(/\s+/g, "-");
 
           const imageURL = await convertHTMLtoImage(heatmapNode, {
@@ -269,14 +270,16 @@ function processSvg({
   console.log("-heatmapNode", heatmapNode);
   console.log("-heatmapContainer", heatmapContainer);
 
+  // Render elements to SVG
   const dotsSvg = renderDots({ heatmapContainer, tissueName });
   const yAxisSvg = renderYAxis({
     heatmapContainer,
     height,
     tissueName,
   });
-
+  
   const svgWidth = yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value;
+  const xAxisSvg = renderXAxis({ heatmapContainer, tissueName, width: svgWidth });
   const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
 
   finalSvg.setAttribute("height", String(dotsSvg!.height.baseVal.value));
@@ -286,9 +289,12 @@ function processSvg({
   finalSvg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
   // Positioning
-  yAxisSvg?.setAttribute("y", "5");
+  yAxisSvg?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + 25}`);
   dotsSvg?.setAttribute("x", String(yAxisSvg!.width.baseVal.value));
+  dotsSvg?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + 20}`);
 
+  // Append elements to final SVG
+  finalSvg.append(xAxisSvg!);
   finalSvg.append(yAxisSvg!);
   finalSvg.append(dotsSvg!);
   
@@ -322,8 +328,12 @@ function renderDots({
     ?.querySelector("svg");
 
   // Cleanup as style attributes aren't used in SVG files
-  chart!.parentElement?.removeAttribute("style");
-  chart!.removeAttribute("style");
+  chart?.removeAttribute("style");
+  Array.from(
+    chart?.querySelectorAll("rect, path, g") || []
+  ).forEach((element) => {
+    element.removeAttribute("style");
+  });
 
   // This returns svg as string
   console.log("-chart", chart?.parentElement?.innerHTML);
@@ -332,6 +342,80 @@ function renderDots({
 }
 
 const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
+
+function renderXAxis({
+  heatmapContainer,
+  tissueName,
+  width,
+}: {
+  heatmapContainer?: HTMLElement | null;
+  tissueName: Tissue;
+  width: number;
+}) {
+  if (!heatmapContainer) return;
+
+  const xAxis = heatmapContainer.querySelector(`[class*="XAxisWrapper"]`);
+
+  const FONT_FAMILY = "sans-serif";
+
+  // Create root SVG elemnt
+  const svg = document.createElementNS(NAME_SPACE_URI, "svg");
+
+  const svgAttributes = {
+    height: `${200}px`,
+    width: `${width}px`,
+    x: `${Y_AXIS_CHART_WIDTH_PX}`,
+    y: `10`,
+    fill: ECHART_AXIS_LABEL_COLOR_HEX,
+    "font-family": FONT_FAMILY,
+    "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
+    // overflow: "visible",
+  };
+
+  applyAttributes(svg, svgAttributes);
+
+  // Create cell type count label
+  const cellTypeCount = document.createElementNS(NAME_SPACE_URI, "text");
+  
+  const cellTypeCountAttributes = {
+    x: 0,
+    width: `100px`,
+    transform: `translate(40, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
+    "text-anchor": "end",
+  };
+  
+  applyAttributes(cellTypeCount, cellTypeCountAttributes);
+  cellTypeCount.textContent = "Cell Count";
+  
+  svg.append(cellTypeCount);
+  
+  // Create gene labels
+  const geneLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
+
+  Array.from(
+    xAxis?.querySelectorAll(`[class*="XAxisLabel"]`) || []
+  ).forEach((label, index) => {
+
+    const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
+
+    const labelAttributes = {
+      x: 0,
+      transform: `translate(${65 + 20*index}, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
+      "text-anchor": "end",
+    };
+
+    applyAttributes(geneLabelText, labelAttributes);
+    geneLabelText.textContent = label.innerHTML;
+
+    console.log("-geneLabelText.textContent", geneLabelText.textContent)
+
+    geneLabelContainer.append(geneLabelText);
+  });
+
+  svg.append(geneLabelContainer);
+
+  return svg;
+}
 
 function renderYAxis({
   heatmapContainer,
@@ -362,7 +446,7 @@ function renderYAxis({
 
   const tissueLabelText = document.createElementNS(NAME_SPACE_URI, "text");
   tissueLabelText.textContent = tissueName;
-  tissueLabelText.setAttribute("transform", "translate(35, 40) rotate(270)");
+  tissueLabelText.setAttribute("transform", "translate(35, 100) rotate(270)");
   tissueLabelText.setAttribute("font-family", "Inter, sans-serif");
   tissueLabelText.setAttribute("font-size", "14px");
   tissueLabelText.setAttribute("font-weight", "bold");
