@@ -20,6 +20,7 @@ import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { get } from "src/common/featureFlags";
 import { BOOLEAN } from "src/common/localStorage/set";
+import { FEATURES } from "../featureFlags/features";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -493,7 +494,7 @@ function transformCellTypeGeneExpressionSummaryData(
 interface TermIdLabels {
   cell_types: {
     [tissueID: string]: {
-      [id: string]: { name: string; total_count: number };
+      [id: string]: { name: string; depth: number; total_count: number };
     };
   };
   genes: { [id: string]: string };
@@ -518,14 +519,16 @@ export function useTermIdLabels(): {
     const returnCellTypes: TermIdLabels["cell_types"] = {};
     Object.entries(cell_types).forEach(([tissueID, cell_types]) => {
       const result: {
-        [id: string]: { name: string; total_count: number };
+        [id: string]: { name: string; depth: number; total_count: number };
       } = {};
       for (const {
         cell_type_ontology_term_id,
         cell_type,
+        depth,
         total_count,
       } of cell_types) {
         result[cell_type_ontology_term_id] = {
+          depth,
           name: cell_type,
           total_count,
         };
@@ -619,7 +622,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
         tissue_ontology_term_ids,
       },
       include_filter_dims: true,
-      is_rollup: get("is_rollup") === BOOLEAN.TRUE,
+      is_rollup: get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE,
     };
   }, [
     selectedGenes,

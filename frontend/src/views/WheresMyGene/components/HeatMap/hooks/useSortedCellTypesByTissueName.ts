@@ -1,8 +1,12 @@
 import { agnes } from "ml-hclust";
 import { useMemo } from "react";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
+  SORT_BY,
   Tissue,
 } from "src/views/WheresMyGene/common/types";
 
@@ -13,15 +17,20 @@ interface Props {
   >;
   selectedCellTypes: { [tissue: Tissue]: CellType[] };
   genes: string[];
+  cellTypeSortBy: SORT_BY;
 }
 
 export function useSortedCellTypesByTissueName({
   tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
   selectedCellTypes,
   genes,
+  cellTypeSortBy,
 }: Props): { [tissue: Tissue]: CellType[] } {
+  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return useMemo(() => {
-    if (genes.length === 0) {
+    const isSortByCellOntology = cellTypeSortBy === SORT_BY.CELL_ONTOLOGY;
+    
+    if (!isRollup && isSortByCellOntology || isRollup && genes.length === 0) {
       return selectedCellTypes;
     }
 
@@ -73,11 +82,11 @@ export function useSortedCellTypesByTissueName({
 
       sortedCellTypesByTissueName[tissueName] = orderedCellTypes;
     }
-
     return sortedCellTypesByTissueName;
   }, [
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
     selectedCellTypes,
     genes,
+    cellTypeSortBy,
   ]);
 }

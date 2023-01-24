@@ -30,6 +30,9 @@ import {
 import { SELECTED_STYLE } from "../../style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
 
 const MAX_DEPTH = 2;
 
@@ -72,7 +75,8 @@ export default memo(function YAxisChart({
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
-
+  
+  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
     <Wrapper id={`${tissue}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
@@ -102,7 +106,7 @@ export default memo(function YAxisChart({
             const { name, depth = 0 } = deserializeCellTypeMetadata(
               cellType as CellTypeMetadata
             );
-            const displayDepth = Math.min(depth, MAX_DEPTH);
+            const displayDepth = isRollup ? 0 : Math.min(depth, MAX_DEPTH);
 
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
