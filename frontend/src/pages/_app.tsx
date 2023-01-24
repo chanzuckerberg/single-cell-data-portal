@@ -63,6 +63,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
     <>
       <ConditionalAuth0Provider
         audience={AUTH0_AUDIENCE}
+        cacheLocation='localstorage'
         clientId={AUTH0_CLIENT_ID}
         domain={AUTH0_DOMAIN}
         redirectUri={windowLocationOriginUri}
