@@ -68,7 +68,7 @@ class ProcessingTest(BaseTest):
         5. upload the original file to S3
         6. upload the labeled file to S3
         """
-        dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
 
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
