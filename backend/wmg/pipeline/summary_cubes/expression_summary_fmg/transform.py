@@ -12,7 +12,6 @@ from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
-from backend.wmg.pipeline.summary_cubes.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 
 logger = logging.getLogger(__name__)
@@ -40,12 +39,6 @@ def transform(
     cube_nnz_thr = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr)
-
-    cell_types = list(cube_index.index.get_level_values("cell_type_ontology_term_id").astype("str"))
-    cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr = rollup_across_cell_type_descendants(
-        cell_types, [cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr]
-    )
-
     return cube_index, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr
 
 
@@ -117,6 +110,7 @@ def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFr
     healthy_filter = cell_labels["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
     if np.any(healthy_filter):
         cell_labels = cell_labels[healthy_filter]
+        cell_labels.index = pd.Index(range(len(cell_labels)))
 
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
