@@ -316,8 +316,7 @@ export type CollectionUploadLinks = {
 async function collectionUploadLinks({
   collectionId,
   payload,
-  token,
-}: CollectionUploadLinks) {
+}: CollectionUploadLinks, token: string) {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_UPLOAD_LINKS, {
     id: collectionId,
   });
@@ -342,7 +341,8 @@ async function collectionUploadLinks({
 export function useCollectionUploadLinks(id: string) {
   const queryCache = useQueryClient();
 
-  return useMutation(useAccessToken(collectionUploadLinks), {
+  return useMutation(useAccessToken((body: CollectionUploadLinks, token: string) => {
+    collectionUploadLinks(body, token)}), {
     onSuccess: () => {
       queryCache.invalidateQueries([USE_COLLECTION, id]);
     },
