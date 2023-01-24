@@ -79,8 +79,8 @@ def are_cell_types_colinear(cell_type1, cell_type2):
     """
     (descendants1,) = find_descendants_per_cell_type([cell_type1])
     (ancestors1,) = find_ancestors_per_cell_type([cell_type1])
-    descendants2 = find_descendants_per_cell_type([cell_type2])
-    ancestors2 = find_ancestors_per_cell_type([cell_type2])
+    (descendants2,) = find_descendants_per_cell_type([cell_type2])
+    (ancestors2,) = find_ancestors_per_cell_type([cell_type2])
     return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
 
 
