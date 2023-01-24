@@ -41,7 +41,8 @@ type AppPropsWithLayout = AppProps & {
 
 function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   const Layout = Component.Layout || DefaultLayout;
-  const windowLocationOriginUri = useWindowLocationOrigin();
+  // const windowLocationOriginUri = useWindowLocationOrigin();
+  const windowLocationOriginUri = "https://dan-key-gen-frontend.rdev.single-cell.czi.technology/";
   console.log("window loc:");
   console.log(windowLocationOriginUri);
   const ConditionalAuth0Provider = windowLocationOriginUri ? Auth0Provider : Fragment;
