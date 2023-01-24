@@ -111,8 +111,10 @@ class ProcessMain(ProcessingLogic):
         # TODO: this could be better - maybe collapse all these exceptions and pass in the status key and value
         except ProcessingCanceled:
             pass  # TODO: what's the effect of canceling a dataset now?
-        except ValidationFailed:
-            self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID)
+        except ValidationFailed as e:
+            self.update_processing_status(
+                dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, e.errors
+            )
             return False
         except ProcessingFailed:
             self.update_processing_status(dataset_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE)
