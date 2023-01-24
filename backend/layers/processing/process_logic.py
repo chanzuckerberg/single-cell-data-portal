@@ -1,7 +1,7 @@
 from datetime import datetime
 from logging import Logger
 from os.path import basename, join
-from typing import Callable
+from typing import Callable, List, Optional
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
@@ -31,9 +31,17 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         self.logger = Logger("processing")
 
     def update_processing_status(
-        self, dataset_id: DatasetVersionId, status_key: DatasetStatusKey, status_value: DatasetStatusGeneric
+        self,
+        dataset_id: DatasetVersionId,
+        status_key: DatasetStatusKey,
+        status_value: DatasetStatusGeneric,
+        validation_errors: Optional[List[str]] = None,
     ):
-        self.business_logic.update_dataset_version_status(dataset_id, status_key, status_value)
+        if validation_errors is not None:
+            validation_message = "\n".join(validation_errors)
+        else:
+            validation_message = None
+        self.business_logic.update_dataset_version_status(dataset_id, status_key, status_value, validation_message)
 
     def download_from_s3(self, bucket_name: str, object_key: str, local_filename: str):
         self.s3_provider.download_file(bucket_name, object_key, local_filename)
