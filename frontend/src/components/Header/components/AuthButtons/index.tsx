@@ -2,9 +2,10 @@ import { Auth0ContextInterface, useAuth0 } from "@auth0/auth0-react";
 import { AnchorButton, Button, MenuDivider } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { Menu, MenuItem } from "czifui";
-import { MouseEventHandler, useState } from "react";
+import { MouseEventHandler, useEffect, useState } from "react";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
+import { useWindowLocationOrigin } from "src/common/hooks/useWindowLocationOrigin";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { AuthButtonWrapper } from "src/components/Header/style";
 import CuratorAPIKeyGenerator from "../CuratorAPIKeyGenerator";
@@ -21,21 +22,26 @@ const AuthButtons = (): JSX.Element | null => {
     logout,
     user: userInfo,
   } = useAuth0();
+  const windowLocationOriginUri = useWindowLocationOrigin();
 
   if (userInfo && error) {
     // (thuang): Force refresh page to log user out
     window.location.reload();
   }
-
+  console.log("hasAuth");
+  console.log(hasAuth);
+  console.log("isloading");
+  console.log(isLoading);
   if (!hasAuth || isLoading) return null;
 
   return (
     <AuthButtonWrapper>
-      {isAuthenticated ? (
+      {isAuthenticated && windowLocationOriginUri ? (
         <LoggedInButtons
           name={userInfo?.name}
           email={userInfo?.email}
-          logout={logout}
+          // logout={() => logout({ returnTo: "https://frontend.corporanet.local:3000/?curator=true"})}
+          logout={() => logout({ returnTo: windowLocationOriginUri })}
         />
       ) : (
         <LoggedOutButtons handleLogin={loginWithRedirect} />

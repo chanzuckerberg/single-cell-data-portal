@@ -1,4 +1,4 @@
-import { Auth0Provider } from "@auth0/auth0-react";
+import { Auth0Provider, Auth0Context } from "@auth0/auth0-react";
 import { AUTH0_AUDIENCE, AUTH0_DOMAIN, AUTH0_CLIENT_ID } from "src/configs/configs";
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
@@ -16,6 +16,7 @@ import configs from "src/configs/configs";
 import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
 import "src/layout.css";
+import { useWindowLocationOrigin } from "src/common/hooks/useWindowLocationOrigin";
 
 declare global {
   interface Window {
@@ -40,7 +41,11 @@ type AppPropsWithLayout = AppProps & {
 
 function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   const Layout = Component.Layout || DefaultLayout;
-  const [redirectUri, setRedirectUri] = useState("");
+  const windowLocationOriginUri = useWindowLocationOrigin();
+  console.log("window loc:");
+  console.log(windowLocationOriginUri);
+  const ConditionalAuth0Provider = windowLocationOriginUri ? Auth0Provider : Fragment;
+
 
   // (thuang): Per Plausible instruction
   // "...make sure your tracking setup includes the second line as shown below"
@@ -53,19 +58,13 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
     }
   }, []);
 
-  const ConditionalAuth0Provider = redirectUri ? Auth0Provider : Fragment;
-
-  useEffect(() => {
-    setRedirectUri(window.location.origin);
-  }, []);
-
   return (
     <>
       <ConditionalAuth0Provider
         audience={AUTH0_AUDIENCE}
         clientId={AUTH0_CLIENT_ID}
         domain={AUTH0_DOMAIN}
-        redirectUri={redirectUri}
+        redirectUri={windowLocationOriginUri}
         useRefreshTokens={true}
       >
         <QueryClientProvider client={queryClient}>

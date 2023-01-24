@@ -1,9 +1,7 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import { AnchorButton, Button, Classes, Intent } from "@blueprintjs/core";
 import { FC } from "react";
-import { API } from "src/common/API";
-import { QUERY_PARAMETERS } from "src/common/constants/queryParameters";
-import { BOOLEAN } from "src/common/localStorage/set";
-import { API_URL } from "src/configs/configs";
+import { useWindowLocationOrigin } from "src/common/hooks/useWindowLocationOrigin";
 import { ContentWrapper } from "./style";
 
 interface Props {
@@ -11,6 +9,10 @@ interface Props {
 }
 
 const CTA: FC<Props> = ({ onClose }) => {
+
+  const { loginWithRedirect } = useAuth0();
+  const windowLocationOriginUri = useWindowLocationOrigin();
+
   return (
     <>
       <ContentWrapper>
@@ -21,7 +23,7 @@ const CTA: FC<Props> = ({ onClose }) => {
   );
 
   function Footer() {
-    return (
+    return windowLocationOriginUri ? (
       <div className={Classes.DIALOG_FOOTER}>
         <div className={Classes.DIALOG_FOOTER_ACTIONS}>
           <Button minimal intent={Intent.PRIMARY} onClick={onClose}>
@@ -29,13 +31,13 @@ const CTA: FC<Props> = ({ onClose }) => {
           </Button>
           <AnchorButton
             intent={Intent.PRIMARY}
-            href={`${API_URL}${API.LOG_IN}?redirect=?${QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT}=${BOOLEAN.TRUE}`}
+            onClick={() => loginWithRedirect({ redirectUri: `${windowLocationOriginUri}?showCC=true`})}
           >
             Continue
           </AnchorButton>
         </div>
       </div>
-    );
+    ) : null;
   }
 };
 

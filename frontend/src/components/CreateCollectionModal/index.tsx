@@ -20,7 +20,8 @@ const AsyncContent = loadable(
 
 const AsyncCTA = loadable(
   () =>
-    /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
+    /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA"),
+  { ssr: false },
 );
 
 const CreateCollectionButton = (props: Partial<IButtonProps>) => (
