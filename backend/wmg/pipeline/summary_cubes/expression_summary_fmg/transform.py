@@ -39,9 +39,6 @@ def transform(
     cube_nnz_thr = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr)
-
-    cell_types = list(cube_index.index.get_level_values("cell_type_ontology_term_id").astype("str"))
-
     return cube_index, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr
 
 
