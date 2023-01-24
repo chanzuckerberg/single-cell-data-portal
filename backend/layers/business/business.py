@@ -25,6 +25,7 @@ from backend.layers.business.exceptions import (
     MaxFileSizeExceededException,
 )
 from backend.layers.common import validation
+from backend.layers.common.cleanup import sanitize
 from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
@@ -101,7 +102,7 @@ class BusinessLogic(BusinessLogicInterface):
         retrieve publisher metadata from Crossref and add it to the collection.
         """
 
-        collection_metadata.sanitize()
+        sanitize(collection_metadata)
 
         # Check metadata is valid
         errors = []
@@ -213,7 +214,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
         # TODO: link.type should DEFINITELY move to an enum. pylance will help with the refactor
-
+        sanitize(body)
         errors = []
 
         # Check metadata
