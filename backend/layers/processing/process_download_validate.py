@@ -190,8 +190,8 @@ class ProcessDownloadValidate(ProcessingLogic):
 
         # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
         if file_url.scheme == "https":
-            file_info = file_url.file_info()
-            status = self.downloader.download(dataset_id, file_url.url, local_path, file_info["size"])
+            file_info = self.uri_provider.get_file_info(source_uri)
+            status = self.downloader.download(dataset_id, file_url.url, local_path, file_info.size)
             self.logger.info(status)  # TODO: this log is awful
         elif file_url.scheme == "s3":
             bucket_name = file_url.netloc
