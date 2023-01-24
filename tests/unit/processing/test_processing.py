@@ -196,7 +196,9 @@ class ProcessingTest(BaseTest):
         )
 
         # Set a mock failure for the schema validator
-        self.schema_validator.validate_and_save_labels = Mock(return_value=(False, ["Validation error 1", "Validation error 2"], True))
+        self.schema_validator.validate_and_save_labels = Mock(
+            return_value=(False, ["Validation error 1", "Validation error 2"], True)
+        )
 
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
