@@ -1,4 +1,0 @@
-djh user api key eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzQ1OTU0MTkuNTY5NDMwOCwiaWF0IjoxNjc0NTA5MDE5LjU2OTQzMDgsInN1YiI6InRlc3RfdXNlcl9pZCJ9.qvgz8yUbE_yV-7ghrrE0x_kgT5VDKLa0ARMUmwSt5cw
-djh token_info {'exp': 1674595419.5694308, 'iat': 1674509019.5694308, 'sub': 'test_user_id'}
-djh identity {'profileData': {'email': 'user@email.com'}}
-djh token {'access_token': 'OK'}
