@@ -12,7 +12,6 @@ from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
-from backend.wmg.pipeline.summary_cubes.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 
 logger = logging.getLogger(__name__)
@@ -42,9 +41,6 @@ def transform(
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr)
 
     cell_types = list(cube_index.index.get_level_values("cell_type_ontology_term_id").astype("str"))
-    cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr = rollup_across_cell_type_descendants(
-        cell_types, [cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr]
-    )
 
     return cube_index, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr
 
