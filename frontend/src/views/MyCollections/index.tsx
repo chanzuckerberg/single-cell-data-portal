@@ -12,7 +12,8 @@ import { StyledCreateCollection, TitleAndDescription } from "./style";
 
 const MyCollections: FC = () => {
   const { data: collections, isFetching } = useCollections();
-
+  console.log(`collections ${collections}`);
+  console.log(`isFetching ${isFetching}`);
   if (isFetching && !collections) return null;
 
   if (!collections) return null;

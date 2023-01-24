@@ -1,11 +1,11 @@
-import { Auth0Provider, Auth0Context } from "@auth0/auth0-react";
+import { Auth0Provider } from "@auth0/auth0-react";
 import { AUTH0_AUDIENCE, AUTH0_DOMAIN, AUTH0_CLIENT_ID } from "src/configs/configs";
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { NextPage } from "next";
 import { AppProps } from "next/app";
 import Script from "next/script";
-import { FC, useEffect, useState, Fragment } from "react";
+import { FC, useEffect, Fragment } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { EVENTS } from "src/common/analytics/events";

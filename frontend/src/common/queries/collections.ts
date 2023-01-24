@@ -120,7 +120,7 @@ async function fetchCollections({}, token: string): Promise<CollectionResponsesM
       withAuthorizationHeader(DEFAULT_FETCH_OPTIONS, token)
     )
   ).json();
-
+  console.log(`json response is ${json}`);
   const collectionsMap: CollectionResponsesMap = new Map();
 
   for (const collection of json.collections as CollectionResponse[]) {

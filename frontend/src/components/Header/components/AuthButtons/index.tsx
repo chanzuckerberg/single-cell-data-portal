@@ -2,7 +2,7 @@ import { Auth0ContextInterface, useAuth0 } from "@auth0/auth0-react";
 import { AnchorButton, Button, MenuDivider } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { Menu, MenuItem } from "czifui";
-import { MouseEventHandler, useEffect, useState } from "react";
+import { MouseEventHandler, useState } from "react";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useWindowLocationOrigin } from "src/common/hooks/useWindowLocationOrigin";
