@@ -4,6 +4,7 @@ from scipy import stats
 import json
 import tiledb
 from functools import lru_cache, wraps
+from typing import Union, Optional
 from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
 from backend.wmg.data.snapshot import (
     load_snapshot,
@@ -12,7 +13,7 @@ from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     DATASET_TO_GENE_IDS_FILENAME,
 )
-from typing import Union, Optional
+from backend.wmg.pipeline.summary_cubes.rollup import are_cell_types_colinear
 
 
 def _make_hashable(func):
@@ -94,6 +95,7 @@ def _query_tiledb(
         filters (keys).
         Ex: {(cell_type1,tissue1,organism1): np.array([0,100,100,0,80])}
     - genes: a list of all genes with nonzero expression found in the query result
+    - cell_types: a list of cell types present for each combination of filters
     """
 
     criteria = FmgQueryCriteria(**filters)
@@ -142,15 +144,47 @@ def _query_tiledb(
     gb_dims = ["dataset_id"] + depluralized_keys
 
     # group-by and sum
-    agg = query.groupby(gb_dims_es).sum()
-    n_cells = cell_counts_query.groupby(gb_dims).sum()["n_total_cells"]
+    agg = _cell_type_respecting_aggregator(query, gb_dims_es)
+    n_cells_with_cell_types = _cell_type_respecting_aggregator(cell_counts_query, gb_dims)
+    n_cells = n_cells_with_cell_types["n_total_cells"]
 
     keep_dataset_ids = group_by_dims is None and "dataset_id" in filters.keys()
     if genes is None:
         genes = list(agg.index.levels[0])
 
     t_n_cells_sum = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
-    return agg, t_n_cells_sum, genes
+
+    # aggregate cell counts as before but now across datasets
+    if not keep_dataset_ids:
+        n_cells_with_cell_types = _cell_type_respecting_aggregator(cell_counts_query, gb_dims[1:])
+
+        # create a new dicitonary with the same keys as t_n_cells_sum but with cell types as values
+        t_n_cells_cell_type = dict(zip(list(t_n_cells_sum.keys()), [None] * len(t_n_cells_sum)))
+
+        # populate the dictionary with cell types
+        for i, group in enumerate(n_cells_with_cell_types.index):
+            t_n_cells_cell_type[group] = n_cells_with_cell_types.iloc[i]["cell_type_ontology_term_id"]
+        cell_types = list(t_n_cells_cell_type.values())
+    else:
+        cell_types = list(n_cells_with_cell_types["cell_type_ontology_term_id"])
+
+    return agg, t_n_cells_sum, genes, cell_types
+
+
+def _cell_type_respecting_aggregator(query, group_by_dimensions):
+    """
+    Aggregates the query result by the specified group-by dimensions by summing numeric columns
+    and concatenating cell types into one string per row delimited by `/`.
+    """
+
+    def _cell_type_concatenator(query):
+        return "/".join(list(set(query)))
+
+    numeric_cols = [query.columns[i] for i, dtype in enumerate(query.dtypes) if dtype != "object"]
+    _aggregator = {"cell_type_ontology_term_id": _cell_type_concatenator}
+    _aggregator.update(dict(zip(numeric_cols, ["sum"] * len(numeric_cols))))
+    agg = query.groupby(group_by_dimensions).agg(_aggregator)
+    return agg
 
 
 def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids):
@@ -262,17 +296,23 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
         `genes`.
         These are the column coordinates of the array in which the expression statistics will be filled
         for the target population.
+
+    cell_types_query - list
+        List of cell types present in the target population
+
+    cell_types_references - list
+        List of cell types present in each reference population
     """
-    context_agg, t_n_cells_sum_context, genes = _query_tiledb(
+    context_agg, t_n_cells_sum_context, genes, cell_types_query = _query_tiledb(
         context_filters, corpus=corpus, group_by_dims=list(target_filters.keys())
     )
-    target_agg, t_n_cells_sum_target, _ = _query_tiledb(target_filters, corpus=corpus, genes=genes)
+    target_agg, t_n_cells_sum_target, _, cell_types_references = _query_tiledb(
+        target_filters, corpus=corpus, genes=genes
+    )
     groups_context_uniq = list(t_n_cells_sum_context.keys())
 
-    target_agg = target_agg.groupby("gene_ontology_term_id").sum()
-
+    target_agg = _cell_type_respecting_aggregator(target_agg, "gene_ontology_term_id")
     genes_target = list(target_agg.index)
-
     genes_context = list(context_agg.index.get_level_values(0))
     groups_context = [i[1:] for i in context_agg.index]
     groups_indexer = pd.Series(index=groups_context_uniq, data=range(len(groups_context_uniq)))
@@ -298,6 +338,8 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
         groups_indices_context,
         genes_indices_context,
         genes_indices_target,
+        cell_types_query,
+        cell_types_references,
     )
 
 
@@ -350,12 +392,31 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
     return pvals, effects
 
 
-def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_cells=25, percentile=0.15, n_markers=10):
+def _post_process_stats(
+    cell_type_query,
+    cell_type_references,
+    genes,
+    pvals,
+    effects,
+    nnz,
+    test="ttest",
+    min_num_expr_cells=25,
+    percentile=0.15,
+    n_markers=10,
+):
     """
     Process and aggregate statistics into the output dictionary format.
 
     Arguments
     ---------
+    cell_type_query - list
+        The cell type ontology term ID(s) of the query population(s).
+        If an empty list, cell types are not included in the query.
+
+    cell_type_references - list
+        The cell type ontology term IDs of the reference populations.
+        If an empty list, cell types are not included in the references.
+
     genes - list
         List of genes corresponding to each p-value and effect size
 
@@ -380,9 +441,41 @@ def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_c
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
     """
+    assert len(cell_type_references) > 0 and len(cell_type_query) > 0
+
+    are_colinear = []
+    # for the set of cell types in each reference group
+    for ct_ref in cell_type_references:
+        # cell types in reference group
+        cts_ref = ct_ref.split("/")
+        is_colinear = False
+        # for the set of cell types in each query group
+        for ct_query in cell_type_query:
+            # cell types in query group
+            cts_query = ct_query.split("/")
+            # check if any pair of cell types are colinear
+            for c1 in cts_ref:
+                for c2 in cts_query:
+                    if are_cell_types_colinear(c1, c2):
+                        is_colinear = True
+                        break
+                # stop checking if any pairs are colinear
+                if is_colinear:
+                    break
+            if is_colinear:
+                break
+        are_colinear.append(is_colinear)
+    are_colinear = np.invert(np.array(are_colinear))
+
     zero_out = nnz.flatten() < min_num_expr_cells
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 1
+
+    # remove comparisons that are colinear in the ontology with the query
+    # this means that the query is a subset or superset of the reference
+    effects[are_colinear] = np.nan
+    pvals[are_colinear] = np.nan
+
     # aggregate
     effects = np.nanpercentile(effects, percentile * 100, axis=0)
     pvals = np.array([stats.combine_pvalues(x[np.invert(np.isnan(x))] + 1e-300)[-1] for x in pvals.T])
@@ -446,6 +539,8 @@ def _get_markers_ttest(target_filters, context_filters, corpus=None, n_markers=1
         groups_indices_context,
         genes_indices_context,
         genes_indices_target,
+        cell_types_query,
+        cell_types_references,
     ) = _prepare_indices_and_metrics(target_filters, context_filters, corpus=corpus)
 
     target_data_sum = np.zeros((1, len(genes)))
@@ -461,7 +556,10 @@ def _get_markers_ttest(target_filters, context_filters, corpus=None, n_markers=1
     pvals, effects = _run_ttest(
         target_data_sum, target_data_sumsq, n_target, context_data_sum, context_data_sumsq, n_context
     )
+
     return _post_process_stats(
+        cell_types_query,
+        cell_types_references,
         genes,
         pvals,
         effects,
@@ -545,6 +643,8 @@ def _get_markers_binomtest(target_filters, context_filters, corpus=None, n_marke
         groups_indices_context,
         genes_indices_context,
         genes_indices_target,
+        cell_types_query,
+        cell_types_references,
     ) = _prepare_indices_and_metrics(target_filters, context_filters, corpus=corpus)
     target_data_nnz_thr = np.zeros((1, len(genes)))
     target_data_nnz_thr[0, genes_indices_target] = list(target_agg["nnz_thr"])
@@ -552,8 +652,9 @@ def _get_markers_binomtest(target_filters, context_filters, corpus=None, n_marke
     context_data_nnz_thr[groups_indices_context, genes_indices_context] = list(context_agg["nnz_thr"])
 
     pvals, effects = _run_binom(target_data_nnz_thr, n_target, context_data_nnz_thr, n_context)
-
     return _post_process_stats(
+        cell_types_query,
+        cell_types_references,
         genes,
         pvals,
         effects,

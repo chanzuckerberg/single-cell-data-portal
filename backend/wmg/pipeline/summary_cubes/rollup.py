@@ -33,6 +33,57 @@ def find_descendants_per_cell_type(cell_types):
     return descendants_per_cell_type
 
 
+def find_ancestors_per_cell_type(cell_types):
+    """
+    Find ancestors for each cell type in the input list.
+
+    Parameters
+    ----------
+    cell_types : list
+        List of cell types (cell type ontology term IDs) to find ancestors for
+
+    Returns
+    -------
+    ancestors_per_cell_type : list
+        List of lists of ancestors for each cell type in the input list.
+    """
+    onto = owlready2.get_ontology(CL_BASIC_PERMANENT_URL_OWL)
+    onto.load()
+
+    ancestors_per_cell_type = []
+    for cell_type in cell_types:
+        cell_type_iri = cell_type.replace(":", "_")
+        entity = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
+        if entity:
+            ancestors = [i.name.replace("_", ":") for i in entity.ancestors()]
+        else:
+            ancestors = [cell_type]
+        ancestors_per_cell_type.append(ancestors)
+    return ancestors_per_cell_type
+
+
+def are_cell_types_colinear(cell_type1, cell_type2):
+    """
+    Determine if two cell types are colinear in the ontology.
+    Colinearity means that cell type 1 is an aacestor of cell type 2
+    or vice-versa.
+    Arguments
+    ---------
+    cell_type1 : str
+        Cell type 1 (cell type ontology term id)
+    cell_type2 : str
+        Cell type 2 (cell type ontology term id)
+    Returns
+    -------
+    bool
+    """
+    (descendants1,) = find_descendants_per_cell_type([cell_type1])
+    (ancestors1,) = find_ancestors_per_cell_type([cell_type1])
+    descendants2 = find_descendants_per_cell_type([cell_type2])
+    ancestors2 = find_ancestors_per_cell_type([cell_type2])
+    return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
+
+
 def rollup_across_cell_type_descendants(cell_types, arrays_to_sum):
     """
     Aggregate values for each cell type across its descendants in the input arrays.
