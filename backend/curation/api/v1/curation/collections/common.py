@@ -210,6 +210,7 @@ def reshape_dataset_for_curation_api(
         ds["id"] = dataset_version.dataset_id.id
     else:
         ds["id"] = dataset_version.version_id.id
+        ds["original_id"] = dataset_version.dataset_id.id if dataset_version.canonical_dataset.published_at else None
     return ds
 
 

@@ -825,6 +825,9 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
+        original_id:
+          $ref: "#/components/schemas/original_id"
+          nullable: true
         processing_status:
           $ref: "#/components/schemas/processing_status_dataset"
         processing_status_detail:
@@ -987,6 +990,13 @@ components:
         ontology_term_id:
           type: string
       type: object
+    original_id:
+      description: |
+        For Datasets in private revisions of published Datasets, a unique identifier of the published Dataset 
+        counterpart if applicable. Null if the published Collection does not contain the revision Dataset.
+      example: 01234567-89ab-cdef-0123-456789abcdef
+      type: string
+      nullable: true
     problem:
       description: Error message container for HTTP APIs.
       properties:

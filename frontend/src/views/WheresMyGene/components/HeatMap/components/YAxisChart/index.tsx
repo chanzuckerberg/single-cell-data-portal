@@ -1,12 +1,9 @@
 import Image from "next/image";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
-import { track } from "src/common/analytics";
-import { EVENTS } from "src/common/analytics/events";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
-import { SELECTED_STYLE } from "../../style";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
@@ -30,6 +27,12 @@ import {
   TissueWrapper,
   Wrapper,
 } from "./style";
+import { SELECTED_STYLE } from "../../style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
 
 const MAX_DEPTH = 2;
 
@@ -72,7 +75,8 @@ export default memo(function YAxisChart({
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
-
+  
+  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
     <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
@@ -102,7 +106,7 @@ export default memo(function YAxisChart({
             const { name, depth = 0 } = deserializeCellTypeMetadata(
               cellType as CellTypeMetadata
             );
-            const displayDepth = Math.min(depth, MAX_DEPTH);
+            const displayDepth = isRollup ? 0 : Math.min(depth, MAX_DEPTH);
 
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;

@@ -213,24 +213,6 @@ class CollectionMetadata:
     links: List[Link]
     consortia: List[str] = field(default_factory=list)
 
-    def strip_fields(self):
-        self.name = self.name.strip()
-        self.description = self.description.strip()
-        self.contact_name = self.contact_name.strip()
-        self.contact_email = self.contact_email.strip()
-        for link in self.links:
-            link.strip_fields()
-        if self.consortia is not None:
-            self.consortia = [consortium.strip() for consortium in self.consortia]
-
-    def sort_consortia(self):
-        if self.consortia is not None:
-            self.consortia.sort()
-
-    def sanitize(self):
-        self.strip_fields()
-        self.sort_consortia()
-
 
 @dataclass
 class CanonicalCollection:

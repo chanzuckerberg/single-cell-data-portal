@@ -1,6 +1,9 @@
 import cloneDeep from "lodash/cloneDeep";
 import { memo, useContext, useMemo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
 import {
   generateTermsByKey,
   OntologyTerm,
@@ -50,6 +53,7 @@ interface Props {
   scaledMeanExpressionMin: number;
   isLoadingAPI: boolean;
   isScaled: boolean;
+  cellTypeSortBy: SORT_BY;
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
   echartsRendererMode: "svg" | "canvas";
@@ -67,6 +71,7 @@ export default memo(function HeatMap({
   scaledMeanExpressionMin,
   isLoadingAPI,
   isScaled,
+  cellTypeSortBy,
   geneSortBy,
   selectedOrganismId,
   echartsRendererMode,
@@ -111,11 +116,11 @@ export default memo(function HeatMap({
   });
 
   const sortedCellTypesByTissueName = useSortedCellTypesByTissueName({
+    cellTypeSortBy,
     genes,
     selectedCellTypes: cellTypes,
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
   });
-
 
   const geneNameToIndex = useMemo(() => {
     const result: { [key: string]: number } = {};
@@ -160,11 +165,11 @@ export default memo(function HeatMap({
         <YAxisWrapper>
           {selectedTissues.map((tissue) => {
             const tissueCellTypes = getTissueCellTypes({
+              cellTypeSortBy,
               cellTypes,
               sortedCellTypesByTissueName,
               tissue,
             });
-
             return (
               <YAxisChart
                 key={tissue}
@@ -184,6 +189,7 @@ export default memo(function HeatMap({
         <ChartWrapper ref={chartWrapperRef}>
           {selectedTissues.map((tissue) => {
             const tissueCellTypes = getTissueCellTypes({
+              cellTypeSortBy,
               cellTypes,
               sortedCellTypesByTissueName,
               tissue,
@@ -226,16 +232,24 @@ export default memo(function HeatMap({
 });
 
 function getTissueCellTypes({
+  cellTypes,
   sortedCellTypesByTissueName,
   tissue,
+  cellTypeSortBy,
 }: {
   cellTypes: { [tissue: Tissue]: CellType[] };
   sortedCellTypesByTissueName: { [tissue: string]: CellType[] };
   tissue: Tissue;
+  cellTypeSortBy: SORT_BY;
 }) {
+  const tissueCellTypes = cellTypes[tissue];
   const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
-
-  return sortedTissueCellTypes || EMPTY_ARRAY;
+  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
+  return (
+    (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY && !isRollup
+      ? tissueCellTypes
+      : sortedTissueCellTypes) || EMPTY_ARRAY
+  );
 }
 
 function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {
