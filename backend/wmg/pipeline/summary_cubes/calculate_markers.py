@@ -303,10 +303,10 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
     cell_types_references - list
         List of cell types present in each reference population
     """
-    context_agg, t_n_cells_sum_context, genes, cell_types_query = _query_tiledb(
+    context_agg, t_n_cells_sum_context, genes, cell_types_references = _query_tiledb(
         context_filters, corpus=corpus, group_by_dims=list(target_filters.keys())
     )
-    target_agg, t_n_cells_sum_target, _, cell_types_references = _query_tiledb(
+    target_agg, t_n_cells_sum_target, _, cell_types_query = _query_tiledb(
         target_filters, corpus=corpus, genes=genes
     )
     groups_context_uniq = list(t_n_cells_sum_context.keys())
@@ -327,6 +327,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
 
     n_target = np.vstack(list(t_n_cells_sum_target.values()))
     n_context = np.vstack(list(t_n_cells_sum_context.values()))
+
     return (
         context_agg,
         target_agg,
