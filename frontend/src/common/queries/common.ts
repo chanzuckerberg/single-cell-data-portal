@@ -20,6 +20,8 @@ export function withAuthorizationHeader(
 ): RequestInit {
   options.headers = options.headers || {} as Record<string, any>;
   options.headers["Authorization"] = `Bearer ${token}`;
+  console.log("headers:");
+  console.log(options.headers);
   return options;
 }
 

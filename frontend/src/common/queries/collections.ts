@@ -320,7 +320,7 @@ async function collectionUploadLinks({
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_UPLOAD_LINKS, {
     id: collectionId,
   });
-
+  console.log("CALLING UPLOAD LINKS");
   const response = await fetch(url, withAuthorizationHeader({
       ...DEFAULT_FETCH_OPTIONS,
       ...JSON_BODY_FETCH_OPTIONS,
