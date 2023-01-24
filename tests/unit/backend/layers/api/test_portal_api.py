@@ -1,18 +1,16 @@
 import dataclasses
 import itertools
 import json
-import unittest
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
 from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import (
+    CollectionVersionId,
     DatasetStatusKey,
 )
 from backend.layers.common.entities import (
     CollectionId,
-    CollectionLinkType,
-    CollectionVersionId,
     DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetUploadStatus,
@@ -25,24 +23,12 @@ from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
 from furl import furl
 
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
-from backend.portal.api.collections_common import verify_collection_body
 from tests.unit.backend.layers.common.base_test import (
     DatasetArtifactUpdate,
     DatasetStatusUpdate,
 )
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
-
-
-def generate_mock_publisher_metadata(journal_override=None):
-    return {
-        "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
-        "published_year": 2021,
-        "published_month": 11,
-        "published_day": 10,
-        "published_at": 1636520400.0,
-        "journal": journal_override or "Nature",
-        "is_preprint": False,
-    }
+from tests.unit.backend.layers.api.fixture import generate_mock_publisher_metadata
 
 
 class TestCollection(BaseAPIPortalTest):
@@ -83,12 +69,15 @@ class TestCollection(BaseAPIPortalTest):
     def test__get_collection_id__ok(self):
         """Verify the test collection exists and the expected fields exist."""
 
-        collection = self.generate_published_collection(add_datasets=2)
+        collection = self.generate_published_collection(
+            add_datasets=2,
+        )
 
         self.maxDiff = None
 
         expected_body = {
             "access_type": "WRITE",
+            "consortia": ["Consortia 1", "Consortia 2"],
             "contact_email": "john.doe@email.com",
             "contact_name": "john doe",
             "created_at": mock.ANY,
@@ -260,10 +249,56 @@ class TestCollection(BaseAPIPortalTest):
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
 
-    # ✅
+    def test__get_collection_id_retrieves_published_version_by_collection_id(self):
+        """
+        GET /collections/:collection_id retrieves the published version given a canonical collection_id
+        """
+        version = self.generate_published_collection()
+        test_url = furl(path=f"/dp/v1/collections/{version.collection_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+
+    def test__get_collection_id_retrieves_published_version_by_collection_id_if_revision(self):
+        """
+        When there is a revision of a published collection, GET /collections/:collection_id retrieves:
+        1. the published version given the canonical collection_id
+        2. the revision if given the version_id
+        """
+        version = self.generate_published_collection()
+        revision = self.business_logic.create_collection_version(version.collection_id)
+
+        test_url = furl(path=f"/dp/v1/collections/{revision.collection_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+
+        test_url = furl(path=f"/dp/v1/collections/{revision.version_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PRIVATE")
+
+    def test__get_collection_id_retrieves_unpublished_version(self):
+        """
+        If a collection is unpublished, GET /collections/:collection_id retrieves the unpublished version
+        when passed the canonical collection_id
+        """
+        version = self.generate_unpublished_collection()
+
+        test_url = furl(path=f"/dp/v1/collections/{version.collection_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PRIVATE")
+
     def test__get_collection_id__403_not_found(self):
-        """Verify the test collection exists and the expected fields exist."""
-        fake_id = self._generate_id()
+        """
+        GET /collections/:collection_id returns 403 if an invalid is specified
+        """
+        fake_id = CollectionId()
         test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
@@ -278,6 +313,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -286,6 +322,11 @@ class TestCollection(BaseAPIPortalTest):
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
+
+        # Check that the collection_id is the canonical collection ID
+        collection_id = response.json["collection_id"]
+        version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertEqual(version.collection_id.id, collection_id)
 
         # Add curator_name
         data["curator_name"] = "john smith"
@@ -296,6 +337,52 @@ class TestCollection(BaseAPIPortalTest):
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
+
+    def test__post_collection_rejects_invalid_consortia(self):
+        test_url = furl(path="/dp/v1/collections")
+
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
+            "links": [],
+            "consortia": ["Invalid Consortia"],
+        }
+
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            data=json_data,
+        )
+
+        self.assertEqual(400, response.status_code)
+
+    def test__post_collection_sorts_consortia(self):
+        test_url = furl(path="/dp/v1/collections")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "10.1016/foo", "link_type": "DOI"},
+            ],
+            "consortia": ["Consortia 3", "Consortia 1"],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            data=json_data,
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = json.loads(response.data)["collection_id"]
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertEqual(collection.metadata.consortia, sorted(data["consortia"]))
 
     # ✅
     def test__post_collection_normalizes_doi(self):
@@ -309,6 +396,7 @@ class TestCollection(BaseAPIPortalTest):
             "links": [
                 {"link_name": "DOI Link", "link_url": "10.1016/foo", "link_type": "DOI"},
             ],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -318,8 +406,8 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
-        collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
-        print(collection)
+        # TODO: this endpoint should also return `version_id`
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         doi = next(link.uri for link in collection.metadata.links if link.type == "DOI")  # TODO: careful
         self.assertEquals(doi, "https://doi.org/10.1016/foo")
 
@@ -336,6 +424,7 @@ class TestCollection(BaseAPIPortalTest):
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
             ],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -358,6 +447,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -379,6 +469,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "invalid/doi", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -403,6 +494,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -412,7 +504,8 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
-        collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        # TODO: this endpoint should also return `version_id`
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         self.assertIsNone(collection.publisher_metadata)
 
     # ✅
@@ -424,6 +517,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_name": "person human",
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -433,7 +527,8 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
-        collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        # TODO: this endpoint should also return `version_id`
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         self.assertIsNone(collection.publisher_metadata)
 
     # ✅
@@ -449,6 +544,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -458,7 +554,8 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
-        collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        # TODO: this endpoint should also return `version_id`
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         self.assertIsNotNone(collection.publisher_metadata)
         self.assertEqual(collection.publisher_metadata, generate_mock_publisher_metadata())
 
@@ -545,8 +642,9 @@ class TestCollection(BaseAPIPortalTest):
 
         self.assertEqual(body["description"], data["description"])
         self.assertEqual(body["name"], data["name"])
-        self.assertEqual(body["contact_name"], body["contact_name"])
-        self.assertEqual(body["contact_email"], body["contact_email"])
+        self.assertEqual(body["contact_name"], data["contact_name"])
+        self.assertEqual(body["contact_email"], data["contact_email"])
+        self.assertEqual(body["consortia"], [])
 
         # test that non owners only have read access
         no_cookie_headers = {"host": "localhost", "Content-Type": "application/json"}
@@ -567,6 +665,7 @@ class TestCollection(BaseAPIPortalTest):
                 {"link_url": "     http://doi.org/10.1016  ", "link_type": "OTHER"},
                 {"link_name": "  DOI Link 2", "link_url": "http://doi.org/10.1017   ", "link_type": "DOI"},
             ],
+            "consortia": ["Consortia 1   "],
         }
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
         self.assertEqual(201, response.status_code)
@@ -580,56 +679,75 @@ class TestCollection(BaseAPIPortalTest):
 
         self.assertEqual(body["description"], data["description"].strip())
         self.assertEqual(body["name"], data["name"].strip())
-        self.assertEqual(body["contact_name"], body["contact_name"].strip())
+        self.assertEqual(body["contact_name"], data["contact_name"].strip())
         self.assertEqual(body["contact_email"], body["contact_email"].strip())
         self.assertEqual(body["data_submission_policy_version"], body["data_submission_policy_version"].strip())
+        self.assertEqual(body["consortia"], ["Consortia 1"])
 
         for link in body["links"]:
             self.assertEqual(link["link_url"], link["link_url"].strip())
 
-    def test__list_collection__check_owner(self):
+    def test__list_collection__check_owner__no_auth(self):
 
         # Generate test collection
-        public_owned = self.generate_published_collection(owner="test_user_id").collection_id
-        private_owned = self.generate_unpublished_collection(owner="test_user_id").version_id
-        public_not_owned = self.generate_published_collection(owner="someone else").collection_id
-        private_not_owned = self.generate_unpublished_collection(owner="someone else").version_id
+        public_owned = self.generate_published_collection(owner="test_user_id")
+        private_owned = self.generate_unpublished_collection(owner="test_user_id")
+        public_not_owned = self.generate_published_collection(owner="someone else")
+        private_not_owned = self.generate_unpublished_collection(owner="someone else")
 
-        revision_not_owned = self.business_logic.create_collection_version(public_not_owned).version_id
-        revision_owned = self.business_logic.create_collection_version(public_owned).version_id
+        revision_not_owned = self.business_logic.create_collection_version(public_not_owned.collection_id)
+        revision_owned = self.business_logic.create_collection_version(public_owned.collection_id)
 
         path = "/dp/v1/collections"
-        with self.subTest("no auth"):
-            headers = {"host": "localhost", "Content-Type": "application/json"}
-            response = self.app.get(path, headers=headers)
-            self.assertEqual(200, response.status_code)
-            result = json.loads(response.data)
-            collections = result.get("collections")
-            self.assertIsNotNone(collections)
-            ids = [collection.get("id") for collection in collections]
-            self.assertIn(public_owned.id, ids)
-            self.assertIn(public_not_owned.id, ids)
-            self.assertNotIn(private_owned.id, ids)
-            self.assertNotIn(private_not_owned.id, ids)
-            self.assertNotIn(revision_owned.id, ids)
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        result = json.loads(response.data)
+        collections = result.get("collections")
+        self.assertIsNotNone(collections)
+        ids = [collection.get("id") for collection in collections]
 
-        with self.subTest("auth"):
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-            response = self.app.get(path, headers=headers)
-            self.assertEqual(200, response.status_code)
-            result = json.loads(response.data)
-            collections = result.get("collections")
-            self.assertIsNotNone(collections)
-            ids = [collection.get("id") for collection in collections]
-            self.assertIn(public_owned.id, ids)
-            self.assertIn(public_not_owned.id, ids)
-            self.assertIn(private_owned.id, ids)
-            self.assertNotIn(private_not_owned.id, ids)
-            self.assertNotIn(revision_not_owned.id, ids)
-            self.assertIn(revision_owned.id, ids)
-            self.assertTrue(
-                [collection for collection in collections if collection.get("revision_of") == public_owned.id][0]
-            )
+        self.assertIn(public_owned.collection_id.id, ids)
+        self.assertNotIn(public_owned.version_id.id, ids)
+        self.assertIn(public_not_owned.collection_id.id, ids)
+        self.assertNotIn(public_not_owned.version_id.id, ids)
+        self.assertNotIn(private_owned.collection_id.id, ids)
+        self.assertNotIn(private_owned.version_id.id, ids)
+        self.assertNotIn(private_not_owned.collection_id.id, ids)
+        self.assertNotIn(private_not_owned.version_id.id, ids)
+        self.assertNotIn(revision_owned.version_id.id, ids)
+        self.assertNotIn(revision_not_owned.version_id.id, ids)
+
+    def test__list_collection__check_owner__auth(self):
+        # Generate test collection
+        public_owned = self.generate_published_collection(owner="test_user_id")
+        private_owned = self.generate_unpublished_collection(owner="test_user_id")
+        public_not_owned = self.generate_published_collection(owner="someone else")
+        private_not_owned = self.generate_unpublished_collection(owner="someone else")
+
+        revision_not_owned = self.business_logic.create_collection_version(public_not_owned.collection_id)
+        revision_owned = self.business_logic.create_collection_version(public_owned.collection_id)
+
+        path = "/dp/v1/collections"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        result = json.loads(response.data)
+        collections = result.get("collections")
+        self.assertIsNotNone(collections)
+        ids = [collection.get("id") for collection in collections]
+        revision_ids = [collection.get("revision_of") for collection in collections if collection.get("revision_of")]
+        self.assertIn(public_owned.collection_id.id, ids)
+        self.assertNotIn(public_owned.version_id.id, ids)
+        self.assertIn(public_not_owned.collection_id.id, ids)
+        self.assertNotIn(public_not_owned.version_id.id, ids)
+        self.assertIn(private_owned.collection_id.id, ids)
+        self.assertNotIn(private_owned.version_id.id, ids)
+        self.assertNotIn(private_not_owned.collection_id.id, ids)
+        self.assertNotIn(private_not_owned.version_id.id, ids)
+        self.assertIn(revision_owned.version_id.id, ids)
+        self.assertNotIn(revision_not_owned.version_id.id, ids)
+        self.assertIn(public_owned.collection_id.id, revision_ids)
 
     # ✅
     def test__get_all_collections_for_index(self):
@@ -827,7 +945,7 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__does_not_exist(self):
-        fake_id = self._generate_id()
+        fake_id = CollectionId()
         test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
@@ -841,9 +959,9 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         response = self.app.get("/dp/v1/collections", headers=headers)
 
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
-        self.assertIn(private_collection.version_id.id, collection_ids)
+        self.assertIn(private_collection.collection_id.id, collection_ids)
         self.assertIn(public_collection.collection_id.id, collection_ids)
-        self.assertIn(collection_to_delete.version_id.id, collection_ids)
+        self.assertIn(collection_to_delete.collection_id.id, collection_ids)
 
         test_url = furl(
             path=f"/dp/v1/collections/{collection_to_delete.version_id.id}", query_params=dict(visibility="PRIVATE")
@@ -854,18 +972,19 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         # check not returned privately
         response = self.app.get("/dp/v1/collections", headers=headers)
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
-        self.assertIn(private_collection.version_id.id, collection_ids)
+        self.assertIn(private_collection.collection_id.id, collection_ids)
         self.assertIn(public_collection.collection_id.id, collection_ids)
-
         self.assertNotIn(collection_to_delete.version_id.id, collection_ids)
+        self.assertNotIn(collection_to_delete.collection_id.id, collection_ids)
 
         # check not returned publicly
         headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.get("/dp/v1/collections", headers=headers)
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
         self.assertIn(public_collection.collection_id.id, collection_ids)
-        self.assertNotIn(private_collection.version_id.id, collection_ids)
+        self.assertNotIn(private_collection.collection_id.id, collection_ids)
         self.assertNotIn(collection_to_delete.version_id.id, collection_ids)
+        self.assertNotIn(collection_to_delete.collection_id.id, collection_ids)
 
 
 class TestUpdateCollection(BaseAPIPortalTest):
@@ -879,6 +998,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
             "contact_name",
             "contact_email",
             "links",
+            "consortia",
         ]
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
@@ -889,6 +1009,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
             "contact_name": "person human",
             "contact_email": "person@human.com",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         data = json.dumps(expected_body)
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
@@ -896,6 +1017,33 @@ class TestUpdateCollection(BaseAPIPortalTest):
         actual_body = json.loads(response.data)
         for field in test_fields:
             self.assertEqual(expected_body[field], actual_body[field])
+
+    def test__update_collection_strip_string_fields__OK(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        # Update the collection
+        new_body = {
+            "name": "collection name    ",
+            "description": "    This is a test collection",
+            "contact_name": "   person human",
+            "contact_email": "  person@human.com  ",
+            "links": [{"link_name": " DOI Link ", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["  Consortia 1   "],
+        }
+        data = json.dumps(new_body)
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
+
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+        self.assertEqual(new_body["name"].strip(), actual_body["name"])
+        self.assertEqual(new_body["description"].strip(), actual_body["description"])
+        self.assertEqual(new_body["contact_name"].strip(), actual_body["contact_name"])
+        self.assertEqual(new_body["contact_email"].strip(), actual_body["contact_email"])
+        self.assertEqual(["Consortia 1"], actual_body["consortia"])
+        self.assertEqual(
+            [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}], actual_body["links"]
+        )
 
     def test__update_collection_partial__OK(self):
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
@@ -915,6 +1063,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
         self.assertEqual(actual_body["description"], collection.metadata.description)
         self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
         self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], collection.metadata.consortia)
         self.assertEqual(
             actual_body["links"],
             [
@@ -930,6 +1079,106 @@ class TestUpdateCollection(BaseAPIPortalTest):
         data = json.dumps({"name": "new name"})
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
         self.assertEqual(403, response.status_code)
+
+    def test__update_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        # Change Consortia
+        payload = {
+            "consortia": ["Consortia 1", "Consortia 3"],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], collection.metadata.name)
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], ["Consortia 1", "Consortia 3"])
+
+    def test__remove_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        # Remove Consortia
+        payload = {
+            "consortia": ["Consortia 1"],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], collection.metadata.name)
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], ["Consortia 1"])
+
+    def test__remove_all_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        # Remove All Consortia
+        payload = {
+            "consortia": [],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], collection.metadata.name)
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], [])
+
+    def test__add_new_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        # Add Consortia
+        payload = {
+            "consortia": ["Consortia 4"],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], collection.metadata.name)
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], ["Consortia 4"])
+
+    def test__update_with_invalid_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        # Invalid Consortia
+        payload = {
+            "consortia": ["Invalid Consortia"],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(400, response.status_code)
+        error_payload = json.loads(response.data)
+        self.assertEqual([{"name": "consortia", "reason": "Invalid consortia."}], error_payload["detail"])
 
     # ✅
     def test__update_collection_links__OK(self):
@@ -992,7 +1241,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id}",
-            data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "http://doi.org/456", "link_type": "DOI"}]}),
+            data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "10.1234/5678", "link_type": "DOI"}]}),
             headers=headers,
         )
         self.assertEqual(200, response.status_code)
@@ -1123,81 +1372,6 @@ class TestCollectionsCurators(BaseAPIPortalTest):
         self.assertEqual(204, response.status_code)
 
 
-# TODO: 💛 Not an API test, but still valuable. Figure out where to put it. Maybe create a test_validation.py?
-class TestVerifyCollection(unittest.TestCase):
-    def test_empty_body(self):
-        body = dict()
-        errors = []
-        verify_collection_body(body, errors)
-        self.assertFalse(errors)
-
-    def test_blank_fields(self):
-        errors = []
-        body = dict(name="", contact_name="", description="", contact_email="")
-        verify_collection_body(body, errors)
-        error_message = "Cannot be blank."
-        self.assertIn({"name": "description", "reason": error_message}, errors)
-        self.assertIn({"name": "name", "reason": error_message}, errors)
-        self.assertIn({"name": "contact_name", "reason": error_message}, errors)
-        self.assertIn({"name": "contact_email", "reason": error_message}, errors)
-
-    def test_invalid_characters_in_field(self):
-        invalid_strings = [b"\x00some data", b"text\x1f", b"text\x01", b"\x7ftext"]
-        for test_string in invalid_strings:
-            with self.subTest(test_string):
-                errors = []
-                string = test_string.decode(encoding="utf-8")
-                body = dict(name=string, contact_name=string, description=string, contact_email="email@email.com")
-                verify_collection_body(body, errors)
-                error_message = "Invalid characters detected."
-                self.assertEqual(1, len(errors))
-                self.assertIn({"name": "name", "reason": error_message}, errors)
-
-    def test_invalid_email(self):
-        bad_emails = ["@.", "email@.", "@place.com", "email@.com", "email@place."]
-        body = dict()
-
-        for email in bad_emails:
-            with self.subTest(email):
-                body["contact_email"] = email
-                errors = []
-                verify_collection_body(body, errors)
-                self.assertEqual([{"name": "contact_email", "reason": "Invalid format."}], errors)
-
-    def test_OK(self):
-        body = dict(name="something", contact_name="a name", description="description", contact_email="email@place.com")
-        errors = []
-        verify_collection_body(body, errors)
-        self.assertFalse(errors)
-
-    def test__link__INVALID(self):
-        test_urls = ["://", "google", ".com", "google.com", "https://"]
-        for link_type in CollectionLinkType:
-            if link_type.name == "DOI":
-                continue
-            for test_url in test_urls:
-                link_body = [{"link_type": link_type.name, "link_url": test_url}]
-                with self.subTest(link_body):
-                    errors = []
-                    body = dict(links=link_body)
-                    verify_collection_body(body, errors)
-                    expected_error = [dict(reason="Invalid URL.", name="links[0]", value=link_body[0]["link_url"])]
-                    self.assertEqual(expected_error, errors)
-
-    def test__link__OK(self):
-        test_urls = ["https://www.google.com", "http://somewhere.org/path/?abcd=123"]
-        for link_type in CollectionLinkType:
-            if link_type.name == "DOI":
-                continue
-            for test_url in test_urls:
-                link_body = [{"link_type": link_type.name, "link_url": test_url}]
-                with self.subTest(link_body):
-                    errors = []
-                    body = dict(links=link_body)
-                    verify_collection_body(body, errors)
-                    self.assertFalse(errors)
-
-
 # TODO: these tests all require the generation of a dataset
 class TestDataset(BaseAPIPortalTest):
 
@@ -1241,7 +1415,7 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
-        fake_id = self._generate_id()
+        fake_id = DatasetVersionId()
         test_url = furl(path=f"/dp/v1/datasets/{fake_id}/asset/{fake_id}")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
@@ -1470,7 +1644,7 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__cancel_dataset_download__dataset_does_not_exist(self):
-        fake_id = self._generate_id()
+        fake_id = DatasetVersionId()
         test_url = f"/dp/v1/datasets/{fake_id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
@@ -1582,7 +1756,7 @@ class TestDataset(BaseAPIPortalTest):
             expected_identifiers = {
                 "s3_uri": test_uri_0,
                 "dataset_id": public_dataset.dataset_version_id,
-                "collection_id": public_dataset.collection_id,
+                "collection_id": public_dataset.collection_version_id,
                 "collection_visibility": "PUBLIC",  # this is a published collection
                 "tombstoned": False,
             }
@@ -1601,7 +1775,7 @@ class TestDataset(BaseAPIPortalTest):
             expected_identifiers = {
                 "s3_uri": test_uri_1,
                 "dataset_id": private_dataset.dataset_version_id,
-                "collection_id": private_dataset.collection_id,
+                "collection_id": private_dataset.collection_version_id,
                 "collection_visibility": "PRIVATE",
                 "tombstoned": False,
             }
@@ -1613,13 +1787,164 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__dataset_meta__404(self):
-        fake_id = self._generate_id()
+        fake_id = DatasetVersionId()
         headers = {"host": "localhost", "Content-Type": "application/json"}
         fake_url = f"http://base.url/{fake_id}.cxg/"
         test_url_404 = f"/dp/v1/datasets/meta?url={fake_url}"
 
         response = self.app.get(test_url_404, headers)
         self.assertEqual(response.status_code, 404)
+
+    def test__explorer_portal_integration(self):
+        """
+        Tests the explorer <-> portal integration.
+        The steps carried out by this test are:
+        1. Generate the explorer_url
+        2. Call the `get_dataset_identifiers` endpoint, retrieve `collection_id` and `dataset_id` from there
+        3. Call the GET /collections/:collection_id endpoint, locate the dataset
+        """
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+
+        def _call_meta_endpoint(explorer_url):
+            test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            return json.loads(response.data)
+
+        def _call_collections_endpoint(collection_id):
+            test_url = f"/dp/v1/collections/{collection_id}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            return json.loads(response.data)
+
+        with self.subTest("Dataset belonging to an unpublished collection"):
+
+            test_uri = "some_uri_0"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+                publish=False,
+            )
+            # In this case, explorer_url points to the canonical link
+            explorer_url = f"http://base.url/{dataset.dataset_id}.cxg/"
+            meta_response = _call_meta_endpoint(explorer_url)
+
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
+
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
+
+        with self.subTest("Dataset belonging to a published collection"):
+
+            test_uri = "some_uri_1"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
+            )
+            # In this case, explorer_url points to the canonical link
+            explorer_url = f"http://base.url/{dataset.dataset_id}.cxg/"
+            meta_response = _call_meta_endpoint(explorer_url)
+
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
+
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
+
+        with self.subTest("Dataset belonging to a revision of a published collection, not replaced"):
+
+            test_uri = "some_uri_2"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
+            )
+            self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
+
+            # In this case, explorer_url points to the versioned link
+            explorer_url = f"http://base.url/{dataset.dataset_version_id}.cxg/"
+            meta_response = _call_meta_endpoint(explorer_url)
+
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
+
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
+
+        with self.subTest("Dataset belonging to a revision of a published collection, replaced"):
+
+            test_uri = "some_uri_1"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
+            )
+            revision = self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
+            revised_dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+                collection_version=revision,
+                replace_dataset_version_id=DatasetVersionId(dataset.dataset_version_id),
+            )
+            self.assertEqual(revised_dataset.dataset_id, dataset.dataset_id)
+            self.assertNotEqual(revised_dataset.dataset_version_id, dataset.dataset_version_id)
+
+            # Retrieve the explorer url from the GET collections/:collection_id endpoint. This is the only way to force
+            # explorer_url to be exactly the same used by the portal to open the explorer url
+            test_url = f"/dp/v1/collections/{revision.version_id}"
+            response = self.app.get(test_url, headers)
+            self.assertEqual(response.status_code, 200)
+            response_data = json.loads(response.data)
+            datasets = response_data["datasets"]
+            self.assertIn(revised_dataset.dataset_version_id, [dataset["id"] for dataset in datasets])
+            replaced_dataset = next(
+                dataset for dataset in datasets if dataset["id"] == revised_dataset.dataset_version_id
+            )
+
+            explorer_url = replaced_dataset["dataset_deployments"][0]["url"]
+            meta_response = _call_meta_endpoint(explorer_url)
+
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
+
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
+
+        with self.subTest("Dataset that appears in multiple published versions"):
+            """
+            If a dataset appears in multiple collection versions, the most recent one will be returned.
+            """
+            test_uri = "some_uri_1"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
+            )
+            revision = self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
+
+            self.business_logic.publish_collection_version(revision.version_id)
+
+            # Both versions are now published
+            original_version = self.business_logic.get_collection_version(
+                CollectionVersionId(dataset.collection_version_id)
+            )
+            revision_version = self.business_logic.get_collection_version(revision.version_id)
+
+            self.assertIsNotNone(original_version.published_at)
+            self.assertIsNotNone(revision_version.published_at)
+
+            explorer_url = f"http://base.url/{dataset.dataset_version_id}.cxg/"
+            meta_response = _call_meta_endpoint(explorer_url)
+
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
+
+            self.assertEqual(returned_collection_id, revision_version.version_id.id)
+
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
 
 class TestDatasetCurators(BaseAPIPortalTest):
@@ -1745,7 +2070,7 @@ class TestRevision(BaseAPIPortalTest):
         """
         Start a revision on a non-existing collection.
         """
-        fake_collection_id = self._generate_id()
+        fake_collection_id = CollectionId()
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.post(f"/dp/v1/collections/{fake_collection_id}", headers=headers)
         self.assertEqual(403, response.status_code)
@@ -1947,7 +2272,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         """
         Publish a collection with a bad uuid (non existant) returns 403
         """
-        collection_id = self._generate_id()
+        collection_id = CollectionId()
         body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
         response = self.app.post(path, headers=self.headers, data=json.dumps(body))
@@ -2218,7 +2543,7 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
 
     # ✅
     def test__link_fake_collection__403(self):
-        fake_id = self._generate_id()
+        fake_id = CollectionId()
         path = f"/dp/v1/collections/{fake_id}/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"url": self.good_link}
