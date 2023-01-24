@@ -1020,14 +1020,6 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     def test__update_collection_strip_string_fields__OK(self):
         collection = self.generate_unpublished_collection()
-        test_fields = [
-            "name",
-            "description",
-            "contact_name",
-            "contact_email",
-            "links",
-            "consortia",
-        ]
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
         # Update the collection
