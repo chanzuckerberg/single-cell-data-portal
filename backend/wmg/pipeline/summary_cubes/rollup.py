@@ -65,6 +65,10 @@ def rollup_across_cell_type_descendants(cell_types, arrays_to_sum):
     # a pandas series to map cell types to their index in the input arrays
     indexer = pd.Series(index=cell_types, data=range(len(cell_types)))
     descendants_indexes = [indexer[children].to_numpy() for children in descendants]
+
+    # flatten the descendant indices into a single array and create a linear
+    # index array for slicing out the descendants per cell type. The array
+    # must be flattened to satisfy numba type requirements.
     z = 0
     linear_indices = [z]
     for ix in descendants_indexes:
