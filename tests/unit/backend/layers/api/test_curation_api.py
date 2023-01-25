@@ -518,8 +518,6 @@ class TestGetCollections(BaseAPIPortalTest):
         body = self._test_response("PRIVATE", auth=True)
         self.assertEqual(1, len(body))
         resp_collection = body[0]
-        self.assertEqual(1, len(body))
-        resp_collection = body[0]
 
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
         self.assertEqual(private_collection.datasets[0].dataset_id.id, resp_collection["datasets"][0]["id"])
@@ -540,8 +538,6 @@ class TestGetCollections(BaseAPIPortalTest):
         unpublished_version = self.generate_revision(published_version.collection_id)
 
         body = self._test_response("PRIVATE", auth=True)
-        self.assertEqual(1, len(body))
-        resp_collection = body[0]
         self.assertEqual(1, len(body))
         resp_collection = body[0]
 
