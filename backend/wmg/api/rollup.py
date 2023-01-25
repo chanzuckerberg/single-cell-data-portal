@@ -53,28 +53,49 @@ def find_descendants_per_cell_type(cell_types):
     return descendants_per_cell_type
 
 
-def rollup_across_cell_type_descendants(cell_types, arrays_to_sum):
+def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_term_id"):
     """
     Aggregate values for each cell type across its descendants in the input arrays.
 
     Parameters
     ----------
-    cell_types : list
-        List of cell types corresponding to each row of the input arrays
+    df : pandas DataFrame
+        Tidy dataframe containing the dimensions across which the numeric columns will be
+        aggregated. The dataframe must have a column containing the cell type ontology term IDs.
+        By default, the column name is "cell_type_ontology_term_id".
 
-    arrays_to_sum : list
-        List of numpy arrays to roll up across descendants. Each array
-        should have the same length as cell_types.
+    cell_type_col : str, optional, default="cell_type_ontology_term_id"
+        Name of the column in the input dataframe containing the cell type ontology term IDs.
 
     Returns
     -------
-    summed_arrays : list
-        List of numpy arrays with the same shape as the input arrays, but
-        with values rolled up across descendants for each cell type (row).
+    df : pandas DataFrame
+        Tidy dataframe with the same dimensions as the input dataframe, but with the numeric
+        columns aggregated across the cell type's descendants.
     """
 
-    for array in arrays_to_sum:
-        assert len(array) == len(cell_types), "Input arrays must have the same length as cell_types"
+    df = df.copy()
+
+    numeric_df = df.select_dtypes(include="number")
+    dimensions_df = df.select_dtypes(exclude="number")
+
+    cell_type_column = dimensions_df.pop(cell_type_col)
+    dimensions_df.insert(0, cell_type_col, cell_type_column)
+
+    dim_indices = []
+    dim_shapes = []
+    for col in dimensions_df.columns:
+        dim = dimensions_df[col].to_numpy()
+        unique_dim = dimensions_df[col].unique()
+        indices = pd.Series(data=range(len(unique_dim)), index=unique_dim)[dim].to_numpy()
+        dim_shapes.append(len(unique_dim))
+        dim_indices.append(indices)
+    dim_shapes.append(numeric_df.shape[1])
+    dim_shapes = tuple(dim_shapes)
+    array_to_sum = np.zeros(dim_shapes)
+    array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
+
+    cell_types = cell_type_column.to_numpy()
 
     descendants = find_descendants_per_cell_type(cell_types)
 
@@ -93,12 +114,15 @@ def rollup_across_cell_type_descendants(cell_types, arrays_to_sum):
     linear_indices = np.array(linear_indices)
     descendants_indexes = np.concatenate(descendants_indexes)
 
-    summed_arrays = []
-    for array in arrays_to_sum:
-        summed = np.zeros_like(array)
-        _array_summer(array, summed, descendants_indexes, linear_indices)
-        summed_arrays.append(summed)
-    return summed_arrays
+    summed = np.zeros_like(array_to_sum)
+    _array_summer(array_to_sum, summed, descendants_indexes, linear_indices)
+
+    summed = summed[tuple(dim_indices)]
+    dtypes = numeric_df.dtypes
+    for col, array in zip(numeric_df.columns, summed.T):
+        df[col] = array.astype(dtypes[col])
+
+    return df
 
 
 @nb.njit(parallel=True, fastmath=True, nogil=True)

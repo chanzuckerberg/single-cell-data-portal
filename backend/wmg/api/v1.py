@@ -208,51 +208,11 @@ def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame, is_rollup
     dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg)
 
     if is_rollup:
-        # rollup cell types per gene and tissue in the dot plot matrix
-        cols = ["nnz", "sum", "n_cells_cell_type", "n_cells_tissue"]
-
-        tissues = dot_plot_matrix_df["tissue_ontology_term_id"]
-        unique_tissues = set(tissues)
-
-        genes = dot_plot_matrix_df["gene_ontology_term_id"]
-        unique_genes = set(genes)
-
-        cell_types = dot_plot_matrix_df["cell_type_ontology_term_id"]
-        unique_cell_types = set(unique_cell_types)
-
-        gene_indexer = Series(index=unique_genes, data=range(len(unique_genes)))
-        tissue_indexer = Series(index=unique_tissues, data=range(len(unique_tissues)))
-        cell_types_indexer = Series(index=unique_cell_types, data=range(len(unique_cell_types)))
-
-        array_to_sum = np.zeros((len(unique_cell_types), len(unique_genes), len(unique_tissues), 4))
-        cell_type_indices = cell_types_indexer[cell_types].values
-        gene_indices = gene_indexer[genes].values
-        tissue_indices = tissue_indexer[tissues].values
-        array_to_sum[cell_type_indices, gene_indices, tissue_indices, :] = dot_plot_matrix_df[cols].values
-
-        (rolled_up_array,) = rollup_across_cell_type_descendants(cell_types, [array_to_sum])
-        rolled_up_array = rolled_up_array[cell_type_indices, gene_indices, tissue_indices, :]
-
-        dtypes = dot_plot_matrix_df.dtypes[cols]
-        for col, array in zip(cols, rolled_up_array.T):
-            dot_plot_matrix_df[col] = array.astype(dtypes[col])
-
-        # rollup cell types per tissue in teh cell counts matrix
-        tissues = cell_counts_cell_type_agg.index.get_level_values("tissue_ontology_term_id")
-        cell_types = cell_counts_cell_type_agg.index.get_level_values("cell_type_ontology_term_id")
-
-        unique_tissues = set(tissues)
-        rolled_up_array = np.zeros(cell_counts_cell_type_agg.shape[0])
-        for tissue in unique_tissues:
-            filt = tissues == tissue
-            cell_counts_cell_type_agg_subset = cell_counts_cell_type_agg[filt]
-            array_subset = cell_counts_cell_type_agg_subset["n_cells_cell_type"].values
-            (rolled_up_array_subset,) = rollup_across_cell_type_descendants(cell_types[filt], [array_subset])
-            rolled_up_array[filt] = rolled_up_array_subset
-
-        cell_counts_cell_type_agg["n_cells_cell_type"] = rolled_up_array.astype(
-            cell_counts_cell_type_agg.dtypes["n_cells_cell_type"]
-        )
+        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df)
+        # make the cell counts dataframe tidy
+        for col in cell_counts_cell_type_agg.index.names:
+            cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
+        cell_counts_cell_type_agg = rollup_across_cell_type_descendants(cell_counts_cell_type_agg)
 
     return dot_plot_matrix_df, cell_counts_cell_type_agg
 
