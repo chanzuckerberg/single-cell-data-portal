@@ -16,7 +16,7 @@ import configs from "src/configs/configs";
 import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
 import "src/layout.css";
-import { useWindowLocationOrigin } from "src/common/hooks/useWindowLocationOrigin";
+// import { useWindowLocationOrigin } from "src/common/hooks/useWindowLocationOrigin";
 
 declare global {
   interface Window {
