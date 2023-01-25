@@ -173,15 +173,19 @@ def build_expression_summary(query_result: DataFrame, is_rollup: bool) -> dict:
         tissues = query_result["tissue_ontology_term_id"]
         unique_tissues = set(tissues)
 
+        genes = query_result["gene_ontology_term_id"]
+        unique_genes = set(genes)
+
         rolled_up_array = np.zeros((query_result.shape[0], 4))
         cols = ["nnz", "sum", "n_cells_cell_type", "n_cells_tissue"]
         for tissue in unique_tissues:
-            query_result_tissue = query_result[tissues == tissue]
-
-            array_tissue = query_result_tissue[cols].values
-            cell_types = list(query_result_tissue["cell_type_ontology_term_id"])
-            (rolled_up_array_tissue,) = rollup_across_cell_type_descendants(cell_types, [array_tissue])
-            rolled_up_array[tissues == tissue] = rolled_up_array_tissue
+            for gene in unique_genes:
+                filt = np.logical_and(tissues == tissue, genes == gene)
+                query_result_subset = query_result[filt]
+                array_subset = query_result_subset[cols].values
+                cell_types = list(query_result_subset["cell_type_ontology_term_id"])
+                (rolled_up_array_subset,) = rollup_across_cell_type_descendants(cell_types, [array_subset])
+                rolled_up_array[filt] = rolled_up_array_subset
 
         dtypes = query_result.dtypes[cols]
         for col, array in zip(cols, rolled_up_array.T):
