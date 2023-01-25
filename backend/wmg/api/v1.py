@@ -212,6 +212,9 @@ def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame, is_rollup
         for col in cell_counts_cell_type_agg.index.names:
             cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
         cell_counts_cell_type_agg = rollup_across_cell_type_descendants(cell_counts_cell_type_agg)
+        # clean up columns that were added to the dataframe to make it tidy
+        for col in cell_counts_cell_type_agg.index.names:
+            del cell_counts_cell_type_agg[col]
 
     return dot_plot_matrix_df, cell_counts_cell_type_agg
 
