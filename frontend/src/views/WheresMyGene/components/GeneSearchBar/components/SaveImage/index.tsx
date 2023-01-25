@@ -277,6 +277,7 @@ function processSvg({
     height,
     tissueName,
   });
+  const legendSvg = renderLegend({ heatmapContainer });
   
   const svgWidth = yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value;
   const xAxisSvg = renderXAxis({ heatmapContainer, tissueName, width: svgWidth });
@@ -294,6 +295,7 @@ function processSvg({
   dotsSvg?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + 20}`);
 
   // Append elements to final SVG
+  finalSvg.append(legendSvg!);
   finalSvg.append(xAxisSvg!);
   finalSvg.append(yAxisSvg!);
   finalSvg.append(dotsSvg!);
@@ -342,6 +344,160 @@ function renderDots({
 }
 
 const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
+
+
+function renderLegend({
+  heatmapContainer,
+}: {
+  heatmapContainer?: HTMLElement | null;
+}) {
+  if (!heatmapContainer) return;
+
+  const width = 120;
+
+  const legend = heatmapContainer.querySelectorAll(`[class*="-LegendWrapper"] [class*="-Wrapper"]`);
+  const colorScale = renderColorScale({heatmapContainer: legend[0], width });
+  const expressedInCells = renderExpressedInCells({heatmapContainer: legend[1], width });
+
+  const FONT_FAMILY = "sans-serif";
+
+  // Create root SVG elemnt
+  const svg = document.createElementNS(NAME_SPACE_URI, "svg");
+
+  const svgAttributes = {
+    x: `0`,
+    y: `0`,
+    fill: ECHART_AXIS_LABEL_COLOR_HEX,
+    "font-family": FONT_FAMILY,
+    "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
+  };
+
+  applyAttributes(svg, svgAttributes);
+  
+  svg.append(colorScale!);
+  svg.append(expressedInCells!);
+
+  return svg;
+}
+
+function renderExpressedInCells({
+  heatmapContainer,
+  width = 0
+}: {
+  heatmapContainer?: Element | null;
+  width?: number;
+}) {
+  if (!heatmapContainer) return;
+
+  const expressedCellsGroup = document.createElementNS(NAME_SPACE_URI, "g");
+  expressedCellsGroup.id = "expressed-in-cells";
+
+  const xPosition = width + 60;
+
+  // Expressed in cells label
+  const expressedCellsLabel = document.createElementNS(NAME_SPACE_URI, "text");
+  expressedCellsLabel.textContent = heatmapContainer.querySelector(`label`)?.innerHTML!;
+  expressedCellsLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
+
+  // Expressed in cells dots
+  const expressedCellsDots = document.createElementNS(NAME_SPACE_URI, "g");
+  expressedCellsDots.setAttribute("fill", "#CCCCCC");
+
+  const dots = heatmapContainer?.querySelectorAll(`span[class*="-Dot"]`);
+  Array.from(
+    dots || []
+  ).forEach((dot, index) => {
+    const circle = document.createElementNS(NAME_SPACE_URI, "circle");
+
+    const circleAttributes = {
+      r: `${Number(dot.getAttribute("size"))/2}`,
+      transform: `translate(${xPosition+2 + 28*index}, 60)`
+    };
+
+    applyAttributes(circle, circleAttributes);
+
+    expressedCellsDots.append(circle);
+  });
+  
+  // Expressed in cells values
+  const expressedCellsValuesGroup = document.createElementNS(NAME_SPACE_URI, "g");
+  expressedCellsValuesGroup.setAttribute("transform", `translate(${xPosition}, 80)`);
+  const colorScaleValues = heatmapContainer.querySelectorAll(`[class*="LowHigh"] span`);
+
+  const expressedCellsValueLow = document.createElementNS(NAME_SPACE_URI, "text");
+  expressedCellsValueLow.setAttribute("x", "0");
+  expressedCellsValueLow.textContent = colorScaleValues[0].innerHTML!;
+
+  const expressedCellsValueHigh = document.createElementNS(NAME_SPACE_URI, "text");
+  expressedCellsValueHigh.setAttribute("x", `${width}`);
+  expressedCellsValueHigh.setAttribute("text-anchor", "end");
+  expressedCellsValueHigh.textContent = colorScaleValues[1].innerHTML!;
+
+  expressedCellsValuesGroup.append(expressedCellsValueLow);
+  expressedCellsValuesGroup.append(expressedCellsValueHigh);
+
+
+  // Append color scale legend
+  expressedCellsGroup.append(expressedCellsLabel);
+  expressedCellsGroup.append(expressedCellsDots);
+  expressedCellsGroup.append(expressedCellsValuesGroup);
+
+  return expressedCellsGroup;
+}
+
+
+function renderColorScale({
+  heatmapContainer,
+  width = 0
+}: {
+  heatmapContainer?: Element | null;
+  width?: number;
+}) {
+  if (!heatmapContainer) return;
+
+  const xPosition = "40";
+
+  const colorScaleGroup = document.createElementNS(NAME_SPACE_URI, "g");
+  colorScaleGroup.id = "color-scale";
+
+  // Color scale label
+  const colorScaleLabel = document.createElementNS(NAME_SPACE_URI, "text");
+  colorScaleLabel.textContent = heatmapContainer.querySelector(`label`)?.innerHTML!;
+  colorScaleLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
+
+  // Color scale image
+  const colorScaleImage = document.createElementNS(NAME_SPACE_URI, "image");
+  const colorScaleImgSrc = document.querySelector(`#visualization-color-scale`)?.getAttribute("src");
+  console.log("-colorScaleImgSrc", colorScaleImgSrc);
+  colorScaleImage.setAttribute("href", `https://cellxgene.cziscience.com${colorScaleImgSrc}`);
+  colorScaleImage.setAttribute("transform", `translate(${xPosition}, 50)`);
+  colorScaleImage.setAttribute("width", `${width}px`);
+  
+  // Color scale values
+  const colorScaleValuesGroup = document.createElementNS(NAME_SPACE_URI, "g");
+  colorScaleValuesGroup.setAttribute("transform", `translate(${xPosition}, 80)`);
+  const colorScaleValues = heatmapContainer.querySelectorAll(`[class*="LowHigh"] span`);
+
+  const colorScaleValueLow = document.createElementNS(NAME_SPACE_URI, "text");
+  colorScaleValueLow.setAttribute("x", "0");
+  colorScaleValueLow.textContent = colorScaleValues[0].innerHTML!;
+
+  const colorScaleValueHigh = document.createElementNS(NAME_SPACE_URI, "text");
+  colorScaleValueHigh.setAttribute("x", `${colorScaleImage.width.baseVal.valueAsString}`);
+  colorScaleValueHigh.setAttribute("text-anchor", "end");
+  colorScaleValueHigh.textContent = colorScaleValues[1].innerHTML!;
+
+  colorScaleValuesGroup.append(colorScaleValueLow);
+  colorScaleValuesGroup.append(colorScaleValueHigh);
+
+
+  // Append color scale legend
+  colorScaleGroup.append(colorScaleLabel);
+  colorScaleGroup.append(colorScaleImage);
+  colorScaleGroup.append(colorScaleValuesGroup);
+
+  return colorScaleGroup;
+}
 
 function renderXAxis({
   heatmapContainer,
