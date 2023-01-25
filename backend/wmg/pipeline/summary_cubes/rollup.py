@@ -33,6 +33,7 @@ def find_descendants_per_cell_type(cell_types):
         descendants_per_cell_type.append(descendants)
     return descendants_per_cell_type
 
+
 def rollup_across_cell_type_descendants(cell_types, arrays_to_sum):
     """
     Aggregate values for each cell type across its descendants in the input arrays.
@@ -79,9 +80,10 @@ def rollup_across_cell_type_descendants(cell_types, arrays_to_sum):
         summed_arrays.append(summed)
     return summed_arrays
 
-@nb.njit(parallel=True,fastmath=True,nogil=True)
+
+@nb.njit(parallel=True, fastmath=True, nogil=True)
 def _array_summer(array, summed, descendants_indexes, linear_indices):
-    for i in nb.prange(len(linear_indices)-1):
-        index = descendants_indexes[linear_indices[i] : linear_indices[i+1]]
+    for i in nb.prange(len(linear_indices) - 1):
+        index = descendants_indexes[linear_indices[i] : linear_indices[i + 1]]
         for j in index:
             summed[i] += array[j]
