@@ -68,7 +68,7 @@ class ProcessingTest(BaseTest):
         5. upload the original file to S3
         6. upload the labeled file to S3
         """
-        dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
 
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
@@ -183,5 +183,35 @@ class ProcessingTest(BaseTest):
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
         self.assertEqual(4, len(artifacts))
 
-    def test_process_download_validate_fail(self):
-        pass
+    def test_process_all_download_validate_fail(self):
+        """
+        If the validation is not successful, the processing pipeline should:
+        1. Set the processing status to INVALID
+        2. Set a validation message accordingly
+        """
+        dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, dropbox_uri, None, None
+        )
+
+        # Set a mock failure for the schema validator
+        self.schema_validator.validate_and_save_labels = Mock(
+            return_value=(False, ["Validation error 1", "Validation error 2"], True)
+        )
+
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, dropbox_uri, None, None
+        )
+
+        pm = ProcessMain(
+            self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
+        )
+
+        for step_name in ["download-validate"]:
+            pm.process(dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_cxg_bucket")
+
+        status = self.business_logic.get_dataset_status(dataset_version_id)
+        self.assertEqual(status.validation_status, DatasetValidationStatus.INVALID)
+        self.assertEqual(status.validation_message, "Validation error 1\nValidation error 2")

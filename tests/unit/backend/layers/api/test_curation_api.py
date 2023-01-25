@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 
 from backend.common.corpora_orm import CollectionVisibility
 from backend.common.utils.api_key import generate
+from backend.curation.api.v1.curation.collections.common import EntityColumns
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersion,
@@ -18,10 +19,9 @@ from backend.layers.common.entities import (
     OntologyTermId,
 )
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
-from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
 from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
-from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
 class TestAsset(BaseAPIPortalTest):
@@ -147,7 +147,7 @@ class TestDeleteCollection(BaseAPIPortalTest):
 
 class TestS3Credentials(BaseAPIPortalTest):
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
-    @patch("backend.portal.api.curation.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
+    @patch("backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock, mock_config: Mock):
         def mock_config_fn(name):
             if name == "curator_role_arn":
@@ -273,6 +273,33 @@ class TestPostCollection(BaseAPIPortalTest):
             for error in expected_errors:
                 self.assertIn(error, response.json["invalid_parameters"])
             self.assertEqual(len(response.json["invalid_parameters"]), num_expected_errors)
+
+    def test__create_collection__strip_string_fields(self):
+
+        collection_metadata = dict(
+            name="collection   ",
+            description="   description",
+            contact_name="  john doe  ",
+            contact_email="  johndoe@email.com",
+            consortia=["Consortia 1   "],
+        )
+
+        response = self.app.post(
+            "/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(collection_metadata)
+        )
+        self.assertIn("id", response.json.keys())
+        self.assertEqual(201, response.status_code)
+
+        # Check that the collection_id is the canonical collection ID
+        collection_id = response.json["id"]
+        version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertEqual(version.collection_id.id, collection_id)
+
+        self.assertEqual(version.metadata.description, collection_metadata["description"].strip())
+        self.assertEqual(version.metadata.name, collection_metadata["name"].strip())
+        self.assertEqual(version.metadata.contact_name, collection_metadata["contact_name"].strip())
+        self.assertEqual(version.metadata.contact_email, collection_metadata["contact_email"].strip())
+        self.assertEqual(version.metadata.consortia, ["Consortia 1"])
 
 
 class TestGetCollections(BaseAPIPortalTest):
@@ -632,6 +659,24 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertDictEqual(expected_body, res_body)  # Confirm dict has been packaged in list
         self.assertEqual(json.dumps(expected_body, sort_keys=True), json.dumps(res_body))
 
+    def test__get_public_collection_verify_consortia_sorted__OK_1(self):
+        collection_metadata = copy.deepcopy(self.sample_collection_metadata)
+        collection_metadata.consortia = ["Consortia 3", "Consortia 1", "Consortia 2"]
+        collection_version = self.generate_unpublished_collection(metadata=collection_metadata)
+        self.assertEqual(collection_version.metadata.consortia, sorted(collection_metadata.consortia))
+
+    def test__get_public_collection_verify_consortia_sorted__OK_2(self):
+        collection_metadata = copy.deepcopy(self.sample_collection_metadata)
+        collection_metadata.consortia = ["Consortia 3", "Consortia 1", "Consortia 2"]
+        collection_version = self.generate_unpublished_collection(metadata=collection_metadata)
+
+        res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
+        self.assertEqual(res.json["consortia"], sorted(collection_metadata.consortia))
+
+    def test__get_private_collection__OK(self):
+        collection_version = self.generate_unpublished_collection()
+        self._test_response(collection_version)
+
     def test_get_collection_dynamic_fields(self):
         def _test_responses_are_equal(test_ids, expected_id, auth_headers) -> dict:
             last_resp = None
@@ -894,11 +939,58 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
 
         response = self.app.get(f"curation/v1/collections/{collection_id}")
-        print(response.json)
         self.assertEqual(new_name, response.json["name"])
         self.assertEqual(collection.metadata.description, response.json["description"])
         self.assertEqual(collection.metadata.contact_name, response.json["contact_name"])
         self.assertEqual(collection.metadata.contact_email, response.json["contact_email"])
+        self.assertEqual(
+            [{"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"}],
+            response.json["links"],
+        )
+        self.assertEqual(collection.publisher_metadata, response.json["publisher_metadata"])
+
+    def test__update_collection_strip_string_fields(self):
+        links = [Link("   name ", "RAW_DATA", "http://test_link.place")]
+        self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata())
+        collection = self.generate_unpublished_collection(links=links)
+        collection_id = collection.collection_id
+
+        new_name = "A new name"
+        new_description = "   description   "
+        new_contact_name = "   jane dough"
+        new_contact_email = "   janedough@email.com"
+        new_consortia = ["Consortia 4   "]
+        metadata = {
+            "name": new_name,
+            "description": new_description,
+            "contact_name": new_contact_name,
+            "contact_email": new_contact_email,
+            "consortia": new_consortia,
+        }
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            data=json.dumps(metadata),
+            headers=self.make_owner_header(),
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(new_name.strip(), response.json["name"])
+        self.assertEqual(new_description.strip(), response.json["description"])
+        self.assertEqual(new_contact_name.strip(), response.json["contact_name"])
+        self.assertEqual(new_contact_email.strip(), response.json["contact_email"])
+        self.assertEqual(
+            [{"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"}],
+            response.json["links"],
+        )
+        self.assertEqual(collection.publisher_metadata, response.json["publisher_metadata"])
+
+        response = self.app.get(f"curation/v1/collections/{collection_id}")
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(new_name.strip(), response.json["name"])
+        self.assertEqual(new_description.strip(), response.json["description"])
+        self.assertEqual(new_contact_name.strip(), response.json["contact_name"])
+        self.assertEqual(new_contact_email.strip(), response.json["contact_email"])
         self.assertEqual(
             [{"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"}],
             response.json["links"],
@@ -1001,6 +1093,24 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual(new_consortia, response.json["consortia"])
+
+    def test__update_public_collection_verify_fix_consortia_sort_order_OK(self):
+        initial_consortia = ["Consortia 1", "Consortia 2"]
+        new_consortia = ["Consortia 3", "Consortia 1", "Consortia 2"]
+        links = [
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
+        ]
+        collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertEqual(initial_consortia, original_collection["consortia"])
+        metadata = {"consortia": new_consortia}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(sorted(new_consortia), response.json["consortia"])
 
     def test__update_collection__doi_is_not_CURIE_reference__BAD_REQUEST(self):
         links = [
@@ -1158,6 +1268,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         body = response.json
         self.assertEqual("test", body["title"])
         self.assertEqual(None, body["revision_of"])
+        self.assertTrue("original_id" not in body)
 
         # retrieve a public dataset
         public_dataset = self.generate_dataset(name="test", publish=True)
@@ -1168,25 +1279,42 @@ class TestGetDatasets(BaseAPIPortalTest):
         body = response.json
         self.assertEqual("test", body["title"])
         self.assertEqual(None, body["revision_of"])
+        self.assertTrue("original_id" not in body)
 
-        # retrieve a revised dataset using dataset_id
-        collection_id = self.generate_published_collection().canonical_collection.id
+        # retrieve a revised dataset using version_id
+        collection_id = self.generate_published_collection(add_datasets=2).canonical_collection.id
         version = self.generate_revision(collection_id)
         dataset_version = self.generate_dataset(
             collection_version=version, replace_dataset_version_id=version.datasets[0].version_id
         )
-        test_url = (
-            f"/curation/v1/collections/{dataset_version.collection_id}/datasets/{dataset_version.dataset_version_id}"
-        )
+        test_url = f"/curation/v1/collections/{version.version_id}/datasets/{dataset_version.dataset_version_id}"
         response = self.app.get(test_url)
         body = response.json
         self.assertEqual(dataset_version.dataset_id, body["revision_of"])
+        self.assertEqual(dataset_version.dataset_id, body["original_id"])
 
-        # retrieve a revision using version_id
-        test_url = f"/curation/v1/collections/{dataset_version.collection_id}/datasets/{dataset_version.dataset_id}"
+        # retrieve an unrevised dataset in a revision Collection
+        unreplaced_dataset = version.datasets[1]
+        test_url = f"/curation/v1/collections/{version.version_id}/datasets/{unreplaced_dataset.version_id}"
         response = self.app.get(test_url)
         body = response.json
         self.assertEqual(None, body["revision_of"])
+        self.assertEqual(unreplaced_dataset.dataset_id.id, body["original_id"])
+
+        # retrieve a newly added dataset in a revision Collection
+        new_dataset = self.generate_dataset(collection_version=version)
+        test_url = f"/curation/v1/collections/{version.version_id}/datasets/{new_dataset.dataset_version_id}"
+        response = self.app.get(test_url)
+        body = response.json
+        self.assertEqual(None, body["revision_of"])
+        self.assertEqual(None, body["original_id"])
+
+        # retrieve a revision using dataset_id
+        test_url = f"/curation/v1/collections/{version.version_id}/datasets/{dataset_version.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+        self.assertEqual(None, body["revision_of"])
+        self.assertEqual(dataset_version.dataset_id, body["original_id"])
 
     def test_get_dataset_is_primary_data_shape(self):
         tests = [
@@ -1476,8 +1604,8 @@ class TestPutLink(BaseAPIPortalTest):
 
 
 class TestAuthToken(BaseAPIPortalTest):
-    @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
-    @patch("backend.portal.api.curation.v1.curation.auth.token.auth0_management_session")
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.auth0_management_session")
     def test__post_token__201(self, auth0_management_session: Mock, CorporaAuthConfig: Mock):
         test_secret = "password1234"
         test_email = "user@email.com"
@@ -1492,7 +1620,7 @@ class TestAuthToken(BaseAPIPortalTest):
         self.assertEqual("OK", token)
         auth0_management_session.get_user_api_key_identity.assert_called_once_with(test_user_id)
 
-    @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
     def test__post_token__401(self, CorporaAuthConfig):
         test_secret = "password1234"
         test_user_id = "test_user_id"
@@ -1501,8 +1629,8 @@ class TestAuthToken(BaseAPIPortalTest):
         response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
         self.assertEqual(401, response.status_code)
 
-    @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
-    @patch("backend.portal.api.curation.v1.curation.auth.token.auth0_management_session")
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.auth0_management_session")
     def test__post_token__404(self, auth0_management_session, CorporaAuthConfig):
         test_secret = "password1234"
         test_user_id = "test_user_id"
