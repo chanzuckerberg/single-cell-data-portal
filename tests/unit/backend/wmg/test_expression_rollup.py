@@ -18,8 +18,6 @@ class RollupExpressionsAcrossCellTypesTest(unittest.TestCase):
             df[i] = exprs[:, i]
 
         df_rollup = rollup_across_cell_type_descendants(df)
-        expected = []
-
         df_expected = df.copy()
         expected_exprs = exprs.copy()
         expected_exprs[0] = exprs[0] + exprs[1]

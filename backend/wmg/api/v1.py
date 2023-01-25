@@ -7,8 +7,7 @@ from backend.layers.common.entities import DatasetId
 
 import connexion
 from flask import jsonify
-from pandas import DataFrame, Series
-import numpy as np
+from pandas import DataFrame
 
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
 from backend.wmg.data.query import (
