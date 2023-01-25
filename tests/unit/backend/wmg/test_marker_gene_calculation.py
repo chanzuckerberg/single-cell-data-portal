@@ -23,7 +23,7 @@ CONTEXT_FILTERS = {
 class MarkerGeneCalculationTest(unittest.TestCase):
     def test__query_tiledb(self):
         with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
-            agg, t_n_cells_sum, _ = _query_tiledb(TARGET_FILTERS, corpus=snapshot)
+            agg, t_n_cells_sum, _, _ = _query_tiledb(TARGET_FILTERS, corpus=snapshot)
             test_sum = list(agg.sum(0))
             # check that returned dataframe is correct
             expected_sum = [28538.255859375, 85875.046875, 11312.0, 11185.0]
