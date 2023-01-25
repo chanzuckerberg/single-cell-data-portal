@@ -251,7 +251,7 @@ paths:
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserAccess: []
-      operationId: backend.layers.api.portal_api.upload_link
+      operationId: backend.portal.api.portal_api.upload_link
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -297,13 +297,8 @@ paths:
         until the collection revision is published. The old datasets are available in the public collection until the
         collection revision is published.
       security:
-<<<<<<< HEAD:backend/portal/api/portal-api.yml
-        - cxguserCookie: []
-      operationId: backend.portal.api.portal_api.upload_relink
-=======
         - cxguserAccess: []
-      operationId: backend.layers.api.portal_api.upload_relink
->>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
+      operationId: backend.portal.api.portal_api.upload_relink
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -343,45 +338,6 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
-<<<<<<< HEAD:backend/portal/api/portal-api.yml
-=======
-  /v1/collections/{collection_id}/genesets:
-    post:
-      tags:
-        - collections
-        - genesets
-      summary: Add genesets to a collection
-      security:
-        - cxguserAccess: []
-      description: >-
-        Add genesets to a private collection
-      operationId: backend.portal.api.app.v1.collections.collection_id.genesets.post
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                genesets:
-                  description: A list of genesets including their gene symbols and descriptions
-                  $ref: "#/components/schemas/user_defined_gene_sets"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/gene_set"
-        "400":
-          $ref: "#/components/responses/400"
-        "403":
-          $ref: "#/components/responses/403"
-
->>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
   /v1/collections/{collection_id}/publish:
     post:
       tags:
@@ -577,54 +533,6 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-<<<<<<< HEAD:backend/portal/api/portal-api.yml
-=======
-  /v1/datasets/{dataset_id}/gene_sets:
-    post:
-      tags:
-        - datasets
-        - genesets
-      summary: Update links between a dataset and gene sets
-      security:
-        - cxguserAccess: []
-      description: >-
-        Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
-        collection owner and the dataset and gene sets must all belong to the same private collection
-      operationId: backend.portal.api.app.v1.datasets.dataset_id.gene_sets.post
-      parameters:
-        - $ref: "#/components/parameters/path_dataset_id"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - add
-                - remove
-              properties:
-                add:
-                  type: array
-                  items:
-                    type: string
-                remove:
-                  type: array
-                  items:
-                    type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/gene_set"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-
->>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
   /v1/datasets/{dataset_id}/status:
     get:
       tags:
@@ -795,29 +703,6 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-<<<<<<< HEAD:backend/portal/api/portal-api.yml
-=======
-  /v1/genesets/{geneset_id}:
-    delete:
-      tags:
-        - genesets
-      summary: Delete a genese
-      security:
-        - cxguserAccess: []
-      description: >-
-        Delete a gene by set removing it from a collection and any data sets it was linked to.
-      operationId: backend.portal.api.app.v1.genesets.geneset_id.delete
-      parameters:
-        - $ref: "#/components/parameters/path_geneset_id"
-      responses:
-        "202":
-          $ref: "#/components/responses/202"
-        "403":
-          $ref: "#/components/responses/403"
-        "405":
-          $ref: "#/components/responses/405"
-
->>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
   /v1/login:
     get:
       tags:
@@ -886,11 +771,7 @@ paths:
       summary: Delete the curator's API key -- for use with Data Portal UI
       operationId: backend.portal.api.app.v1.auth.keys.delete
       security:
-<<<<<<< HEAD:backend/portal/api/portal-api.yml
-        - cxguserCookie: []
-=======
-        - cxguserAccess: [ ]
->>>>>>> d78e8537ad (migrate cookie api key to bearer access token in Portal API spec):backend/portal/api/app/portal-api.yml
+        - cxguserAccess: []
       responses:
         "202":
           $ref: "#/components/responses/202"
