@@ -7,11 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 def build_in_mem_cube(
-    gene_ids: pd.DataFrame,
-    cube_index: pd.DataFrame,
-    other_cube_attrs: list,
-    cube_sum: np.ndarray,
-    cube_nnz: np.ndarray
+    gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray, cube_nnz: np.ndarray
 ):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes

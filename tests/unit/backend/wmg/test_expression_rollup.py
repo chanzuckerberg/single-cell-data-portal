@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from backend.wmg.api.rollup import rollup_across_cell_type_descendants
 
+
 class RollupExpressionsAcrossCellTypesTest(unittest.TestCase):
     # test that the rollup function works as expected for input 2d arrays
     def test__expression_rollup_2d_arrays(self):

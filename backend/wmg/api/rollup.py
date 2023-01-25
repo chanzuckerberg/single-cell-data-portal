@@ -9,6 +9,7 @@ from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
 # ontology object
 onto = None
 
+
 def find_descendants_per_cell_type(cell_types):
     """
     Find descendants for each cell type in the input list.

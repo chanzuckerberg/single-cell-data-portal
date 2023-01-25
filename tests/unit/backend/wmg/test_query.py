@@ -379,10 +379,7 @@ class QueryTest(unittest.TestCase):
 
         # after aggregating, we will get three tissues, and three cell types per tissue,
         # with 729 * expected_count total cells
-        expected = (
-            * len(criteria.tissue_ontology_term_ids)
-            * dim_size
-        )
+        expected = *len(criteria.tissue_ontology_term_ids) * dim_size
         self.assertEqual(expected, result.to_dict("records"))
 
     def test__query_agg_tissue_counts__returns_correct_result(self):
