@@ -73,7 +73,6 @@ def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_te
         Tidy dataframe with the same dimensions as the input dataframe, but with the numeric
         columns aggregated across the cell type's descendants.
     """
-
     df = df.copy()
 
     numeric_df = df.select_dtypes(include="number")
@@ -95,14 +94,12 @@ def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_te
     array_to_sum = np.zeros(dim_shapes)
     array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
 
-    cell_types = cell_type_column.to_numpy()
+    cell_types = cell_type_column.unique()
 
     descendants = find_descendants_per_cell_type(cell_types)
-
     # a pandas series to map cell types to their index in the input arrays
     indexer = pd.Series(index=cell_types, data=range(len(cell_types)))
     descendants_indexes = [indexer[children].to_numpy() for children in descendants]
-
     # flatten the descendant indices into a single array and create a linear
     # index array for slicing out the descendants per cell type. The array
     # must be flattened to satisfy numba type requirements.
