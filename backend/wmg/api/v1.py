@@ -169,20 +169,23 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
 
 
 def build_expression_summary(query_result: DataFrame, is_rollup: bool) -> dict:
-    tissues = query_result["tissue_ontology_term_id"]
-    unique_tissues = set(tissues)
+    if is_rollup:
+        tissues = query_result["tissue_ontology_term_id"]
+        unique_tissues = set(tissues)
 
-    rolled_up_array = np.zeros((query_result.shape[0], 4))
-    cols = ["nnz", "sum", "n_cells_cell_type", "n_cells_tissue"]
-    for tissue in unique_tissues:
-        query_result_tissue = query_result[tissues == tissue]
-        array_tissue = query_result_tissue[cols].values
-        cell_types = list(query_result_tissue["cell_type_ontology_term_id"])
-        (rolled_up_array_tissue,) = rollup_across_cell_type_descendants(cell_types, [array_tissue])
-        rolled_up_array[tissues == tissue] = rolled_up_array_tissue
+        rolled_up_array = np.zeros((query_result.shape[0], 4))
+        cols = ["nnz", "sum", "n_cells_cell_type", "n_cells_tissue"]
+        for tissue in unique_tissues:
+            query_result_tissue = query_result[tissues == tissue]
 
-    for col, array in zip(cols, rolled_up_array.T):
-        query_result[col] = array
+            array_tissue = query_result_tissue[cols].values
+            cell_types = list(query_result_tissue["cell_type_ontology_term_id"])
+            (rolled_up_array_tissue,) = rollup_across_cell_type_descendants(cell_types, [array_tissue])
+            rolled_up_array[tissues == tissue] = rolled_up_array_tissue
+
+        dtypes = query_result.dtypes[cols]
+        for col, array in zip(cols, rolled_up_array.T):
+            query_result[col] = array.astype(dtypes[col])
 
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
     # is_rollup is a flag to indicate whether the expressions should be rolled up or not
