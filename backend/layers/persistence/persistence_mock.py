@@ -202,6 +202,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 self.datasets[dataset_version.dataset_id.id].published_at = published_at
             if self.datasets[dataset_version.dataset_id.id].revised_at is None:
                 self.datasets[dataset_version.dataset_id.id].revised_at = published_at
+            dataset_version.canonical_dataset.dataset_version_id = dataset_version.version_id
         cc = self.collections.get(collection_id.id)
         if cc is None:
             self.collections[collection_id.id] = CanonicalCollection(
