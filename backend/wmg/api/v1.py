@@ -210,7 +210,7 @@ def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame, is_rollup
     if is_rollup:
         # rollup cell types per gene and tissue in the dot plot matrix
         cols = ["nnz", "sum", "n_cells_cell_type", "n_cells_tissue"]
-        
+
         tissues = dot_plot_matrix_df["tissue_ontology_term_id"]
         unique_tissues = set(tissues)
 
