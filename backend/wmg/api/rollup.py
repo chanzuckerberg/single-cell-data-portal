@@ -45,6 +45,11 @@ def find_descendants_per_cell_type(cell_types):
     for cell_type in cell_types:
         descendants = _descendants(cell_type)
         descendants_per_cell_type.append(descendants)
+
+    for i, children in enumerate(descendants_per_cell_type):
+        # remove descendent cell types that are not cell types in the WMG data
+        descendants_per_cell_type[i] = list(set(children).intersection(cell_types))
+
     return descendants_per_cell_type
 
 
@@ -72,9 +77,6 @@ def rollup_across_cell_type_descendants(cell_types, arrays_to_sum):
         assert len(array) == len(cell_types), "Input arrays must have the same length as cell_types"
 
     descendants = find_descendants_per_cell_type(cell_types)
-    for i, children in enumerate(descendants):
-        # remove descendent cell types that are not cell types in the WMG data
-        descendants[i] = list(set(children).intersection(cell_types))
 
     # a pandas series to map cell types to their index in the input arrays
     indexer = pd.Series(index=cell_types, data=range(len(cell_types)))

@@ -42,7 +42,7 @@ def query():
 
     expression_summary = q.expression_summary(criteria)
     cell_counts = q.cell_counts(criteria)
-    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
+    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts, is_rollup)
 
     response_filter_dims_values = (
         build_filter_dims_values(criteria, snapshot, expression_summary) if include_filter_dims else {}
@@ -50,7 +50,7 @@ def query():
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
-            expression_summary=build_expression_summary(dot_plot_matrix_df, is_rollup),
+            expression_summary=build_expression_summary(dot_plot_matrix_df),
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                 cell_types=build_ordered_cell_types_by_tissue(
@@ -168,29 +168,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
     return response_filter_dims_values
 
 
-def build_expression_summary(query_result: DataFrame, is_rollup: bool) -> dict:
-    if is_rollup:
-        tissues = query_result["tissue_ontology_term_id"]
-        unique_tissues = set(tissues)
-
-        genes = query_result["gene_ontology_term_id"]
-        unique_genes = set(genes)
-
-        rolled_up_array = np.zeros((query_result.shape[0], 4))
-        cols = ["nnz", "sum", "n_cells_cell_type", "n_cells_tissue"]
-        for tissue in unique_tissues:
-            for gene in unique_genes:
-                filt = np.logical_and(tissues == tissue, genes == gene)
-                query_result_subset = query_result[filt]
-                array_subset = query_result_subset[cols].values
-                cell_types = list(query_result_subset["cell_type_ontology_term_id"])
-                (rolled_up_array_subset,) = rollup_across_cell_type_descendants(cell_types, [array_subset])
-                rolled_up_array[filt] = rolled_up_array_subset
-
-        dtypes = query_result.dtypes[cols]
-        for col, array in zip(cols, rolled_up_array.T):
-            query_result[col] = array.astype(dtypes[col])
-
+def build_expression_summary(query_result: DataFrame) -> dict:
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
     # is_rollup is a flag to indicate whether the expressions should be rolled up or not
     structured_result: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
@@ -223,11 +201,52 @@ def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
     return cell_counts_tissue_agg
 
 
-def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame) -> Tuple[DataFrame, DataFrame]:
+def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame, is_rollup: bool) -> Tuple[DataFrame, DataFrame]:
     # Get the dot plot matrix dataframe and aggregated cell counts per cell type
     cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts)
     cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
     dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg)
+
+    if is_rollup:
+        # rollup cell types per gene and tissue in the dot plot matrix
+        tissues = dot_plot_matrix_df["tissue_ontology_term_id"]
+        unique_tissues = set(tissues)
+
+        genes = dot_plot_matrix_df["gene_ontology_term_id"]
+        unique_genes = set(genes)
+
+        rolled_up_array = np.zeros((dot_plot_matrix_df.shape[0], 4))
+        cols = ["nnz", "sum", "n_cells_cell_type", "n_cells_tissue"]
+        for tissue in unique_tissues:
+            for gene in unique_genes:
+                filt = np.logical_and(tissues == tissue, genes == gene)
+                dot_plot_matrix_df_subset = dot_plot_matrix_df[filt]
+                array_subset = dot_plot_matrix_df_subset[cols].values
+                cell_types = list(dot_plot_matrix_df_subset["cell_type_ontology_term_id"])
+                (rolled_up_array_subset,) = rollup_across_cell_type_descendants(cell_types, [array_subset])
+                rolled_up_array[filt] = rolled_up_array_subset
+
+        dtypes = dot_plot_matrix_df.dtypes[cols]
+        for col, array in zip(cols, rolled_up_array.T):
+            dot_plot_matrix_df[col] = array.astype(dtypes[col])
+
+        # rollup cell types per tissue in teh cell counts matrix
+        tissues = cell_counts_cell_type_agg.index.get_level_values("tissue_ontology_term_id")
+        cell_types = cell_counts_cell_type_agg.index.get_level_values("cell_type_ontology_term_id")
+
+        unique_tissues = set(tissues)
+        rolled_up_array = np.zeros((cell_counts_cell_type_agg.shape[0], 1))
+        for tissue in unique_tissues:
+            filt = tissues == tissue
+            cell_counts_cell_type_agg_subset = cell_counts_cell_type_agg[filt]
+            array_subset = cell_counts_cell_type_agg_subset["n_cells_cell_type"].values
+            (rolled_up_array_subset,) = rollup_across_cell_type_descendants(cell_types[filt], [array_subset])
+            rolled_up_array[filt] = rolled_up_array_subset
+
+        cell_counts_cell_type_agg["n_cells_cell_type"] = rolled_up_array.astype(
+            cell_counts_cell_type_agg.dtypes["n_cells_cell_type"]
+        )
+
     return dot_plot_matrix_df, cell_counts_cell_type_agg
 
 
