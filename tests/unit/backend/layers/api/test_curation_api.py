@@ -543,7 +543,7 @@ class TestGetCollections(BaseAPIPortalTest):
 
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
         self.assertEqual(unpublished_version.datasets[0].version_id.id, resp_collection["datasets"][0]["id"])
-        self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
+        self.check_fields(self.expected_dataset_columns + ["original_id"], resp_collection["datasets"][0], "datasets")
         self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
     def check_fields(self, fields: list, response: dict, entity: str):
