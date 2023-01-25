@@ -360,8 +360,16 @@ class BusinessLogic(BusinessLogicInterface):
             ):
                 new_dataset_version = dataset_version
             else:
+                # Determine if this dataset already belongs to a published collection. If so, we will increment its revision count by one.
+                # Otherwise, it means the dataset has been replaced inside this revision already, so we shouldn't increment
+                mapped_version = self.database_provider.get_dataset_mapped_version(dataset_version.dataset_id)
+                if mapped_version and mapped_version.version_id == existing_dataset_version_id:
+                    should_increment_revision_count = True
+                else:
+                    should_increment_revision_count = False
+
                 new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
-                    collection_version_id, existing_dataset_version_id
+                    collection_version_id, existing_dataset_version_id, should_increment_revision_count
                 )
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)

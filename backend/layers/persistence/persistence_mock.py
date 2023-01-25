@@ -329,7 +329,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version.datasets = [d for d in version.datasets if d != dataset_version_id]
 
     def replace_dataset_in_collection_version(
-        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
+        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId, increment_count: bool
     ) -> DatasetVersion:
         new_version_id = DatasetVersionId()
         old_version = self.get_dataset_version(old_dataset_version_id)
@@ -343,7 +343,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             artifacts=[],
             created_at=datetime.utcnow(),
             canonical_dataset=old_version.canonical_dataset,
-            revision_count=old_version.revision_count+1,
+            revision_count=old_version.revision_count+1 if increment_count else old_version.revision_count,
         )
         self.datasets_versions[new_version_id.id] = new_version
 
