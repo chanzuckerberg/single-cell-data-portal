@@ -1,6 +1,7 @@
 import owlready2
 import pandas as pd
 import numpy as np
+import numba as nb
 from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
 
 
@@ -114,12 +115,30 @@ def rollup_across_cell_type_descendants(cell_types, arrays_to_sum):
 
     # a pandas series to map cell types to their index in the input arrays
     indexer = pd.Series(index=cell_types, data=range(len(cell_types)))
+    descendants_indexes = [indexer[children].to_numpy() for children in descendants]
+
+    # flatten the descendant indices into a single array and create a linear
+    # index array for slicing out the descendants per cell type. The array
+    # must be flattened to satisfy numba type requirements.
+    z = 0
+    linear_indices = [z]
+    for ix in descendants_indexes:
+        z += len(ix)
+        linear_indices.append(z)
+    linear_indices = np.array(linear_indices)
+    descendants_indexes = np.concatenate(descendants_indexes)
+
     summed_arrays = []
     for array in arrays_to_sum:
         summed = np.zeros_like(array)
-        for i, children in enumerate(descendants):
-            # indexer is used to map children cell types to their index
-            # in the input arrays
-            summed[i] += array[indexer[children]].sum(axis=0)
+        _array_summer(array, summed, descendants_indexes, linear_indices)
         summed_arrays.append(summed)
     return summed_arrays
+
+
+@nb.njit(parallel=True, fastmath=True, nogil=True)
+def _array_summer(array, summed, descendants_indexes, linear_indices):
+    for i in nb.prange(len(linear_indices) - 1):
+        index = descendants_indexes[linear_indices[i] : linear_indices[i + 1]]
+        for j in index:
+            summed[i] += array[j]
