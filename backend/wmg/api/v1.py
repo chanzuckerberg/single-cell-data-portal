@@ -7,7 +7,7 @@ from backend.layers.common.entities import DatasetId
 
 import connexion
 from flask import jsonify
-from pandas import DataFrame
+from pandas import DataFrame, Series
 import numpy as np
 
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
@@ -209,22 +209,29 @@ def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame, is_rollup
 
     if is_rollup:
         # rollup cell types per gene and tissue in the dot plot matrix
+        cols = ["nnz", "sum", "n_cells_cell_type", "n_cells_tissue"]
+        
         tissues = dot_plot_matrix_df["tissue_ontology_term_id"]
         unique_tissues = set(tissues)
 
         genes = dot_plot_matrix_df["gene_ontology_term_id"]
         unique_genes = set(genes)
 
-        rolled_up_array = np.zeros((dot_plot_matrix_df.shape[0], 4))
-        cols = ["nnz", "sum", "n_cells_cell_type", "n_cells_tissue"]
-        for tissue in unique_tissues:
-            for gene in unique_genes:
-                filt = np.logical_and(tissues == tissue, genes == gene)
-                dot_plot_matrix_df_subset = dot_plot_matrix_df[filt]
-                array_subset = dot_plot_matrix_df_subset[cols].values
-                cell_types = list(dot_plot_matrix_df_subset["cell_type_ontology_term_id"])
-                (rolled_up_array_subset,) = rollup_across_cell_type_descendants(cell_types, [array_subset])
-                rolled_up_array[filt] = rolled_up_array_subset
+        cell_types = dot_plot_matrix_df["cell_type_ontology_term_id"]
+        unique_cell_types = set(unique_cell_types)
+
+        gene_indexer = Series(index=unique_genes, data=range(len(unique_genes)))
+        tissue_indexer = Series(index=unique_tissues, data=range(len(unique_tissues)))
+        cell_types_indexer = Series(index=unique_cell_types, data=range(len(unique_cell_types)))
+
+        array_to_sum = np.zeros((len(unique_cell_types), len(unique_genes), len(unique_tissues), 4))
+        cell_type_indices = cell_types_indexer[cell_types].values
+        gene_indices = gene_indexer[genes].values
+        tissue_indices = tissue_indexer[tissues].values
+        array_to_sum[cell_type_indices, gene_indices, tissue_indices, :] = dot_plot_matrix_df[cols].values
+
+        (rolled_up_array,) = rollup_across_cell_type_descendants(cell_types, [array_to_sum])
+        rolled_up_array = rolled_up_array[cell_type_indices, gene_indices, tissue_indices, :]
 
         dtypes = dot_plot_matrix_df.dtypes[cols]
         for col, array in zip(cols, rolled_up_array.T):
