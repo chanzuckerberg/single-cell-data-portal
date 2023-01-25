@@ -1160,6 +1160,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_id_to_replace = published_collection.datasets[0].version_id
         dataset_id_to_keep = published_collection.datasets[1].version_id
 
+        dataset_from_db = self.database_provider.get_dataset_version(dataset_id_to_replace)
+        self.assertEqual(dataset_from_db.revision_count, 0)
+
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
             new_version.version_id, "http://fake.url", None, dataset_id_to_replace
         )
@@ -1202,6 +1205,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertCountEqual(
             [replaced_dataset_version_id, dataset_id_to_keep], [dataset.version_id for dataset in version.datasets]
         )
+
+        dataset_from_db = self.database_provider.get_dataset_version(replaced_dataset_version_id)
+        self.assertEqual(dataset_from_db.revision_count, 1)
 
     def test_publish_version_does_not_change_original_published_at_ok(self):
         """

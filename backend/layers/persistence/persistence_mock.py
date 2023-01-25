@@ -269,6 +269,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             artifacts=[],
             created_at=datetime.utcnow(),
             canonical_dataset=CanonicalDataset(dataset_id, None, None),
+            revision_count=0,
         )
         self.datasets_versions[version_id.id] = version
         self.datasets[dataset_id.id] = CanonicalDataset(
@@ -342,6 +343,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             artifacts=[],
             created_at=datetime.utcnow(),
             canonical_dataset=old_version.canonical_dataset,
+            revision_count=old_version.revision_count+1,
         )
         self.datasets_versions[new_version_id.id] = new_version
 

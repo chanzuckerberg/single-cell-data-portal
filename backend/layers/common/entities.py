@@ -188,6 +188,7 @@ class DatasetVersion:
     artifacts: List[DatasetArtifact]
     created_at: datetime
     canonical_dataset: CanonicalDataset
+    revision_count: int
 
 
 @dataclass
