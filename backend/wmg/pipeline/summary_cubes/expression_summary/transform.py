@@ -11,7 +11,6 @@ from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
-from backend.wmg.pipeline.summary_cubes.rollup import rollup_across_cell_type_descendants
 
 logger = logging.getLogger(__name__)
 
