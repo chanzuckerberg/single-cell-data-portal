@@ -306,9 +306,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
     context_agg, t_n_cells_sum_context, genes, cell_types_references = _query_tiledb(
         context_filters, corpus=corpus, group_by_dims=list(target_filters.keys())
     )
-    target_agg, t_n_cells_sum_target, _, cell_types_query = _query_tiledb(
-        target_filters, corpus=corpus, genes=genes
-    )
+    target_agg, t_n_cells_sum_target, _, cell_types_query = _query_tiledb(target_filters, corpus=corpus, genes=genes)
     groups_context_uniq = list(t_n_cells_sum_context.keys())
 
     target_agg = _cell_type_respecting_aggregator(target_agg, "gene_ontology_term_id")
