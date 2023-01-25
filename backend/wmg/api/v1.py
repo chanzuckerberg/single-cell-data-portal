@@ -235,7 +235,7 @@ def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame, is_rollup
         cell_types = cell_counts_cell_type_agg.index.get_level_values("cell_type_ontology_term_id")
 
         unique_tissues = set(tissues)
-        rolled_up_array = np.zeros((cell_counts_cell_type_agg.shape[0], 1))
+        rolled_up_array = np.zeros(cell_counts_cell_type_agg.shape[0])
         for tissue in unique_tissues:
             filt = tissues == tissue
             cell_counts_cell_type_agg_subset = cell_counts_cell_type_agg[filt]
