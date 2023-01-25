@@ -33,14 +33,6 @@ def transform(
 
     cube_nnz: np.ndarray
         The number of cells with non zero expression for each gene for each group of cell attributes
-
-    cube_sum_rollup: np.ndarray
-        The sum of expression values for each gene for each group of cell attributes
-        Aggregated across the descendants of the cell type in each group.
-
-    cube_nnz_rollup: np.ndarray
-        The number of cells with non zero expression for each gene for each group of cell attributes
-        Aggregated across the descendants of the cell type in each group.
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -49,14 +41,9 @@ def transform(
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
-    cube_sum_rollup = np.zeros((n_groups, n_genes), dtype=np.float32)
-    cube_nnz_rollup = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz)
-
-    cell_types = list(cube_index.index.get_level_values("cell_type_ontology_term_id").astype("str"))
-    cube_sum_rollup, cube_nnz_rollup = rollup_across_cell_type_descendants(cell_types, [cube_sum, cube_nnz])
-    return cube_index, cube_sum, cube_nnz, cube_sum_rollup, cube_nnz_rollup
+    return cube_index, cube_sum, cube_nnz
 
 
 @log_func_runtime

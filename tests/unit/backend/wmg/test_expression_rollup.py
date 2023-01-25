@@ -1,7 +1,6 @@
 import unittest
 import numpy as np
-from backend.wmg.pipeline.summary_cubes.rollup import rollup_across_cell_type_descendants
-
+from backend.wmg.api.rollup import rollup_across_cell_type_descendants
 
 class RollupExpressionsAcrossCellTypesTest(unittest.TestCase):
     # test that the rollup function works as expected for input 2d arrays
