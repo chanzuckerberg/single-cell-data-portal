@@ -26,7 +26,8 @@ def build_in_mem_cube(
         cube_index.index.get_level_values("disease_ontology_term_id").astype("str")
         == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
     )
-    cube_index = cube_index[healthy_filter]
+    if np.any(healthy_filter):
+        cube_index = cube_index[healthy_filter]
 
     # Count total values so we can allocate buffers once
     total_vals = 0
