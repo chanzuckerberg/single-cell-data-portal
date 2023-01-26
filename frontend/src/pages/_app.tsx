@@ -16,7 +16,7 @@ import configs from "src/configs/configs";
 import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
 import "src/layout.css";
-// import { useWindowLocationOrigin } from "src/common/hooks/useWindowLocationOrigin";
+import { useWindowLocationOrigin } from "src/common/hooks/useWindowLocationOrigin";
 
 declare global {
   interface Window {
@@ -39,10 +39,10 @@ type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
 
-function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
+function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element | null {
   const Layout = Component.Layout || DefaultLayout;
-  // const windowLocationOriginUri = useWindowLocationOrigin();
-  const windowLocationOriginUri = "https://dan-key-gen-frontend.rdev.single-cell.czi.technology/";
+  const windowLocationOriginUri = useWindowLocationOrigin();
+  // const windowLocationOriginUri = "https://dan-key-gen-frontend.rdev.single-cell.czi.technology/";
   console.log("window loc:");
   console.log(windowLocationOriginUri);
   const ConditionalAuth0Provider = windowLocationOriginUri ? Auth0Provider : Fragment;
@@ -58,6 +58,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
       (window.plausible.q = window.plausible.q || []).push(args);
     }
   }, []);
+  if (!windowLocationOriginUri) return null; 
 
   return (
     <>
