@@ -310,7 +310,6 @@ export function formDataToObject(formData: FormData): {
 export type CollectionUploadLinks = {
   collectionId: string;
   payload: string;
-  token: string;
 };
 
 async function collectionUploadLinks({
