@@ -215,12 +215,14 @@ def rollup(dot_plot_matrix_df, cell_counts_cell_type_agg) -> Tuple[DataFrame, Da
     if dot_plot_matrix_df.shape[0] > 0:
         dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df)
 
-    # make the cell counts dataframe tidy
-    for col in cell_counts_cell_type_agg.index.names:
-        cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
-    cell_counts_cell_type_agg = rollup_across_cell_type_descendants(cell_counts_cell_type_agg)
-    # clean up columns that were added to the dataframe to make it tidy
-    cell_counts_cell_type_agg.drop(columns=cell_counts_cell_type_agg.index.names, inplace=True)
+    if cell_counts_cell_type_agg.shape[0] > 0:
+        # make the cell counts dataframe tidy
+        for col in cell_counts_cell_type_agg.index.names:
+            cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
+        cell_counts_cell_type_agg = rollup_across_cell_type_descendants(cell_counts_cell_type_agg)
+
+        # clean up columns that were added to the dataframe to make it tidy
+        cell_counts_cell_type_agg.drop(columns=cell_counts_cell_type_agg.index.names, inplace=True)
     return dot_plot_matrix_df, cell_counts_cell_type_agg
 
 
