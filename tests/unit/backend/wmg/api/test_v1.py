@@ -660,6 +660,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 # the values for dev_stage terms when a dev stage filter is included should match the values returned
                 # if no filter is passed in for dev stage
                 response = self.app.post("/wmg/v1/query", json=filter_0_request)
+                self.assertEqual(200, response.status_code)
                 dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
                 self_reported_ethnicity_terms = json.loads(response.data)["filter_dims"][
                     "self_reported_ethnicity_terms"
