@@ -207,7 +207,8 @@ def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame, is_rollup
     dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg)
 
     if is_rollup:
-        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df)
+        if dot_plot_matrix_df.shape[0] > 0:
+            dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df)
         # make the cell counts dataframe tidy
         for col in cell_counts_cell_type_agg.index.names:
             cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
