@@ -74,28 +74,33 @@ def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_te
         columns aggregated across the cell type's descendants.
     """
     df = df.copy()
-
+    # numeric data
     numeric_df = df.select_dtypes(include="number")
+    # non-numeric data
     dimensions_df = df.select_dtypes(exclude="number")
-
+    # move the cell type column to the front of the dataframe
     cell_type_column = dimensions_df.pop(cell_type_col)
     dimensions_df.insert(0, cell_type_col, cell_type_column)
 
+    # calculate integer indices for each non-numeric column in the input dataframe
+    # and calculate the shape of the output array
     dim_indices = []
     dim_shapes = []
     for col in dimensions_df.columns:
+        # map each unique value in the column to an integer index
         dim = dimensions_df[col].to_numpy()
         unique_dim = dimensions_df[col].unique()
         indices = pd.Series(data=range(len(unique_dim)), index=unique_dim)[dim].to_numpy()
         dim_shapes.append(len(unique_dim))
         dim_indices.append(indices)
+    # the last dimension corresponds to the numeric columns
     dim_shapes.append(numeric_df.shape[1])
     dim_shapes = tuple(dim_shapes)
     array_to_sum = np.zeros(dim_shapes)
+    # slot the numeric data into the multi-dimensional numpy array
     array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
 
     cell_types = cell_type_column.unique()
-
     descendants = find_descendants_per_cell_type(cell_types)
     # a pandas series to map cell types to their index in the input arrays
     indexer = pd.Series(index=cell_types, data=range(len(cell_types)))
@@ -111,9 +116,11 @@ def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_te
     linear_indices = np.array(linear_indices)
     descendants_indexes = np.concatenate(descendants_indexes)
 
+    # roll up the multi-dimensional array across cell types (first axis)
     summed = np.zeros_like(array_to_sum)
     _array_summer(array_to_sum, summed, descendants_indexes, linear_indices)
 
+    # extract numeric data and write back into the dataframe
     summed = summed[tuple(dim_indices)]
     dtypes = numeric_df.dtypes
     for col, array in zip(numeric_df.columns, summed.T):
