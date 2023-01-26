@@ -7,7 +7,7 @@ from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
 
 
 # ontology object
-onto = None
+ontology = None
 
 
 def find_descendants_per_cell_type(cell_types):
@@ -25,16 +25,16 @@ def find_descendants_per_cell_type(cell_types):
         List of lists of descendants for each cell type in the input list.
     """
 
-    global onto
-    if not onto:
-        onto = owlready2.get_ontology(CL_BASIC_PERMANENT_URL_OWL)
-        onto.load()
+    global ontology
+    if not ontology:
+        ontology = owlready2.get_ontology(CL_BASIC_PERMANENT_URL_OWL)
+        ontology.load()
 
     # cache finding descendants per cell type
     @lru_cache(maxsize=None)
     def _descendants(cell_type):
         cell_type_iri = cell_type.replace(":", "_")
-        entity = onto.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
+        entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
         if entity:
             descendants = [i.name.replace("_", ":") for i in entity.descendants()]
         else:
@@ -118,7 +118,7 @@ def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_te
 
     # roll up the multi-dimensional array across cell types (first axis)
     summed = np.zeros_like(array_to_sum)
-    _array_summer(array_to_sum, summed, descendants_indexes, linear_indices)
+    _sum_array_elements(array_to_sum, summed, descendants_indexes, linear_indices)
 
     # extract numeric data and write back into the dataframe
     summed = summed[tuple(dim_indices)]
@@ -130,7 +130,7 @@ def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_te
 
 
 @nb.njit(parallel=True, fastmath=True, nogil=True)
-def _array_summer(array, summed, descendants_indexes, linear_indices):
+def _sum_array_elements(array, summed, descendants_indexes, linear_indices):
     for i in nb.prange(len(linear_indices) - 1):
         index = descendants_indexes[linear_indices[i] : linear_indices[i + 1]]
         for j in index:
