@@ -90,6 +90,7 @@ export default function SaveImage({
   }, [isOpen]);
 
   const handleDownload = useCallback(async () => {
+    setIsOpen(false);
     setIsDownloading(true);
     setEchartsRendererMode("svg");
 
@@ -127,24 +128,14 @@ export default function SaveImage({
           });
           // raw URI if only one tissue is selected
 
-          // DEBUG
-          // DEBUG
-          // DEBUG
-          // update logic here later
-          const input =
-            selectedTissues.length === 1
-              ? processSvg({
-                  height,
-                  svg: decodeURIComponent(imageURL.split(",")[1]),
-                  tissueName,
-                })
-              : isPNG // otherwise, convert to array buffer if PNG
-              ? base64URLToArrayBuffer(imageURL)
+          const input = 
+            isPNG 
+              ? selectedTissues.length === 1 ? imageURL : base64URLToArrayBuffer(imageURL)
               : processSvg({
                   height,
                   svg: decodeURIComponent(imageURL.split(",")[1]),
-                  tissueName,
-                });
+                  tissueName
+              });
 
           return {
             input,
@@ -167,9 +158,17 @@ export default function SaveImage({
         const blob = await downloadZip(images).blob();
         link.href = URL.createObjectURL(blob);
         link.download = `CELLxGENE_gene_expression.zip`;
-      } else {
-        link.href = images[0].input as string;
-        link.download = images[0].name;
+      } else {;
+        if(isPNG) {
+          // PNG download link
+          link.href = images[0].input as string;
+          link.download = images[0].name;
+        } else { 
+          // SVG download link
+          // (ashin-czi): Fixes SVG string breaking when encountering a "#" character
+          link.href = "data:image/svg+xml," + (images[0].input as string).replace(/#/g, "%23");
+          link.download = images[0].name;
+        }
       }
       link.click();
       link.remove();
@@ -200,7 +199,7 @@ export default function SaveImage({
         <StyledButtonIcon
           data-test-id="download-button"
           // TODO: put handleButtonClick when svgs are fixed
-          onClick={handleDownload}
+          onClick={handleButtonClick}
           disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
           sdsSize="medium"
           sdsType="primary"
@@ -271,28 +270,18 @@ function processSvg({
   console.log("-heatmapContainer", heatmapContainer);
 
   // Render elements to SVG
-  const dotsSvg = renderDots({ heatmapContainer, tissueName });
-  const yAxisSvg = renderYAxis({
-    heatmapContainer,
-    height,
-    tissueName,
-  });
+  const xAxisSvg = renderXAxis({ heatmapContainer });
+  const yAxisSvg = renderYAxis({ heatmapContainer, height, tissueName });
+  const dotsSvg = renderDots({ heatmapContainer, tissueName, xPosition: yAxisSvg!.width.baseVal.value });
   const legendSvg = renderLegend({ heatmapContainer });
   
-  const svgWidth = yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value;
-  const xAxisSvg = renderXAxis({ heatmapContainer, tissueName, width: svgWidth });
+  const svgWidth = yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value + 20;
+  const svgHeight = dotsSvg!.height.baseVal.value + xAxisSvg!.height.baseVal.value;
   const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
 
-  finalSvg.setAttribute("height", String(dotsSvg!.height.baseVal.value));
-  finalSvg.setAttribute("width", String(svgWidth));
-  finalSvg.setAttribute("xmlns", NAME_SPACE_URI);
-  finalSvg.setAttribute("version", "1.1");
-  finalSvg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-
-  // Positioning
-  yAxisSvg?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + 25}`);
-  dotsSvg?.setAttribute("x", String(yAxisSvg!.width.baseVal.value));
-  dotsSvg?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + 20}`);
+  finalSvg.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns', NAME_SPACE_URI)
+  finalSvg.setAttribute("height", `${svgHeight}`);
+  finalSvg.setAttribute("width", `${svgWidth}`);
 
   // Append elements to final SVG
   finalSvg.append(legendSvg!);
@@ -300,34 +289,30 @@ function processSvg({
   finalSvg.append(yAxisSvg!);
   finalSvg.append(dotsSvg!);
   
-  // (ashin-czi): Fixes SVG string breaking when encountering a "#" character
-  const finalSvgString = finalSvg.outerHTML.replace(/#/g, "%23");
-  
+  // DEBUG
+  // DEBUG
+  // open()?.document.body.append(finalSvg!);
 
-  // Temporary download snippet
-  const link = document.createElement("a");
-  link.href = `data:image/svg+xml,${finalSvgString}`;
-  link.download = `CELLxGENE_gene_expression.svg`;
-  link.click();
-  link.remove();
-
-  open()?.document.body.append(finalSvg!);
-
-  return heatmapContainer?.innerHTML;
+  return finalSvg.outerHTML;
 }
 
 function renderDots({
   heatmapContainer,
   tissueName,
+  xPosition,
 }: {
   heatmapContainer?: HTMLElement | null;
   tissueName: Tissue;
+  xPosition: number;
 }) {
   if (!heatmapContainer) return;
 
   const chart = heatmapContainer
     .querySelector(`#${tissueName}-chart`)
     ?.querySelector("svg");
+
+  chart?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + 20}`);
+  chart?.setAttribute("x", `${xPosition}`);
 
   // Cleanup as style attributes aren't used in SVG files
   chart?.removeAttribute("style");
@@ -501,12 +486,8 @@ function renderColorScale({
 
 function renderXAxis({
   heatmapContainer,
-  tissueName,
-  width,
 }: {
   heatmapContainer?: HTMLElement | null;
-  tissueName: Tissue;
-  width: number;
 }) {
   if (!heatmapContainer) return;
 
@@ -519,13 +500,11 @@ function renderXAxis({
 
   const svgAttributes = {
     height: `${200}px`,
-    width: `${width}px`,
     x: `${Y_AXIS_CHART_WIDTH_PX}`,
     y: `10`,
     fill: ECHART_AXIS_LABEL_COLOR_HEX,
     "font-family": FONT_FAMILY,
     "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
-    // overflow: "visible",
   };
 
   applyAttributes(svg, svgAttributes);
@@ -591,6 +570,7 @@ function renderYAxis({
   const svg = document.createElementNS(NAME_SPACE_URI, "svg");
 
   const svgAttributes = {
+    y: `${X_AXIS_CHART_HEIGHT_PX + 25}`,
     height: `${height}px`,
     width: `${Y_AXIS_CHART_WIDTH_PX + 60}px`, // Adds padding for current tissue label
   };
@@ -649,13 +629,16 @@ function renderYAxis({
 
     // cellTypeLabel
     const cellTypeLabel = document.createElementNS(NAME_SPACE_URI, "text");
-
+    
+    // Preserves whitespace
+    cellTypeLabel.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space", "preserve");
+    
     const labelAttributes = {
       x: 0,
       y: 0,
     };
-
-    applyAttributes(cellTypeLabel, labelAttributes);
+    
+    applyAttributes(cellTypeLabel, labelAttributes); 
     cellTypeLabel.textContent = String(label);
 
     // cellCount

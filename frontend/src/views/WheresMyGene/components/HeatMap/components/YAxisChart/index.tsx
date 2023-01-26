@@ -33,6 +33,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveImage";
 
 const MAX_DEPTH = 2;
 
@@ -189,6 +190,7 @@ const CellTypeButton = ({
           cellType &&
           cellType.total_count > 25 && (
             <InfoButtonWrapper
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               style={{
                 cursor: "pointer",
                 paddingTop: "3px",
