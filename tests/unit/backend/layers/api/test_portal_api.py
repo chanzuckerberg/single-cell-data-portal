@@ -388,7 +388,11 @@ class TestCollection(BaseAPIPortalTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={
+                "host": "localhost",
+                "Content-Type": "application/json",
+                "Authorization": self.get_mock_cxguser_token(),
+            },
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -1116,7 +1120,11 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     def test__update_collection_strip_string_fields__OK(self):
         collection = self.generate_unpublished_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Authorization": self.get_mock_cxguser_token(),
+        }
 
         # Update the collection
         new_body = {
