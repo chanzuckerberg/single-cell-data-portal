@@ -1,4 +1,4 @@
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0, LocalStorageCache } from "@auth0/auth0-react";
 
 export const DEFAULT_FETCH_OPTIONS: RequestInit = {
   credentials: "include",
@@ -30,6 +30,13 @@ export function useAccessToken(apiCaller: CallableFunction) {
   return async (...args: any) => {
     const token: string = await getAccessTokenSilently();
     console.log(`Retrieved access token: ${token}`);
+    // Store refresh token
+    const refresh_token = new LocalStorageCache;
+    const key = refresh_token.allKeys().find((key: string | string[]) => key.includes('auth0spa')) || "";
+    const refresh_token_value = refresh_token.get(key);
+    // @ts-ignore
+    const finalRefreshToken = refresh_token_value?.body?.refresh_token
+    localStorage.setItem('refresh_token', finalRefreshToken);
     return apiCaller(...args, token);
   }
 }
