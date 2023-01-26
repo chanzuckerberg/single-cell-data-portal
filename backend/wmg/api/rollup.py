@@ -55,6 +55,15 @@ def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_te
     """
     Aggregate values for each cell type across its descendants in the input arrays.
 
+    The non-numeric columns in the input dataframe must contain cell type ontology term IDs,
+    and are treated as the dimensions of a multi-dimensional numpy array. The numeric data in
+    the dataframe is slotted into this array and rolled up along the first axis (which will always
+    correspond to the cell type ontology term IDs). The resulting rolled up array is reshaped back
+    into the tidy dataframe and returned.
+
+    This ensures that cell types are only rolled up within each combination of other dimensions
+    (e.g. tissue, gene, organism). We wouldn't want to roll up expressions across genes and tissues.
+
     Parameters
     ----------
     df : pandas DataFrame
