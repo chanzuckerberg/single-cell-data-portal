@@ -124,17 +124,18 @@ export default function SaveImage({
             filter: screenshotFilter(tissueName),
             height: height + X_AXIS_CHART_HEIGHT_PX + 120,
             pixelRatio: 4,
-            width: heatmapNode.width, 
+            width: heatmapNode.width,
           });
           // raw URI if only one tissue is selected
 
-          const input = 
-            isPNG 
-              ? selectedTissues.length === 1 ? imageURL : base64URLToArrayBuffer(imageURL)
-              : processSvg({
-                  height,
-                  svg: decodeURIComponent(imageURL.split(",")[1]),
-                  tissueName
+          const input = isPNG
+            ? selectedTissues.length === 1
+              ? imageURL
+              : base64URLToArrayBuffer(imageURL)
+            : processSvg({
+                height,
+                svg: decodeURIComponent(imageURL.split(",")[1]),
+                tissueName,
               });
 
           return {
@@ -151,22 +152,24 @@ export default function SaveImage({
         heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
       }
 
-      const link = document.createElement("a"); 
+      const link = document.createElement("a");
 
       if (images.length > 1) {
         const { downloadZip } = await import("client-zip");
         const blob = await downloadZip(images).blob();
         link.href = URL.createObjectURL(blob);
         link.download = `CELLxGENE_gene_expression.zip`;
-      } else {;
-        if(isPNG) {
+      } else {
+        if (isPNG) {
           // PNG download link
           link.href = images[0].input as string;
           link.download = images[0].name;
-        } else { 
+        } else {
           // SVG download link
           // (ashin-czi): Fixes SVG string breaking when encountering a "#" character
-          link.href = "data:image/svg+xml," + (images[0].input as string).replace(/#/g, "%23");
+          link.href =
+            "data:image/svg+xml," +
+            (images[0].input as string).replace(/#/g, "%23");
           link.download = images[0].name;
         }
       }
@@ -272,14 +275,24 @@ function processSvg({
   // Render elements to SVG
   const xAxisSvg = renderXAxis({ heatmapContainer });
   const yAxisSvg = renderYAxis({ heatmapContainer, height, tissueName });
-  const dotsSvg = renderDots({ heatmapContainer, tissueName, xPosition: yAxisSvg!.width.baseVal.value });
+  const dotsSvg = renderDots({
+    heatmapContainer,
+    tissueName,
+    xPosition: yAxisSvg!.width.baseVal.value,
+  });
   const legendSvg = renderLegend({ heatmapContainer });
-  
-  const svgWidth = yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value + 20;
-  const svgHeight = dotsSvg!.height.baseVal.value + xAxisSvg!.height.baseVal.value;
+
+  const svgWidth =
+    yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value + 20;
+  const svgHeight =
+    dotsSvg!.height.baseVal.value + xAxisSvg!.height.baseVal.value;
   const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
 
-  finalSvg.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns', NAME_SPACE_URI)
+  finalSvg.setAttributeNS(
+    "http://www.w3.org/2000/xmlns/",
+    "xmlns",
+    NAME_SPACE_URI
+  );
   finalSvg.setAttribute("height", `${svgHeight}`);
   finalSvg.setAttribute("width", `${svgWidth}`);
 
@@ -288,7 +301,7 @@ function processSvg({
   finalSvg.append(xAxisSvg!);
   finalSvg.append(yAxisSvg!);
   finalSvg.append(dotsSvg!);
-  
+
   // DEBUG
   // DEBUG
   // open()?.document.body.append(finalSvg!);
@@ -316,11 +329,11 @@ function renderDots({
 
   // Cleanup as style attributes aren't used in SVG files
   chart?.removeAttribute("style");
-  Array.from(
-    chart?.querySelectorAll("rect, path, g") || []
-  ).forEach((element) => {
-    element.removeAttribute("style");
-  });
+  Array.from(chart?.querySelectorAll("rect, path, g") || []).forEach(
+    (element) => {
+      element.removeAttribute("style");
+    }
+  );
 
   // This returns svg as string
   console.log("-chart", chart?.parentElement?.innerHTML);
@@ -329,7 +342,6 @@ function renderDots({
 }
 
 const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
-
 
 function renderLegend({
   heatmapContainer,
@@ -340,9 +352,14 @@ function renderLegend({
 
   const width = 120;
 
-  const legend = heatmapContainer.querySelectorAll(`[class*="-LegendWrapper"] [class*="-Wrapper"]`);
-  const colorScale = renderColorScale({heatmapContainer: legend[0], width });
-  const expressedInCells = renderExpressedInCells({heatmapContainer: legend[1], width });
+  const legend = heatmapContainer.querySelectorAll(
+    `[class*="-LegendWrapper"] [class*="-Wrapper"]`
+  );
+  const colorScale = renderColorScale({ heatmapContainer: legend[0], width });
+  const expressedInCells = renderExpressedInCells({
+    heatmapContainer: legend[1],
+    width,
+  });
 
   const FONT_FAMILY = "sans-serif";
 
@@ -358,7 +375,7 @@ function renderLegend({
   };
 
   applyAttributes(svg, svgAttributes);
-  
+
   svg.append(colorScale!);
   svg.append(expressedInCells!);
 
@@ -367,7 +384,7 @@ function renderLegend({
 
 function renderExpressedInCells({
   heatmapContainer,
-  width = 0
+  width = 0,
 }: {
   heatmapContainer?: Element | null;
   width?: number;
@@ -381,7 +398,8 @@ function renderExpressedInCells({
 
   // Expressed in cells label
   const expressedCellsLabel = document.createElementNS(NAME_SPACE_URI, "text");
-  expressedCellsLabel.textContent = heatmapContainer.querySelector(`label`)?.innerHTML!;
+  expressedCellsLabel.textContent =
+    heatmapContainer.querySelector(`label`)?.innerHTML!;
   expressedCellsLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
 
   // Expressed in cells dots
@@ -389,38 +407,49 @@ function renderExpressedInCells({
   expressedCellsDots.setAttribute("fill", "#CCCCCC");
 
   const dots = heatmapContainer?.querySelectorAll(`span[class*="-Dot"]`);
-  Array.from(
-    dots || []
-  ).forEach((dot, index) => {
+  Array.from(dots || []).forEach((dot, index) => {
     const circle = document.createElementNS(NAME_SPACE_URI, "circle");
 
     const circleAttributes = {
-      r: `${Number(dot.getAttribute("size"))/2}`,
-      transform: `translate(${xPosition+2 + 28*index}, 60)`
+      r: `${Number(dot.getAttribute("size")) / 2}`,
+      transform: `translate(${xPosition + 2 + 28 * index}, 60)`,
     };
 
     applyAttributes(circle, circleAttributes);
 
     expressedCellsDots.append(circle);
   });
-  
-  // Expressed in cells values
-  const expressedCellsValuesGroup = document.createElementNS(NAME_SPACE_URI, "g");
-  expressedCellsValuesGroup.setAttribute("transform", `translate(${xPosition}, 80)`);
-  const colorScaleValues = heatmapContainer.querySelectorAll(`[class*="LowHigh"] span`);
 
-  const expressedCellsValueLow = document.createElementNS(NAME_SPACE_URI, "text");
+  // Expressed in cells values
+  const expressedCellsValuesGroup = document.createElementNS(
+    NAME_SPACE_URI,
+    "g"
+  );
+  expressedCellsValuesGroup.setAttribute(
+    "transform",
+    `translate(${xPosition}, 80)`
+  );
+  const colorScaleValues = heatmapContainer.querySelectorAll(
+    `[class*="LowHigh"] span`
+  );
+
+  const expressedCellsValueLow = document.createElementNS(
+    NAME_SPACE_URI,
+    "text"
+  );
   expressedCellsValueLow.setAttribute("x", "0");
   expressedCellsValueLow.textContent = colorScaleValues[0].innerHTML!;
 
-  const expressedCellsValueHigh = document.createElementNS(NAME_SPACE_URI, "text");
+  const expressedCellsValueHigh = document.createElementNS(
+    NAME_SPACE_URI,
+    "text"
+  );
   expressedCellsValueHigh.setAttribute("x", `${width}`);
   expressedCellsValueHigh.setAttribute("text-anchor", "end");
   expressedCellsValueHigh.textContent = colorScaleValues[1].innerHTML!;
 
   expressedCellsValuesGroup.append(expressedCellsValueLow);
   expressedCellsValuesGroup.append(expressedCellsValueHigh);
-
 
   // Append color scale legend
   expressedCellsGroup.append(expressedCellsLabel);
@@ -430,10 +459,9 @@ function renderExpressedInCells({
   return expressedCellsGroup;
 }
 
-
 function renderColorScale({
   heatmapContainer,
-  width = 0
+  width = 0,
 }: {
   heatmapContainer?: Element | null;
   width?: number;
@@ -447,34 +475,47 @@ function renderColorScale({
 
   // Color scale label
   const colorScaleLabel = document.createElementNS(NAME_SPACE_URI, "text");
-  colorScaleLabel.textContent = heatmapContainer.querySelector(`label`)?.innerHTML!;
+  colorScaleLabel.textContent =
+    heatmapContainer.querySelector(`label`)?.innerHTML!;
   colorScaleLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
 
   // Color scale image
   const colorScaleImage = document.createElementNS(NAME_SPACE_URI, "image");
-  const colorScaleImgSrc = document.querySelector(`#visualization-color-scale`)?.getAttribute("src");
+  const colorScaleImgSrc = document
+    .querySelector(`#visualization-color-scale`)
+    ?.getAttribute("src");
   console.log("-colorScaleImgSrc", colorScaleImgSrc);
-  colorScaleImage.setAttribute("href", `https://cellxgene.cziscience.com${colorScaleImgSrc}`);
+  colorScaleImage.setAttribute(
+    "href",
+    `https://cellxgene.cziscience.com${colorScaleImgSrc}`
+  );
   colorScaleImage.setAttribute("transform", `translate(${xPosition}, 50)`);
   colorScaleImage.setAttribute("width", `${width}px`);
-  
+
   // Color scale values
   const colorScaleValuesGroup = document.createElementNS(NAME_SPACE_URI, "g");
-  colorScaleValuesGroup.setAttribute("transform", `translate(${xPosition}, 80)`);
-  const colorScaleValues = heatmapContainer.querySelectorAll(`[class*="LowHigh"] span`);
+  colorScaleValuesGroup.setAttribute(
+    "transform",
+    `translate(${xPosition}, 80)`
+  );
+  const colorScaleValues = heatmapContainer.querySelectorAll(
+    `[class*="LowHigh"] span`
+  );
 
   const colorScaleValueLow = document.createElementNS(NAME_SPACE_URI, "text");
   colorScaleValueLow.setAttribute("x", "0");
   colorScaleValueLow.textContent = colorScaleValues[0].innerHTML!;
 
   const colorScaleValueHigh = document.createElementNS(NAME_SPACE_URI, "text");
-  colorScaleValueHigh.setAttribute("x", `${colorScaleImage.width.baseVal.valueAsString}`);
+  colorScaleValueHigh.setAttribute(
+    "x",
+    `${colorScaleImage.width.baseVal.valueAsString}`
+  );
   colorScaleValueHigh.setAttribute("text-anchor", "end");
   colorScaleValueHigh.textContent = colorScaleValues[1].innerHTML!;
 
   colorScaleValuesGroup.append(colorScaleValueLow);
   colorScaleValuesGroup.append(colorScaleValueHigh);
-
 
   // Append color scale legend
   colorScaleGroup.append(colorScaleLabel);
@@ -511,41 +552,42 @@ function renderXAxis({
 
   // Create cell type count label
   const cellTypeCount = document.createElementNS(NAME_SPACE_URI, "text");
-  
+
   const cellTypeCountAttributes = {
     x: 0,
     width: `100px`,
     transform: `translate(40, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
     "text-anchor": "end",
   };
-  
+
   applyAttributes(cellTypeCount, cellTypeCountAttributes);
   cellTypeCount.textContent = "Cell Count";
-  
+
   svg.append(cellTypeCount);
-  
+
   // Create gene labels
   const geneLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
 
-  Array.from(
-    xAxis?.querySelectorAll(`[class*="XAxisLabel"]`) || []
-  ).forEach((label, index) => {
+  Array.from(xAxis?.querySelectorAll(`[class*="XAxisLabel"]`) || []).forEach(
+    (label, index) => {
+      const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
 
-    const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
+      const labelAttributes = {
+        x: 0,
+        transform: `translate(${
+          65 + 20 * index
+        }, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
+        "text-anchor": "end",
+      };
 
-    const labelAttributes = {
-      x: 0,
-      transform: `translate(${65 + 20*index}, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
-      "text-anchor": "end",
-    };
+      applyAttributes(geneLabelText, labelAttributes);
+      geneLabelText.textContent = label.innerHTML;
 
-    applyAttributes(geneLabelText, labelAttributes);
-    geneLabelText.textContent = label.innerHTML;
+      console.log("-geneLabelText.textContent", geneLabelText.textContent);
 
-    console.log("-geneLabelText.textContent", geneLabelText.textContent)
-
-    geneLabelContainer.append(geneLabelText);
-  });
+      geneLabelContainer.append(geneLabelText);
+    }
+  );
 
   svg.append(geneLabelContainer);
 
@@ -591,7 +633,7 @@ function renderYAxis({
   tissueLabelRect.setAttribute("x", "40");
   tissueLabelRect.setAttribute("width", "5");
   tissueLabelRect.setAttribute("height", height + "");
-  
+
   tissueLabelContainer.append(tissueLabelText);
   tissueLabelContainer.append(tissueLabelRect);
 
@@ -629,16 +671,20 @@ function renderYAxis({
 
     // cellTypeLabel
     const cellTypeLabel = document.createElementNS(NAME_SPACE_URI, "text");
-    
+
     // Preserves whitespace
-    cellTypeLabel.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space", "preserve");
-    
+    cellTypeLabel.setAttributeNS(
+      "http://www.w3.org/XML/1998/namespace",
+      "xml:space",
+      "preserve"
+    );
+
     const labelAttributes = {
       x: 0,
       y: 0,
     };
-    
-    applyAttributes(cellTypeLabel, labelAttributes); 
+
+    applyAttributes(cellTypeLabel, labelAttributes);
     cellTypeLabel.textContent = String(label);
 
     // cellCount
