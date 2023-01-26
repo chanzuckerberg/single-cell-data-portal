@@ -9,7 +9,6 @@ on:
   pull_request:
     branches:
       - "*"
-      - "dan/rdev-api"
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
