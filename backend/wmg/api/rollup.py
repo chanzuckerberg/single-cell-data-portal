@@ -7,7 +7,21 @@ from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
 
 
 # ontology object
-ontology = None
+ontology = owlready2.get_ontology(CL_BASIC_PERMANENT_URL_OWL)
+ontology.load()
+
+
+# cache finding descendants per cell type
+@lru_cache(maxsize=None)
+def _descendants(cell_type):
+    global ontology
+    cell_type_iri = cell_type.replace(":", "_")
+    entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
+    if entity:
+        descendants = [i.name.replace("_", ":") for i in entity.descendants()]
+    else:
+        descendants = [cell_type]
+    return descendants
 
 
 def find_descendants_per_cell_type(cell_types):
@@ -24,22 +38,6 @@ def find_descendants_per_cell_type(cell_types):
     descendants_per_cell_type : list
         List of lists of descendants for each cell type in the input list.
     """
-
-    global ontology
-    if not ontology:
-        ontology = owlready2.get_ontology(CL_BASIC_PERMANENT_URL_OWL)
-        ontology.load()
-
-    # cache finding descendants per cell type
-    @lru_cache(maxsize=None)
-    def _descendants(cell_type):
-        cell_type_iri = cell_type.replace(":", "_")
-        entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
-        if entity:
-            descendants = [i.name.replace("_", ":") for i in entity.descendants()]
-        else:
-            descendants = [cell_type]
-        return descendants
 
     descendants_per_cell_type = []
     for cell_type in cell_types:
