@@ -51,7 +51,7 @@ def find_descendants_per_cell_type(cell_types):
     return descendants_per_cell_type
 
 
-def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_term_id"):
+def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_term_id") -> pd.DataFrame:
     """
     Aggregate values for each cell type across its descendants in the input arrays.
 

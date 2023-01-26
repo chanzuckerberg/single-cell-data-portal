@@ -41,7 +41,9 @@ def query():
 
     expression_summary = q.expression_summary(criteria)
     cell_counts = q.cell_counts(criteria)
-    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts, is_rollup)
+    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
+    if is_rollup:
+        dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
     response_filter_dims_values = (
         build_filter_dims_values(criteria, snapshot, expression_summary) if include_filter_dims else {}
@@ -200,23 +202,25 @@ def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
     return cell_counts_tissue_agg
 
 
-def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame, is_rollup: bool) -> Tuple[DataFrame, DataFrame]:
+def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame) -> Tuple[DataFrame, DataFrame]:
     # Get the dot plot matrix dataframe and aggregated cell counts per cell type
     cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts)
     cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
     dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg)
+    return dot_plot_matrix_df, cell_counts_cell_type_agg
 
-    if is_rollup:
-        if dot_plot_matrix_df.shape[0] > 0:
-            dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df)
-        # make the cell counts dataframe tidy
-        for col in cell_counts_cell_type_agg.index.names:
-            cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
-        cell_counts_cell_type_agg = rollup_across_cell_type_descendants(cell_counts_cell_type_agg)
-        # clean up columns that were added to the dataframe to make it tidy
-        for col in cell_counts_cell_type_agg.index.names:
-            del cell_counts_cell_type_agg[col]
 
+def rollup(dot_plot_matrix_df, cell_counts_cell_type_agg) -> Tuple[DataFrame, DataFrame]:
+    # Roll up numeric columns in the input dataframes
+    if dot_plot_matrix_df.shape[0] > 0:
+        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df)
+
+    # make the cell counts dataframe tidy
+    for col in cell_counts_cell_type_agg.index.names:
+        cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
+    cell_counts_cell_type_agg = rollup_across_cell_type_descendants(cell_counts_cell_type_agg)
+    # clean up columns that were added to the dataframe to make it tidy
+    cell_counts_cell_type_agg.drop(columns=cell_counts_cell_type_agg.index.names, inplace=True)
     return dot_plot_matrix_df, cell_counts_cell_type_agg
 
 
