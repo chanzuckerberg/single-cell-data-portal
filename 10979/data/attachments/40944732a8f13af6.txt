@@ -1,0 +1,24 @@
+headers -  {'host': 'localhost', 'Authorization': 'Bearer owner'}
+
+
+using lenient func
+
+headers -  {'host': 'localhost', 'Authorization': 'Bearer owner'}
+
+
+using lenient func
+
+headers -  {'host': 'localhost', 'Authorization': 'Bearer owner'}
+
+
+using lenient func
+
+headers -  {'host': 'localhost', 'Authorization': 'Bearer owner'}
+
+
+using lenient func
+
+headers -  {'host': 'localhost'}
+headers -  {'host': 'localhost'}
+headers -  {'host': 'localhost'}
+headers -  {'host': 'localhost'}
