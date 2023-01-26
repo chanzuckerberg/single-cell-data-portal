@@ -316,6 +316,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         dataset_version = self.datasets_versions[version_id.id]
         dataset_version.status.validation_message = validation_message
 
+    def increment_dataset_revision_counter(self, dataset_id: DatasetId) -> None:
+        self.datasets[dataset_id.id].revision_count = 1 + self.datasets[dataset_id.id].revision_count
+
+
     def add_dataset_to_collection_version(self, version_id: CollectionVersionId, dataset_id: DatasetId) -> None:
         # Not needed for now - create_dataset does this
         # As an alternative, this could either be called by create_dataset

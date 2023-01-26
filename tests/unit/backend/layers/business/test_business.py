@@ -1351,6 +1351,68 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(dataset_0.canonical_dataset.published_at, published_collection.published_at)
         self.assertEqual(dataset_1.canonical_dataset.published_at, published_collection.published_at)
 
+    
+    def test_dataset_revision_count_increases_when_publishing(self):
+        """
+        When publishing a collection that contains a dataset replaced once,
+        the revision count for the replaced dataset should increase by 1
+        """
+
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+
+        # We will replace the first dataset
+        dataset_version_id_to_replace = published_collection.datasets[0].version_id
+        dataset_id_to_replace = published_collection.datasets[0].dataset_id
+
+        dataset_from_db = self.business_logic.get_dataset_version_from_canonical(dataset_id_to_replace)
+        self.assertEqual(dataset_from_db.canonical_dataset.revision_count, 0)
+
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            new_version.version_id, "http://fake.url", None, dataset_version_id_to_replace
+        )
+
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
+
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        dataset_from_db = self.business_logic.get_dataset_version_from_canonical(dataset_id_to_replace)
+        self.assertEqual(dataset_from_db.canonical_dataset.revision_count, 1)
+
+    def test_dataset_revision_count_does_not_increase_more_than_one(self):
+        """
+        When publishing a collection that contains a dataset replaced multiple times,
+        the revision count for the replaced dataset should still increase by 1
+        """
+
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+
+        # We will replace the first dataset
+        dataset_version_id_to_replace = published_collection.datasets[0].version_id
+        dataset_id_to_replace = published_collection.datasets[0].dataset_id
+
+        dataset_from_db = self.business_logic.get_dataset_version_from_canonical(dataset_id_to_replace)
+        self.assertEqual(dataset_from_db.canonical_dataset.revision_count, 0)
+
+        # Replace a dataset for the first time
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            new_version.version_id, "http://fake.url", None, dataset_version_id_to_replace
+        )
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
+
+        # Replace a dataset for the second time
+        replaced_dataset_version_id_2, _ = self.business_logic.ingest_dataset(
+            new_version.version_id, "http://fake.url", None, replaced_dataset_version_id
+        )
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id_2)
+
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        dataset_from_db = self.business_logic.get_dataset_version_from_canonical(dataset_id_to_replace)
+        self.assertEqual(dataset_from_db.canonical_dataset.revision_count, 1)
+
+
 
 if __name__ == "__main__":
     unittest.main()

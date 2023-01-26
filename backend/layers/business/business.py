@@ -520,7 +520,7 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Publishes a collection version.
         """
-        version = self.database_provider.get_collection_version(version_id)
+        version = self.database_provider.get_collection_version_with_datasets(version_id)
 
         if version.published_at is not None:
             raise CollectionPublishException("Cannot publish an already published collection")
@@ -528,6 +528,18 @@ class BusinessLogic(BusinessLogicInterface):
         if len(version.datasets) == 0:
             raise CollectionPublishException("Cannot publish a collection with no datasets")
 
+        # Increment the dataset counters
+        published_version = self.get_published_collection_version(version.canonical_collection.id)
+        if published_version is not None:
+            old_datasets = [d.version_id for d in published_version.datasets]
+            for dataset in version.datasets:
+                # A dataset is revised if: 
+                # 1. Its canonical dataset has already been published (published_at is not None)
+                # 2. Its version_id does not appear in the published collection version
+                if dataset.canonical_dataset.published_at is not None and dataset.version_id not in old_datasets:
+                    self.database_provider.increment_dataset_revision_counter(dataset.canonical_dataset.dataset_id)
+
+        # Finalize the collection version
         self.database_provider.finalize_collection_version(version.collection_id, version_id)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:

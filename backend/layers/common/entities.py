@@ -176,6 +176,7 @@ class CanonicalDataset:
     dataset_version_id: Optional[DatasetVersionId]
     published_at: Optional[datetime] = None
     revised_at: Optional[datetime] = None  # The last time this Dataset Version was Published
+    revision_count: int = 0
 
 
 @dataclass
