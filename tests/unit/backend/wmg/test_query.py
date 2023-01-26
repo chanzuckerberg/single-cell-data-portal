@@ -132,7 +132,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria), False)
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -206,7 +206,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria), False)
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -433,7 +433,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria), False)
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -507,7 +507,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria), False)
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -584,7 +584,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria), False)
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
