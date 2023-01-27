@@ -24,7 +24,7 @@ locals {
   frontend_cmd                 = []
   # TODO: Assess whether this is safe for Portal API as well. Trying 1 worker in rdev portal backend containers, to minimize use of memory by TileDB (allocates multi-GB per process)
   backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "5", "--log-level", "info"]
-  data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/dev_data.sql"
+  data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_2023.sql"
 
   vpc_id                          = local.secret["vpc_id"]
   subnets                         = local.secret["private_subnets"]

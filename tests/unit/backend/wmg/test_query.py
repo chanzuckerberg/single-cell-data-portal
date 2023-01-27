@@ -132,10 +132,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(
-                q.expression_summary(criteria),
-                q.cell_counts(criteria),
-            )
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -159,39 +156,27 @@ class QueryTest(unittest.TestCase):
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
         ]
 
@@ -221,10 +206,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(
-                q.expression_summary(criteria),
-                q.cell_counts(criteria),
-            )
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -244,156 +226,108 @@ class QueryTest(unittest.TestCase):
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells_cell_type": 21870,
-                "n_cells_cell_type_rollup": 21870,
                 "n_cells_tissue": 65610,
-                "n_cells_tissue_rollup": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
-                "nnz_rollup": 2187,
-                "sum_rollup": 2187.0,
             },
         ]
 
@@ -439,11 +373,7 @@ class QueryTest(unittest.TestCase):
 
         # after aggregating, we will get three tissues, and three cell types per tissue,
         # with 729 * expected_count total cells
-        expected = (
-            [{"n_cells_cell_type": 2187 * expected_count, "n_cells_cell_type_rollup": 2187 * expected_count}]
-            * len(criteria.tissue_ontology_term_ids)
-            * dim_size
-        )
+        expected = [{"n_cells_cell_type": 2187 * expected_count}] * len(criteria.tissue_ontology_term_ids) * dim_size
         self.assertEqual(expected, result.to_dict("records"))
 
     def test__query_agg_tissue_counts__returns_correct_result(self):
@@ -479,7 +409,6 @@ class QueryTest(unittest.TestCase):
         expected = [
             {
                 "n_cells_tissue": 2187 * expected_count * dim_size,
-                "n_cells_tissue_rollup": 2187 * expected_count * dim_size,
             }
         ] * len(criteria.tissue_ontology_term_ids)
         self.assertEqual(expected, result.to_dict("records"))
@@ -504,10 +433,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(
-                q.expression_summary(criteria),
-                q.cell_counts(criteria),
-            )
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -530,39 +456,27 @@ class QueryTest(unittest.TestCase):
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells_cell_type": 7290,
-                "n_cells_cell_type_rollup": 7290,
                 "n_cells_tissue": 21870,
-                "n_cells_tissue_rollup": 21870,
                 "nnz": 729,
                 "sum": 729.0,
-                "nnz_rollup": 729,
-                "sum_rollup": 729.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells_cell_type": 7290,
-                "n_cells_cell_type_rollup": 7290,
                 "n_cells_tissue": 21870,
-                "n_cells_tissue_rollup": 21870,
                 "nnz": 729,
                 "sum": 729.0,
-                "nnz_rollup": 729,
-                "sum_rollup": 729.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells_cell_type": 7290,
-                "n_cells_cell_type_rollup": 7290,
                 "n_cells_tissue": 21870,
-                "n_cells_tissue_rollup": 21870,
                 "nnz": 729,
                 "sum": 729.0,
-                "nnz_rollup": 729,
-                "sum_rollup": 729.0,
             },
         ]
 
@@ -593,10 +507,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(
-                q.expression_summary(criteria),
-                q.cell_counts(criteria),
-            )
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -619,39 +530,27 @@ class QueryTest(unittest.TestCase):
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells_cell_type": 14580,
-                "n_cells_cell_type_rollup": 14580,
                 "n_cells_tissue": 43740,
-                "n_cells_tissue_rollup": 43740,
                 "nnz": 1458,
                 "sum": 1458.0,
-                "nnz_rollup": 1458,
-                "sum_rollup": 1458.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells_cell_type": 14580,
-                "n_cells_cell_type_rollup": 14580,
                 "n_cells_tissue": 43740,
-                "n_cells_tissue_rollup": 43740,
                 "nnz": 1458,
                 "sum": 1458.0,
-                "nnz_rollup": 1458,
-                "sum_rollup": 1458.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells_cell_type": 14580,
-                "n_cells_cell_type_rollup": 14580,
                 "n_cells_tissue": 43740,
-                "n_cells_tissue_rollup": 43740,
                 "nnz": 1458,
                 "sum": 1458.0,
-                "nnz_rollup": 1458,
-                "sum_rollup": 1458.0,
             },
         ]
 
@@ -685,10 +584,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             q = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(
-                q.expression_summary(criteria),
-                q.cell_counts(criteria),
-            )
+            result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -710,39 +606,27 @@ class QueryTest(unittest.TestCase):
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
                 "n_cells_cell_type": 4860,
-                "n_cells_cell_type_rollup": 4860,
                 "n_cells_tissue": 14580,
-                "n_cells_tissue_rollup": 14580,
                 "nnz": 486,
                 "sum": 486.0,
-                "nnz_rollup": 486,
-                "sum_rollup": 486.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                 "n_cells_cell_type": 4860,
-                "n_cells_cell_type_rollup": 4860,
                 "n_cells_tissue": 14580,
-                "n_cells_tissue_rollup": 14580,
                 "nnz": 486,
                 "sum": 486.0,
-                "nnz_rollup": 486,
-                "sum_rollup": 486.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
                 "n_cells_cell_type": 4860,
-                "n_cells_cell_type_rollup": 4860,
                 "n_cells_tissue": 14580,
-                "n_cells_tissue_rollup": 14580,
                 "nnz": 486,
                 "sum": 486.0,
-                "nnz_rollup": 486,
-                "sum_rollup": 486.0,
             },
         ]
 
