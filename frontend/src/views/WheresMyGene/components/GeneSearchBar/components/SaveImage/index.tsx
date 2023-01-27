@@ -539,7 +539,7 @@ function renderXAxis({
 }) {
   if (!heatmapContainer) return;
 
-  const xAxis = heatmapContainer.querySelector(`[class*="XAxisWrapper"]`);
+  const xAxis = heatmapContainer.querySelector(`#x-axis-wrapper`);
 
   const FONT_FAMILY = "sans-serif";
 
