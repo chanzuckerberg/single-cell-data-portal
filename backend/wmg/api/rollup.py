@@ -24,14 +24,29 @@ def _descendants(cell_type):
     return descendants
 
 
-def find_descendants_per_cell_type(cell_types):
+@lru_cache(maxsize=None)
+def _ancestors(cell_type):
+    global ontology
+    cell_type_iri = cell_type.replace(":", "_")
+    entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
+    if entity:
+        ancestors = [i.name.replace("_", ":") for i in entity.ancestors()]
+    else:
+        ancestors = [cell_type]
+    return ancestors
+
+
+def find_lineage_per_cell_type(cell_types, descendants=True):
     """
-    Find descendants for each cell type in the input list.
+    Find the ancestors or descendants for each cell type in the input list.
 
     Parameters
     ----------
     cell_types : list
         List of cell types (cell type ontology term IDs) to find descendants for
+
+    descendants : bool, optional, default=True
+        If True, find descendants. If False, find ancestors.
 
     Returns
     -------
@@ -39,21 +54,41 @@ def find_descendants_per_cell_type(cell_types):
         List of lists of descendants for each cell type in the input list.
     """
 
-    descendants_per_cell_type = []
+    relatives_per_cell_type = []
     for cell_type in cell_types:
-        descendants = _descendants(cell_type)
-        descendants_per_cell_type.append(descendants)
+        relatives = _descendants(cell_type) if descendants else _ancestors(cell_type)
+        relatives_per_cell_type.append(relatives)
 
-    for i, children in enumerate(descendants_per_cell_type):
+    for i, children in enumerate(relatives_per_cell_type):
         # remove descendent cell types that are not cell types in the WMG data
-        descendants_per_cell_type[i] = list(set(children).intersection(cell_types))
+        relatives_per_cell_type[i] = list(set(children).intersection(cell_types))
 
-    return descendants_per_cell_type
+    return relatives_per_cell_type
+
+
+def are_cell_types_colinear(cell_type1, cell_type2):
+    """
+    Determine if two cell types are colinear in the ontology.
+    Colinearity means that cell type 1 is an aacestor of cell type 2
+    or vice-versa.
+    Arguments
+    ---------
+    cell_type1 : str
+        Cell type 1 (cell type ontology term id)
+    cell_type2 : str
+        Cell type 2 (cell type ontology term id)
+    Returns
+    -------
+    bool
+    """
+    descendants1, descendants2 = find_lineage_per_cell_type([cell_type1, cell_type2])
+    ancestors1, ancestors2 = find_lineage_per_cell_type([cell_type1, cell_type2], descendants=False)
+    return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
 
 
 def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_term_id") -> pd.DataFrame:
     """
-    Aggregate values for each cell type across its descendants in the input arrays.
+    Aggregate values for each cell type across its descendants in the input dataframe.
 
     The non-numeric columns in the input dataframe must contain cell type ontology term IDs,
     and are treated as the dimensions of a multi-dimensional numpy array. The numeric data in
@@ -108,7 +143,38 @@ def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_te
     array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
 
     cell_types = cell_type_column.unique()
-    descendants = find_descendants_per_cell_type(cell_types)
+
+    summed = rollup_across_cell_type_descendants_array(array_to_sum, cell_types)
+
+    # extract numeric data and write back into the dataframe
+    summed = summed[tuple(dim_indices)]
+    dtypes = numeric_df.dtypes
+    for col, array in zip(numeric_df.columns, summed.T):
+        df[col] = array.astype(dtypes[col])
+
+    return df
+
+
+def rollup_across_cell_type_descendants_array(array_to_sum, cell_types) -> np.ndarray:
+    """
+    Aggregate values for each cell type across its descendants in the input array.
+    Cell types must be the first dimension of the input array.
+
+    Parameters
+    ----------
+    array_to_sum : numpy array
+        Multi-dimensional numpy array containing the numeric data to be rolled up. The first
+        dimension must correspond to the cell type ontology term IDs.
+
+    cell_types : list
+        List of cell type ontology term IDs corresponding to the first dimension of the input
+
+    Returns
+    -------
+    summed : numpy array
+        Multi-dimensional numpy array aggregated across the cell type's descendants.
+    """
+    descendants = find_lineage_per_cell_type(cell_types)
     # a pandas series to map cell types to their index in the input arrays
     indexer = pd.Series(index=cell_types, data=range(len(cell_types)))
     descendants_indexes = [indexer[children].to_numpy() for children in descendants]
@@ -126,14 +192,7 @@ def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_te
     # roll up the multi-dimensional array across cell types (first axis)
     summed = np.zeros_like(array_to_sum)
     _sum_array_elements(array_to_sum, summed, descendants_indexes, linear_indices)
-
-    # extract numeric data and write back into the dataframe
-    summed = summed[tuple(dim_indices)]
-    dtypes = numeric_df.dtypes
-    for col, array in zip(numeric_df.columns, summed.T):
-        df[col] = array.astype(dtypes[col])
-
-    return df
+    return summed
 
 
 @nb.njit(parallel=True, fastmath=True, nogil=True)
