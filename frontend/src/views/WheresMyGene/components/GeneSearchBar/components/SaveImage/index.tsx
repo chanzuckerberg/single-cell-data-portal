@@ -352,12 +352,19 @@ function renderLegend({
 
   const width = 120;
 
-  const legend = heatmapContainer.querySelectorAll(
-    `[class*="-LegendWrapper"] [class*="-Wrapper"]`
+  const relativeGeneExpressionElement = heatmapContainer.querySelector(
+    `#relative-gene-expression`
   );
-  const colorScale = renderColorScale({ heatmapContainer: legend[0], width });
+  const expressedInCellsElement = heatmapContainer.querySelector(
+    `#expressed-in-cells`
+  );
+
+  const colorScale = renderColorScale({ 
+    element: relativeGeneExpressionElement, 
+    width,
+  });
   const expressedInCells = renderExpressedInCells({
-    heatmapContainer: legend[1],
+    element: expressedInCellsElement,
     width,
   });
 
@@ -383,13 +390,13 @@ function renderLegend({
 }
 
 function renderExpressedInCells({
-  heatmapContainer,
+  element,
   width = 0,
 }: {
-  heatmapContainer?: Element | null;
+  element?: Element | null;
   width?: number;
 }) {
-  if (!heatmapContainer) return;
+  if (!element) return;
 
   const expressedCellsGroup = document.createElementNS(NAME_SPACE_URI, "g");
   expressedCellsGroup.id = "expressed-in-cells";
@@ -399,14 +406,14 @@ function renderExpressedInCells({
   // Expressed in cells label
   const expressedCellsLabel = document.createElementNS(NAME_SPACE_URI, "text");
   expressedCellsLabel.textContent =
-    heatmapContainer.querySelector(`label`)?.innerHTML!;
+    element.querySelector(`#expressed-in-cells-label`)?.innerHTML!;
   expressedCellsLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
 
   // Expressed in cells dots
   const expressedCellsDots = document.createElementNS(NAME_SPACE_URI, "g");
   expressedCellsDots.setAttribute("fill", "#CCCCCC");
 
-  const dots = heatmapContainer?.querySelectorAll(`span[class*="-Dot"]`);
+  const dots = element?.querySelectorAll(`#expressed-in-cells-dots span`);
   Array.from(dots || []).forEach((dot, index) => {
     const circle = document.createElementNS(NAME_SPACE_URI, "circle");
 
@@ -429,8 +436,8 @@ function renderExpressedInCells({
     "transform",
     `translate(${xPosition}, 80)`
   );
-  const colorScaleValues = heatmapContainer.querySelectorAll(
-    `[class*="LowHigh"] span`
+  const expressedCellsValues = element.querySelectorAll(
+    `.low-high span`
   );
 
   const expressedCellsValueLow = document.createElementNS(
@@ -438,7 +445,7 @@ function renderExpressedInCells({
     "text"
   );
   expressedCellsValueLow.setAttribute("x", "0");
-  expressedCellsValueLow.textContent = colorScaleValues[0].innerHTML!;
+  expressedCellsValueLow.textContent = expressedCellsValues[0].innerHTML!;
 
   const expressedCellsValueHigh = document.createElementNS(
     NAME_SPACE_URI,
@@ -446,7 +453,7 @@ function renderExpressedInCells({
   );
   expressedCellsValueHigh.setAttribute("x", `${width}`);
   expressedCellsValueHigh.setAttribute("text-anchor", "end");
-  expressedCellsValueHigh.textContent = colorScaleValues[1].innerHTML!;
+  expressedCellsValueHigh.textContent = expressedCellsValues[1].innerHTML!;
 
   expressedCellsValuesGroup.append(expressedCellsValueLow);
   expressedCellsValuesGroup.append(expressedCellsValueHigh);
@@ -460,13 +467,13 @@ function renderExpressedInCells({
 }
 
 function renderColorScale({
-  heatmapContainer,
+  element,
   width = 0,
 }: {
-  heatmapContainer?: Element | null;
+  element?: Element | null;
   width?: number;
 }) {
-  if (!heatmapContainer) return;
+  if (!element) return;
 
   const xPosition = "40";
 
@@ -476,7 +483,7 @@ function renderColorScale({
   // Color scale label
   const colorScaleLabel = document.createElementNS(NAME_SPACE_URI, "text");
   colorScaleLabel.textContent =
-    heatmapContainer.querySelector(`label`)?.innerHTML!;
+    element.querySelector(`#relative-gene-expression-label`)?.innerHTML!;
   colorScaleLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
 
   // Color scale image
@@ -498,8 +505,8 @@ function renderColorScale({
     "transform",
     `translate(${xPosition}, 80)`
   );
-  const colorScaleValues = heatmapContainer.querySelectorAll(
-    `[class*="LowHigh"] span`
+  const colorScaleValues = element.querySelectorAll(
+    `.low-high span`
   );
 
   const colorScaleValueLow = document.createElementNS(NAME_SPACE_URI, "text");
@@ -568,7 +575,7 @@ function renderXAxis({
   // Create gene labels
   const geneLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
 
-  Array.from(xAxis?.querySelectorAll(`[class*="XAxisLabel"]`) || []).forEach(
+  Array.from(xAxis?.querySelectorAll(`[data-test-id*='gene-label-'] div`) || []).forEach(
     (label, index) => {
       const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
 
