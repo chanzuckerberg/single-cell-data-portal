@@ -535,7 +535,7 @@ def migrate_redesign_correct_published_at(ctx):
                         continue
                     # print(new_version.id, new_version.published_at, record.published_at)
                     print(f"Setting version {new_version.id}'s published_at from {new_version.published_at} to {record.revised_at}")
-                    # new_version.published_at = record.revised_at # uncomment this line
+                    new_version.published_at = record.revised_at # uncomment this line
                 except Exception as e:
                     # In this case there is more than one version 
                     print(e)
