@@ -85,7 +85,6 @@ class WmgQuery:
             indexed_dims=["tissue_ontology_term_ids", "tissue_original_ontology_term_ids", "organism_ontology_term_id"],
         )
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
-        cell_counts.rename(columns={"n_cells_rollup": "n_total_cells_rollup"}, inplace=True)
         return cell_counts
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
