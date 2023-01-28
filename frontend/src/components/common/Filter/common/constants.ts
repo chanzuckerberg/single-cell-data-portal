@@ -2976,6 +2976,18 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     viewKind: "SELECT",
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_SUSPENSION_TYPE,
+    analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.SUSPENSION_TYPE,
+    categoryFilterId: CATEGORY_FILTER_ID.SUSPENSION_TYPE,
+    filterOnKey: "suspension_type",
+    label: "Suspension Type",
+    labelKind: "VALUE",
+    matchKind: "INCLUDES_SOME",
+    multiselect: true,
+    valueSourceKind: "NONE",
+    viewKind: "SELECT",
+  },
+  {
     categoryFilterId: CATEGORY_FILTER_ID.TISSUE_CALCULATED,
     descendants: TISSUE_DESCENDANTS,
     filterOnKey: "tissueCalculated",
