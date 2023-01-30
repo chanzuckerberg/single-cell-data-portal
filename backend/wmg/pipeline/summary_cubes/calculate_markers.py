@@ -290,8 +290,8 @@ def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_id
 
     unique_groups = list(t_n_cells_sum.keys())
     n_cells_array = np.vstack(list(t_n_cells_sum.values()))
-    if "cell_type_ontology_term_id" in n_cells.index.names:
-        cell_type_index = list(n_cells.index.names).index("cell_type_ontology_term_id")
+    if "cell_type_ontology_term_id" in level_names:
+        cell_type_index = level_names.index("cell_type_ontology_term_id")
         cell_types = [group[cell_type_index] for group in unique_groups]
         n_cells_array = rollup_across_cell_type_descendants_array(n_cells_array, cell_types)
 
