@@ -164,12 +164,26 @@ def _query_tiledb_context(
         `n_cells_per_gene`
     - genes: a list of all genes with nonzero expression found in the query result
     """
-    group_by_dims = list(target_filters.keys())
     keep_dataset_ids = "dataset_ids" in target_filters
+    group_by_dims = _find_groupby_dims(target_filters, context_filters)
     return _query_tiledb_context_memoized(context_filters, group_by_dims, keep_dataset_ids, corpus=corpus)
 
 
-def _query_tiledb_target(
+def _find_groupby_dims(target_filters, context_filters):
+    # find mismatch between target_filter and context_filter
+    # comparisons will be made across the mismatched dimensions
+    target_levels = []
+    for k in target_filters:
+        if k in context_filters:
+            out = list(set(target_filters[k]).symmetric_difference(context_filters[k]))
+            if len(out) > 0:
+                target_levels.append(k[:-1])  # depluralize
+        else:
+            target_levels.append(k[:-1])
+    return target_levels
+
+
+def _query_target(
     target_filters: dict,
     context_filters: dict,
     context_agg: pd.DataFrame,
@@ -207,14 +221,7 @@ def _query_tiledb_target(
 
     # find mismatch between target_filter and context_filter
     # comparisons will be made across the mismatched dimensions
-    target_levels = []
-    for k in target_filters:
-        if k in context_filters:
-            out = list(set(target_filters[k]).symmetric_difference(context_filters[k]))
-            if len(out) > 0:
-                target_levels.append(k[:-1])  # depluralize
-        else:
-            target_levels.append(k[:-1])
+    target_levels = _find_groupby_dims(target_filters, context_filters)
 
     filt = np.ones(context_agg.shape[0], dtype="bool")
     for level in target_levels:
@@ -363,7 +370,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
     context_agg, n_cells_per_gene_context, n_cells_index_context, genes = _query_tiledb_context(
         target_filters, context_filters, corpus=corpus
     )
-    target_agg, n_cells_per_gene_target = _query_tiledb_target(
+    target_agg, n_cells_per_gene_target = _query_target(
         target_filters, context_filters, context_agg, n_cells_per_gene_context, n_cells_index_context
     )
 
