@@ -1,14 +1,10 @@
-import unittest
-
 import pandas
 
-import time
 from unittest.mock import patch
 
 import anndata
 
 import numpy as np
-import pandas
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.common.entities import OntologyTermId
 
@@ -16,7 +12,6 @@ from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
 class TestProcessingDownloadValidate(BaseProcessingTest):
-
     def setUp(self):
         super().setUp()
         self.pdv = ProcessDownloadValidate(
@@ -107,7 +102,11 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
 
         self.assertCountEqual(
             extracted_metadata.assay,
-            [OntologyTermId("10x", "EFO:001"), OntologyTermId("smartseq", "EFO:010"), OntologyTermId("cite-seq", "EFO:011")],
+            [
+                OntologyTermId("10x", "EFO:001"),
+                OntologyTermId("smartseq", "EFO:010"),
+                OntologyTermId("cite-seq", "EFO:011"),
+            ],
         )
 
         self.assertCountEqual(extracted_metadata.disease, [OntologyTermId("healthy", "MONDO:123")])
@@ -124,7 +123,11 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
 
         self.assertCountEqual(
             extracted_metadata.development_stage,
-            [OntologyTermId("adult", "HsapDv:0"), OntologyTermId("baby", "HsapDv:1"), OntologyTermId("tween", "HsapDv:2")],
+            [
+                OntologyTermId("adult", "HsapDv:0"),
+                OntologyTermId("baby", "HsapDv:1"),
+                OntologyTermId("tween", "HsapDv:2"),
+            ],
         )
 
         self.assertCountEqual(

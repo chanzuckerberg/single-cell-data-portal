@@ -1,13 +1,9 @@
 from unittest.mock import Mock, patch
 
-from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_seurat import ProcessSeurat
-from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
-from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
-from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
 from backend.layers.common.entities import (
     DatasetArtifactType,
     DatasetConversionStatus,
@@ -15,12 +11,10 @@ from backend.layers.common.entities import (
     DatasetUploadStatus,
     DatasetValidationStatus,
 )
-from tests.unit.backend.layers.common.base_test import BaseTest
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
 class ProcessingTest(BaseProcessingTest):
-
     def test_process_download_validate_success(self):
         """
         ProcessDownloadValidate should:
