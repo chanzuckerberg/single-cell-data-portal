@@ -79,11 +79,7 @@ export default function SaveImage({
   setEchartsRendererMode,
 }: Props): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  const [fileType, setFileType] = useState<"png" | "svg">("svg");
-  // const [fileType, setFileType] = useState<"png" | "svg">("png");
+  const [fileType, setFileType] = useState<"png" | "svg">("png");
   const handleButtonClick = useCallback(() => {
     if (!isOpen) track(EVENTS.WMG_DOWNLOAD_CLICKED);
     setIsOpen(!isOpen);
@@ -269,9 +265,6 @@ function processSvg({
     .querySelector("foreignObject")
     ?.querySelector("div");
 
-  console.log("-heatmapNode", heatmapNode);
-  console.log("-heatmapContainer", heatmapContainer);
-
   // Render elements to SVG
   const xAxisSvg = renderXAxis({ heatmapContainer });
   const yAxisSvg = renderYAxis({ heatmapContainer, height, tissueName });
@@ -302,10 +295,6 @@ function processSvg({
   finalSvg.append(yAxisSvg!);
   finalSvg.append(dotsSvg!);
 
-  // DEBUG
-  // DEBUG
-  // open()?.document.body.append(finalSvg!);
-
   return finalSvg.outerHTML;
 }
 
@@ -334,9 +323,6 @@ function renderDots({
       element.removeAttribute("style");
     }
   );
-
-  // This returns svg as string
-  console.log("-chart", chart?.parentElement?.innerHTML);
 
   return chart;
 }
@@ -491,7 +477,7 @@ function renderColorScale({
   const colorScaleImgSrc = document
     .querySelector(`#visualization-color-scale`)
     ?.getAttribute("src");
-  console.log("-colorScaleImgSrc", colorScaleImgSrc);
+
   colorScaleImage.setAttribute(
     "href",
     `https://cellxgene.cziscience.com${colorScaleImgSrc}`
@@ -589,8 +575,6 @@ function renderXAxis({
 
       applyAttributes(geneLabelText, labelAttributes);
       geneLabelText.textContent = label.innerHTML;
-
-      console.log("-geneLabelText.textContent", geneLabelText.textContent);
 
       geneLabelContainer.append(geneLabelText);
     }
@@ -716,14 +700,6 @@ function renderYAxis({
 
   svg.append(tissueLabelContainer);
   svg.append(cellTypeNamesContainer);
-
-  // This returns svg as string
-  console.log("svg", svg.innerHTML);
-
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // open()?.document.body.appendChild(svg);
 
   return svg;
 }
