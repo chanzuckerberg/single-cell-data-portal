@@ -1037,7 +1037,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
     def test_publish_version_with_updated_metadata_ok(self):
         """
-        Publishing a collection with updated metadata should succeed
+        Publishing a collection with updated metadata should succeed, but not update revised_at
         """
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
@@ -1057,7 +1057,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.business_logic.publish_collection_version(new_version.version_id)
 
         new_version_from_db = self.database_provider.get_collection_version(new_version.version_id)
-        self.assertIsNotNone(new_version_from_db.published_at)
+        # Canonical Collection's revised_at should NOT be updated for collection metadata only revisions
+        self.assertIsNone(new_version_from_db.canonical_collection.revised_at)
         self.assertEqual(published_collection.collection_id, new_version_from_db.collection_id)
         self.assertEqual(new_version.version_id, new_version_from_db.version_id)
         self.assertEqual([d.version_id for d in new_version.datasets], new_version_from_db.datasets)
@@ -1099,8 +1100,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(1, len(version_from_db.datasets))
 
         # The old version should still have two datasets (after publishing)
-        version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
-        self.assertEqual(2, len(version_from_db.datasets))
+        old_version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
+        self.assertEqual(2, len(old_version_from_db.datasets))
+
+        # The Canonical Collection should have an updated revised_at timestamp
+        self.assertEqual(version_from_db.canonical_collection.revised_at, version_from_db.published_at)
+        self.assertTrue(version_from_db.canonical_collection.revised_at > old_version_from_db.published_at)
 
         # Get collection retrieves the new version (with one datasets)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
@@ -1140,8 +1145,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(3, len(version_from_db.datasets))
 
         # The old version should still have two datasets (after publishing)
-        version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
-        self.assertEqual(2, len(version_from_db.datasets))
+        old_version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
+        self.assertEqual(2, len(old_version_from_db.datasets))
+
+        # The Canonical Collection should have an updated revised_at timestamp
+        self.assertEqual(version_from_db.canonical_collection.revised_at, version_from_db.published_at)
+        self.assertTrue(version_from_db.canonical_collection.revised_at > old_version_from_db.published_at)
 
         # Get collection retrieves the new version (with three datasets, including the new one)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
@@ -1191,9 +1200,13 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], version_from_db.datasets)
 
         # The old version should have the correct datasets (after publishing)
-        version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
-        self.assertEqual(2, len(version_from_db.datasets))
-        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], version_from_db.datasets)
+        old_version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
+        self.assertEqual(2, len(old_version_from_db.datasets))
+        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], old_version_from_db.datasets)
+
+        # The Canonical Collection should have an updated revised_at timestamp
+        self.assertEqual(version_from_db.canonical_collection.revised_at, version_from_db.published_at)
+        self.assertTrue(version_from_db.canonical_collection.revised_at > old_version_from_db.published_at)
 
         # Get collection retrieves the new version (with two datasets, including the replaced one)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
