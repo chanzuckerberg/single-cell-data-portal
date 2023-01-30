@@ -528,17 +528,19 @@ class BusinessLogic(BusinessLogicInterface):
         if len(version.datasets) == 0:
             raise CollectionPublishException("Cannot publish a collection with no datasets")
 
-        published_at = None
-        # if collection is a revision and has no changes to previous version's datasets--set same 'published_at'
+        has_dataset_revisions = False
+        # if collection is a revision and has no changes to previous version's datasets--don't update 'revised_at'
         # used for cases where revision only contains collection-level metadata changes
         if version.canonical_collection.version_id is not None:
             canonical_version = self.database_provider.get_collection_version(version.canonical_collection.version_id)
             canonical_datasets = set([dataset_version_id.id for dataset_version_id in canonical_version.datasets])
             version_datasets = set([dataset_version_id.id for dataset_version_id in version.datasets])
-            if canonical_datasets == version_datasets:
-                published_at = canonical_version.published_at
+            if canonical_datasets != version_datasets:
+                has_dataset_revisions = True
 
-        self.database_provider.finalize_collection_version(version.collection_id, version_id, published_at)
+        self.database_provider.finalize_collection_version(
+            version.collection_id, version_id, update_revised_at=has_dataset_revisions
+        )
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         """

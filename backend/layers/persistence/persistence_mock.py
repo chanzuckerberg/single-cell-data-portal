@@ -63,7 +63,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> CollectionVersion:
         collection_id = CollectionId()
         version_id = CollectionVersionId()
-        canonical = CanonicalCollection(collection_id, None, None, False)
+        canonical = CanonicalCollection(collection_id, None, None, None, False)
         version = CollectionVersion(
             collection_id=collection_id,
             version_id=version_id,
@@ -191,6 +191,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
+        update_revised_at: bool = False,
     ) -> None:
 
         published_at = published_at if published_at else datetime.utcnow()
@@ -206,12 +207,18 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         cc = self.collections.get(collection_id.id)
         if cc is None:
             self.collections[collection_id.id] = CanonicalCollection(
-                id=collection_id, version_id=version_id, originally_published_at=published_at, tombstoned=False
+                id=collection_id,
+                version_id=version_id,
+                originally_published_at=published_at,
+                revised_at=None,
+                tombstoned=False,
             )
 
         else:
             new_cc = copy.deepcopy(cc)
             new_cc.version_id = version_id
+            if update_revised_at:
+                new_cc.revised_at = published_at
             self.collections[collection_id.id] = new_cc
         self.collections_versions[version_id.id].published_at = published_at
 

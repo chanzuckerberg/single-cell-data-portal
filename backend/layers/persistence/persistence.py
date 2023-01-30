@@ -188,10 +188,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         version_id = CollectionVersionId()
         now = datetime.utcnow()
         canonical_collection = CollectionTable(
-            id=collection_id.id,
-            version_id=None,
-            tombstone=False,
-            originally_published_at=None,
+            id=collection_id.id, version_id=None, tombstone=False, originally_published_at=None, revised_at=None
         )
 
         collection_version_row = CollectionVersionTable(
@@ -399,6 +396,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
+        update_revised_at: bool = False,
     ) -> None:
         """
         Finalizes a collection version
@@ -409,9 +407,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection = session.query(CollectionTable).filter_by(id=collection_id.id).one()
             collection.version_id = version_id.id
 
-            # update canonical collection if this is its first publish
+            # update canonical collection timestamps depending on whether this is its first publish
             if collection.originally_published_at is None:
                 collection.originally_published_at = published_at
+            # if not first publish, update revised_at if flagged to do so
+            elif update_revised_at:
+                collection.revised_at = published_at
 
             # update collection version
             collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
