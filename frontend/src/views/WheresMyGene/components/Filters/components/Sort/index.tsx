@@ -1,5 +1,8 @@
 import { InputDropdownProps as IInputDropdownProps } from "czifui";
 import { useContext, useMemo } from "react";
+import { FEATURES } from "src/common/featureFlags/features";
+import { get } from "src/common/featureFlags";
+import { BOOLEAN } from "src/common/localStorage/set";
 import {
   DispatchContext,
   StateContext,
@@ -11,6 +14,11 @@ import { FilterLabel, FilterWrapper, Label, StyledDropdown } from "./style";
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
 };
+
+const CELL_TYPE_OPTIONS = [
+  { id: SORT_BY.CELL_ONTOLOGY, name: "Cell Ontology" },
+  { id: SORT_BY.H_CLUSTER, name: "Hierarchical" },
+];
 
 const GENE_OPTIONS = [
   { id: SORT_BY.USER_ENTERED, name: "As Entered" },
@@ -33,6 +41,13 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
     [areFiltersDisabled]
   );
 
+  const cellTypeSelectedOptionLabel = useMemo(() => {
+    return (
+      CELL_TYPE_OPTIONS.find((option) => option.id === sortBy.cellTypes)
+        ?.name || CELL_TYPE_OPTIONS[0].name
+    );
+  }, [sortBy]);
+
   const geneSelectedOptionLabel = useMemo(() => {
     return (
       GENE_OPTIONS.find((option) => option.id === sortBy.genes)?.name ||
@@ -40,9 +55,20 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
     );
   }, [sortBy]);
 
+  const isRollup = get(FEATURES.IS_ROLLUP)===BOOLEAN.TRUE;
   return (
     <div>
       <Label>View Options</Label>
+      {!isRollup && <FilterWrapper>
+        <FilterLabel>Sort Cell Types</FilterLabel>
+        <StyledDropdown
+          data-test-id="cell-type-sort-dropdown"
+          onChange={cellTypesOnChange}
+          label={cellTypeSelectedOptionLabel}
+          options={CELL_TYPE_OPTIONS}
+          InputDropdownProps={InputDropdownProps}
+        />
+      </FilterWrapper>}
       <FilterWrapper>
         <FilterLabel>Sort Genes</FilterLabel>
         <StyledDropdown
@@ -55,6 +81,14 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
       </FilterWrapper>
     </div>
   );
+
+  function cellTypesOnChange(
+    value: { id?: SORT_BY; name: string } | null
+  ): void {
+    if (!dispatch || !value) return;
+
+    dispatch(selectSortBy({ cellTypes: value.id as SORT_BY }));
+  }
 
   function genesOnChange(value: { id?: SORT_BY; name: string } | null): void {
     if (!dispatch || !value) return;

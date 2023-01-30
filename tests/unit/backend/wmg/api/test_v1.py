@@ -563,6 +563,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 filter=filter_0,
                 # matters for this test
                 include_filter_dims=True,
+                is_rollup=True,
             )
 
             response = self.app.post("/wmg/v1/query", json=filter_0_request)
@@ -628,6 +629,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     filter=filter_0,
                     # matters for this test
                     include_filter_dims=True,
+                    is_rollup=True,
                 )
 
                 filter_0_no_dev_stage_filter = dict(
@@ -642,7 +644,9 @@ class WmgApiV1Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=[],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                 )
-                filter_0_no_dev_stage_request = dict(filter=filter_0_no_dev_stage_filter, include_filter_dims=True)
+                filter_0_no_dev_stage_request = dict(
+                    filter=filter_0_no_dev_stage_filter, include_filter_dims=True, is_rollup=True
+                )
 
                 filter_0_no_ethnicity_filter = dict(
                     # these don't matter for the expected result
@@ -656,7 +660,9 @@ class WmgApiV1Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
                     self_reported_ethnicity_ontology_term_ids=[],
                 )
-                filter_0_no_ethnicity_request = dict(filter=filter_0_no_ethnicity_filter, include_filter_dims=True)
+                filter_0_no_ethnicity_request = dict(
+                    filter=filter_0_no_ethnicity_filter, include_filter_dims=True, is_rollup=True
+                )
                 # the values for dev_stage terms when a dev stage filter is included should match the values returned
                 # if no filter is passed in for dev stage
                 response = self.app.post("/wmg/v1/query", json=filter_0_request)
@@ -711,7 +717,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"self_reported_ethnicity_ontology_term_id_2": "self_reported_ethnicity_ontology_term_id_2_label"},
                 ]
                 self_reported_ethnicity_0_request = dict(
-                    filter=self_reported_ethnicity_0_filter, include_filter_dims=True
+                    filter=self_reported_ethnicity_0_filter, include_filter_dims=True, is_rollup=True
                 )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_0_request)
                 dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
@@ -740,7 +746,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
                 ]
                 self_reported_ethnicity_1_request = dict(
-                    filter=self_reported_ethnicity_1_filter, include_filter_dims=True
+                    filter=self_reported_ethnicity_1_filter, include_filter_dims=True, is_rollup=True
                 )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_request)
                 dev_stage_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
@@ -760,7 +766,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_1"],
                 )
                 self_reported_ethnicity_1_dev_1_request = dict(
-                    filter=self_reported_ethnicity_1_dev_1_filter, include_filter_dims=True
+                    filter=self_reported_ethnicity_1_dev_1_filter, include_filter_dims=True, is_rollup=True
                 )
 
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_dev_1_request)
@@ -796,9 +802,11 @@ class WmgApiV1Tests(unittest.TestCase):
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_2"],
                 )
                 self_reported_ethnicity_2_request = dict(
-                    filter=self_reported_ethnicity_2_filter, include_filter_dims=True
+                    filter=self_reported_ethnicity_2_filter, include_filter_dims=True, is_rollup=True
                 )
-                eth_2_dev_2_request = dict(filter=self_reported_ethnicity_2_dev_2_filter, include_filter_dims=True)
+                eth_2_dev_2_request = dict(
+                    filter=self_reported_ethnicity_2_dev_2_filter, include_filter_dims=True, is_rollup=True
+                )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_2_request)
                 dev_stage_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
                     "development_stage_terms"
@@ -835,6 +843,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     full_filters_request = dict(
                         filter=full_filters,
                         include_filter_dims=True,
+                        is_rollup=True,
                     )
                     self.app.post("/wmg/v1/query", json=full_filters_request)
                     self.assertEqual(mock_dims.call_count, 5)
@@ -854,6 +863,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     no_secondary_filters_request = dict(
                         filter=no_secondary_filters,
                         include_filter_dims=True,
+                        is_rollup=True,
                     )
                     self.app.post("/wmg/v1/query", json=no_secondary_filters_request)
                     mock_dims.assert_not_called()
@@ -873,6 +883,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     two_secondary_filters_request = dict(
                         filter=two_secondary_filters,
                         include_filter_dims=True,
+                        is_rollup=True,
                     )
                     self.app.post("/wmg/v1/query", json=two_secondary_filters_request)
                     self.assertEqual(mock_dims.call_count, 2)
