@@ -194,7 +194,6 @@ def rollup_across_cell_type_descendants_array(array_to_sum, cell_types) -> np.nd
     _sum_array_elements(array_to_sum, summed, descendants_indexes, linear_indices)
     return summed
 
-
 @nb.njit(parallel=True, fastmath=True, nogil=True)
 def _sum_array_elements(array, summed, descendants_indexes, linear_indices):
     for i in nb.prange(len(linear_indices) - 1):
