@@ -23,6 +23,7 @@ import {
   X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../../HeatMap/utils";
+import { plasmaSvgString } from "../../../InfoPanel/components/ColorScale";
 import { Label } from "../../style";
 import { StyledButtonIcon } from "../QuickSelect/style";
 import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
@@ -473,15 +474,8 @@ function renderColorScale({
   colorScaleLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
 
   // Color scale image
-  const colorScaleImage = document.createElementNS(NAME_SPACE_URI, "image");
-  const colorScaleImgSrc = document
-    .querySelector(`#visualization-color-scale`)
-    ?.getAttribute("src");
-
-  colorScaleImage.setAttribute(
-    "href",
-    `https://cellxgene.cziscience.com${colorScaleImgSrc}`
-  );
+  const colorScaleImage = document.createElementNS(NAME_SPACE_URI, "g");
+  colorScaleImage.innerHTML = plasmaSvgString;
   colorScaleImage.setAttribute("transform", `translate(${xPosition}, 50)`);
   colorScaleImage.setAttribute("width", `${width}px`);
 
@@ -502,7 +496,7 @@ function renderColorScale({
   const colorScaleValueHigh = document.createElementNS(NAME_SPACE_URI, "text");
   colorScaleValueHigh.setAttribute(
     "x",
-    `${colorScaleImage.width.baseVal.valueAsString}`
+    `120`
   );
   colorScaleValueHigh.setAttribute("text-anchor", "end");
   colorScaleValueHigh.textContent = colorScaleValues[1].innerHTML!;
