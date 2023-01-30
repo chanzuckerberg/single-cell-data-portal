@@ -37,6 +37,9 @@ configure_logging()
 
 
 class ProcessMain(ProcessingLogic):
+    """
+    Main class for the dataset pipeline processing
+    """
 
     process_download_validate: ProcessDownloadValidate
     process_seurat: ProcessSeurat
@@ -88,6 +91,9 @@ class ProcessMain(ProcessingLogic):
         artifact_bucket: Optional[str],
         cxg_bucket: Optional[str],
     ):
+        """
+        Gets called by the step function at every different step, as defined by `step_name`
+        """
         self.log_batch_environment()
         self.logger.info(f"Processing dataset {dataset_id}")
         try:
@@ -105,8 +111,10 @@ class ProcessMain(ProcessingLogic):
         # TODO: this could be better - maybe collapse all these exceptions and pass in the status key and value
         except ProcessingCanceled:
             pass  # TODO: what's the effect of canceling a dataset now?
-        except ValidationFailed:
-            self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID)
+        except ValidationFailed as e:
+            self.update_processing_status(
+                dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, e.errors
+            )
             return False
         except ProcessingFailed:
             self.update_processing_status(dataset_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE)

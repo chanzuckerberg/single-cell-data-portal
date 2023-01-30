@@ -25,7 +25,8 @@ def transform(
     """
     Build the summary cube with rankit expression sum & sum of squares, nnz
     (num cells with non zero expression) values for each gene for each possible
-    group of cell attributes (cube row).
+    group of cell attributes (cube row). All values are aggregated across the
+    descendants of the cell type in each group (row).
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -109,6 +110,7 @@ def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFr
     healthy_filter = cell_labels["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
     if np.any(healthy_filter):
         cell_labels = cell_labels[healthy_filter]
+        cell_labels.index = pd.Index(range(len(cell_labels)))
 
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])

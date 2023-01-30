@@ -27,7 +27,12 @@ class BusinessLogicInterface:
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         pass
 
-    def get_published_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+    def get_published_collection_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
+        pass
+
+    def get_unpublished_collection_version_from_canonical(
+        self, collection_id: CollectionId
+    ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
@@ -94,6 +99,7 @@ class BusinessLogicInterface:
         dataset_version_id: DatasetVersionId,
         status_key: DatasetStatusKey,
         new_dataset_status: DatasetStatusGeneric,
+        validation_message: Optional[str] = None,
     ) -> None:
         pass
 

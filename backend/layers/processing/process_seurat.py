@@ -14,6 +14,17 @@ from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
 class ProcessSeurat(ProcessingLogic):
+    """
+    Base class for handling the `Process Seurat` step of the step function.
+    This will:
+    1. Determine if a Seurat conversion is possible (this is set by the previous step - DownloadAndValidate)
+    2. Download the labeled h5ad artifact from S3 (uploaded by DownloadAndValidate)
+    3. Convert to RDS
+    4. Upload the RDS artifact to S3
+    If this step completes successfully, and ProcessCxg is completed, the handle_success lambda will be invoked
+    If this step fails, the handle_failures lambda will be invoked
+    """
+
     def __init__(
         self,
         business_logic: BusinessLogicInterface,

@@ -25,6 +25,7 @@ from backend.layers.business.exceptions import (
     MaxFileSizeExceededException,
 )
 from backend.layers.common import validation
+from backend.layers.common.cleanup import sanitize
 from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
@@ -101,9 +102,10 @@ class BusinessLogic(BusinessLogicInterface):
         retrieve publisher metadata from Crossref and add it to the collection.
         """
 
-        errors = []
+        sanitize(collection_metadata)
+
         # Check metadata is valid
-        collection_metadata.strip_fields()
+        errors = []
         validation.verify_collection_metadata(collection_metadata, errors)
 
         # TODO: Maybe switch link.type to be an enum
@@ -137,6 +139,9 @@ class BusinessLogic(BusinessLogicInterface):
     def get_unpublished_collection_version_from_canonical(
         self, collection_id: CollectionId
     ) -> Optional[CollectionVersionWithDatasets]:
+        """
+        Given a canonical collection_id, retrieves its latest unpublished version
+        """
         latest = datetime.datetime.fromtimestamp(0)
         unpublished_collection = None
         for collection in self.get_collection_versions_from_canonical(collection_id):
@@ -147,7 +152,7 @@ class BusinessLogic(BusinessLogicInterface):
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         """
-        Returns a specific collection version
+        Returns a specific collection version by id
         """
         return self.database_provider.get_collection_version_with_datasets(version_id)
 
@@ -209,7 +214,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
         # TODO: link.type should DEFINITELY move to an enum. pylance will help with the refactor
-
+        sanitize(body)
         errors = []
 
         # Check metadata
@@ -499,12 +504,22 @@ class BusinessLogic(BusinessLogicInterface):
         return self.get_collection_version(added_version_id)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
+        """
+        Deletes a collection version. This method will raise an error if the version is published.
+        (Note: for performance reasons, the check is performed by the underlying layer)
+        """
         self.database_provider.delete_collection_version(version_id)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
+        """
+        Tombstones a canonical collection
+        """
         self.database_provider.delete_canonical_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+        """
+        Publishes a collection version.
+        """
         version = self.database_provider.get_collection_version(version_id)
 
         if version.published_at is not None:
@@ -516,9 +531,16 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.finalize_collection_version(version.collection_id, version_id)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
+        """
+        Returns a dataset version by id
+        """
         return self.database_provider.get_dataset_version(dataset_version_id)
 
     def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        """
+        Given a canonical dataset id, returns its mapped dataset version, i.e. the dataset version
+        that belongs to the most recently published collection
+        """
         return self.database_provider.get_dataset_mapped_version(dataset_id)
 
     def _get_collection_and_dataset(

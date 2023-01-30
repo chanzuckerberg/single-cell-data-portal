@@ -5,13 +5,13 @@ import numpy as np
 import pandas as pd
 
 import tiledb
-
 from backend.common.utils.math_utils import MB
 from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.summary_cubes.rollup import rollup_across_cell_type_descendants
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,25 @@ def transform(
     """
     Build the summary cube with rankit expression sum, nnz (num cells with non zero expression) values for
     each gene for each possible group of cell attributes (cube row)
+
+    Returns
+    -------
+    cube_index: pd.DataFrame
+        The index of the summary cube, with one row per possible group of cell attributes
+
+    cube_sum: np.ndarray
+        The sum of expression values for each gene for each group of cell attributes
+
+    cube_nnz: np.ndarray
+        The number of cells with non zero expression for each gene for each group of cell attributes
+
+    cube_sum_rollup: np.ndarray
+        The sum of expression values for each gene for each group of cell attributes
+        Aggregated across the descendants of the cell type in each group.
+
+    cube_nnz_rollup: np.ndarray
+        The number of cells with non zero expression for each gene for each group of cell attributes
+        Aggregated across the descendants of the cell type in each group.
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -30,9 +49,14 @@ def transform(
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
+    cube_sum_rollup = np.zeros((n_groups, n_genes), dtype=np.float32)
+    cube_nnz_rollup = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz)
-    return cube_index, cube_sum, cube_nnz
+
+    cell_types = list(cube_index.index.get_level_values("cell_type_ontology_term_id").astype("str"))
+    cube_sum_rollup, cube_nnz_rollup = rollup_across_cell_type_descendants(cell_types, [cube_sum, cube_nnz])
+    return cube_index, cube_sum, cube_nnz, cube_sum_rollup, cube_nnz_rollup
 
 
 @log_func_runtime
