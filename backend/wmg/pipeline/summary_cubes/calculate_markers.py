@@ -177,7 +177,7 @@ def _query_tiledb_target(
     n_cells_index_context: pd.MultiIndex,
 ):
     """
-    Query the tileDB array and return required data artifacts for downstream processing.
+    Extract data for the target population from the context query results.
 
     Arguments
     ---------
@@ -188,7 +188,7 @@ def _query_tiledb_target(
         Dictionary of filters for the context population
 
     context_agg - pd.DataFrame
-        Dataframe of aggregated statistics from the context query
+        Dataframe of aggregated metrics from the context query
 
     n_cells_per_gene_context - numpy array
         Each row in the array contains the true number of cells present for the combination of
