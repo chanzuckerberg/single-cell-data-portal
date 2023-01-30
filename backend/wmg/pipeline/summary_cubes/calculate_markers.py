@@ -12,7 +12,7 @@ from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     DATASET_TO_GENE_IDS_FILENAME,
 )
-from typing import Union, Optional, Tuple
+from typing import Union, Optional
 from backend.wmg.api.rollup import (
     rollup_across_cell_type_descendants_array,
     rollup_across_cell_type_descendants,
@@ -127,7 +127,7 @@ def _query_tiledb_context_memoized(
         # remove tidy
         agg.drop(columns=agg.index.names, inplace=True)
 
-    return agg, n_cells, n_cells_per_gene, n_cells_index, genes
+    return agg, n_cells_per_gene, n_cells_index, genes
 
 
 def _query_tiledb_context(
@@ -223,7 +223,7 @@ def _query_tiledb_target(
 
     filt_ncells = np.ones(len(n_cells_index_context), dtype="bool")
     for level in target_levels:
-        level_values = np.array(list(n_cells_index_context.index.get_level_values(level)))
+        level_values = np.array(list(n_cells_index_context.get_level_values(level)))
         filt_ncells = np.logical_and(filt_ncells, np.in1d(level_values, target_filters[level + "s"]))
 
     target_agg = context_agg[filt]
@@ -295,7 +295,7 @@ def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_id
         cell_types = [group[cell_type_index] for group in unique_groups]
         n_cells_array = rollup_across_cell_type_descendants_array(n_cells_array, cell_types)
 
-    index = pd.Index(unique_groups, names=level_names)
+    index = pd.Index(unique_groups, name=level_names)
     return n_cells_array, index
 
 
@@ -500,7 +500,7 @@ def _post_process_stats(
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 1
 
-    if cell_type_target and cell_types_context:
+    if cell_type_target is not None and cell_types_context is not None:
         is_colinear = np.array(
             [are_cell_types_colinear(cell_type, cell_type_target) for cell_type in cell_types_context]
         )
@@ -587,7 +587,7 @@ def _get_markers_ttest(target_filters, context_filters, corpus=None, n_markers=1
     )
 
     if "cell_type_ontology_term_ids" in target_filters:
-        cell_type_target = target_filters["cell_type_ontology_term_ids"]
+        cell_type_target = target_filters["cell_type_ontology_term_ids"][0]
         cell_types_context = groups_index_context.get_level_values("cell_type_ontology_term_id")
     else:
         cell_type_target = None
@@ -687,7 +687,7 @@ def _get_markers_binomtest(target_filters, context_filters, corpus=None, n_marke
     pvals, effects = _run_binom(target_data_nnz_thr, n_target, context_data_nnz_thr, n_context)
 
     if "cell_type_ontology_term_ids" in target_filters:
-        cell_type_target = target_filters["cell_type_ontology_term_ids"]
+        cell_type_target = target_filters["cell_type_ontology_term_ids"][0]
         cell_types_context = groups_index_context.get_level_values("cell_type_ontology_term_id")
     else:
         cell_type_target = None
