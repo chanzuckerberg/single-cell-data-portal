@@ -219,6 +219,7 @@ class CanonicalCollection:
     id: CollectionId
     version_id: Optional[CollectionVersionId]  # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
+    revised_at: Optional[datetime]
     tombstoned: bool
 
 
