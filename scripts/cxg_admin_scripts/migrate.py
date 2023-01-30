@@ -529,13 +529,13 @@ def migrate_redesign_correct_published_at(ctx):
                 collection_id = record.id
                 try:
                     new_version = session.query(CollectionVersionRow).filter_by(collection_id=collection_id).one()
-                    if new_version.published_at > record.revised_at:
+                    if new_version.published_at >= record.revised_at:
                         # In this case, this version has been revised past the migration and we shouldn't change it
-                        print("new version's published_at > old collection revised_at, skipping")
+                        print("new version's published_at >= old collection revised_at, skipping")
                         continue
                     # print(new_version.id, new_version.published_at, record.published_at)
                     print(f"Setting version {new_version.id}'s published_at from {new_version.published_at} to {record.revised_at}")
-                    new_version.published_at = record.revised_at # uncomment this line
+                    # new_version.published_at = record.revised_at # uncomment this line
                 except Exception as e:
                     # In this case there is more than one version 
                     print(e)

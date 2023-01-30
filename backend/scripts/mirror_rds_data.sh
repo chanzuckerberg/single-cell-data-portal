@@ -45,7 +45,7 @@ echo
 [[ $ANS == 'Y' ]] || exit 1
 
 make db/tunnel/up
-PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} ${DB_DUMP_FILE}
+PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} --schema=persistence_schema ${DB_DUMP_FILE}
 make db/tunnel/down
 
 DB_UPDATE_CMDS=$(cat <<EOF
