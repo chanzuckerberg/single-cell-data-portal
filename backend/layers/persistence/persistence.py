@@ -167,6 +167,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 CollectionId(str(collection.id)),
                 None if collection.version_id is None else CollectionVersionId(str(collection.version_id)),
                 collection.originally_published_at,
+                collection.revised_at,
                 collection.tombstone,
             )
 
@@ -208,7 +209,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(collection_version_row)
 
             return self._row_to_collection_version(
-                collection_version_row, CanonicalCollection(collection_id, None, None, False)
+                collection_version_row, CanonicalCollection(collection_id, None, None, None, False)
             )
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
@@ -285,6 +286,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     CollectionId(str(collection_row.id)),
                     None if collection_row.version_id is None else CollectionVersionId(str(collection_row.version_id)),
                     collection_row.originally_published_at,
+                    collection_row.revised_at,
                     collection_row.tombstone,
                 )
 
@@ -323,6 +325,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     CollectionId(str(canonical_row.id)),
                     CollectionVersionId(str(canonical_row.version_id)),
                     canonical_row.originally_published_at,
+                    canonical_row.revised_at,
                     canonical_row.tombstone,
                 )
                 yield self._row_to_collection_version(version, canonical)
