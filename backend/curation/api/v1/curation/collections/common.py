@@ -107,8 +107,6 @@ def reshape_for_curation_api(
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
-    # check if the new published at is different from the original published at.
-    published_version = business_logic.get_published_collection_version(collection_version.canonical_collection.id)
     response = dict(
         collection_url=collection_url,
         consortia=collection_version.metadata.consortia,
