@@ -39,6 +39,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
         data = {
             "contact_email": "example@gmail.com",
             "contact_name": TEST_ACCT_CONTACT_NAME,
+            "curator_name": "John Smith",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "http://protocol.com"}],
             "name": "test collection",
