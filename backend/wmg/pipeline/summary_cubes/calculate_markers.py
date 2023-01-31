@@ -13,7 +13,7 @@ from backend.wmg.data.snapshot import (
     DATASET_TO_GENE_IDS_FILENAME,
 )
 from typing import Union, Optional
-from backend.wmg.api.rollup import (
+from backend.wmg.data.rollup import (
     rollup_across_cell_type_descendants_array,
     rollup_across_cell_type_descendants,
     are_cell_types_colinear,
