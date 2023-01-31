@@ -1,8 +1,8 @@
 from backend.layers.common.entities import CollectionVersion
-from tests.unit.backend.layers.common.base_api_test import NewBaseTest
+from tests.unit.backend.layers.common.base_test import BaseTest
 
 
-class DataPortalTestCase(NewBaseTest):
+class DataPortalTestCase(BaseTest):
     def generate_collection(self, **params) -> CollectionVersion:
         visibility = params.pop("visibility", "PUBLIC")
         if visibility == "PUBLIC":
