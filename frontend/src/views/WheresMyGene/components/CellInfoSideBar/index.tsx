@@ -22,13 +22,6 @@ export interface CellInfoBarProps {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
   tissueName: string;
 }
-function useHandleHoverEnd(event: EVENTS, hoverStartTime: number, payload = {}) {
-  return useCallback(() => {
-    if (Date.now() - hoverStartTime > 2 * 1000) {
-      track(event, payload);
-    }
-  }, [hoverStartTime]);
-}
 
 function CellInfoSideBar({
   cellInfoCellType,
@@ -65,8 +58,14 @@ function CellInfoSideBar({
 
   const [hoverStartTime, setHoverStartTime] = useState(0);
 
-  const handleFmgHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, hoverStartTime, {label: "marker score"});
-  const handleMarkerScoreHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, hoverStartTime, {label: "marker genes"});
+  const useHandleHoverEnd = useCallback((event: EVENTS, payload = {}) => {
+    if (Date.now() - hoverStartTime > 2 * 1000) {
+      track(event, payload);
+    }
+  }, [hoverStartTime])
+
+  const handleFmgHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker score"});
+  const handleMarkerScoreHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker genes"});
 
   if (isLoading || !data) return null;
 
