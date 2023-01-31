@@ -1,4 +1,4 @@
-import { memo, MouseEventHandler } from "react";
+import { Dispatch, memo, MouseEventHandler } from "react";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import SaveImage from "../../../GeneSearchBar/components/SaveImage";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
@@ -13,6 +13,7 @@ interface Props {
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
   setIsDownloading: (isDownloading: boolean) => void;
+  setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
 }
 
 export default memo(function Legend({
@@ -22,6 +23,7 @@ export default memo(function Legend({
   selectedGenes,
   selectedCellTypes,
   setIsDownloading,
+  setEchartsRendererMode,
 }: Props): JSX.Element {
   return (
     <LegendWrapper>
@@ -30,6 +32,7 @@ export default memo(function Legend({
         selectedGenes={selectedGenes}
         selectedCellTypes={selectedCellTypes}
         setIsDownloading={setIsDownloading}
+        setEchartsRendererMode={setEchartsRendererMode}
       />
 
       <SourceDataButton

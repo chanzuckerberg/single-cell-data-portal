@@ -56,6 +56,7 @@ interface Props {
   cellTypeSortBy: SORT_BY;
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
+  echartsRendererMode: "svg" | "canvas";
 }
 
 export default memo(function HeatMap({
@@ -73,6 +74,7 @@ export default memo(function HeatMap({
   cellTypeSortBy,
   geneSortBy,
   selectedOrganismId,
+  echartsRendererMode,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
 
@@ -156,8 +158,8 @@ export default memo(function HeatMap({
       </TopLeftCornerMask>
       <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
         {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
-        <XAxisWrapper>
-          <XAxisMask />
+        <XAxisWrapper id="x-axis-wrapper">
+          <XAxisMask data-test-id="x-axis-mask" />
           <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
         <YAxisWrapper>
@@ -206,7 +208,11 @@ export default memo(function HeatMap({
             return (
               <Chart
                 isScaled={isScaled}
-                key={tissue}
+                /**
+                 * (thuang): We use `key` to force re-render the HeatMap component
+                 * when the renderer mode changes, so echarts can create new instances
+                 */
+                key={`${tissue}-${echartsRendererMode}`}
                 tissue={tissue}
                 cellTypes={tissueCellTypes}
                 selectedGeneData={
@@ -215,6 +221,7 @@ export default memo(function HeatMap({
                 setIsLoading={setIsLoading}
                 scaledMeanExpressionMax={scaledMeanExpressionMax}
                 scaledMeanExpressionMin={scaledMeanExpressionMin}
+                echartsRendererMode={echartsRendererMode}
               />
             );
           })}
