@@ -17,7 +17,7 @@ from backend.wmg.data.query import (
     retrieve_top_n_markers,
 )
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
-from backend.wmg.api.rollup import rollup_across_cell_type_descendants
+from backend.wmg.data.rollup import rollup_across_cell_type_descendants
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
