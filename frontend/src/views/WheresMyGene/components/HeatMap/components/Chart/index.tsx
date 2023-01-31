@@ -294,10 +294,6 @@ export default memo(function Chart({
       },
     ];
 
-    handleDotHoverAnalytic = setTimeout(() => { 
-      track(EVENTS.WMG_HEATMAP_DOT_HOVER);
-    }, 2 * 1000);
-
     return <StyledTooltipTable data={data || undefined} />;
   }, [
     chartProps,
@@ -316,11 +312,13 @@ export default memo(function Chart({
       title={tooltipContent || <>No data</>}
       leaveDelay={0}
       placement="right-end"
-      onClose={ () => {
-        // Handles race condition when timeout is set before close
-        setTimeout(() => {
-          clearTimeout(handleDotHoverAnalytic); 
-        }, 100);
+      onMouseMove={ () => {
+        clearInterval(handleDotHoverAnalytic);
+        if(tooltipContent?.props.data) {
+          handleDotHoverAnalytic = setTimeout(() => { 
+            track(EVENTS.WMG_HEATMAP_DOT_HOVER);
+          }, 2 * 1000);
+        }
       } }
       PopperProps={{
         anchorEl: {
@@ -351,6 +349,12 @@ export default memo(function Chart({
         width={heatmapWidth}
         ref={ref}
         id={`${tissue.replace(/\s+/g, "-")}-chart`}
+        onMouseLeave={ () => {
+          // Handles race condition when a timeout is set after clearing
+          setTimeout(() => {
+            clearTimeout(handleDotHoverAnalytic); 
+          }, 100);
+        } }
       />
     </Tooltip>
   );
