@@ -1,0 +1,1 @@
+DEBUG    h5py._debian_h5py_serial._conv:attrs.py:77 Creating converter from 3 to 5
