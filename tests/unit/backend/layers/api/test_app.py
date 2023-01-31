@@ -1,9 +1,12 @@
 import logging
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
-from tests.unit.backend.layers.common.base_api_test import NewBaseTest
 
+class TestAPI(BaseAPIPortalTest):
+    """
+    Test for the base API routes (root, Swagger, ...)
+    """
 
-class TestAPI(NewBaseTest):
     def check_request_id(self, response):
         request_id = [header[1] for header in response.headers if header[0] == "X-Request-Id"][0]
         self.assertTrue(len(request_id) > 1)

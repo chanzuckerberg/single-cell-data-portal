@@ -5,12 +5,8 @@ import os
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.json import CustomJSONEncoder
 from backend.common.utils.result_notification import format_failed_batch_issue_slack_alert, notify_slack
-from backend.layers.business.business import BusinessLogic
+from backend.portal.api.providers import get_business_logic
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
-from backend.layers.persistence.persistence import DatabaseProvider
-
-database_provider = DatabaseProvider()
-business_logic = BusinessLogic(database_provider, None, None, None, None)
 
 
 def handle_failure(event: dict, context) -> None:
@@ -33,7 +29,7 @@ def update_dataset_processing_status_to_failed(dataset_id, error=None) -> None:
     This functions updates the processing status for a given dataset uuid to failed
     """
     try:
-        business_logic.update_dataset_version_status(
+        get_business_logic().update_dataset_version_status(
             DatasetVersionId(dataset_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
         )
     # If dataset not in db dont worry about updating its processing status
@@ -52,12 +48,12 @@ def get_error_step_name(event: dict) -> str:
     return error_job_name
 
 
-def trigger_slack_notification(dataset_id):
-    dataset = business_logic.get_dataset_version(DatasetVersionId(dataset_id))
+def get_failure_slack_notification_message(dataset_id):
+    dataset = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
     if dataset is None:
         return
     collection_id = dataset.collection_id
-    collection = business_logic.get_collection_version_from_canonical(collection_id)
+    collection = get_business_logic().get_collection_version_from_canonical(collection_id)
     if collection is None:
         return
     collection_id, collection_owner = collection.version_id, collection.owner
@@ -92,7 +88,11 @@ def trigger_slack_notification(dataset_id):
             },
         ]
     }
-    batch_alert_data = format_failed_batch_issue_slack_alert(data)
+    return format_failed_batch_issue_slack_alert(data)
+
+
+def trigger_slack_notification(dataset_id):
+    data = get_failure_slack_notification_message(dataset_id)
     logger = logging.getLogger(__name__)
-    logger.info(batch_alert_data)
+    logger.info(data)
     notify_slack(data)
