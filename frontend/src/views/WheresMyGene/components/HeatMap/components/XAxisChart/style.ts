@@ -1,10 +1,13 @@
 import styled from "@emotion/styled";
 import { SELECTED_STYLE } from "../../style";
-import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
-import { HEAT_MAP_BASE_CELL_WIDTH_PX } from "../../utils";
+import {
+  HEAT_MAP_BASE_CELL_WIDTH_PX,
+  X_AXIS_CHART_HEIGHT_PX,
+  Y_AXIS_CHART_WIDTH_PX,
+} from "../../utils";
 
 export const ECHART_AXIS_LABEL_COLOR_HEX = "#6e7079";
-const ECHART_AXIS_LABEL_FONT_SIZE = 12;
+export const ECHART_AXIS_LABEL_FONT_SIZE_PX = 12;
 
 export const XAxisContainer = styled.div`
   ${xAxisWidth}
@@ -49,9 +52,9 @@ export const GeneButtonStyle = styled.button`
 
 // adjust the left position of CellCountLabel by -20 to center it properly
 export const CellCountLabel = styled.div`
-  font: ${ECHART_AXIS_LABEL_FONT_SIZE}px sans-serif;
+  font: ${ECHART_AXIS_LABEL_FONT_SIZE_PX}px sans-serif;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
-  width: ${ECHART_AXIS_LABEL_FONT_SIZE}px;
+  width: ${ECHART_AXIS_LABEL_FONT_SIZE_PX}px;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
   background-color: white;
   text-orientation: sideways;
