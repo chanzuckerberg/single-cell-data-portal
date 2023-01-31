@@ -6,8 +6,8 @@ from jose import jws
 from unittest.mock import patch, DEFAULT
 
 from backend.common.auth0_manager import auth0_management_session
-from unit.backend.layers.api.config import TOKEN_EXPIRES
-from unit.backend.layers.common.base_api_test import BaseAPIPortalTest
+from tests.unit.backend.layers.api.config import TOKEN_EXPIRES
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
 def get_cxguser_token(user="owner"):

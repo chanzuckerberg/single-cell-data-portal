@@ -2,7 +2,7 @@ import os
 from unittest.mock import patch
 import json
 
-from unit.backend.layers.common.base_api_test import BaseAPIPortalTest
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
 class TestVersion(BaseAPIPortalTest):
