@@ -237,9 +237,9 @@ export default memo(function Chart({
   const [hoveredGeneIndex, hoveredCellTypeIndex] = currentIndices;
 
   const tooltipContent = useMemo(() => {
-    clearTimeout(handleDotHoverAnalytic);
+    clearTimeout(handleDotHoverAnalytic); 
 
-    if (!chartProps || currentIndices[0] < 0) return null;
+    if (!chartProps) return null;
 
     const { chartData } = chartProps;
 
@@ -317,13 +317,10 @@ export default memo(function Chart({
       leaveDelay={0}
       placement="right-end"
       onClose={ () => {
+        // Handles race condition when timeout is set before close
         setTimeout(() => {
-          // Handles race condition when timeout is set before close
           clearTimeout(handleDotHoverAnalytic); 
-
-          // If we hover out then we are no longer at an index
-          setCurrentIndices([-1,-1]);
-        }, 500);
+        }, 100);
       } }
       PopperProps={{
         anchorEl: {
