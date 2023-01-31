@@ -95,7 +95,7 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const heatmap = await page.$$("[class*=ChartContainer] svg");
+        const heatmap = await page.$$("#blood-chart svg");
         await expect(heatmap.length).not.toBe(0);
       },
       { page }
@@ -165,7 +165,7 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const heatmap = await page.$$("[class*=ChartContainer] svg");
+        const heatmap = await page.$$("#blood-chart svg");
         expect(heatmap.length).not.toBe(0);
       },
       { page }
@@ -322,7 +322,7 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const heatmap = await page.$$("[class*=ChartContainer] svg");
+        const heatmap = await page.$$("#blood-chart svg");
         await expect(heatmap.length).not.toBe(0);
       },
       { page }
