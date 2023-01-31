@@ -12,6 +12,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY, EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import {
   CellType,
@@ -51,6 +53,8 @@ const BASE_DEBOUNCE_MS = 200;
 const MAX_DEBOUNCE_MS = 2 * 1000;
 
 const TOOLTIP_THROTTLE_MS = 100;
+
+let handleDotHoverAnalytic: NodeJS.Timeout;
 
 export default memo(function Chart({
   cellTypes,
@@ -233,7 +237,9 @@ export default memo(function Chart({
   const [hoveredGeneIndex, hoveredCellTypeIndex] = currentIndices;
 
   const tooltipContent = useMemo(() => {
-    if (!chartProps) return null;
+    clearTimeout(handleDotHoverAnalytic);
+
+    if (!chartProps || currentIndices[0] < 0) return null;
 
     const { chartData } = chartProps;
 
@@ -288,6 +294,10 @@ export default memo(function Chart({
       },
     ];
 
+    handleDotHoverAnalytic = setTimeout(() => { 
+      track(EVENTS.WMG_HEATMAP_DOT_HOVER);
+    }, 2 * 1000);
+
     return <StyledTooltipTable data={data || undefined} />;
   }, [
     chartProps,
@@ -306,6 +316,15 @@ export default memo(function Chart({
       title={tooltipContent || <>No data</>}
       leaveDelay={0}
       placement="right-end"
+      onClose={ () => {
+        setTimeout(() => {
+          // Handles race condition when timeout is set before close
+          clearTimeout(handleDotHoverAnalytic); 
+
+          // If we hover out then we are no longer at an index
+          setCurrentIndices([-1,-1]);
+        }, 500);
+      } }
       PopperProps={{
         anchorEl: {
           getBoundingClientRect: () => ({
