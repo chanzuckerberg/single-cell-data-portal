@@ -95,8 +95,8 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const canvases = await page.$$("canvas");
-        await expect(canvases.length).not.toBe(0);
+        const heatmap = await page.$$("[class*=ChartContainer] svg");
+        await expect(heatmap.length).not.toBe(0);
       },
       { page }
     );
@@ -165,8 +165,8 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const canvases = await page.$$("canvas");
-        expect(canvases.length).not.toBe(0);
+        const heatmap = await page.$$("[class*=ChartContainer] svg");
+        expect(heatmap.length).not.toBe(0);
       },
       { page }
     );
@@ -322,8 +322,8 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const canvases = await page.$$("canvas");
-        await expect(canvases.length).not.toBe(0);
+        const heatmap = await page.$$("[class*=ChartContainer] svg");
+        await expect(heatmap.length).not.toBe(0);
       },
       { page }
     );
