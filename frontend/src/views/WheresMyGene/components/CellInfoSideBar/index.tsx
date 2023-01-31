@@ -58,11 +58,14 @@ function CellInfoSideBar({
 
   const [hoverStartTime, setHoverStartTime] = useState(0);
 
-  const handleHoverEnd = useCallback(() => {
+  const useHandleHoverEnd = useCallback((event: EVENTS, payload = {}) => {
     if (Date.now() - hoverStartTime > 2 * 1000) {
-      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER);
+      track(event, payload);
     }
-  }, [hoverStartTime]);
+  }, [hoverStartTime])
+
+  const handleFmgHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker score"});
+  const handleMarkerScoreHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker genes"});
 
   if (isLoading || !data) return null;
 
@@ -92,8 +95,8 @@ function CellInfoSideBar({
                     rel="noopener"
                     target="_blank"
                     onClick={() => {
-                      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER);
-                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED);
+                      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker genes"});
+                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {label: "marker genes"});
                     }}
                   >
                     Click to read more about the identification method.
@@ -108,7 +111,7 @@ function CellInfoSideBar({
               isAllCaps={false}
               style={{ fontWeight: "500" }}
               onMouseEnter={() => setHoverStartTime(Date.now())}
-              onMouseLeave={handleHoverEnd}
+              onMouseLeave={handleFmgHoverEnd}
             >
               <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
@@ -141,7 +144,50 @@ function CellInfoSideBar({
                 Copy
               </CopyGenesButton>
             </td>
-            <td>Marker Score</td>
+            <td>
+              Marker Score
+              <Tooltip
+                sdsStyle="dark"
+                placement="bottom"
+                width="default"
+                className="fmg-tooltip-icon"
+                arrow={true}
+                title={
+                  <StyledTooltip>
+                    <div>
+                    Marker Score indicates the strength and specificity of a gene as a marker.
+                    It is the 5th percentile of the effect sizes when comparing the expressions
+                    in a cell type of interest to each other cell type in the tissue.
+                    </div>
+                    <br />
+                    <div>
+                      <a
+                        href={ROUTES.FMG_DOCS}
+                        rel="noopener"
+                        target="_blank"
+                        onClick={() => {
+                          track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker score"});
+                          track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {label: "marker score"});
+                        }}
+                      >
+                        Click to read more about the identification method.
+                      </a>
+                    </div>                    
+                  </StyledTooltip>
+                }
+              >
+                <TooltipButton
+                  sdsStyle="minimal"
+                  sdsType="secondary"
+                  isAllCaps={false}
+                  style={{ fontWeight: "500" }}
+                  onMouseEnter={() => setHoverStartTime(Date.now())}
+                  onMouseLeave={handleMarkerScoreHoverEnd}
+                >
+                  <StyledIconImage src={questionMarkIcon} />
+                </TooltipButton>
+              </Tooltip>
+            </td>
           </tr>
         </thead>
         <tbody>
