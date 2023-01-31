@@ -2,10 +2,10 @@ import os
 from unittest.mock import patch
 import json
 
-from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest
+from unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
-class TestVersion(BaseAuthAPITest):
+class TestVersion(BaseAPIPortalTest):
     @patch.dict(os.environ, {"COMMIT_SHA": "test"})
     def test_get(self):
         response = self.app.get("/dp/v1/deployed_version")

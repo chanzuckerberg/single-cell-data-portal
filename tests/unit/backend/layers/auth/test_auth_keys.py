@@ -1,13 +1,37 @@
+import base64
 import json
+import time
 
 from jose import jws
 from unittest.mock import patch, DEFAULT
 
 from backend.common.auth0_manager import auth0_management_session
-from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from unit.backend.layers.api.config import TOKEN_EXPIRES
+from unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
-class TestKeys(BaseAuthAPITest):
+def get_cxguser_token(user="owner"):
+    """
+    Generated an auth token for testing.
+    :param user: the type of use the token will simulate.
+    :return:
+    """
+    cxguser = base64.b64encode(
+        json.dumps(
+            {
+                "access_token": user,
+                "refresh_token": f"random-{time.time()}",
+                "scope": "openid profile email offline",
+                "expires_in": TOKEN_EXPIRES,
+                "token_type": "Bearer",
+                "expires_at": TOKEN_EXPIRES,
+            }
+        ).encode("utf8")
+    ).decode("utf8")
+    return f"cxguser={cxguser}"
+
+
+class TestKeys(BaseAPIPortalTest):
     @classmethod
     def setUpClass(cls):
         auth0_management_session.domain = "localhost"  # setting this so CorporaAuthConfig isn't used in the test
