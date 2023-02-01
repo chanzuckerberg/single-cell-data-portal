@@ -12,6 +12,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY, EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import {
   CellType,
@@ -43,6 +45,7 @@ interface Props {
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
   isScaled: boolean;
+  echartsRendererMode: "svg" | "canvas";
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -50,6 +53,8 @@ const BASE_DEBOUNCE_MS = 200;
 const MAX_DEBOUNCE_MS = 2 * 1000;
 
 const TOOLTIP_THROTTLE_MS = 100;
+
+let handleDotHoverAnalytic: NodeJS.Timeout;
 
 export default memo(function Chart({
   cellTypes,
@@ -59,6 +64,7 @@ export default memo(function Chart({
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
   isScaled,
+  echartsRendererMode,
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -112,14 +118,23 @@ export default memo(function Chart({
 
     setIsChartInitialized(true);
 
-    const chart = init(current, EMPTY_OBJECT, { useDirtyRect: true });
+    const chart = init(current, EMPTY_OBJECT, {
+      renderer: "svg",
+      // renderer: echartsRendererMode,
+      useDirtyRect: true,
+    });
 
     chart.getZr().on("mousemove", function (params) {
       throttledSetCurrentIndices(params, chart);
     });
 
     setChart(chart);
-  }, [ref, isChartInitialized, throttledSetCurrentIndices]);
+  }, [
+    ref,
+    isChartInitialized,
+    throttledSetCurrentIndices,
+    echartsRendererMode,
+  ]);
 
   // Update heatmap size
   useEffect(() => {
@@ -222,6 +237,8 @@ export default memo(function Chart({
   const [hoveredGeneIndex, hoveredCellTypeIndex] = currentIndices;
 
   const tooltipContent = useMemo(() => {
+    clearTimeout(handleDotHoverAnalytic); 
+
     if (!chartProps) return null;
 
     const { chartData } = chartProps;
@@ -295,6 +312,14 @@ export default memo(function Chart({
       title={tooltipContent || <>No data</>}
       leaveDelay={0}
       placement="right-end"
+      onMouseMove={ () => {
+        clearInterval(handleDotHoverAnalytic);
+        if(tooltipContent?.props.data) {
+          handleDotHoverAnalytic = setTimeout(() => { 
+            track(EVENTS.WMG_HEATMAP_DOT_HOVER);
+          }, 2 * 1000);
+        }
+      } }
       PopperProps={{
         anchorEl: {
           getBoundingClientRect: () => ({
@@ -323,7 +348,13 @@ export default memo(function Chart({
         height={heatmapHeight}
         width={heatmapWidth}
         ref={ref}
-        id={`${tissue}-chart`}
+        id={`${tissue.replace(/\s+/g, "-")}-chart`}
+        onMouseLeave={ () => {
+          // Handles race condition when a timeout is set after clearing
+          setTimeout(() => {
+            clearTimeout(handleDotHoverAnalytic); 
+          }, 100);
+        } }
       />
     </Tooltip>
   );

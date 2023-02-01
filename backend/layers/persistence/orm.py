@@ -18,6 +18,7 @@ class CollectionTable:
     id = Column(UUID(as_uuid=True), primary_key=True)
     version_id = Column(UUID(as_uuid=True))
     originally_published_at = Column(DateTime)
+    revised_at = Column(DateTime)
     tombstone = Column(BOOLEAN)
 
 

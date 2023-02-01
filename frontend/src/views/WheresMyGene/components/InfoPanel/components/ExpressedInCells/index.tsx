@@ -6,11 +6,11 @@ const PERCENTAGES = [0, 0.25, 0.5, 0.75, 1];
 
 export default function ExpressedInCells(): JSX.Element {
   return (
-    <Wrapper>
-      <Label>Expressed in Cells (%)</Label>
+    <Wrapper id="expressed-in-cells">
+      <Label id="expressed-in-cells-label">Expressed in Cells (%)</Label>
 
       <Content>
-        <Dots>
+        <Dots id="expressed-in-cells-dots">
           {PERCENTAGES.map((percentage) => (
             <Dot
               size={convertPercentageToDiameter(percentage)}
@@ -18,7 +18,7 @@ export default function ExpressedInCells(): JSX.Element {
             />
           ))}
         </Dots>
-        <LowHigh>
+        <LowHigh className="low-high">
           <span>0</span>
           <span>100</span>
         </LowHigh>
