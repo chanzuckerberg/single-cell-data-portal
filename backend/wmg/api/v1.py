@@ -1,23 +1,20 @@
 from collections import defaultdict
-from typing import Dict, List, Any, Iterable, Tuple
 from math import isnan
-from backend.layers.business.business import BusinessLogic
-from backend.layers.persistence.persistence import DatabaseProvider
-from backend.layers.common.entities import DatasetId
+from typing import Any, Dict, Iterable, List, Tuple
 
 import connexion
 from flask import jsonify
 from pandas import DataFrame
 
-from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.data.query import (
-    WmgQuery,
-    WmgQueryCriteria,
-    MarkerGeneQueryCriteria,
-    retrieve_top_n_markers,
-)
-from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
+from backend.layers.business.business import BusinessLogic
+from backend.layers.common.entities import DatasetId
+from backend.layers.persistence.persistence import DatabaseProvider
+from backend.wmg.data.ontology_labels import (gene_term_label,
+                                              ontology_term_label)
+from backend.wmg.data.query import (MarkerGeneQueryCriteria, WmgQuery,
+                                    WmgQueryCriteria, retrieve_top_n_markers)
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
+from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data

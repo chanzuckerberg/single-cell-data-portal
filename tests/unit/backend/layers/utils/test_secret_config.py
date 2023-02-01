@@ -1,17 +1,16 @@
+import os
 import unittest
 import uuid
-import os
-
 from unittest.mock import PropertyMock, patch
-
 
 import boto3
 
-from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
-from tests.unit.backend.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
-
-from backend.common.utils.secret_config import SecretConfig
 from backend.common.utils.aws import AwsSecret
+from backend.common.utils.secret_config import SecretConfig
+from tests.unit.backend.fixtures.environment_setup import (EnvironmentSetup,
+                                                           fixture_file_path)
+from tests.unit.backend.fixtures.existing_aws_secret_test_fixture import \
+    ExistingAwsSecretTestFixture
 
 
 class BogoComponentConfig(SecretConfig):

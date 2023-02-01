@@ -1,17 +1,13 @@
+import json
 import unittest
 from unittest.mock import patch
 
 from requests import RequestException
-from requests.models import Response, HTTPError
-import json
+from requests.models import HTTPError, Response
 
 from backend.common.providers.crossref_provider import (
-    CrossrefException,
-    CrossrefFetchException,
-    CrossrefProvider,
-    CrossrefParseException,
-    CrossrefDOINotFoundException,
-)
+    CrossrefDOINotFoundException, CrossrefException, CrossrefFetchException,
+    CrossrefParseException, CrossrefProvider)
 
 
 class TestCrossrefProvider(unittest.TestCase):

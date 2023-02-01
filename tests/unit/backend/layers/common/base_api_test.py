@@ -3,9 +3,11 @@ import json
 import time
 import unittest
 from unittest.mock import patch
-from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
-from tests.unit.backend.layers.common.base_test import BaseTest
+
+from backend.layers.thirdparty.cdn_provider_interface import \
+    CDNProviderInterface
 from tests.unit.backend.layers.api.config import TOKEN_EXPIRES
+from tests.unit.backend.layers.common.base_test import BaseTest
 
 
 class BaseAuthAPITest(unittest.TestCase):

@@ -1,19 +1,16 @@
 import json
 import unittest
-from os import path, mkdir
+from os import mkdir, path
 from shutil import rmtree
 from uuid import uuid4
 
 import numpy as np
 import tiledb
-from pandas import Series, DataFrame, Categorical
+from pandas import Categorical, DataFrame, Series
 
 from backend.common.utils.cxg_generation_utils import (
-    convert_dictionary_to_cxg_group,
-    convert_dataframe_to_cxg_array,
-    convert_ndarray_to_cxg_dense_array,
-    convert_matrices_to_cxg_arrays,
-)
+    convert_dataframe_to_cxg_array, convert_dictionary_to_cxg_group,
+    convert_matrices_to_cxg_arrays, convert_ndarray_to_cxg_dense_array)
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
 

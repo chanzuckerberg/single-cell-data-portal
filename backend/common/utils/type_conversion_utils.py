@@ -1,5 +1,5 @@
-from typing import Union, Tuple
 import logging
+from typing import Tuple, Union
 
 import numpy as np
 import pandas as pd

@@ -1,5 +1,5 @@
-from time import sleep
 import os
+from time import sleep
 
 import boto3
 from botocore.errorfactory import ClientError

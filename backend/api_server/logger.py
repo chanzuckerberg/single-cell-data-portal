@@ -1,8 +1,10 @@
 import logging
 from logging.config import dictConfig
+
 from pythonjsonlogger import jsonlogger
 
-from backend.common.logging_config import format_log_string, DATETIME_FORMAT, LOGGED_FIELDS
+from backend.common.logging_config import (DATETIME_FORMAT, LOGGED_FIELDS,
+                                           format_log_string)
 
 
 def configure_logging(app_name):

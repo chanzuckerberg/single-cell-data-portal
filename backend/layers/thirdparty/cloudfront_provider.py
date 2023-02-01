@@ -1,12 +1,12 @@
-import boto3
+import logging
 import uuid
 from typing import List
 
+import boto3
+
 from backend.common.corpora_config import CorporaCloudfrontConfig
-
-import logging
-
-from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
+from backend.layers.thirdparty.cdn_provider_interface import \
+    CDNProviderInterface
 
 client = boto3.client("cloudfront")
 

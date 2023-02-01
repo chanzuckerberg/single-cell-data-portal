@@ -1,6 +1,7 @@
 import unittest
 
-from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
+from backend.wmg.data.ontology_labels import (gene_term_label,
+                                              ontology_term_label)
 
 
 class OntologyLabelTests(unittest.TestCase):

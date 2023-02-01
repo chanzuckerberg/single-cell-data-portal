@@ -1,10 +1,11 @@
-from flask import request, make_response
+from flask import make_response, request
 from jose import JWTError
 
 from backend.common.auth0_manager import auth0_management_session
 from backend.common.corpora_config import CorporaAuthConfig
 from backend.common.utils import api_key
-from backend.common.utils.http_exceptions import UnauthorizedError, NotFoundHTTPException
+from backend.common.utils.http_exceptions import (NotFoundHTTPException,
+                                                  UnauthorizedError)
 
 
 def post():

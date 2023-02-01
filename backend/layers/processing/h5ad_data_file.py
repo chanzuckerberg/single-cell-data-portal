@@ -7,16 +7,14 @@ import anndata
 import numpy as np
 import tiledb
 
-from backend.common.utils.color_conversion_utils import convert_anndata_category_colors_to_cxg_category_colors
+from backend.common.utils.color_conversion_utils import (
+    ColorFormatException,
+    convert_anndata_category_colors_to_cxg_category_colors)
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.cxg_constants import CxgConstants
 from backend.common.utils.cxg_generation_utils import (
-    convert_dictionary_to_cxg_group,
-    convert_dataframe_to_cxg_array,
-    convert_ndarray_to_cxg_dense_array,
-    convert_matrices_to_cxg_arrays,
-)
-from backend.common.utils.color_conversion_utils import ColorFormatException
+    convert_dataframe_to_cxg_array, convert_dictionary_to_cxg_group,
+    convert_matrices_to_cxg_arrays, convert_ndarray_to_cxg_dense_array)
 from backend.common.utils.matrix_utils import is_matrix_sparse
 from backend.common.utils.semvar_utils import validate_version_str
 

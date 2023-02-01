@@ -1,8 +1,9 @@
-import boto3
-import requests
 import typing
 from abc import ABC, abstractmethod
-from urllib.parse import urlparse, ParseResult
+from urllib.parse import ParseResult, urlparse
+
+import boto3
+import requests
 
 
 class MissingHeaderException(Exception):
@@ -22,14 +23,12 @@ class URL(ABC):
     @abstractmethod
     def validate(cls, url: str) -> typing.Optional["URL"]:
         """Validates the URL matches the expected format, and returns a new class object if valid.."""
-        pass
 
     @abstractmethod
     def file_info(self) -> dict:
         """
         Extract information about a file from a URL.
         """
-        pass
 
     @property
     def scheme(self):

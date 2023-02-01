@@ -1,11 +1,13 @@
 import string
+
 from flask import jsonify, make_response
-from backend.gene_info.api.ncbi_provider import NCBIAPIException, NCBIProvider, NCBIUnexpectedResultException
-from backend.common.utils.http_exceptions import (
-    NotFoundHTTPException,
-    ForbiddenHTTPException,
-)
+
+from backend.common.utils.http_exceptions import (ForbiddenHTTPException,
+                                                  NotFoundHTTPException)
 from backend.gene_info.api.ensembl_ids import GeneChecker
+from backend.gene_info.api.ncbi_provider import (NCBIAPIException,
+                                                 NCBIProvider,
+                                                 NCBIUnexpectedResultException)
 
 
 def gene_info(gene: string = None, geneID: string = None):

@@ -3,7 +3,7 @@ import os
 import psutil
 import tiledb
 
-from backend.common.utils.math_utils import MB, GB
+from backend.common.utils.math_utils import GB, MB
 
 
 def create_ctx(config_overrides: dict = {}) -> tiledb.Ctx:

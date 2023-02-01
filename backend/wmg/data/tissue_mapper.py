@@ -1,5 +1,6 @@
-import owlready2
 from typing import List
+
+import owlready2
 
 
 class TissueMapper:

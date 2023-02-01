@@ -4,12 +4,11 @@ import unittest
 import tiledb
 
 from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus
+from backend.wmg.data.schemas.cube_schema import (cell_counts_schema,
+                                                  expression_summary_schema)
+from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import \
+    expression_summary_fmg_schema
 from backend.wmg.data.utils import create_empty_cube
-from backend.wmg.data.schemas.cube_schema import (
-    expression_summary_schema,
-    cell_counts_schema,
-)
-from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import expression_summary_fmg_schema
 
 
 class TestIntegratedCorpusSchema(unittest.TestCase):

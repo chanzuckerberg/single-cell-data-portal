@@ -2,8 +2,10 @@ import json
 import os
 import time
 import unittest
+
 import requests
 from requests import HTTPError
+
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 

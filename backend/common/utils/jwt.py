@@ -1,7 +1,8 @@
 from jose import ExpiredSignatureError, jwt
 from jose.exceptions import JWTClaimsError, JWTError
 
-from backend.common.utils.http_exceptions import UnauthorizedError, ExpiredCredentialsError
+from backend.common.utils.http_exceptions import (ExpiredCredentialsError,
+                                                  UnauthorizedError)
 
 
 def jwt_decode(*args, **kwargs) -> dict:

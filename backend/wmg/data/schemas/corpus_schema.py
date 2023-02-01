@@ -6,14 +6,13 @@ It is a roadmap item.  Currently supported:
 Casting to ASCII for now as that covers 99.99% of our data (eg, ontology IDs).
 """
 
+import pathlib
 from collections import namedtuple
-from typing import Union, List
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
 import tiledb
-
-import pathlib
 
 uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 

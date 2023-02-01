@@ -1,10 +1,10 @@
-from flask import make_response, jsonify
+from flask import jsonify, make_response
 
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
-from backend.portal.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.exceptions import CollectionVersionException
 from backend.layers.common.entities import CollectionId
+from backend.portal.api.providers import get_business_logic
 
 
 def post(collection_id: str, token_info: dict):

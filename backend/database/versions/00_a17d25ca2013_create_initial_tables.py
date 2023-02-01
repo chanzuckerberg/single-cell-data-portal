@@ -7,7 +7,7 @@ Create Date: 2020-07-17 21:57:32.177139
 """
 
 from alembic import op
-from sqlalchemy import Column, String, Boolean, Integer, func, TIMESTAMP
+from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String, func
 from sqlalchemy.dialects.postgresql import ENUM
 
 # revision identifiers, used by Alembic.

@@ -1,25 +1,15 @@
 import enum
-
 from datetime import datetime
-from sqlalchemy import (
-    Boolean,
-    CheckConstraint,
-    Column,
-    DateTime,
-    Enum,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    UniqueConstraint,
-    types,
-)
+from typing import Dict, List, Optional
+from uuid import uuid4
+
+from sqlalchemy import (Boolean, CheckConstraint, Column, DateTime, Enum,
+                        Float, ForeignKey, Integer, String, UniqueConstraint,
+                        types)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.dialects.postgresql.json import JSON
-from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
+from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import relationship
-from typing import Optional, List, Dict
-from uuid import uuid4
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.exceptions import CorporaException

@@ -7,21 +7,20 @@ from unittest.mock import Mock, patch
 from backend.common.corpora_orm import CollectionVisibility
 from backend.common.utils.api_key import generate
 from backend.curation.api.v1.curation.collections.common import EntityColumns
-from backend.layers.common.entities import (
-    CollectionId,
-    CollectionVersion,
-    DatasetArtifactType,
-    DatasetProcessingStatus,
-    DatasetStatusKey,
-    DatasetUploadStatus,
-    DatasetValidationStatus,
-    Link,
-    OntologyTermId,
-)
-from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
-from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
-from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
+from backend.layers.common.entities import (CollectionId, CollectionVersion,
+                                            DatasetArtifactType,
+                                            DatasetProcessingStatus,
+                                            DatasetStatusKey,
+                                            DatasetUploadStatus,
+                                            DatasetValidationStatus, Link,
+                                            OntologyTermId)
+from backend.layers.thirdparty.crossref_provider import \
+    CrossrefDOINotFoundException
+from tests.unit.backend.layers.api.test_portal_api import \
+    generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
+from tests.unit.backend.layers.common.base_test import (DatasetArtifactUpdate,
+                                                        DatasetStatusUpdate)
 
 
 class TestAsset(BaseAPIPortalTest):

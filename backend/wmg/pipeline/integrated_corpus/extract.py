@@ -8,9 +8,9 @@ from anndata._core.views import ArrayView
 from scipy import sparse
 
 from backend.layers.business.business import BusinessLogic
+from backend.layers.common.entities import DatasetArtifactType
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.wmg.data.constants import INCLUDED_ASSAYS
-from backend.layers.common.entities import DatasetArtifactType
 
 logger = logging.getLogger(__name__)
 

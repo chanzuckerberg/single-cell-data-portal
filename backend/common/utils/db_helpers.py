@@ -1,8 +1,8 @@
 import logging
 
-from backend.common.corpora_orm import Base, DbDatasetProcessingStatus
 from sqlalchemy.orm import Session
 
+from backend.common.corpora_orm import Base, DbDatasetProcessingStatus
 
 logger = logging.getLogger(__name__)
 

@@ -1,34 +1,32 @@
 import contextlib
+import json
 import os
 import sys
 import tempfile
 from collections import namedtuple
-from itertools import filterfalse, cycle, islice
-from typing import List, Callable, Tuple, Dict, NamedTuple
-import json
+from itertools import cycle, filterfalse, islice
+from typing import Callable, Dict, List, NamedTuple, Tuple
+
 import numpy as np
 import pandas as pd
 import tiledb
-from numpy.random import random, randint
+from numpy.random import randint, random
 from pandas import DataFrame
 
-from backend.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
+from backend.common.corpora_orm import (CollectionVisibility, DbCollection,
+                                        DbDataset)
 from backend.common.entities import Collection
 from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.schemas.cube_schema import (
-    expression_summary_indexed_dims,
-    expression_summary_logical_attrs,
-    expression_summary_logical_dims,
-    expression_summary_schema,
-    cell_counts_logical_attrs,
-    cell_counts_schema,
-    cell_counts_indexed_dims,
-    cell_counts_logical_dims,
-)
-from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
+    cell_counts_indexed_dims, cell_counts_logical_attrs,
+    cell_counts_logical_dims, cell_counts_schema,
+    expression_summary_indexed_dims, expression_summary_logical_attrs,
+    expression_summary_logical_dims, expression_summary_schema)
+from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME, WmgSnapshot
 from backend.wmg.data.tiledb import create_ctx
-from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
+from tests.unit.backend.wmg.fixtures.test_primary_filters import \
+    build_precomputed_primary_filters
 
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:

@@ -2,24 +2,19 @@ import os
 import shutil
 from unittest.mock import patch
 
-
 import requests
 
-from backend.common.corpora_orm import (
-    ConversionStatus,
-    UploadStatus,
-    ValidationStatus,
-    DatasetArtifactFileType,
-)
+from backend.common.corpora_orm import (ConversionStatus,
+                                        DatasetArtifactFileType, UploadStatus,
+                                        ValidationStatus)
 from backend.common.entities import Dataset
-from backend.portal.pipeline.processing.exceptions import (
-    ProcessingFailed,
-    ValidationFailed,
-    ConversionFailed,
-)
+from backend.portal.pipeline.processing.exceptions import (ConversionFailed,
+                                                           ProcessingFailed,
+                                                           ValidationFailed)
 from backend.portal.pipeline.processing.process import main
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
+from tests.unit.backend.fixtures.mock_aws_test_case import \
+    CorporaTestCaseUsingMockAWS
 
 
 class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):

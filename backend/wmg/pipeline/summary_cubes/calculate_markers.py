@@ -1,23 +1,20 @@
-import pandas as pd
-import numpy as np
-from scipy import stats
 import json
-import tiledb
 from functools import lru_cache, wraps
+from typing import Optional, Union
+
+import numpy as np
+import pandas as pd
+import tiledb
+from scipy import stats
+
 from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
-from backend.wmg.data.snapshot import (
-    load_snapshot,
-    WmgSnapshot,
-    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
-    CELL_COUNTS_CUBE_NAME,
-    DATASET_TO_GENE_IDS_FILENAME,
-)
-from typing import Union, Optional
-from backend.wmg.data.rollup import (
-    rollup_across_cell_type_descendants_array,
-    rollup_across_cell_type_descendants,
-    are_cell_types_colinear,
-)
+from backend.wmg.data.rollup import (are_cell_types_colinear,
+                                     rollup_across_cell_type_descendants,
+                                     rollup_across_cell_type_descendants_array)
+from backend.wmg.data.snapshot import (CELL_COUNTS_CUBE_NAME,
+                                       DATASET_TO_GENE_IDS_FILENAME,
+                                       EXPRESSION_SUMMARY_FMG_CUBE_NAME,
+                                       WmgSnapshot, load_snapshot)
 
 
 def _make_hashable(func):

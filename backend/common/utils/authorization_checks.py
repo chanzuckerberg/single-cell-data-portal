@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Optional, Union
 
 from backend.common.utils.corpora_constants import CorporaConstants
 

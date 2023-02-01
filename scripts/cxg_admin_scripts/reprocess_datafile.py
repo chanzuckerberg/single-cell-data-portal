@@ -1,24 +1,21 @@
+import json
+import logging
+import os
+import sys
+from time import sleep, time
+
 import boto3
 import click
 from click import Context
 
-import logging
-import json
-import os
-import sys
-from time import time, sleep
-
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.common.utils.db_session import db_session_manager
-from backend.common.corpora_orm import (
-    DbDataset,
-    DatasetArtifactFileType,
-)
-from backend.common.entities.dataset import Dataset
-
 from urllib.parse import urlparse
+
+from backend.common.corpora_orm import DatasetArtifactFileType, DbDataset
+from backend.common.entities.dataset import Dataset
+from backend.common.utils.db_session import db_session_manager
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

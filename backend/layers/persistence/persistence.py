@@ -6,41 +6,32 @@ from datetime import datetime
 from typing import Any, Iterable, List, Optional
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError, ProgrammingError
+from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from backend.common.corpora_config import CorporaDbConfig
-from backend.layers.common.entities import (
-    CanonicalCollection,
-    CanonicalDataset,
-    CollectionId,
-    CollectionMetadata,
-    CollectionVersion,
-    CollectionVersionId,
-    CollectionVersionWithDatasets,
-    DatasetArtifact,
-    DatasetArtifactId,
-    DatasetArtifactType,
-    DatasetConversionStatus,
-    DatasetId,
-    DatasetMetadata,
-    DatasetProcessingStatus,
-    DatasetStatus,
-    DatasetUploadStatus,
-    DatasetValidationStatus,
-    DatasetVersion,
-    DatasetVersionId,
-)
 from backend.layers.business.exceptions import CollectionIsPublishedException
+from backend.layers.common.entities import (CanonicalCollection,
+                                            CanonicalDataset, CollectionId,
+                                            CollectionMetadata,
+                                            CollectionVersion,
+                                            CollectionVersionId,
+                                            CollectionVersionWithDatasets,
+                                            DatasetArtifact, DatasetArtifactId,
+                                            DatasetArtifactType,
+                                            DatasetConversionStatus, DatasetId,
+                                            DatasetMetadata,
+                                            DatasetProcessingStatus,
+                                            DatasetStatus, DatasetUploadStatus,
+                                            DatasetValidationStatus,
+                                            DatasetVersion, DatasetVersionId)
 from backend.layers.persistence.constants import SCHEMA_NAME
-from backend.layers.persistence.orm import (
-    CollectionTable,
-    CollectionVersionTable,
-    DatasetTable,
-    DatasetArtifactTable,
-    DatasetVersionTable,
-)
-from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
+from backend.layers.persistence.orm import (CollectionTable,
+                                            CollectionVersionTable,
+                                            DatasetArtifactTable, DatasetTable,
+                                            DatasetVersionTable)
+from backend.layers.persistence.persistence_interface import (
+    DatabaseProviderInterface, PersistenceException)
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +58,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def _create_schema(self):
         from sqlalchemy.schema import CreateSchema
+
         from backend.layers.persistence.orm import metadata
 
         self._engine.execute(CreateSchema(self._schema_name))

@@ -1,14 +1,17 @@
 from flask import jsonify, make_response
 
 from backend.common.corpora_orm import CollectionVisibility, ProjectLinkType
-from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
-from backend.portal.api.providers import get_business_logic
+from backend.common.utils.http_exceptions import (
+    ForbiddenHTTPException, InvalidParametersHTTPException)
+from backend.curation.api.v1.curation.collections.common import \
+    reshape_for_curation_api
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionQueryFilter
-from backend.layers.business.exceptions import CollectionCreationException, InvalidMetadataException
+from backend.layers.business.exceptions import (CollectionCreationException,
+                                                InvalidMetadataException)
 from backend.layers.common import doi
 from backend.layers.common.entities import CollectionMetadata, Link
-from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
+from backend.portal.api.providers import get_business_logic
 
 
 def get(visibility: str, token_info: dict, curator: str = None):

@@ -1,10 +1,11 @@
+from functools import lru_cache
+
+import numba as nb
+import numpy as np
 import owlready2
 import pandas as pd
-import numpy as np
-import numba as nb
-from functools import lru_cache
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
 
+from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
 
 # ontology object
 ontology = owlready2.get_ontology(CL_BASIC_PERMANENT_URL_OWL)

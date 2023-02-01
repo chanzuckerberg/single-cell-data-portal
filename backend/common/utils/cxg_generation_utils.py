@@ -1,12 +1,11 @@
 import json
 
 import numpy as np
-import tiledb
 import pandas as pd
+import tiledb
 
-from backend.common.utils.type_conversion_utils import (
-    get_dtype_and_schema_of_array,
-)
+from backend.common.utils.type_conversion_utils import \
+    get_dtype_and_schema_of_array
 
 
 def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):

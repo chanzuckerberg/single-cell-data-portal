@@ -1,6 +1,7 @@
-import boto3
 import os
 import subprocess
+
+import boto3
 
 from backend.wmg.data.utils import log_func_runtime
 

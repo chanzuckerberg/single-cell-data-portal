@@ -6,52 +6,40 @@ from urllib.parse import urlparse
 from flask import Response, jsonify, make_response
 
 from backend.common.utils.http_exceptions import (
-    ConflictException,
-    GoneHTTPException,
-    ForbiddenHTTPException,
-    InvalidParametersHTTPException,
-    MethodNotAllowedException,
-    NotFoundHTTPException,
-    ServerErrorHTTPException,
-    TooLargeHTTPException,
-)
-from backend.portal.api import explorer_url
-from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
-from backend.portal.api.enrichment import enrich_dataset_with_ancestors
-from backend.portal.api.providers import get_business_logic, get_cloudfront_provider
+    ConflictException, ForbiddenHTTPException, GoneHTTPException,
+    InvalidParametersHTTPException, MethodNotAllowedException,
+    NotFoundHTTPException, ServerErrorHTTPException, TooLargeHTTPException)
+from backend.common.utils.ontology_mappings.ontology_map_loader import \
+    ontology_mappings
 from backend.layers.auth.user_info import UserInfo
-from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
-from backend.layers.business.exceptions import (
-    ArtifactNotFoundException,
-    CollectionCreationException,
-    CollectionIsPublishedException,
-    CollectionNotFoundException,
-    CollectionPublishException,
-    CollectionUpdateException,
-    CollectionVersionException,
-    DatasetInWrongStatusException,
-    DatasetNotFoundException,
-    InvalidMetadataException,
-    InvalidURIException,
-    MaxFileSizeExceededException,
-)
+from backend.layers.business.entities import (CollectionMetadataUpdate,
+                                              CollectionQueryFilter)
+from backend.layers.business.exceptions import (ArtifactNotFoundException,
+                                                CollectionCreationException,
+                                                CollectionIsPublishedException,
+                                                CollectionNotFoundException,
+                                                CollectionPublishException,
+                                                CollectionUpdateException,
+                                                CollectionVersionException,
+                                                DatasetInWrongStatusException,
+                                                DatasetNotFoundException,
+                                                InvalidMetadataException,
+                                                InvalidURIException,
+                                                MaxFileSizeExceededException)
 from backend.layers.common import doi
-from backend.layers.common.entities import (
-    CollectionId,
-    CollectionMetadata,
-    CollectionVersionWithDatasets,
-    CollectionVersionId,
-    DatasetArtifact,
-    DatasetArtifactId,
-    DatasetArtifactType,
-    DatasetId,
-    DatasetStatus,
-    DatasetVersion,
-    DatasetVersionId,
-    Link,
-    OntologyTermId,
-)
+from backend.layers.common.entities import (CollectionId, CollectionMetadata,
+                                            CollectionVersionId,
+                                            CollectionVersionWithDatasets,
+                                            DatasetArtifact, DatasetArtifactId,
+                                            DatasetArtifactType, DatasetId,
+                                            DatasetStatus, DatasetVersion,
+                                            DatasetVersionId, Link,
+                                            OntologyTermId)
 from backend.layers.thirdparty.uri_provider import FileInfoException
+from backend.portal.api import explorer_url
+from backend.portal.api.enrichment import enrich_dataset_with_ancestors
+from backend.portal.api.providers import (get_business_logic,
+                                          get_cloudfront_provider)
 
 
 def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):

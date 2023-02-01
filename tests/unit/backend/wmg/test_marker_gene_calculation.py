@@ -1,9 +1,13 @@
-import unittest
 import json
+import unittest
+
 import pytest
-from tests.unit.backend.wmg.fixtures.test_snapshot import load_test_fmg_snapshot
-from backend.wmg.pipeline.summary_cubes.calculate_markers import _prepare_indices_and_metrics, get_markers
+
 from backend.wmg.data.query import retrieve_top_n_markers
+from backend.wmg.pipeline.summary_cubes.calculate_markers import (
+    _prepare_indices_and_metrics, get_markers)
+from tests.unit.backend.wmg.fixtures.test_snapshot import \
+    load_test_fmg_snapshot
 
 TEST_SNAPSHOT = "test-fmg-snapshot"
 

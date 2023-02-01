@@ -5,21 +5,19 @@ import time
 import anndata
 import numpy
 import numpy as np
-from pandas import DataFrame
 import scanpy
 import tiledb
+from pandas import DataFrame
 from scipy import sparse
-from scipy.sparse import csr_matrix, coo_matrix
+from scipy.sparse import coo_matrix, csr_matrix
 
-from backend.wmg.pipeline.integrated_corpus.extract import get_X_raw
 from backend.wmg.data.constants import (
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
-    GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
-    INCLUDED_ASSAYS,
-)
+    GENE_EXPRESSION_COUNT_MIN_THRESHOLD, INCLUDED_ASSAYS,
+    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD)
 from backend.wmg.data.rankit import rankit
-from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
+from backend.wmg.data.tissue_mapper import TissueMapper
+from backend.wmg.pipeline.integrated_corpus.extract import get_X_raw
 
 logger = logging.getLogger(__name__)
 

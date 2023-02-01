@@ -3,26 +3,19 @@ from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Union
 
 from backend.layers.business.exceptions import CollectionIsPublishedException
-from backend.layers.common.entities import (
-    CanonicalCollection,
-    CanonicalDataset,
-    CollectionId,
-    CollectionMetadata,
-    CollectionVersion,
-    CollectionVersionId,
-    CollectionVersionWithDatasets,
-    DatasetArtifact,
-    DatasetArtifactId,
-    DatasetConversionStatus,
-    DatasetId,
-    DatasetMetadata,
-    DatasetProcessingStatus,
-    DatasetStatus,
-    DatasetUploadStatus,
-    DatasetValidationStatus,
-    DatasetVersion,
-    DatasetVersionId,
-)
+from backend.layers.common.entities import (CanonicalCollection,
+                                            CanonicalDataset, CollectionId,
+                                            CollectionMetadata,
+                                            CollectionVersion,
+                                            CollectionVersionId,
+                                            CollectionVersionWithDatasets,
+                                            DatasetArtifact, DatasetArtifactId,
+                                            DatasetConversionStatus, DatasetId,
+                                            DatasetMetadata,
+                                            DatasetProcessingStatus,
+                                            DatasetStatus, DatasetUploadStatus,
+                                            DatasetValidationStatus,
+                                            DatasetVersion, DatasetVersionId)
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 
 

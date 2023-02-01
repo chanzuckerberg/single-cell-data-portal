@@ -7,7 +7,7 @@ from sqlalchemy import Column, String
 
 from backend.common.corpora_orm import Base
 from backend.common.entities.entity import Entity
-from backend.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
+from backend.common.utils.json import CurationJSONEncoder, CustomJSONEncoder
 
 
 class DBTest(Base):

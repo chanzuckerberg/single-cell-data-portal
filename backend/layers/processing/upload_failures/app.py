@@ -4,9 +4,11 @@ import os
 
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.json import CustomJSONEncoder
-from backend.common.utils.result_notification import format_failed_batch_issue_slack_alert, notify_slack
+from backend.common.utils.result_notification import (
+    format_failed_batch_issue_slack_alert, notify_slack)
+from backend.layers.common.entities import (DatasetProcessingStatus,
+                                            DatasetStatusKey, DatasetVersionId)
 from backend.portal.api.providers import get_business_logic
-from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
 
 
 def handle_failure(event: dict, context) -> None:

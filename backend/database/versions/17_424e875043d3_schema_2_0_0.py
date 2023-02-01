@@ -5,10 +5,9 @@ Revises: 16_b65dad1f2a7e
 Create Date: 2021-08-12 10:22:45.891595
 
 """
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB, ENUM
-
+from alembic import op
+from sqlalchemy.dialects.postgresql import ENUM, JSONB
 
 # revision identifiers, used by Alembic.
 revision = "17_424e875043d3"

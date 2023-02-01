@@ -1,6 +1,7 @@
-from argparse import ArgumentParser
-import boto3
 import logging
+from argparse import ArgumentParser
+
+import boto3
 from owlready2 import get_ontology
 
 

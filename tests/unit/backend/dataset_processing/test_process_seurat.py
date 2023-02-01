@@ -1,16 +1,13 @@
 import logging
-from unittest.mock import patch
 from unittest import mock
+from unittest.mock import patch
 
-from backend.common.corpora_orm import (
-    DatasetArtifactFileType,
-    ConversionStatus,
-)
-
-
+from backend.common.corpora_orm import (ConversionStatus,
+                                        DatasetArtifactFileType)
 from backend.portal.pipeline.processing.exceptions import ConversionFailed
 from backend.portal.pipeline.processing.process_seurat import process
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.fixtures.mock_aws_test_case import \
+    CorporaTestCaseUsingMockAWS
 
 
 class TestProcessSeurat(CorporaTestCaseUsingMockAWS):

@@ -4,59 +4,48 @@ import logging
 from typing import Iterable, Optional, Tuple
 
 from backend.layers.business.business_interface import BusinessLogicInterface
-from backend.layers.business.entities import (
-    CollectionMetadataUpdate,
-    CollectionQueryFilter,
-    DatasetArtifactDownloadData,
-)
-from backend.layers.business.exceptions import (
-    ArtifactNotFoundException,
-    CollectionCreationException,
-    CollectionIsPublishedException,
-    CollectionNotFoundException,
-    CollectionPublishException,
-    CollectionUpdateException,
-    CollectionVersionException,
-    DatasetInWrongStatusException,
-    DatasetIngestException,
-    DatasetNotFoundException,
-    DatasetUpdateException,
-    InvalidURIException,
-    MaxFileSizeExceededException,
-)
+from backend.layers.business.entities import (CollectionMetadataUpdate,
+                                              CollectionQueryFilter,
+                                              DatasetArtifactDownloadData)
+from backend.layers.business.exceptions import (ArtifactNotFoundException,
+                                                CollectionCreationException,
+                                                CollectionIsPublishedException,
+                                                CollectionNotFoundException,
+                                                CollectionPublishException,
+                                                CollectionUpdateException,
+                                                CollectionVersionException,
+                                                DatasetIngestException,
+                                                DatasetInWrongStatusException,
+                                                DatasetNotFoundException,
+                                                DatasetUpdateException,
+                                                InvalidURIException,
+                                                MaxFileSizeExceededException)
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
-from backend.layers.common.entities import (
-    CollectionId,
-    CollectionLinkType,
-    CollectionMetadata,
-    CollectionVersion,
-    CollectionVersionId,
-    CollectionVersionWithDatasets,
-    DatasetArtifact,
-    DatasetArtifactId,
-    DatasetArtifactType,
-    DatasetConversionStatus,
-    DatasetId,
-    DatasetMetadata,
-    DatasetProcessingStatus,
-    DatasetStatus,
-    DatasetStatusGeneric,
-    DatasetStatusKey,
-    DatasetUploadStatus,
-    DatasetValidationStatus,
-    DatasetVersion,
-    DatasetVersionId,
-    Link,
-)
-from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
+from backend.layers.common.entities import (CollectionId, CollectionLinkType,
+                                            CollectionMetadata,
+                                            CollectionVersion,
+                                            CollectionVersionId,
+                                            CollectionVersionWithDatasets,
+                                            DatasetArtifact, DatasetArtifactId,
+                                            DatasetArtifactType,
+                                            DatasetConversionStatus, DatasetId,
+                                            DatasetMetadata,
+                                            DatasetProcessingStatus,
+                                            DatasetStatus,
+                                            DatasetStatusGeneric,
+                                            DatasetStatusKey,
+                                            DatasetUploadStatus,
+                                            DatasetValidationStatus,
+                                            DatasetVersion, DatasetVersionId,
+                                            Link)
+from backend.layers.persistence.persistence_interface import \
+    DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
-    CrossrefDOINotFoundException,
-    CrossrefException,
-    CrossrefProviderInterface,
-)
+    CrossrefDOINotFoundException, CrossrefException, CrossrefProviderInterface)
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
-from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
+from backend.layers.thirdparty.step_function_provider import \
+    StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 

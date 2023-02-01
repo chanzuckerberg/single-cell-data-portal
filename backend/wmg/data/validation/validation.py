@@ -1,14 +1,14 @@
 import logging
 import os
 import pathlib
-
-import anndata
 from pathlib import Path
 
+import anndata
 import tiledb
 
-from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME, CELL_COUNTS_CUBE_NAME
 from backend.common.utils.math_utils import GB
+from backend.wmg.data.snapshot import (CELL_COUNTS_CUBE_NAME,
+                                       EXPRESSION_SUMMARY_CUBE_NAME)
 from backend.wmg.data.validation import fixtures
 
 logger = logging.getLogger(__name__)

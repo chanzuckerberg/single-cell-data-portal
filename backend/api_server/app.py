@@ -1,7 +1,6 @@
 import json
 import os
 import time
-
 from urllib.parse import urlparse
 
 import connexion

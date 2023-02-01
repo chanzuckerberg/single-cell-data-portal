@@ -1,8 +1,9 @@
-from backend.gene_info.config import GeneInfoConfig
+import json
 import logging
 import urllib.request
-import json
 import xml.etree.ElementTree as ET
+
+from backend.gene_info.config import GeneInfoConfig
 
 
 class NCBIException(Exception):

@@ -1,11 +1,12 @@
+import contextlib
 import logging
 import os
-import unittest
 import tempfile
+import unittest
 from unittest import mock
 from unittest.mock import Mock
-import contextlib
-from backend.wmg.pipeline.cube_pipeline import main, logger
+
+from backend.wmg.pipeline.cube_pipeline import logger, main
 
 
 @contextlib.contextmanager

@@ -1,10 +1,9 @@
 import re
 from typing import List, Union
-
 from urllib.parse import urlparse
+
 from backend.layers.business.entities import CollectionMetadataUpdate
 from backend.layers.business.exceptions import InvalidMetadataException
-
 from backend.layers.common.entities import CollectionMetadata, Link
 from backend.layers.common.regex import CONTROL_CHARS, EMAIL_REGEX
 

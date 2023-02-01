@@ -1,6 +1,9 @@
 from dataclasses import dataclass
-from backend.common.utils.dl_sources.url import URL, MissingHeaderException, from_url
+
 import requests
+
+from backend.common.utils.dl_sources.url import (URL, MissingHeaderException,
+                                                 from_url)
 
 
 @dataclass

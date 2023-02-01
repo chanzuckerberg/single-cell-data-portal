@@ -1,10 +1,10 @@
+import logging
+from datetime import datetime
+from urllib.parse import urlparse
+
 import requests
 
 from backend.common.corpora_config import CorporaConfig
-from urllib.parse import urlparse
-from datetime import datetime
-
-import logging
 
 
 class CrossrefException(Exception):

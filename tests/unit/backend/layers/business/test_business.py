@@ -4,45 +4,36 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
-from backend.layers.thirdparty.crossref_provider import (
-    CrossrefDOINotFoundException,
-    CrossrefException,
-    CrossrefProviderInterface,
-)
-from backend.layers.business.business import (
-    BusinessLogic,
-    CollectionMetadataUpdate,
-    CollectionQueryFilter,
-    DatasetArtifactDownloadData,
-)
-from backend.layers.business.exceptions import (
-    CollectionCreationException,
-    CollectionPublishException,
-    CollectionUpdateException,
-    CollectionVersionException,
-    DatasetIngestException,
-    DatasetNotFoundException,
-)
-from backend.layers.common.entities import (
-    CollectionId,
-    CollectionMetadata,
-    CollectionVersion,
-    CollectionVersionId,
-    CollectionVersionWithDatasets,
-    DatasetArtifactType,
-    DatasetMetadata,
-    DatasetProcessingStatus,
-    DatasetUploadStatus,
-    DatasetValidationStatus,
-    DatasetVersionId,
-    Link,
-    OntologyTermId,
-)
+from backend.layers.business.business import (BusinessLogic,
+                                              CollectionMetadataUpdate,
+                                              CollectionQueryFilter,
+                                              DatasetArtifactDownloadData)
+from backend.layers.business.exceptions import (CollectionCreationException,
+                                                CollectionPublishException,
+                                                CollectionUpdateException,
+                                                CollectionVersionException,
+                                                DatasetIngestException,
+                                                DatasetNotFoundException)
+from backend.layers.common.entities import (CollectionId, CollectionMetadata,
+                                            CollectionVersion,
+                                            CollectionVersionId,
+                                            CollectionVersionWithDatasets,
+                                            DatasetArtifactType,
+                                            DatasetMetadata,
+                                            DatasetProcessingStatus,
+                                            DatasetUploadStatus,
+                                            DatasetValidationStatus,
+                                            DatasetVersionId, Link,
+                                            OntologyTermId)
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.crossref_provider import (
+    CrossrefDOINotFoundException, CrossrefException, CrossrefProviderInterface)
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
-from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
-from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
+from backend.layers.thirdparty.step_function_provider import \
+    StepFunctionProviderInterface
+from backend.layers.thirdparty.uri_provider import (FileInfo,
+                                                    UriProviderInterface)
 from tests.unit.backend.layers.fixtures import test_user_name
 
 test_curator_name = "Test User"

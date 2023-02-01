@@ -1,12 +1,10 @@
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from backend.common.corpora_orm import generate_id
-from backend.common.utils.exceptions import (
-    CorporaException,
-    NonExistentCollectionException,
-    NonExistentDatasetException,
-)
+from backend.common.utils.exceptions import (CorporaException,
+                                             NonExistentCollectionException,
+                                             NonExistentDatasetException)
 from backend.portal.pipeline.submissions.app import dataset_submissions_handler
 
 

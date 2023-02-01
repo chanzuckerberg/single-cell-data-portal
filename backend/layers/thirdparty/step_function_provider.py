@@ -4,7 +4,8 @@ from time import time
 import boto3
 
 from backend.common.corpora_config import CorporaConfig
-from backend.layers.common.entities import CollectionVersionId, DatasetVersionId
+from backend.layers.common.entities import (CollectionVersionId,
+                                            DatasetVersionId)
 
 
 class StepFunctionProviderInterface:

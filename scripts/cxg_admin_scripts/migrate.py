@@ -12,17 +12,14 @@ from backend.common.utils.s3_buckets import buckets
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.common.utils.db_session import db_session_manager
 from urllib.parse import urlparse
-from backend.common.corpora_orm import (
-    CollectionVisibility,
-    DbCollection,
-    DbDataset,
-    DatasetArtifactFileType,
-    DbDatasetArtifact,
-    ProcessingStatus,
-)
+
+from backend.common.corpora_orm import (CollectionVisibility,
+                                        DatasetArtifactFileType, DbCollection,
+                                        DbDataset, DbDatasetArtifact,
+                                        ProcessingStatus)
 from backend.common.entities import DatasetAsset
+from backend.common.utils.db_session import db_session_manager
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -415,13 +412,14 @@ def migrate_redesign_write(ctx):
     from sqlalchemy import create_engine
     from sqlalchemy.orm import Session
 
-    from backend.layers.persistence.orm import (
-        CollectionTable as CollectionRow,
-        CollectionVersionTable as CollectionVersionRow,
-        DatasetTable as DatasetRow,
-        DatasetVersionTable as DatasetVersionRow,
-        DatasetArtifactTable as DatasetArtifactRow,
-    )
+    from backend.layers.persistence.orm import CollectionTable as CollectionRow
+    from backend.layers.persistence.orm import \
+        CollectionVersionTable as CollectionVersionRow
+    from backend.layers.persistence.orm import \
+        DatasetArtifactTable as DatasetArtifactRow
+    from backend.layers.persistence.orm import DatasetTable as DatasetRow
+    from backend.layers.persistence.orm import \
+        DatasetVersionTable as DatasetVersionRow
 
     database_pass = os.getenv("PGPASSWORD")
     database_name = os.getenv("PGDB")
@@ -433,6 +431,7 @@ def migrate_redesign_write(ctx):
     engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
 
     from sqlalchemy.schema import CreateSchema
+
     from backend.layers.persistence.orm import metadata
 
     engine.execute(CreateSchema("persistence_schema"))
@@ -510,18 +509,20 @@ def migrate_redesign_write(ctx):
             session.add(artifact_row)
         session.commit()
 
+
 def migrate_redesign_correct_published_at(ctx):
     """
     Corrects published_at for redesign
     """
 
-    from backend.layers.persistence.orm import (
-        CollectionTable as CollectionRow,
-        CollectionVersionTable as CollectionVersionRow,
-        DatasetTable as DatasetRow,
-        DatasetVersionTable as DatasetVersionRow,
-        DatasetArtifactTable as DatasetArtifactRow,
-    )
+    from backend.layers.persistence.orm import CollectionTable as CollectionRow
+    from backend.layers.persistence.orm import \
+        CollectionVersionTable as CollectionVersionRow
+    from backend.layers.persistence.orm import \
+        DatasetArtifactTable as DatasetArtifactRow
+    from backend.layers.persistence.orm import DatasetTable as DatasetRow
+    from backend.layers.persistence.orm import \
+        DatasetVersionTable as DatasetVersionRow
 
     with db_session_manager() as session:
         for record in session.query(DbCollection):
@@ -534,9 +535,10 @@ def migrate_redesign_correct_published_at(ctx):
                         print("new version's published_at >= old collection revised_at, skipping")
                         continue
                     # print(new_version.id, new_version.published_at, record.published_at)
-                    print(f"Setting version {new_version.id}'s published_at from {new_version.published_at} to {record.revised_at}")
+                    print(
+                        f"Setting version {new_version.id}'s published_at from {new_version.published_at} to {record.revised_at}"
+                    )
                     # new_version.published_at = record.revised_at # uncomment this line
                 except Exception as e:
-                    # In this case there is more than one version 
+                    # In this case there is more than one version
                     print(e)
-

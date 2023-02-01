@@ -4,33 +4,22 @@ from flask import Response, jsonify, make_response
 
 from backend.common.utils.exceptions import MaxFileSizeExceededException
 from backend.common.utils.http_exceptions import (
-    ForbiddenHTTPException,
-    InvalidParametersHTTPException,
-    MethodNotAllowedException,
-    NotFoundHTTPException,
-    TooLargeHTTPException,
-)
-from backend.portal.api.providers import get_business_logic
+    ForbiddenHTTPException, InvalidParametersHTTPException,
+    MethodNotAllowedException, NotFoundHTTPException, TooLargeHTTPException)
+from backend.curation.api.v1.curation.collections.common import (
+    get_infered_dataset_version, reshape_dataset_for_curation_api)
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business_interface import BusinessLogicInterface
-from backend.layers.business.exceptions import (
-    CollectionIsPublishedException,
-    CollectionNotFoundException,
-    CollectionUpdateException,
-    DatasetInWrongStatusException,
-    DatasetNotFoundException,
-    InvalidURIException,
-)
-from backend.layers.common.entities import (
-    CollectionId,
-    CollectionVersionId,
-    CollectionVersionWithDatasets,
-    DatasetVersion,
-)
-from backend.curation.api.v1.curation.collections.common import (
-    get_infered_dataset_version,
-    reshape_dataset_for_curation_api,
-)
+from backend.layers.business.exceptions import (CollectionIsPublishedException,
+                                                CollectionNotFoundException,
+                                                CollectionUpdateException,
+                                                DatasetInWrongStatusException,
+                                                DatasetNotFoundException,
+                                                InvalidURIException)
+from backend.layers.common.entities import (CollectionId, CollectionVersionId,
+                                            CollectionVersionWithDatasets,
+                                            DatasetVersion)
+from backend.portal.api.providers import get_business_logic
 
 
 def get(collection_id: str, dataset_id: str = None):

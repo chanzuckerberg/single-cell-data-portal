@@ -1,8 +1,9 @@
 import os
 import pathlib
 import shutil
-from unittest import TestCase
 import tempfile
+from unittest import TestCase
+
 import boto3
 from moto import mock_s3
 

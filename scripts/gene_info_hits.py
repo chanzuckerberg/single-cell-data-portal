@@ -3,8 +3,8 @@
 # See https://docs.google.com/spreadsheets/d/1ZULeY_rBsN8u4sUREmJZC3P3PL2yZm2pPrRvSCpCMHQ/edit#gid=2059332851
 
 import csv
-import urllib.request
 import json
+import urllib.request
 
 
 def get_search_url(term):

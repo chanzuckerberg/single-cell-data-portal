@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-import sys
 import json
+import sys
 import threading
-
 
 from tests.functional.backend.common import BaseFunctionalTestCase
 

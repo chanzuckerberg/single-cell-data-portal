@@ -4,21 +4,17 @@ from flask import Response, jsonify, make_response
 
 from backend.common.corpora_orm import ProjectLinkType
 from backend.common.utils.http_exceptions import (
-    InvalidParametersHTTPException,
-    MethodNotAllowedException,
-)
-from backend.portal.api.providers import get_business_logic
+    InvalidParametersHTTPException, MethodNotAllowedException)
+from backend.curation.api.v1.curation.collections.common import (
+    extract_doi_from_links, get_infered_collection_version_else_forbidden,
+    is_owner_or_allowed_else_forbidden, reshape_for_curation_api)
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate
-from backend.layers.business.exceptions import CollectionUpdateException, InvalidMetadataException
+from backend.layers.business.exceptions import (CollectionUpdateException,
+                                                InvalidMetadataException)
 from backend.layers.common import doi
 from backend.layers.common.entities import Link
-from backend.curation.api.v1.curation.collections.common import (
-    extract_doi_from_links,
-    get_infered_collection_version_else_forbidden,
-    is_owner_or_allowed_else_forbidden,
-    reshape_for_curation_api,
-)
+from backend.portal.api.providers import get_business_logic
 
 
 def delete(collection_id: str, token_info: dict) -> Response:
