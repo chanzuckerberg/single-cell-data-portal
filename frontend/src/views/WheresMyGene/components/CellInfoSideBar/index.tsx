@@ -58,14 +58,22 @@ function CellInfoSideBar({
 
   const [hoverStartTime, setHoverStartTime] = useState(0);
 
-  const useHandleHoverEnd = useCallback((event: EVENTS, payload = {}) => {
-    if (Date.now() - hoverStartTime > 2 * 1000) {
-      track(event, payload);
-    }
-  }, [hoverStartTime])
+  const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
+    return useCallback(() => {
+      if (Date.now() - hoverStartTime > 2 * 1000) {
+        track(event, payload);
+      }
+    }, [hoverStartTime]);
+  };
 
-  const handleFmgHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker score"});
-  const handleMarkerScoreHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker genes"});
+  const handleFmgHoverEnd = useHandleHoverEnd(
+    EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
+    { label: "marker genes" }
+  );
+  const handleMarkerScoreHoverEnd = useHandleHoverEnd(
+    EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
+    { label: "marker score" }
+  );
 
   if (isLoading || !data) return null;
 
@@ -82,6 +90,8 @@ function CellInfoSideBar({
             width="default"
             className="fmg-tooltip-icon"
             arrow={true}
+            onOpen={() => setHoverStartTime(Date.now())}
+            onClose={handleFmgHoverEnd}
             title={
               <StyledTooltip>
                 <div>
@@ -95,8 +105,12 @@ function CellInfoSideBar({
                     rel="noopener"
                     target="_blank"
                     onClick={() => {
-                      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker genes"});
-                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {label: "marker genes"});
+                      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                        label: "marker genes",
+                      });
+                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                        label: "marker genes",
+                      });
                     }}
                   >
                     Click to read more about the identification method.
@@ -110,8 +124,6 @@ function CellInfoSideBar({
               sdsType="secondary"
               isAllCaps={false}
               style={{ fontWeight: "500" }}
-              onMouseEnter={() => setHoverStartTime(Date.now())}
-              onMouseLeave={handleFmgHoverEnd}
             >
               <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
@@ -152,12 +164,15 @@ function CellInfoSideBar({
                 width="default"
                 className="fmg-tooltip-icon"
                 arrow={true}
+                onOpen={() => setHoverStartTime(Date.now())}
+                onClose={handleMarkerScoreHoverEnd}
                 title={
                   <StyledTooltip>
                     <div>
-                    Marker Score indicates the strength and specificity of a gene as a marker.
-                    It is the 5th percentile of the effect sizes when comparing the expressions
-                    in a cell type of interest to each other cell type in the tissue.
+                      Marker Score indicates the strength and specificity of a
+                      gene as a marker. It is the 5th percentile of the effect
+                      sizes when comparing the expressions in a cell type of
+                      interest to each other cell type in the tissue.
                     </div>
                     <br />
                     <div>
@@ -166,13 +181,17 @@ function CellInfoSideBar({
                         rel="noopener"
                         target="_blank"
                         onClick={() => {
-                          track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker score"});
-                          track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {label: "marker score"});
+                          track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                            label: "marker score",
+                          });
+                          track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                            label: "marker score",
+                          });
                         }}
                       >
                         Click to read more about the identification method.
                       </a>
-                    </div>                    
+                    </div>
                   </StyledTooltip>
                 }
               >
@@ -181,8 +200,6 @@ function CellInfoSideBar({
                   sdsType="secondary"
                   isAllCaps={false}
                   style={{ fontWeight: "500" }}
-                  onMouseEnter={() => setHoverStartTime(Date.now())}
-                  onMouseLeave={handleMarkerScoreHoverEnd}
                 >
                   <StyledIconImage src={questionMarkIcon} />
                 </TooltipButton>
