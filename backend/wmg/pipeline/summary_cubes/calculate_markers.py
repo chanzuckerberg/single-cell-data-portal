@@ -103,6 +103,8 @@ def _query_tiledb_context_memoized(
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
 
+    # explicitly filtering both cell counts and expression summary down to just the healthy cells
+    # we do not want to include diseased cells in the marker gene calculation.
     healthy_filter_es = query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
     query = query[healthy_filter_es]
 
