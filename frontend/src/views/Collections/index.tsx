@@ -182,6 +182,12 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: "suspension_type",
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.SUSPENSION_TYPE,
+      },
+      // Hidden, required for filter.
+      {
         accessor: "tissueCalculated",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.TISSUE_CALCULATED,
@@ -220,6 +226,7 @@ export default function Collections(): JSX.Element {
           CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
           CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
           CATEGORY_FILTER_ID.SEX,
+          CATEGORY_FILTER_ID.SUSPENSION_TYPE,
           CATEGORY_FILTER_ID.TISSUE_CALCULATED,
         ],
         sortBy: [

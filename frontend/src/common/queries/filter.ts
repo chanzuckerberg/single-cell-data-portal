@@ -103,6 +103,7 @@ export interface DatasetResponse {
   published_at: number;
   revised_at?: number;
   sex: Ontology[];
+  suspension_type: string[];
   tissue: Ontology[];
   tissue_ancestors: string[];
 }
@@ -277,12 +278,16 @@ function aggregateCollectionDatasetRows(
           ...collectionDatasetRow.development_stage_ancestors,
         ],
         disease: [...accum.disease, ...collectionDatasetRow.disease],
+        organism: [...accum.organism, ...collectionDatasetRow.organism],
         self_reported_ethnicity: [
           ...accum.self_reported_ethnicity,
           ...collectionDatasetRow.self_reported_ethnicity,
         ],
-        organism: [...accum.organism, ...collectionDatasetRow.organism],
         sex: [...accum.sex, ...collectionDatasetRow.sex],
+        suspension_type: [
+          ...accum.suspension_type,
+          ...collectionDatasetRow.suspension_type,
+        ],
         tissue: [...accum.tissue, ...collectionDatasetRow.tissue],
         tissueCalculated: [
           ...accum.tissueCalculated,
@@ -301,9 +306,10 @@ function aggregateCollectionDatasetRows(
       cell_type_ancestors: [],
       development_stage_ancestors: [],
       disease: [],
-      self_reported_ethnicity: [],
       organism: [],
+      self_reported_ethnicity: [],
       sex: [],
+      suspension_type: [],
       tissue: [],
       tissueCalculated: [],
       tissue_ancestors: [],
@@ -324,11 +330,12 @@ function aggregateCollectionDatasetRows(
       ...new Set(aggregatedCategoryValues.development_stage_ancestors),
     ],
     disease: uniqueOntologies(aggregatedCategoryValues.disease),
+    organism: uniqueOntologies(aggregatedCategoryValues.organism),
     self_reported_ethnicity: uniqueOntologies(
       aggregatedCategoryValues.self_reported_ethnicity
     ),
-    organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
+    suspension_type: [...new Set(aggregatedCategoryValues.suspension_type)],
     tissue: uniqueOntologies(aggregatedCategoryValues.tissue),
     tissueCalculated: [...new Set(aggregatedCategoryValues.tissueCalculated)],
     tissue_ancestors: [...new Set(aggregatedCategoryValues.tissue_ancestors)],
