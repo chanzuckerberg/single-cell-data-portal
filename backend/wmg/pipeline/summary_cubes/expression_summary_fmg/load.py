@@ -2,7 +2,6 @@ import logging
 
 import numpy as np
 import pandas as pd
-from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 
 logger = logging.getLogger(__name__)
 

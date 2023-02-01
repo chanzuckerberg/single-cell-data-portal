@@ -8,7 +8,6 @@ from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, MARKER_GENES_CUBE_NAME
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
 from backend.wmg.pipeline.summary_cubes.calculate_markers import get_markers
-from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 from backend.common.utils.exceptions import MarkerGeneCalculationException
 
 logger = logging.getLogger(__name__)
