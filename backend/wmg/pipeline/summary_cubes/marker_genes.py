@@ -73,6 +73,7 @@ def create_marker_genes_cube(corpus_path: str):
                     target, context, corpus=corpus_path, test="binomtest", percentile=0.3, n_markers=None
                 )
             except MarkerGeneCalculationException as e:
+                # exception handling here so pipeline doesn't fail if no cells match query criteria
                 logger.info("Error finding markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
                 logger.info(e)
                 continue
