@@ -25,12 +25,10 @@ class CollectionNotFoundException(CollectionUpdateException):
     """
 
 
-
 class CollectionIsPublishedException(CollectionUpdateException):
     """
     Raised when a mutable operation is performed on a published exception
     """
-
 
 
 class InvalidLinkException(BusinessException):
@@ -63,12 +61,10 @@ class InvalidURIException(DatasetIngestException):
     """
 
 
-
 class MaxFileSizeExceededException(DatasetIngestException):
     """
     Raised when trying to ingest a dataset that is too big
     """
-
 
 
 class DatasetInWrongStatusException(DatasetIngestException):
@@ -77,12 +73,10 @@ class DatasetInWrongStatusException(DatasetIngestException):
     """
 
 
-
 class DatasetNotFoundException(BusinessException):
     """
     Raised when a write operation was called on a dataset, but it was not found
     """
-
 
 
 class DatasetUpdateException(BusinessException):
