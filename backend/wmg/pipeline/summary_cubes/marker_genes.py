@@ -73,7 +73,7 @@ def create_marker_genes_cube(corpus_path: str):
                 b_markers = get_markers(
                     target, context, corpus=corpus_path, test="binomtest", percentile=0.3, n_markers=None
                 )
-            except MarkerGeneCalculationException as e:
+            except MarkerGeneCalculationException:
                 logger.info("Error finding markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
                 continue
             gc.collect()
