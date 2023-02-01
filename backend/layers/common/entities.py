@@ -163,11 +163,11 @@ class DatasetMetadata:
     cell_count: int
     schema_version: str
     mean_genes_per_cell: float
-    batch_condition: List[str]
-    suspension_type: List[str]
-    donor_id: List[str]
     is_primary_data: str
     x_approximate_distribution: Optional[str]
+    batch_condition: List[str] = field(default_factory=list)
+    suspension_type: List[str] = field(default_factory=list)
+    donor_id: List[str] = field(default_factory=list)
 
 
 @dataclass
