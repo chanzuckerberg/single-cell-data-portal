@@ -10,9 +10,17 @@ const isProdBuild = process.env.NODE_ENV === nodeEnv.PRODUCTION;
 
 const PLAUSIBLE_URL = "https://plausible.io";
 
-const TWITTER_URL = "https://cdn.syndication.twimg.com platform.twitter.com";
+const TWITTER_URL = ["https://cdn.syndication.twimg.com platform.twitter.com"];
 
-const SCRIPT_SRC = ["'self'", "'wasm-unsafe-eval'", PLAUSIBLE_URL, TWITTER_URL];
+const WISTIA_URL = "https://fast.wistia.net/";
+
+const SCRIPT_SRC = [
+  "'self'",
+  "'wasm-unsafe-eval'",
+  PLAUSIBLE_URL,
+  TWITTER_URL,
+  WISTIA_URL,
+];
 
 const defaultSecureHeaders = {
   contentSecurityPolicy: {
@@ -28,7 +36,7 @@ const defaultSecureHeaders = {
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       formAction: "'self'",
       frameAncestors: ["'none'"],
-      frameSrc: TWITTER_URL,
+      frameSrc: [TWITTER_URL, WISTIA_URL],
       imgSrc: ["'self'", "data:"],
       manifestSrc: ["'self'"],
       mediaSrc: ["'self'"],
