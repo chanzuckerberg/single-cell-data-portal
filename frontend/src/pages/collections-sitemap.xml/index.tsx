@@ -2,7 +2,7 @@ import { GetServerSideProps } from "next";
 import { getServerSideSitemap, ISitemapField } from "next-sitemap";
 
 // function to convert epoch/unix timestamp to YYYY-MM-DD HH:MM +00:00 format
-function unixToYYYYMMDD(date: string) {
+function unixToYYYYMMDDHHMM(date: string) {
   let myDate = new Date(parseFloat(date) * 1000);
 
   let month = String(myDate.getMonth() + 1);
@@ -50,8 +50,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const fields: ISitemapField[] = collections.map((collection) => ({
     loc: `https://www.cellxgene.cziscience.com/collections/${collection.id}`,
     lastmod: collection.revised_at
-      ? unixToYYYYMMDD(collection.revised_at)
-      : unixToYYYYMMDD(collection.published_at),
+      ? unixToYYYYMMDDHHMM(collection.revised_at)
+      : unixToYYYYMMDDHHMM(collection.published_at),
   }));
 
   return getServerSideSitemap(context, fields);
