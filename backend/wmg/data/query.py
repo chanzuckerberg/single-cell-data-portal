@@ -23,7 +23,10 @@ class WmgQueryCriteria(BaseModel):
 class FmgQueryCriteria(BaseModel):
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    # for now, we will only support finding marker genes for a single cell type.
+    # this is to account for the fact that roll-up becomes much more complex when
+    # multiple cell types are specified.
+    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0, max_items=1)
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
@@ -85,7 +88,6 @@ class WmgQuery:
             indexed_dims=["tissue_ontology_term_ids", "tissue_original_ontology_term_ids", "organism_ontology_term_id"],
         )
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
-        cell_counts.rename(columns={"n_cells_rollup": "n_total_cells_rollup"}, inplace=True)
         return cell_counts
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues

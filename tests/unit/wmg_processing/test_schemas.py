@@ -79,7 +79,7 @@ class TestSummaryCubeSchema(unittest.TestCase):
         with tempfile.TemporaryDirectory() as summary_cube_dir:
             create_empty_cube(uri=f"{summary_cube_dir}/cube", schema=expression_summary_schema)
             summary_cube_schema = tiledb.ArraySchema.load(f"{summary_cube_dir}/cube")
-            self.assertEqual(summary_cube_schema.nattr, 11)
+            self.assertEqual(summary_cube_schema.nattr, 9)
             self.assertTrue(summary_cube_schema.has_attr("cell_type_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("dataset_id"))
             self.assertTrue(summary_cube_schema.has_attr("assay_ontology_term_id"))
@@ -89,8 +89,6 @@ class TestSummaryCubeSchema(unittest.TestCase):
             self.assertTrue(summary_cube_schema.has_attr("sex_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("nnz"))
             self.assertTrue(summary_cube_schema.has_attr("sum"))
-            self.assertTrue(summary_cube_schema.has_attr("nnz_rollup"))
-            self.assertTrue(summary_cube_schema.has_attr("sum_rollup"))
 
 
 class TestFmgSummaryCubeSchema(unittest.TestCase):
@@ -135,7 +133,7 @@ class TestCellCountCubeSchema(unittest.TestCase):
         with tempfile.TemporaryDirectory() as cell_count_cube_dir:
             create_empty_cube(uri=f"{cell_count_cube_dir}/cube", schema=cell_counts_schema)
             cell_count_cube_schema = tiledb.ArraySchema.load(f"{cell_count_cube_dir}/cube")
-            self.assertEqual(cell_count_cube_schema.nattr, 9)
+            self.assertEqual(cell_count_cube_schema.nattr, 8)
             self.assertTrue(cell_count_cube_schema.has_attr("cell_type_ontology_term_id"))
             self.assertTrue(cell_count_cube_schema.has_attr("dataset_id"))
             self.assertTrue(cell_count_cube_schema.has_attr("assay_ontology_term_id"))
@@ -144,4 +142,3 @@ class TestCellCountCubeSchema(unittest.TestCase):
             self.assertTrue(cell_count_cube_schema.has_attr("self_reported_ethnicity_ontology_term_id"))
             self.assertTrue(cell_count_cube_schema.has_attr("sex_ontology_term_id"))
             self.assertTrue(cell_count_cube_schema.has_attr("n_cells"))
-            self.assertTrue(cell_count_cube_schema.has_attr("n_cells_rollup"))
