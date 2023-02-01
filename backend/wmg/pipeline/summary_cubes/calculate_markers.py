@@ -246,6 +246,9 @@ def _query_target(
         level_values = np.array(list(n_cells_index_context.get_level_values(level)))
         filt_ncells = np.logical_and(filt_ncells, np.in1d(level_values, target_filters[level + "s"]))
 
+    if not np.any(filt) or not np.any(filt_ncells):
+        raise MarkerGeneCalculationException("No cells found for target population.")
+
     target_agg = context_agg[filt]
     n_cells_per_gene_target = n_cells_per_gene_context[filt_ncells].sum(axis=0, keepdims=True)
     return target_agg, n_cells_per_gene_target
