@@ -57,15 +57,17 @@ function CellInfoSideBar({
   }, [data, dispatch]);
 
   const [hoverStartTime, setHoverStartTime] = useState(0);
+  
+  const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
+      return useCallback(() => {
+        if (Date.now() - hoverStartTime > 2 * 1000) {
+          track(event, payload);
+        }
+      }, [hoverStartTime])
+  }
 
-  const useHandleHoverEnd = useCallback((event: EVENTS, payload = {}) => {
-    if (Date.now() - hoverStartTime > 2 * 1000) {
-      track(event, payload);
-    }
-  }, [hoverStartTime])
-
-  const handleFmgHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker score"});
-  const handleMarkerScoreHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker genes"});
+  const handleFmgHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker genes"});
+  const handleMarkerScoreHoverEnd = useHandleHoverEnd(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {label: "marker score"});
 
   if (isLoading || !data) return null;
 
@@ -82,8 +84,11 @@ function CellInfoSideBar({
             width="default"
             className="fmg-tooltip-icon"
             arrow={true}
+            onOpen={() => setHoverStartTime(Date.now())}   
+            onClose={handleFmgHoverEnd}
             title={
-              <StyledTooltip>
+              <StyledTooltip             
+              >
                 <div>
                   Marker genes are highly and uniquely expressed in the cell
                   type relative to all other cell types.
@@ -110,8 +115,6 @@ function CellInfoSideBar({
               sdsType="secondary"
               isAllCaps={false}
               style={{ fontWeight: "500" }}
-              onMouseEnter={() => setHoverStartTime(Date.now())}
-              onMouseLeave={handleFmgHoverEnd}
             >
               <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
@@ -152,6 +155,8 @@ function CellInfoSideBar({
                 width="default"
                 className="fmg-tooltip-icon"
                 arrow={true}
+                onOpen={() => setHoverStartTime(Date.now())}
+                onClose={handleMarkerScoreHoverEnd}                
                 title={
                   <StyledTooltip>
                     <div>
@@ -181,8 +186,6 @@ function CellInfoSideBar({
                   sdsType="secondary"
                   isAllCaps={false}
                   style={{ fontWeight: "500" }}
-                  onMouseEnter={() => setHoverStartTime(Date.now())}
-                  onMouseLeave={handleMarkerScoreHoverEnd}
                 >
                   <StyledIconImage src={questionMarkIcon} />
                 </TooltipButton>
