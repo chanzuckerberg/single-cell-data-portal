@@ -330,6 +330,17 @@ def migrate_redesign_debug(ctx):
     """
     migrate.migrate_redesign_debug(ctx)
 
+@cli.command()
+@click.pass_context
+def migrate_redesign_correct_published_at(ctx):
+    """
+    Used to debug the schema migration process. To be removed.
+    ./scripts/cxg_admin.py --deployment dev migrate-redesign-debug
+    """
+    migrate.migrate_redesign_correct_published_at(ctx)
+
+
+
 
 if __name__ == "__main__":
     cli(obj={})
