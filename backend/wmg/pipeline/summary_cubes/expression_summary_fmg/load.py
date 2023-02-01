@@ -21,14 +21,6 @@ def build_in_mem_cube(
     """
     logger.info("Building in-mem cube")
 
-    # filter out groups with unhealthy cells
-    healthy_filter = (
-        cube_index.index.get_level_values("disease_ontology_term_id").astype("str")
-        == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
-    )
-    if np.any(healthy_filter):
-        cube_index = cube_index[healthy_filter]
-
     # Count total values so we can allocate buffers once
     total_vals = 0
     for cube_idx in cube_index.cube_idx.values:

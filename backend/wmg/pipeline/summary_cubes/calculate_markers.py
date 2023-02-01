@@ -21,7 +21,6 @@ from backend.wmg.data.rollup import (
 from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 from backend.common.utils.exceptions import MarkerGeneCalculationException
 
-
 def _make_hashable(func):
     """
     Implicitly convert unhashable data structures (list and dict) to hashable strings
@@ -102,8 +101,12 @@ def _query_tiledb_context_memoized(
     q = WmgQuery(snapshot)
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
-    healthy_filter = cell_counts_query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
-    cell_counts_query = cell_counts_query[healthy_filter]
+
+    healthy_filter_es = query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+    query = query[healthy_filter_es]
+
+    healthy_filter_cc = cell_counts_query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+    cell_counts_query = cell_counts_query[healthy_filter_cc]
 
     if query.shape[0] == 0 or cell_counts_query.shape[0] == 0:
         raise MarkerGeneCalculationException("No cells match the given query criteria.")
@@ -520,6 +523,8 @@ def _post_process_stats(
         )
         effects[is_colinear] = np.nan
         pvals[is_colinear] = np.nan
+        pvals[:,np.all(np.isnan(effects),axis=0)] = 1
+        effects[:,np.all(np.isnan(effects),axis=0)] = 0
 
     # aggregate
     effects = np.nanpercentile(effects, percentile * 100, axis=0)
