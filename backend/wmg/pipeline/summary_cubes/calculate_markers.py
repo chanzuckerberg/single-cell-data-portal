@@ -18,6 +18,8 @@ from backend.wmg.data.rollup import (
     rollup_across_cell_type_descendants,
     are_cell_types_colinear,
 )
+from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+from backend.common.utils.exceptions import MarkerGeneCalculationException
 
 
 def _make_hashable(func):
@@ -100,6 +102,11 @@ def _query_tiledb_context_memoized(
     q = WmgQuery(snapshot)
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
+    healthy_filter = cell_counts_query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+    cell_counts_query = cell_counts_query[healthy_filter]
+
+    if query.shape[0] == 0 or cell_counts_query.shape[0] == 0:
+        raise MarkerGeneCalculationException("No cells match the given query criteria.")
 
     depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
 
