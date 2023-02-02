@@ -18,6 +18,8 @@ from backend.wmg.data.rollup import (
     rollup_across_cell_type_descendants,
     are_cell_types_colinear,
 )
+from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+from backend.common.utils.exceptions import MarkerGeneCalculationException
 
 
 def _make_hashable(func):
@@ -100,6 +102,19 @@ def _query_tiledb_context_memoized(
     q = WmgQuery(snapshot)
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
+
+    # explicitly filtering both cell counts and expression summary down to just the healthy cells
+    # we do not want to include diseased cells in the marker gene calculation.
+    healthy_filter_es = query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+    query = query[healthy_filter_es]
+
+    healthy_filter_cc = (
+        cell_counts_query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+    )
+    cell_counts_query = cell_counts_query[healthy_filter_cc]
+
+    if query.shape[0] == 0 or cell_counts_query.shape[0] == 0:
+        raise MarkerGeneCalculationException("No cells match the given query criteria.")
 
     depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
 
@@ -232,6 +247,9 @@ def _query_target(
     for level in target_levels:
         level_values = np.array(list(n_cells_index_context.get_level_values(level)))
         filt_ncells = np.logical_and(filt_ncells, np.in1d(level_values, target_filters[level + "s"]))
+
+    if not np.any(filt) or not np.any(filt_ncells):
+        raise MarkerGeneCalculationException("No cells found for target population.")
 
     target_agg = context_agg[filt]
     n_cells_per_gene_target = n_cells_per_gene_context[filt_ncells].sum(axis=0, keepdims=True)
@@ -513,6 +531,8 @@ def _post_process_stats(
         )
         effects[is_colinear] = np.nan
         pvals[is_colinear] = np.nan
+        pvals[:, np.all(np.isnan(effects), axis=0)] = 1
+        effects[:, np.all(np.isnan(effects), axis=0)] = 0
 
     # aggregate
     effects = np.nanpercentile(effects, percentile * 100, axis=0)

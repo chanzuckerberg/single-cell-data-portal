@@ -8,6 +8,7 @@ from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, MARKER_GENES_CUBE_NAME
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
 from backend.wmg.pipeline.summary_cubes.calculate_markers import get_markers
+from backend.common.utils.exceptions import MarkerGeneCalculationException
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -19,10 +20,17 @@ def extract_tissue_celltype_organism(corpus_path: str) -> pd.DataFrame:
     with tiledb.open(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}") as array:
         yield (
             array.query(
-                attrs=["cell_type_ontology_term_id"], dims=["organism_ontology_term_id", "tissue_ontology_term_id"]
+                attrs=["cell_type_ontology_term_id"],
+                dims=["organism_ontology_term_id", "tissue_ontology_term_id"],
             )
             .df[:]
-            .groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id", "organism_ontology_term_id"])
+            .groupby(
+                [
+                    "tissue_ontology_term_id",
+                    "cell_type_ontology_term_id",
+                    "organism_ontology_term_id",
+                ]
+            )
             .first()
         )
 
@@ -57,10 +65,18 @@ def create_marker_genes_cube(corpus_path: str):
                 "tissue_ontology_term_ids": [tiss],
                 "organism_ontology_term_id": organism,
             }
-            t_markers = get_markers(target, context, corpus=corpus_path, test="ttest", percentile=0.05, n_markers=None)
-            b_markers = get_markers(
-                target, context, corpus=corpus_path, test="binomtest", percentile=0.3, n_markers=None
-            )
+            try:
+                t_markers = get_markers(
+                    target, context, corpus=corpus_path, test="ttest", percentile=0.05, n_markers=None
+                )
+                b_markers = get_markers(
+                    target, context, corpus=corpus_path, test="binomtest", percentile=0.3, n_markers=None
+                )
+            except MarkerGeneCalculationException as e:
+                # exception handling here so pipeline doesn't fail if no cells match query criteria
+                logger.info("Error finding markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
+                logger.info(e)
+                continue
             gc.collect()
 
             all_marker_genes = set(list(t_markers.keys())).union(list(b_markers.keys()))
