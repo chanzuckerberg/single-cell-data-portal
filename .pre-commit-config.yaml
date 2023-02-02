@@ -5,30 +5,19 @@ repos:
       - id: black
         stages: [commit]
         files: ^(backend|tests|scripts)/
-
-  - repo: https://github.com/PyCQA/autoflake
-    rev: v2.0.1
-    hooks:
-      - id: autoflake
-        stages: [commit]
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        stages: [commit]
-        name: isort (python)
-        args: ["--profile", "black", "--py", "39", "--line-length", "120"]
-  - repo: https://github.com/pycqa/flake8
-    rev: 4.0.1 # Must be kept in sync with flake8 version in requirements.txt
-    hooks:
-      - id: flake8
+        args: ["--config", "pyproject.toml"]
+      - id: black-jupyter
         stages: [commit]
         files: ^(backend|tests|scripts)/
-        additional_dependencies:
-          - flake8-bugbear
-          - flake8-comprehensions
-          - flake8-simplify
+        args: ["--config", "pyproject.toml"]
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.239
+    hooks:
+      - id: ruff
+        args: ["--config=pyproject.toml", "--fix"]
+        stages: [commit]
+        files: ^(backend|tests|scripts)/
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.4.0
