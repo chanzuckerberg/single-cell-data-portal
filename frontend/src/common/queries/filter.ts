@@ -18,7 +18,7 @@ import {
   COLLATOR_CASE_INSENSITIVE,
   SELF_REPORTED_ETHNICITY_DENY_LIST,
   PUBLICATION_DATE_VALUES,
-  SUSPENSION_TYPES_DENY_LIST,
+  SUSPENSION_TYPE_DENY_LIST,
 } from "src/components/common/Filter/common/constants";
 import {
   Categories,
@@ -786,7 +786,7 @@ function sanitizeDatasetResponse(
   sanitizedDatasetResponse.suspension_type = (
     datasetResponse.suspension_type ?? []
   ).filter(
-    (suspensionType) => !SUSPENSION_TYPES_DENY_LIST.includes(suspensionType)
+    (suspensionType) => !SUSPENSION_TYPE_DENY_LIST.includes(suspensionType)
   );
 
   sanitizedDatasetResponse.assay = datasetResponse.assay ?? [];

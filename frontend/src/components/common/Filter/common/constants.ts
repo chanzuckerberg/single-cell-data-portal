@@ -255,7 +255,7 @@ export const SELF_REPORTED_ETHNICITY_DENY_LIST = ["na"];
 /**
  * List of suspension types to exclude from filter functionality.
  */
-export const SUSPENSION_TYPES_DENY_LIST = ["na"];
+export const SUSPENSION_TYPE_DENY_LIST = ["na"];
 
 /**
  * String value to append to labels in multi-panel categories if the value appears in more than one panel.
