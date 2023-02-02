@@ -584,7 +584,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
-        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.NA)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
     def test_add_dataset_to_unpublished_collection_ok(self):
