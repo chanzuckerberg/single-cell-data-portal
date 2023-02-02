@@ -19,7 +19,7 @@ fmt:
 
 .PHONY: lint
 lint:
-	ruff check --config=pyproject.toml --diff backend tests
+	ruff check --config=pyproject.toml backend tests
 
 .PHONY: unit-test
 unit-test: local-unit-test
