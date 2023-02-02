@@ -910,16 +910,16 @@ class WmgApiV1Tests(unittest.TestCase):
 
             expected = {
                 "marker_genes": [
-                    {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.3849880695343018},
-                    {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 2.0541346073150635},
-                    {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 2.0228285789489746},
-                    {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7104357481002808},
-                    {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5636593103408813},
+                    {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.661743640899658},
+                    {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 2.1092216968536377},
+                    {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 2.072816848754883},
+                    {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.8734184503555298},
+                    {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.623068928718567},
+                    {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5588932037353516},
                     {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4483562707901},
-                    {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.322214126586914},
-                    {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.2264039516448975},
-                    {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 1.0376155376434326},
-                    {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4109770655632019},
+                    {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.2816050052642822},
+                    {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 1.0649874210357666},
+                    {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.46257320046424866},
                 ],
                 "snapshot_id": "test-fmg-snapshot",
             }
