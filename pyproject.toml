@@ -25,7 +25,7 @@ exclude = '''
 '''
 
 [tool.ruff]
-select = ["A","E", "F", "B", "SIM", "C4", "I"]
-ignore = ["E501", "E402", "C408"]
+select = ["E", "F", "B", "SIM", "C4", "I"]
+ignore = ["E501", "E402", "C408", ]
 line-length = 120
 target-version = "py38"
