@@ -1,8 +1,7 @@
 import tiledb
 
 from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus
-from backend.wmg.pipeline.integrated_corpus.job import (
-    build_integrated_corpus, extract_datasets)
+from backend.wmg.pipeline.integrated_corpus.job import build_integrated_corpus, extract_datasets
 
 
 def run(dataset_directory: list, corpus_path: str, extract_data: bool):

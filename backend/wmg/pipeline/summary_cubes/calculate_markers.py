@@ -10,13 +10,18 @@ from scipy import stats
 from backend.common.utils.exceptions import MarkerGeneCalculationException
 from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
-from backend.wmg.data.rollup import (are_cell_types_colinear,
-                                     rollup_across_cell_type_descendants,
-                                     rollup_across_cell_type_descendants_array)
-from backend.wmg.data.snapshot import (CELL_COUNTS_CUBE_NAME,
-                                       DATASET_TO_GENE_IDS_FILENAME,
-                                       EXPRESSION_SUMMARY_FMG_CUBE_NAME,
-                                       WmgSnapshot, load_snapshot)
+from backend.wmg.data.rollup import (
+    are_cell_types_colinear,
+    rollup_across_cell_type_descendants,
+    rollup_across_cell_type_descendants_array,
+)
+from backend.wmg.data.snapshot import (
+    CELL_COUNTS_CUBE_NAME,
+    DATASET_TO_GENE_IDS_FILENAME,
+    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
+    WmgSnapshot,
+    load_snapshot,
+)
 
 
 def _make_hashable(func):

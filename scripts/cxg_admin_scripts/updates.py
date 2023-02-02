@@ -12,9 +12,13 @@ from sqlalchemy import null
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
-from backend.common.corpora_orm import (CollectionLinkType,
-                                        CollectionVisibility, DbCollection,
-                                        DbCollectionLink, DbDataset)
+from backend.common.corpora_orm import (
+    CollectionLinkType,
+    CollectionVisibility,
+    DbCollection,
+    DbCollectionLink,
+    DbDataset,
+)
 from backend.common.entities.collection import Collection
 from backend.common.providers import crossref_provider
 from backend.common.utils.db_session import db_session_manager

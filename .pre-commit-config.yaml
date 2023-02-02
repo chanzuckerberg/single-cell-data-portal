@@ -18,7 +18,7 @@ repos:
       - id: isort
         stages: [commit]
         name: isort (python)
-
+        args: ["--profile", "black", "--py", "39", "--line-length", "120"]
   - repo: https://github.com/pycqa/flake8
     rev: 4.0.1 # Must be kept in sync with flake8 version in requirements.txt
     hooks:

@@ -9,15 +9,13 @@ from urllib.parse import urlencode
 import requests
 from authlib.integrations.flask_client import OAuth
 from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
-from flask import (Response, after_this_request, current_app, g, jsonify,
-                   make_response, redirect, request, session)
+from flask import Response, after_this_request, current_app, g, jsonify, make_response, redirect, request, session
 
-from backend.common.authorizer import (assert_authorized_token,
-                                       get_userinfo_from_auth0)
+from backend.common.authorizer import assert_authorized_token, get_userinfo_from_auth0
 from backend.common.corpora_config import CorporaAuthConfig
+
 # global oauth client
-from backend.common.utils.http_exceptions import (ExpiredCredentialsError,
-                                                  UnauthorizedError)
+from backend.common.utils.http_exceptions import ExpiredCredentialsError, UnauthorizedError
 
 oauth_client = None
 

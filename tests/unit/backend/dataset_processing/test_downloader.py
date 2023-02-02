@@ -13,8 +13,7 @@ from backend.common.entities import Dataset
 from backend.common.utils.math_utils import MB
 from backend.portal.pipeline.processing import download
 from backend.portal.pipeline.processing.exceptions import ProcessingFailed
-from tests.unit.backend.fixtures.data_portal_test_case import \
-    DataPortalTestCase
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
 def start_server(path, port):

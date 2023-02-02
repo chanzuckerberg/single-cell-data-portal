@@ -5,8 +5,7 @@ import numpy as np
 import pandas
 
 from backend.layers.common.entities import OntologyTermId
-from backend.layers.processing.process_download_validate import \
-    ProcessDownloadValidate
+from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 

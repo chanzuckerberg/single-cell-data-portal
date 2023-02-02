@@ -1,8 +1,7 @@
 import logging
 
 from backend.layers.business.business import BusinessLogic
-from backend.layers.common.entities import (DatasetProcessingStatus,
-                                            DatasetStatusKey, DatasetVersionId)
+from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
 from backend.layers.persistence.persistence import DatabaseProvider
 
 database_provider = DatabaseProvider()

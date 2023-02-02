@@ -5,7 +5,8 @@ import anndata
 from backend.common.utils.color_conversion_utils import (
     ColorFormatException,
     convert_anndata_category_colors_to_cxg_category_colors,
-    convert_color_to_hex_format)
+    convert_color_to_hex_format,
+)
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
 

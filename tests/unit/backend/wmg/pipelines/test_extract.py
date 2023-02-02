@@ -1,8 +1,7 @@
 from unittest.mock import patch
 
 import backend.wmg.pipeline.integrated_corpus.extract
-from backend.layers.common.entities import (CollectionId, DatasetArtifactType,
-                                            DatasetVersionId, OntologyTermId)
+from backend.layers.common.entities import CollectionId, DatasetArtifactType, DatasetVersionId, OntologyTermId
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 from tests.unit.backend.layers.common.base_test import BaseTest
 

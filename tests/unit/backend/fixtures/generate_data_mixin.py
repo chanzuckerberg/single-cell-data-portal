@@ -4,10 +4,12 @@ from backend.common.entities import Collection, Dataset
 from backend.common.entities.collection_link import CollectionLink
 from backend.common.entities.geneset import Geneset
 from backend.common.utils.db_session import db_session_manager
-from tests.unit.backend.utils import (BogusCollectionParams,
-                                      BogusDatasetParams,
-                                      BogusDbCollectionLinkParams,
-                                      BogusGenesetParams)
+from tests.unit.backend.utils import (
+    BogusCollectionParams,
+    BogusDatasetParams,
+    BogusDbCollectionLinkParams,
+    BogusGenesetParams,
+)
 
 
 class GenerateDataMixin:

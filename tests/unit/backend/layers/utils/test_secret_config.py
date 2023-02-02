@@ -7,10 +7,8 @@ import boto3
 
 from backend.common.utils.aws import AwsSecret
 from backend.common.utils.secret_config import SecretConfig
-from tests.unit.backend.fixtures.environment_setup import (EnvironmentSetup,
-                                                           fixture_file_path)
-from tests.unit.backend.fixtures.existing_aws_secret_test_fixture import \
-    ExistingAwsSecretTestFixture
+from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
+from tests.unit.backend.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
 
 
 class BogoComponentConfig(SecretConfig):

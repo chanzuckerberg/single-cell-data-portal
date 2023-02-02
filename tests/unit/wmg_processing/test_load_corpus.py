@@ -11,21 +11,18 @@ import tiledb
 from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
 
-from backend.wmg.data.constants import \
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
+from backend.wmg.data.constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 from backend.wmg.data.rankit import rankit
-from backend.wmg.data.schemas.corpus_schema import (
-    OBS_ARRAY_NAME, VAR_ARRAY_NAME, create_tdb_integrated_corpus)
+from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME, VAR_ARRAY_NAME, create_tdb_integrated_corpus
 from backend.wmg.pipeline.cube_pipeline import load_data_and_create_cube
 from backend.wmg.pipeline.integrated_corpus.job import build_integrated_corpus
 from backend.wmg.pipeline.integrated_corpus.load import load_dataset
 from backend.wmg.pipeline.integrated_corpus.transform import (
     apply_pre_concatenation_filters,
-    filter_out_rankits_with_low_expression_counts)
-from backend.wmg.pipeline.integrated_corpus.validate import \
-    validate_dataset_properties
-from tests.unit.backend.wmg.fixtures.test_anndata_object import (
-    create_anndata_test_fixture, create_anndata_test_object)
+    filter_out_rankits_with_low_expression_counts,
+)
+from backend.wmg.pipeline.integrated_corpus.validate import validate_dataset_properties
+from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_fixture, create_anndata_test_object
 
 
 class TestCorpusLoad(unittest.TestCase):

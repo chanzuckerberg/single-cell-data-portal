@@ -3,8 +3,7 @@ import itertools
 import pytest
 
 from backend.layers.business.exceptions import InvalidMetadataException
-from backend.layers.common.entities import (CollectionLinkType,
-                                            CollectionMetadata, Link)
+from backend.layers.common.entities import CollectionLinkType, CollectionMetadata, Link
 from backend.layers.common.validation import verify_collection_metadata
 
 

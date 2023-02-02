@@ -4,17 +4,24 @@ from unittest.mock import patch
 
 from backend.api_server.app import app
 from backend.wmg.api.v1 import find_dim_option_values
-from backend.wmg.data.schemas.cube_schema import \
-    expression_summary_non_indexed_dims
+from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
-    test_gene_terms, test_organism_terms, test_snapshot_id, test_tissue_terms)
+    test_gene_terms,
+    test_organism_terms,
+    test_snapshot_id,
+    test_tissue_terms,
+)
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    all_ones_expression_summary_values, all_tens_cell_counts_values,
-    all_X_cell_counts_values, create_temp_wmg_snapshot,
+    all_ones_expression_summary_values,
+    all_tens_cell_counts_values,
+    all_X_cell_counts_values,
+    create_temp_wmg_snapshot,
     exclude_all_but_one_gene_per_organism,
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
-    load_test_fmg_snapshot, reverse_cell_type_ordering)
+    load_test_fmg_snapshot,
+    reverse_cell_type_ordering,
+)
 
 TEST_SNAPSHOT = "test-fmg-snapshot"
 

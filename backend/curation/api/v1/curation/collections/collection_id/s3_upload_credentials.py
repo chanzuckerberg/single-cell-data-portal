@@ -8,7 +8,8 @@ from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.curation.api.v1.curation.collections.common import (
     get_infered_collection_version_else_forbidden,
-    is_owner_or_allowed_else_forbidden)
+    is_owner_or_allowed_else_forbidden,
+)
 from backend.layers.auth.user_info import UserInfo
 
 sts_client = boto3.client("sts")

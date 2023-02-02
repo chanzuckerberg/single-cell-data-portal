@@ -5,8 +5,7 @@ from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
 
-from backend.common.corpora_orm import (DatasetArtifactFileType,
-                                        DbDatasetArtifact)
+from backend.common.corpora_orm import DatasetArtifactFileType, DbDatasetArtifact
 from backend.common.entities.entity import Entity
 from backend.common.utils.s3_buckets import buckets
 

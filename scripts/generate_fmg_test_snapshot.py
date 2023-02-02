@@ -4,8 +4,7 @@ import sys
 
 import tiledb
 
-from backend.wmg.pipeline.summary_cubes.marker_genes import \
-    create_marker_genes_cube
+from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 
 test_tissue = "UBERON:0002048"
 test_organism = "NCBITaxon:9606"

@@ -9,10 +9,8 @@ from moto import mock_s3
 from backend.common.corpora_orm import UploadStatus
 from backend.common.entities.dataset import Dataset
 from backend.portal.pipeline.processing.exceptions import ProcessingCancelled
-from backend.portal.pipeline.processing.process_download_validate import (
-    download_from_source_uri, extract_metadata)
-from tests.unit.backend.fixtures.data_portal_test_case import \
-    DataPortalTestCase
+from backend.portal.pipeline.processing.process_download_validate import download_from_source_uri, extract_metadata
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
 class TestProcessingDownloadValidate(DataPortalTestCase):

@@ -5,8 +5,7 @@ import unittest
 import numpy as np
 import tiledb
 
-from backend.wmg.pipeline.summary_cubes.marker_genes import \
-    create_marker_genes_cube
+from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 
 TEST_SNAPSHOT = "test-fmg-snapshot"

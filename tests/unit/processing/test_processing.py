@@ -1,14 +1,15 @@
 from unittest.mock import Mock, patch
 
-from backend.layers.common.entities import (DatasetArtifactType,
-                                            DatasetConversionStatus,
-                                            DatasetProcessingStatus,
-                                            DatasetUploadStatus,
-                                            DatasetValidationStatus)
+from backend.layers.common.entities import (
+    DatasetArtifactType,
+    DatasetConversionStatus,
+    DatasetProcessingStatus,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
+)
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
-from backend.layers.processing.process_download_validate import \
-    ProcessDownloadValidate
+from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_seurat import ProcessSeurat
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 

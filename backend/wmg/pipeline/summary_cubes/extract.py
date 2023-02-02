@@ -1,8 +1,7 @@
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.schemas.corpus_schema import (OBS_ARRAY_NAME,
-                                                    VAR_ARRAY_NAME)
+from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME, VAR_ARRAY_NAME
 
 
 def extract_var_data(tdb_group: str, ctx: tiledb.Ctx) -> list:

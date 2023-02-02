@@ -3,11 +3,15 @@ import string
 
 import numpy as np
 
-from backend.common.corpora_orm import (CollectionLinkType,
-                                        CollectionVisibility, ConversionStatus,
-                                        IsPrimaryData, UploadStatus,
-                                        ValidationStatus,
-                                        XApproximateDistribution)
+from backend.common.corpora_orm import (
+    CollectionLinkType,
+    CollectionVisibility,
+    ConversionStatus,
+    IsPrimaryData,
+    UploadStatus,
+    ValidationStatus,
+    XApproximateDistribution,
+)
 
 
 class BogusProcessingStatusParams:

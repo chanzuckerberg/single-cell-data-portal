@@ -8,9 +8,12 @@ from parameterized import parameterized_class
 from scipy import sparse
 
 from backend.common.utils.type_conversion_utils import (
-    get_dtype_and_schema_of_array, get_dtypes_and_schemas_of_dataframe,
-    get_encoding_dtype_of_array, get_schema_type_hint_from_dtype,
-    get_schema_type_hint_of_array)
+    get_dtype_and_schema_of_array,
+    get_dtypes_and_schemas_of_dataframe,
+    get_encoding_dtype_of_array,
+    get_schema_type_hint_from_dtype,
+    get_schema_type_hint_of_array,
+)
 
 
 class TestTypeConversionUtils(unittest.TestCase):

@@ -8,19 +8,18 @@ from urllib.parse import unquote_plus
 from pythonjsonlogger import jsonlogger
 
 from backend.common.logging_config import DATETIME_FORMAT, LOG_FORMAT
-from backend.common.utils.exceptions import (CorporaException,
-                                             NonExistentCollectionException,
-                                             NonExistentDatasetException)
-from backend.common.utils.regex import (COLLECTION_ID_REGEX, DATASET_ID_REGEX,
-                                        USERNAME_REGEX)
+from backend.common.utils.exceptions import (
+    CorporaException,
+    NonExistentCollectionException,
+    NonExistentDatasetException,
+)
+from backend.common.utils.regex import COLLECTION_ID_REGEX, DATASET_ID_REGEX, USERNAME_REGEX
 from backend.layers.business.business import BusinessLogic
-from backend.layers.business.exceptions import (CollectionNotFoundException,
-                                                DatasetNotFoundException)
+from backend.layers.business.exceptions import CollectionNotFoundException, DatasetNotFoundException
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
-from backend.layers.thirdparty.step_function_provider import \
-    StepFunctionProvider
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProvider
 
 log_handler = logging.StreamHandler(stream=sys.stdout)

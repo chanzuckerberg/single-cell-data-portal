@@ -14,10 +14,14 @@ sys.path.insert(0, pkg_root)  # noqa
 
 from urllib.parse import urlparse
 
-from backend.common.corpora_orm import (CollectionVisibility,
-                                        DatasetArtifactFileType, DbCollection,
-                                        DbDataset, DbDatasetArtifact,
-                                        ProcessingStatus)
+from backend.common.corpora_orm import (
+    CollectionVisibility,
+    DatasetArtifactFileType,
+    DbCollection,
+    DbDataset,
+    DbDatasetArtifact,
+    ProcessingStatus,
+)
 from backend.common.entities import DatasetAsset
 from backend.common.utils.db_session import db_session_manager
 
@@ -413,13 +417,10 @@ def migrate_redesign_write(ctx):
     from sqlalchemy.orm import Session
 
     from backend.layers.persistence.orm import CollectionTable as CollectionRow
-    from backend.layers.persistence.orm import \
-        CollectionVersionTable as CollectionVersionRow
-    from backend.layers.persistence.orm import \
-        DatasetArtifactTable as DatasetArtifactRow
+    from backend.layers.persistence.orm import CollectionVersionTable as CollectionVersionRow
+    from backend.layers.persistence.orm import DatasetArtifactTable as DatasetArtifactRow
     from backend.layers.persistence.orm import DatasetTable as DatasetRow
-    from backend.layers.persistence.orm import \
-        DatasetVersionTable as DatasetVersionRow
+    from backend.layers.persistence.orm import DatasetVersionTable as DatasetVersionRow
 
     database_pass = os.getenv("PGPASSWORD")
     database_name = os.getenv("PGDB")
@@ -514,8 +515,7 @@ def migrate_redesign_correct_published_at(ctx):
     """
     Corrects published_at for redesign
     """
-    from backend.layers.persistence.orm import \
-        CollectionVersionTable as CollectionVersionRow
+    from backend.layers.persistence.orm import CollectionVersionTable as CollectionVersionRow
 
     with db_session_manager() as session:
         for record in session.query(DbCollection):

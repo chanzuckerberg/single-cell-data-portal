@@ -9,10 +9,8 @@ from pandas import DataFrame
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import DatasetId
 from backend.layers.persistence.persistence import DatabaseProvider
-from backend.wmg.data.ontology_labels import (gene_term_label,
-                                              ontology_term_label)
-from backend.wmg.data.query import (MarkerGeneQueryCriteria, WmgQuery,
-                                    WmgQueryCriteria, retrieve_top_n_markers)
+from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.wmg.data.query import MarkerGeneQueryCriteria, WmgQuery, WmgQueryCriteria, retrieve_top_n_markers
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 

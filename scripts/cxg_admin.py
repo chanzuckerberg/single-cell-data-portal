@@ -14,8 +14,7 @@ from urllib.parse import urlparse
 
 from backend.common.corpora_config import CorporaDbConfig
 from backend.common.utils.db_session import DBSessionMaker
-from scripts.cxg_admin_scripts import (dataset_details, deletions, migrate,
-                                       reprocess_datafile, tombstones, updates)
+from scripts.cxg_admin_scripts import dataset_details, deletions, migrate, reprocess_datafile, tombstones, updates
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -277,8 +276,7 @@ def wmg_get_s3_uris(ctx):
     ./scripts/cxg_admin.py --deployment dev wmg-get-s3-uris
     """
 
-    from backend.wmg.pipeline.integrated_corpus.extract import \
-        get_dataset_s3_uris
+    from backend.wmg.pipeline.integrated_corpus.extract import get_dataset_s3_uris
 
     s3_uris = get_dataset_s3_uris()
     print(s3_uris)

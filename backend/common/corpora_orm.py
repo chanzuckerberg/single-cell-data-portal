@@ -3,9 +3,19 @@ from datetime import datetime
 from typing import Dict, List, Optional
 from uuid import uuid4
 
-from sqlalchemy import (Boolean, CheckConstraint, Column, DateTime, Enum,
-                        Float, ForeignKey, Integer, String, UniqueConstraint,
-                        types)
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+    types,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.dialects.postgresql.json import JSON
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base

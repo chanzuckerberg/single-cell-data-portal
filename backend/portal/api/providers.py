@@ -3,8 +3,7 @@ from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
 from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
-from backend.layers.thirdparty.step_function_provider import \
-    StepFunctionProvider
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProvider
 
 _business_logic = None

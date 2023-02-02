@@ -5,9 +5,12 @@ import os
 import pandas as pd
 
 from backend.wmg.data import query
-from backend.wmg.data.snapshot import (EXPRESSION_SUMMARY_CUBE_NAME,
-                                       EXPRESSION_SUMMARY_FMG_CUBE_NAME,
-                                       WmgSnapshot, _open_cube)
+from backend.wmg.data.snapshot import (
+    EXPRESSION_SUMMARY_CUBE_NAME,
+    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
+    WmgSnapshot,
+    _open_cube,
+)
 
 pd.set_option("max_columns", 10)
 pd.set_option("display.width", 256)

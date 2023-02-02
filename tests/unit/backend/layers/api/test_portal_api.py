@@ -8,21 +8,22 @@ from unittest.mock import Mock, patch
 from furl import furl
 
 from backend.layers.business.entities import DatasetArtifactDownloadData
-from backend.layers.common.entities import (CollectionId, CollectionVersionId,
-                                            DatasetArtifactType,
-                                            DatasetProcessingStatus,
-                                            DatasetStatusKey,
-                                            DatasetUploadStatus,
-                                            DatasetVersionId, Link,
-                                            OntologyTermId)
-from backend.layers.thirdparty.crossref_provider import (
-    CrossrefDOINotFoundException, CrossrefFetchException)
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionVersionId,
+    DatasetArtifactType,
+    DatasetProcessingStatus,
+    DatasetStatusKey,
+    DatasetUploadStatus,
+    DatasetVersionId,
+    Link,
+    OntologyTermId,
+)
+from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
-from tests.unit.backend.layers.api.fixture import \
-    generate_mock_publisher_metadata
+from tests.unit.backend.layers.api.fixture import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
-from tests.unit.backend.layers.common.base_test import (DatasetArtifactUpdate,
-                                                        DatasetStatusUpdate)
+from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 
 
 class TestCollection(BaseAPIPortalTest):

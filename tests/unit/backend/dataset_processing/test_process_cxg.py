@@ -6,8 +6,7 @@ from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.common.entities.dataset import Dataset
 from backend.portal.pipeline.processing.exceptions import ConversionFailed
 from backend.portal.pipeline.processing.process_cxg import process_cxg
-from tests.unit.backend.fixtures.data_portal_test_case import \
-    DataPortalTestCase
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
 class TestProcessingCXG(DataPortalTestCase):

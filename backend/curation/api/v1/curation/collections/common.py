@@ -3,19 +3,29 @@ from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.corpora_orm import (DbCollection, DbCollectionLink,
-                                        DbDataset, DbDatasetArtifact,
-                                        DbDatasetProcessingStatus)
+from backend.common.corpora_orm import (
+    DbCollection,
+    DbCollectionLink,
+    DbDataset,
+    DbDatasetArtifact,
+    DbDatasetProcessingStatus,
+)
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.layers.auth.user_info import UserInfo
-from backend.layers.common.entities import (CollectionId, CollectionVersion,
-                                            CollectionVersionId,
-                                            CollectionVersionWithDatasets,
-                                            DatasetArtifactType, DatasetId,
-                                            DatasetProcessingStatus,
-                                            DatasetValidationStatus,
-                                            DatasetVersion, DatasetVersionId,
-                                            Link, OntologyTermId)
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionVersion,
+    CollectionVersionId,
+    CollectionVersionWithDatasets,
+    DatasetArtifactType,
+    DatasetId,
+    DatasetProcessingStatus,
+    DatasetValidationStatus,
+    DatasetVersion,
+    DatasetVersionId,
+    Link,
+    OntologyTermId,
+)
 from backend.portal.api.explorer_url import generate as generate_explorer_url
 from backend.portal.api.providers import get_business_logic
 

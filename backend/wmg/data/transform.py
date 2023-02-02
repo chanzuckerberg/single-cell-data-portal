@@ -5,11 +5,12 @@ import pandas as pd
 import tiledb
 
 from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
-from backend.wmg.data.ontology_labels import (gene_term_label,
-                                              ontology_term_label)
-from backend.wmg.data.snapshot import (CELL_TYPE_ORDERINGS_FILENAME,
-                                       EXPRESSION_SUMMARY_CUBE_NAME,
-                                       PRIMARY_FILTER_DIMENSIONS_FILENAME)
+from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.wmg.data.snapshot import (
+    CELL_TYPE_ORDERINGS_FILENAME,
+    EXPRESSION_SUMMARY_CUBE_NAME,
+    PRIMARY_FILTER_DIMENSIONS_FILENAME,
+)
 from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.utils import log_func_runtime
 

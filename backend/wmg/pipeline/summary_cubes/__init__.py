@@ -1,16 +1,14 @@
 from backend.common.utils.exceptions import CubeValidationException
 from backend.common.utils.result_notification import (
-    format_failed_batch_issue_slack_alert, gen_wmg_pipeline_failure_message,
-    notify_slack)
+    format_failed_batch_issue_slack_alert,
+    gen_wmg_pipeline_failure_message,
+    notify_slack,
+)
 from backend.wmg.data.validation.validation import Validation
-from backend.wmg.pipeline.summary_cubes.cell_count import \
-    create_cell_count_cube
-from backend.wmg.pipeline.summary_cubes.expression_summary.job import \
-    create_expression_summary_cube
-from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.job import \
-    create_expression_summary_fmg_cube
-from backend.wmg.pipeline.summary_cubes.marker_genes import \
-    create_marker_genes_cube
+from backend.wmg.pipeline.summary_cubes.cell_count import create_cell_count_cube
+from backend.wmg.pipeline.summary_cubes.expression_summary.job import create_expression_summary_cube
+from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.job import create_expression_summary_fmg_cube
+from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 
 
 def run(corpus_path: str, validate_cube: bool) -> dict:

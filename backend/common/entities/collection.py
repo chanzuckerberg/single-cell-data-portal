@@ -4,10 +4,15 @@ from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from backend.common.corpora_orm import (CollectionLinkType,
-                                        CollectionVisibility, DbCollection,
-                                        DbCollectionLink, DbProjectLink,
-                                        ProjectLinkType, generate_id)
+from backend.common.corpora_orm import (
+    CollectionLinkType,
+    CollectionVisibility,
+    DbCollection,
+    DbCollectionLink,
+    DbProjectLink,
+    ProjectLinkType,
+    generate_id,
+)
 from backend.common.entities import Dataset
 from backend.common.entities.entity import Entity
 from backend.common.entities.geneset import Geneset

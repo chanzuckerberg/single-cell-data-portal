@@ -12,27 +12,36 @@ from sqlalchemy.orm import sessionmaker
 
 from backend.common.corpora_config import CorporaDbConfig
 from backend.layers.business.exceptions import CollectionIsPublishedException
-from backend.layers.common.entities import (CanonicalCollection,
-                                            CanonicalDataset, CollectionId,
-                                            CollectionMetadata,
-                                            CollectionVersion,
-                                            CollectionVersionId,
-                                            CollectionVersionWithDatasets,
-                                            DatasetArtifact, DatasetArtifactId,
-                                            DatasetArtifactType,
-                                            DatasetConversionStatus, DatasetId,
-                                            DatasetMetadata,
-                                            DatasetProcessingStatus,
-                                            DatasetStatus, DatasetUploadStatus,
-                                            DatasetValidationStatus,
-                                            DatasetVersion, DatasetVersionId)
+from backend.layers.common.entities import (
+    CanonicalCollection,
+    CanonicalDataset,
+    CollectionId,
+    CollectionMetadata,
+    CollectionVersion,
+    CollectionVersionId,
+    CollectionVersionWithDatasets,
+    DatasetArtifact,
+    DatasetArtifactId,
+    DatasetArtifactType,
+    DatasetConversionStatus,
+    DatasetId,
+    DatasetMetadata,
+    DatasetProcessingStatus,
+    DatasetStatus,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
+    DatasetVersion,
+    DatasetVersionId,
+)
 from backend.layers.persistence.constants import SCHEMA_NAME
-from backend.layers.persistence.orm import (CollectionTable,
-                                            CollectionVersionTable,
-                                            DatasetArtifactTable, DatasetTable,
-                                            DatasetVersionTable)
-from backend.layers.persistence.persistence_interface import (
-    DatabaseProviderInterface, PersistenceException)
+from backend.layers.persistence.orm import (
+    CollectionTable,
+    CollectionVersionTable,
+    DatasetArtifactTable,
+    DatasetTable,
+    DatasetVersionTable,
+)
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
 
 logger = logging.getLogger(__name__)
 

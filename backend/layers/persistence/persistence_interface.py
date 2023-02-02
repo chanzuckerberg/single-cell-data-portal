@@ -1,17 +1,24 @@
 from datetime import datetime
 from typing import Iterable, List, Optional
 
-from backend.layers.common.entities import (CollectionId, CollectionMetadata,
-                                            CollectionVersion,
-                                            CollectionVersionId,
-                                            CollectionVersionWithDatasets,
-                                            DatasetArtifact, DatasetArtifactId,
-                                            DatasetConversionStatus, DatasetId,
-                                            DatasetMetadata,
-                                            DatasetProcessingStatus,
-                                            DatasetStatus, DatasetUploadStatus,
-                                            DatasetValidationStatus,
-                                            DatasetVersion, DatasetVersionId)
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionMetadata,
+    CollectionVersion,
+    CollectionVersionId,
+    CollectionVersionWithDatasets,
+    DatasetArtifact,
+    DatasetArtifactId,
+    DatasetConversionStatus,
+    DatasetId,
+    DatasetMetadata,
+    DatasetProcessingStatus,
+    DatasetStatus,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
+    DatasetVersion,
+    DatasetVersionId,
+)
 
 
 class PersistenceException(Exception):

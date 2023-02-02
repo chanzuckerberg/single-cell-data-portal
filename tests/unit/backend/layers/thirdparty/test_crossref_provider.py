@@ -6,8 +6,12 @@ from requests import RequestException
 from requests.models import HTTPError, Response
 
 from backend.common.providers.crossref_provider import (
-    CrossrefDOINotFoundException, CrossrefException, CrossrefFetchException,
-    CrossrefParseException, CrossrefProvider)
+    CrossrefDOINotFoundException,
+    CrossrefException,
+    CrossrefFetchException,
+    CrossrefParseException,
+    CrossrefProvider,
+)
 
 
 class TestCrossrefProvider(unittest.TestCase):

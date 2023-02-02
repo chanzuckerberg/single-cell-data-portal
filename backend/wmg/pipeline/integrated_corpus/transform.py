@@ -12,8 +12,10 @@ from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
 
 from backend.wmg.data.constants import (
-    GENE_EXPRESSION_COUNT_MIN_THRESHOLD, INCLUDED_ASSAYS,
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD)
+    GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
+    INCLUDED_ASSAYS,
+    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+)
 from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tissue_mapper import TissueMapper

@@ -6,14 +6,15 @@ import boto3
 from sqlalchemy.orm import Session
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.corpora_orm import (CollectionVisibility, ProcessingStatus,
-                                        ValidationStatus)
+from backend.common.corpora_orm import CollectionVisibility, ProcessingStatus, ValidationStatus
 from backend.common.entities import Collection, Dataset
 from backend.common.utils.authorization_checks import owner_or_allowed
-from backend.common.utils.exceptions import (InvalidProcessingStateException,
-                                             MaxFileSizeExceededException,
-                                             NonExistentCollectionException,
-                                             NonExistentDatasetException)
+from backend.common.utils.exceptions import (
+    InvalidProcessingStateException,
+    MaxFileSizeExceededException,
+    NonExistentCollectionException,
+    NonExistentDatasetException,
+)
 from backend.common.utils.math_utils import GB
 
 _stepfunctions_client = None

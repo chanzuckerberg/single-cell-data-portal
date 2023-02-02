@@ -12,23 +12,21 @@ from moto import mock_s3
 import backend.portal.pipeline.processing.common
 import backend.portal.pipeline.processing.process_download_validate
 from backend.common.corpora_config import CorporaConfig
-from backend.common.corpora_orm import (CollectionVisibility,
-                                        DatasetArtifactFileType,
-                                        ProcessingStatus, UploadStatus,
-                                        ValidationStatus)
+from backend.common.corpora_orm import (
+    CollectionVisibility,
+    DatasetArtifactFileType,
+    ProcessingStatus,
+    UploadStatus,
+    ValidationStatus,
+)
 from backend.common.entities.collection import Collection
 from backend.common.entities.dataset import Dataset
 from backend.common.upload import upload
-from backend.common.utils.exceptions import (CorporaException,
-                                             MaxFileSizeExceededException)
+from backend.common.utils.exceptions import CorporaException, MaxFileSizeExceededException
 from backend.common.utils.math_utils import GB
-from backend.portal.pipeline.processing.common import (convert_file,
-                                                       create_artifact,
-                                                       get_bucket_prefix)
-from backend.portal.pipeline.processing.exceptions import (ConversionFailed,
-                                                           ProcessingCancelled)
-from tests.unit.backend.fixtures.data_portal_test_case import \
-    DataPortalTestCase
+from backend.portal.pipeline.processing.common import convert_file, create_artifact, get_bucket_prefix
+from backend.portal.pipeline.processing.exceptions import ConversionFailed, ProcessingCancelled
+from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
 class TestCommon(DataPortalTestCase):

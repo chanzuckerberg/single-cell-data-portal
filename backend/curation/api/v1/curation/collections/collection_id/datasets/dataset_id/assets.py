@@ -2,8 +2,10 @@ from flask import jsonify, make_response
 
 from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.curation.api.v1.curation.collections.common import (
-    allowed_dataset_asset_types, get_infered_collection_version_else_forbidden,
-    get_infered_dataset_version)
+    allowed_dataset_asset_types,
+    get_infered_collection_version_else_forbidden,
+    get_infered_dataset_version,
+)
 from backend.portal.api.providers import get_business_logic
 
 

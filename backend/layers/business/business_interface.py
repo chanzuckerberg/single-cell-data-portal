@@ -1,18 +1,26 @@
 from typing import Iterable, Optional, Tuple
 
-from backend.layers.business.entities import (CollectionMetadataUpdate,
-                                              CollectionQueryFilter,
-                                              DatasetArtifactDownloadData)
-from backend.layers.common.entities import (CollectionId, CollectionMetadata,
-                                            CollectionVersion,
-                                            CollectionVersionId,
-                                            CollectionVersionWithDatasets,
-                                            DatasetArtifact, DatasetArtifactId,
-                                            DatasetId, DatasetMetadata,
-                                            DatasetStatus,
-                                            DatasetStatusGeneric,
-                                            DatasetStatusKey, DatasetVersion,
-                                            DatasetVersionId)
+from backend.layers.business.entities import (
+    CollectionMetadataUpdate,
+    CollectionQueryFilter,
+    DatasetArtifactDownloadData,
+)
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionMetadata,
+    CollectionVersion,
+    CollectionVersionId,
+    CollectionVersionWithDatasets,
+    DatasetArtifact,
+    DatasetArtifactId,
+    DatasetId,
+    DatasetMetadata,
+    DatasetStatus,
+    DatasetStatusGeneric,
+    DatasetStatusKey,
+    DatasetVersion,
+    DatasetVersionId,
+)
 
 
 class BusinessLogicInterface:
