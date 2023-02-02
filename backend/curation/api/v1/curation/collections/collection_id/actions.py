@@ -64,10 +64,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
             body["link_url"],
         )
 
-    if body.get("links") is not None:
-        update_links = [_link_from_request(node) for node in body["links"]]
-    else:
-        update_links = None
+    update_links = [_link_from_request(node) for node in body["links"]] if body.get("links") is not None else None
 
     # Build CollectionMetadataUpdate object
     collection_metadata = CollectionMetadataUpdate(
@@ -83,7 +80,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     try:
         get_business_logic().update_collection_version(collection_version.version_id, collection_metadata)
     except InvalidMetadataException as ex:
-        raise InvalidParametersHTTPException(ext=dict(invalid_parameters=ex.errors))
+        raise InvalidParametersHTTPException(ext=dict(invalid_parameters=ex.errors)) from None
     except CollectionUpdateException as ex:
         errors.extend(ex.errors)
     if errors:

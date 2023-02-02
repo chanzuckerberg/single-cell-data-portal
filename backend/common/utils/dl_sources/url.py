@@ -48,7 +48,7 @@ class URL(ABC):
         except KeyError:
             raise MissingHeaderException(
                 f"{self.__class__.__name__}:URL({self.url}) failed request. '{key}' not present in the header."
-            )
+            ) from None
 
     def _get_key_with_fallback(self, headers: dict, key: str, fallback_key: str) -> str:
         try:
@@ -58,7 +58,7 @@ class URL(ABC):
                 f"""{self.__class__.__name__}:URL({self.url}) failed request.
                 Neither '{key}' nor '{fallback_key}' are present in the header.
                 """
-            )
+            ) from None
 
 
 class DropBoxURL(URL):

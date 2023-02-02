@@ -19,6 +19,6 @@ def post(collection_id: str, token_info: dict):
     try:
         collection_version = get_business_logic().create_collection_version(CollectionId(collection_id))
     except CollectionVersionException:
-        raise ForbiddenHTTPException("Another revision is already in progress")
+        raise ForbiddenHTTPException("Another revision is already in progress") from None
 
     return make_response(jsonify({"id": collection_version.version_id.id}), 201)

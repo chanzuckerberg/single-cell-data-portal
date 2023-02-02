@@ -348,7 +348,7 @@ def post_collection_revision(collection_id: str, token_info: dict):
     try:
         version = get_business_logic().create_collection_version(CollectionId(collection_id))
     except CollectionVersionException:
-        raise ForbiddenHTTPException("Another revision is already in progress")
+        raise ForbiddenHTTPException("Another revision is already in progress") from None
 
     response = _collection_to_response(version, "WRITE")
 
@@ -395,7 +395,7 @@ def create_collection(body: dict, user: str):
     try:
         version = get_business_logic().create_collection(user, curator_name, metadata)
     except (InvalidMetadataException, CollectionCreationException) as ex:
-        raise InvalidParametersHTTPException(detail=ex.errors)
+        raise InvalidParametersHTTPException(detail=ex.errors) from None
 
     return make_response(jsonify({"collection_id": version.collection_id.id}), 201)
 
@@ -451,7 +451,7 @@ def delete_collection(collection_id: str, token_info: dict):
         try:
             get_business_logic().delete_collection_version(resource_id)
         except CollectionIsPublishedException:
-            raise ForbiddenHTTPException()
+            raise ForbiddenHTTPException() from None
     elif isinstance(resource_id, CollectionId):
         get_business_logic().tombstone_collection(resource_id)
 
@@ -475,10 +475,7 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
-    if body.get("links") is not None:
-        update_links = [_link_from_request(node) for node in body["links"]]
-    else:
-        update_links = None
+    update_links = [_link_from_request(node) for node in body["links"]] if body.get("links") is not None else None
 
     payload = CollectionMetadataUpdate(
         body.get("name"),
@@ -492,9 +489,9 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     try:
         get_business_logic().update_collection_version(version.version_id, payload)
     except InvalidMetadataException as ex:
-        raise InvalidParametersHTTPException(detail=ex.errors)
+        raise InvalidParametersHTTPException(detail=ex.errors) from None
     except CollectionUpdateException as ex:
-        raise InvalidParametersHTTPException(detail=ex.errors)
+        raise InvalidParametersHTTPException(detail=ex.errors) from None
 
     # Requires strong consistency w.r.t. the operation above - if not available, the update needs
     # to be done in memory
@@ -515,7 +512,7 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     try:
         get_business_logic().publish_collection_version(version.version_id)
     except CollectionPublishException:
-        raise ConflictException(detail="The collection must have a least one dataset.")
+        raise ConflictException(detail="The collection must have a least one dataset.") from None
 
     get_cloudfront_provider().create_invalidation_for_index_paths()
 
@@ -537,23 +534,23 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
         )
         return dataset_version_id
     except CollectionNotFoundException:
-        raise ForbiddenHTTPException()
+        raise ForbiddenHTTPException() from None
     except CollectionIsPublishedException:
-        raise ForbiddenHTTPException()
+        raise ForbiddenHTTPException() from None
     except DatasetNotFoundException:
-        raise NotFoundHTTPException()
+        raise NotFoundHTTPException() from None
     except InvalidURIException:
-        raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
+        raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.") from None
     except FileInfoException as ex:
-        raise InvalidParametersHTTPException(detail=str(ex))
+        raise InvalidParametersHTTPException(detail=str(ex)) from None
     except MaxFileSizeExceededException:
-        raise TooLargeHTTPException()
+        raise TooLargeHTTPException() from None
     except DatasetInWrongStatusException:
         raise MethodNotAllowedException(
             detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset "
             "is in progress. Please cancel the current submission by deleting the dataset, or wait until "
             "the submission has finished processing."
-        )
+        ) from None
 
 
 # TODO: those two methods should probably be collapsed into one
@@ -595,10 +592,10 @@ def post_dataset_asset(dataset_id: str, asset_id: str):
             DatasetVersionId(dataset_id), DatasetArtifactId(asset_id)
         )
     except ArtifactNotFoundException:
-        raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.")
+        raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.") from None
 
     if download_data.file_size is None:
-        raise ServerErrorHTTPException()
+        raise ServerErrorHTTPException() from None
 
     if download_data.presigned_url is None:
         raise ServerErrorHTTPException()
@@ -705,7 +702,7 @@ def delete_dataset(dataset_id: str, token_info: dict):
     try:
         get_business_logic().remove_dataset_version(collection_version.version_id, DatasetVersionId(dataset_id))
     except CollectionUpdateException:
-        raise MethodNotAllowedException(detail="Cannot delete a public Dataset")
+        raise MethodNotAllowedException(detail="Cannot delete a public Dataset") from None
     return Response(status=202)
 
 
@@ -717,7 +714,7 @@ def get_dataset_identifiers(url: str):
         path = urlparse(url).path
         id = [segment for segment in path.split("/") if segment][-1].removesuffix(".cxg")
     except Exception:
-        raise ServerErrorHTTPException("Cannot parse URL")
+        raise ServerErrorHTTPException("Cannot parse URL") from None
 
     dataset = get_business_logic().get_dataset_version(DatasetVersionId(id))
     if dataset is None:

@@ -74,9 +74,9 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         try:
             collection_version, dataset_version = business_logic._get_collection_and_dataset(collection_id, dataset_id)
         except CollectionNotFoundException:
-            raise NonExistentCollectionException(f"Collection {parsed['collection_id']} does not exist")
+            raise NonExistentCollectionException(f"Collection {parsed['collection_id']} does not exist") from None
         except DatasetNotFoundException:
-            raise NonExistentDatasetException(f"No Dataset with {dataset_id=} in Collection {collection_id}")
+            raise NonExistentDatasetException(f"No Dataset with {dataset_id=} in Collection {collection_id}") from None
 
         collection_owner = collection_version.owner
 

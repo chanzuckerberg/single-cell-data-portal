@@ -18,10 +18,7 @@ def _descendants(cell_type):
     global ontology
     cell_type_iri = cell_type.replace(":", "_")
     entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
-    if entity:
-        descendants = [i.name.replace("_", ":") for i in entity.descendants()]
-    else:
-        descendants = [cell_type]
+    descendants = [i.name.replace("_", ":") for i in entity.descendants()] if entity else [cell_type]
     return descendants
 
 
@@ -30,10 +27,7 @@ def _ancestors(cell_type):
     global ontology
     cell_type_iri = cell_type.replace(":", "_")
     entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
-    if entity:
-        ancestors = [i.name.replace("_", ":") for i in entity.ancestors()]
-    else:
-        ancestors = [cell_type]
+    ancestors = [i.name.replace("_", ":") for i in entity.ancestors()] if entity else [cell_type]
     return ancestors
 
 

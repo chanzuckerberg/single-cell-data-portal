@@ -57,7 +57,7 @@ def db_session_manager(**kwargs):
         logger.exception(e)
         if session is not None:
             session.rollback()
-        raise CorporaException("Failed to commit.")
+        raise CorporaException("Failed to commit.") from None
     finally:
         if session is not None:
             session.close()

@@ -27,7 +27,7 @@ def run(corpus_path: str, validate_cube: bool) -> dict:
         try:
             is_valid = Validation(corpus_path).validate_cube()
         except Exception as e:
-            raise CubeValidationException(e)
+            raise CubeValidationException from e
         if is_valid is False:
             pipeline_failure_message = gen_wmg_pipeline_failure_message(
                 "Issue with cube validation, see logs for more detail"

@@ -152,10 +152,7 @@ def reshape_dataset_for_curation_api(
     ds = dict()
 
     # Determine what columns to include from the dataset
-    if preview:
-        columns = EntityColumns.dataset_metadata_preview_cols
-    else:
-        columns = EntityColumns.dataset_metadata_cols
+    columns = EntityColumns.dataset_metadata_preview_cols if preview else EntityColumns.dataset_metadata_cols
 
     # Get dataset metadata fields.
     # Metadata can be None if the dataset isn't still fully processed, so we account for that

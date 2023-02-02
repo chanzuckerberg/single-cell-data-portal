@@ -43,7 +43,7 @@ class NCBIProvider:
         try:
             return urllib.request.urlopen(fetch_url).read()
         except Exception:
-            raise NCBIUnexpectedResultException
+            raise NCBIUnexpectedResultException from None
 
     def fetch_gene_uid(self, geneID, gene):
         """
@@ -60,7 +60,7 @@ class NCBIProvider:
         try:
             search_response = self._search_gene_uid(geneID)
         except NCBIUnexpectedResultException:
-            raise NCBIUnexpectedResultException
+            raise NCBIUnexpectedResultException from None
 
         # search with gene name if needed
         if not self._is_valid_search_result(search_response) and gene and gene != "":
@@ -75,7 +75,7 @@ class NCBIProvider:
                     logging.error(f"Unexpected NCBI search result, got {search_response}")
                     raise NCBIUnexpectedResultException
             except NCBIUnexpectedResultException:
-                raise NCBIUnexpectedResultException
+                raise NCBIUnexpectedResultException from None
         elif not self._is_valid_search_result(search_response):
             logging.error(f"Unexpected NCBI search result, got {search_response}")
             raise NCBIUnexpectedResultException
@@ -91,7 +91,7 @@ class NCBIProvider:
         try:
             search_response = urllib.request.urlopen(search_url).read()
         except Exception:
-            raise NCBIUnexpectedResultException
+            raise NCBIUnexpectedResultException from None
         return json.loads(search_response)
 
     def _is_valid_search_result(self, search_result):

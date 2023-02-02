@@ -106,7 +106,7 @@ class Validation:
         with tiledb.open(self.expression_summary_path, "r") as cube:
             species_list = cube.df[:].organism_ontology_term_id.drop_duplicates().to_list()
             species_count = len(species_list)
-            if self.MIN_SPECIES_COUNT > species_count:
+            if species_count < self.MIN_SPECIES_COUNT:
                 self.errors.append(
                     f"Expression summary cube missing mandatory species. Only contains {species_count} species"
                 )
@@ -183,7 +183,7 @@ class Validation:
         with tiledb.open(self.expression_summary_path, "r") as cube:
             tissue_list = cube.df[:].tissue_ontology_term_id.drop_duplicates().to_list()
             tissue_count = len(tissue_list)
-            if self.MIN_TISSUE_COUNT > tissue_count:
+            if tissue_count < self.MIN_TISSUE_COUNT:
                 self.errors.append(f"Only {tissue_count} tissues included in cube")
             for tissue in fixtures.validation_tissues_with_many_cell_types.values():
                 if tissue not in tissue_list:
@@ -209,20 +209,20 @@ class Validation:
                 # Most cells should express both genes, more cells should express MALAT1
                 if ACTB_cell_count > MALAT1_cell_count:
                     self.errors.append(f"More cells express ACTB ({ACTB_cell_count}) than MALAT1 ({MALAT1_cell_count})")
-                if self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT > (100 * MALAT1_cell_count / cell_count_human):
+                if 100 * MALAT1_cell_count / cell_count_human < self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT:
                     self.errors.append(
                         f"less than " f"{self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT}% of cells express MALAT1"
                     )
-                if self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT > (100 * ACTB_cell_count / cell_count_human):
+                if 100 * ACTB_cell_count / cell_count_human < self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT:
                     self.errors.append(
                         f"less than " f"{self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT}% of cells express ACTB"
                     )
 
                 MALAT1_avg_expression = cube.df[MALAT1_ont_id:MALAT1_ont_id]["sum"].sum() / MALAT1_cell_count
                 ACTB_avg_expression = cube.df[ACTB_ont_id:ACTB_ont_id]["sum"].sum() / ACTB_cell_count
-                if self.MIN_MALAT1_RANKIT_EXPRESSION > MALAT1_avg_expression:
+                if MALAT1_avg_expression < self.MIN_MALAT1_RANKIT_EXPRESSION:
                     self.errors.append(f"MALAT1 avg rankit score is {MALAT1_avg_expression}")
-                if self.MIN_ACTB_RANKIT_EXPRESSION > ACTB_avg_expression:
+                if ACTB_avg_expression < self.MIN_ACTB_RANKIT_EXPRESSION:
                     self.errors.append(f"ACTB avg rankit score is {ACTB_avg_expression}")
 
     def validate_sex_specific_marker_gene(self):
@@ -453,7 +453,7 @@ class Validation:
         with tiledb.open(self.expression_summary_path) as cube:
             datasets = cube.df[:].dataset_id.drop_duplicates()
             dataset_count = len(datasets)
-            if self.MIN_DATASET_COUNT > dataset_count:
+            if dataset_count < self.MIN_DATASET_COUNT:
                 self.errors.append("Not enough datasets in the cube")
             logger.info(f"{dataset_count} datasets included in {self.expression_summary_path}")
             logger.info(f"Included dataset ids are: {datasets}")

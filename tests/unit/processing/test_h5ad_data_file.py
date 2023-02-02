@@ -47,11 +47,11 @@ class TestH5ADDataFile(unittest.TestCase):
             h5ad_file.anndata.var.sort_index(inplace=True), self.sample_anndata.var.sort_index(inplace=True)
         )
 
-        for key in h5ad_file.anndata.obsm.keys():
+        for key in h5ad_file.anndata.obsm:
             self.assertIn(key, self.sample_anndata.obsm.keys())
             self.assertTrue((h5ad_file.anndata.obsm[key] == self.sample_anndata.obsm[key]).all())
 
-        for key in self.sample_anndata.obsm.keys():
+        for key in self.sample_anndata.obsm:
             self.assertIn(key, h5ad_file.anndata.obsm.keys())
             self.assertTrue((h5ad_file.anndata.obsm[key] == self.sample_anndata.obsm[key]).all())
 

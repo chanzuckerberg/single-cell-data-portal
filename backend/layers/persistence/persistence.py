@@ -86,7 +86,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             logger.exception(e)
             if session is not None:
                 session.rollback()
-            raise PersistenceException("Failed to commit.")
+            raise PersistenceException("Failed to commit.") from None
         finally:
             if session is not None:
                 session.close()

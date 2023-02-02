@@ -11,15 +11,15 @@ def jwt_decode(*args, **kwargs) -> dict:
         raise ExpiredCredentialsError(
             detail="Your authentication credentials have expired. Please provide updated "
             "credentials before trying again."
-        )
+        ) from None
     except JWTClaimsError:
-        raise UnauthorizedError(detail="Incorrect claims, please check the audience and issuer.")
+        raise UnauthorizedError(detail="Incorrect claims, please check the audience and issuer.") from None
     except Exception:
-        raise UnauthorizedError(detail="Unable to parse authentication token.")
+        raise UnauthorizedError(detail="Unable to parse authentication token.") from None
 
 
 def get_unverified_header(token: str) -> dict:
     try:
         return jwt.get_unverified_header(token)
     except JWTError:
-        raise UnauthorizedError(detail="Unable to parse authentication token.")
+        raise UnauthorizedError(detail="Unable to parse authentication token.") from None

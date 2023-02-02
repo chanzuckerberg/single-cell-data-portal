@@ -221,7 +221,7 @@ def convert_anndata_category_colors_to_cxg_category_colors(adata):
 
     cxg_colors = dict()
     color_key_suffix = "_colors"
-    for uns_key in adata.uns.keys():
+    for uns_key in adata.uns:
         # find uns array that describes colors for a category
         if not uns_key.endswith(color_key_suffix):
             continue

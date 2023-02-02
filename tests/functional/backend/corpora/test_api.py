@@ -91,7 +91,7 @@ class TestApi(BaseFunctionalTestCase):
             res.raise_for_status()
             data = json.loads(res.content)
             data.pop("access_type")
-            for key in updated_data.keys():
+            for key in updated_data:
                 self.assertEqual(updated_data[key], data[key])
 
         self.upload_and_wait(collection_id, "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0")

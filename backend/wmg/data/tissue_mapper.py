@@ -172,10 +172,7 @@ class TissueMapper:
             return self._cached_labels[ontology_term_id]
 
         entity = self._get_entity_from_id(self.reformat_ontology_term_id(ontology_term_id, to_writable=False))
-        if entity:
-            result = entity.label[0]
-        else:
-            result = ontology_term_id
+        result = entity.label[0] if entity else ontology_term_id
 
         self._cached_labels[ontology_term_id] = result
         return result
