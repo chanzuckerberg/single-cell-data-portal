@@ -14,13 +14,12 @@ export COVERAGE_RUN_ARGS:=--data-file=$(COVERAGE_DATA_FILE) --parallel-mode $(CO
 
 .PHONY: fmt
 fmt:
-	pre-commit run black
-	pre-commit run autoflake
-	pre-commit run isort
+	black --config=pyproject.toml backend scripts tests
+	ruff check --fix --config=pyproject.toml backend tests scripts
 
 .PHONY: lint
 lint:
-	pre-commit run flake8 --all-files
+	ruff check --config=pyproject.toml --diff backend tests
 
 .PHONY: unit-test
 unit-test: local-unit-test
