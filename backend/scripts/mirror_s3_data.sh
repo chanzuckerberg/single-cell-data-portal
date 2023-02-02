@@ -26,6 +26,5 @@ S3_SYNC_CMD="aws s3 sync --copy-props metadata-directive --no-progress"
 set -x
 $S3_SYNC_CMD --exclude '*loom' s3://corpora-data-${SRC_ENV}/ s3://corpora-data-${DEST_ENV}/
 $S3_SYNC_CMD s3://hosted-cellxgene-${SRC_ENV}/ s3://hosted-cellxgene-${DEST_ENV}/
-$S3_SYNC_CMD s3://cellxgene-wmg-${SRC_ENV}/ s3://cellxgene-wmg-${DEST_ENV}/
 set +x
 
