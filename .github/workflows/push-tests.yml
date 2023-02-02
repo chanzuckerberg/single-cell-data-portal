@@ -190,7 +190,7 @@ jobs:
       - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
-      - lint
+      - static-code-checker
       - build-frontend-backend-images
       - build-batch-job-images
     runs-on: ubuntu-20.04
@@ -578,7 +578,7 @@ jobs:
       - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
-      - lint
+      - static-code-checker
       - build-frontend-backend-images
       - build-batch-job-images
     runs-on: ubuntu-20.04
