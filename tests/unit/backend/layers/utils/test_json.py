@@ -6,7 +6,6 @@ from enum import Enum
 from sqlalchemy import Column, String
 
 from backend.common.corpora_orm import Base
-from backend.common.entities.entity import Entity
 from backend.common.utils.json import CurationJSONEncoder, CustomJSONEncoder
 
 
@@ -43,12 +42,6 @@ class TestCustomJSONEncoder(unittest.TestCase):
         expected_base = json.dumps(params, sort_keys=True)
         self._verify_json_encoding(test_base, expected_base)
         self.assertDictEqual({k: v for k, v in test_base}, params)
-
-    def test_entity(self):
-        params = dict(id="foo", name="bar")
-        test_entity = Entity(DBTest(**params))
-        expected_entity = json.dumps(params, sort_keys=True)
-        self._verify_json_encoding(test_entity, expected_entity)
 
     def test_unsupported_type(self):
         class Unsupported:
