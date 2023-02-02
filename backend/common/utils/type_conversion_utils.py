@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -72,7 +72,7 @@ def get_schema_type_hint_from_dtype(dtype) -> dict:
         return res[1]
 
 
-def _get_type_info_from_dtype(dtype) -> Union[Tuple[np.dtype, dict], None]:
+def _get_type_info_from_dtype(dtype) -> Optional[Tuple[np.dtype, dict]]:
     """
     Best-effort to determine encoding type and schema hint from a dtype.
     If this is not possible, or the type is unsupported, return None.
@@ -87,15 +87,14 @@ def _get_type_info_from_dtype(dtype) -> Union[Tuple[np.dtype, dict], None]:
     if dtype.kind == "U":
         return (np.dtype(str), {"type": "string"})
 
-    if dtype.kind in ["i", "u"]:
-        if np.can_cast(dtype, np.int32):
-            return (np.int32, {"type": "int32"})
+    if dtype.kind in ["i", "u"] and np.can_cast(dtype, np.int32):
+        return (np.int32, {"type": "int32"})
 
     if dtype.kind == "f":
         _float64_warning(dtype)
         return (np.float32, {"type": "float32"})
 
-    if dtype.kind == "O" and not dtype.name == "category":
+    if dtype.kind == "O" and dtype.name != "category":
         return (np.dtype(str), {"type": "string"})
 
     return None

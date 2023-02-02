@@ -51,7 +51,7 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     deterministic_term_ids = sorted(ontology_labels.ontology_term_id_labels.keys())
 
     if dimension_name == "gene_ontology_term_id":
-        return list(sorted(ontology_labels.gene_term_id_labels.keys()))[:dim_size]
+        return sorted(ontology_labels.gene_term_id_labels.keys())[:dim_size]
     if dimension_name == "tissue_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("UBERON")][:dim_size]
     if dimension_name == "tissue_original_ontology_term_id":
@@ -113,9 +113,11 @@ def exclude_dev_stage_and_ethnicity_for_secondary_filter_test(coord) -> bool:
         "self_reported_ethnicity_ontology_term_id_1",
         "self_reported_ethnicity_ontology_term_id_2",
     )
-    if coord.development_stage_ontology_term_id in dev_stages_to_exclude:
-        if coord.self_reported_ethnicity_ontology_term_id in self_reported_ethnicity_terms_to_exclude:
-            return True
+    if (
+        coord.development_stage_ontology_term_id in dev_stages_to_exclude
+        and coord.self_reported_ethnicity_ontology_term_id in self_reported_ethnicity_terms_to_exclude
+    ):
+        return True
     return False
 
 
@@ -142,21 +144,24 @@ def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
 def load_test_fmg_snapshot(snapshot_name: str) -> WmgSnapshot:
     with tiledb.open(
         f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_fmg", ctx=create_ctx()
-    ) as expression_summary_fmg_cube:
-        with tiledb.open(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts", ctx=create_ctx()) as cell_counts_cube:
-            with tiledb.open(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes", ctx=create_ctx()) as marker_genes_cube:
-                with open(f"{FIXTURES_ROOT}/{snapshot_name}/dataset_to_gene_ids.json", "r") as f:
-                    dataset_to_gene_ids = json.load(f)
-                    yield WmgSnapshot(
-                        snapshot_identifier=snapshot_name,
-                        expression_summary_cube=None,
-                        expression_summary_fmg_cube=expression_summary_fmg_cube,
-                        marker_genes_cube=marker_genes_cube,
-                        cell_counts_cube=cell_counts_cube,
-                        cell_type_orderings=None,
-                        primary_filter_dimensions=None,
-                        dataset_to_gene_ids=dataset_to_gene_ids,
-                    )
+    ) as expression_summary_fmg_cube, tiledb.open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts", ctx=create_ctx()
+    ) as cell_counts_cube, tiledb.open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes", ctx=create_ctx()
+    ) as marker_genes_cube, open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/dataset_to_gene_ids.json", "r"
+    ) as f:
+        dataset_to_gene_ids = json.load(f)
+        yield WmgSnapshot(
+            snapshot_identifier=snapshot_name,
+            expression_summary_cube=None,
+            expression_summary_fmg_cube=expression_summary_fmg_cube,
+            marker_genes_cube=marker_genes_cube,
+            cell_counts_cube=cell_counts_cube,
+            cell_type_orderings=None,
+            primary_filter_dimensions=None,
+            dataset_to_gene_ids=dataset_to_gene_ids,
+        )
 
 
 @contextlib.contextmanager
@@ -180,18 +185,19 @@ def create_temp_wmg_snapshot(
         cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
         primary_filter_dimensions = build_precomputed_primary_filters()
 
-        with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
-            with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
-                yield WmgSnapshot(
-                    snapshot_identifier=snapshot_name,
-                    expression_summary_cube=expression_summary_cube,
-                    expression_summary_fmg_cube=None,
-                    marker_genes_cube=None,
-                    cell_counts_cube=cell_counts_cube,
-                    cell_type_orderings=cell_type_orderings,
-                    primary_filter_dimensions=primary_filter_dimensions,
-                    dataset_to_gene_ids=None,
-                )
+        with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube, tiledb.open(
+            cell_counts_cube_dir, ctx=create_ctx()
+        ) as cell_counts_cube:
+            yield WmgSnapshot(
+                snapshot_identifier=snapshot_name,
+                expression_summary_cube=expression_summary_cube,
+                expression_summary_fmg_cube=None,
+                marker_genes_cube=None,
+                cell_counts_cube=cell_counts_cube,
+                cell_type_orderings=cell_type_orderings,
+                primary_filter_dimensions=primary_filter_dimensions,
+                dataset_to_gene_ids=None,
+            )
 
 
 def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> DataFrame:

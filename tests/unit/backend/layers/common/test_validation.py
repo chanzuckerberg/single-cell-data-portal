@@ -88,5 +88,5 @@ def test_invalid_characters_in_field(invalid_string):
     with pytest.raises(InvalidMetadataException):
         verify_collection_metadata(body, errors)
     error_message = "Invalid characters detected."
-    assert 1 == len(errors)
+    assert len(errors) == 1
     assert {"name": "name", "reason": error_message} in errors

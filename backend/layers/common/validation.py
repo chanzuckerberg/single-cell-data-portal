@@ -52,7 +52,7 @@ def _verify_collection_metadata_fields(
             return value
 
     def verify_collection_consortia(metadata: Union[CollectionMetadata, CollectionMetadataUpdate], errors: list):
-        consortia = getattr(metadata, "consortia")
+        consortia = metadata.consortia
         if consortia:
             for consortium in consortia:
                 if consortium not in valid_consortia:

@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import shutil
 import threading
@@ -129,11 +130,9 @@ class Downloader:
         # else:
         #     progress_tracker = NoOpProgressTracker()
 
-        try:
+        with contextlib.suppress(Exception):
             self.download_file(url, local_path, chunk_size)
             # TODO: maybe add a check on the file size
-        except Exception:
-            pass
 
         self.business_logic.update_dataset_version_status(
             dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED

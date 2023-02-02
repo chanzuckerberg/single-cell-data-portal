@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import owlready2
 
@@ -110,8 +110,8 @@ class TissueMapper:
         # TODO: use the pinned ontology at `single-cell-curation`
         self._uberon = owlready2.get_ontology(uberon_ontology)
         self._uberon.load()
-        self._cached_tissues = {}
-        self._cached_labels = {}
+        self._cached_tissues: dict = {}
+        self._cached_labels: dict = {}
 
     def get_high_level_tissue(self, tissue_ontology_term_id: str) -> str:
         """
@@ -141,7 +141,7 @@ class TissueMapper:
         # List ancestors for this entity, including itself. Ignore any ancestors that
         # are not descendents of UBERON_0000061 (anatomical structure).
         ancestors = [entity.name]
-        branch_ancestors = []
+        branch_ancestors: list = []
         for is_a in entity.is_a:
             branch_ancestors = self._list_ancestors(is_a, branch_ancestors)
 
@@ -197,12 +197,12 @@ class TissueMapper:
                 raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one ':'")
             return ontology_term_id.replace(":", "_")
 
-    def _list_ancestors(self, entity: owlready2.entity.ThingClass, ancestors: List[str] = []) -> List[str]:
+    def _list_ancestors(self, entity: owlready2.entity.ThingClass, ancestors: Optional[List[str]] = None) -> List[str]:
         """
         Recursive function that given an entity of an ontology, it traverses the ontology and returns
         a list of all ancestors associated with the entity.
         """
-
+        ancestors = ancestors or []
         if self._is_restriction(entity):
             # Entity is a restriction, check for part_of relationship
 

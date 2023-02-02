@@ -23,7 +23,7 @@ class CrossrefParseException(CrossrefException):
     pass
 
 
-class CrossrefProvider(object):
+class CrossrefProvider:
     """
     Provider class used to call Crossref and retrieve publisher metadata
     """

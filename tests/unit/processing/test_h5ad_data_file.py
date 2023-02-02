@@ -156,7 +156,7 @@ class TestH5ADDataFile(unittest.TestCase):
 
         try:
             with tiledb.open("foo", mode="w") as A:
-                value = {}
+                value = dict()
                 value[col_name] = np.zeros((100,), dtype=np.int)
                 A[:] = value  # if there's a regression, this statement will throw a TileDBError
                 # if we get here we're good

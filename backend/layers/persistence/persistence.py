@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 import uuid
@@ -43,18 +44,14 @@ class DatabaseProvider(DatabaseProviderInterface):
         self._engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
         self._session_maker = sessionmaker(bind=self._engine)
         self._schema_name = schema_name
-        try:
+        with contextlib.suppress(Exception):
             self._create_schema()
-        except Exception:
-            pass
 
     def _drop_schema(self):
         from sqlalchemy.schema import DropSchema
 
-        try:
+        with contextlib.suppress(ProgrammingError):
             self._engine.execute(DropSchema(self._schema_name, cascade=True))
-        except ProgrammingError:
-            pass
 
     def _create_schema(self):
         from sqlalchemy.schema import CreateSchema

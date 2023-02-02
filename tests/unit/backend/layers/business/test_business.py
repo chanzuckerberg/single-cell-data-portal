@@ -48,7 +48,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.run_as_integration = True if os.environ.get("INTEGRATION_TEST", "false").lower() == "true" else False
+        cls.run_as_integration = os.environ.get("INTEGRATION_TEST", "false").lower() == "true"
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
@@ -165,7 +165,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         Pass `complete_dataset_ingestion=False` if you want to initialize datasets only.
         """
         version = self.initialize_empty_unpublished_collection(owner, curator_name)
-        for i in range(2):
+        for _ in range(2):
             dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id,
             )
@@ -181,11 +181,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self,
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
-        published_at: datetime = datetime.utcnow(),
+        published_at: datetime = None,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
+        published_at = published_at or datetime.utcnow()
         version = self.initialize_unpublished_collection(owner, curator_name)
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
         return self.database_provider.get_collection_version_with_datasets(version.version_id)

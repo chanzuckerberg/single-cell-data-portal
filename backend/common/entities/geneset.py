@@ -12,7 +12,8 @@ class Geneset(Entity):
     table = DbGeneset
 
     @classmethod
-    def create(cls, session: Session, name: str, description: str, genes: list, dataset_ids: list = [], **kwargs):
+    def create(cls, session: Session, name: str, description: str, genes: list, dataset_ids: list = None, **kwargs):
+        dataset_ids = dataset_ids or []
         gene_set = DbGeneset(name=name, description=description, genes=genes, **kwargs)
         session.add(gene_set)
         session.commit()

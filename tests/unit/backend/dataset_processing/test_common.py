@@ -1,3 +1,4 @@
+import contextlib
 import enum
 import os
 import pathlib
@@ -59,12 +60,10 @@ class TestCommon(DataPortalTestCase):
             self.addCleanup(s3_mock.stop)
         s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
         self.s3_resource = boto3.resource("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
-        try:
+        with contextlib.suppress(self.s3_resource.meta.client.exceptions.BucketAlreadyExists):
             s3.create_bucket(
                 Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
             )
-        except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
-            pass
         return s3
 
     def delete_s3_bucket(self, bucket_name):

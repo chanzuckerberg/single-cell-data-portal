@@ -166,7 +166,7 @@ def _dataset_to_response(
     # Only return `dataset_deployments` if a CXG artifact is available. This is to prevent the "Explore"
     # button to show up while a dataset upload is in progress
     if any(a for a in dataset.artifacts if a.type == DatasetArtifactType.CXG):
-        use_canonical = False if is_in_revision else True
+        use_canonical = not is_in_revision
         dataset_deployments = [{"url": explorer_url.generate(dataset, use_canonical=use_canonical)}]
     else:
         dataset_deployments = []
@@ -361,9 +361,10 @@ def create_collection(body: dict, user: str):
 
     errors = []
     doi_url = None
-    if doi_node := doi.get_doi_link_node(body, errors):
-        if doi_url := doi.portal_get_normalized_doi_url(doi_node, errors):
-            doi_node["link_url"] = doi_url
+    if (doi_node := doi.get_doi_link_node(body, errors)) and (
+        doi_url := doi.portal_get_normalized_doi_url(doi_node, errors)
+    ):
+        doi_node["link_url"] = doi_url
     curator_name = body.get("curator_name")
     if curator_name is None:
         errors.append("Create Collection body is missing field 'curator_name'")
@@ -450,9 +451,10 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
 
     errors = []
     doi_url = None
-    if doi_node := doi.get_doi_link_node(body, errors):
-        if doi_url := doi.portal_get_normalized_doi_url(doi_node, errors):
-            doi_node["link_url"] = doi_url
+    if (doi_node := doi.get_doi_link_node(body, errors)) and (
+        doi_url := doi.portal_get_normalized_doi_url(doi_node, errors)
+    ):
+        doi_node["link_url"] = doi_url
     if errors:
         raise InvalidParametersHTTPException(detail=errors)  # TODO: rewrite this exception?
 

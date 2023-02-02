@@ -115,7 +115,7 @@ class Validation:
                 if species not in species_list:
                     self.errors.append(f"Cube missing species: {species}")
             logger.info(f"{species_count} species included in cube")
-            logger.info(f"Included species ids are: {[species for species in species_list]}")
+            logger.info(f"Included species ids are: {species_list}")
 
             # todo check/log cell type per species
 
@@ -190,7 +190,7 @@ class Validation:
                 if tissue not in tissue_list:
                     self.errors.append(f"{tissue} missing from tissue list")
             logger.info(f"{tissue_count} tissues included in cube")
-            logger.info(f"Included tissue ids are: {[tissues for tissues in tissue_list]}")
+            logger.info(f"Included tissue ids are: {tissue_list}")
 
             # todo check/log cell type per tissue
 
@@ -457,4 +457,4 @@ class Validation:
             if self.MIN_DATASET_COUNT > dataset_count:
                 self.errors.append("Not enough datasets in the cube")
             logger.info(f"{dataset_count} datasets included in {self.expression_summary_path}")
-            logger.info(f"Included dataset ids are: {[dataset for dataset in datasets]}")
+            logger.info(f"Included dataset ids are: {datasets}")

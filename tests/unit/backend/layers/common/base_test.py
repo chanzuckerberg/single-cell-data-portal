@@ -67,7 +67,7 @@ class BaseTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.run_as_integration = True if os.environ.get("INTEGRATION_TEST", "false").lower() == "true" else False
+        cls.run_as_integration = os.environ.get("INTEGRATION_TEST", "false").lower() == "true"
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
@@ -167,7 +167,7 @@ class BaseTest(unittest.TestCase):
         self,
         owner="test_user_id",
         curator_name="Test User",
-        links: List[Link] = [],
+        links: List[Link] = None,
         add_datasets: int = 0,
         metadata=None,
     ) -> CollectionVersion:
@@ -202,11 +202,12 @@ class BaseTest(unittest.TestCase):
     def generate_published_collection(
         self,
         owner="test_user_id",
-        links: List[Link] = [],
+        links: List[Link] = None,
         add_datasets: int = 1,
         curator_name: str = "Jane Smith",
         metadata=None,
     ) -> CollectionVersionWithDatasets:
+        links = links or []
         unpublished_collection = self.generate_unpublished_collection(
             owner, curator_name, links, add_datasets=add_datasets, metadata=metadata
         )
@@ -223,7 +224,7 @@ class BaseTest(unittest.TestCase):
         collection_version: Optional[CollectionVersion] = None,
         metadata: Optional[DatasetMetadata] = None,
         name: Optional[str] = None,
-        statuses: List[DatasetStatusUpdate] = [],
+        statuses: List[DatasetStatusUpdate] = None,
         validation_message: str = None,
         artifacts: List[DatasetArtifactUpdate] = None,
         publish: bool = False,
@@ -232,6 +233,8 @@ class BaseTest(unittest.TestCase):
         """
         Convenience method for generating a dataset. Also generates an unpublished collection if needed.
         """
+        statuses = statuses or []
+
         if not collection_version:
             collection_version = self.generate_unpublished_collection(owner)
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(

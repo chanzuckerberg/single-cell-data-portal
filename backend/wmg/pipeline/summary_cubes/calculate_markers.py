@@ -73,7 +73,8 @@ def _query_tiledb_context_memoized(
     if isinstance(corpus, str):
         expression_summary_fmg_cube = tiledb.open(f"{corpus}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}")
         cell_counts_cube = tiledb.open(f"{corpus}/{CELL_COUNTS_CUBE_NAME}")
-        dataset_to_gene_ids = json.load(open(f"{corpus}/{DATASET_TO_GENE_IDS_FILENAME}"))
+        with open(f"{corpus}/{DATASET_TO_GENE_IDS_FILENAME}") as fp:
+            dataset_to_gene_ids = json.load(fp)
     else:
         if corpus is None:
             corpus = load_snapshot()

@@ -18,7 +18,7 @@ class NCBIUnexpectedResultException(NCBIException):
     pass
 
 
-class NCBIProvider(object):
+class NCBIProvider:
     """
     Provider class used to generate NCBI URL
     """
@@ -125,14 +125,13 @@ class NCBIProvider(object):
             for x in root[0]:
                 if x.tag == summary_tag:
                     summary = x.text
-                elif x.tag == gene_tag:
-                    if len(x) > 0:
-                        for y in x[0]:
-                            if y.tag == desc_tag:
-                                name = y.text
-                            elif y.tag == syn_tag:
-                                for syn in y:
-                                    synonyms.append(syn.text)
+                elif x.tag == gene_tag and len(x) > 0:
+                    for y in x[0]:
+                        if y.tag == desc_tag:
+                            name = y.text
+                        elif y.tag == syn_tag:
+                            for syn in y:
+                                synonyms.append(syn.text)
         return dict(
             name=name,
             summary=summary,

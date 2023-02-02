@@ -53,11 +53,10 @@ def get(visibility: str, token_info: dict, curator: str = None):
 def post(body: dict, user: str):
     # Extract DOI into link
     errors = []
-    if doi_url := body.get("doi"):
-        if doi_url := doi.curation_get_normalized_doi_url(doi_url, errors):
-            links = body.get("links", [])
-            links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
-            body["links"] = links
+    if (doi_url := body.get("doi")) and (doi_url := doi.curation_get_normalized_doi_url(doi_url, errors)):
+        links = body.get("links", [])
+        links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
+        body["links"] = links
 
     # Build CollectionMetadata object
     links = [Link(link.get("link_name"), link["link_type"], link["link_url"]) for link in body.get("links", [])]

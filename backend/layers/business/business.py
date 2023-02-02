@@ -522,8 +522,8 @@ class BusinessLogic(BusinessLogicInterface):
         # used for cases where revision only contains collection-level metadata changes
         if version.canonical_collection.version_id is not None:
             canonical_version = self.database_provider.get_collection_version(version.canonical_collection.version_id)
-            canonical_datasets = set([dataset_version_id.id for dataset_version_id in canonical_version.datasets])
-            version_datasets = set([dataset_version_id.id for dataset_version_id in version.datasets])
+            canonical_datasets = {dataset_version_id.id for dataset_version_id in canonical_version.datasets}
+            version_datasets = {dataset_version_id.id for dataset_version_id in version.datasets}
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 

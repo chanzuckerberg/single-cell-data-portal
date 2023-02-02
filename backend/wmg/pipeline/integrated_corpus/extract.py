@@ -48,15 +48,15 @@ def get_dataset_s3_uris() -> Dict[str, str]:
             and (dataset.metadata.assay is not None)
             and (dataset.metadata.is_primary_data == "PRIMARY")
             and (dataset.metadata.organism is not None)
+            and any(assay.ontology_term_id in INCLUDED_ASSAYS for assay in dataset.metadata.assay)
+            and len(dataset.metadata.organism) < 2
         ):
-            if any(assay.ontology_term_id in INCLUDED_ASSAYS for assay in dataset.metadata.assay):
-                if len(dataset.metadata.organism) < 2:
-                    s3_uri = next(
-                        a.uri
-                        for a in dataset.artifacts
-                        if a.type == DatasetArtifactType.H5AD and a.get_file_name() == "local.h5ad"
-                    )
-                    s3_uris[dataset.dataset_id.id] = s3_uri
+            s3_uri = next(
+                a.uri
+                for a in dataset.artifacts
+                if a.type == DatasetArtifactType.H5AD and a.get_file_name() == "local.h5ad"
+            )
+            s3_uris[dataset.dataset_id.id] = s3_uri
     return s3_uris
 
 

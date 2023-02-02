@@ -43,7 +43,8 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     with tiledb.scope_ctx(create_ctx()):
         dataset_count = len(os.listdir(dataset_directory))
         if os.path.exists(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json"):
-            dataset_gene_mapping = json.load(open(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json", "r"))
+            with open(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json", "r") as fp:
+                dataset_gene_mapping = json.load(fp)
         else:
             dataset_gene_mapping = {}
 

@@ -5,7 +5,7 @@ from backend.common.utils.corpora_constants import CorporaConstants
 
 def has_scope(required_scope: str, scope: Union[list, str]) -> bool:
     scopes = scope.split(" ") if isinstance(scope, str) else scope or []
-    return True if required_scope in scopes else False
+    return required_scope in scopes
 
 
 def is_super_curator(scope: Union[list, str]) -> bool:

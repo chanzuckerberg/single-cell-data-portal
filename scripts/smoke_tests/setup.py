@@ -68,7 +68,7 @@ if __name__ == "__main__":
     dataset_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
     num_to_create = NUM_TEST_COLLECTIONS - collection_count
     threads = []
-    for i in range(num_to_create):
+    for _ in range(num_to_create):
         thread = threading.Thread(target=smoke_test_init.create_and_publish_collection, args=(dataset_dropbox_url,))
         threads.append(thread)
         thread.start()

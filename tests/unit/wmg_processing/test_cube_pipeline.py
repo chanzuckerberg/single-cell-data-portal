@@ -37,8 +37,8 @@ class TestCubePipe(unittest.TestCase):
             self.assertEqual(1, len(logs.records))
             mock_notify_slack.assert_called_once()
 
-    @unittest.skip
-    def test_pipeline_creates_files():
+    @unittest.skip("not implemented")
+    def test_pipeline_creates_files(self):
         """
         Test the pipeline successfully copies from mock s3, loads corpus and correctly builds cube/cell_ordering files
         and correctly uploads files to mock s3

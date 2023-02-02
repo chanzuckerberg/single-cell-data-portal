@@ -44,7 +44,7 @@ def remove_oldest_datasets(timestamp):
         except Exception:
             pass
 
-    timestamps = sorted(list(set([x[0] for x in candidate_to_delete])))
+    timestamps = sorted({x[0] for x in candidate_to_delete})
 
     if len(timestamps) > 2:
         timestamps_to_delete = list(timestamps)[:-2]

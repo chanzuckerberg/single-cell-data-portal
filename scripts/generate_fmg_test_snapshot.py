@@ -529,31 +529,33 @@ if __name__ == "__main__":
     if not os.path.isdir(new_snapshot):
         os.mkdir(new_snapshot)
 
-    with tiledb.open(f"{snapshot}/expression_summary") as es_arr:
-        with tiledb.open(f"{snapshot}/expression_summary_fmg") as esfmg_arr:
-            with tiledb.open(f"{snapshot}/cell_counts") as cc_arr:
-                with open(f"{snapshot}/dataset_to_gene_ids.json", "r") as dtg_file:
-                    print("Subsetting existing snapshot...")
-                    es = es_arr.df[(test_genes, test_tissue, [], test_organism)]
-                    esfmg = esfmg_arr.query(
-                        attr_cond=tiledb.QueryCondition(f"gene_ontology_term_id in {test_genes}")
-                    ).df[(test_tissue, test_organism, [])]
-                    cc = cc_arr.df[(test_tissue, [], test_organism)]
+    with tiledb.open(f"{snapshot}/expression_summary") as es_arr, tiledb.open(
+        f"{snapshot}/expression_summary_fmg"
+    ) as esfmg_arr, tiledb.open(f"{snapshot}/cell_counts") as cc_arr, open(
+        f"{snapshot}/dataset_to_gene_ids.json", "r"
+    ) as dtg_file:
+        print("Subsetting existing snapshot...")
+        es = es_arr.df[(test_genes, test_tissue, [], test_organism)]
+        esfmg = esfmg_arr.query(attr_cond=tiledb.QueryCondition(f"gene_ontology_term_id in {test_genes}")).df[
+            (test_tissue, test_organism, [])
+        ]
+        cc = cc_arr.df[(test_tissue, [], test_organism)]
 
-                    print("Creating new snapshot...")
-                    tiledb.Array.create(f"{new_snapshot}/expression_summary", es_arr.schema, overwrite=True)
-                    tiledb.Array.create(f"{new_snapshot}/expression_summary_fmg", esfmg_arr.schema, overwrite=True)
-                    tiledb.Array.create(f"{new_snapshot}/cell_counts", cc_arr.schema, overwrite=True)
+        print("Creating new snapshot...")
+        tiledb.Array.create(f"{new_snapshot}/expression_summary", es_arr.schema, overwrite=True)
+        tiledb.Array.create(f"{new_snapshot}/expression_summary_fmg", esfmg_arr.schema, overwrite=True)
+        tiledb.Array.create(f"{new_snapshot}/cell_counts", cc_arr.schema, overwrite=True)
 
-                    tiledb.from_pandas(f"{new_snapshot}/expression_summary", es, mode="append")
-                    tiledb.from_pandas(f"{new_snapshot}/expression_summary_fmg", esfmg, mode="append")
-                    tiledb.from_pandas(f"{new_snapshot}/cell_counts", cc, mode="append")
+        tiledb.from_pandas(f"{new_snapshot}/expression_summary", es, mode="append")
+        tiledb.from_pandas(f"{new_snapshot}/expression_summary_fmg", esfmg, mode="append")
+        tiledb.from_pandas(f"{new_snapshot}/cell_counts", cc, mode="append")
 
-                    dtg = json.load(dtg_file)
-                    genes = set(es["gene_ontology_term_id"])
-                    for k in dtg:
-                        dtg[k] = list(genes.intersection(dtg[k]))
-                    json.dump(dtg, open(f"{new_snapshot}/dataset_to_gene_ids.json", "w"))
+        dtg = json.load(dtg_file)
+        genes = set(es["gene_ontology_term_id"])
+        for k in dtg:
+            dtg[k] = list(genes.intersection(dtg[k]))
+        with open(f"{new_snapshot}/dataset_to_gene_ids.json", "w") as fp:
+            json.dump(dtg, fp)
 
     print("Creating marker genes cube...")
     create_marker_genes_cube(new_snapshot)

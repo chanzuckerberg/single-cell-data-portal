@@ -1,4 +1,5 @@
 import base64
+import contextlib
 import json
 import logging
 import os
@@ -36,10 +37,8 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
         return oauth_client
 
     code_challenge_method = None
-    try:
+    with contextlib.suppress(RuntimeError):
         code_challenge_method = config.code_challenge_method
-    except RuntimeError:
-        pass
 
     oauth = OAuth(current_app)
     oauth_client = oauth.register(

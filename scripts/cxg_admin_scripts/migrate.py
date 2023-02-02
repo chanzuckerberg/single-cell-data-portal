@@ -514,15 +514,8 @@ def migrate_redesign_correct_published_at(ctx):
     """
     Corrects published_at for redesign
     """
-
-    from backend.layers.persistence.orm import CollectionTable as CollectionRow
     from backend.layers.persistence.orm import \
         CollectionVersionTable as CollectionVersionRow
-    from backend.layers.persistence.orm import \
-        DatasetArtifactTable as DatasetArtifactRow
-    from backend.layers.persistence.orm import DatasetTable as DatasetRow
-    from backend.layers.persistence.orm import \
-        DatasetVersionTable as DatasetVersionRow
 
     with db_session_manager() as session:
         for record in session.query(DbCollection):
@@ -536,7 +529,8 @@ def migrate_redesign_correct_published_at(ctx):
                         continue
                     # print(new_version.id, new_version.published_at, record.published_at)
                     print(
-                        f"Setting version {new_version.id}'s published_at from {new_version.published_at} to {record.revised_at}"
+                        f"Setting version {new_version.id}'s published_at "
+                        f"from {new_version.published_at} to {record.revised_at}"
                     )
                     # new_version.published_at = record.revised_at # uncomment this line
                 except Exception as e:

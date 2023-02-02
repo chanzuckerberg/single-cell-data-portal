@@ -1,3 +1,4 @@
+import contextlib
 import os
 import random
 import tempfile
@@ -35,21 +36,17 @@ class CorporaTestCaseUsingMockAWS(BaseAPITest):
         self.s3_resource = boto3.resource("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
         # Corpora Bucket
         self.bucket = self.s3_resource.Bucket(self.corpora_config.bucket_name)
-        try:
+        with contextlib.suppress(self.s3_resource.meta.client.exceptions.BucketAlreadyExists):
             self.bucket.create(CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]})
-        except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
-            pass
 
         # Cellxgene Bucket
         self.cellxgene_bucket = self.s3_resource.Bucket(
             os.getenv("CELLXGENE_BUCKET", f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
         )
-        try:
+        with contextlib.suppress(self.s3_resource.meta.client.exceptions.BucketAlreadyExists):
             self.cellxgene_bucket.create(
                 CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
             )
-        except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
-            pass
 
     def tearDown(self):
         super().tearDown()
@@ -65,7 +62,7 @@ class CorporaTestCaseUsingMockAWS(BaseAPITest):
     ):
         bucket_name = bucket_name or self.bucket.name
 
-        if not self.s3_resource.Bucket(bucket_name) in self.s3_resource.buckets.all():
+        if self.s3_resource.Bucket(bucket_name) not in self.s3_resource.buckets.all():
             self.s3_resource.Bucket(bucket_name).create()
 
         s3object = self.s3_resource.Bucket(bucket_name).Object(object_key)

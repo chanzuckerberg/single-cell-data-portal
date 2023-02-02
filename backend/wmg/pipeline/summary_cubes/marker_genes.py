@@ -67,7 +67,7 @@ def create_marker_genes_cube(corpus_path: str):
             )
             gc.collect()
 
-            all_marker_genes = set(list(t_markers.keys())).union(list(b_markers.keys()))
+            all_marker_genes = set(t_markers.keys()).union(b_markers.keys())
             markers = []
             for g in all_marker_genes:
                 b_stats = b_markers.get(g, {"p_value_binomtest": np.nan, "effect_size_binomtest": np.nan})

@@ -63,7 +63,7 @@ def create_flask_app():
 
 
 def configure_flask_app(flask_app):
-    flask_app.debug = False if DEPLOYMENT_STAGE == "prod" else True
+    flask_app.debug = DEPLOYMENT_STAGE != "prod"
 
     # set the flask secret key, needed for session cookies
     flask_secret_key = "OpenSesame"

@@ -211,7 +211,7 @@ class TestCollection(BaseAPIPortalTest):
         authenticated = [True, False]
         owns = [True, False]
         visibility = ["public", "private"]
-        test_cases = [params for params in itertools.product(authenticated, owns, visibility)]
+        test_cases = itertools.product(authenticated, owns, visibility)
 
         # Generate test collection
         # Note: for private collections, you want to use version_id
@@ -2521,7 +2521,7 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             self.assertEqual(400, response.status_code)
             print(json.loads(response.data)["detail"])
-            self.assertTrue("The URL provided causes an error with Dropbox." == json.loads(response.data)["detail"])
+            self.assertTrue(json.loads(response.data)["detail"] == "The URL provided causes an error with Dropbox.")
 
     # ✅
     def test__oversized__413(self):

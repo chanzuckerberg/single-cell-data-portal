@@ -41,7 +41,7 @@ class StrippedString(types.TypeDecorator):
         return StrippedString(self.impl.length)
 
 
-class TransformingBase(object):
+class TransformingBase:
     """
     Add functionality to transform a Base object, and recursively transform its linked entities.
     """
@@ -164,12 +164,12 @@ class TransformingBase(object):
         return f"<{self.__class__.__name__}(id={self.id})>"
 
 
-class AuditMixin(object):
+class AuditMixin:
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
 
-class TimestampMixin(object):
+class TimestampMixin:
     published_at = Column(DateTime, nullable=True)
     revised_at = Column(DateTime, nullable=True)
 
