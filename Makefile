@@ -14,13 +14,12 @@ export COVERAGE_RUN_ARGS:=--data-file=$(COVERAGE_DATA_FILE) --parallel-mode $(CO
 
 .PHONY: fmt
 fmt:
-	pre-commit run black
-	pre-commit run autoflake
-	pre-commit run isort
+	black backend scripts tests
+	flake8 backend tests scripts
 
 .PHONY: lint
 lint:
-	pre-commit run flake8 --all-files
+	flake8 backend tests
 
 .PHONY: unit-test
 unit-test: local-unit-test
