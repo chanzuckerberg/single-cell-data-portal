@@ -173,6 +173,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           !currentOptions?.includes(selected)
         );
 
+        // If there are newly selected filters, send an analytic event for each of them
         if(newlySelected.length) {
           newlySelected.forEach((selected) => {
             const {eventName, label} = analyticMapping[key]!;
