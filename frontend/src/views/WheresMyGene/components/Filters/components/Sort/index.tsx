@@ -10,6 +10,8 @@ import {
 import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGene/common/types";
 import { FilterLabel, FilterWrapper, Label, StyledDropdown } from "./style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -92,6 +94,10 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
 
   function genesOnChange(value: { id?: SORT_BY; name: string } | null): void {
     if (!dispatch || !value) return;
+
+    track(EVENTS.WMG_OPTION_SELECT_SORT_GENES, {
+      sort_genes_view_option: value.name
+    });
 
     dispatch(selectSortBy({ genes: value.id as SORT_BY }));
   }

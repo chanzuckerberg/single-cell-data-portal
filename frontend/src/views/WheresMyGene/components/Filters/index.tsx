@@ -15,6 +15,8 @@ import {
   useMemo,
   useState,
 } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   FilterDimensions,
@@ -129,6 +131,25 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
   }, [sex_terms, sexes]);
 
+  const analyticMapping: {[key in keyof IFilters]: {eventName: EVENTS, label: string}} = {
+    "datasets": {
+      eventName: EVENTS.FILTER_SELECT_DATASET,
+      label: "dataset_name"
+    },
+    "diseases": {
+      eventName: EVENTS.FILTER_SELECT_DISEASE,
+      label: "disease"
+    },
+    "ethnicities": {
+      eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
+      label: "ethnicity"
+    },
+    "sexes": {
+      eventName: EVENTS.FILTER_SELECT_SEX,
+      label: "gender"
+    },
+  };
+
   const handleFilterChange = useCallback(
     function handleFilterChange_(
       key: keyof IFilters
@@ -146,6 +167,19 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           (currentOptions === null && JSON.stringify(options) === "[]")
         ) {
           return;
+        }
+
+        const newlySelected = options.filter(selected => 
+          !currentOptions?.includes(selected)
+        );
+
+        if(newlySelected.length) {
+          newlySelected.forEach((selected) => {
+            const {eventName, label} = analyticMapping[key]!;
+            track(eventName, {
+              [label]: selected.name
+            });
+          })
         }
 
         currentOptions = options;

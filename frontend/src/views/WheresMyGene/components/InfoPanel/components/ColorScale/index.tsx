@@ -4,6 +4,8 @@ import {
   Tooltip,
 } from "czifui";
 import { useContext, useMemo } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import {
   DispatchContext,
   StateContext,
@@ -13,7 +15,7 @@ import { SORT_BY } from "src/views/WheresMyGene/common/types";
 import { FlexDiv, Label, LabelWrapper, StyledDropdown, Wrapper } from "./style";
 
 interface Props {
-  handleIsScaledChange: () => void;
+  setIsScaled: (prevIsScaled: boolean) => void;
 }
 
 // (ashin-czi): Used by SaveImage to recreate the color scale plasma image in an SVG
@@ -46,7 +48,7 @@ const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
 };
 
 export default function ColorScale({
-  handleIsScaledChange,
+  setIsScaled,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { sortBy } = useContext(StateContext);
@@ -85,7 +87,11 @@ export default function ColorScale({
   ): void {
     if (!dispatch || !value) return;
 
-    handleIsScaledChange();
+    track(EVENTS.WMG_OPTION_SELECT_COLOR_SCALE, {
+      color_scale_view_option: value.name
+    });
+
+    setIsScaled(value.id == SORT_BY.COLOR_SCALED ? true : false);
 
     dispatch(selectSortBy({ scaled: value.id as SORT_BY }));
   }
