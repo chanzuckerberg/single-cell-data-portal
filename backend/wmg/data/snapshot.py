@@ -69,27 +69,30 @@ class WmgSnapshot:
 
     def __init__(self, **kwargs):
         API_URL = os.getenv("API_URL")
-        dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
-        datasets = requests.get(dataset_metadata_url).json()
+        # this should always be true for deployed environments.
+        # otherwise, skip so tests pass.
+        if API_URL:
+            dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
+            datasets = requests.get(dataset_metadata_url).json()
 
-        collection_metadata_url = f"{API_URL}/dp/v1/collections/index"
-        collections = requests.get(collection_metadata_url).json()
+            collection_metadata_url = f"{API_URL}/dp/v1/collections/index"
+            collections = requests.get(collection_metadata_url).json()
 
-        collections_dict = {collection["id"]: collection for collection in collections}
+            collections_dict = {collection["id"]: collection for collection in collections}
 
-        dataset_dict = {}
-        for dataset in datasets:
-            for asset in dataset["dataset_assets"]:
-                if asset["filename"] == "local.h5ad":
-                    dataset_id = asset["s3_uri"].split("/")[-2]
-                    dataset_dict[dataset_id] = dict(
-                        id=dataset_id,
-                        label=dataset["name"],
-                        collection_id=dataset["collection_id"],
-                        collection_label=collections_dict[dataset["collection_id"]]["name"],
-                    )
+            dataset_dict = {}
+            for dataset in datasets:
+                for asset in dataset["dataset_assets"]:
+                    if asset["filename"] == "local.h5ad":
+                        dataset_id = asset["s3_uri"].split("/")[-2]
+                        dataset_dict[dataset_id] = dict(
+                            id=dataset_id,
+                            label=dataset["name"],
+                            collection_id=dataset["collection_id"],
+                            collection_label=collections_dict[dataset["collection_id"]]["name"],
+                        )
 
-        self.dataset_dict = dataset_dict
+            self.dataset_dict = dataset_dict
 
 
 # Cached data
