@@ -4,7 +4,6 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import pathTool from "path";
 import { ROUTES } from "src/common/constants/routes";
-import LandingFooter from "src/components/LandingFooter";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
 
@@ -250,96 +249,93 @@ interface Collection {
 const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
   const { files, subDirectories } = docPaths;
   return (
-    <>
-      <SitemapLayout>
-        <Head>
-          <title>CELL&times;GENE | Sitemap</title>
-        </Head>
-        <header>
-          <SitemapTitle>Sitemap</SitemapTitle>
-          <SitemapNav>
-            <SitemapNavLink href={ROUTES.HOMEPAGE}>Home</SitemapNavLink>
-            <SitemapPageLink href={`#collections`}>
-              Collections
-              <DownChevron />
-            </SitemapPageLink>
-            <SitemapNavLink href={ROUTES.DATASETS}>Datasets</SitemapNavLink>
-            <SitemapNavLink href={ROUTES.WHERE_IS_MY_GENE}>
-              Gene-Expression
-            </SitemapNavLink>
-            <SitemapPageLink href={`#docs`}>
-              Docs
-              <DownChevron />
-            </SitemapPageLink>
-            <SitemapNavLink href={ROUTES.PRIVACY}>Privacy</SitemapNavLink>
-            <SitemapNavLink href={ROUTES.TOS}>TOS</SitemapNavLink>
-          </SitemapNav>
-        </header>
-        <main>
-          <SitemapSection id="collections">
-            <h2>
-              <a href={ROUTES.COLLECTIONS}>Collections</a>
-            </h2>
-            <SitemapSectionGrid>
-              {collections.map((collection: Collection, index) => (
-                <a
-                  href={ROUTES.COLLECTION.replace(":id", collection.id)}
-                  key={`collection-${index}`}
-                >
-                  {collection.name}
-                </a>
-              ))}
-            </SitemapSectionGrid>
-          </SitemapSection>
-          <SitemapSection id="docs">
-            <h2>
-              <a href={ROUTES.DOCS}>Docs</a>
-            </h2>
-            <SitemapSectionGrid>
-              {files.map((file: String, index) => (
-                <a key={`file-${index}`} href={`${ROUTES.DOCS}/${file}`}>
-                  {file.split("__")[1]}
-                </a>
-              ))}
-              {subDirectories.map((dir: Directory, index) => (
-                <div key={`dir-${index}`}>
-                  <p>{dir.dirName.split("__")[1]}</p>
-                  {dir.files.length || dir.subDirectories.length ? (
-                    <ul>
-                      {dir.files.map((file: String, index) => (
-                        <li key={`dirFile-${index}`}>
-                          <a href={`${ROUTES.DOCS}/${file}`}>
-                            {file.split("__")[1]}
-                          </a>
-                        </li>
-                      ))}
-                      {console.log(dir.files)}
-                    </ul>
-                  ) : null}
-                  <div>
-                    {dir.subDirectories.map((subDir: Directory, index) => (
-                      <div key={`subDir-${index}`}>
-                        <p>{subDir.dirName.split("__")[1]}</p>
-                        <ul>
-                          {subDir.files.map((file: String, index) => (
-                            <li key={`subDirFile-${index}`}>
-                              <a href={`${ROUTES.DOCS}/${file}`}>
-                                {file.split("__")[1]}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+    <SitemapLayout>
+      <Head>
+        <title>CELL&times;GENE | Sitemap</title>
+      </Head>
+      <header>
+        <SitemapTitle>Sitemap</SitemapTitle>
+        <SitemapNav>
+          <SitemapNavLink href={ROUTES.HOMEPAGE}>Home</SitemapNavLink>
+          <SitemapPageLink href={`#collections`}>
+            Collections
+            <DownChevron />
+          </SitemapPageLink>
+          <SitemapNavLink href={ROUTES.DATASETS}>Datasets</SitemapNavLink>
+          <SitemapNavLink href={ROUTES.WHERE_IS_MY_GENE}>
+            Gene-Expression
+          </SitemapNavLink>
+          <SitemapPageLink href={`#docs`}>
+            Docs
+            <DownChevron />
+          </SitemapPageLink>
+          <SitemapNavLink href={ROUTES.PRIVACY}>Privacy</SitemapNavLink>
+          <SitemapNavLink href={ROUTES.TOS}>TOS</SitemapNavLink>
+        </SitemapNav>
+      </header>
+      <main>
+        <SitemapSection id="collections">
+          <h2>
+            <a href={ROUTES.COLLECTIONS}>Collections</a>
+          </h2>
+          <SitemapSectionGrid>
+            {collections.map((collection: Collection, index) => (
+              <a
+                href={ROUTES.COLLECTION.replace(":id", collection.id)}
+                key={`collection-${index}`}
+              >
+                {collection.name}
+              </a>
+            ))}
+          </SitemapSectionGrid>
+        </SitemapSection>
+        <SitemapSection id="docs">
+          <h2>
+            <a href={ROUTES.DOCS}>Docs</a>
+          </h2>
+          <SitemapSectionGrid>
+            {files.map((file: String, index) => (
+              <a key={`file-${index}`} href={`${ROUTES.DOCS}/${file}`}>
+                {file.split("__")[1]}
+              </a>
+            ))}
+            {subDirectories.map((dir: Directory, index) => (
+              <div key={`dir-${index}`}>
+                <p>{dir.dirName.split("__")[1]}</p>
+                {dir.files.length || dir.subDirectories.length ? (
+                  <ul>
+                    {dir.files.map((file: String, index) => (
+                      <li key={`dirFile-${index}`}>
+                        <a href={`${ROUTES.DOCS}/${file}`}>
+                          {file.split("__")[1]}
+                        </a>
+                      </li>
                     ))}
-                  </div>
+                    {console.log(dir.files)}
+                  </ul>
+                ) : null}
+                <div>
+                  {dir.subDirectories.map((subDir: Directory, index) => (
+                    <div key={`subDir-${index}`}>
+                      <p>{subDir.dirName.split("__")[1]}</p>
+                      <ul>
+                        {subDir.files.map((file: String, index) => (
+                          <li key={`subDirFile-${index}`}>
+                            <a href={`${ROUTES.DOCS}/${file}`}>
+                              {file.split("__")[1]}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </SitemapSectionGrid>
-          </SitemapSection>
-        </main>
-      </SitemapLayout>
-      <LandingFooter />
-    </>
+              </div>
+            ))}
+          </SitemapSectionGrid>
+        </SitemapSection>
+      </main>
+    </SitemapLayout>
   );
 };
 
