@@ -20,7 +20,7 @@ env:
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
 jobs:
-  static-code-checker:
+  lint:
     runs-on: ubuntu-20.04
     steps:
       - name: Configure AWS Credentials
@@ -190,7 +190,7 @@ jobs:
       - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
-      - static-code-checker
+      - lint
       - build-frontend-backend-images
       - build-batch-job-images
     runs-on: ubuntu-20.04
@@ -578,7 +578,7 @@ jobs:
       - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
-      - static-code-checker
+      - lint
       - build-frontend-backend-images
       - build-batch-job-images
     runs-on: ubuntu-20.04
