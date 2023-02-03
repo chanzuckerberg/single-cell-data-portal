@@ -1,8 +1,9 @@
 import json
 import logging
+import os
 import timeit
 import unittest
-import os
+
 import requests
 
 from tests.functional.backend.wmg.fixtures import (

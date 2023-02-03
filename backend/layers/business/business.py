@@ -17,8 +17,8 @@ from backend.layers.business.exceptions import (
     CollectionPublishException,
     CollectionUpdateException,
     CollectionVersionException,
-    DatasetInWrongStatusException,
     DatasetIngestException,
+    DatasetInWrongStatusException,
     DatasetNotFoundException,
     DatasetUpdateException,
     InvalidURIException,
@@ -111,10 +111,7 @@ class BusinessLogic(BusinessLogicInterface):
         # TODO: Maybe switch link.type to be an enum
         doi = next((link.uri for link in collection_metadata.links if link.type == "DOI"), None)
 
-        if doi is not None:
-            publisher_metadata = self._get_publisher_metadata(doi, errors)
-        else:
-            publisher_metadata = None
+        publisher_metadata = self._get_publisher_metadata(doi, errors) if doi is not None else None
 
         if errors:
             raise CollectionCreationException(errors)
@@ -226,10 +223,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Determine if the DOI has changed
         old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
-        if body.links is None:
-            new_doi = None
-        else:
-            new_doi = next((link.uri for link in body.links if link.type == "DOI"), None)
+        new_doi = None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
 
         # Determine if publisher metadata should be unset, ignored or set at the end of the method.
         # Note: the update needs to be done at the end to ensure atomicity
@@ -533,8 +527,8 @@ class BusinessLogic(BusinessLogicInterface):
         # used for cases where revision only contains collection-level metadata changes
         if version.canonical_collection.version_id is not None:
             canonical_version = self.database_provider.get_collection_version(version.canonical_collection.version_id)
-            canonical_datasets = set([dataset_version_id.id for dataset_version_id in canonical_version.datasets])
-            version_datasets = set([dataset_version_id.id for dataset_version_id in version.datasets])
+            canonical_datasets = {dataset_version_id.id for dataset_version_id in canonical_version.datasets}
+            version_datasets = {dataset_version_id.id for dataset_version_id in version.datasets}
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
@@ -574,6 +568,6 @@ class BusinessLogic(BusinessLogicInterface):
                 d for d in collection_version.datasets if d.version_id.id == dataset_id or d.dataset_id.id == dataset_id
             )
         except StopIteration:
-            raise DatasetNotFoundException()
+            raise DatasetNotFoundException() from None
 
         return collection_version, dataset_version

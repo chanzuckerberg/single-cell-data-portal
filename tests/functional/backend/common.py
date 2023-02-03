@@ -1,12 +1,13 @@
-import unittest
-import os
-import requests
 import base64
 import json
+import os
 import time
+import unittest
 
+import requests
 from requests.adapters import HTTPAdapter, Response
 from requests.packages.urllib3.util import Retry
+
 from backend.common.corpora_config import CorporaAuthConfig
 
 API_URL = {

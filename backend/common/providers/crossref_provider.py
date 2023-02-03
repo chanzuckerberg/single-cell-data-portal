@@ -1,10 +1,10 @@
+import logging
+from datetime import datetime
+from urllib.parse import urlparse
+
 import requests
 
 from backend.common.corpora_config import CorporaConfig
-from urllib.parse import urlparse
-from datetime import datetime
-
-import logging
 
 
 class CrossrefException(Exception):
@@ -23,7 +23,7 @@ class CrossrefParseException(CrossrefException):
     pass
 
 
-class CrossrefProvider(object):
+class CrossrefProvider:
     """
     Provider class used to call Crossref and retrieve publisher metadata
     """
@@ -107,7 +107,7 @@ class CrossrefProvider(object):
                 elif "institution" in message:
                     journal = message["institution"][0]["name"]
             except Exception:
-                raise CrossrefParseException("Journal node missing")
+                raise CrossrefParseException("Journal node missing") from None
 
             # Authors
             # Note: make sure that the order is preserved, as it is a relevant information

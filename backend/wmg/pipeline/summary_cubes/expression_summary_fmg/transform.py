@@ -3,15 +3,13 @@ import logging
 import numba as nb
 import numpy as np
 import pandas as pd
-
 import tiledb
 
 from backend.common.utils.math_utils import MB
-from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
-
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 
 logger = logging.getLogger(__name__)
 
