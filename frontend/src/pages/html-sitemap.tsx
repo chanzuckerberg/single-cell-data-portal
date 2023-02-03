@@ -1,11 +1,179 @@
+import styled from "@emotion/styled";
 import fs from "fs";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import pathTool from "path";
 import { ROUTES } from "src/common/constants/routes";
-import { CommonStyle, Layout } from "src/components/common/staticPages/style";
+import LandingFooter from "src/components/LandingFooter";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
+
+const DownChevron = () => (
+  <svg viewBox="0 0 14 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M12.3136 1.00012L6.65674 6.65697L0.999884 1.00012"
+      stroke="black"
+      strokeWidth="2"
+    />
+  </svg>
+);
+
+const SitemapLayout = styled.div`
+  max-width: 1400px;
+  margin: auto;
+  padding-top: 105px;
+  padding-bottom: 120px;
+  padding-left: 120px;
+  padding-right: 120px;
+
+  @media (max-width: 768px) {
+    padding: 40px 25px;
+  }
+`;
+
+const SitemapTitle = styled.h1`
+  margin-bottom: 0;
+  font-size: 42px;
+  line-height: 56.7px;
+  font-weight: 600;
+`;
+
+const SitemapNav = styled.nav`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, 50%);
+    margin-top: 28px;
+  }
+`;
+
+const SitemapPageLink = styled.a`
+  display: inline-block;
+  margin-top: 40px;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  color: #000000;
+
+  &:hover {
+    text-decoration: none;
+    color: #000000;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    line-height: 28px;
+    margin-top: 10px;
+  }
+
+  svg {
+    width: 12px;
+    margin-left: 12px;
+
+    @media (max-width: 768px) {
+      width: 10px;
+      margin-left: 10px;
+    }
+  }
+`;
+
+const SitemapNavLink = styled.a`
+  display: inline-block;
+  margin-top: 40px;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  color: #0073ff;
+
+  &:hover {
+    text-decoration: none;
+    color: #0056c6;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    line-height: 28px;
+    margin-top: 10px;
+  }
+`;
+
+const SitemapSection = styled.section`
+  border-top: 3px solid #f1f1f1;
+  padding-top: 75px;
+  margin-top: 75px;
+
+  @media (max-width: 768px) {
+    padding-top: 40px;
+    margin-top: 40px;
+  }
+
+  h2,
+  h2 a {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 28px;
+    color: #0073ff;
+
+    &:hover {
+      text-decoration: none;
+      color: #0056c6;
+    }
+  }
+`;
+
+const SitemapSectionGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 0 60px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+
+  a {
+    display: inline-block;
+    margin-top: 20px;
+    font-size: 16px;
+    line-height: 26px;
+    color: #0073ff;
+
+    &:hover {
+      text-decoration: none;
+      color: #0056c6;
+    }
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
+  }
+
+  p {
+    margin-top: 25px;
+    font-size: 16px;
+    line-height: 26px;
+    font-weight: 500;
+    color: #545454;
+    margin-bottom: 0;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
+  }
+
+  li {
+    &::marker {
+      color: #0073ff;
+    }
+
+    &:hover {
+      &::marker {
+        color: #0056c6;
+      }
+    }
+  }
+`;
 
 interface Directory {
   dirName: string;
@@ -65,7 +233,7 @@ interface Props {
     files: [];
     subDirectories: [];
   };
-  collections: [];
+  collections: Collection[];
 }
 
 interface Directory {
@@ -74,47 +242,65 @@ interface Directory {
   subDirectories: Directory[];
 }
 
+interface Collection {
+  id: string;
+  name: string;
+}
+
 const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
   const { files, subDirectories } = docPaths;
-
-  console.log(collections);
   return (
-    <Layout>
-      <CommonStyle>
+    <>
+      <SitemapLayout>
         <Head>
           <title>CELL&times;GENE | Sitemap</title>
         </Head>
         <header>
-          <h1>Sitemap</h1>
-          <nav>
-            <a href={ROUTES.HOMEPAGE}>Home</a>
-            <a href={ROUTES.COLLECTIONS}>Collections</a>
-            <a href={ROUTES.DATASETS}>Datasets</a>
-            <a href={ROUTES.WHERE_IS_MY_GENE}>Gene-Expression</a>
-            <a href={ROUTES.DOCS}>Docs</a>
-            <a href={ROUTES.PRIVACY}>Privacy</a>
-            <a href={ROUTES.TOS}>TOS</a>
-          </nav>
+          <SitemapTitle>Sitemap</SitemapTitle>
+          <SitemapNav>
+            <SitemapNavLink href={ROUTES.HOMEPAGE}>Home</SitemapNavLink>
+            <SitemapPageLink href={`#collections`}>
+              Collections
+              <DownChevron />
+            </SitemapPageLink>
+            <SitemapNavLink href={ROUTES.DATASETS}>Datasets</SitemapNavLink>
+            <SitemapNavLink href={ROUTES.WHERE_IS_MY_GENE}>
+              Gene-Expression
+            </SitemapNavLink>
+            <SitemapPageLink href={`#docs`}>
+              Docs
+              <DownChevron />
+            </SitemapPageLink>
+            <SitemapNavLink href={ROUTES.PRIVACY}>Privacy</SitemapNavLink>
+            <SitemapNavLink href={ROUTES.TOS}>TOS</SitemapNavLink>
+          </SitemapNav>
         </header>
-
-        <hr />
-
         <main>
-          <section className="sitemapSection_collections"></section>
-          <section className="sitemapSection_docs">
-            <div>
-              files:
-              <br />
+          <SitemapSection id="collections">
+            <h2>
+              <a href={ROUTES.COLLECTIONS}>Collections</a>
+            </h2>
+            <SitemapSectionGrid>
+              {collections.map((collection: Collection, index) => (
+                <a
+                  href={ROUTES.COLLECTION.replace(":id", collection.id)}
+                  key={`collection-${index}`}
+                >
+                  {collection.name}
+                </a>
+              ))}
+            </SitemapSectionGrid>
+          </SitemapSection>
+          <SitemapSection id="docs">
+            <h2>
+              <a href={ROUTES.DOCS}>Docs</a>
+            </h2>
+            <SitemapSectionGrid>
               {files.map((file: String, index) => (
-                <a key={`file-${index}`} href={`/${ROUTES.DOCS}/${file}`}>
+                <a key={`file-${index}`} href={`${ROUTES.DOCS}/${file}`}>
                   {file.split("__")[1]}
                 </a>
               ))}
-            </div>
-            <br />
-            <div>
-              subfolders:
-              <br />
               {subDirectories.map((dir: Directory, index) => (
                 <div key={`dir-${index}`}>
                   <p>{dir.dirName.split("__")[1]}</p>
@@ -122,7 +308,7 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
                     <ul>
                       {dir.files.map((file: String, index) => (
                         <li key={`dirFile-${index}`}>
-                          <a href={`/${ROUTES.DOCS}/${file}`}>
+                          <a href={`${ROUTES.DOCS}/${file}`}>
                             {file.split("__")[1]}
                           </a>
                         </li>
@@ -137,7 +323,7 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
                         <ul>
                           {subDir.files.map((file: String, index) => (
                             <li key={`subDirFile-${index}`}>
-                              <a href={`/${ROUTES.DOCS}/${file}`}>
+                              <a href={`${ROUTES.DOCS}/${file}`}>
                                 {file.split("__")[1]}
                               </a>
                             </li>
@@ -148,11 +334,12 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
                   </div>
                 </div>
               ))}
-            </div>
-          </section>
+            </SitemapSectionGrid>
+          </SitemapSection>
         </main>
-      </CommonStyle>
-    </Layout>
+      </SitemapLayout>
+      <LandingFooter />
+    </>
   );
 };
 
