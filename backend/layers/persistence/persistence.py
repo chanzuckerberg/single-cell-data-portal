@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 import uuid
@@ -6,10 +7,11 @@ from datetime import datetime
 from typing import Any, Iterable, List, Optional
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError, ProgrammingError
+from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from backend.common.corpora_config import CorporaDbConfig
+from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -31,13 +33,12 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.persistence.constants import SCHEMA_NAME
 from backend.layers.persistence.orm import (
     CollectionTable,
     CollectionVersionTable,
-    DatasetTable,
     DatasetArtifactTable,
+    DatasetTable,
     DatasetVersionTable,
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
@@ -52,21 +53,18 @@ class DatabaseProvider(DatabaseProviderInterface):
         self._engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
         self._session_maker = sessionmaker(bind=self._engine)
         self._schema_name = schema_name
-        try:
+        with contextlib.suppress(Exception):
             self._create_schema()
-        except Exception:
-            pass
 
     def _drop_schema(self):
         from sqlalchemy.schema import DropSchema
 
-        try:
+        with contextlib.suppress(ProgrammingError):
             self._engine.execute(DropSchema(self._schema_name, cascade=True))
-        except ProgrammingError:
-            pass
 
     def _create_schema(self):
         from sqlalchemy.schema import CreateSchema
+
         from backend.layers.persistence.orm import metadata
 
         self._engine.execute(CreateSchema(self._schema_name))
@@ -88,7 +86,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             logger.exception(e)
             if session is not None:
                 session.rollback()
-            raise PersistenceException("Failed to commit.")
+            raise PersistenceException("Failed to commit.") from None
         finally:
             if session is not None:
                 session.close()
@@ -167,6 +165,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 CollectionId(str(collection.id)),
                 None if collection.version_id is None else CollectionVersionId(str(collection.version_id)),
                 collection.originally_published_at,
+                collection.revised_at,
                 collection.tombstone,
             )
 
@@ -188,10 +187,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         version_id = CollectionVersionId()
         now = datetime.utcnow()
         canonical_collection = CollectionTable(
-            id=collection_id.id,
-            version_id=None,
-            tombstone=False,
-            originally_published_at=None,
+            id=collection_id.id, version_id=None, tombstone=False, originally_published_at=None, revised_at=None
         )
 
         collection_version_row = CollectionVersionTable(
@@ -211,7 +207,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(collection_version_row)
 
             return self._row_to_collection_version(
-                collection_version_row, CanonicalCollection(collection_id, None, None, False)
+                collection_version_row, CanonicalCollection(collection_id, None, None, None, False)
             )
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
@@ -288,6 +284,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     CollectionId(str(collection_row.id)),
                     None if collection_row.version_id is None else CollectionVersionId(str(collection_row.version_id)),
                     collection_row.originally_published_at,
+                    collection_row.revised_at,
                     collection_row.tombstone,
                 )
 
@@ -326,6 +323,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     CollectionId(str(canonical_row.id)),
                     CollectionVersionId(str(canonical_row.version_id)),
                     canonical_row.originally_published_at,
+                    canonical_row.revised_at,
                     canonical_row.tombstone,
                 )
                 yield self._row_to_collection_version(version, canonical)
@@ -399,6 +397,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
+        update_revised_at: bool = False,
     ) -> None:
         """
         Finalizes a collection version
@@ -409,9 +408,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection = session.query(CollectionTable).filter_by(id=collection_id.id).one()
             collection.version_id = version_id.id
 
-            # update canonical collection if this is its first publish
+            # update canonical collection timestamps depending on whether this is its first publish
             if collection.originally_published_at is None:
                 collection.originally_published_at = published_at
+            # if not first publish, update revised_at if flagged to do so
+            elif update_revised_at:
+                collection.revised_at = published_at
 
             # update collection version
             collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()

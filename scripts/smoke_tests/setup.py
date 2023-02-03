@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-import sys
 import json
+import sys
 import threading
-
 
 from tests.functional.backend.common import BaseFunctionalTestCase
 
@@ -39,6 +38,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
         data = {
             "contact_email": "example@gmail.com",
             "contact_name": TEST_ACCT_CONTACT_NAME,
+            "curator_name": "John Smith",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "http://protocol.com"}],
             "name": "test collection",
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     dataset_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
     num_to_create = NUM_TEST_COLLECTIONS - collection_count
     threads = []
-    for i in range(num_to_create):
+    for _ in range(num_to_create):
         thread = threading.Thread(target=smoke_test_init.create_and_publish_collection, args=(dataset_dropbox_url,))
         threads.append(thread)
         thread.start()

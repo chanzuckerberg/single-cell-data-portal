@@ -1,5 +1,8 @@
 import { InputDropdownProps as IInputDropdownProps } from "czifui";
 import { useContext, useMemo } from "react";
+import { FEATURES } from "src/common/featureFlags/features";
+import { get } from "src/common/featureFlags";
+import { BOOLEAN } from "src/common/localStorage/set";
 import {
   DispatchContext,
   StateContext,
@@ -52,19 +55,22 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
     );
   }, [sortBy]);
 
+  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
     <div>
       <Label>View Options</Label>
-      <FilterWrapper>
-        <FilterLabel>Sort Cell Types</FilterLabel>
-        <StyledDropdown
-          data-test-id="cell-type-sort-dropdown"
-          onChange={cellTypesOnChange}
-          label={cellTypeSelectedOptionLabel}
-          options={CELL_TYPE_OPTIONS}
-          InputDropdownProps={InputDropdownProps}
-        />
-      </FilterWrapper>
+      {!isRollup && (
+        <FilterWrapper>
+          <FilterLabel>Sort Cell Types</FilterLabel>
+          <StyledDropdown
+            data-test-id="cell-type-sort-dropdown"
+            onChange={cellTypesOnChange}
+            label={cellTypeSelectedOptionLabel}
+            options={CELL_TYPE_OPTIONS}
+            InputDropdownProps={InputDropdownProps}
+          />
+        </FilterWrapper>
+      )}
       <FilterWrapper>
         <FilterLabel>Sort Genes</FilterLabel>
         <StyledDropdown

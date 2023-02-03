@@ -20,7 +20,6 @@ describe("Collection Revision", () => {
   );
 
   test("starts a revision", async ({ page }) => {
-
     const collectionName = await startRevision(page);
 
     const publishButton = await page.$(getTestID("publish-collection-button"));
@@ -78,7 +77,6 @@ describe("Collection Revision", () => {
   });
 
   test("allows editing", async ({ page }) => {
-
     await startRevision(page);
 
     const collectionName = await getInnerText(

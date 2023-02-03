@@ -86,6 +86,9 @@ paths:
                 include_filter_dims:
                   type: boolean
                   default: false
+                is_rollup:
+                  type: boolean
+                  default: true
               required:
                 - filter
       responses:
@@ -395,7 +398,6 @@ paths:
                           type: number
                           format: float
                           maxLength: 4
-                          minimum: 0.0
 
 components:
   schemas:

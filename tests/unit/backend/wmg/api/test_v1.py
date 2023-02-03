@@ -7,20 +7,20 @@ from backend.wmg.api.v1 import find_dim_option_values
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
-    test_snapshot_id,
-    test_organism_terms,
-    test_tissue_terms,
     test_gene_terms,
+    test_organism_terms,
+    test_snapshot_id,
+    test_tissue_terms,
 )
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    create_temp_wmg_snapshot,
-    load_test_fmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
     all_X_cell_counts_values,
-    reverse_cell_type_ordering,
+    create_temp_wmg_snapshot,
     exclude_all_but_one_gene_per_organism,
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
+    load_test_fmg_snapshot,
+    reverse_cell_type_ordering,
 )
 
 TEST_SNAPSHOT = "test-fmg-snapshot"
@@ -563,6 +563,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 filter=filter_0,
                 # matters for this test
                 include_filter_dims=True,
+                is_rollup=True,
             )
 
             response = self.app.post("/wmg/v1/query", json=filter_0_request)
@@ -628,6 +629,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     filter=filter_0,
                     # matters for this test
                     include_filter_dims=True,
+                    is_rollup=True,
                 )
 
                 filter_0_no_dev_stage_filter = dict(
@@ -642,7 +644,9 @@ class WmgApiV1Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=[],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                 )
-                filter_0_no_dev_stage_request = dict(filter=filter_0_no_dev_stage_filter, include_filter_dims=True)
+                filter_0_no_dev_stage_request = dict(
+                    filter=filter_0_no_dev_stage_filter, include_filter_dims=True, is_rollup=True
+                )
 
                 filter_0_no_ethnicity_filter = dict(
                     # these don't matter for the expected result
@@ -656,7 +660,9 @@ class WmgApiV1Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
                     self_reported_ethnicity_ontology_term_ids=[],
                 )
-                filter_0_no_ethnicity_request = dict(filter=filter_0_no_ethnicity_filter, include_filter_dims=True)
+                filter_0_no_ethnicity_request = dict(
+                    filter=filter_0_no_ethnicity_filter, include_filter_dims=True, is_rollup=True
+                )
                 # the values for dev_stage terms when a dev stage filter is included should match the values returned
                 # if no filter is passed in for dev stage
                 response = self.app.post("/wmg/v1/query", json=filter_0_request)
@@ -711,7 +717,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"self_reported_ethnicity_ontology_term_id_2": "self_reported_ethnicity_ontology_term_id_2_label"},
                 ]
                 self_reported_ethnicity_0_request = dict(
-                    filter=self_reported_ethnicity_0_filter, include_filter_dims=True
+                    filter=self_reported_ethnicity_0_filter, include_filter_dims=True, is_rollup=True
                 )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_0_request)
                 dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
@@ -740,7 +746,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
                 ]
                 self_reported_ethnicity_1_request = dict(
-                    filter=self_reported_ethnicity_1_filter, include_filter_dims=True
+                    filter=self_reported_ethnicity_1_filter, include_filter_dims=True, is_rollup=True
                 )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_request)
                 dev_stage_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
@@ -760,7 +766,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_1"],
                 )
                 self_reported_ethnicity_1_dev_1_request = dict(
-                    filter=self_reported_ethnicity_1_dev_1_filter, include_filter_dims=True
+                    filter=self_reported_ethnicity_1_dev_1_filter, include_filter_dims=True, is_rollup=True
                 )
 
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_dev_1_request)
@@ -796,9 +802,11 @@ class WmgApiV1Tests(unittest.TestCase):
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_2"],
                 )
                 self_reported_ethnicity_2_request = dict(
-                    filter=self_reported_ethnicity_2_filter, include_filter_dims=True
+                    filter=self_reported_ethnicity_2_filter, include_filter_dims=True, is_rollup=True
                 )
-                eth_2_dev_2_request = dict(filter=self_reported_ethnicity_2_dev_2_filter, include_filter_dims=True)
+                eth_2_dev_2_request = dict(
+                    filter=self_reported_ethnicity_2_dev_2_filter, include_filter_dims=True, is_rollup=True
+                )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_2_request)
                 dev_stage_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
                     "development_stage_terms"
@@ -818,64 +826,68 @@ class WmgApiV1Tests(unittest.TestCase):
                 self.assertEqual(dev_stage_terms_eth_2_dev_2, dev_stage_terms_eth_2_no_dev_filter)
                 self.assertNotEqual(eth_stage_terms_eth_2_dev_2, self_reported_ethnicity_terms_eth_2_no_dev_filter)
 
-            with self.subTest("Additional queries are not performed when the secondary dimensions are not set"):
-                with patch("backend.wmg.api.v1.find_dim_option_values") as mock_dims:
-                    mock_dims.side_effect = find_dim_option_values
-                    full_filters = dict(
-                        gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                        organism_ontology_term_id="organism_ontology_term_id_0",
-                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                        dataset_ids=["dataset_id_0"],
-                        disease_ontology_term_ids=["disease_ontology_term_id_0"],
-                        sex_ontology_term_ids=["sex_ontology_term_id_0"],
-                        development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                        self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
-                    )
+            with self.subTest("Additional queries are not performed when the secondary dimensions are not set"), patch(
+                "backend.wmg.api.v1.find_dim_option_values"
+            ) as mock_dims:
+                mock_dims.side_effect = find_dim_option_values
+                full_filters = dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=["dataset_id_0"],
+                    disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                    sex_ontology_term_ids=["sex_ontology_term_id_0"],
+                    development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
+                )
 
-                    full_filters_request = dict(
-                        filter=full_filters,
-                        include_filter_dims=True,
-                    )
-                    self.app.post("/wmg/v1/query", json=full_filters_request)
-                    self.assertEqual(mock_dims.call_count, 5)
+                full_filters_request = dict(
+                    filter=full_filters,
+                    include_filter_dims=True,
+                    is_rollup=True,
+                )
+                self.app.post("/wmg/v1/query", json=full_filters_request)
+                self.assertEqual(mock_dims.call_count, 5)
 
-                    mock_dims.reset_mock()
-                    no_secondary_filters = dict(
-                        gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                        organism_ontology_term_id="organism_ontology_term_id_0",
-                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                        dataset_ids=[],
-                        disease_ontology_term_ids=[],
-                        sex_ontology_term_ids=[],
-                        development_stage_ontology_term_ids=[],
-                        self_reported_ethnicity_ontology_term_ids=[],
-                    )
+                mock_dims.reset_mock()
+                no_secondary_filters = dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=[],
+                    disease_ontology_term_ids=[],
+                    sex_ontology_term_ids=[],
+                    development_stage_ontology_term_ids=[],
+                    self_reported_ethnicity_ontology_term_ids=[],
+                )
 
-                    no_secondary_filters_request = dict(
-                        filter=no_secondary_filters,
-                        include_filter_dims=True,
-                    )
-                    self.app.post("/wmg/v1/query", json=no_secondary_filters_request)
-                    mock_dims.assert_not_called()
-                    # technically not necessary
-                    mock_dims.reset_mock()
+                no_secondary_filters_request = dict(
+                    filter=no_secondary_filters,
+                    include_filter_dims=True,
+                    is_rollup=True,
+                )
+                self.app.post("/wmg/v1/query", json=no_secondary_filters_request)
+                mock_dims.assert_not_called()
+                # technically not necessary
+                mock_dims.reset_mock()
 
-                    two_secondary_filters = dict(
-                        gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                        organism_ontology_term_id="organism_ontology_term_id_0",
-                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                        dataset_ids=[],
-                        disease_ontology_term_ids=[],
-                        sex_ontology_term_ids=[],
-                        development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                        self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
-                    )
-                    two_secondary_filters_request = dict(
-                        filter=two_secondary_filters,
-                        include_filter_dims=True,
-                    )
-                    self.app.post("/wmg/v1/query", json=two_secondary_filters_request)
-                    self.assertEqual(mock_dims.call_count, 2)
+                two_secondary_filters = dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=[],
+                    disease_ontology_term_ids=[],
+                    sex_ontology_term_ids=[],
+                    development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
+                )
+                two_secondary_filters_request = dict(
+                    filter=two_secondary_filters,
+                    include_filter_dims=True,
+                    is_rollup=True,
+                )
+                self.app.post("/wmg/v1/query", json=two_secondary_filters_request)
+                self.assertEqual(mock_dims.call_count, 2)
 
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
@@ -905,16 +917,16 @@ class WmgApiV1Tests(unittest.TestCase):
 
             expected = {
                 "marker_genes": [
-                    {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.317647933959961},
-                    {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 1.908108115196228},
-                    {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 1.7537814378738403},
-                    {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7066189050674438},
-                    {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5534085035324097},
-                    {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.363141417503357},
-                    {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.1919057369232178},
-                    {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.1310830116271973},
-                    {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 0.9623821377754211},
-                    {"gene_ontology_term_id": "ENSG00000173110", "p_value": 0.0, "effect_size": 0.18932978808879852},
+                    {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.661743640899658},
+                    {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 2.1092216968536377},
+                    {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 2.072816848754883},
+                    {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.8734184503555298},
+                    {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.623068928718567},
+                    {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5588932037353516},
+                    {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4483562707901},
+                    {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.2816050052642822},
+                    {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 1.0649874210357666},
+                    {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.46257320046424866},
                 ],
                 "snapshot_id": "test-fmg-snapshot",
             }

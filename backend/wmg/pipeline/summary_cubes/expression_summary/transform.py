@@ -3,15 +3,13 @@ import logging
 import numba as nb
 import numpy as np
 import pandas as pd
-
 import tiledb
 
 from backend.common.utils.math_utils import MB
-from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
-
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +20,17 @@ def transform(
     """
     Build the summary cube with rankit expression sum, nnz (num cells with non zero expression) values for
     each gene for each possible group of cell attributes (cube row)
+
+    Returns
+    -------
+    cube_index: pd.DataFrame
+        The index of the summary cube, with one row per possible group of cell attributes
+
+    cube_sum: np.ndarray
+        The sum of expression values for each gene for each group of cell attributes
+
+    cube_nnz: np.ndarray
+        The number of cells with non zero expression for each gene for each group of cell attributes
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)

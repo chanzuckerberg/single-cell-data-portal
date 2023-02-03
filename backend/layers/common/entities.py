@@ -1,13 +1,11 @@
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 from urllib.parse import urlparse
 
-import uuid
-
 from dataclasses_json import dataclass_json
-
 
 # TODO: copy and paste the docs for these
 
@@ -213,22 +211,13 @@ class CollectionMetadata:
     links: List[Link]
     consortia: List[str] = field(default_factory=list)
 
-    def strip_fields(self):
-        self.name = self.name.strip()
-        self.description = self.description.strip()
-        self.contact_name = self.contact_name.strip()
-        self.contact_email = self.contact_email.strip()
-        for link in self.links:
-            link.strip_fields()
-        if self.consortia is not None:
-            self.consortia = [consortium.strip() for consortium in self.consortia]
-
 
 @dataclass
 class CanonicalCollection:
     id: CollectionId
     version_id: Optional[CollectionVersionId]  # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
+    revised_at: Optional[datetime]
     tombstoned: bool
 
 
@@ -249,20 +238,14 @@ class CollectionVersionBase:
         This collection version has been published.
         TODO: After old API code is removed consider moving closer to API layer
         """
-        if self.published_at is not None:
-            return True
-        else:
-            return False
+        return self.published_at is not None
 
     def is_unpublished_version(self) -> bool:
         """
         The collection has been published, and this is a unpublished version of the collection.
         TODO: After old API code is removed consider moving closer to API layer
         """
-        if self.canonical_collection.originally_published_at is not None and not self.is_published():
-            return True
-        else:
-            return False
+        return self.canonical_collection.originally_published_at is not None and not self.is_published()
 
     def is_initial_unpublished_version(self) -> bool:
         """
@@ -270,10 +253,7 @@ class CollectionVersionBase:
         published.
         TODO: After old API code is removed consider moving closer to API layer
         """
-        if not self.is_published() and self.canonical_collection.originally_published_at is None:
-            return True
-        else:
-            return False
+        return not self.is_published() and self.canonical_collection.originally_published_at is None
 
 
 @dataclass

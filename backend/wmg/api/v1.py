@@ -1,23 +1,18 @@
 from collections import defaultdict
-from typing import Dict, List, Any, Iterable, Tuple
 from math import isnan
-from backend.layers.business.business import BusinessLogic
-from backend.layers.persistence.persistence import DatabaseProvider
-from backend.layers.common.entities import DatasetId
+from typing import Any, Dict, Iterable, List, Tuple
 
 import connexion
 from flask import jsonify
 from pandas import DataFrame
 
-from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.data.query import (
-    WmgQuery,
-    WmgQueryCriteria,
-    MarkerGeneQueryCriteria,
-    retrieve_top_n_markers,
-)
-from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
-
+from backend.layers.business.business import BusinessLogic
+from backend.layers.common.entities import DatasetId
+from backend.layers.persistence.persistence import DatabaseProvider
+from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.wmg.data.query import MarkerGeneQueryCriteria, WmgQuery, WmgQueryCriteria, retrieve_top_n_markers
+from backend.wmg.data.rollup import rollup_across_cell_type_descendants
+from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
@@ -31,6 +26,9 @@ def primary_filter_dimensions():
 
 def query():
     request = connexion.request.json
+    is_rollup = request.get("is_rollup", True)
+    include_filter_dims = request.get("include_filter_dims", False)
+
     criteria = WmgQueryCriteria(**request["filter"])
 
     snapshot: WmgSnapshot = load_snapshot()
@@ -39,8 +37,8 @@ def query():
     expression_summary = q.expression_summary(criteria)
     cell_counts = q.cell_counts(criteria)
     dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
-
-    include_filter_dims = request.get("include_filter_dims", False)
+    if is_rollup:
+        dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
     response_filter_dims_values = (
         build_filter_dims_values(criteria, snapshot, expression_summary) if include_filter_dims else {}
@@ -168,6 +166,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
 
 def build_expression_summary(query_result: DataFrame) -> dict:
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
+    # is_rollup is a flag to indicate whether the expressions should be rolled up or not
     structured_result: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
     for row in query_result.itertuples(index=False):
         structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id].append(
@@ -203,6 +202,22 @@ def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame) -> Tuple[
     cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts)
     cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
     dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg)
+    return dot_plot_matrix_df, cell_counts_cell_type_agg
+
+
+def rollup(dot_plot_matrix_df, cell_counts_cell_type_agg) -> Tuple[DataFrame, DataFrame]:
+    # Roll up numeric columns in the input dataframes
+    if dot_plot_matrix_df.shape[0] > 0:
+        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df)
+
+    if cell_counts_cell_type_agg.shape[0] > 0:
+        # make the cell counts dataframe tidy
+        for col in cell_counts_cell_type_agg.index.names:
+            cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
+        cell_counts_cell_type_agg = rollup_across_cell_type_descendants(cell_counts_cell_type_agg)
+
+        # clean up columns that were added to the dataframe to make it tidy
+        cell_counts_cell_type_agg.drop(columns=cell_counts_cell_type_agg.index.names, inplace=True)
     return dot_plot_matrix_df, cell_counts_cell_type_agg
 
 

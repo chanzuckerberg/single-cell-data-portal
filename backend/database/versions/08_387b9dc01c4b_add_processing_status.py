@@ -5,10 +5,9 @@ Revises: 07_f6c4f66e8db6
 Create Date: 2020-11-12 10:24:40.435293
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects.postgresql import ENUM
-
 
 # revision identifiers, used by Alembic.
 revision = "08_387b9dc01c4b"

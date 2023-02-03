@@ -3,27 +3,26 @@ import pathlib
 import sys
 import time
 
-from backend.common.utils.result_notification import (
-    notify_slack,
-    format_failed_batch_issue_slack_alert,
-    gen_wmg_pipeline_success_message,
-    gen_wmg_pipeline_failure_message,
-)
 from backend.common.utils.exceptions import CubeValidationException
-from backend.wmg.pipeline import integrated_corpus, summary_cubes
-
-from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
-from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME, CELL_COUNTS_CUBE_NAME
+from backend.common.utils.result_notification import (
+    format_failed_batch_issue_slack_alert,
+    gen_wmg_pipeline_failure_message,
+    gen_wmg_pipeline_success_message,
+    notify_slack,
+)
+from backend.wmg.data.load_cube import make_snapshot_active, upload_artifacts_to_s3
+from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 from backend.wmg.data.transform import (
+    cell_type_ordering_create_file,
     generate_primary_filter_dimensions,
     get_cell_types_by_tissue,
-    cell_type_ordering_create_file,
 )
 from backend.wmg.data.utils import (
     get_all_dataset_ids,
-    get_expression_summary_cube_gene_count,
     get_cell_count_cube_count,
+    get_expression_summary_cube_gene_count,
 )
+from backend.wmg.pipeline import integrated_corpus, summary_cubes
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

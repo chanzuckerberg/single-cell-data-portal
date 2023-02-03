@@ -25,3 +25,7 @@ class NonExistentDatasetException(CorporaException):
 
 class CubeValidationException(Exception):
     pass
+
+
+class MarkerGeneCalculationException(Exception):
+    pass

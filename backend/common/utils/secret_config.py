@@ -109,10 +109,8 @@ class SecretConfig:
     def _determine_source(self, source):
         if source:
             pass
-        elif self.environ_source in os.environ:
-            source = os.environ[self.environ_source]
         else:
-            source = "aws"
+            source = os.environ.get(self.environ_source, "aws")
         return source
 
     def value_from_config(self, name):

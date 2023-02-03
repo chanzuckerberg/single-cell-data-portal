@@ -4,11 +4,6 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
-from backend.layers.thirdparty.crossref_provider import (
-    CrossrefDOINotFoundException,
-    CrossrefException,
-    CrossrefProviderInterface,
-)
 from backend.layers.business.business import (
     BusinessLogic,
     CollectionMetadataUpdate,
@@ -40,6 +35,11 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.crossref_provider import (
+    CrossrefDOINotFoundException,
+    CrossrefException,
+    CrossrefProviderInterface,
+)
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
@@ -57,7 +57,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.run_as_integration = True if os.environ.get("INTEGRATION_TEST", "false").lower() == "true" else False
+        cls.run_as_integration = os.environ.get("INTEGRATION_TEST", "false").lower() == "true"
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
@@ -174,7 +174,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         Pass `complete_dataset_ingestion=False` if you want to initialize datasets only.
         """
         version = self.initialize_empty_unpublished_collection(owner, curator_name)
-        for i in range(2):
+        for _ in range(2):
             dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id,
             )
@@ -190,11 +190,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self,
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
-        published_at: datetime = datetime.utcnow(),
+        published_at: datetime = None,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
+        published_at = published_at or datetime.utcnow()
         version = self.initialize_unpublished_collection(owner, curator_name)
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
@@ -584,7 +585,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
-        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.NA)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
     def test_add_dataset_to_unpublished_collection_ok(self):
@@ -1037,7 +1038,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
     def test_publish_version_with_updated_metadata_ok(self):
         """
-        Publishing a collection with updated metadata should succeed
+        Publishing a collection with updated metadata should succeed, but not update revised_at
         """
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
@@ -1057,7 +1058,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.business_logic.publish_collection_version(new_version.version_id)
 
         new_version_from_db = self.database_provider.get_collection_version(new_version.version_id)
-        self.assertIsNotNone(new_version_from_db.published_at)
+        # Canonical Collection's revised_at should NOT be updated for collection metadata only revisions
+        self.assertIsNone(new_version_from_db.canonical_collection.revised_at)
         self.assertEqual(published_collection.collection_id, new_version_from_db.collection_id)
         self.assertEqual(new_version.version_id, new_version_from_db.version_id)
         self.assertEqual([d.version_id for d in new_version.datasets], new_version_from_db.datasets)
@@ -1099,8 +1101,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(1, len(version_from_db.datasets))
 
         # The old version should still have two datasets (after publishing)
-        version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
-        self.assertEqual(2, len(version_from_db.datasets))
+        old_version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
+        self.assertEqual(2, len(old_version_from_db.datasets))
+
+        # The Canonical Collection should have an updated revised_at timestamp
+        self.assertEqual(version_from_db.canonical_collection.revised_at, version_from_db.published_at)
+        self.assertTrue(version_from_db.canonical_collection.revised_at > old_version_from_db.published_at)
 
         # Get collection retrieves the new version (with one datasets)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
@@ -1140,8 +1146,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(3, len(version_from_db.datasets))
 
         # The old version should still have two datasets (after publishing)
-        version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
-        self.assertEqual(2, len(version_from_db.datasets))
+        old_version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
+        self.assertEqual(2, len(old_version_from_db.datasets))
+
+        # The Canonical Collection should have an updated revised_at timestamp
+        self.assertEqual(version_from_db.canonical_collection.revised_at, version_from_db.published_at)
+        self.assertTrue(version_from_db.canonical_collection.revised_at > old_version_from_db.published_at)
 
         # Get collection retrieves the new version (with three datasets, including the new one)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
@@ -1191,9 +1201,13 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], version_from_db.datasets)
 
         # The old version should have the correct datasets (after publishing)
-        version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
-        self.assertEqual(2, len(version_from_db.datasets))
-        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], version_from_db.datasets)
+        old_version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
+        self.assertEqual(2, len(old_version_from_db.datasets))
+        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], old_version_from_db.datasets)
+
+        # The Canonical Collection should have an updated revised_at timestamp
+        self.assertEqual(version_from_db.canonical_collection.revised_at, version_from_db.published_at)
+        self.assertTrue(version_from_db.canonical_collection.revised_at > old_version_from_db.published_at)
 
         # Get collection retrieves the new version (with two datasets, including the replaced one)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)

@@ -1,13 +1,4 @@
-import {
-  Button,
-  CellBasic,
-  CellHeader,
-  Icon,
-  Table,
-  TableHeader,
-  TableRow,
-  Tooltip,
-} from "czifui";
+import { Button, Icon, Tooltip } from "czifui";
 import React, { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -19,8 +10,7 @@ import { addSelectedGenes } from "../../common/store/actions";
 import {
   ButtonContainer,
   CopyGenesButton,
-  GeneCellHeader,
-  GeneHeaderWrapper,
+  StyledHTMLTable,
   StyledIconImage,
   StyledMarkerGeneHeader,
   StyledTooltip,
@@ -68,11 +58,22 @@ function CellInfoSideBar({
 
   const [hoverStartTime, setHoverStartTime] = useState(0);
 
-  const handleHoverEnd = useCallback(() => {
-    if (Date.now() - hoverStartTime > 2 * 1000) {
-      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER);
-    }
-  }, [hoverStartTime]);
+  const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
+    return useCallback(() => {
+      if (Date.now() - hoverStartTime > 2 * 1000) {
+        track(event, payload);
+      }
+    }, [hoverStartTime]);
+  };
+
+  const handleFmgHoverEnd = useHandleHoverEnd(
+    EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
+    { label: "marker genes" }
+  );
+  const handleMarkerScoreHoverEnd = useHandleHoverEnd(
+    EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
+    { label: "marker score" }
+  );
 
   if (isLoading || !data) return null;
 
@@ -89,6 +90,8 @@ function CellInfoSideBar({
             width="default"
             className="fmg-tooltip-icon"
             arrow={true}
+            onOpen={() => setHoverStartTime(Date.now())}
+            onClose={handleFmgHoverEnd}
             title={
               <StyledTooltip>
                 <div>
@@ -102,8 +105,12 @@ function CellInfoSideBar({
                     rel="noopener"
                     target="_blank"
                     onClick={() => {
-                      handleHoverEnd();
-                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED);
+                      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                        label: "marker genes",
+                      });
+                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                        label: "marker genes",
+                      });
                     }}
                   >
                     Click to read more about the identification method.
@@ -117,8 +124,6 @@ function CellInfoSideBar({
               sdsType="secondary"
               isAllCaps={false}
               style={{ fontWeight: "500" }}
-              onMouseEnter={() => setHoverStartTime(Date.now())}
-              onMouseLeave={handleHoverEnd}
             >
               <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
@@ -136,10 +141,10 @@ function CellInfoSideBar({
           Add to Dot Plot
         </Button>
       </ButtonContainer>
-      <Table>
-        <TableHeader>
-          <GeneCellHeader hideSortIcon>
-            <GeneHeaderWrapper>
+      <StyledHTMLTable condensed bordered={false}>
+        <thead>
+          <tr>
+            <td>
               Gene{" "}
               <CopyGenesButton
                 onClick={handleCopyGenes}
@@ -150,28 +155,67 @@ function CellInfoSideBar({
               >
                 Copy
               </CopyGenesButton>
-            </GeneHeaderWrapper>
-          </GeneCellHeader>
-          <CellHeader hideSortIcon horizontalAlign="right">
-            Marker Score
-          </CellHeader>
-        </TableHeader>
+            </td>
+            <td>
+              Marker Score
+              <Tooltip
+                sdsStyle="dark"
+                placement="bottom"
+                width="default"
+                className="fmg-tooltip-icon"
+                arrow={true}
+                onOpen={() => setHoverStartTime(Date.now())}
+                onClose={handleMarkerScoreHoverEnd}
+                title={
+                  <StyledTooltip>
+                    <div>
+                      Marker Score indicates the strength and specificity of a
+                      gene as a marker. It is the 5th percentile of the effect
+                      sizes when comparing the expressions in a cell type of
+                      interest to each other cell type in the tissue.
+                    </div>
+                    <br />
+                    <div>
+                      <a
+                        href={ROUTES.FMG_DOCS}
+                        rel="noopener"
+                        target="_blank"
+                        onClick={() => {
+                          track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                            label: "marker score",
+                          });
+                          track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                            label: "marker score",
+                          });
+                        }}
+                      >
+                        Click to read more about the identification method.
+                      </a>
+                    </div>
+                  </StyledTooltip>
+                }
+              >
+                <TooltipButton
+                  sdsStyle="minimal"
+                  sdsType="secondary"
+                  isAllCaps={false}
+                  style={{ fontWeight: "500" }}
+                >
+                  <StyledIconImage src={questionMarkIcon} />
+                </TooltipButton>
+              </Tooltip>
+            </td>
+          </tr>
+        </thead>
         <tbody>
           {Object.entries(data.marker_genes).map((gene) => (
-            <TableRow key={gene[0]}>
-              <CellBasic
-                shouldShowTooltipOnHover={false}
-                primaryText={gene[0]}
-              />
-              <CellBasic
-                shouldShowTooltipOnHover={false}
-                horizontalAlign="right"
-                primaryText={gene[1].effect_size.toPrecision(4)}
-              />
-            </TableRow>
+            <tr key={gene[0]}>
+              <td>{gene[0]}</td>
+              <td>{gene[1].effect_size.toPrecision(4)}</td>
+            </tr>
           ))}
         </tbody>
-      </Table>
+      </StyledHTMLTable>
     </div>
   );
 }

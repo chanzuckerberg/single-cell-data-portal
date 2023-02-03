@@ -1,52 +1,49 @@
 {
-    "config_version": "v1",
-    "terraform_version": "0.13.5",
-    "default_env": "rdev",
-    "app": "data-portal",
-    "default_compose_env_file": ".env.ecr",
-    "services": [
-        "frontend",
-        "backend"
-    ],
-    "environments": {
-        "rdev": {
-            "aws_profile": "single-cell-dev",
-            "secret_arn": "happy/env-rdev-config",
-            "terraform_directory": ".happy/terraform/envs/rdev",
-            "task_launch_type": "fargate",
-            "auto_run_migrations": true,
-            "log_group_prefix": "/dp/rdev"
-        },
-        "dev": {
-            "aws_profile": "single-cell-dev",
-            "secret_arn": "happy/env-dev-config",
-            "terraform_directory": ".happy/terraform/envs/dev",
-            "delete_protected": true,
-            "task_launch_type": "fargate",
-            "auto_run_migrations": true,
-            "log_group_prefix": "/dp/dev"
-        },
-        "stage": {
-            "aws_profile": "single-cell-dev",
-            "secret_arn": "happy/env-stage-config",
-            "terraform_directory": ".happy/terraform/envs/stage",
-            "delete_protected": true,
-            "task_launch_type": "fargate",
-            "auto_run_migrations": true,
-            "log_group_prefix": "/dp/staging"
-        },
-        "prod": {
-            "aws_profile": "single-cell-prod",
-            "secret_arn": "happy/env-prod-config",
-            "terraform_directory": ".happy/terraform/envs/prod",
-            "delete_protected": true,
-            "task_launch_type": "fargate",
-            "auto_run_migrations": true,
-            "log_group_prefix": "/dp/prod"
-        }
+  "config_version": "v1",
+  "terraform_version": "0.13.5",
+  "default_env": "rdev",
+  "app": "data-portal",
+  "default_compose_env_file": ".env.ecr",
+  "services": ["frontend", "backend"],
+  "environments": {
+    "rdev": {
+      "aws_profile": "single-cell-dev",
+      "secret_arn": "happy/env-rdev-config",
+      "terraform_directory": ".happy/terraform/envs/rdev",
+      "task_launch_type": "fargate",
+      "auto_run_migrations": true,
+      "log_group_prefix": "/dp/rdev"
     },
-    "tasks": {
-        "migrate": ["migrate_db_task_definition_arn"],
-        "delete": ["delete_db_task_definition_arn"]
+    "dev": {
+      "aws_profile": "single-cell-dev",
+      "secret_arn": "happy/env-dev-config",
+      "terraform_directory": ".happy/terraform/envs/dev",
+      "delete_protected": true,
+      "task_launch_type": "fargate",
+      "auto_run_migrations": true,
+      "log_group_prefix": "/dp/dev"
+    },
+    "stage": {
+      "aws_profile": "single-cell-dev",
+      "secret_arn": "happy/env-stage-config",
+      "terraform_directory": ".happy/terraform/envs/stage",
+      "delete_protected": true,
+      "task_launch_type": "fargate",
+      "auto_run_migrations": true,
+      "log_group_prefix": "/dp/staging"
+    },
+    "prod": {
+      "aws_profile": "single-cell-prod",
+      "secret_arn": "happy/env-prod-config",
+      "terraform_directory": ".happy/terraform/envs/prod",
+      "delete_protected": true,
+      "task_launch_type": "fargate",
+      "auto_run_migrations": true,
+      "log_group_prefix": "/dp/prod"
     }
+  },
+  "tasks": {
+    "migrate": ["migrate_db_task_definition_arn"],
+    "delete": ["delete_db_task_definition_arn"]
+  }
 }

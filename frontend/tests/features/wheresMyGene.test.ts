@@ -95,8 +95,8 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const canvases = await page.$$("canvas");
-        await expect(canvases.length).not.toBe(0);
+        const heatmap = await page.$$("#blood-chart svg");
+        await expect(heatmap.length).not.toBe(0);
       },
       { page }
     );
@@ -165,8 +165,8 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const canvases = await page.$$("canvas");
-        expect(canvases.length).not.toBe(0);
+        const heatmap = await page.$$("#blood-chart svg");
+        expect(heatmap.length).not.toBe(0);
       },
       { page }
     );
@@ -322,8 +322,8 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const canvases = await page.$$("canvas");
-        await expect(canvases.length).not.toBe(0);
+        const heatmap = await page.$$("#blood-chart svg");
+        await expect(heatmap.length).not.toBe(0);
       },
       { page }
     );
@@ -359,7 +359,7 @@ describe("Where's My Gene", () => {
         // (thuang): Sometimes when API response is slow, we'll not capture all the
         // cell type names, so a sanity check that we expect at least 100 names
         expect(beforeCellTypeNames.length).toBeGreaterThan(100);
-        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length-1);
+        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length - 1);
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);

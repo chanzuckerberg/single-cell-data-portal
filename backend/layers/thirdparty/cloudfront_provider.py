@@ -1,21 +1,23 @@
-import boto3
+import logging
 import uuid
 from typing import List
 
+import boto3
+
 from backend.common.corpora_config import CorporaCloudfrontConfig
-
-import logging
-
 from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 
 client = boto3.client("cloudfront")
 
 
 class CloudfrontProvider(CDNProviderInterface):
-    # Since Cloudfront is only used in deployed environments (dev, staging, prod),
-    # only trigger an invalidation if the distribution_id is defined in secrets manager.
-    # Otherwise this will be a no-op
     def create_invalidation(self, paths: List[str]):
+        """
+        Creates an invalidation for the specified paths.
+        Since Cloudfront is only used in deployed environments (dev, staging, prod),
+        only trigger an invalidation if the distribution_id is defined in secrets manager.
+        Otherwise this will be a no-op
+        """
         try:
             distribution = CorporaCloudfrontConfig().distribution_id
         except RuntimeError:  # Will be raised if the attribute is not found (i.e. in rdev)
@@ -39,4 +41,8 @@ class CloudfrontProvider(CDNProviderInterface):
         logging.info(response)
 
     def create_invalidation_for_index_paths(self):
+        """
+        Creates an invalidation for the index paths.
+        By default, these are the only portal paths that require caching.
+        """
         return self.create_invalidation(["/dp/v1/datasets/index", "/dp/v1/collections/index"])

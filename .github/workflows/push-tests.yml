@@ -35,11 +35,11 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
-      - name: Lint Python
-        run: |
-          docker-compose run --no-deps --rm backend make -C /single-cell-data-portal lint
-      - name: Lint frontend
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - name: check backend
+        uses: pre-commit/action@v3.0.0
+      - name: check frontend
         run: |
           docker-compose run --no-deps --rm frontend make lint
       - uses: 8398a7/action-slack@v3

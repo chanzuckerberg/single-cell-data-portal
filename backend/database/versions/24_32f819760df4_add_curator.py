@@ -5,9 +5,8 @@ Revises: 21_c830a9e1f874
 Create Date: 2021-11-22 09:59:28.579807
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 from backend.common.corpora_orm import StrippedString

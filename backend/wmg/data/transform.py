@@ -1,18 +1,18 @@
-import tiledb
-import pandas as pd
-
-from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.data.tissue_mapper import TissueMapper
-from typing import Dict, List, Iterable, Set
 import json
+from typing import Dict, Iterable, List, Set
 
+import pandas as pd
+import tiledb
+
+from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
+from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.snapshot import (
     CELL_TYPE_ORDERINGS_FILENAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
+from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.utils import log_func_runtime
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL
 
 
 @log_func_runtime
@@ -92,10 +92,10 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
 
     # Note: those dependencies are only needed by the WMG pipeline, so we should keep them local
     # so that this file can be imported by tests without breaking.
-    from pronto import Ontology
     import pygraphviz as pgv
+    from pronto import Ontology
 
-    onto = Ontology(CL_BASIC_PERMANENT_URL)
+    onto = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
     ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
     ancestors = [i for s in ancestors for i in s]
     ancestors = set(ancestors)

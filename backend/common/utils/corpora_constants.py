@@ -1,4 +1,4 @@
-class CorporaConstants(object):
+class CorporaConstants:
     REQUIRED_SIMPLE_METADATA_FIELDS = [
         "schema_version",
         "title",

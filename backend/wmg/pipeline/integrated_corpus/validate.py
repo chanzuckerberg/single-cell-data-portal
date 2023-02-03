@@ -1,11 +1,12 @@
 import logging
 import os
 from functools import cache
+
 import anndata
 from scipy import sparse
 
-from backend.wmg.pipeline.integrated_corpus.extract import get_X_raw
 from backend.wmg.data.utils import get_all_dataset_ids
+from backend.wmg.pipeline.integrated_corpus.extract import get_X_raw
 
 logger = logging.getLogger(__name__)
 

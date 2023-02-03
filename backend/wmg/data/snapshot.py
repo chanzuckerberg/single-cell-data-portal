@@ -2,7 +2,8 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Optional, Dict
+from typing import Dict, Optional
+
 import pandas as pd
 import tiledb
 from pandas import DataFrame
@@ -10,8 +11,8 @@ from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.schemas.corpus_schema import DATASET_TO_GENE_IDS_NAME
+from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"

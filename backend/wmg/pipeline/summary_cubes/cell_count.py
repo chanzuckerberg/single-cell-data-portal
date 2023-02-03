@@ -63,6 +63,10 @@ def create_cell_count_cube(corpus_path: str):
     """
     obs = extract(corpus_path)
     df = transform(obs)
+
+    n_cells = df["n_cells"].to_numpy()
+    df["n_cells"] = n_cells
+
     uri = load(corpus_path, df)
     cell_count = df.n_cells.sum()
     logger.info(f"{cell_count=}")

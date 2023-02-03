@@ -4,17 +4,17 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.wmg.pipeline.summary_cubes.extract import extract_var_data
-from backend.wmg.pipeline.summary_cubes.expression_summary.load import build_in_mem_cube
-from backend.wmg.pipeline.summary_cubes.expression_summary.transform import transform
-from backend.wmg.data.schemas.cube_schema import expression_summary_schema
+from backend.wmg.data.schemas.cube_schema import (
+    expression_summary_indexed_dims_no_gene_ontology,
+    expression_summary_non_indexed_dims,
+    expression_summary_schema,
+)
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.utils import log_func_runtime, create_empty_cube
-from backend.wmg.data.schemas.cube_schema import (
-    expression_summary_non_indexed_dims,
-    expression_summary_indexed_dims_no_gene_ontology,
-)
+from backend.wmg.data.utils import create_empty_cube, log_func_runtime
+from backend.wmg.pipeline.summary_cubes.expression_summary.load import build_in_mem_cube
+from backend.wmg.pipeline.summary_cubes.expression_summary.transform import transform
+from backend.wmg.pipeline.summary_cubes.extract import extract_var_data
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,11 @@ def _load(
     Build expression summary cube in memory and write to disk
     """
     dims, vals = build_in_mem_cube(
-        gene_ontology_term_ids, cube_index, expression_summary_non_indexed_dims, cube_sum, cube_nnz
+        gene_ontology_term_ids,
+        cube_index,
+        expression_summary_non_indexed_dims,
+        cube_sum,
+        cube_nnz,
     )
 
     logger.debug("Saving cube to tiledb")
