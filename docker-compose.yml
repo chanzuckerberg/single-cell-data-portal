@@ -245,7 +245,7 @@ services:
         - HAPPY_BRANCH
         - HAPPY_TAG
     restart: always
-    command: [ "./container_init.sh" ]
+    command: ["./container_init.sh"]
     depends_on:
       - localstack
       - database

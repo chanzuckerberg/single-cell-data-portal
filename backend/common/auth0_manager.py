@@ -1,8 +1,9 @@
+import logging
+
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util import Retry
 
-import logging
 from backend.common.corpora_config import CorporaAuthConfig
 
 logger = logging.getLogger(__name__)

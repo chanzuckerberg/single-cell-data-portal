@@ -8,7 +8,7 @@ import {
   MDXRemoteProps,
   MDXRemoteSerializeResult,
 } from "next-mdx-remote";
-import rehypeMathJax from 'rehype-mathjax';
+import rehypeMathJax from "rehype-mathjax";
 import remarkMath from "remark-math";
 import { serialize } from "next-mdx-remote/serialize";
 import Head from "next/head";
@@ -101,7 +101,10 @@ export const getStaticProps = async ({
   const activeFile = slug[slug.length - 1];
   const { data: frontMatter, content } = matter(markdownWithMeta);
   const mdxSource = await serialize(content, {
-    mdxOptions: { rehypePlugins: [rehypeSlug, rehypeMathJax], remarkPlugins: [remarkMath] },
+    mdxOptions: {
+      rehypePlugins: [rehypeSlug, rehypeMathJax],
+      remarkPlugins: [remarkMath],
+    },
   });
   return {
     props: {

@@ -5,7 +5,7 @@ from unittest import TestCase
 import boto3
 from moto import mock_s3
 
-from backend.common.utils.dl_sources.url import from_url, RegisteredSources, S3URL, DropBoxURL, S3URI
+from backend.common.utils.dl_sources.url import S3URI, S3URL, DropBoxURL, RegisteredSources, from_url
 
 
 class TestRegisteredSources(unittest.TestCase):

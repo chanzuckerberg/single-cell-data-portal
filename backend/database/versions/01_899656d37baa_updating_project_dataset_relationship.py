@@ -6,7 +6,7 @@ Create Date: 2020-07-13 21:11:12.683976
 
 """
 from alembic import op
-from sqlalchemy import Column, String, TIMESTAMP, func, INTEGER
+from sqlalchemy import INTEGER, TIMESTAMP, Column, String, func
 
 # revision identifiers, used by Alembic.
 revision = "01_899656d37baa"

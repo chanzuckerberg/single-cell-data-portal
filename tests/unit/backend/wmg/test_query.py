@@ -1,21 +1,21 @@
 import unittest
 from typing import NamedTuple
 
-from backend.wmg.api.v1 import get_dot_plot_data, agg_cell_type_counts, agg_tissue_counts
+from backend.wmg.api.v1 import agg_cell_type_counts, agg_tissue_counts, get_dot_plot_data
 from backend.wmg.data.query import (
-    WmgQueryCriteria,
-    WmgQuery,
-    MarkerGeneQueryCriteria,
     FmgQueryCriteria,
+    MarkerGeneQueryCriteria,
+    WmgQuery,
+    WmgQueryCriteria,
     retrieve_top_n_markers,
 )
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    create_temp_wmg_snapshot,
-    load_test_fmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
     all_X_cell_counts_values,
+    create_temp_wmg_snapshot,
+    load_test_fmg_snapshot,
 )
 
 TEST_SNAPSHOT = "test-fmg-snapshot"

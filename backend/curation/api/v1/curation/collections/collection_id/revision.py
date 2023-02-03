@@ -1,10 +1,10 @@
-from flask import make_response, jsonify
+from flask import jsonify, make_response
 
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
-from backend.portal.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.exceptions import CollectionVersionException
 from backend.layers.common.entities import CollectionId
+from backend.portal.api.providers import get_business_logic
 
 
 def post(collection_id: str, token_info: dict):
@@ -19,6 +19,6 @@ def post(collection_id: str, token_info: dict):
     try:
         collection_version = get_business_logic().create_collection_version(CollectionId(collection_id))
     except CollectionVersionException:
-        raise ForbiddenHTTPException("Another revision is already in progress")
+        raise ForbiddenHTTPException("Another revision is already in progress") from None
 
     return make_response(jsonify({"id": collection_version.version_id.id}), 201)

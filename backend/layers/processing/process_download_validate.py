@@ -73,7 +73,7 @@ class ProcessDownloadValidate(ProcessingLogic):
                 local_filename, output_filename
             )
         except Exception as e:
-            raise ValidationFailed([str(e)])
+            raise ValidationFailed([str(e)]) from None
 
         if not is_valid:
             raise ValidationFailed(errors)
@@ -91,10 +91,7 @@ class ProcessDownloadValidate(ProcessingLogic):
 
         # TODO: Concern with respect to previous use of raising error when there is no raw layer.
         # This new way defaults to adata.X.
-        if adata.raw is not None and adata.raw.X is not None:
-            layer_for_mean_genes_per_cell = adata.raw.X
-        else:
-            layer_for_mean_genes_per_cell = adata.X
+        layer_for_mean_genes_per_cell = adata.raw.X if adata.raw is not None and adata.raw.X is not None else adata.X
 
         # For mean_genes_per_cell, we only want the columns (genes) that have a feature_biotype of `gene`,
         # as opposed to `spike-in`
@@ -116,7 +113,7 @@ class ProcessDownloadValidate(ProcessingLogic):
             base_term_id = base_term + "_ontology_term_id"
             return [
                 OntologyTermId(label=k[0], ontology_term_id=k[1])
-                for k in adata.obs.groupby([base_term, base_term_id]).groups.keys()
+                for k in adata.obs.groupby([base_term, base_term_id]).groups
             ]
 
         def _get_is_primary_data() -> Literal["PRIMARY", "SECONDARY", "BOTH"]:

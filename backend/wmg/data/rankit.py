@@ -1,7 +1,8 @@
+import logging
+
 import numba as nb
 import numpy as np
 import scipy as sc
-import logging
 
 logger = logging.getLogger("wmg")
 

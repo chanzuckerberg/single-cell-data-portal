@@ -4,31 +4,26 @@ import json
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
+
+from furl import furl
+
 from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import (
-    CollectionVersionId,
-    DatasetStatusKey,
-)
-from backend.layers.common.entities import (
     CollectionId,
+    CollectionVersionId,
     DatasetArtifactType,
     DatasetProcessingStatus,
+    DatasetStatusKey,
     DatasetUploadStatus,
     DatasetVersionId,
     Link,
     OntologyTermId,
 )
-from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
-
-from furl import furl
-
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
-from tests.unit.backend.layers.common.base_test import (
-    DatasetArtifactUpdate,
-    DatasetStatusUpdate,
-)
-from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
+from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
 from tests.unit.backend.layers.api.fixture import generate_mock_publisher_metadata
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
+from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 
 
 class TestCollection(BaseAPIPortalTest):
@@ -217,7 +212,7 @@ class TestCollection(BaseAPIPortalTest):
         authenticated = [True, False]
         owns = [True, False]
         visibility = ["public", "private"]
-        test_cases = [params for params in itertools.product(authenticated, owns, visibility)]
+        test_cases = itertools.product(authenticated, owns, visibility)
 
         # Generate test collection
         # Note: for private collections, you want to use version_id
@@ -2527,7 +2522,7 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             self.assertEqual(400, response.status_code)
             print(json.loads(response.data)["detail"])
-            self.assertTrue("The URL provided causes an error with Dropbox." == json.loads(response.data)["detail"])
+            self.assertTrue(json.loads(response.data)["detail"] == "The URL provided causes an error with Dropbox.")
 
     # ✅
     def test__oversized__413(self):
