@@ -1,43 +1,27 @@
 import { GetServerSideProps } from "next";
 import { getServerSideSitemap, ISitemapField } from "next-sitemap";
 
-// function to convert epoch/unix timestamp to YYYY-MM-DD HH:MM +00:00 format
-function unixToYYYYMMDDHHMM(date: string) {
-  let myDate = new Date(parseFloat(date) * 1000);
+// github copilot convert timestamp function
+function convertTimestamp(timestamp: string) {
+  const date = new Date(parseFloat(timestamp) * 1000);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hour = date.getHours();
+  const minute = date.getMinutes();
+  const second = date.getSeconds();
+  const offset = date.getTimezoneOffset();
+  const offsetHours = Math.abs(Math.floor(offset / 60));
+  const offsetMinutes = Math.abs(offset % 60);
+  const timezoneOffset = `${offset < 0 ? "+" : "-"}${offsetHours
+    .toString()
+    .padStart(2, "0")}:${offsetMinutes.toString().padStart(2, "0")}`;
 
-  let month = String(myDate.getMonth() + 1);
-  if (parseFloat(month) < 10) {
-    month = "0" + String(month);
-  }
-
-  let day = String(myDate.getDate());
-  if (parseFloat(day) < 10) {
-    day = "0" + String(day);
-  }
-
-  let hours = String(myDate.getHours());
-  if (parseFloat(hours) < 10) {
-    hours = "0" + String(hours);
-  }
-
-  let minutes = String(myDate.getMinutes());
-  if (parseFloat(minutes) < 10) {
-    minutes = "0" + String(minutes);
-  }
-
-  let dateStr =
-    myDate.getFullYear() +
-    "-" +
-    month +
-    "-" +
-    day +
-    " " +
-    hours +
-    ":" +
-    minutes +
-    " +00:00";
-
-  return dateStr;
+  return `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")} ${hour.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}:${second.toString().padStart(2, "0")} ${timezoneOffset}`;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -50,8 +34,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const fields: ISitemapField[] = collections.map((collection) => ({
     loc: `https://www.cellxgene.cziscience.com/collections/${collection.id}`,
     lastmod: collection.revised_at
-      ? unixToYYYYMMDDHHMM(collection.revised_at)
-      : unixToYYYYMMDDHHMM(collection.published_at),
+      ? convertTimestamp(collection.revised_at)
+      : convertTimestamp(collection.published_at),
   }));
 
   return getServerSideSitemap(context, fields);
