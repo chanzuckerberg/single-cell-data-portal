@@ -237,7 +237,7 @@ export default memo(function Chart({
   const [hoveredGeneIndex, hoveredCellTypeIndex] = currentIndices;
 
   const tooltipContent = useMemo(() => {
-    clearTimeout(handleDotHoverAnalytic); 
+    clearTimeout(handleDotHoverAnalytic);
 
     if (!chartProps) return null;
 
@@ -312,14 +312,14 @@ export default memo(function Chart({
       title={tooltipContent || <>No data</>}
       leaveDelay={0}
       placement="right-end"
-      onMouseMove={ () => {
+      onMouseMove={() => {
         clearInterval(handleDotHoverAnalytic);
-        if(tooltipContent?.props.data) {
-          handleDotHoverAnalytic = setTimeout(() => { 
+        if (tooltipContent?.props.data) {
+          handleDotHoverAnalytic = setTimeout(() => {
             track(EVENTS.WMG_HEATMAP_DOT_HOVER);
           }, 2 * 1000);
         }
-      } }
+      }}
       PopperProps={{
         anchorEl: {
           getBoundingClientRect: () => ({
@@ -349,12 +349,12 @@ export default memo(function Chart({
         width={heatmapWidth}
         ref={ref}
         id={`${tissue.replace(/\s+/g, "-")}-chart`}
-        onMouseLeave={ () => {
+        onMouseLeave={() => {
           // Handles race condition when a timeout is set after clearing
           setTimeout(() => {
-            clearTimeout(handleDotHoverAnalytic); 
+            clearTimeout(handleDotHoverAnalytic);
           }, 100);
-        } }
+        }}
       />
     </Tooltip>
   );

@@ -73,7 +73,6 @@ describe("Collection", () => {
     describe("Publish a collection", () => {
       describe("when no dataset", () => {
         test("shows disabled publish button", async ({ page }) => {
-
           await createCollection({ page });
 
           await tryUntil(

@@ -2,15 +2,8 @@ import logging
 import os
 import re
 import sys
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 from urllib.parse import unquote_plus
-from backend.layers.business.business import BusinessLogic
-from backend.layers.business.exceptions import CollectionNotFoundException, DatasetNotFoundException
-from backend.layers.persistence.persistence import DatabaseProvider
-from backend.layers.thirdparty.crossref_provider import CrossrefProvider
-from backend.layers.thirdparty.s3_provider import S3Provider
-from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
-from backend.layers.thirdparty.uri_provider import UriProvider
 
 from pythonjsonlogger import jsonlogger
 
@@ -20,7 +13,14 @@ from backend.common.utils.exceptions import (
     NonExistentCollectionException,
     NonExistentDatasetException,
 )
-from backend.common.utils.regex import USERNAME_REGEX, COLLECTION_ID_REGEX, DATASET_ID_REGEX
+from backend.common.utils.regex import COLLECTION_ID_REGEX, DATASET_ID_REGEX, USERNAME_REGEX
+from backend.layers.business.business import BusinessLogic
+from backend.layers.business.exceptions import CollectionNotFoundException, DatasetNotFoundException
+from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.thirdparty.crossref_provider import CrossrefProvider
+from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
+from backend.layers.thirdparty.uri_provider import UriProvider
 
 log_handler = logging.StreamHandler(stream=sys.stdout)
 formatter = jsonlogger.JsonFormatter(LOG_FORMAT, DATETIME_FORMAT)
@@ -74,9 +74,9 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         try:
             collection_version, dataset_version = business_logic._get_collection_and_dataset(collection_id, dataset_id)
         except CollectionNotFoundException:
-            raise NonExistentCollectionException(f"Collection {parsed['collection_id']} does not exist")
+            raise NonExistentCollectionException(f"Collection {parsed['collection_id']} does not exist") from None
         except DatasetNotFoundException:
-            raise NonExistentDatasetException(f"No Dataset with {dataset_id=} in Collection {collection_id}")
+            raise NonExistentDatasetException(f"No Dataset with {dataset_id=} in Collection {collection_id}") from None
 
         collection_owner = collection_version.owner
 

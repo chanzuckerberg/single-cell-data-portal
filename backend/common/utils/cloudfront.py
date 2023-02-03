@@ -1,10 +1,10 @@
-import boto3
+import logging
 import uuid
 from typing import List
 
-from backend.common.corpora_config import CorporaCloudfrontConfig
+import boto3
 
-import logging
+from backend.common.corpora_config import CorporaCloudfrontConfig
 
 client = boto3.client("cloudfront")
 

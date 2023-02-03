@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 from urllib.parse import urlparse
 
 import requests
@@ -113,7 +113,7 @@ class CrossrefProvider(CrossrefProviderInterface):
                 elif "institution" in message:
                     journal = message["institution"][0]["name"]
             except Exception:
-                raise CrossrefParseException("Journal node missing")
+                raise CrossrefParseException("Journal node missing") from None
 
             # Authors
             # Note: make sure that the order is preserved, as it is a relevant information

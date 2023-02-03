@@ -10,17 +10,11 @@ from click import Context
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
+from urllib.parse import urlparse
+
 from backend.common.corpora_config import CorporaDbConfig
 from backend.common.utils.db_session import DBSessionMaker
-
-from scripts.cxg_admin_scripts import deletions
-from scripts.cxg_admin_scripts import tombstones
-from scripts.cxg_admin_scripts import migrate
-from scripts.cxg_admin_scripts import updates
-from scripts.cxg_admin_scripts import reprocess_datafile
-from scripts.cxg_admin_scripts import dataset_details
-
-from urllib.parse import urlparse
+from scripts.cxg_admin_scripts import dataset_details, deletions, migrate, reprocess_datafile, tombstones, updates
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -330,6 +324,7 @@ def migrate_redesign_debug(ctx):
     """
     migrate.migrate_redesign_debug(ctx)
 
+
 @cli.command()
 @click.pass_context
 def migrate_redesign_correct_published_at(ctx):
@@ -338,8 +333,6 @@ def migrate_redesign_correct_published_at(ctx):
     ./scripts/cxg_admin.py --deployment dev migrate-redesign-debug
     """
     migrate.migrate_redesign_correct_published_at(ctx)
-
-
 
 
 if __name__ == "__main__":

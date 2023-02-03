@@ -4,7 +4,6 @@ import typing
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
-
 from backend.common.corpora_orm import Base
 
 

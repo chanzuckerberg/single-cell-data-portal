@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 import uuid
@@ -6,10 +7,11 @@ from datetime import datetime
 from typing import Any, Iterable, List, Optional
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError, ProgrammingError
+from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from backend.common.corpora_config import CorporaDbConfig
+from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -31,13 +33,12 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.persistence.constants import SCHEMA_NAME
 from backend.layers.persistence.orm import (
     CollectionTable,
     CollectionVersionTable,
-    DatasetTable,
     DatasetArtifactTable,
+    DatasetTable,
     DatasetVersionTable,
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
@@ -52,21 +53,18 @@ class DatabaseProvider(DatabaseProviderInterface):
         self._engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
         self._session_maker = sessionmaker(bind=self._engine)
         self._schema_name = schema_name
-        try:
+        with contextlib.suppress(Exception):
             self._create_schema()
-        except Exception:
-            pass
 
     def _drop_schema(self):
         from sqlalchemy.schema import DropSchema
 
-        try:
+        with contextlib.suppress(ProgrammingError):
             self._engine.execute(DropSchema(self._schema_name, cascade=True))
-        except ProgrammingError:
-            pass
 
     def _create_schema(self):
         from sqlalchemy.schema import CreateSchema
+
         from backend.layers.persistence.orm import metadata
 
         self._engine.execute(CreateSchema(self._schema_name))
@@ -88,7 +86,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             logger.exception(e)
             if session is not None:
                 session.rollback()
-            raise PersistenceException("Failed to commit.")
+            raise PersistenceException("Failed to commit.") from None
         finally:
             if session is not None:
                 session.close()

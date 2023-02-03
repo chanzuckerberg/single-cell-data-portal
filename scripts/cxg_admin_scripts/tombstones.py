@@ -1,15 +1,15 @@
-import click
-from click import Context
 import json
 import os
 import sys
+
+import click
+from click import Context
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
 from backend.common.entities.collection import Collection
 from backend.common.entities.dataset import Dataset
-
 from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.json import CustomJSONEncoder
 
