@@ -1,6 +1,9 @@
 import cloneDeep from "lodash/cloneDeep";
 import { memo, useContext, useMemo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
 import {
   generateTermsByKey,
   OntologyTerm,
@@ -31,9 +34,9 @@ import {
   Container,
   ContainerWrapper,
   TopLeftCornerMask,
-  YAxisWrapper,
   XAxisMask,
   XAxisWrapper,
+  YAxisWrapper,
 } from "./style";
 
 interface Props {
@@ -53,6 +56,7 @@ interface Props {
   cellTypeSortBy: SORT_BY;
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
+  echartsRendererMode: "svg" | "canvas";
 }
 
 export default memo(function HeatMap({
@@ -70,6 +74,7 @@ export default memo(function HeatMap({
   cellTypeSortBy,
   geneSortBy,
   selectedOrganismId,
+  echartsRendererMode,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
 
@@ -153,8 +158,8 @@ export default memo(function HeatMap({
       </TopLeftCornerMask>
       <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
         {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
-        <XAxisWrapper>
-          <XAxisMask />
+        <XAxisWrapper id="x-axis-wrapper">
+          <XAxisMask data-test-id="x-axis-mask" />
           <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
         <YAxisWrapper>
@@ -165,7 +170,6 @@ export default memo(function HeatMap({
               sortedCellTypesByTissueName,
               tissue,
             });
-
             return (
               <YAxisChart
                 key={tissue}
@@ -191,10 +195,24 @@ export default memo(function HeatMap({
               tissue,
             });
 
+            const selectedGeneData =
+              orderedSelectedGeneExpressionSummariesByTissueName[tissue];
+
+            /**
+             * (thuang): If there is no selected gene data, we don't want to render
+             * the chart, because it will cause the chart to render with 0 width,
+             * which is an error for echarts
+             */
+            if (!selectedGeneData?.length) return null;
+
             return (
               <Chart
                 isScaled={isScaled}
-                key={tissue}
+                /**
+                 * (thuang): We use `key` to force re-render the HeatMap component
+                 * when the renderer mode changes, so echarts can create new instances
+                 */
+                key={`${tissue}-${echartsRendererMode}`}
                 tissue={tissue}
                 cellTypes={tissueCellTypes}
                 selectedGeneData={
@@ -203,6 +221,7 @@ export default memo(function HeatMap({
                 setIsLoading={setIsLoading}
                 scaledMeanExpressionMax={scaledMeanExpressionMax}
                 scaledMeanExpressionMin={scaledMeanExpressionMin}
+                echartsRendererMode={echartsRendererMode}
               />
             );
           })}
@@ -225,9 +244,9 @@ function getTissueCellTypes({
 }) {
   const tissueCellTypes = cellTypes[tissue];
   const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
-
+  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
-    (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY
+    (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY && !isRollup
       ? tissueCellTypes
       : sortedTissueCellTypes) || EMPTY_ARRAY
   );

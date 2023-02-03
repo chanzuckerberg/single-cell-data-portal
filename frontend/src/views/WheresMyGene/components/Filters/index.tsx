@@ -1,3 +1,4 @@
+import { createFilterOptions } from "@mui/material";
 import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
@@ -12,12 +13,12 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   FilterDimensions,
+  RawDataset,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { DispatchContext, StateContext } from "../../common/store";
@@ -31,13 +32,13 @@ import {
   Wrapper,
 } from "./style";
 
-/**
- * NOTE(thuang): Update this count to match the amount of filters we render,
- * so that we don't accidentally clear filters when people collapse the sidebar
- */
-const FILTERS_COUNT = 4;
+const filterOptions = createFilterOptions({
+  stringify: (option: RawDataset) =>
+    `${option.label} ${option.collection_label}`,
+});
 
 const DropdownMenuProps = {
+  filterOptions,
   getOptionSelected,
 };
 
@@ -46,7 +47,6 @@ export interface Props {
 }
 
 export default memo(function Filters({ isLoading }: Props): JSX.Element {
-  const readyFilterCount = useRef(0);
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
   const [availableFilters, setAvailableFilters] =
@@ -90,6 +90,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     const newAvailableFilters = {
       datasets: rawDatasets.map((dataset) => ({
         ...dataset,
+        details: dataset.collection_label,
         name: dataset.label,
       })),
       development_stage_terms: rawDevelopmentStages,
@@ -129,23 +130,25 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   }, [sex_terms, sexes]);
 
   const handleFilterChange = useCallback(
-    function handleFilterChange(
+    function handleFilterChange_(
       key: keyof IFilters
     ): (options: DefaultMenuSelectOption[] | null) => void {
-      return (options: DefaultMenuSelectOption[] | null): void => {
-        if (!dispatch || !options) return;
+      let currentOptions: DefaultMenuSelectOption[] | null = null;
 
-        /**
-         * (thuang): We don't want to dispatch empty selection at the following
-         * times:
-         * 1. At mount
-         * 2. When we have just loaded available filter options
-         * Thus, FILTERS_COUNT * 2 (conditions)
-         */
-        if (readyFilterCount.current !== FILTERS_COUNT * 2) {
-          readyFilterCount.current++;
+      return (options: DefaultMenuSelectOption[] | null): void => {
+        if (
+          !dispatch ||
+          !options ||
+          // If the options are the same
+          JSON.stringify(options.sort(sortOptions)) ===
+            JSON.stringify(currentOptions?.sort(sortOptions)) ||
+          // If the options change from null to [], which is the default value
+          (currentOptions === null && JSON.stringify(options) === "[]")
+        ) {
           return;
         }
+
+        currentOptions = options;
 
         dispatch(
           selectFilters(
@@ -155,7 +158,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         );
       };
     },
-    [dispatch, readyFilterCount]
+    [dispatch]
   );
 
   const handleDatasetsChange = useMemo(
@@ -184,6 +187,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         <div>
           <StyledComplexFilter
             multiple
+            search
             label="Dataset"
             options={datasets as unknown as DefaultMenuSelectOption[]}
             onChange={handleDatasetsChange}
@@ -257,4 +261,14 @@ function getOptionSelected(
   value: { id: string }
 ): boolean {
   return option.id === value.id;
+}
+
+function sortOptions(a: DefaultMenuSelectOption, b: DefaultMenuSelectOption) {
+  if (a.name < b.name) {
+    return -1;
+  }
+  if (a.name > b.name) {
+    return 1;
+  }
+  return 0;
 }

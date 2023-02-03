@@ -87,7 +87,10 @@ def random_expression_summary_values(coords):
 
 
 def all_ones_expression_summary_values(coords):
-    return {"nnz": np.ones(len(coords)), "sum": np.ones(len(coords))}
+    return {
+        "nnz": np.ones(len(coords)),
+        "sum": np.ones(len(coords)),
+    }
 
 
 def all_tens_cell_counts_values(coords) -> List[int]:
@@ -265,7 +268,9 @@ def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callab
     tiledb.Array.create(cube_dir, cell_counts_schema, overwrite=True)
 
     with tiledb.open(cube_dir, mode="w") as cube:
-        logical_attr_values: Dict[str, list] = {"n_cells": cell_counts_fn(coords)}
+        logical_attr_values: Dict[str, list] = {
+            "n_cells": cell_counts_fn(coords),
+        }
         assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cell_counts_logical_attrs])
 
         physical_dim_values = dim_values[: len(cell_counts_indexed_dims)]

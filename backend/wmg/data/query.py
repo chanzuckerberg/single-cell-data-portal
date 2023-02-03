@@ -4,7 +4,6 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 from backend.wmg.data.snapshot import WmgSnapshot
-import math
 
 
 class WmgQueryCriteria(BaseModel):
@@ -24,7 +23,10 @@ class WmgQueryCriteria(BaseModel):
 class FmgQueryCriteria(BaseModel):
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    # for now, we will only support finding marker genes for a single cell type.
+    # this is to account for the fact that roll-up becomes much more complex when
+    # multiple cell types are specified.
+    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0, max_items=1)
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
@@ -169,14 +171,10 @@ def retrieve_top_n_markers(query_result, test, n_markers):
     attrs = [f"p_value_{test}", f"effect_size_{test}"]
     col_names = ["p_value", "effect_size"]
     markers = query_result[["gene_ontology_term_id"] + attrs].rename(columns=dict(zip(attrs, col_names)))
+    markers = markers[markers["effect_size"].notna()]
     if n_markers > 0:
         markers = markers.nlargest(n_markers, "effect_size")
-
+    else:
+        markers = markers.sort_values("effect_size", ascending=False)
     records = markers[["gene_ontology_term_id"] + col_names].to_dict(orient="records")
-
-    marker_genes = []
-    for record in records:
-        if not math.isnan(record["p_value"]) and not math.isnan(record["effect_size"]):
-            marker_genes.append(record)
-
-    return marker_genes
+    return records

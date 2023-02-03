@@ -95,8 +95,8 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const canvases = await page.$$("canvas");
-        await expect(canvases.length).not.toBe(0);
+        const heatmap = await page.$$("#blood-chart svg");
+        await expect(heatmap.length).not.toBe(0);
       },
       { page }
     );
@@ -165,8 +165,8 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const canvases = await page.$$("canvas");
-        expect(canvases.length).not.toBe(0);
+        const heatmap = await page.$$("#blood-chart svg");
+        expect(heatmap.length).not.toBe(0);
       },
       { page }
     );
@@ -252,7 +252,7 @@ describe("Where's My Gene", () => {
     await selectFirstNOptions(GENE_COUNT, page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
@@ -280,7 +280,7 @@ describe("Where's My Gene", () => {
     await selectNthOption(2, page);
 
     const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
@@ -322,14 +322,14 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const canvases = await page.$$("canvas");
-        await expect(canvases.length).not.toBe(0);
+        const heatmap = await page.$$("#blood-chart svg");
+        await expect(heatmap.length).not.toBe(0);
       },
       { page }
     );
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
     const beforeCellTypeNames = await getNames(
@@ -346,7 +346,7 @@ describe("Where's My Gene", () => {
         await page.keyboard.press("Backspace");
 
         const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} text`,
+          `${getTestID(GENE_LABELS_ID)} button`,
           page
         );
         const afterCellTypeNames = await getNames(

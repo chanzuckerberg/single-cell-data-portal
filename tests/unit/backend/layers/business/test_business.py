@@ -61,11 +61,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
-            cls.database_provider._drop_schema("persistence_schema")
+            cls.database_provider._drop_schema()
 
     def setUp(self) -> None:
         if self.run_as_integration:
-            self.database_provider._create_schema("persistence_schema")
+            self.database_provider._create_schema()
         else:
             self.database_provider = DatabaseProviderMock()
 
@@ -77,6 +77,16 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
         mock_config.start()
+
+        # TODO: also deduplicate with base test
+        from backend.layers.common import validation
+
+        validation.valid_consortia = {
+            "Consortia 1",
+            "Consortia 2",
+            "Consortia 3",
+            "Consortia 4",
+        }
 
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
@@ -96,7 +106,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         )
 
         self.sample_collection_metadata = CollectionMetadata(
-            "test collection 1", "description of test collection 1", "scientist", "scientist@czi.com", []
+            "test collection 1",
+            "description of test collection 1",
+            "scientist",
+            "scientist@czi.com",
+            [],
+            ["Consortia 1", "Consortia 2"],
         )
 
         self.sample_dataset_metadata = DatasetMetadata(
@@ -127,7 +142,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     def tearDown(self):
         if self.run_as_integration:
-            self.database_provider._drop_schema("persistence_schema")
+            self.database_provider._drop_schema()
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -214,6 +229,18 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         )
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
         self.assertEqual(collection, collection_from_database)
+
+    def test_create_collection_with_consortia_ok(self):
+        """
+        A collection with consortia can be created using `create_collection`
+        """
+        good_consortia = ["Consortia 1", "Consortia 2"]
+        self.sample_collection_metadata.consortia = good_consortia
+        collection = self.business_logic.create_collection(
+            test_user_name, test_curator_name, self.sample_collection_metadata
+        )
+        collection_from_database = self.database_provider.get_collection_version(collection.version_id)
+        self.assertEqual(good_consortia, collection_from_database.metadata.consortia)
 
     def test_create_collection_with_links_ok(self):
         """
@@ -418,6 +445,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             contact_name="new contact name",
             contact_email="new_email@czi.com",
             links=[Link("test link 2", "other", "http://example.com/other")],
+            consortia=["Consortia 1"],
         )
 
         self.business_logic.update_collection_version(version.version_id, body)
@@ -428,6 +456,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.assertEqual(updated_version.metadata.contact_name, body.contact_name)
         self.assertEqual(updated_version.metadata.contact_email, body.contact_email)
         self.assertEqual(updated_version.metadata.links, body.links)
+        self.assertEqual(updated_version.metadata.consortia, body.consortia)
 
     def test_update_collection_partial_ok(self):
         """
@@ -442,6 +471,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             contact_name=None,
             contact_email=None,
             links=None,
+            consortia=None,
         )
 
         self.business_logic.update_collection_version(version.version_id, body)
@@ -456,6 +486,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.assertEqual(updated_version.metadata.contact_name, self.sample_collection_metadata.contact_name)
         self.assertEqual(updated_version.metadata.contact_email, self.sample_collection_metadata.contact_email)
         self.assertEqual(updated_version.metadata.links, self.sample_collection_metadata.links)
+        self.assertEqual(updated_version.metadata.consortia, self.sample_collection_metadata.consortia)
 
     def test_update_published_collection_fail(self):
         """
@@ -468,6 +499,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             contact_name="new contact name",
             contact_email="new_email@czi.com",
             links=None,
+            consortia=None,
         )
 
         with self.assertRaises(CollectionUpdateException):
@@ -495,6 +527,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             contact_name=None,
             contact_email=None,
             links=links,
+            consortia=None,
         )
 
         self.business_logic.update_collection_version(version.version_id, body)
@@ -524,6 +557,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             contact_name=None,
             contact_email=None,
             links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            consortia=None,
         )
 
         expected_updated_publisher_metadata = {"authors": ["New Test Author"]}
@@ -550,7 +584,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
-        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.NA)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
     def test_add_dataset_to_unpublished_collection_ok(self):
@@ -921,7 +955,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         """
         A collection version can only be created on an existing collection
         """
-        non_existing_collection_id = self.database_provider._generate_id()
+        non_existing_collection_id = CollectionId()
         with self.assertRaises(CollectionVersionException):
             self.business_logic.create_collection_version(CollectionId(non_existing_collection_id))
 
@@ -1003,7 +1037,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
     def test_publish_version_with_updated_metadata_ok(self):
         """
-        Publishing a collection with updated metadata should succeed
+        Publishing a collection with updated metadata should succeed, but not update revised_at
         """
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
@@ -1014,6 +1048,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
             contact_name="new contact name",
             contact_email="new_email@czi.com",
             links=None,
+            consortia=None,
         )
 
         self.assertIsNone(new_version.published_at)
@@ -1022,7 +1057,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.business_logic.publish_collection_version(new_version.version_id)
 
         new_version_from_db = self.database_provider.get_collection_version(new_version.version_id)
-        self.assertIsNotNone(new_version_from_db.published_at)
+        # Canonical Collection's revised_at should NOT be updated for collection metadata only revisions
+        self.assertIsNone(new_version_from_db.canonical_collection.revised_at)
         self.assertEqual(published_collection.collection_id, new_version_from_db.collection_id)
         self.assertEqual(new_version.version_id, new_version_from_db.version_id)
         self.assertEqual([d.version_id for d in new_version.datasets], new_version_from_db.datasets)
@@ -1064,8 +1100,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(1, len(version_from_db.datasets))
 
         # The old version should still have two datasets (after publishing)
-        version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
-        self.assertEqual(2, len(version_from_db.datasets))
+        old_version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
+        self.assertEqual(2, len(old_version_from_db.datasets))
+
+        # The Canonical Collection should have an updated revised_at timestamp
+        self.assertEqual(version_from_db.canonical_collection.revised_at, version_from_db.published_at)
+        self.assertTrue(version_from_db.canonical_collection.revised_at > old_version_from_db.published_at)
 
         # Get collection retrieves the new version (with one datasets)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
@@ -1105,8 +1145,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(3, len(version_from_db.datasets))
 
         # The old version should still have two datasets (after publishing)
-        version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
-        self.assertEqual(2, len(version_from_db.datasets))
+        old_version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
+        self.assertEqual(2, len(old_version_from_db.datasets))
+
+        # The Canonical Collection should have an updated revised_at timestamp
+        self.assertEqual(version_from_db.canonical_collection.revised_at, version_from_db.published_at)
+        self.assertTrue(version_from_db.canonical_collection.revised_at > old_version_from_db.published_at)
 
         # Get collection retrieves the new version (with three datasets, including the new one)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
@@ -1156,9 +1200,13 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], version_from_db.datasets)
 
         # The old version should have the correct datasets (after publishing)
-        version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
-        self.assertEqual(2, len(version_from_db.datasets))
-        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], version_from_db.datasets)
+        old_version_from_db = self.database_provider.get_collection_version(published_collection.version_id)
+        self.assertEqual(2, len(old_version_from_db.datasets))
+        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], old_version_from_db.datasets)
+
+        # The Canonical Collection should have an updated revised_at timestamp
+        self.assertEqual(version_from_db.canonical_collection.revised_at, version_from_db.published_at)
+        self.assertTrue(version_from_db.canonical_collection.revised_at > old_version_from_db.published_at)
 
         # Get collection retrieves the new version (with two datasets, including the replaced one)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)

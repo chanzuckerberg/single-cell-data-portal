@@ -2,11 +2,10 @@ import base64
 import json
 import time
 import unittest
-from unittest.mock import Mock, patch
-from backend.layers.api.portal_api import PortalApi
+from unittest.mock import patch
 from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
-from tests.unit.backend.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.layers.common.base_test import BaseTest
+from tests.unit.backend.layers.api.config import TOKEN_EXPIRES
 
 
 class BaseAuthAPITest(unittest.TestCase):
@@ -19,7 +18,7 @@ class BaseAuthAPITest(unittest.TestCase):
         self.mock_assert_authorized_token.start()
 
         self.mock_config = patch(
-            "backend.portal.api.curation.v1.curation.collections.common.get_collections_base_url",
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
             return_value="https://frontend.corporanet.local:3000",
         )
         self.mock_config.start()
@@ -36,6 +35,9 @@ class BaseAuthAPITest(unittest.TestCase):
 
     def make_not_owner_header(self):
         return {"Authorization": "Bearer " + "not_owner", "Content-Type": "application/json"}
+
+    def make_not_auth_header(self):
+        return {"Content-Type": "application/json"}
 
     def _mock_assert_authorized_token(self, token: str, audience: str = None):
         if token == "owner":
@@ -57,24 +59,25 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         self.mock.start()
 
         self.cloudfront_provider = CDNProviderInterface()
-        pa = PortalApi(self.business_logic, self.cloudfront_provider)
-
-        import backend.layers.api.router
-
-        backend.layers.api.router.portal_api = Mock(return_value=pa)
 
         from backend.api_server.app import app
 
         self.app = app.test_client(use_cookies=False)
 
-        # enable mocking of business logic for the curation API
-        self.mock_business_logic = patch("backend.layers.api.router._business_logic", new=self.business_logic)
+        # Mock all the dependencies of the API classes
+        self.mock_business_logic = patch("backend.portal.api.providers._business_logic", new=self.business_logic)
         self.mock_business_logic.start()
+
+        self.mock_cloudfront_provider = patch(
+            "backend.portal.api.providers._cloudfront_provider", new=self.cloudfront_provider
+        )
+        self.mock_cloudfront_provider.start()
 
     def tearDown(self):
         super().tearDown()
-        # disable mocking of business logic for the curation API
+        # Disable mocking of business logic and cloudfront provider
         self.mock_business_logic.stop()
+        self.mock_cloudfront_provider.stop()
 
     def get_cxguser_token(self, user="owner"):
         """

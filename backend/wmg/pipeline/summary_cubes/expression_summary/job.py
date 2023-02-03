@@ -26,7 +26,11 @@ def _load(
     Build expression summary cube in memory and write to disk
     """
     dims, vals = build_in_mem_cube(
-        gene_ontology_term_ids, cube_index, expression_summary_non_indexed_dims, cube_sum, cube_nnz
+        gene_ontology_term_ids,
+        cube_index,
+        expression_summary_non_indexed_dims,
+        cube_sum,
+        cube_nnz,
     )
 
     logger.debug("Saving cube to tiledb")

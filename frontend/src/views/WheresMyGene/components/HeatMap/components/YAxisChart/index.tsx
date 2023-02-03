@@ -1,8 +1,5 @@
-import { memo, useContext, useEffect, useMemo, useState } from "react";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
-import { BOOLEAN } from "src/common/localStorage/set";
 import Image from "next/image";
+import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
@@ -10,27 +7,33 @@ import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTyp
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
+  formatLabel,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
   Y_AXIS_CHART_WIDTH_PX,
-  formatLabel,
 } from "../../utils";
-import ReplaySVG from "./icons/replay.svg";
 import InfoSVG from "./icons/info-sign-icon.svg";
+import ReplaySVG from "./icons/replay.svg";
 import {
+  CellCountLabelStyle,
+  CellTypeButtonStyle,
   Container,
+  FlexRow,
+  FlexRowJustified,
+  InfoButtonWrapper,
   ResetImageWrapper,
+  StyledImage,
   TissueName,
   TissueWrapper,
   Wrapper,
-  StyledImage,
-  CellTypeButtonStyle,
-  CellCountLabelStyle,
-  FlexRowJustified,
-  FlexRow,
-  InfoButtonWrapper,
 } from "./style";
 import { SELECTED_STYLE } from "../../style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveImage";
 
 const MAX_DEPTH = 2;
 
@@ -58,7 +61,6 @@ export default memo(function YAxisChart({
   const tissueKey = tissue.replace(/\s+/g, "-");
 
   const dispatch = useContext(DispatchContext);
-  const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
 
   const { handleCellTypeClick } = useDeleteGenesAndCellTypes();
 
@@ -74,9 +76,10 @@ export default memo(function YAxisChart({
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
-
+  
+  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
-    <Wrapper id={`${tissue}-y-axis`}>
+    <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
         <TissueName>{capitalize(tissue)}</TissueName>
         {hasDeletedCellTypes && (
@@ -104,7 +107,7 @@ export default memo(function YAxisChart({
             const { name, depth = 0 } = deserializeCellTypeMetadata(
               cellType as CellTypeMetadata
             );
-            const displayDepth = Math.min(depth, MAX_DEPTH);
+            const displayDepth = isRollup ? 0 : Math.min(depth, MAX_DEPTH);
 
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
@@ -124,7 +127,7 @@ export default memo(function YAxisChart({
                 tissueID={tissueID}
                 tissue={tissue}
                 generateMarkerGenes={generateMarkerGenes}
-                isMarkerGenes={isMarkerGenes}
+                date-test-id="cell-type-label"
               />
             );
           })}
@@ -143,13 +146,11 @@ const CellTypeButton = ({
   name,
   metadata,
   onClick,
-  isMarkerGenes,
   generateMarkerGenes,
   tissueID,
   tissue,
 }: {
   name: string;
-  isMarkerGenes: boolean;
   metadata: CellTypeMetadata;
   onClick: () => void;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
@@ -170,8 +171,10 @@ const CellTypeButton = ({
     formattedString !== total_count.toString() ? "+" : ""
   }`;
 
+  const cellType = deserializeCellTypeMetadata(metadata);
+
   return (
-    <FlexRowJustified>
+    <FlexRowJustified data-test-id="cell-type-label-count">
       <FlexRow>
         <CellTypeButtonStyle
           active={active}
@@ -179,35 +182,43 @@ const CellTypeButton = ({
             setActive(!active);
             onClick();
           }}
+          data-test-id="cell-type-label"
         >
           {name}
         </CellTypeButtonStyle>
-        {!FMG_EXCLUDE_TISSUES.includes(tissue) && (
-          <InfoButtonWrapper
-            style={{
-              paddingTop: "3px",
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              if (isMarkerGenes) {
-                const cellType = deserializeCellTypeMetadata(metadata);
-                generateMarkerGenes(cellType, tissueID);
-              }
-            }}
-          >
-            <StyledImage
-              id={"marker-gene-button"}
-              src={InfoSVG.src}
-              width="10"
-              height="10"
-              alt={`display marker genes for ${
-                deserializeCellTypeMetadata(metadata).name
-              }`}
-            />
-          </InfoButtonWrapper>
-        )}
+        {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
+          cellType &&
+          cellType.total_count > 25 && (
+            <InfoButtonWrapper
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+              style={{
+                cursor: "pointer",
+                paddingTop: "3px",
+              }}
+              onClick={() => {
+                if (cellType) {
+                  generateMarkerGenes(cellType, tissueID);
+                  track(EVENTS.WMG_FMG_INFO_CLICKED, {
+                    combination: `${cellType.name}, ${tissue}}`,
+                  });
+                }
+              }}
+            >
+              <StyledImage
+                id={"marker-gene-button"}
+                src={InfoSVG.src}
+                width="10"
+                height="10"
+                alt={`display marker genes for ${
+                  deserializeCellTypeMetadata(metadata).name
+                }`}
+              />
+            </InfoButtonWrapper>
+          )}
       </FlexRow>
-      <CellCountLabelStyle>{countString}</CellCountLabelStyle>
+      <CellCountLabelStyle data-test-id="cell-count">
+        {countString}
+      </CellCountLabelStyle>
     </FlexRowJustified>
   );
 };

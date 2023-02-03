@@ -1,5 +1,4 @@
 import copy
-import uuid
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Union
 
@@ -58,17 +57,13 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.datasets = {}  # rename to: active_datasets
         self.datasets_versions = {}
 
-    @staticmethod
-    def _generate_id():
-        return str(uuid.uuid4())
-
     # TODO: add publisher_metadata here?
     def create_canonical_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
     ) -> CollectionVersion:
-        collection_id = CollectionId(self._generate_id())
-        version_id = CollectionVersionId(self._generate_id())
-        canonical = CanonicalCollection(collection_id, None, None, False)
+        collection_id = CollectionId()
+        version_id = CollectionVersionId()
+        canonical = CanonicalCollection(collection_id, None, None, None, False)
         version = CollectionVersion(
             collection_id=collection_id,
             version_id=version_id,
@@ -146,10 +141,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         cc = self.collections[collection_id.id]
         current_version_id = cc.version_id
         current_version = self.collections_versions[current_version_id.id]
-        new_version_id = CollectionVersionId(self._generate_id())
+        new_version_id = CollectionVersionId()
         # Note: since datasets are immutable, there is no need to clone datasets here,
         # but the list that contains datasets needs to be copied, since it's a pointer.
-        self.datasets_versions
         new_dataset_list = copy.deepcopy(current_version.datasets)
 
         collection_version = CollectionVersion(
@@ -197,6 +191,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
+        update_revised_at: bool = False,
     ) -> None:
 
         published_at = published_at if published_at else datetime.utcnow()
@@ -208,15 +203,22 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 self.datasets[dataset_version.dataset_id.id].published_at = published_at
             if self.datasets[dataset_version.dataset_id.id].revised_at is None:
                 self.datasets[dataset_version.dataset_id.id].revised_at = published_at
+            dataset_version.canonical_dataset.dataset_version_id = dataset_version.version_id
         cc = self.collections.get(collection_id.id)
         if cc is None:
             self.collections[collection_id.id] = CanonicalCollection(
-                id=collection_id, version_id=version_id, originally_published_at=published_at, tombstoned=False
+                id=collection_id,
+                version_id=version_id,
+                originally_published_at=published_at,
+                revised_at=None,
+                tombstoned=False,
             )
 
         else:
             new_cc = copy.deepcopy(cc)
             new_cc.version_id = version_id
+            if update_revised_at:
+                new_cc.revised_at = published_at
             self.collections[collection_id.id] = new_cc
         self.collections_versions[version_id.id].published_at = published_at
 
@@ -262,8 +264,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         # Creates a dataset and initializes it with one version
-        dataset_id = DatasetId(self._generate_id())
-        version_id = DatasetVersionId(self._generate_id())
+        dataset_id = DatasetId()
+        version_id = DatasetVersionId()
         collection_version = self.collections_versions[collection_version_id.id]
         version = DatasetVersion(
             dataset_id=dataset_id,
@@ -290,7 +292,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
     ) -> DatasetArtifactId:
         version = self.datasets_versions[version_id.id]
-        artifact_id = DatasetArtifactId(self._generate_id())
+        artifact_id = DatasetArtifactId()
         version.artifacts.append(DatasetArtifact(artifact_id, artifact_type, artifact_uri))
         return artifact_id
 
@@ -335,7 +337,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def replace_dataset_in_collection_version(
         self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
     ) -> DatasetVersion:
-        new_version_id = DatasetVersionId(self._generate_id())
+        new_version_id = DatasetVersionId()
         old_version = self.get_dataset_version(old_dataset_version_id)
         collection_version = self.collections_versions[collection_version_id.id]
         new_version = DatasetVersion(

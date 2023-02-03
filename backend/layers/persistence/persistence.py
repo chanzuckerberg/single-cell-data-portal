@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any, Iterable, List, Optional
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, ProgrammingError
 from sqlalchemy.orm import sessionmaker
 
 from backend.common.corpora_config import CorporaDbConfig
@@ -32,12 +32,13 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.business.exceptions import CollectionIsPublishedException
+from backend.layers.persistence.constants import SCHEMA_NAME
 from backend.layers.persistence.orm import (
-    Collection as CollectionTable,
-    CollectionVersion as CollectionVersionTable,
-    Dataset as DatasetTable,
-    DatasetArtifact as DatasetArtifactTable,
-    DatasetVersion as DatasetVersionTable,
+    CollectionTable,
+    CollectionVersionTable,
+    DatasetTable,
+    DatasetArtifactTable,
+    DatasetVersionTable,
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
 
@@ -45,27 +46,31 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseProvider(DatabaseProviderInterface):
-    def __init__(self, database_uri: str = None, schema_name: str = "persistence_schema") -> None:
+    def __init__(self, database_uri: str = None, schema_name: str = SCHEMA_NAME) -> None:
         if not database_uri:
             database_uri = CorporaDbConfig().database_uri
         self._engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
         self._session_maker = sessionmaker(bind=self._engine)
+        self._schema_name = schema_name
         try:
-            self._create_schema(schema_name)
+            self._create_schema()
         except Exception:
             pass
 
-    def _drop_schema(self, schema_name: str):
+    def _drop_schema(self):
         from sqlalchemy.schema import DropSchema
 
-        self._engine.execute(DropSchema(schema_name, cascade=True))
+        try:
+            self._engine.execute(DropSchema(self._schema_name, cascade=True))
+        except ProgrammingError:
+            pass
 
-    def _create_schema(self, schema_name: str):
+    def _create_schema(self):
         from sqlalchemy.schema import CreateSchema
         from backend.layers.persistence.orm import metadata
 
-        self._engine.execute(CreateSchema(schema_name))
-        metadata.schema = schema_name
+        self._engine.execute(CreateSchema(self._schema_name))
+        metadata.schema = self._schema_name
         metadata.create_all(bind=self._engine)
 
     @contextmanager
@@ -88,17 +93,13 @@ class DatabaseProvider(DatabaseProviderInterface):
             if session is not None:
                 session.close()
 
-    @staticmethod
-    def _generate_id():
-        return str(uuid.uuid4())
-
     def _row_to_collection_version(self, row: Any, canonical_collection: CanonicalCollection) -> CollectionVersion:
         return CollectionVersion(
             collection_id=CollectionId(str(row.collection_id)),
-            version_id=CollectionVersionId(str(row.version_id)),
+            version_id=CollectionVersionId(str(row.id)),
             owner=row.owner,
             curator_name=row.curator_name,
-            metadata=CollectionMetadata.from_json(row.metadata),
+            metadata=CollectionMetadata.from_json(row.collection_metadata),
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
             published_at=row.published_at,
@@ -111,10 +112,10 @@ class DatabaseProvider(DatabaseProviderInterface):
     ) -> CollectionVersionWithDatasets:
         return CollectionVersionWithDatasets(
             collection_id=CollectionId(str(row.collection_id)),
-            version_id=CollectionVersionId(str(row.version_id)),
+            version_id=CollectionVersionId(str(row.id)),
             owner=row.owner,
             curator_name=row.curator_name,
-            metadata=CollectionMetadata.from_json(row.metadata),
+            metadata=CollectionMetadata.from_json(row.collection_metadata),
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=datasets,
             published_at=row.published_at,
@@ -134,13 +135,13 @@ class DatabaseProvider(DatabaseProviderInterface):
             status = row.status
         else:
             status = DatasetStatus.from_json(row.status)
-        if type(row.metadata) is DatasetMetadata or row.metadata is None:
-            metadata = row.metadata
+        if type(row.dataset_metadata) is DatasetMetadata or row.dataset_metadata is None:
+            metadata = row.dataset_metadata
         else:
-            metadata = DatasetMetadata.from_json(row.metadata)
+            metadata = DatasetMetadata.from_json(row.dataset_metadata)
         return DatasetVersion(
             DatasetId(str(row.dataset_id)),
-            DatasetVersionId(str(row.version_id)),
+            DatasetVersionId(str(row.id)),
             CollectionId(str(row.collection_id)),
             status,
             metadata,
@@ -166,15 +167,16 @@ class DatabaseProvider(DatabaseProviderInterface):
                 CollectionId(str(collection.id)),
                 None if collection.version_id is None else CollectionVersionId(str(collection.version_id)),
                 collection.originally_published_at,
-                collection.tombstoned,
+                collection.revised_at,
+                collection.tombstone,
             )
 
     def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:
         with self._manage_session() as session:
-            dataset = session.query(DatasetTable).filter_by(dataset_id=dataset_id.id).one_or_none()
+            dataset = session.query(DatasetTable).filter_by(id=dataset_id.id).one_or_none()
             if dataset is None:
                 return None
-            return CanonicalDataset(dataset_id, DatasetVersionId(str(dataset.dataset_version_id)), dataset.published_at)
+            return CanonicalDataset(dataset_id, DatasetVersionId(str(dataset.version_id)), dataset.published_at)
 
     def create_canonical_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
@@ -183,22 +185,19 @@ class DatabaseProvider(DatabaseProviderInterface):
         Creates a new canonical collection, generating a canonical collection_id and a new version_id.
         Returns the newly created CollectionVersion
         """
-        collection_id = CollectionId((self._generate_id()))
-        version_id = CollectionVersionId((self._generate_id()))
+        collection_id = CollectionId()
+        version_id = CollectionVersionId()
         now = datetime.utcnow()
         canonical_collection = CollectionTable(
-            id=collection_id.id,
-            version_id=None,
-            tombstoned=False,
-            originally_published_at=None,
+            id=collection_id.id, version_id=None, tombstone=False, originally_published_at=None, revised_at=None
         )
 
         collection_version_row = CollectionVersionTable(
+            id=version_id.id,
             collection_id=collection_id.id,
-            version_id=version_id.id,
             owner=owner,
             curator_name=curator_name,
-            metadata=collection_metadata.to_json(),
+            collection_metadata=collection_metadata.to_json(),
             publisher_metadata=None,
             published_at=None,
             created_at=now,
@@ -210,7 +209,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(collection_version_row)
 
             return self._row_to_collection_version(
-                collection_version_row, CanonicalCollection(collection_id, None, None, False)
+                collection_version_row, CanonicalCollection(collection_id, None, None, None, False)
             )
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
@@ -218,7 +217,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Retrieves a specific collection version by id
         """
         with self._manage_session() as session:
-            collection_version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one_or_none()
+            collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one_or_none()
             if collection_version is None:
                 return None
             collection_id = CollectionId(str(collection_version.collection_id))
@@ -234,7 +233,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Retrieves a specific collection version by id, with datasets
         """
         with self._manage_session() as session:
-            collection_version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one_or_none()
+            collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one_or_none()
             if collection_version is None:
                 return None
             collection_id = CollectionId(str(collection_version.collection_id))
@@ -252,7 +251,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             if version_id is None or version_id[0] is None:
                 return None
             version_id = version_id[0]
-            collection_version = session.query(CollectionVersionTable).filter_by(version_id=version_id).one()
+            collection_version = session.query(CollectionVersionTable).filter_by(id=version_id).one()
             canonical_collection = self.get_canonical_collection(collection_id)
             datasets = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
             return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, datasets)
@@ -287,7 +286,8 @@ class DatabaseProvider(DatabaseProviderInterface):
                     CollectionId(str(collection_row.id)),
                     None if collection_row.version_id is None else CollectionVersionId(str(collection_row.version_id)),
                     collection_row.originally_published_at,
-                    collection_row.tombstoned,
+                    collection_row.revised_at,
+                    collection_row.tombstone,
                 )
 
             result = []
@@ -309,25 +309,24 @@ class DatabaseProvider(DatabaseProviderInterface):
                 canonical_collections = (
                     session.query(CollectionTable)
                     .filter(CollectionTable.version_id.isnot(None))
-                    .filter_by(tombstoned=False)
+                    .filter_by(tombstone=False)
                     .all()
                 )
 
             mapped_version_ids = [i.version_id for i in canonical_collections]
             versions = (
-                session.query(CollectionVersionTable)
-                .filter(CollectionVersionTable.version_id.in_(mapped_version_ids))
-                .all()
+                session.query(CollectionVersionTable).filter(CollectionVersionTable.id.in_(mapped_version_ids)).all()
             )  # noqa
 
             for version in versions:
                 # TODO: should be optimized using a map
-                canonical_row = next(cc for cc in canonical_collections if cc.version_id == version.version_id)
+                canonical_row = next(cc for cc in canonical_collections if cc.version_id == version.id)
                 canonical = CanonicalCollection(
                     CollectionId(str(canonical_row.id)),
                     CollectionVersionId(str(canonical_row.version_id)),
                     canonical_row.originally_published_at,
-                    canonical_row.tombstoned,
+                    canonical_row.revised_at,
+                    canonical_row.tombstone,
                 )
                 yield self._row_to_collection_version(version, canonical)
 
@@ -338,7 +337,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             canonical_collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()
             if canonical_collection:
-                canonical_collection.tombstoned = True
+                canonical_collection.tombstone = True
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
@@ -347,8 +346,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         Saves collection metadata for a collection version
         """
         with self._manage_session() as session:
-            version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one()
-            version.metadata = collection_metadata.to_json()
+            version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
+            version.collection_metadata = collection_metadata.to_json()
 
     def save_collection_publisher_metadata(
         self, version_id: CollectionVersionId, publisher_metadata: Optional[dict]
@@ -357,7 +356,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Saves publisher metadata for a collection version. Specify None to remove it
         """
         with self._manage_session() as session:
-            version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one()
+            version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             version.publisher_metadata = json.dumps(publisher_metadata)
 
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
@@ -368,12 +367,12 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             current_version_id = session.query(CollectionTable.version_id).filter_by(id=collection_id.id).one()[0]
-            current_version = session.query(CollectionVersionTable).filter_by(version_id=current_version_id).one()
-            new_version_id = self._generate_id()
+            current_version = session.query(CollectionVersionTable).filter_by(id=current_version_id).one()
+            new_version_id = CollectionVersionId()
             new_version = CollectionVersionTable(
-                version_id=new_version_id,
+                id=new_version_id.id,
                 collection_id=collection_id.id,
-                metadata=current_version.metadata,
+                collection_metadata=current_version.collection_metadata,
                 owner=current_version.owner,
                 curator_name=current_version.curator_name,
                 publisher_metadata=current_version.publisher_metadata,
@@ -389,7 +388,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Deletes a collection version, if it is unpublished.
         """
         with self._manage_session() as session:
-            version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one_or_none()
+            version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one_or_none()
             if version:
                 if version.published_at:
                     raise CollectionIsPublishedException(f"Published Collection Version {version_id} cannot be deleted")
@@ -400,55 +399,37 @@ class DatabaseProvider(DatabaseProviderInterface):
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
+        update_revised_at: bool = False,
     ) -> None:
         """
-        Finalizes a collection version. This is equivalent to calling:
-        1. update_collection_version_mapping
-        2. set_collection_version_published_at
-        3. finalize_dataset_versions
+        Finalizes a collection version
         """
         published_at = published_at if published_at else datetime.utcnow()
-        self.update_collection_version_mapping(collection_id, version_id, published_at)
-        self.set_collection_version_published_at(version_id, published_at)
-        self.finalize_dataset_versions(version_id, published_at)
-
-    def update_collection_version_mapping(
-        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: datetime
-    ) -> None:
-        """
-        Updates the mapping between the canonical collection `collection_id` and its `version_id`
-        """
         with self._manage_session() as session:
+            # update canonical collection -> collection version mapping
             collection = session.query(CollectionTable).filter_by(id=collection_id.id).one()
             collection.version_id = version_id.id
+
+            # update canonical collection timestamps depending on whether this is its first publish
             if collection.originally_published_at is None:
                 collection.originally_published_at = published_at
+            # if not first publish, update revised_at if flagged to do so
+            elif update_revised_at:
+                collection.revised_at = published_at
 
-    def set_collection_version_published_at(self, version_id: CollectionVersionId, published_at: datetime) -> None:
-        """
-        Sets the `published_at` datetime for a collection version
-        """
-        with self._manage_session() as session:
-            collection_version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one()
+            # update collection version
+            collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             collection_version.published_at = published_at
 
-    def finalize_dataset_versions(self, version_id: CollectionVersionId, published_at: datetime) -> None:
-        """
-        1. Updates the mapping between the canonical dataset and the latest published dataset version for each dataset
-        in a CollectionVersion
-        2. Sets the each canonical dataset's 'published_at' if not previously set
-        """
-        with self._manage_session() as session:
-            dataset_version_ids = (
-                session.query(CollectionVersionTable.datasets).filter_by(version_id=version_id.id).one()[0]
-            )
+            # finalize collection version's dataset versions
+            dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
             for dataset_version, dataset in (
                 session.query(DatasetVersionTable, DatasetTable)
-                .filter(DatasetVersionTable.dataset_id == DatasetTable.dataset_id)
-                .filter(DatasetVersionTable.version_id.in_(dataset_version_ids))
+                .filter(DatasetVersionTable.dataset_id == DatasetTable.id)
+                .filter(DatasetVersionTable.id.in_(dataset_version_ids))
                 .all()
             ):
-                dataset.version_id = dataset_version.version_id
+                dataset.version_id = dataset_version.id
                 if dataset.published_at is None:
                     dataset.published_at = published_at
 
@@ -457,9 +438,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns a dataset version by id.
         """
         with self._manage_session() as session:
-            dataset_version = (
-                session.query(DatasetVersionTable).filter_by(version_id=dataset_version_id.id).one_or_none()
-            )
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one_or_none()
             if dataset_version is None:
                 return None
             return self._hydrate_dataset_version(dataset_version)
@@ -487,7 +466,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         acc = []
         with self._manage_session() as session:
             for version in session.query(DatasetVersionTable).all():  # noqa
-                if str(version.version_id) in active_datasets:
+                if str(version.id) in active_datasets:
                     acc.append(self._hydrate_dataset_version(version))
         return acc
 
@@ -520,20 +499,16 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             collection_id = (
-                session.query(CollectionVersionTable.collection_id)
-                .filter_by(version_id=collection_version_id.id)
-                .one()[0]
+                session.query(CollectionVersionTable.collection_id).filter_by(id=collection_version_id.id).one()[0]
             )
-        dataset_id = DatasetId(self._generate_id())
-        dataset_version_id = DatasetVersionId(self._generate_id())
-        canonical_dataset = DatasetTable(
-            dataset_id=dataset_id.id, dataset_version_id=dataset_version_id.id, published_at=None
-        )
+        dataset_id = DatasetId()
+        dataset_version_id = DatasetVersionId()
+        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=dataset_version_id.id, published_at=None)
         dataset_version = DatasetVersionTable(
-            version_id=dataset_version_id.id,
+            id=dataset_version_id.id,
             dataset_id=dataset_id.id,
             collection_id=collection_id,
-            metadata=None,
+            dataset_metadata=None,
             artifacts=list(),
             status=DatasetStatus.empty().to_json(),
             created_at=datetime.utcnow(),
@@ -552,11 +527,11 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Adds a dataset artifact to an existing dataset version.
         """
-        artifact_id = DatasetArtifactId(self._generate_id())
+        artifact_id = DatasetArtifactId()
         artifact = DatasetArtifactTable(id=artifact_id.id, type=artifact_type, uri=artifact_uri)
         with self._manage_session() as session:
             session.add(artifact)
-            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=version_id.id).one()
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             artifacts = list(dataset_version.artifacts)
             artifacts.append(uuid.UUID(artifact_id.id))
             dataset_version.artifacts = artifacts
@@ -567,7 +542,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Updates the processing status for a dataset version.
         """
         with self._manage_session() as session:
-            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=version_id.id).one()
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["processing_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
@@ -577,7 +552,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Updates the validation status for a dataset version.
         """
         with self._manage_session() as session:
-            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=version_id.id).one()
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
@@ -587,7 +562,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Updates the upload status for a dataset version.
         """
         with self._manage_session() as session:
-            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=version_id.id).one()
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["upload_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
@@ -599,14 +574,14 @@ class DatabaseProvider(DatabaseProviderInterface):
         Updates the conversion status for a dataset version and for `status_type`
         """
         with self._manage_session() as session:
-            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=version_id.id).one()
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status[status_type] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         with self._manage_session() as session:
-            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=version_id.id).one()
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_message"] = validation_message
             dataset_version.status = json.dumps(dataset_version_status)
@@ -616,7 +591,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns the status for a dataset version
         """
         with self._manage_session() as session:
-            status = session.query(DatasetVersionTable.status).filter_by(version_id=version_id.id).one()
+            status = session.query(DatasetVersionTable.status).filter_by(id=version_id.id).one()
         return DatasetStatus.from_json(status[0])
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
@@ -624,8 +599,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         Sets the metadata for a dataset version
         """
         with self._manage_session() as session:
-            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=version_id.id).one()
-            dataset_version.metadata = metadata.to_json()
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
+            dataset_version.dataset_metadata = metadata.to_json()
 
     def add_dataset_to_collection_version_mapping(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
@@ -634,9 +609,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Adds a mapping between an existing collection version and a dataset version
         """
         with self._manage_session() as session:
-            collection_version = (
-                session.query(CollectionVersionTable).filter_by(version_id=collection_version_id.id).one()
-            )
+            collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
             # TODO: alternatively use postgres `array_append`
             # TODO: make sure that the UUID conversion works
             updated_datasets = list(collection_version.datasets)
@@ -650,9 +623,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Removes a mapping between a collection version and a dataset version
         """
         with self._manage_session() as session:
-            collection_version = (
-                session.query(CollectionVersionTable).filter_by(version_id=collection_version_id.id).one()
-            )
+            collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
             # TODO: alternatively use postgres `array_remove`
             updated_datasets = list(collection_version.datasets)
             updated_datasets.remove(uuid.UUID(dataset_version_id.id))
@@ -667,19 +638,15 @@ class DatabaseProvider(DatabaseProviderInterface):
         # TODO: this method should probably be split into multiple - it contains too much logic
         with self._manage_session() as session:
             collection_id = (
-                session.query(CollectionVersionTable.collection_id)
-                .filter_by(version_id=collection_version_id.id)
-                .one()[0]
+                session.query(CollectionVersionTable.collection_id).filter_by(id=collection_version_id.id).one()[0]
             )  # noqa
-            dataset_id = (
-                session.query(DatasetVersionTable.dataset_id).filter_by(version_id=old_dataset_version_id.id).one()[0]
-            )
-            new_dataset_version_id = DatasetVersionId(self._generate_id())
+            dataset_id = session.query(DatasetVersionTable.dataset_id).filter_by(id=old_dataset_version_id.id).one()[0]
+            new_dataset_version_id = DatasetVersionId()
             new_dataset_version = DatasetVersionTable(
-                version_id=new_dataset_version_id.id,
+                id=new_dataset_version_id.id,
                 dataset_id=dataset_id,
                 collection_id=collection_id,
-                metadata=None,
+                dataset_metadata=None,
                 artifacts=list(),
                 status=DatasetStatus.empty().to_json(),
                 created_at=datetime.utcnow(),
@@ -687,7 +654,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(new_dataset_version)
 
             collection_version = (
-                session.query(CollectionVersionTable).filter_by(version_id=collection_version_id.id).one()
+                session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
             )  # noqa
             # This replaces the dataset while preserving the order of datasets
             datasets = list(collection_version.datasets)
@@ -702,13 +669,11 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns the dataset version mapped to a canonical dataset_id, or None if not existing
         """
         with self._manage_session() as session:
-            canonical_dataset = session.query(DatasetTable).filter_by(dataset_id=dataset_id.id).one_or_none()
+            canonical_dataset = session.query(DatasetTable).filter_by(id=dataset_id.id).one_or_none()
             if canonical_dataset is None:
                 return None
-            if canonical_dataset.dataset_version_id is None:
+            if canonical_dataset.version_id is None:
                 return None
-            dataset_version = (
-                session.query(DatasetVersionTable).filter_by(version_id=canonical_dataset.dataset_version_id).one()
-            )
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=canonical_dataset.version_id).one()
             dataset_version.canonical_dataset = canonical_dataset
             return self._hydrate_dataset_version(dataset_version)

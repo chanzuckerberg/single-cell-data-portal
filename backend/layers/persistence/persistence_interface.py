@@ -6,6 +6,7 @@ from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionId,
+    CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetConversionStatus,
@@ -40,13 +41,19 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+    def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
+        """
+        Retrieves a specific collection version by id, with datasets
+        """
+        pass
+
+    def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         """
         Retrieves the latest mapped version for a collection
         """
         pass
 
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersion]:
+    def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersionWithDatasets]:
         """
         Retrieves all versions for a specific collections, without filtering
         """
@@ -105,7 +112,7 @@ class DatabaseProviderInterface:
         self,
         collection_id: CollectionId,
         version_id: CollectionVersionId,
-        published_at: Optional[datetime],
+        published_at: Optional[datetime] = None,
     ) -> None:
         """
         Finalizes a collection version. This is equivalent to calling:

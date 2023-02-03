@@ -18,6 +18,9 @@ import { ROUTES } from "../constants/routes";
 import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
+import { get } from "src/common/featureFlags";
+import { BOOLEAN } from "src/common/localStorage/set";
+import { FEATURES } from "../featureFlags/features";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -218,7 +221,7 @@ export function useWMGQuery(
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
 
-  query = clobberQueryIfSubsetofPrev(query, [
+  query = clobberQueryIfSubsetOfPrev(query, [
     "gene_ontology_term_ids",
     "tissue_ontology_term_ids",
   ]);
@@ -251,7 +254,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   sex_terms: [],
 };
 
-interface RawDataset {
+export interface RawDataset {
   collection_id: string;
   collection_label: string;
   id: string;
@@ -619,6 +622,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
         tissue_ontology_term_ids,
       },
       include_filter_dims: true,
+      is_rollup: get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE,
     };
   }, [
     selectedGenes,
@@ -636,7 +640,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
 }
 let prevQuery: Query | null;
 
-function clobberQueryIfSubsetofPrev(
+function clobberQueryIfSubsetOfPrev(
   query: Query | null,
   filtersToCheck: (keyof Filter)[]
 ): Query | null {
@@ -651,7 +655,11 @@ function clobberQueryIfSubsetofPrev(
   if (
     (Object.entries(query.filter) as [keyof Filter, string[]][]).every(
       ([key, value]) => {
-        if (!filtersToCheck.includes(key)) return true; //skip filters we're not checking
+        //just check for equality on the filters we aren't checking for subsets
+        if (!filtersToCheck.includes(key))
+          return (
+            JSON.stringify(value) === JSON.stringify(prevQuery?.filter[key])
+          );
         return value.every((elem) => prevQuery?.filter[key].includes(elem));
       }
     )
@@ -764,7 +772,7 @@ export async function fetchMarkerGenes({
   cellTypeID,
   organismID,
   tissueID,
-  test = "binomtest",
+  test = "ttest",
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
   const url = API_URL + API.WMG_MARKER_GENES;
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);

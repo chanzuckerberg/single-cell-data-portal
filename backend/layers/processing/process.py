@@ -21,6 +21,7 @@ from backend.layers.processing.exceptions import (
     UploadFailed,
     ValidationFailed,
 )
+from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -32,8 +33,13 @@ from backend.layers.thirdparty.schema_validator_provider import (
 )
 from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
 
+configure_logging()
+
 
 class ProcessMain(ProcessingLogic):
+    """
+    Main class for the dataset pipeline processing
+    """
 
     process_download_validate: ProcessDownloadValidate
     process_seurat: ProcessSeurat
@@ -85,6 +91,9 @@ class ProcessMain(ProcessingLogic):
         artifact_bucket: Optional[str],
         cxg_bucket: Optional[str],
     ):
+        """
+        Gets called by the step function at every different step, as defined by `step_name`
+        """
         self.log_batch_environment()
         self.logger.info(f"Processing dataset {dataset_id}")
         try:
@@ -102,8 +111,10 @@ class ProcessMain(ProcessingLogic):
         # TODO: this could be better - maybe collapse all these exceptions and pass in the status key and value
         except ProcessingCanceled:
             pass  # TODO: what's the effect of canceling a dataset now?
-        except ValidationFailed:
-            self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID)
+        except ValidationFailed as e:
+            self.update_processing_status(
+                dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, e.errors
+            )
             return False
         except ProcessingFailed:
             self.update_processing_status(dataset_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE)
@@ -143,7 +154,6 @@ class ProcessMain(ProcessingLogic):
 
 
 if __name__ == "__main__":
-
     database_provider = DatabaseProvider()
     s3_provider = S3Provider()
     uri_provider = UriProvider()

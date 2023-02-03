@@ -327,19 +327,21 @@ def migrate_redesign_read(ctx):
                     artifact_ids.append(record_artifact.id)
                     artifacts.append(artifact)
 
-                dataset_version = {
-                    "version_id": dataset_version_id,
-                    "dataset_id": record_dataset.id,
-                    "collection_id": collection_id,
-                    "metadata": dataset_metadata,
-                    "artifacts": artifact_ids,
-                    "status": strip_prefixes_dict(status),
-                    "created_at": record_dataset.created_at,
-                }
+                if not record_dataset.tombstone:
 
-                dataset_ids.append(dataset_version_id)
-                datasets.append(dataset)
-                dataset_versions.append(dataset_version)
+                    dataset_version = {
+                        "version_id": dataset_version_id,
+                        "dataset_id": record_dataset.id,
+                        "collection_id": collection_id,
+                        "metadata": dataset_metadata,
+                        "artifacts": artifact_ids,
+                        "status": strip_prefixes_dict(status),
+                        "created_at": record_dataset.created_at,
+                    }
+
+                    dataset_ids.append(dataset_version_id)
+                    datasets.append(dataset)
+                    dataset_versions.append(dataset_version)
 
             version = {
                 "version_id": version_id,
@@ -414,11 +416,11 @@ def migrate_redesign_write(ctx):
     from sqlalchemy.orm import Session
 
     from backend.layers.persistence.orm import (
-        Collection as CollectionRow,
-        CollectionVersion as CollectionVersionRow,
-        Dataset as DatasetRow,
-        DatasetVersion as DatasetVersionRow,
-        DatasetArtifact as DatasetArtifactRow,
+        CollectionTable as CollectionRow,
+        CollectionVersionTable as CollectionVersionRow,
+        DatasetTable as DatasetRow,
+        DatasetVersionTable as DatasetVersionRow,
+        DatasetArtifactTable as DatasetArtifactRow,
     )
 
     database_pass = os.getenv("PGPASSWORD")
@@ -429,12 +431,6 @@ def migrate_redesign_write(ctx):
     # Uncomment for local
     # database_uri = f"postgresql://postgres:secret@localhost"
     engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
-
-    # engine.execute(schema.CreateSchema('persistence_schema'))
-    # metadata_obj.create_all(bind=engine)
-
-    # from sqlalchemy.schema import DropSchema
-    # engine.execute(DropSchema("persistence_schema", cascade=True))
 
     from sqlalchemy.schema import CreateSchema
     from backend.layers.persistence.orm import metadata
@@ -449,7 +445,7 @@ def migrate_redesign_write(ctx):
                 id=collection["id"],
                 version_id=collection["version_id"],
                 originally_published_at=collection.get("originally_published_at"),
-                tombstoned=collection["tombstoned"],
+                tombstone=collection["tombstoned"],
             )
 
             session.add(canonical_collection_row)
@@ -463,10 +459,10 @@ def migrate_redesign_write(ctx):
                 del link["url"]
 
             collection_version_row = CollectionVersionRow(
+                id=version["version_id"],
                 collection_id=version["collection_id"],
-                version_id=version["version_id"],
                 owner=version["owner"],
-                metadata=json.dumps(coll_metadata),
+                collection_metadata=json.dumps(coll_metadata),
                 publisher_metadata=json.dumps(version["publisher_metadata"]),
                 published_at=version["published_at"],
                 datasets=version["datasets"],
@@ -478,8 +474,8 @@ def migrate_redesign_write(ctx):
 
         for dataset in datasets:
             dataset_row = DatasetRow(
-                dataset_id=dataset["dataset_id"],
-                dataset_version_id=dataset["dataset_version_id"],
+                id=dataset["dataset_id"],
+                version_id=dataset["dataset_version_id"],
                 published_at=dataset.get("published_at"),
             )
 
@@ -491,13 +487,11 @@ def migrate_redesign_write(ctx):
             if not dataset_version.get("status"):
                 continue
 
-            metadata = dataset_version["metadata"]
-
             dataset_version_row = DatasetVersionRow(
-                version_id=dataset_version["version_id"],
+                id=dataset_version["version_id"],
                 dataset_id=dataset_version["dataset_id"],
                 collection_id=dataset_version["collection_id"],
-                metadata=json.dumps(dataset_version["metadata"]),
+                dataset_metadata=json.dumps(dataset_version["metadata"]),
                 artifacts=dataset_version["artifacts"],
                 status=json.dumps(dataset_version["status"]),
                 created_at=dataset_version.get("created_at"),
@@ -515,3 +509,34 @@ def migrate_redesign_write(ctx):
 
             session.add(artifact_row)
         session.commit()
+
+def migrate_redesign_correct_published_at(ctx):
+    """
+    Corrects published_at for redesign
+    """
+
+    from backend.layers.persistence.orm import (
+        CollectionTable as CollectionRow,
+        CollectionVersionTable as CollectionVersionRow,
+        DatasetTable as DatasetRow,
+        DatasetVersionTable as DatasetVersionRow,
+        DatasetArtifactTable as DatasetArtifactRow,
+    )
+
+    with db_session_manager() as session:
+        for record in session.query(DbCollection):
+            if record.published_at is not None and record.revised_at is not None:
+                collection_id = record.id
+                try:
+                    new_version = session.query(CollectionVersionRow).filter_by(collection_id=collection_id).one()
+                    if new_version.published_at >= record.revised_at:
+                        # In this case, this version has been revised past the migration and we shouldn't change it
+                        print("new version's published_at >= old collection revised_at, skipping")
+                        continue
+                    # print(new_version.id, new_version.published_at, record.published_at)
+                    print(f"Setting version {new_version.id}'s published_at from {new_version.published_at} to {record.revised_at}")
+                    # new_version.published_at = record.revised_at # uncomment this line
+                except Exception as e:
+                    # In this case there is more than one version 
+                    print(e)
+

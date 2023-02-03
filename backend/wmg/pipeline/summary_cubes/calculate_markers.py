@@ -13,6 +13,13 @@ from backend.wmg.data.snapshot import (
     DATASET_TO_GENE_IDS_FILENAME,
 )
 from typing import Union, Optional
+from backend.wmg.data.rollup import (
+    rollup_across_cell_type_descendants_array,
+    rollup_across_cell_type_descendants,
+    are_cell_types_colinear,
+)
+from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+from backend.common.utils.exceptions import MarkerGeneCalculationException
 
 
 def _make_hashable(func):
@@ -53,50 +60,20 @@ def _make_hashable(func):
 
     return wrapped
 
+    # this decorator function is required to allow lru_cache to
 
-# this decorator function is required to allow lru_cache to
+
 # memoize the function as dicts, lists, and WmgSnapshot objects
 # are not typically hashable.
 @_make_hashable
 @lru_cache(maxsize=None)
-def _query_tiledb(
-    filters: dict,
+def _query_tiledb_context_memoized(
+    context_filters: dict,
+    group_by_dims,
+    keep_dataset_ids,
     corpus: Optional[Union[WmgSnapshot, str]] = None,
-    group_by_dims: Optional[list] = None,
-    genes: Optional[list] = None,
 ):
-    """
-    Query the tileDB array and return required data artifacts for downstream processing.
-
-    Arguments
-    ---------
-    filters - dict,
-        Dictionary of filters for the target population
-
-    corpus - str or WmgSnapshot, optional, default None
-        If string, it is the path to the snapshot.
-        If WmgSnapshot, it is the snapshot object.
-        If None, the snapshot will be fetched from AWS.
-
-    group_by_dims - list, optional, default None
-        A list of filter dimensions to aggregate the tileDB query result by.
-        If group-by dimensions not provided, use the keys specified in the `filters`
-
-    genes - list, optional, default None
-        A list of genes to calculate true population sizes for.
-        If None, the genes in the aggregated query results are used.
-
-    Returns
-    -------
-    - agg: query result aggregated by filter keys
-    - t_n_cells_sum: a dictionary of 1D numpy arrays with length # of genes
-        each value is the true number of cells present for the combination of
-        filters (keys).
-        Ex: {(cell_type1,tissue1,organism1): np.array([0,100,100,0,80])}
-    - genes: a list of all genes with nonzero expression found in the query result
-    """
-
-    criteria = FmgQueryCriteria(**filters)
+    criteria = FmgQueryCriteria(**context_filters)
 
     if isinstance(corpus, str):
         expression_summary_fmg_cube = tiledb.open(f"{corpus}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}")
@@ -126,12 +103,20 @@ def _query_tiledb(
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
 
-    # if group-by dimensions not provided, use the keys specified in the filter JSON
-    if group_by_dims is None:
-        # depluralize plural keys to match names in schema
-        depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in filters.keys()]
-    else:
-        depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
+    # explicitly filtering both cell counts and expression summary down to just the healthy cells
+    # we do not want to include diseased cells in the marker gene calculation.
+    healthy_filter_es = query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+    query = query[healthy_filter_es]
+
+    healthy_filter_cc = (
+        cell_counts_query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+    )
+    cell_counts_query = cell_counts_query[healthy_filter_cc]
+
+    if query.shape[0] == 0 or cell_counts_query.shape[0] == 0:
+        raise MarkerGeneCalculationException("No cells match the given query criteria.")
+
+    depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
 
     # group-by dimensions for expression summary must include genes
     gb_dims_es = ["gene_ontology_term_id"] + depluralized_keys
@@ -145,12 +130,130 @@ def _query_tiledb(
     agg = query.groupby(gb_dims_es).sum()
     n_cells = cell_counts_query.groupby(gb_dims).sum()["n_total_cells"]
 
-    keep_dataset_ids = group_by_dims is None and "dataset_id" in filters.keys()
-    if genes is None:
-        genes = list(agg.index.levels[0])
+    genes = list(agg.index.levels[0])
+    n_cells_per_gene, n_cells_index = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
 
-    t_n_cells_sum = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
-    return agg, t_n_cells_sum, genes
+    # roll up across cell type descendants
+    if "cell_type_ontology_term_id" in agg.index.names:
+        # make tidy
+        for name in agg.index.names:
+            agg[name] = agg.index.get_level_values(name)
+        agg = rollup_across_cell_type_descendants(agg)
+        # remove tidy
+        agg.drop(columns=agg.index.names, inplace=True)
+
+    return agg, n_cells_per_gene, n_cells_index, genes
+
+
+def _query_tiledb_context(
+    target_filters: dict,
+    context_filters: dict,
+    corpus: Optional[Union[WmgSnapshot, str]] = None,
+):
+    """
+    Query the tileDB array and return required data artifacts for downstream processing.
+
+    Arguments
+    ---------
+    target_filters - dict,
+        Dictionary of filters for the target population
+
+    context_filters - dict,
+        Dictionary of filters for the context population
+
+    corpus - str or WmgSnapshot, optional, default None
+        If string, it is the path to the snapshot.
+        If WmgSnapshot, it is the snapshot object.
+        If None, the snapshot will be fetched from AWS.
+
+    Returns
+    -------
+    - agg: query result aggregated by filter keys
+    - n_cells_context: Series of aggregated cell counts from the context query further
+        stratified by dataset IDs.
+    - n_cells_per_gene: numpy array
+        Each row in the array contains the true number of cells present for the combination of
+        filters in the context query.
+    - n_cells_index: pandas MultiIndex
+        Each element in the index contains the combination of filters for the corresponding row in
+        `n_cells_per_gene`
+    - genes: a list of all genes with nonzero expression found in the query result
+    """
+    keep_dataset_ids = "dataset_ids" in target_filters
+    group_by_dims = _find_groupby_dims(target_filters, context_filters)
+    return _query_tiledb_context_memoized(context_filters, group_by_dims, keep_dataset_ids, corpus=corpus)
+
+
+def _find_groupby_dims(target_filters, context_filters):
+    # find mismatch between target_filter and context_filter
+    # comparisons will be made across the mismatched dimensions
+    target_levels = []
+    for k in target_filters:
+        if k in context_filters:
+            out = list(set(target_filters[k]).symmetric_difference(context_filters[k]))
+            if len(out) > 0:
+                target_levels.append(k[:-1])  # depluralize
+        else:
+            target_levels.append(k[:-1])
+    return target_levels
+
+
+def _query_target(
+    target_filters: dict,
+    context_filters: dict,
+    context_agg: pd.DataFrame,
+    n_cells_per_gene_context: np.array,
+    n_cells_index_context: pd.MultiIndex,
+):
+    """
+    Extract data for the target population from the context query results.
+
+    Arguments
+    ---------
+    target_filters - dict,
+        Dictionary of filters for the target population
+
+    context_filters - dict,
+        Dictionary of filters for the context population
+
+    context_agg - pd.DataFrame
+        Dataframe of aggregated metrics from the context query
+
+    n_cells_per_gene_context - numpy array
+        Each row in the array contains the true number of cells present for the combination of
+        filters in the context query.
+
+    n_cells_index_context - pandas MultiIndex
+        Each element in the index contains the combination of filters for the corresponding row in
+        `n_cells_per_gene_context`.
+
+    Returns
+    -------
+    - agg: target query result aggregated by filter keys
+    - n_cells_per_gene_target: numpy array
+        each row in the array contains the true number of cells present for the target population.
+    """
+
+    # find mismatch between target_filter and context_filter
+    # comparisons will be made across the mismatched dimensions
+    target_levels = _find_groupby_dims(target_filters, context_filters)
+
+    filt = np.ones(context_agg.shape[0], dtype="bool")
+    for level in target_levels:
+        level_values = np.array(list(context_agg.index.get_level_values(level)))
+        filt = np.logical_and(filt, np.in1d(level_values, target_filters[level + "s"]))
+
+    filt_ncells = np.ones(len(n_cells_index_context), dtype="bool")
+    for level in target_levels:
+        level_values = np.array(list(n_cells_index_context.get_level_values(level)))
+        filt_ncells = np.logical_and(filt_ncells, np.in1d(level_values, target_filters[level + "s"]))
+
+    if not np.any(filt) or not np.any(filt_ncells):
+        raise MarkerGeneCalculationException("No cells found for target population.")
+
+    target_agg = context_agg[filt]
+    n_cells_per_gene_target = n_cells_per_gene_context[filt_ncells].sum(axis=0, keepdims=True)
+    return target_agg, n_cells_per_gene_target
 
 
 def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids):
@@ -172,8 +275,16 @@ def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_id
     keep_dataset_ids - boolean
         If True, then the dataset IDs are kept in the index of the returned
         population sizes. Otherwise, the dataset IDs are removed.
-    """
 
+    Returns
+    -------
+    n_cells_array - numpy.ndarray
+        A numpy array with the number of cells per gene for each combination of filters.
+
+    index - pandas.MultiIndex
+        A pandas multi-index with the filter keys as levels corresponding to each row of
+        the returned array.
+    """
     genes_indexer = pd.Series(index=genes, data=range(len(genes)))
 
     # fill in an array stratified across desired filter combinations + dataset ID
@@ -189,8 +300,10 @@ def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_id
     # as a filter by the user.
     if keep_dataset_ids:
         groups = list(n_cells.index)
+        level_names = tuple(n_cells.index.names)
     else:
         groups = list(zip(*[n_cells.index.get_level_values(i) for i in range(1, len(n_cells.index[0]))]))
+        level_names = tuple(n_cells.index.names[1:])
 
     # sum up the cell count arrays across duplicate groups
     # (groups can be duplicate after excluding dataset_ids)
@@ -199,7 +312,16 @@ def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_id
         summer = t_n_cells_sum.get(k, np.zeros(t_n_cells.shape[1]))
         summer += t_n_cells[i]
         t_n_cells_sum[k] = summer
-    return t_n_cells_sum
+
+    unique_groups = list(t_n_cells_sum.keys())
+    n_cells_array = np.vstack(list(t_n_cells_sum.values()))
+    if "cell_type_ontology_term_id" in level_names:
+        cell_type_index = level_names.index("cell_type_ontology_term_id")
+        cell_types = [group[cell_type_index] for group in unique_groups]
+        n_cells_array = rollup_across_cell_type_descendants_array(n_cells_array, cell_types)
+
+    index = pd.Index(unique_groups, name=level_names)
+    return n_cells_array, index
 
 
 def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
@@ -228,14 +350,14 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
     target_agg - DataFrame,
         aggregated values for the target query across genes
 
-    groups_context_uniq - list of tuples
-        List of unique combinations of filter values (length N)
+    n_cells_index_context - pandas MultiIndex
+        Index of unique combinations of filter values (length N)
 
-    n_target - np.ndarray
+    n_cells_per_gene_target - np.ndarray
         1 x M array of cell counts for the target group
         (M = number of genes)
 
-    n_context - np.ndarray
+    n_cells_per_gene_context - np.ndarray
         N x M array of cell counts for the groups present in the context
         (N = number of groups, M = number of genes)
 
@@ -263,11 +385,12 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
         These are the column coordinates of the array in which the expression statistics will be filled
         for the target population.
     """
-    context_agg, t_n_cells_sum_context, genes = _query_tiledb(
-        context_filters, corpus=corpus, group_by_dims=list(target_filters.keys())
+    context_agg, n_cells_per_gene_context, n_cells_index_context, genes = _query_tiledb_context(
+        target_filters, context_filters, corpus=corpus
     )
-    target_agg, t_n_cells_sum_target, _ = _query_tiledb(target_filters, corpus=corpus, genes=genes)
-    groups_context_uniq = list(t_n_cells_sum_context.keys())
+    target_agg, n_cells_per_gene_target = _query_target(
+        target_filters, context_filters, context_agg, n_cells_per_gene_context, n_cells_index_context
+    )
 
     target_agg = target_agg.groupby("gene_ontology_term_id").sum()
 
@@ -275,7 +398,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
 
     genes_context = list(context_agg.index.get_level_values(0))
     groups_context = [i[1:] for i in context_agg.index]
-    groups_indexer = pd.Series(index=groups_context_uniq, data=range(len(groups_context_uniq)))
+    groups_indexer = pd.Series(index=n_cells_index_context, data=range(len(n_cells_index_context)))
     genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
 
     groups_indices_context = list(groups_indexer[groups_context])
@@ -285,14 +408,12 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
     target_data_nnz = np.zeros((1, len(genes)))
     target_data_nnz[0, genes_indices_target] = list(target_agg["nnz"])
 
-    n_target = np.vstack(list(t_n_cells_sum_target.values()))
-    n_context = np.vstack(list(t_n_cells_sum_context.values()))
     return (
         context_agg,
         target_agg,
-        groups_context_uniq,
-        n_target,
-        n_context,
+        n_cells_index_context,
+        n_cells_per_gene_target,
+        n_cells_per_gene_context,
         target_data_nnz,
         genes,
         groups_indices_context,
@@ -350,12 +471,32 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
     return pvals, effects
 
 
-def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_cells=25, percentile=0.15, n_markers=10):
+def _post_process_stats(
+    cell_type_target,
+    cell_types_context,
+    genes,
+    pvals,
+    effects,
+    nnz,
+    test="ttest",
+    min_num_expr_cells=25,
+    percentile=0.15,
+    n_markers=10,
+):
     """
     Process and aggregate statistics into the output dictionary format.
 
     Arguments
     ---------
+    cell_type_target - str or None
+        Cell type ontology term ID corresponding to the target population. If
+        None, a cell type was not specified for the target population and so marker
+        genes are not being calculated for cell types.
+
+    cell_types_context - list or None
+        List of cell types in the context populations. If None, marker genes are not
+        being calculated for cell types.
+
     genes - list
         List of genes corresponding to each p-value and effect size
 
@@ -383,6 +524,16 @@ def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_c
     zero_out = nnz.flatten() < min_num_expr_cells
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 1
+
+    if cell_type_target is not None and cell_types_context is not None:
+        is_colinear = np.array(
+            [are_cell_types_colinear(cell_type, cell_type_target) for cell_type in cell_types_context]
+        )
+        effects[is_colinear] = np.nan
+        pvals[is_colinear] = np.nan
+        pvals[:, np.all(np.isnan(effects), axis=0)] = 1
+        effects[:, np.all(np.isnan(effects), axis=0)] = 0
+
     # aggregate
     effects = np.nanpercentile(effects, percentile * 100, axis=0)
     pvals = np.array([stats.combine_pvalues(x[np.invert(np.isnan(x))] + 1e-300)[-1] for x in pvals.T])
@@ -438,7 +589,7 @@ def _get_markers_ttest(target_filters, context_filters, corpus=None, n_markers=1
     (
         context_agg,
         target_agg,
-        groups_context_uniq,
+        groups_index_context,
         n_target,
         n_context,
         target_data_nnz,
@@ -453,15 +604,24 @@ def _get_markers_ttest(target_filters, context_filters, corpus=None, n_markers=1
     target_data_sumsq = np.zeros((1, len(genes)))
     target_data_sumsq[0, genes_indices_target] = list(target_agg["sqsum"])
 
-    context_data_sum = np.zeros((len(groups_context_uniq), len(genes)))
+    context_data_sum = np.zeros((len(groups_index_context), len(genes)))
     context_data_sum[groups_indices_context, genes_indices_context] = list(context_agg["sum"])
-    context_data_sumsq = np.zeros((len(groups_context_uniq), len(genes)))
+    context_data_sumsq = np.zeros((len(groups_index_context), len(genes)))
     context_data_sumsq[groups_indices_context, genes_indices_context] = list(context_agg["sqsum"])
 
     pvals, effects = _run_ttest(
         target_data_sum, target_data_sumsq, n_target, context_data_sum, context_data_sumsq, n_context
     )
+
+    if "cell_type_ontology_term_ids" in target_filters:
+        cell_type_target = target_filters["cell_type_ontology_term_ids"][0]
+        cell_types_context = groups_index_context.get_level_values("cell_type_ontology_term_id")
+    else:
+        cell_type_target = None
+        cell_types_context = None
     return _post_process_stats(
+        cell_type_target,
+        cell_types_context,
         genes,
         pvals,
         effects,
@@ -537,7 +697,7 @@ def _get_markers_binomtest(target_filters, context_filters, corpus=None, n_marke
     (
         context_agg,
         target_agg,
-        groups_context_uniq,
+        groups_index_context,
         n_target,
         n_context,
         target_data_nnz,
@@ -548,12 +708,20 @@ def _get_markers_binomtest(target_filters, context_filters, corpus=None, n_marke
     ) = _prepare_indices_and_metrics(target_filters, context_filters, corpus=corpus)
     target_data_nnz_thr = np.zeros((1, len(genes)))
     target_data_nnz_thr[0, genes_indices_target] = list(target_agg["nnz_thr"])
-    context_data_nnz_thr = np.zeros((len(groups_context_uniq), len(genes)))
+    context_data_nnz_thr = np.zeros((len(groups_index_context), len(genes)))
     context_data_nnz_thr[groups_indices_context, genes_indices_context] = list(context_agg["nnz_thr"])
 
     pvals, effects = _run_binom(target_data_nnz_thr, n_target, context_data_nnz_thr, n_context)
 
+    if "cell_type_ontology_term_ids" in target_filters:
+        cell_type_target = target_filters["cell_type_ontology_term_ids"][0]
+        cell_types_context = groups_index_context.get_level_values("cell_type_ontology_term_id")
+    else:
+        cell_type_target = None
+        cell_types_context = None
     return _post_process_stats(
+        cell_type_target,
+        cell_types_context,
         genes,
         pvals,
         effects,

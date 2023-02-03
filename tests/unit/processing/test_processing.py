@@ -1,13 +1,9 @@
 from unittest.mock import Mock, patch
 
-from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_seurat import ProcessSeurat
-from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
-from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
-from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
 from backend.layers.common.entities import (
     DatasetArtifactType,
     DatasetConversionStatus,
@@ -15,49 +11,10 @@ from backend.layers.common.entities import (
     DatasetUploadStatus,
     DatasetValidationStatus,
 )
-from tests.unit.backend.layers.common.base_test import BaseTest
+from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
-class MockS3Provider(S3ProviderInterface):
-    """
-    Simple S3 mock that mostly checks if paths are correct
-    """
-
-    def __init__(self) -> None:
-        self.mock_s3_fs = []
-
-    def upload_file(self, src_file: str, bucket_name: str, dst_file: str, extra_args: dict):
-        url = f"s3://{bucket_name}/{dst_file}"
-        self.mock_s3_fs.append(url)
-
-    def upload_directory(self, src_dir: str, s3_uri: str):
-        self.mock_s3_fs.append(s3_uri)
-
-    def download_file(self, bucket_name: str, object_key: str, local_filename: str):
-        pass
-
-    def file_exists(self, bucket_name: str, object_key: str):
-        url = f"s3://{bucket_name}/{object_key}"
-        return self.uri_exists(url)
-
-    def uri_exists(self, uri: str):
-        return uri in self.mock_s3_fs
-
-    def is_empty(self):
-        return len(self.mock_s3_fs) == 0
-
-
-class ProcessingTest(BaseTest):
-    def setUp(self):
-        super().setUp()
-        self.uri_provider = UriProvider()
-        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "local.h5ad"))
-        self.s3_provider = MockS3Provider()
-        self.schema_validator = SchemaValidatorProviderInterface()
-        self.schema_validator.validate_and_save_labels = Mock(return_value=(True, [], True))
-        self.downloader = Downloader(self.business_logic)
-        self.downloader.download_file = Mock()
-
+class ProcessingTest(BaseProcessingTest):
     def test_process_download_validate_success(self):
         """
         ProcessDownloadValidate should:
@@ -68,7 +25,7 @@ class ProcessingTest(BaseTest):
         5. upload the original file to S3
         6. upload the labeled file to S3
         """
-        dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
 
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
@@ -183,5 +140,35 @@ class ProcessingTest(BaseTest):
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
         self.assertEqual(4, len(artifacts))
 
-    def test_process_download_validate_fail(self):
-        pass
+    def test_process_all_download_validate_fail(self):
+        """
+        If the validation is not successful, the processing pipeline should:
+        1. Set the processing status to INVALID
+        2. Set a validation message accordingly
+        """
+        dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, dropbox_uri, None, None
+        )
+
+        # Set a mock failure for the schema validator
+        self.schema_validator.validate_and_save_labels = Mock(
+            return_value=(False, ["Validation error 1", "Validation error 2"], True)
+        )
+
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, dropbox_uri, None, None
+        )
+
+        pm = ProcessMain(
+            self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
+        )
+
+        for step_name in ["download-validate"]:
+            pm.process(dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_cxg_bucket")
+
+        status = self.business_logic.get_dataset_status(dataset_version_id)
+        self.assertEqual(status.validation_status, DatasetValidationStatus.INVALID)
+        self.assertEqual(status.validation_message, "Validation error 1\nValidation error 2")

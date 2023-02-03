@@ -24,7 +24,8 @@ def transform(
     """
     Build the summary cube with rankit expression sum & sum of squares, nnz
     (num cells with non zero expression) values for each gene for each possible
-    group of cell attributes (cube row).
+    group of cell attributes (cube row). All values are aggregated across the
+    descendants of the cell type in each group (row).
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -105,6 +106,7 @@ def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFr
     Create index for queryable dimensions
     """
     cell_labels = extract_obs_data(tdb_group, cube_dims)
+
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
     cube_index["cube_idx"] = range(len(cube_index))

@@ -12,16 +12,17 @@ export default function RelativeGeneExpression({
   isScaled,
 }: Props): JSX.Element {
   return (
-    <Wrapper>
-      <Label>Gene Expression</Label>
+    <Wrapper id="relative-gene-expression">
+      <Label id="relative-gene-expression-label">Gene Expression</Label>
       <ContentWrapper>
         <Content>
           <Image
+            id="visualization-color-scale"
             src={plasmaImage}
             alt="visualization color scale: interpolateMagma(1.0 - meanExpression)"
             width={CONTENT_WIDTH_PX}
           />
-          <LowHigh>
+          <LowHigh className="low-high">
             <span>0.0</span>
             <span>{isScaled ? "1.0" : "6.0"}</span>
           </LowHigh>

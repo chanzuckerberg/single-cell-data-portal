@@ -25,6 +25,7 @@ from backend.layers.business.exceptions import (
     MaxFileSizeExceededException,
 )
 from backend.layers.common import validation
+from backend.layers.common.cleanup import sanitize
 from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
@@ -101,6 +102,9 @@ class BusinessLogic(BusinessLogicInterface):
         retrieve publisher metadata from Crossref and add it to the collection.
         """
 
+        sanitize(collection_metadata)
+
+        # Check metadata is valid
         errors = []
         validation.verify_collection_metadata(collection_metadata, errors)
 
@@ -115,7 +119,6 @@ class BusinessLogic(BusinessLogicInterface):
         if errors:
             raise CollectionCreationException(errors)
 
-        collection_metadata.strip_fields()
         created_version = self.database_provider.create_canonical_collection(owner, curator_name, collection_metadata)
 
         # TODO: can collapse with `create_canonical_collection`
@@ -136,6 +139,9 @@ class BusinessLogic(BusinessLogicInterface):
     def get_unpublished_collection_version_from_canonical(
         self, collection_id: CollectionId
     ) -> Optional[CollectionVersionWithDatasets]:
+        """
+        Given a canonical collection_id, retrieves its latest unpublished version
+        """
         latest = datetime.datetime.fromtimestamp(0)
         unpublished_collection = None
         for collection in self.get_collection_versions_from_canonical(collection_id):
@@ -146,7 +152,7 @@ class BusinessLogic(BusinessLogicInterface):
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         """
-        Returns a specific collection version
+        Returns a specific collection version by id
         """
         return self.database_provider.get_collection_version_with_datasets(version_id)
 
@@ -208,8 +214,10 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
         # TODO: link.type should DEFINITELY move to an enum. pylance will help with the refactor
-
+        sanitize(body)
         errors = []
+
+        # Check metadata
         validation.verify_collection_metadata_update(body, errors)
 
         current_version = self.get_collection_version(version_id)
@@ -282,7 +290,7 @@ class BusinessLogic(BusinessLogicInterface):
             collection_version_id, new_dataset_version.version_id
         )
 
-        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
+        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.NA)
         self.database_provider.update_dataset_processing_status(
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
@@ -496,12 +504,22 @@ class BusinessLogic(BusinessLogicInterface):
         return self.get_collection_version(added_version_id)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
+        """
+        Deletes a collection version. This method will raise an error if the version is published.
+        (Note: for performance reasons, the check is performed by the underlying layer)
+        """
         self.database_provider.delete_collection_version(version_id)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
+        """
+        Tombstones a canonical collection
+        """
         self.database_provider.delete_canonical_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+        """
+        Publishes a collection version.
+        """
         version = self.database_provider.get_collection_version(version_id)
 
         if version.published_at is not None:
@@ -510,10 +528,52 @@ class BusinessLogic(BusinessLogicInterface):
         if len(version.datasets) == 0:
             raise CollectionPublishException("Cannot publish a collection with no datasets")
 
-        self.database_provider.finalize_collection_version(version.collection_id, version_id)
+        has_dataset_revisions = False
+        # if collection is a revision and has no changes to previous version's datasets--don't update 'revised_at'
+        # used for cases where revision only contains collection-level metadata changes
+        if version.canonical_collection.version_id is not None:
+            canonical_version = self.database_provider.get_collection_version(version.canonical_collection.version_id)
+            canonical_datasets = set([dataset_version_id.id for dataset_version_id in canonical_version.datasets])
+            version_datasets = set([dataset_version_id.id for dataset_version_id in version.datasets])
+            if canonical_datasets != version_datasets:
+                has_dataset_revisions = True
+
+        self.database_provider.finalize_collection_version(
+            version.collection_id, version_id, update_revised_at=has_dataset_revisions
+        )
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
+        """
+        Returns a dataset version by id
+        """
         return self.database_provider.get_dataset_version(dataset_version_id)
 
     def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        """
+        Given a canonical dataset id, returns its mapped dataset version, i.e. the dataset version
+        that belongs to the most recently published collection
+        """
         return self.database_provider.get_dataset_mapped_version(dataset_id)
+
+    def _get_collection_and_dataset(
+        self, collection_id: str, dataset_id: str
+    ) -> Tuple[CollectionVersionWithDatasets, DatasetVersion]:
+        """
+        Get collection and dataset by their ids. Will look up by both version and canonical id for both.
+        """
+
+        collection_version = self.get_collection_version_from_canonical(CollectionId(collection_id))
+        if collection_version is None:
+            collection_version = self.get_collection_version(CollectionVersionId(collection_id))
+        if collection_version is None:
+            raise CollectionNotFoundException()
+
+        # Extract the dataset from the dataset list.
+        try:
+            dataset_version = next(
+                d for d in collection_version.datasets if d.version_id.id == dataset_id or d.dataset_id.id == dataset_id
+            )
+        except StopIteration:
+            raise DatasetNotFoundException()
+
+        return collection_version, dataset_version
