@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 import pandas as pd
-import tiledb
 import requests
+import tiledb
 from pandas import DataFrame
 from tiledb import Array
 
