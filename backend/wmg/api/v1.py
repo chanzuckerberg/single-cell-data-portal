@@ -6,9 +6,6 @@ import connexion
 from flask import jsonify
 from pandas import DataFrame
 
-from backend.layers.business.business import BusinessLogic
-from backend.layers.common.entities import DatasetId
-from backend.layers.persistence.persistence import DatabaseProvider
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import MarkerGeneQueryCriteria, WmgQuery, WmgQueryCriteria, retrieve_top_n_markers
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
@@ -81,19 +78,6 @@ def markers():
             marker_genes=marker_genes,
         )
     )
-
-
-_business_logic = None
-
-
-def get_business_logic():
-    """
-    Returns an instance of the business logic handler. Use this to interrogate the database
-    """
-    global _business_logic
-    if not _business_logic:
-        _business_logic = BusinessLogic(DatabaseProvider(), None, None, None, None)
-    return _business_logic
 
 
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:

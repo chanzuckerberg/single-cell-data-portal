@@ -27,7 +27,7 @@ DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
 logger = logging.getLogger("wmg")
 
 
-@dataclass
+@dataclass(init=True)
 class WmgSnapshot:
     """
     All of the data artifacts the WMG API depends upon to perform its functions, versioned by "snapshot_identifier".
