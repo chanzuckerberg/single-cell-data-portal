@@ -67,7 +67,7 @@ class WmgSnapshot:
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         API_URL = os.getenv("API_URL")
         dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
         datasets = requests.get(dataset_metadata_url).json()
