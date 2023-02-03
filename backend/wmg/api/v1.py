@@ -96,34 +96,8 @@ def get_business_logic():
     return _business_logic
 
 
-# TODO: Read this from generated data artifact instead of DB.
-#  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
-#  -portal/2086. This code is without a unit test, but we are intending to replace it.
-def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
-    # We return a DTO because the db entity can't access its attributes after the db session ends,
-    # and we want to keep session management out of the calling method
-
-    business_logic = get_business_logic()
-
-    def get_dataset(dataset_id_):
-
-        dataset = business_logic.get_dataset_version_from_canonical(DatasetId(dataset_id_))
-        if dataset is None:
-            # Handle possible missing dataset due to db state evolving past wmg snapshot
-            return dict(id=dataset_id_, label="", collection_id="", collection_label="")
-        collection = business_logic.get_collection_version_from_canonical(dataset.collection_id)
-        if collection is None:
-            # Handle possible missing dataset due to db state evolving past wmg snapshot
-            return dict(id=dataset_id_, label="", collection_id="", collection_label="")
-
-        return dict(
-            id=dataset.dataset_id.id,
-            label=dataset.metadata.name,
-            collection_id=collection.collection_id.id,
-            collection_label=collection.metadata.name,
-        )
-
-    return [get_dataset(dataset_id) for dataset_id in dataset_ids]
+def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
+    return [snapshot.dataset_dict[dataset_id] for dataset_id in dataset_ids]
 
 
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
@@ -152,7 +126,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
             dims[dim] = find_dim_option_values(criteria, snapshot, dim)
 
     response_filter_dims_values = dict(
-        datasets=fetch_datasets_metadata(dims["dataset_id"]),
+        datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
         development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),

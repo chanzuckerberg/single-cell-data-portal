@@ -6,6 +6,7 @@ from typing import Dict, Optional
 
 import pandas as pd
 import tiledb
+import requests
 from pandas import DataFrame
 from tiledb import Array
 
@@ -65,6 +66,30 @@ class WmgSnapshot:
 
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot
+
+    def __init__(self):
+        API_URL = os.getenv("API_URL")
+        dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
+        datasets = requests.get(dataset_metadata_url).json()
+
+        collection_metadata_url = f"{API_URL}/dp/v1/collections/index"
+        collections = requests.get(collection_metadata_url).json()
+
+        collections_dict = {collection["id"]: collection for collection in collections}
+
+        dataset_dict = {}
+        for dataset in datasets:
+            for asset in dataset["dataset_assets"]:
+                if asset["filename"] == "local.h5ad":
+                    dataset_id = asset["s3_uri"].split("/")[-2]
+                    dataset_dict[dataset_id] = dict(
+                        id=dataset_id,
+                        label=dataset["name"],
+                        collection_id=dataset["collection_id"],
+                        collection_label=collections_dict[dataset["collection_id"]]["name"],
+                    )
+
+        self.dataset_dict = dataset_dict
 
 
 # Cached data
