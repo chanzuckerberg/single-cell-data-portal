@@ -27,7 +27,7 @@ DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
 logger = logging.getLogger("wmg")
 
 
-@dataclass(init=True)
+@dataclass
 class WmgSnapshot:
     """
     All of the data artifacts the WMG API depends upon to perform its functions, versioned by "snapshot_identifier".
@@ -67,7 +67,7 @@ class WmgSnapshot:
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot
 
-    def __init__(self, **kwargs):
+    def build_dataset_metadata_dict(self):
         API_URL = os.getenv("API_URL")
         # this should always be true for deployed environments.
         # otherwise, skip so tests pass.
@@ -108,6 +108,7 @@ def load_snapshot() -> WmgSnapshot:
     global cached_snapshot
     if new_snapshot_identifier := _update_latest_snapshot_identifier():
         cached_snapshot = _load_snapshot(new_snapshot_identifier)
+        cached_snapshot.build_dataset_metadata_dict()
     return cached_snapshot
 
 
