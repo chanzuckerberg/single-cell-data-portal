@@ -40,7 +40,7 @@ class TestSecretConfig(unittest.TestCase):
         BogoComponentConfig.reset()
 
     def test_from_file(self):
-        with EnvironmentSetup({"CONFIG_SOURCE": fixture_file_path("bogo_config.js")}):
+        with EnvironmentSetup({"CONFIG_SOURCE": fixture_file_path("bogo_config.json")}):
             config = BogoComponentConfig(deployment=self.deployment_env)
             self.assertEqual("value_from_file", config.secret1)
 
