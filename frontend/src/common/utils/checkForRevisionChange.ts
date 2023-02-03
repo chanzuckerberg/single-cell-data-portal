@@ -53,7 +53,12 @@ function checkCollectionKeyForDifference(
     // entry is an object
     publishedCollection[collectionKey] instanceof Object
   ) {
-    if (!isEqual(publishedCollection[collectionKey], revisedCollection[collectionKey])) {
+    if (
+      !isEqual(
+        publishedCollection[collectionKey],
+        revisedCollection[collectionKey]
+      )
+    ) {
       return true;
     }
   } else if (
