@@ -88,7 +88,7 @@ class WmgSnapshot:
 
             dataset_dict = {}
             for dataset in datasets:
-                dataset_id = dataset["dataset_deployments"][0]["url"].split("/")[-2].split(".cxg")[0]
+                dataset_id = dataset["explorer_url"].split("/")[-2].split(".cxg")[0]
                 dataset_dict[dataset_id] = dict(
                     id=dataset_id,
                     label=dataset["name"],
