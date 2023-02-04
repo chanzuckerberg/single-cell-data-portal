@@ -295,7 +295,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
             result = []
             for v in versions:
-                if v.collection_id in all_canonical_map:
+                if str(v.collection_id) in all_canonical_map:
                     result.append(self._row_to_collection_version(v, all_canonical_map[str(v.collection_id)]))
 
             return result
