@@ -81,7 +81,7 @@ def markers():
 
 
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
-    return [snapshot.dataset_dict[dataset_id] for dataset_id in dataset_ids]
+    return [snapshot.dataset_dict.get(dataset_id, {}) for dataset_id in dataset_ids]
 
 
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
