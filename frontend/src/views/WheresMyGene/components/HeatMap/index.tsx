@@ -1,9 +1,6 @@
 import cloneDeep from "lodash/cloneDeep";
 import { memo, useContext, useMemo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
-import { BOOLEAN } from "src/common/localStorage/set";
 import {
   generateTermsByKey,
   OntologyTerm,
@@ -244,9 +241,8 @@ function getTissueCellTypes({
 }) {
   const tissueCellTypes = cellTypes[tissue];
   const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
-  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
-    (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY && !isRollup
+    (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY
       ? tissueCellTypes
       : sortedTissueCellTypes) || EMPTY_ARRAY
   );
