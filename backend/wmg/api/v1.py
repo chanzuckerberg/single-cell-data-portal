@@ -127,7 +127,6 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
 
 def build_expression_summary(query_result: DataFrame) -> dict:
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
-    # is_rollup is a flag to indicate whether the expressions should be rolled up or not
     structured_result: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
     for row in query_result.itertuples(index=False):
         structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id].append(
