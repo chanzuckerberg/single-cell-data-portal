@@ -399,11 +399,18 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
 
     def test_get_all_collections_published_ok(self):
         """
-        If published filter flag is True, only published collections should be returned
+        If published filter flag is True, only published, non-tombstoned collections should be returned
         """
         self.initialize_unpublished_collection()
         self.initialize_published_collection()
-        self.initialize_published_collection()
+
+        # Add a tombstoned Collection
+        collection_to_tombstone: CollectionVersionWithDatasets = self.initialize_published_collection()
+        self.database_provider.delete_canonical_collection(collection_to_tombstone.collection_id)
+
+        # Confirm tombstoned Collection is in place
+        all_collections_including_tombstones = self.database_provider.get_all_collections_versions(get_tombstoned=True)
+        self.assertEqual(3, len(list(all_collections_including_tombstones)))
 
         filter = CollectionQueryFilter(is_published=True)
         versions = list(self.business_logic.get_collections(filter))
