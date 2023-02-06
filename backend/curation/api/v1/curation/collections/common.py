@@ -11,8 +11,6 @@ from backend.common.corpora_orm import (
     DbDatasetProcessingStatus,
 )
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
-from backend.portal.api.explorer_url import generate as generate_explorer_url
-from backend.portal.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.common.entities import (
     CollectionId,
@@ -28,6 +26,8 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
+from backend.portal.api.explorer_url import generate as generate_explorer_url
+from backend.portal.api.providers import get_business_logic
 
 allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)
 
@@ -152,10 +152,7 @@ def reshape_dataset_for_curation_api(
     ds = dict()
 
     # Determine what columns to include from the dataset
-    if preview:
-        columns = EntityColumns.dataset_metadata_preview_cols
-    else:
-        columns = EntityColumns.dataset_metadata_cols
+    columns = EntityColumns.dataset_metadata_preview_cols if preview else EntityColumns.dataset_metadata_cols
 
     # Get dataset metadata fields.
     # Metadata can be None if the dataset isn't still fully processed, so we account for that

@@ -2,7 +2,6 @@
 ../browser/frontend
 ../browser/backend
 ../infra
-../.flake8
 ../.gitignore
 ../environment.test
 ../LICENSE

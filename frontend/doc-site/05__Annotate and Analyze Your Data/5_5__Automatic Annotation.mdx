@@ -1,12 +1,12 @@
 # Automated Annotation of Single Cell Data (EXPERIMENTAL)
 
-CZ CELLxGENE Annotate enables the use of prediction models trained on expertly curated reference atlases to automatic cell type annotation on newly generated and QC'd single cell datasets. Your data can be annotated using CELLxGENE Desktop along with any of our available models. CELLxGENE annotation augments your dataset with the following new information:
+CZ CELLxGENE Annotate enables automatic cell type annotation of newly generated single cell datasets using pre-trained models. Annotation augments your dataset with the following new information:
 
 - transferred cell type labels (a.k.a. the most probable cell type)
 - uncertainty scores (measure of the confidence of the predicted label - takes on a value between 0 and 1 [0 = confident, 1 = uncertain])
 - a projection of the query dataset into the reference embedding, and a newly computed UMAP based on that projection
 
-After you successfully complete the automatic annotation workflow, you can explore and refine your predictions using [standard features in CELLxGENE](https://cellxgene.cziscience.com/docs/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials) such as:
+After you complete the automatic annotation workflow, you can explore and refine your predictions using [standard features in CELLxGENE](https://cellxgene.cziscience.com/docs/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials) such as:
 
 - visualizing clusters by predicted cell type
 - plotting marker genes
@@ -23,7 +23,6 @@ After you successfully complete the automatic annotation workflow, you can explo
 You can install the latest experimental release of CELLxGENE Annotate to gain access to the automatic annotation subcommand. It is highly recommended to perform installation in a clean Python environment using [Conda](https://docs.conda.io/en/latest/) or [venv](https://docs.python.org/3/library/venv.html) with Python version 3.9+. Find examples of virtual environment setup using venv and conda below.
 
 CELLxGENE[annotate] is currently only tested on OS X and Ubuntu operating systems.
-
 
 ### Option 1: conda setup
 
@@ -61,9 +60,11 @@ pip install 'cellxgene[annotate]'
 ```
 
 If `conda` is not installed on your system, install these additional packages:
+
 ```
 pip install scvi-tools==0.16.2 'scanpy[leiden]==1.9.1' xgboost==1.6.1 torch==1.11.0
 ```
+
 If this fails, we recommend you use a Conda environment (see the [conda setup](#option-1-conda-setup) section, above)
 
 To test the success of your installation, run:
@@ -155,10 +156,12 @@ It is important that once you have constructed your object, that you perform ini
 You can download models to perform prediction for the following tissues:
 
 Reference Mapping Models:
+
 - [HLCA Lung Model](https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_20220920223732.zip)
 - [Pan Tissue Immune Reference](https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/immune_ref_20220920223732.zip)
 
 Logistic Regression Models:
+
 - [HLCA Lung Model](https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_lr_20221109230850.zip)
 
 ### Step 1: Running `cellxgene annotate`

@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 import os
@@ -5,8 +6,8 @@ import os
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.json import CustomJSONEncoder
 from backend.common.utils.result_notification import format_failed_batch_issue_slack_alert, notify_slack
-from backend.portal.api.providers import get_business_logic
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
+from backend.portal.api.providers import get_business_logic
 
 
 def handle_failure(event: dict, context) -> None:
@@ -28,13 +29,11 @@ def update_dataset_processing_status_to_failed(dataset_id, error=None) -> None:
     """
     This functions updates the processing status for a given dataset uuid to failed
     """
-    try:
+    with contextlib.suppress(Exception):
+        # If dataset not in db dont worry about updating its processing status
         get_business_logic().update_dataset_version_status(
             DatasetVersionId(dataset_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
         )
-    # If dataset not in db dont worry about updating its processing status
-    except Exception:
-        pass
 
 
 def get_error_step_name(event: dict) -> str:
@@ -43,7 +42,7 @@ def get_error_step_name(event: dict) -> str:
     """
     error_cause_dict = json.loads(event["error"]["Cause"])
     error_job_name = None
-    if "JobName" in error_cause_dict:
+    if error_cause_dict.get("JobName"):
         error_job_name = error_cause_dict["JobName"]
     return error_job_name
 

@@ -2,7 +2,6 @@ import time
 from unittest.mock import patch
 
 import anndata
-
 import numpy as np
 import pandas
 from moto import mock_s3
@@ -242,7 +241,7 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
         time.sleep(1)
         dataset = Dataset.get(self.session, self.dataset_id)
         dataset.update(tombstone=True)
-        for x in range(10):
+        for _ in range(10):
             if tracker.stop_downloader.is_set():
                 return
             time.sleep(3)

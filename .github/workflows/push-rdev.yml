@@ -3,12 +3,12 @@ name: Push Remote Dev
 on:
   push:
     tags:
-      - '*rdev'
-      - 'rdev*'
+      - "*rdev"
+      - "rdev*"
     branches:
-      - 'rdev-*'
-      - '**/rdev-*'
-      - '**-rdev'
+      - "rdev-*"
+      - "**/rdev-*"
+      - "**-rdev"
 
 env:
   DEPLOYMENT_STAGE: test

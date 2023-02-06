@@ -10,7 +10,10 @@ from backend.common.utils.http_exceptions import (
     NotFoundHTTPException,
     TooLargeHTTPException,
 )
-from backend.portal.api.providers import get_business_logic
+from backend.curation.api.v1.curation.collections.common import (
+    get_infered_dataset_version,
+    reshape_dataset_for_curation_api,
+)
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.exceptions import (
@@ -27,10 +30,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetVersion,
 )
-from backend.curation.api.v1.curation.collections.common import (
-    get_infered_dataset_version,
-    reshape_dataset_for_curation_api,
-)
+from backend.portal.api.providers import get_business_logic
 
 
 def get(collection_id: str, dataset_id: str = None):
@@ -75,7 +75,7 @@ def _get_collection_and_dataset(
             d for d in collection_version.datasets if d.version_id.id == dataset_id or d.dataset_id.id == dataset_id
         )
     except StopIteration:
-        raise ForbiddenHTTPException()
+        raise ForbiddenHTTPException() from None
 
     return collection_version, dataset_version
 
@@ -97,7 +97,7 @@ def delete(token_info: dict, collection_id: str, dataset_id: str):
     try:
         business_logic.remove_dataset_version(collection_version.version_id, dataset_version.version_id)
     except CollectionUpdateException:
-        raise MethodNotAllowedException(detail="Cannot delete a public Dataset")
+        raise MethodNotAllowedException(detail="Cannot delete a public Dataset") from None
     return Response(status=202)
     # End of duplicate block
 
@@ -121,19 +121,19 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
         )
         return Response(status=202)
     except CollectionNotFoundException:
-        raise ForbiddenHTTPException()
+        raise ForbiddenHTTPException() from None
     except CollectionIsPublishedException:
-        raise ForbiddenHTTPException()
+        raise ForbiddenHTTPException() from None
     except DatasetNotFoundException:
-        raise NotFoundHTTPException()
+        raise NotFoundHTTPException() from None
     except InvalidURIException:
-        raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
+        raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.") from None
     except MaxFileSizeExceededException:
-        raise TooLargeHTTPException()
+        raise TooLargeHTTPException() from None
     except DatasetInWrongStatusException:
         raise MethodNotAllowedException(
             detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset "
             "is in progress. Please cancel the current submission by deleting the dataset, or wait until "
             "the submission has finished processing."
-        )
+        ) from None
     # End of duplicate block

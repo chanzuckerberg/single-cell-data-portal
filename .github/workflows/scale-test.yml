@@ -26,5 +26,3 @@ jobs:
           STAGING_STATS=$(tail -n 13 locust_staging_stats.txt)
           STAGING_MSG="\`\`\`STAGING SCALE TEST RESULTS: ${STAGING_STATS}\`\`\`"
           curl -X POST -H 'Content-type: application/json' --data "{'text':'${STAGING_MSG}'}" $SLACK_WEBHOOK
-
-
