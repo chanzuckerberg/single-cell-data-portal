@@ -1,9 +1,15 @@
 import { DefaultMenuSelectOption } from "czifui";
 import { CSSProperties } from "react";
+import { FILTER_LABELS } from "./constants";
 
 export interface Organism {
   id: string;
   name: string;
+}
+
+export interface CompareDimension {
+  name: FILTER_LABELS | "None";
+  id: string;
 }
 
 /** tissue name */

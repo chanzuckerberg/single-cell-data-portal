@@ -18,6 +18,7 @@ export interface State {
     [tissue: Tissue]: string[];
   };
   selectedOrganismId: string | null;
+  selectedCompare: string | null;
   selectedTissues: string[];
   selectedFilters: {
     datasets: string[];
@@ -47,6 +48,7 @@ export const INITIAL_STATE: State = {
   selectedCellTypeIds: {},
   selectedFilters: EMPTY_FILTERS,
   selectedGenes: [],
+  selectedCompare: null,
   selectedOrganismId: null,
   selectedTissues: [],
   snapshotId: null,
@@ -67,6 +69,7 @@ export const REDUCERS = {
   selectFilters,
   selectGenes,
   selectOrganism,
+  selectCompare,
   selectSortBy,
   selectTissues,
   setSnapshotId,
@@ -147,6 +150,20 @@ function selectOrganism(
     selectedGenes: [],
     selectedOrganismId: action.payload,
     selectedTissues: [],
+  };
+}
+
+function selectCompare(
+  state: State,
+  action: PayloadAction<string | null>
+): State {
+  if (state.selectedCompare === action.payload) {
+    return state;
+  }
+
+  return {
+    ...state,
+    selectedCompare: action.payload,
   };
 }
 

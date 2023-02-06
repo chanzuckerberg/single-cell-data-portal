@@ -43,6 +43,16 @@ export function selectOrganism(
   };
 }
 
+export function selectCompare(
+  dimensionId: State["selectedCompare"]
+): GetActionTypeOfReducer<typeof REDUCERS["selectCompare"]> {
+  console.log("payload", dimensionId)
+  return {
+    payload: dimensionId,
+    type: "selectCompare",
+  };
+}
+
 export function selectGenes(
   genes: State["selectedGenes"]
 ): GetActionTypeOfReducer<typeof REDUCERS["selectGenes"]> {

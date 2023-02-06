@@ -21,9 +21,11 @@ import {
   RawDataset,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
+import { FILTER_LABELS } from "../../common/constants";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
+import Compare from "../GeneSearchBar/components/Compare";
 import Organism from "../GeneSearchBar/components/Organism";
 import Sort from "./components/Sort";
 import {
@@ -188,7 +190,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           <StyledComplexFilter
             multiple
             search
-            label="Dataset"
+            label={FILTER_LABELS.DATASET}
             options={datasets as unknown as DefaultMenuSelectOption[]}
             onChange={handleDatasetsChange}
             value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
@@ -200,7 +202,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           />
           <StyledComplexFilter
             multiple
-            label="Disease"
+            label={FILTER_LABELS.DISEASE}
             options={disease_terms}
             onChange={handleDiseasesChange}
             value={selectedDiseases}
@@ -212,7 +214,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           />
           <StyledComplexFilter
             multiple
-            label="Self-Reported Ethnicity"
+            label={FILTER_LABELS.ETHNICITY}
             options={self_reported_ethnicity_terms}
             onChange={handleEthnicitiesChange}
             value={selectedEthnicities}
@@ -224,7 +226,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           />
           <StyledComplexFilter
             multiple
-            label="Sex"
+            label={FILTER_LABELS.SEX}
             options={sex_terms}
             onChange={handleSexesChange}
             value={selectedSexes}
@@ -237,6 +239,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         </div>
 
         <Organism isLoading={isLoading} />
+        <Compare isLoading={isLoading} availableFilters={availableFilters} />
 
         <Sort areFiltersDisabled={areFiltersDisabled} />
       </Wrapper>

@@ -10,6 +10,8 @@ import {
 export const Label = styled("div")`
   ${fontBodyS}
 
+  margin-top: 20px;
+
   ${(props) => {
     const fontWeights = getFontWeights(props);
 
