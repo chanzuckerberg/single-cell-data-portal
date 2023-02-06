@@ -253,6 +253,11 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
 export const SELF_REPORTED_ETHNICITY_DENY_LIST = ["na"];
 
 /**
+ * List of suspension types to exclude from filter functionality.
+ */
+export const SUSPENSION_TYPE_DENY_LIST = ["na"];
+
+/**
  * String value to append to labels in multi-panel categories if the value appears in more than one panel.
  */
 export const LABEL_SUFFIX_NON_SPECIFIC = ", non-specific";
