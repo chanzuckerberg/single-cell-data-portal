@@ -1066,7 +1066,9 @@ components:
           type: number
       type: object
     suspension_type:
-      description:
+      description: |
+        [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#suspension_type)
+
         List of unique suspension types represented in the dataset, corresponding to dataset's assay(s).
         Possible item values are 'nucleus', 'cell', and/or 'na'.
       type: array
