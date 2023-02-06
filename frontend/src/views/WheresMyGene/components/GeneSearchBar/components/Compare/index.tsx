@@ -31,10 +31,10 @@ const FILTERS: CompareDimension[] = [
     name: "None",
     id: ""
   },
-  {
-    name: FILTER_LABELS.DATASET,
-    id: "dataset"
-  },
+  // {
+  //   name: FILTER_LABELS.DATASET,
+  //   id: "dataset"
+  // },
   {
     name: FILTER_LABELS.DISEASE,
     id: "disease"
