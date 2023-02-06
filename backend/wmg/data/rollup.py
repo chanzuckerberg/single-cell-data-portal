@@ -1,10 +1,11 @@
+from functools import lru_cache
+
+import numba as nb
+import numpy as np
 import owlready2
 import pandas as pd
-import numpy as np
-import numba as nb
-from functools import lru_cache
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
 
+from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
 
 # ontology object
 ontology = owlready2.get_ontology(CL_BASIC_PERMANENT_URL_OWL)
@@ -17,10 +18,7 @@ def _descendants(cell_type):
     global ontology
     cell_type_iri = cell_type.replace(":", "_")
     entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
-    if entity:
-        descendants = [i.name.replace("_", ":") for i in entity.descendants()]
-    else:
-        descendants = [cell_type]
+    descendants = [i.name.replace("_", ":") for i in entity.descendants()] if entity else [cell_type]
     return descendants
 
 
@@ -29,10 +27,7 @@ def _ancestors(cell_type):
     global ontology
     cell_type_iri = cell_type.replace(":", "_")
     entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
-    if entity:
-        ancestors = [i.name.replace("_", ":") for i in entity.ancestors()]
-    else:
-        ancestors = [cell_type]
+    ancestors = [i.name.replace("_", ":") for i in entity.ancestors()] if entity else [cell_type]
     return ancestors
 
 

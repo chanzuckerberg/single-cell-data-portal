@@ -1,10 +1,10 @@
-from flask import request, make_response
+from flask import make_response, request
 from jose import JWTError
 
 from backend.common.auth0_manager import auth0_management_session
 from backend.common.corpora_config import CorporaAuthConfig
 from backend.common.utils import api_key
-from backend.common.utils.http_exceptions import UnauthorizedError, NotFoundHTTPException
+from backend.common.utils.http_exceptions import NotFoundHTTPException, UnauthorizedError
 
 
 def post():
@@ -13,7 +13,7 @@ def post():
     try:
         token_info = api_key.verify(user_api_key, config.api_key_secret)
     except JWTError:
-        raise UnauthorizedError(detail="The API key is invalid")
+        raise UnauthorizedError(detail="The API key is invalid") from None
     else:
         identity = auth0_management_session.get_user_api_key_identity(token_info["sub"])
         if not identity:

@@ -2,13 +2,13 @@ from flask import jsonify, make_response
 
 from backend.common.corpora_orm import CollectionVisibility, ProjectLinkType
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
-from backend.portal.api.providers import get_business_logic
+from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.business.exceptions import CollectionCreationException, InvalidMetadataException
 from backend.layers.common import doi
 from backend.layers.common.entities import CollectionMetadata, Link
-from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
+from backend.portal.api.providers import get_business_logic
 
 
 def get(visibility: str, token_info: dict, curator: str = None):
@@ -50,11 +50,10 @@ def get(visibility: str, token_info: dict, curator: str = None):
 def post(body: dict, user: str):
     # Extract DOI into link
     errors = []
-    if doi_url := body.get("doi"):
-        if doi_url := doi.curation_get_normalized_doi_url(doi_url, errors):
-            links = body.get("links", [])
-            links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
-            body["links"] = links
+    if (doi_url := body.get("doi")) and (doi_url := doi.curation_get_normalized_doi_url(doi_url, errors)):
+        links = body.get("links", [])
+        links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
+        body["links"] = links
 
     # Build CollectionMetadata object
     links = [Link(link.get("link_name"), link["link_type"], link["link_url"]) for link in body.get("links", [])]

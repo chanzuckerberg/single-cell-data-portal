@@ -1,10 +1,9 @@
 import re
 from typing import List, Union
-
 from urllib.parse import urlparse
+
 from backend.layers.business.entities import CollectionMetadataUpdate
 from backend.layers.business.exceptions import InvalidMetadataException
-
 from backend.layers.common.entities import CollectionMetadata, Link
 from backend.layers.common.regex import CONTROL_CHARS, EMAIL_REGEX
 
@@ -53,7 +52,7 @@ def _verify_collection_metadata_fields(
             return value
 
     def verify_collection_consortia(metadata: Union[CollectionMetadata, CollectionMetadataUpdate], errors: list):
-        consortia = getattr(metadata, "consortia")
+        consortia = metadata.consortia
         if consortia:
             for consortium in consortia:
                 if consortium not in valid_consortia:

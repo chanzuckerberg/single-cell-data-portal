@@ -1,8 +1,9 @@
-from backend.gene_info.config import GeneInfoConfig
+import json
 import logging
 import urllib.request
-import json
 import xml.etree.ElementTree as ET
+
+from backend.gene_info.config import GeneInfoConfig
 
 
 class NCBIException(Exception):
@@ -17,7 +18,7 @@ class NCBIUnexpectedResultException(NCBIException):
     pass
 
 
-class NCBIProvider(object):
+class NCBIProvider:
     """
     Provider class used to generate NCBI URL
     """
@@ -42,7 +43,7 @@ class NCBIProvider(object):
         try:
             return urllib.request.urlopen(fetch_url).read()
         except Exception:
-            raise NCBIUnexpectedResultException
+            raise NCBIUnexpectedResultException from None
 
     def fetch_gene_uid(self, geneID, gene):
         """
@@ -59,7 +60,7 @@ class NCBIProvider(object):
         try:
             search_response = self._search_gene_uid(geneID)
         except NCBIUnexpectedResultException:
-            raise NCBIUnexpectedResultException
+            raise NCBIUnexpectedResultException from None
 
         # search with gene name if needed
         if not self._is_valid_search_result(search_response) and gene and gene != "":
@@ -74,7 +75,7 @@ class NCBIProvider(object):
                     logging.error(f"Unexpected NCBI search result, got {search_response}")
                     raise NCBIUnexpectedResultException
             except NCBIUnexpectedResultException:
-                raise NCBIUnexpectedResultException
+                raise NCBIUnexpectedResultException from None
         elif not self._is_valid_search_result(search_response):
             logging.error(f"Unexpected NCBI search result, got {search_response}")
             raise NCBIUnexpectedResultException
@@ -90,7 +91,7 @@ class NCBIProvider(object):
         try:
             search_response = urllib.request.urlopen(search_url).read()
         except Exception:
-            raise NCBIUnexpectedResultException
+            raise NCBIUnexpectedResultException from None
         return json.loads(search_response)
 
     def _is_valid_search_result(self, search_result):
@@ -124,14 +125,13 @@ class NCBIProvider(object):
             for x in root[0]:
                 if x.tag == summary_tag:
                     summary = x.text
-                elif x.tag == gene_tag:
-                    if len(x) > 0:
-                        for y in x[0]:
-                            if y.tag == desc_tag:
-                                name = y.text
-                            elif y.tag == syn_tag:
-                                for syn in y:
-                                    synonyms.append(syn.text)
+                elif x.tag == gene_tag and len(x) > 0:
+                    for y in x[0]:
+                        if y.tag == desc_tag:
+                            name = y.text
+                        elif y.tag == syn_tag:
+                            for syn in y:
+                                synonyms.append(syn.text)
         return dict(
             name=name,
             summary=summary,

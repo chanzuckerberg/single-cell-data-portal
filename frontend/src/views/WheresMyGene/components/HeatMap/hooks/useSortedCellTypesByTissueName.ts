@@ -29,8 +29,11 @@ export function useSortedCellTypesByTissueName({
   const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return useMemo(() => {
     const isSortByCellOntology = cellTypeSortBy === SORT_BY.CELL_ONTOLOGY;
-    
-    if (!isRollup && isSortByCellOntology || isRollup && genes.length === 0) {
+
+    if (
+      (!isRollup && isSortByCellOntology) ||
+      (isRollup && genes.length === 0)
+    ) {
       return selectedCellTypes;
     }
 

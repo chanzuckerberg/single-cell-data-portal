@@ -1,25 +1,27 @@
-import pandas as pd
-import numpy as np
-from scipy import stats
 import json
-import tiledb
 from functools import lru_cache, wraps
+from typing import Optional, Union
+
+import numpy as np
+import pandas as pd
+import tiledb
+from scipy import stats
+
+from backend.common.utils.exceptions import MarkerGeneCalculationException
+from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
+from backend.wmg.data.rollup import (
+    are_cell_types_colinear,
+    rollup_across_cell_type_descendants,
+    rollup_across_cell_type_descendants_array,
+)
 from backend.wmg.data.snapshot import (
-    load_snapshot,
-    WmgSnapshot,
-    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
     CELL_COUNTS_CUBE_NAME,
     DATASET_TO_GENE_IDS_FILENAME,
+    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
+    WmgSnapshot,
+    load_snapshot,
 )
-from typing import Union, Optional
-from backend.wmg.data.rollup import (
-    rollup_across_cell_type_descendants_array,
-    rollup_across_cell_type_descendants,
-    are_cell_types_colinear,
-)
-from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
-from backend.common.utils.exceptions import MarkerGeneCalculationException
 
 
 def _make_hashable(func):
@@ -78,7 +80,8 @@ def _query_tiledb_context_memoized(
     if isinstance(corpus, str):
         expression_summary_fmg_cube = tiledb.open(f"{corpus}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}")
         cell_counts_cube = tiledb.open(f"{corpus}/{CELL_COUNTS_CUBE_NAME}")
-        dataset_to_gene_ids = json.load(open(f"{corpus}/{DATASET_TO_GENE_IDS_FILENAME}"))
+        with open(f"{corpus}/{DATASET_TO_GENE_IDS_FILENAME}") as fp:
+            dataset_to_gene_ids = json.load(fp)
     else:
         if corpus is None:
             corpus = load_snapshot()

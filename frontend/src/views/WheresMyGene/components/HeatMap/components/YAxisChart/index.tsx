@@ -76,7 +76,7 @@ export default memo(function YAxisChart({
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
-  
+
   const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
     <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>

@@ -1,12 +1,13 @@
+import contextlib
 import http.server
 import logging
 import multiprocessing
 import os
 import random
-
-from unittest.mock import patch
-import requests
 import socketserver
+from unittest.mock import patch
+
+import requests
 
 from backend.common.entities import Dataset
 from backend.common.utils.math_utils import MB
@@ -38,10 +39,8 @@ class TestDownload(DataPortalTestCase):
         cls.server_process.terminate()
 
     def cleanup_local_file(self, local_file):
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.remove(local_file)
-        except FileNotFoundError:
-            pass
 
     def test_download_good(self):
         local_file = "local.h5ad"
@@ -69,27 +68,25 @@ class TestDownload(DataPortalTestCase):
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/upload_test_file.txt"
 
-        with self.subTest("Bigger"):
-            with self.assertRaises(ProcessingFailed):
-                download.download(
-                    "test_dataset_id",
-                    url,
-                    local_file,
-                    1,
-                    chunk_size=1024,
-                    update_frequency=1,
-                )
+        with self.subTest("Bigger"), self.assertRaises(ProcessingFailed):
+            download.download(
+                "test_dataset_id",
+                url,
+                local_file,
+                1,
+                chunk_size=1024,
+                update_frequency=1,
+            )
 
-        with self.subTest("Smaller"):
-            with self.assertRaises(ProcessingFailed):
-                download.download(
-                    "test_dataset_id",
-                    url,
-                    local_file,
-                    10 * MB,
-                    chunk_size=1024,
-                    update_frequency=1,
-                )
+        with self.subTest("Smaller"), self.assertRaises(ProcessingFailed):
+            download.download(
+                "test_dataset_id",
+                url,
+                local_file,
+                10 * MB,
+                chunk_size=1024,
+                update_frequency=1,
+            )
 
     def test__stop_download(self):
         local_file = "local.h5ad"

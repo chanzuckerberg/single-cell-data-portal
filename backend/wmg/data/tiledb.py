@@ -1,12 +1,14 @@
 import os
+from typing import Optional
 
 import psutil
 import tiledb
 
-from backend.common.utils.math_utils import MB, GB
+from backend.common.utils.math_utils import GB, MB
 
 
-def create_ctx(config_overrides: dict = {}) -> tiledb.Ctx:
+def create_ctx(config_overrides: Optional[dict] = None) -> tiledb.Ctx:
+    config_overrides = config_overrides or {}
     cfg = {
         "py.init_buffer_bytes": int(0.5 * GB),
         "sm.tile_cache_size": 100 * MB if os.getenv("DEPLOYMENT_STAGE", "test") == "test" else virtual_memory_size(0.5),

@@ -37,10 +37,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         status_value: DatasetStatusGeneric,
         validation_errors: Optional[List[str]] = None,
     ):
-        if validation_errors is not None:
-            validation_message = "\n".join(validation_errors)
-        else:
-            validation_message = None
+        validation_message = "\n".join(validation_errors) if validation_errors is not None else None
         self.business_logic.update_dataset_version_status(dataset_id, status_key, status_value, validation_message)
 
     def download_from_s3(self, bucket_name: str, object_key: str, local_filename: str):
@@ -83,7 +80,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             self.business_logic.add_dataset_artifact(dataset_id, artifact_type, s3_uri)
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception:
-            raise ConversionFailed(processing_status_key)
+            raise ConversionFailed(processing_status_key) from None
 
     def convert_file(
         self,
@@ -101,7 +98,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTED)
             self.logger.info(f"Finished converting {converter} in {datetime.now()- start}")
         except Exception:
-            raise ConversionFailed(processing_status_key)
+            raise ConversionFailed(processing_status_key) from None
         return file_dir
 
     def get_bucket_prefix(self, identifier: str) -> str:

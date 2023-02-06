@@ -1,4 +1,4 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from backend.common.corpora_orm import generate_id
 from backend.common.utils.exceptions import (

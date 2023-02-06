@@ -1,14 +1,16 @@
-import logging
 import contextlib
+import gc
+import logging
+
+import numpy as np
 import pandas as pd
 import tiledb
-import numpy as np
-import gc
+
+from backend.common.utils.exceptions import MarkerGeneCalculationException
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, MARKER_GENES_CUBE_NAME
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
 from backend.wmg.pipeline.summary_cubes.calculate_markers import get_markers
-from backend.common.utils.exceptions import MarkerGeneCalculationException
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -79,7 +81,7 @@ def create_marker_genes_cube(corpus_path: str):
                 continue
             gc.collect()
 
-            all_marker_genes = set(list(t_markers.keys())).union(list(b_markers.keys()))
+            all_marker_genes = set(t_markers.keys()).union(b_markers.keys())
             markers = []
             for g in all_marker_genes:
                 b_stats = b_markers.get(g, {"p_value_binomtest": np.nan, "effect_size_binomtest": np.nan})
