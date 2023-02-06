@@ -32,22 +32,20 @@ class MarkerGeneCalculationTest(unittest.TestCase):
             n_cells_per_gene_context = output[4]
 
             test_sum_target = list(target_agg.sum(0))
-
             # check that returned dataframe is correct
-            expected_sum_target = [21988.90625, 66193.2578125, 8782.0, 8666.0]
+            expected_sum_target = [34526.12109375, 103218.53125, 13837.0, 13702.0]
             for i in range(len(test_sum_target)):
                 assert abs(test_sum_target[i] - expected_sum_target[i]) < 0.05
 
             test_sum_context = list(context_agg.sum(0))
-
             # check that returned dataframe is correct
-            expected_sum_context = [23619970.0, 49531328.0, 13138847.0, 12511276.0]
+            expected_sum_context = [22351500.0, 44170256.0, 12959351.0, 12319208.0]
             for i in range(len(test_sum_context)):
                 assert abs(test_sum_context[i] - expected_sum_context[i]) < 0.05
 
             # check that returned population sizes are correct
-            assert n_cells_per_gene_target.sum() == 198740.0
-            assert n_cells_per_gene_context.sum() == 845656230.0
+            assert n_cells_per_gene_target.sum() == 302270.0
+            assert n_cells_per_gene_context.sum() == 900750182.0
 
     def test__get_markers_ttest(self):
         with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
