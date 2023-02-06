@@ -131,22 +131,24 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
   }, [sex_terms, sexes]);
 
-  const analyticMapping: {[key in keyof IFilters]: {eventName: EVENTS, label: string}} = {
-    "datasets": {
+  const analyticMapping: {
+    [key in keyof IFilters]: { eventName: EVENTS; label: string };
+  } = {
+    datasets: {
       eventName: EVENTS.FILTER_SELECT_DATASET,
-      label: "dataset_name"
+      label: "dataset_name",
     },
-    "diseases": {
+    diseases: {
       eventName: EVENTS.FILTER_SELECT_DISEASE,
-      label: "disease"
+      label: "disease",
     },
-    "ethnicities": {
+    ethnicities: {
       eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
-      label: "ethnicity"
+      label: "ethnicity",
     },
-    "sexes": {
+    sexes: {
       eventName: EVENTS.FILTER_SELECT_SEX,
-      label: "gender"
+      label: "gender",
     },
   };
 
@@ -169,18 +171,18 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           return;
         }
 
-        const newlySelected = options.filter(selected => 
-          !currentOptions?.includes(selected)
+        const newlySelected = options.filter(
+          (selected) => !currentOptions?.includes(selected)
         );
 
         // If there are newly selected filters, send an analytic event for each of them
-        if(newlySelected.length) {
+        if (newlySelected.length) {
           newlySelected.forEach((selected) => {
-            const {eventName, label} = analyticMapping[key]!;
+            const { eventName, label } = analyticMapping[key]!;
             track(eventName, {
-              [label]: selected.name
+              [label]: selected.name,
             });
-          })
+          });
         }
 
         currentOptions = options;

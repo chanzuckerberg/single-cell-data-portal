@@ -86,7 +86,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
     if (!dispatch || !value) return;
 
     track(EVENTS.WMG_OPTION_SELECT_CELL_TYPES, {
-      sort_cell_types_view_option: value.name
+      sort_cell_types_view_option: value.name,
     });
 
     dispatch(selectSortBy({ cellTypes: value.id as SORT_BY }));
@@ -96,7 +96,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
     if (!dispatch || !value) return;
 
     track(EVENTS.WMG_OPTION_SELECT_SORT_GENES, {
-      sort_genes_view_option: value.name
+      sort_genes_view_option: value.name,
     });
 
     dispatch(selectSortBy({ genes: value.id as SORT_BY }));

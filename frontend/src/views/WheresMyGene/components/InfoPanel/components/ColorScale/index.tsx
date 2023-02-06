@@ -47,9 +47,7 @@ const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
 };
 
-export default function ColorScale({
-  setIsScaled,
-}: Props): JSX.Element {
+export default function ColorScale({ setIsScaled }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { sortBy } = useContext(StateContext);
 
@@ -88,7 +86,7 @@ export default function ColorScale({
     if (!dispatch || !value) return;
 
     track(EVENTS.WMG_OPTION_SELECT_COLOR_SCALE, {
-      color_scale_view_option: value.name
+      color_scale_view_option: value.name,
     });
 
     setIsScaled(value.id == SORT_BY.COLOR_SCALED ? true : false);
