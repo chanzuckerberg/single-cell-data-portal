@@ -85,6 +85,10 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
   ): void {
     if (!dispatch || !value) return;
 
+    track(EVENTS.WMG_OPTION_SELECT_CELL_TYPES, {
+      sort_cell_types_view_option: value.name
+    });
+
     dispatch(selectSortBy({ cellTypes: value.id as SORT_BY }));
   }
 
