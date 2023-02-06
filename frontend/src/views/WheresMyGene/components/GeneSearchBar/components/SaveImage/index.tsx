@@ -342,12 +342,11 @@ function renderLegend({
   const relativeGeneExpressionElement = heatmapContainer.querySelector(
     `#relative-gene-expression`
   );
-  const expressedInCellsElement = heatmapContainer.querySelector(
-    `#expressed-in-cells`
-  );
+  const expressedInCellsElement =
+    heatmapContainer.querySelector(`#expressed-in-cells`);
 
-  const colorScale = renderColorScale({ 
-    element: relativeGeneExpressionElement, 
+  const colorScale = renderColorScale({
+    element: relativeGeneExpressionElement,
     width,
   });
   const expressedInCells = renderExpressedInCells({
@@ -392,8 +391,9 @@ function renderExpressedInCells({
 
   // Expressed in cells label
   const expressedCellsLabel = document.createElementNS(NAME_SPACE_URI, "text");
-  expressedCellsLabel.textContent =
-    element.querySelector(`#expressed-in-cells-label`)?.innerHTML!;
+  expressedCellsLabel.textContent = element.querySelector(
+    `#expressed-in-cells-label`
+  )?.innerHTML!;
   expressedCellsLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
 
   // Expressed in cells dots
@@ -423,9 +423,7 @@ function renderExpressedInCells({
     "transform",
     `translate(${xPosition}, 80)`
   );
-  const expressedCellsValues = element.querySelectorAll(
-    `.low-high span`
-  );
+  const expressedCellsValues = element.querySelectorAll(`.low-high span`);
 
   const expressedCellsValueLow = document.createElementNS(
     NAME_SPACE_URI,
@@ -469,8 +467,9 @@ function renderColorScale({
 
   // Color scale label
   const colorScaleLabel = document.createElementNS(NAME_SPACE_URI, "text");
-  colorScaleLabel.textContent =
-    element.querySelector(`#relative-gene-expression-label`)?.innerHTML!;
+  colorScaleLabel.textContent = element.querySelector(
+    `#relative-gene-expression-label`
+  )?.innerHTML!;
   colorScaleLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
 
   // Color scale image
@@ -485,19 +484,14 @@ function renderColorScale({
     "transform",
     `translate(${xPosition}, 80)`
   );
-  const colorScaleValues = element.querySelectorAll(
-    `.low-high span`
-  );
+  const colorScaleValues = element.querySelectorAll(`.low-high span`);
 
   const colorScaleValueLow = document.createElementNS(NAME_SPACE_URI, "text");
   colorScaleValueLow.setAttribute("x", "0");
   colorScaleValueLow.textContent = colorScaleValues[0].innerHTML!;
 
   const colorScaleValueHigh = document.createElementNS(NAME_SPACE_URI, "text");
-  colorScaleValueHigh.setAttribute(
-    "x",
-    `120`
-  );
+  colorScaleValueHigh.setAttribute("x", `120`);
   colorScaleValueHigh.setAttribute("text-anchor", "end");
   colorScaleValueHigh.textContent = colorScaleValues[1].innerHTML!;
 
@@ -555,24 +549,24 @@ function renderXAxis({
   // Create gene labels
   const geneLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
 
-  Array.from(xAxis?.querySelectorAll(`[data-test-id*='gene-label-'] div`) || []).forEach(
-    (label, index) => {
-      const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
+  Array.from(
+    xAxis?.querySelectorAll(`[data-test-id*='gene-label-'] div`) || []
+  ).forEach((label, index) => {
+    const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
 
-      const labelAttributes = {
-        x: 0,
-        transform: `translate(${
-          65 + 20 * index
-        }, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
-        "text-anchor": "end",
-      };
+    const labelAttributes = {
+      x: 0,
+      transform: `translate(${
+        65 + 20 * index
+      }, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
+      "text-anchor": "end",
+    };
 
-      applyAttributes(geneLabelText, labelAttributes);
-      geneLabelText.textContent = label.innerHTML;
+    applyAttributes(geneLabelText, labelAttributes);
+    geneLabelText.textContent = label.innerHTML;
 
-      geneLabelContainer.append(geneLabelText);
-    }
-  );
+    geneLabelContainer.append(geneLabelText);
+  });
 
   svg.append(geneLabelContainer);
 

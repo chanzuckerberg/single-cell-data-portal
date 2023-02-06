@@ -1,6 +1,6 @@
+import json
 import os
 from unittest.mock import patch
-import json
 
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 

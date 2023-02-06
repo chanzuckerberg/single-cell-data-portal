@@ -1,21 +1,21 @@
 import unittest
 from typing import NamedTuple
 
-from backend.wmg.api.v1 import get_dot_plot_data, agg_cell_type_counts, agg_tissue_counts
+from backend.wmg.api.v1 import agg_cell_type_counts, agg_tissue_counts, get_dot_plot_data
 from backend.wmg.data.query import (
-    WmgQueryCriteria,
-    WmgQuery,
-    MarkerGeneQueryCriteria,
     FmgQueryCriteria,
+    MarkerGeneQueryCriteria,
+    WmgQuery,
+    WmgQueryCriteria,
     retrieve_top_n_markers,
 )
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    create_temp_wmg_snapshot,
-    load_test_fmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
     all_X_cell_counts_values,
+    create_temp_wmg_snapshot,
+    load_test_fmg_snapshot,
 )
 
 TEST_SNAPSHOT = "test-fmg-snapshot"
@@ -43,16 +43,16 @@ class QueryTest(unittest.TestCase):
             result = q.marker_genes(criteria)
             marker_genes = retrieve_top_n_markers(result, "ttest", 10)
             expected = [
-                {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.3849880695343018},
-                {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 2.0541346073150635},
-                {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 2.0228285789489746},
-                {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7104357481002808},
-                {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5636593103408813},
+                {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.661743640899658},
+                {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 2.1092216968536377},
+                {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 2.072816848754883},
+                {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.8734184503555298},
+                {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.623068928718567},
+                {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5588932037353516},
                 {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4483562707901},
-                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.322214126586914},
-                {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.2264039516448975},
-                {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 1.0376155376434326},
-                {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4109770655632019},
+                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.2816050052642822},
+                {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 1.0649874210357666},
+                {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.46257320046424866},
             ]
 
             self.assertEqual(marker_genes, expected)
@@ -68,38 +68,34 @@ class QueryTest(unittest.TestCase):
             result = q.marker_genes(criteria)
             marker_genes = retrieve_top_n_markers(result, "ttest", 0)
             expected = [
-                {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.3849880695343018},
-                {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 2.0541346073150635},
-                {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 2.0228285789489746},
-                {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7104357481002808},
-                {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5636593103408813},
+                {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.661743640899658},
+                {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 2.1092216968536377},
+                {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 2.072816848754883},
+                {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.8734184503555298},
+                {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.623068928718567},
+                {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5588932037353516},
                 {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4483562707901},
-                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.322214126586914},
-                {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.2264039516448975},
-                {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 1.0376155376434326},
-                {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4109770655632019},
-                {"gene_ontology_term_id": "ENSG00000173110", "p_value": 0.0, "effect_size": 0.32264721393585205},
-                {"gene_ontology_term_id": "ENSG00000102007", "p_value": 0.0, "effect_size": 0.0336155891418457},
-                {"gene_ontology_term_id": "ENSG00000171311", "p_value": 0.0, "effect_size": 0.017332054674625397},
-                {"gene_ontology_term_id": "ENSG00000125844", "p_value": 0.0, "effect_size": -0.04536204785108566},
-                {"gene_ontology_term_id": "ENSG00000031698", "p_value": 0.0, "effect_size": -0.07584364712238312},
-                {"gene_ontology_term_id": "ENSG00000102158", "p_value": 0.0, "effect_size": -0.12228783220052719},
-                {"gene_ontology_term_id": "ENSG00000186818", "p_value": 0.0, "effect_size": -0.19816149771213531},
-                {"gene_ontology_term_id": "ENSG00000134970", "p_value": 0.0, "effect_size": -0.24059846997261047},
-                {"gene_ontology_term_id": "ENSG00000170542", "p_value": 0.0, "effect_size": -0.32444605231285095},
-                {"gene_ontology_term_id": "ENSG00000133112", "p_value": 0.0, "effect_size": -0.4885671138763428},
-                {"gene_ontology_term_id": "ENSG00000159128", "p_value": 0.0, "effect_size": -0.5244735479354858},
-                {"gene_ontology_term_id": "ENSG00000113580", "p_value": 0.0, "effect_size": -0.5796177983283997},
-                {"gene_ontology_term_id": "ENSG00000116473", "p_value": 0.0, "effect_size": -0.5802189111709595},
-                {"gene_ontology_term_id": "ENSG00000125740", "p_value": 0.0, "effect_size": -0.6218612790107727},
-                {"gene_ontology_term_id": "ENSG00000161547", "p_value": 0.0, "effect_size": -0.6748051643371582},
-                {"gene_ontology_term_id": "ENSG00000186184", "p_value": 0.0, "effect_size": -0.7197926640510559},
-                {"gene_ontology_term_id": "ENSG00000135940", "p_value": 0.0, "effect_size": -0.7351719737052917},
-                {"gene_ontology_term_id": "ENSG00000092820", "p_value": 0.0, "effect_size": -0.7487977147102356},
-                {"gene_ontology_term_id": "ENSG00000070831", "p_value": 0.0, "effect_size": -0.9065274596214294},
+                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.2816050052642822},
+                {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 1.0649874210357666},
+                {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.46257320046424866},
+                {"gene_ontology_term_id": "ENSG00000173110", "p_value": 0.0, "effect_size": 0.04467674344778061},
+                {"gene_ontology_term_id": "ENSG00000125844", "p_value": 0.0, "effect_size": -0.018479663878679276},
+                {"gene_ontology_term_id": "ENSG00000102007", "p_value": 0.0, "effect_size": -0.03636987507343292},
+                {"gene_ontology_term_id": "ENSG00000031698", "p_value": 0.0, "effect_size": -0.10610716789960861},
+                {"gene_ontology_term_id": "ENSG00000102158", "p_value": 0.0, "effect_size": -0.13100826740264893},
+                {"gene_ontology_term_id": "ENSG00000186818", "p_value": 0.0, "effect_size": -0.18612566590309143},
+                {"gene_ontology_term_id": "ENSG00000159128", "p_value": 0.0, "effect_size": -0.5121894478797913},
+                {"gene_ontology_term_id": "ENSG00000125740", "p_value": 0.0, "effect_size": -0.6192882657051086},
+                {"gene_ontology_term_id": "ENSG00000116473", "p_value": 0.0, "effect_size": -0.6428257822990417},
+                {"gene_ontology_term_id": "ENSG00000133112", "p_value": 0.0, "effect_size": -0.6987436413764954},
+                {"gene_ontology_term_id": "ENSG00000092820", "p_value": 0.0, "effect_size": -0.7473370432853699},
+                {"gene_ontology_term_id": "ENSG00000161547", "p_value": 0.0, "effect_size": -0.776445746421814},
+                {"gene_ontology_term_id": "ENSG00000186184", "p_value": 0.0, "effect_size": -0.7776976823806763},
+                {"gene_ontology_term_id": "ENSG00000070831", "p_value": 0.0, "effect_size": -0.8825482130050659},
+                {"gene_ontology_term_id": "ENSG00000135940", "p_value": 0.0, "effect_size": -0.8879522085189819},
                 {"gene_ontology_term_id": "ENSG00000168028", "p_value": 0.0, "effect_size": -1.3053345680236816},
-                {"gene_ontology_term_id": "ENSG00000075415", "p_value": 0.0, "effect_size": -1.3920032978057861},
-                {"gene_ontology_term_id": "ENSG00000170296", "p_value": 0.0, "effect_size": -1.7694092988967896},
+                {"gene_ontology_term_id": "ENSG00000075415", "p_value": 0.0, "effect_size": -1.390924096107483},
+                {"gene_ontology_term_id": "ENSG00000170296", "p_value": 0.0, "effect_size": -1.5161384344100952},
             ]
             self.assertEqual(marker_genes, expected)
 

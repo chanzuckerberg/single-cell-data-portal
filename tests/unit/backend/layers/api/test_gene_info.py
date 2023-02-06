@@ -1,13 +1,14 @@
-import unittest
-import requests
 import json
-from backend.common.utils.http_exceptions import NotFoundHTTPException
-
-from backend.gene_info.api import ncbi_provider, ensembl_ids
-from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
-from backend.api_server.app import app
+import unittest
 import xml.etree.ElementTree as ET
-from unittest.mock import patch, call
+from unittest.mock import call, patch
+
+import requests
+
+from backend.api_server.app import app
+from backend.common.utils.http_exceptions import NotFoundHTTPException
+from backend.gene_info.api import ensembl_ids, ncbi_provider
+from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 
 
 class GeneInfoAPIv1Tests(unittest.TestCase):

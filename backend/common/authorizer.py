@@ -4,9 +4,10 @@ from functools import lru_cache
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
+
 from backend.common.corpora_config import CorporaAuthConfig
 from backend.common.utils.http_exceptions import UnauthorizedError
-from backend.common.utils.jwt import jwt_decode, get_unverified_header
+from backend.common.utils.jwt import get_unverified_header, jwt_decode
 
 _auth0_session_with_retry = None
 

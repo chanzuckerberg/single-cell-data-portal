@@ -359,7 +359,7 @@ describe("Where's My Gene", () => {
         // (thuang): Sometimes when API response is slow, we'll not capture all the
         // cell type names, so a sanity check that we expect at least 100 names
         expect(beforeCellTypeNames.length).toBeGreaterThan(100);
-        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length-1);
+        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length - 1);
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);

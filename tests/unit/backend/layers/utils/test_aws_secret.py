@@ -1,9 +1,9 @@
 import os
 import unittest
 from time import sleep
+from unittest.mock import patch
 
 import boto3
-from unittest.mock import patch
 
 from backend.common.utils.aws import AwsSecret
 from tests.unit.backend.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture

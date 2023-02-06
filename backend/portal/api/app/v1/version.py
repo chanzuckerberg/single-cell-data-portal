@@ -1,5 +1,6 @@
 import os
-from flask import make_response, jsonify
+
+from flask import jsonify, make_response
 
 
 def get():

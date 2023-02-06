@@ -1,9 +1,9 @@
 import base64
 import json
 import time
+from unittest.mock import DEFAULT, patch
 
 from jose import jws
-from unittest.mock import patch, DEFAULT
 
 from backend.common.auth0_manager import auth0_management_session
 from tests.unit.backend.layers.api.config import TOKEN_EXPIRES

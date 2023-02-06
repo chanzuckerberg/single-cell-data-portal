@@ -1,5 +1,6 @@
-from flask import g
 from functools import wraps
+
+from flask import g
 
 from backend.common.utils.db_session import db_session_manager
 
