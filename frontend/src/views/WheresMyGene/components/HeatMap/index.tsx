@@ -245,10 +245,12 @@ function getTissueCellTypes({
   const tissueCellTypes = cellTypes[tissue];
   const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
   const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
+  const sortedTissueCellTypesIfDefined =
+    sortedTissueCellTypes ?? tissueCellTypes;
   return (
     (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY && !isRollup
       ? tissueCellTypes
-      : sortedTissueCellTypes) || EMPTY_ARRAY
+      : sortedTissueCellTypesIfDefined) || EMPTY_ARRAY
   );
 }
 
