@@ -405,17 +405,20 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
         self.initialize_published_collection()
 
         # Add a tombstoned Collection
-        collection_to_tombstone: CollectionVersionWithDatasets = self.initialize_published_collection()
-        self.database_provider.delete_canonical_collection(collection_to_tombstone.collection_id)
+        collection_version_to_tombstone: CollectionVersionWithDatasets = self.initialize_published_collection()
+        self.database_provider.delete_canonical_collection(collection_version_to_tombstone.collection_id)
 
         # Confirm tombstoned Collection is in place
         all_collections_including_tombstones = self.database_provider.get_all_collections_versions(get_tombstoned=True)
         self.assertEqual(3, len(list(all_collections_including_tombstones)))
 
+        all_collections_no_tombstones = self.database_provider.get_all_collections_versions()
+        self.assertEqual(2, len(list(all_collections_no_tombstones)))
+
         filter = CollectionQueryFilter(is_published=True)
         versions = list(self.business_logic.get_collections(filter))
 
-        self.assertEqual(2, len(versions))
+        self.assertEqual(1, len(versions))
         for version in versions:
             self.assertIsNotNone(version.published_at)
 
