@@ -239,7 +239,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         </div>
 
         <Organism isLoading={isLoading} />
-        <Compare isLoading={isLoading} availableFilters={availableFilters} />
+        <Compare isLoading={isLoading} />
 
         <Sort areFiltersDisabled={areFiltersDisabled} />
       </Wrapper>

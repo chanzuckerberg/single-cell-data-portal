@@ -23,7 +23,6 @@ const InputDropdownProps: Partial<RawInputDropdownProps> = {
 
 interface Props {
   isLoading: boolean;
-  availableFilters: Partial<FilterDimensions>;
 }
 
 const FILTERS: CompareDimension[] = [
@@ -51,7 +50,6 @@ const FILTERS: CompareDimension[] = [
 
 export default function Compare({ 
   isLoading,
-  availableFilters,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedCompare } = useContext(StateContext);
