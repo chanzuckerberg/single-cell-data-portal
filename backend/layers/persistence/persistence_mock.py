@@ -115,9 +115,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self, get_tombstoned: bool = False
     ) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version in self.collections_versions.values():
-            if not get_tombstoned and version.canonical_collection.tombstoned:  # Do not yield a tombstone
+            updated_version = self._update_version_with_canonical(version)
+            if not get_tombstoned and updated_version.canonical_collection.tombstoned:
                 continue
-            yield self._update_version_with_canonical(version)
+            yield updated_version
 
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
@@ -130,10 +131,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def delete_canonical_collection(self, collection_id: CollectionId) -> None:
         collection = self.collections[collection_id.id]
         collection.tombstoned = True
-        version_id = collection.version_id.id
-        self.collections_versions[version_id] = self._update_version_with_canonical(
-            self.collections_versions[version_id]
-        )
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
