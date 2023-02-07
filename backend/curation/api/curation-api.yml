@@ -964,10 +964,7 @@ components:
             nullable: true
             type: string
           link_type:
-            description: |
-              If the link_type is DOI, then the `link_url` must be a valid DOI link; the `link_name` will be ignored 
-              or overwritten if provided. For example, https://doi.org/00.0000/science.abc1234 is a valid DOI 
-              `link_url`. All other links types can be any valid URL.
+            description: Any valid URL.
             enum:
               - PROTOCOL
               - RAW_DATA
@@ -1066,7 +1063,9 @@ components:
           type: number
       type: object
     suspension_type:
-      description:
+      description: |
+        [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#suspension_type)
+
         List of unique suspension types represented in the dataset, corresponding to dataset's assay(s).
         Possible item values are 'nucleus', 'cell', and/or 'na'.
       type: array

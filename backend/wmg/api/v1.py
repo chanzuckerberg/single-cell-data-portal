@@ -81,7 +81,10 @@ def markers():
 
 
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
-    return [snapshot.dataset_dict.get(dataset_id, {}) for dataset_id in dataset_ids]
+    return [
+        snapshot.dataset_dict.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
+        for dataset_id in dataset_ids
+    ]
 
 
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
@@ -124,7 +127,6 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
 
 def build_expression_summary(query_result: DataFrame) -> dict:
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
-    # is_rollup is a flag to indicate whether the expressions should be rolled up or not
     structured_result: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
     for row in query_result.itertuples(index=False):
         structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id].append(

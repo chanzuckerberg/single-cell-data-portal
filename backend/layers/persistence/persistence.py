@@ -268,7 +268,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 versions.append(version)
             return versions
 
-    def get_all_collections_versions(self) -> Iterable[CollectionVersion]:
+    def get_all_collections_versions(self, get_tombstoned: bool = False) -> Iterable[CollectionVersion]:
         """
         Retrieves all versions of all collections.
         TODO: for performance reasons, it might be necessary to add a filtering parameter here.
@@ -277,7 +277,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             versions = session.query(CollectionVersionTable).all()
 
             # Create a canonical mapping
-            all_canonical_collections = session.query(CollectionTable).all()
+            if get_tombstoned:
+                all_canonical_collections = session.query(CollectionTable).all()
+            else:
+                all_canonical_collections = (
+                    session.query(CollectionTable).filter(CollectionTable.tombstone.isnot(True)).all()
+                )
             all_canonical_map = dict()
             for collection_row in all_canonical_collections:
                 all_canonical_map[str(collection_row.id)] = CanonicalCollection(
@@ -290,7 +295,8 @@ class DatabaseProvider(DatabaseProviderInterface):
 
             result = []
             for v in versions:
-                result.append(self._row_to_collection_version(v, all_canonical_map[str(v.collection_id)]))
+                if str(v.collection_id) in all_canonical_map:
+                    result.append(self._row_to_collection_version(v, all_canonical_map[str(v.collection_id)]))
 
             return result
 
