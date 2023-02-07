@@ -54,7 +54,7 @@ class DatabaseProviderInterface:
         Retrieves all versions for a specific collections, without filtering
         """
 
-    def get_all_collections_versions(self) -> Iterable[CollectionVersion]:
+    def get_all_collections_versions(self, get_tombstoned: bool) -> Iterable[CollectionVersion]:
         """
         Retrieves all versions of all collections.
         TODO: for performance reasons, it might be necessary to add a filtering parameter here.
