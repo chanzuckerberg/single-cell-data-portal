@@ -13,7 +13,7 @@ interface Props {
 const Layout = ({ children }: Props) => {
   const { pathname } = useRouter();
 
-  if (pathname === ROUTES.HOMEPAGE) {
+  if (pathname === ROUTES.HOMEPAGE || pathname === ROUTES.SITEMAP) {
     return (
       <>
         <LandingHeader />

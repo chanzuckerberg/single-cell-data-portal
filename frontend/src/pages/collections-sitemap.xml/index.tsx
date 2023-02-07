@@ -1,18 +1,27 @@
 import { GetServerSideProps } from "next";
 import { getServerSideSitemap, ISitemapField } from "next-sitemap";
 
-// function to convert epoch/unix timestamp to YYYY-MM-DD format
-function unixToYYYYMMDD(date: string) {
-  let myDate = new Date(parseFloat(date) * 1000);
+// github copilot convert timestamp function
+function convertTimestamp(timestamp: string) {
+  const date = new Date(parseFloat(timestamp) * 1000);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hour = date.getHours();
+  const minute = date.getMinutes();
+  const second = date.getSeconds();
+  const offset = date.getTimezoneOffset();
+  const offsetHours = Math.abs(Math.floor(offset / 60));
+  const offsetMinutes = Math.abs(offset % 60);
+  const timezoneOffset = `${offset < 0 ? "+" : "-"}${offsetHours
+    .toString()
+    .padStart(2, "0")}:${offsetMinutes.toString().padStart(2, "0")}`;
 
-  let dateStr =
-    myDate.getFullYear() +
-    "-" +
-    (myDate.getMonth() + 1) +
-    "-" +
-    myDate.getDate();
-
-  return dateStr;
+  return `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")} ${hour.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}:${second.toString().padStart(2, "0")} ${timezoneOffset}`;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -25,8 +34,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const fields: ISitemapField[] = collections.map((collection) => ({
     loc: `https://www.cellxgene.cziscience.com/collections/${collection.id}`,
     lastmod: collection.revised_at
-      ? unixToYYYYMMDD(collection.revised_at)
-      : unixToYYYYMMDD(collection.published_at),
+      ? convertTimestamp(collection.revised_at)
+      : convertTimestamp(collection.published_at),
   }));
 
   return getServerSideSitemap(context, fields);
