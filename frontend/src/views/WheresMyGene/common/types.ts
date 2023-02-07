@@ -7,7 +7,7 @@ export interface Organism {
   name: string;
 }
 
-export interface CompareDimension {
+export interface CompareDimensionOption {
   name: FILTER_LABELS | "None";
   id: string;
 }

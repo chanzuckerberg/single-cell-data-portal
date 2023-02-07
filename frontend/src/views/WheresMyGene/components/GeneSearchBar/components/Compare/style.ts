@@ -1,6 +1,11 @@
 import styled from "@emotion/styled";
-import { Dropdown, fontBodyS, fontBodyXxs, getColors, getFontWeights  } from "czifui";
-
+import {
+  Dropdown,
+  fontBodyS,
+  fontBodyXxs,
+  getColors,
+  getFontWeights,
+} from "czifui";
 
 export const Wrapper = styled.div`
   display: flex;

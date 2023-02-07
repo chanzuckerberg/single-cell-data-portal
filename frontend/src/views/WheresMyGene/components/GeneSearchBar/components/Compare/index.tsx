@@ -3,18 +3,17 @@ import {
   DefaultMenuSelectOption,
   InputDropdownProps as RawInputDropdownProps,
 } from "czifui";
-import { useContext, useEffect, useMemo } from "react";
+import { useContext } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { FilterDimensions, usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import { FILTER_LABELS } from "src/views/WheresMyGene/common/constants";
 import {
   DispatchContext,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
 import { selectCompare } from "src/views/WheresMyGene/common/store/actions";
-import { CompareDimension } from "../../../../common/types";
+import { CompareDimensionOption } from "../../../../common/types";
 import { CompareLabel, StyledDropdown, Wrapper } from "./style";
 
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
@@ -25,10 +24,10 @@ interface Props {
   isLoading: boolean;
 }
 
-const FILTERS: CompareDimension[] = [
+const FILTERS: CompareDimensionOption[] = [
   {
     name: "None",
-    id: ""
+    id: "",
   },
   // {
   //   name: FILTER_LABELS.DATASET,
@@ -36,31 +35,31 @@ const FILTERS: CompareDimension[] = [
   // },
   {
     name: FILTER_LABELS.DISEASE,
-    id: "disease"
+    id: "disease",
   },
   {
     name: FILTER_LABELS.ETHNICITY,
-    id: "ethnicity"
+    id: "ethnicity",
   },
   {
     name: FILTER_LABELS.SEX,
-    id: "gender"
-  }
+    id: "gender",
+  },
 ];
 
-export default function Compare({ 
-  isLoading,
-}: Props): JSX.Element {
+export default function Compare({ isLoading }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedCompare } = useContext(StateContext);
 
-  const dimension = FILTERS.find(filter => filter.id === selectedCompare);
+  const dimension = FILTERS.find((filter) => filter.id === selectedCompare);
   return (
     <Wrapper>
       <CompareLabel>Compare</CompareLabel>
       <StyledDropdown
         label={dimension?.name || "None"}
-        options={FILTERS as unknown as DefaultDropdownMenuOption[] || EMPTY_ARRAY}
+        options={
+          (FILTERS as unknown as DefaultDropdownMenuOption[]) || EMPTY_ARRAY
+        }
         onChange={handleOnChange as tempOnChange}
         InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-test-id="compare-dropdown"
@@ -68,10 +67,10 @@ export default function Compare({
     </Wrapper>
   );
 
-  function handleOnChange(dimension: CompareDimension | null): void {
+  function handleOnChange(dimension: CompareDimensionOption | null): void {
     if (!dispatch || !dimension) return;
 
-    console.log("Selected", dimension.id)
+    console.log("Selected", dimension.id);
 
     // track(EVENTS.WMG_SELECT_ORGANISM, { payload: organism?.name });
 
