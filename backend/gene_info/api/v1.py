@@ -1,11 +1,10 @@
 import string
+
 from flask import jsonify, make_response
-from backend.gene_info.api.ncbi_provider import NCBIAPIException, NCBIProvider, NCBIUnexpectedResultException
-from backend.common.utils.http_exceptions import (
-    NotFoundHTTPException,
-    ForbiddenHTTPException,
-)
+
+from backend.common.utils.http_exceptions import ForbiddenHTTPException, NotFoundHTTPException
 from backend.gene_info.api.ensembl_ids import GeneChecker
+from backend.gene_info.api.ncbi_provider import NCBIAPIException, NCBIProvider, NCBIUnexpectedResultException
 
 
 def gene_info(gene: string = None, geneID: string = None):
@@ -19,23 +18,23 @@ def gene_info(gene: string = None, geneID: string = None):
         try:
             geneID = gene_checker.get_id(gene)
         except ValueError as e:
-            raise NotFoundHTTPException(str(e))
+            raise NotFoundHTTPException(str(e)) from None
 
     # search for gene UID from ensembl ID
     try:
         (uid, show_warning_banner) = provider.fetch_gene_uid(geneID, gene)
     except NCBIAPIException:
-        raise ForbiddenHTTPException("Failed search of NCBI database, API key issue")
+        raise ForbiddenHTTPException("Failed search of NCBI database, API key issue") from None
     except NCBIUnexpectedResultException:
-        raise NotFoundHTTPException("Unexpected NCBI search result")
+        raise NotFoundHTTPException("Unexpected NCBI search result") from None
 
     # fetch gene information using NCBI UID
     try:
         gene_info_tree = provider.fetch_gene_info_tree(uid)
     except NCBIAPIException:
-        raise ForbiddenHTTPException("Failed fetch of NCBI database, API key issue")
+        raise ForbiddenHTTPException("Failed fetch of NCBI database, API key issue") from None
     except NCBIUnexpectedResultException:
-        raise NotFoundHTTPException("Unexpected NCBI info tree result")
+        raise NotFoundHTTPException("Unexpected NCBI info tree result") from None
     gene_info = provider.parse_gene_info_tree(gene_info_tree)
     return make_response(
         jsonify(

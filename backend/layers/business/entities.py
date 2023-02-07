@@ -1,6 +1,5 @@
-from typing import List, Optional
-
 from dataclasses import dataclass
+from typing import List, Optional
 
 from backend.layers.common.entities import DatasetArtifactType, Link
 

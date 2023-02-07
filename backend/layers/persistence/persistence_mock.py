@@ -111,9 +111,14 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         if cc is not None:
             return self.get_collection_version_with_datasets(cc.version_id)
 
-    def get_all_collections_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
+    def get_all_collections_versions(
+        self, get_tombstoned: bool = False
+    ) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version in self.collections_versions.values():
-            yield self._update_version_with_canonical(version)
+            updated_version = self._update_version_with_canonical(version)
+            if not get_tombstoned and updated_version.canonical_collection.tombstoned:
+                continue
+            yield updated_version
 
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():

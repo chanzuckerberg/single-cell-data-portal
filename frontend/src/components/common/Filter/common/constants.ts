@@ -253,6 +253,11 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
 export const SELF_REPORTED_ETHNICITY_DENY_LIST = ["na"];
 
 /**
+ * List of suspension types to exclude from filter functionality.
+ */
+export const SUSPENSION_TYPE_DENY_LIST = ["na"];
+
+/**
  * String value to append to labels in multi-panel categories if the value appears in more than one panel.
  */
 export const LABEL_SUFFIX_NON_SPECIFIC = ", non-specific";
@@ -2969,6 +2974,18 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     categoryFilterId: CATEGORY_FILTER_ID.SEX,
     filterOnKey: "sex",
     label: "Sex",
+    labelKind: "VALUE",
+    matchKind: "INCLUDES_SOME",
+    multiselect: true,
+    valueSourceKind: "NONE",
+    viewKind: "SELECT",
+  },
+  {
+    analyticsEvent: EVENTS.FILTER_SELECT_SUSPENSION_TYPE,
+    analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.SUSPENSION_TYPE,
+    categoryFilterId: CATEGORY_FILTER_ID.SUSPENSION_TYPE,
+    filterOnKey: "suspension_type",
+    label: "Suspension Type",
     labelKind: "VALUE",
     matchKind: "INCLUDES_SOME",
     multiselect: true,

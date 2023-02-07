@@ -1,22 +1,26 @@
-import pandas as pd
-import numpy as np
-from scipy import stats
 import json
-import tiledb
 from functools import lru_cache, wraps
+from typing import Optional, Union
+
+import numpy as np
+import pandas as pd
+import tiledb
+from scipy import stats
+
+from backend.common.utils.exceptions import MarkerGeneCalculationException
+from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
+from backend.wmg.data.rollup import (
+    are_cell_types_colinear,
+    rollup_across_cell_type_descendants,
+    rollup_across_cell_type_descendants_array,
+)
 from backend.wmg.data.snapshot import (
-    load_snapshot,
-    WmgSnapshot,
-    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
     CELL_COUNTS_CUBE_NAME,
     DATASET_TO_GENE_IDS_FILENAME,
-)
-from typing import Union, Optional
-from backend.wmg.data.rollup import (
-    rollup_across_cell_type_descendants_array,
-    rollup_across_cell_type_descendants,
-    are_cell_types_colinear,
+    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
+    WmgSnapshot,
+    load_snapshot,
 )
 
 
@@ -76,7 +80,8 @@ def _query_tiledb_context_memoized(
     if isinstance(corpus, str):
         expression_summary_fmg_cube = tiledb.open(f"{corpus}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}")
         cell_counts_cube = tiledb.open(f"{corpus}/{CELL_COUNTS_CUBE_NAME}")
-        dataset_to_gene_ids = json.load(open(f"{corpus}/{DATASET_TO_GENE_IDS_FILENAME}"))
+        with open(f"{corpus}/{DATASET_TO_GENE_IDS_FILENAME}") as fp:
+            dataset_to_gene_ids = json.load(fp)
     else:
         if corpus is None:
             corpus = load_snapshot()
@@ -100,6 +105,14 @@ def _query_tiledb_context_memoized(
     q = WmgQuery(snapshot)
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
+
+    # set metrics for all non-healthy cells to zero so they are not included in the rollup
+    # if, after rollup, zeros remain, nothing needs to be done as the test metrics will be
+    # all nan.
+    for df in [query, cell_counts_query]:
+        exclude_filter = df["disease_ontology_term_id"].astype("str") != NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+        numeric_columns = df.select_dtypes("number").columns
+        df.loc[exclude_filter, numeric_columns] = 0
 
     depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
 
@@ -232,6 +245,9 @@ def _query_target(
     for level in target_levels:
         level_values = np.array(list(n_cells_index_context.get_level_values(level)))
         filt_ncells = np.logical_and(filt_ncells, np.in1d(level_values, target_filters[level + "s"]))
+
+    if not np.any(filt) or not np.any(filt_ncells):
+        raise MarkerGeneCalculationException("No cells found for target population.")
 
     target_agg = context_agg[filt]
     n_cells_per_gene_target = n_cells_per_gene_context[filt_ncells].sum(axis=0, keepdims=True)
@@ -513,6 +529,8 @@ def _post_process_stats(
         )
         effects[is_colinear] = np.nan
         pvals[is_colinear] = np.nan
+        pvals[:, np.all(np.isnan(effects), axis=0)] = 1
+        effects[:, np.all(np.isnan(effects), axis=0)] = 0
 
     # aggregate
     effects = np.nanpercentile(effects, percentile * 100, axis=0)

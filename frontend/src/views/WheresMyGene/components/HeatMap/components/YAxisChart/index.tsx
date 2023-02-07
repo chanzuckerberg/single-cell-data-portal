@@ -76,7 +76,7 @@ export default memo(function YAxisChart({
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
-  
+
   const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
     <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
@@ -167,9 +167,7 @@ const CellTypeButton = ({
     maximumFractionDigits: 1,
     notation: "compact",
   }).format(total_count);
-  const countString = `${formattedString}${
-    formattedString !== total_count.toString() ? "+" : ""
-  }`;
+  const countString = `${formattedString}`.toLowerCase();
 
   const cellType = deserializeCellTypeMetadata(metadata);
 

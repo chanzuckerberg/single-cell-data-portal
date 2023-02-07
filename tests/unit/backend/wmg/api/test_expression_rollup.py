@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
 import pandas as pd
+
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
 
 

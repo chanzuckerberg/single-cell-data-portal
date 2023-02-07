@@ -13,15 +13,15 @@ def get_cxguser_cookie():
     USERS_CONFIGURATION_PATH = "oauth/users.json"
     CLIENTS_CONFIGURATION_PATH = "oauth/clients-config.json"
 
-    f = open(USERS_CONFIGURATION_PATH)
-    data = json.load(f)
+    with open(USERS_CONFIGURATION_PATH) as f:
+        data = json.load(f)
 
     user_data = data[0]
     user_name = user_data["Username"]
     password = user_data["Password"]
 
-    f = open(CLIENTS_CONFIGURATION_PATH)
-    data = json.load(f)
+    with open(CLIENTS_CONFIGURATION_PATH) as f:
+        data = json.load(f)
     client_data = data[0]
     client_id = client_data["ClientId"]
 

@@ -1,17 +1,16 @@
 import json
 import unittest
-from os import remove, path
+from os import path, remove
 from shutil import rmtree
 from uuid import uuid4
 
 import anndata
 import numpy as np
-from pandas import Series, DataFrame, Categorical
 import tiledb
+from pandas import Categorical, DataFrame, Series
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
-
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
 
@@ -48,11 +47,11 @@ class TestH5ADDataFile(unittest.TestCase):
             h5ad_file.anndata.var.sort_index(inplace=True), self.sample_anndata.var.sort_index(inplace=True)
         )
 
-        for key in h5ad_file.anndata.obsm.keys():
+        for key in h5ad_file.anndata.obsm:
             self.assertIn(key, self.sample_anndata.obsm.keys())
             self.assertTrue((h5ad_file.anndata.obsm[key] == self.sample_anndata.obsm[key]).all())
 
-        for key in self.sample_anndata.obsm.keys():
+        for key in self.sample_anndata.obsm:
             self.assertIn(key, h5ad_file.anndata.obsm.keys())
             self.assertTrue((h5ad_file.anndata.obsm[key] == self.sample_anndata.obsm[key]).all())
 
@@ -157,7 +156,7 @@ class TestH5ADDataFile(unittest.TestCase):
 
         try:
             with tiledb.open("foo", mode="w") as A:
-                value = {}
+                value = dict()
                 value[col_name] = np.zeros((100,), dtype=np.int)
                 A[:] = value  # if there's a regression, this statement will throw a TileDBError
                 # if we get here we're good

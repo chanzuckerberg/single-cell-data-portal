@@ -14,12 +14,12 @@ export COVERAGE_RUN_ARGS:=--data-file=$(COVERAGE_DATA_FILE) --parallel-mode $(CO
 
 .PHONY: fmt
 fmt:
-	black backend scripts tests
-	flake8 backend tests scripts
+	black --config=pyproject.toml backend scripts tests
+	ruff check --fix --config=pyproject.toml backend tests scripts
 
 .PHONY: lint
 lint:
-	flake8 backend tests
+	ruff check --config=pyproject.toml backend tests
 
 .PHONY: unit-test
 unit-test: local-unit-test

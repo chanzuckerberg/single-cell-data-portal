@@ -8,7 +8,6 @@ Create Date: 2020-08-24 11:04:30.640496
 from alembic import op
 from sqlalchemy.dialects.postgresql import ENUM
 
-
 # revision identifiers, used by Alembic.
 revision = "03_fa0950f6df19"
 down_revision = "02_7968f161b60c"
