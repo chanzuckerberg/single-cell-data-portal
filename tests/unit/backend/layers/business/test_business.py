@@ -3,7 +3,6 @@ import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch
 from uuid import uuid4
-import time
 
 from backend.layers.business.business import (
     BusinessLogic,
@@ -797,22 +796,6 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
-    def test_get_all_datasets_TIMING(self):
-        for i in range(100):
-            self.initialize_published_collection()
-        t0 = time.time()
-        datasets = list(self.business_logic.get_all_published_datasets())
-        t1 = time.time()
-        print("datasets")
-        print(t1 - t0)
-        self.assertEqual(200, len(datasets))
-        filter = CollectionQueryFilter(is_published=True)
-        t2 = time.time()
-        collections = list(self.business_logic.get_collections(filter))
-        t3 = time.time()
-        print("published collections")
-        print(t3 - t2)
-        self.assertEqual(100, len(collections))
 
     def test_get_all_datasets_ok(self):
         """
