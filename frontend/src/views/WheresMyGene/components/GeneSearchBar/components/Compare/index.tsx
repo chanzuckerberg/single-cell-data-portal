@@ -21,33 +21,34 @@ const InputDropdownProps: Partial<RawInputDropdownProps> = {
 };
 
 interface Props {
+  areFiltersDisabled: boolean;
   isLoading: boolean;
 }
 
 const FILTERS: CompareDimensionOption[] = [
   {
     name: "None",
-    id: "",
+    id: null,
   },
   // {
   //   name: FILTER_LABELS.DATASET,
-  //   id: "dataset"
+  //   id: "datasets"
   // },
   {
     name: FILTER_LABELS.DISEASE,
-    id: "disease",
+    id: "disease_terms",
   },
   {
     name: FILTER_LABELS.ETHNICITY,
-    id: "ethnicity",
+    id: "self_reported_ethnicity_terms",
   },
   {
     name: FILTER_LABELS.SEX,
-    id: "gender",
+    id: "sex_terms",
   },
 ];
 
-export default function Compare({ isLoading }: Props): JSX.Element {
+export default function Compare({ isLoading, areFiltersDisabled }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedCompare } = useContext(StateContext);
 
@@ -61,7 +62,7 @@ export default function Compare({ isLoading }: Props): JSX.Element {
           (FILTERS as unknown as DefaultDropdownMenuOption[]) || EMPTY_ARRAY
         }
         onChange={handleOnChange as tempOnChange}
-        InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
+        InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading || areFiltersDisabled }}
         data-test-id="compare-dropdown"
       />
     </Wrapper>

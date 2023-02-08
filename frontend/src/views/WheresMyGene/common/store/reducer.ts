@@ -1,6 +1,6 @@
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
-import { EMPTY_FILTERS } from "src/common/queries/wheresMyGene";
+import { EMPTY_FILTERS, FilterDimensions } from "src/common/queries/wheresMyGene";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
@@ -18,14 +18,14 @@ export interface State {
     [tissue: Tissue]: string[];
   };
   selectedOrganismId: string | null;
-  selectedCompare: string | null;
+  selectedCompare: keyof FilterDimensions | null;
   selectedTissues: string[];
   selectedFilters: {
     datasets: string[];
-    developmentStages: string[];
-    diseases: string[];
-    ethnicities: string[];
-    sexes: string[];
+    development_stage_terms: string[];
+    disease_terms: string[];
+    self_reported_ethnicity_terms: string[];
+    sex_terms: string[];
   };
   /**
    * (thuang): BE API response always returns a snapshot ID. When the ID changes,
@@ -155,7 +155,7 @@ function selectOrganism(
 
 function selectCompare(
   state: State,
-  action: PayloadAction<string | null>
+  action: PayloadAction<keyof FilterDimensions | null>
 ): State {
   if (state.selectedCompare === action.payload) {
     return state;

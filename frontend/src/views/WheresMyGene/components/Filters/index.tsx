@@ -26,7 +26,6 @@ import {
 import { FILTER_LABELS } from "../../common/constants";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectFilters } from "../../common/store/actions";
-import { Filters as IFilters } from "../../common/types";
 import Compare from "../GeneSearchBar/components/Compare";
 import Organism from "../GeneSearchBar/components/Organism";
 import Sort from "./components/Sort";
@@ -60,9 +59,9 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
 
   const {
     datasets: datasetIds,
-    diseases,
-    ethnicities,
-    sexes,
+    disease_terms: diseases,
+    self_reported_ethnicity_terms: ethnicities,
+    sex_terms: sexes,
   } = selectedFilters;
 
   const {
@@ -134,21 +133,21 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   }, [sex_terms, sexes]);
 
   const analyticMapping: {
-    [key in keyof IFilters]: { eventName: EVENTS; label: string };
+    [key in keyof Partial<FilterDimensions>]: { eventName: EVENTS; label: string };
   } = {
     datasets: {
       eventName: EVENTS.FILTER_SELECT_DATASET,
       label: "dataset_name",
     },
-    diseases: {
+    disease_terms: {
       eventName: EVENTS.FILTER_SELECT_DISEASE,
       label: "disease",
     },
-    ethnicities: {
+    self_reported_ethnicity_terms: {
       eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
       label: "ethnicity",
     },
-    sexes: {
+    sex_terms: {
       eventName: EVENTS.FILTER_SELECT_SEX,
       label: "gender",
     },
@@ -156,7 +155,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
 
   const handleFilterChange = useCallback(
     function handleFilterChange_(
-      key: keyof IFilters
+      key: keyof FilterDimensions
     ): (options: DefaultMenuSelectOption[] | null) => void {
       let currentOptions: DefaultMenuSelectOption[] | null = null;
 
@@ -206,17 +205,17 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   );
 
   const handleDiseasesChange = useMemo(
-    () => handleFilterChange("diseases"),
+    () => handleFilterChange("disease_terms"),
     [handleFilterChange]
   );
 
   const handleEthnicitiesChange = useMemo(
-    () => handleFilterChange("ethnicities"),
+    () => handleFilterChange("self_reported_ethnicity_terms"),
     [handleFilterChange]
   );
 
   const handleSexesChange = useMemo(
-    () => handleFilterChange("sexes"),
+    () => handleFilterChange("sex_terms"),
     [handleFilterChange]
   );
 
@@ -276,7 +275,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         </div>
 
         <Organism isLoading={isLoading} />
-        <Compare isLoading={isLoading} />
+        <Compare isLoading={isLoading} areFiltersDisabled={areFiltersDisabled} />
 
         <Sort areFiltersDisabled={areFiltersDisabled} />
       </Wrapper>

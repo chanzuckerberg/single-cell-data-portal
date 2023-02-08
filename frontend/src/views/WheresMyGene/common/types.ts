@@ -1,5 +1,6 @@
 import { DefaultMenuSelectOption } from "czifui";
 import { CSSProperties } from "react";
+import { FilterDimensions } from "src/common/queries/wheresMyGene";
 import { FILTER_LABELS } from "./constants";
 
 export interface Organism {
@@ -9,7 +10,7 @@ export interface Organism {
 
 export interface CompareDimensionOption {
   name: FILTER_LABELS | "None";
-  id: string;
+  id: keyof FilterDimensions | null;
 }
 
 /** tissue name */

@@ -75,14 +75,14 @@ export default function WheresMyGene(): JSX.Element {
   } = useCellTypesByTissueName();
 
   const [cellTypesByTissueName, setCellTypesByTissueName] =
-    useState<CellTypeByTissueName>(EMPTY_OBJECT);
-
+  useState<CellTypeByTissueName>(EMPTY_OBJECT);
+  
   useEffect(() => {
     if (isLoadingCellTypesByTissueName) return;
-
+    
     setCellTypesByTissueName(rawCellTypesByTissueName);
   }, [rawCellTypesByTissueName, isLoadingCellTypesByTissueName]);
-
+  
   /**
    * This holds ALL the geneData we have loaded from the API, including previously
    * and currently selected genes.

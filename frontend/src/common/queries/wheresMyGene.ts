@@ -567,8 +567,14 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
    * any selected secondary filter options to the query, otherwise BE will return
    * only the filtered options back to us.
    */
-  const { datasets, developmentStages, diseases, ethnicities, sexes } =
-    includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
+  const { 
+    datasets: datasets, 
+    development_stage_terms: developmentStages, 
+    disease_terms: diseases, 
+    self_reported_ethnicity_terms: ethnicities, 
+    sex_terms: sexes 
+  } = includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
+
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
@@ -691,10 +697,10 @@ interface Dataset extends RawDataset {
 
 export const EMPTY_FILTERS: State["selectedFilters"] = {
   datasets: [],
-  developmentStages: [],
-  diseases: [],
-  ethnicities: [],
-  sexes: [],
+  development_stage_terms: [],
+  disease_terms: [],
+  self_reported_ethnicity_terms: [],
+  sex_terms: [],
 };
 export interface CollectionFromDatasets {
   name: string;
