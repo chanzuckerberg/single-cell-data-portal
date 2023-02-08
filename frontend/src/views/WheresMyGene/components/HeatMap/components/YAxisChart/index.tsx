@@ -167,9 +167,7 @@ const CellTypeButton = ({
     maximumFractionDigits: 1,
     notation: "compact",
   }).format(total_count);
-  const countString = `${formattedString}${
-    formattedString !== total_count.toString() ? "+" : ""
-  }`;
+  const countString = `${formattedString}`.toLowerCase();
 
   const cellType = deserializeCellTypeMetadata(metadata);
 
