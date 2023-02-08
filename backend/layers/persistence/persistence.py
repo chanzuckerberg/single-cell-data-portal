@@ -121,6 +121,13 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_collection=canonical_collection,
         )
 
+    def _row_to_canonical_dataset(self, row: Any):
+        return CanonicalDataset(
+            DatasetId(str(row.id)),
+            DatasetVersionId(str(row.version_id)),
+            row.published_at
+        )
+
     def _row_to_dataset_artifact(self, row: Any):
         return DatasetArtifact(
             DatasetArtifactId(str(row.id)),
@@ -236,8 +243,9 @@ class DatabaseProvider(DatabaseProviderInterface):
             artifact_map = {artifact.id: artifact for artifact in artifacts}
             datasets = []
             for version in versions:
-                version_artifacts = [artifact_map[artifact_id] for artifact_id in version.artifacts]
-                datasets.append(self._row_to_dataset_version(version, canonical_map.get(version.dataset_id), version_artifacts))
+                canonical_dataset = self._row_to_canonical_dataset(canonical_map.get(version.dataset_id))
+                version_artifacts = [self._row_to_dataset_artifact(artifact_map[artifact_id]) for artifact_id in version.artifacts]
+                datasets.append(self._row_to_dataset_version(version, canonical_dataset, version_artifacts))
         return datasets
 
     def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
@@ -482,15 +490,15 @@ class DatabaseProvider(DatabaseProviderInterface):
 
         acc = []
         with self._manage_session() as session:
+            # TODO: IN query or all and filter in python??
             versions = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(active_datasets)).all()
             artifacts = session.query(DatasetArtifactTable).all()
             canonical_datasets = session.query(DatasetTable).all()
             canonical_map = {dataset.id: dataset for dataset in canonical_datasets}
             artifact_map = {artifact.id: artifact for artifact in artifacts}
             for version in versions:  # noqa
-                canonical_dataset = canonical_map.get(version.dataset_id)
-                artifact_ids = version.artifacts
-                artifacts = [artifact_map.get(artifact_id) for artifact_id in artifact_ids]
+                canonical_dataset = self._row_to_canonical_dataset(canonical_map.get(version.dataset_id))
+                artifacts = [self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts]
                 acc.append(self._row_to_dataset_version(version, canonical_dataset, artifacts))
         return acc
 
