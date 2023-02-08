@@ -3,6 +3,7 @@ import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch
 from uuid import uuid4
+import time
 
 from backend.layers.business.business import (
     BusinessLogic,
@@ -796,6 +797,15 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
+    def test_get_all_datasets_TIMING(self):
+        for i in range(100):
+            self.initialize_published_collection()
+        t0 = time.time()
+        datasets = list(self.business_logic.get_all_published_datasets())
+        t1 = time.time()
+        print(t1 - t0)
+        self.assertEqual(200, len(datasets))
+
     def test_get_all_datasets_ok(self):
         """
         All dataset that belong to a published collection can be retrieved with `get_all_published_datasets`
