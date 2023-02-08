@@ -1,8 +1,5 @@
 import { InputDropdownProps as IInputDropdownProps } from "czifui";
 import { useContext, useMemo } from "react";
-import { FEATURES } from "src/common/featureFlags/features";
-import { get } from "src/common/featureFlags";
-import { BOOLEAN } from "src/common/localStorage/set";
 import {
   DispatchContext,
   StateContext,
@@ -10,6 +7,8 @@ import {
 import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGene/common/types";
 import { FilterLabel, FilterWrapper, Label, StyledDropdown } from "./style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -55,22 +54,19 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
     );
   }, [sortBy]);
 
-  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
     <div>
       <Label>View Options</Label>
-      {!isRollup && (
-        <FilterWrapper>
-          <FilterLabel>Sort Cell Types</FilterLabel>
-          <StyledDropdown
-            data-test-id="cell-type-sort-dropdown"
-            onChange={cellTypesOnChange}
-            label={cellTypeSelectedOptionLabel}
-            options={CELL_TYPE_OPTIONS}
-            InputDropdownProps={InputDropdownProps}
-          />
-        </FilterWrapper>
-      )}
+      <FilterWrapper>
+        <FilterLabel>Sort Cell Types</FilterLabel>
+        <StyledDropdown
+          data-test-id="cell-type-sort-dropdown"
+          onChange={cellTypesOnChange}
+          label={cellTypeSelectedOptionLabel}
+          options={CELL_TYPE_OPTIONS}
+          InputDropdownProps={InputDropdownProps}
+        />
+      </FilterWrapper>
       <FilterWrapper>
         <FilterLabel>Sort Genes</FilterLabel>
         <StyledDropdown
@@ -89,11 +85,19 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
   ): void {
     if (!dispatch || !value) return;
 
+    track(EVENTS.WMG_OPTION_SELECT_CELL_TYPES, {
+      sort_cell_types_view_option: value.name,
+    });
+
     dispatch(selectSortBy({ cellTypes: value.id as SORT_BY }));
   }
 
   function genesOnChange(value: { id?: SORT_BY; name: string } | null): void {
     if (!dispatch || !value) return;
+
+    track(EVENTS.WMG_OPTION_SELECT_SORT_GENES, {
+      sort_genes_view_option: value.name,
+    });
 
     dispatch(selectSortBy({ genes: value.id as SORT_BY }));
   }
