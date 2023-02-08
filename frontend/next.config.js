@@ -10,7 +10,7 @@ const isProdBuild = process.env.NODE_ENV === nodeEnv.PRODUCTION;
 
 const PLAUSIBLE_URL = "https://plausible.io";
 
-const TWITTER_URL = ["https://cdn.syndication.twimg.com platform.twitter.com"];
+const TWITTER_URL = "https://cdn.syndication.twimg.com platform.twitter.com";
 
 const WISTIA_URL = "https://fast.wistia.net/";
 
