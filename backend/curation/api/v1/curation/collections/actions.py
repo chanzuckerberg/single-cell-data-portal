@@ -1,4 +1,4 @@
-from flask import jsonify, make_response
+from flask import jsonify, make_response, request, g
 
 from backend.common.corpora_orm import CollectionVisibility, ProjectLinkType
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
@@ -66,8 +66,11 @@ def post(body: dict, user: str):
         body.get("consortia", []),
     )
 
+    print(f"\nDJH {g.access_token_payload}\n")
+    curator_name = g.access_token_payload["curator_name"]
+
     try:
-        version = get_business_logic().create_collection(user, "", metadata)
+        version = get_business_logic().create_collection(user, curator_name, metadata)
     except InvalidMetadataException as ex:
         errors.extend(ex.errors)
     except CollectionCreationException as ex:

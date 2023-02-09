@@ -1,4 +1,5 @@
 import os
+from flask import g
 from functools import lru_cache
 
 import requests
@@ -48,6 +49,7 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
         payload = jwt_decode(
             token, public_key, algorithms=algorithms, audience=use_audience, issuer=issuer, options=options
         )
+        g.access_token_payload = payload  # Make it available throughout a request
         return payload
 
     raise UnauthorizedError(detail="Unable to find appropriate key")
