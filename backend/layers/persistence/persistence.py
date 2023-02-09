@@ -151,9 +151,9 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_dataset,
         )
 
-    def _hydrate_dataset_version(self, dataset_version: List[DatasetVersionTable]) -> DatasetVersion:
+    def _hydrate_dataset_version(self, dataset_version: DatasetVersionTable) -> DatasetVersion:
         """
-        Populates canonical_dataset, artifacts, and status for List[DatasetVersionRow]
+        Populates canonical_dataset, artifacts, and status for single DatasetVersionRow
         """
         canonical_dataset = self.get_canonical_dataset(DatasetId(str(dataset_version.dataset_id)))
         artifacts = self.get_dataset_artifacts(dataset_version.artifacts)
