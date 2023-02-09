@@ -23,7 +23,7 @@ class GeneChecker:
 
     def __init__(self):
         if not GeneChecker.gene_dict:
-            for file in self.GENE_FILES.keys():
+            for file in self.GENE_FILES:
                 with gzip.open(self.GENE_FILES[file], "rt") as genes:
                     for gene in genes:
                         gene = gene.rstrip().split(",")

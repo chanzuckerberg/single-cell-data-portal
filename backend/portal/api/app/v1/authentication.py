@@ -1,4 +1,5 @@
 import base64
+import contextlib
 import json
 import logging
 import os
@@ -34,10 +35,8 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
         return oauth_client
 
     code_challenge_method = None
-    try:
+    with contextlib.suppress(RuntimeError):
         code_challenge_method = config.code_challenge_method
-    except RuntimeError:
-        pass
 
     oauth = OAuth(current_app)
     oauth_client = oauth.register(
@@ -98,7 +97,7 @@ def oauth2_callback() -> Response:
         current_app.logger.exception("Unable to authorize access token.")
         # remove the token
         remove_token(config.cookie_name)
-        raise UnauthorizedError(detail=f"Response from oauth server not valid. {e}")
+        raise UnauthorizedError(detail=f"Response from oauth server not valid. {e}") from None
 
     return_to = session.pop("oauth_corpora_callback_redirect", "/")
     return redirect(return_to)

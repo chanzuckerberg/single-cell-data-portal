@@ -1,18 +1,18 @@
-import click
 import json
 import logging
 import os
 import sys
 
+import click
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.common.entities.dataset import Dataset
+from backend.common.corpora_orm import CollectionVisibility, DbCollection
 from backend.common.entities.collection import Collection
+from backend.common.entities.dataset import Dataset
 from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.json import CustomJSONEncoder
-
-from backend.common.corpora_orm import CollectionVisibility, DbCollection
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

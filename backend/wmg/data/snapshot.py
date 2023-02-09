@@ -2,16 +2,18 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Optional, Dict
+from typing import Dict, Optional
+
 import pandas as pd
+import requests
 import tiledb
 from pandas import DataFrame
 from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.schemas.corpus_schema import DATASET_TO_GENE_IDS_NAME
+from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
@@ -65,6 +67,37 @@ class WmgSnapshot:
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot
 
+    def build_dataset_metadata_dict(self):
+        # hardcode to dev backend if deployment is rdev
+        API_URL = (
+            "https://api.cellxgene.dev.single-cell.czi.technology"
+            if os.environ.get("REMOTE_DEV_PREFIX")
+            else os.getenv("API_URL")
+        )
+
+        # this should always be true for deployed environments.
+        # otherwise, skip so tests pass.
+        if API_URL:
+            dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
+            datasets = requests.get(dataset_metadata_url).json()
+
+            collection_metadata_url = f"{API_URL}/dp/v1/collections/index"
+            collections = requests.get(collection_metadata_url).json()
+
+            collections_dict = {collection["id"]: collection for collection in collections}
+
+            dataset_dict = {}
+            for dataset in datasets:
+                dataset_id = dataset["explorer_url"].split("/")[-2].split(".cxg")[0]
+                dataset_dict[dataset_id] = dict(
+                    id=dataset_id,
+                    label=dataset["name"],
+                    collection_id=dataset["collection_id"],
+                    collection_label=collections_dict[dataset["collection_id"]]["name"],
+                )
+
+            self.dataset_dict = dataset_dict
+
 
 # Cached data
 cached_snapshot: Optional[WmgSnapshot] = None
@@ -79,6 +112,7 @@ def load_snapshot() -> WmgSnapshot:
     global cached_snapshot
     if new_snapshot_identifier := _update_latest_snapshot_identifier():
         cached_snapshot = _load_snapshot(new_snapshot_identifier)
+        cached_snapshot.build_dataset_metadata_dict()
     return cached_snapshot
 
 

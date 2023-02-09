@@ -1,9 +1,9 @@
 [
   {
-    "SubjectId":"User1",
-    "Username":"User1",
-    "Password":"pwd",
-    "IsActive":true,
+    "SubjectId": "User1",
+    "Username": "User1",
+    "Password": "pwd",
+    "IsActive": true,
     "Claims": [
       {
         "Type": "name",

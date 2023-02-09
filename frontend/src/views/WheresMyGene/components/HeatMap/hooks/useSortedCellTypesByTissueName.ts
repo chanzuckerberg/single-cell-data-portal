@@ -1,8 +1,5 @@
 import { agnes } from "ml-hclust";
 import { useMemo } from "react";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
-import { BOOLEAN } from "src/common/localStorage/set";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -26,11 +23,10 @@ export function useSortedCellTypesByTissueName({
   genes,
   cellTypeSortBy,
 }: Props): { [tissue: Tissue]: CellType[] } {
-  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return useMemo(() => {
     const isSortByCellOntology = cellTypeSortBy === SORT_BY.CELL_ONTOLOGY;
-    
-    if (!isRollup && isSortByCellOntology || isRollup && genes.length === 0) {
+
+    if (isSortByCellOntology) {
       return selectedCellTypes;
     }
 

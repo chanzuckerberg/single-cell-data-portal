@@ -1,8 +1,10 @@
-from typing import List, Dict, Union
+from typing import Dict, List, Union
+
 import tiledb
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
+
 from backend.wmg.data.snapshot import WmgSnapshot
 
 

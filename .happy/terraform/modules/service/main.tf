@@ -19,7 +19,7 @@ resource aws_ecs_service service {
     subnets          = var.subnets
     assign_public_ip = false
   }
-
+  enable_execute_command = true
   wait_for_steady_state = var.wait_for_steady_state
 }
 

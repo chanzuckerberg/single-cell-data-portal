@@ -4,11 +4,6 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
-from backend.layers.thirdparty.crossref_provider import (
-    CrossrefDOINotFoundException,
-    CrossrefException,
-    CrossrefProviderInterface,
-)
 from backend.layers.business.business import (
     BusinessLogic,
     CollectionMetadataUpdate,
@@ -40,6 +35,11 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.crossref_provider import (
+    CrossrefDOINotFoundException,
+    CrossrefException,
+    CrossrefProviderInterface,
+)
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
@@ -57,7 +57,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.run_as_integration = True if os.environ.get("INTEGRATION_TEST", "false").lower() == "true" else False
+        cls.run_as_integration = os.environ.get("INTEGRATION_TEST", "false").lower() == "true"
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
@@ -174,7 +174,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         Pass `complete_dataset_ingestion=False` if you want to initialize datasets only.
         """
         version = self.initialize_empty_unpublished_collection(owner, curator_name)
-        for i in range(2):
+        for _ in range(2):
             dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id,
             )
@@ -190,11 +190,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self,
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
-        published_at: datetime = datetime.utcnow(),
+        published_at: datetime = None,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
+        published_at = published_at or datetime.utcnow()
         version = self.initialize_unpublished_collection(owner, curator_name)
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
@@ -398,16 +399,26 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
 
     def test_get_all_collections_published_ok(self):
         """
-        If published filter flag is True, only published collections should be returned
+        If published filter flag is True, only published, non-tombstoned collections should be returned
         """
         self.initialize_unpublished_collection()
         self.initialize_published_collection()
-        self.initialize_published_collection()
+
+        # Add a tombstoned Collection
+        collection_version_to_tombstone: CollectionVersionWithDatasets = self.initialize_published_collection()
+        self.database_provider.delete_canonical_collection(collection_version_to_tombstone.collection_id)
+
+        # Confirm tombstoned Collection is in place
+        all_collections_including_tombstones = self.database_provider.get_all_collections_versions(get_tombstoned=True)
+        self.assertEqual(3, len(list(all_collections_including_tombstones)))
+
+        all_collections_no_tombstones = self.database_provider.get_all_collections_versions()
+        self.assertEqual(2, len(list(all_collections_no_tombstones)))
 
         filter = CollectionQueryFilter(is_published=True)
         versions = list(self.business_logic.get_collections(filter))
 
-        self.assertEqual(2, len(versions))
+        self.assertEqual(1, len(versions))
         for version in versions:
             self.assertIsNotNone(version.published_at)
 
@@ -584,7 +595,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
-        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.NA)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
     def test_add_dataset_to_unpublished_collection_ok(self):

@@ -7,20 +7,20 @@ from backend.wmg.api.v1 import find_dim_option_values
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
-    test_snapshot_id,
-    test_organism_terms,
-    test_tissue_terms,
     test_gene_terms,
+    test_organism_terms,
+    test_snapshot_id,
+    test_tissue_terms,
 )
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    create_temp_wmg_snapshot,
-    load_test_fmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
     all_X_cell_counts_values,
-    reverse_cell_type_ordering,
+    create_temp_wmg_snapshot,
     exclude_all_but_one_gene_per_organism,
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
+    load_test_fmg_snapshot,
+    reverse_cell_type_ordering,
 )
 
 TEST_SNAPSHOT = "test-fmg-snapshot"
@@ -826,67 +826,68 @@ class WmgApiV1Tests(unittest.TestCase):
                 self.assertEqual(dev_stage_terms_eth_2_dev_2, dev_stage_terms_eth_2_no_dev_filter)
                 self.assertNotEqual(eth_stage_terms_eth_2_dev_2, self_reported_ethnicity_terms_eth_2_no_dev_filter)
 
-            with self.subTest("Additional queries are not performed when the secondary dimensions are not set"):
-                with patch("backend.wmg.api.v1.find_dim_option_values") as mock_dims:
-                    mock_dims.side_effect = find_dim_option_values
-                    full_filters = dict(
-                        gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                        organism_ontology_term_id="organism_ontology_term_id_0",
-                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                        dataset_ids=["dataset_id_0"],
-                        disease_ontology_term_ids=["disease_ontology_term_id_0"],
-                        sex_ontology_term_ids=["sex_ontology_term_id_0"],
-                        development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                        self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
-                    )
+            with self.subTest("Additional queries are not performed when the secondary dimensions are not set"), patch(
+                "backend.wmg.api.v1.find_dim_option_values"
+            ) as mock_dims:
+                mock_dims.side_effect = find_dim_option_values
+                full_filters = dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=["dataset_id_0"],
+                    disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                    sex_ontology_term_ids=["sex_ontology_term_id_0"],
+                    development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
+                )
 
-                    full_filters_request = dict(
-                        filter=full_filters,
-                        include_filter_dims=True,
-                        is_rollup=True,
-                    )
-                    self.app.post("/wmg/v1/query", json=full_filters_request)
-                    self.assertEqual(mock_dims.call_count, 5)
+                full_filters_request = dict(
+                    filter=full_filters,
+                    include_filter_dims=True,
+                    is_rollup=True,
+                )
+                self.app.post("/wmg/v1/query", json=full_filters_request)
+                self.assertEqual(mock_dims.call_count, 5)
 
-                    mock_dims.reset_mock()
-                    no_secondary_filters = dict(
-                        gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                        organism_ontology_term_id="organism_ontology_term_id_0",
-                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                        dataset_ids=[],
-                        disease_ontology_term_ids=[],
-                        sex_ontology_term_ids=[],
-                        development_stage_ontology_term_ids=[],
-                        self_reported_ethnicity_ontology_term_ids=[],
-                    )
+                mock_dims.reset_mock()
+                no_secondary_filters = dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=[],
+                    disease_ontology_term_ids=[],
+                    sex_ontology_term_ids=[],
+                    development_stage_ontology_term_ids=[],
+                    self_reported_ethnicity_ontology_term_ids=[],
+                )
 
-                    no_secondary_filters_request = dict(
-                        filter=no_secondary_filters,
-                        include_filter_dims=True,
-                        is_rollup=True,
-                    )
-                    self.app.post("/wmg/v1/query", json=no_secondary_filters_request)
-                    mock_dims.assert_not_called()
-                    # technically not necessary
-                    mock_dims.reset_mock()
+                no_secondary_filters_request = dict(
+                    filter=no_secondary_filters,
+                    include_filter_dims=True,
+                    is_rollup=True,
+                )
+                self.app.post("/wmg/v1/query", json=no_secondary_filters_request)
+                mock_dims.assert_not_called()
+                # technically not necessary
+                mock_dims.reset_mock()
 
-                    two_secondary_filters = dict(
-                        gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                        organism_ontology_term_id="organism_ontology_term_id_0",
-                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                        dataset_ids=[],
-                        disease_ontology_term_ids=[],
-                        sex_ontology_term_ids=[],
-                        development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                        self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
-                    )
-                    two_secondary_filters_request = dict(
-                        filter=two_secondary_filters,
-                        include_filter_dims=True,
-                        is_rollup=True,
-                    )
-                    self.app.post("/wmg/v1/query", json=two_secondary_filters_request)
-                    self.assertEqual(mock_dims.call_count, 2)
+                two_secondary_filters = dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=[],
+                    disease_ontology_term_ids=[],
+                    sex_ontology_term_ids=[],
+                    development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
+                )
+                two_secondary_filters_request = dict(
+                    filter=two_secondary_filters,
+                    include_filter_dims=True,
+                    is_rollup=True,
+                )
+                self.app.post("/wmg/v1/query", json=two_secondary_filters_request)
+                self.assertEqual(mock_dims.call_count, 2)
 
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
@@ -916,16 +917,16 @@ class WmgApiV1Tests(unittest.TestCase):
 
             expected = {
                 "marker_genes": [
-                    {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.3849880695343018},
-                    {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 2.0541346073150635},
-                    {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 2.0228285789489746},
-                    {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7104357481002808},
-                    {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5636593103408813},
-                    {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4483562707901},
-                    {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.322214126586914},
-                    {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.2264039516448975},
-                    {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 1.0376155376434326},
-                    {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4109770655632019},
+                    {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.2067770957946777},
+                    {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 1.982871413230896},
+                    {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 1.8833003044128418},
+                    {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7571982145309448},
+                    {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.569277048110962},
+                    {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.4530354738235474},
+                    {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.450181245803833},
+                    {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4011939764022827},
+                    {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 0.9537287950515747},
+                    {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4246297776699066},
                 ],
                 "snapshot_id": "test-fmg-snapshot",
             }

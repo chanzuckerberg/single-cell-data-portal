@@ -1,10 +1,9 @@
+import contextlib
 import enum
-
 import os
 import pathlib
 import shutil
 import tempfile
-
 from unittest.mock import patch
 
 import boto3
@@ -12,22 +11,21 @@ from moto import mock_s3
 
 import backend.portal.pipeline.processing.common
 import backend.portal.pipeline.processing.process_download_validate
+from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import (
     CollectionVisibility,
     DatasetArtifactFileType,
+    ProcessingStatus,
     UploadStatus,
     ValidationStatus,
-    ProcessingStatus,
 )
-from backend.common.corpora_config import CorporaConfig
 from backend.common.entities.collection import Collection
 from backend.common.entities.dataset import Dataset
 from backend.common.upload import upload
 from backend.common.utils.exceptions import CorporaException, MaxFileSizeExceededException
 from backend.common.utils.math_utils import GB
-from backend.portal.pipeline.processing.exceptions import ProcessingCancelled, ConversionFailed
 from backend.portal.pipeline.processing.common import convert_file, create_artifact, get_bucket_prefix
-
+from backend.portal.pipeline.processing.exceptions import ConversionFailed, ProcessingCancelled
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
@@ -60,12 +58,10 @@ class TestCommon(DataPortalTestCase):
             self.addCleanup(s3_mock.stop)
         s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
         self.s3_resource = boto3.resource("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
-        try:
+        with contextlib.suppress(self.s3_resource.meta.client.exceptions.BucketAlreadyExists):
             s3.create_bucket(
                 Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
             )
-        except self.s3_resource.meta.client.exceptions.BucketAlreadyExists:
-            pass
         return s3
 
     def delete_s3_bucket(self, bucket_name):

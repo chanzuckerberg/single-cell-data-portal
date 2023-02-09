@@ -8,9 +8,9 @@ from anndata._core.views import ArrayView
 from scipy import sparse
 
 from backend.layers.business.business import BusinessLogic
+from backend.layers.common.entities import DatasetArtifactType
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.wmg.data.constants import INCLUDED_ASSAYS
-from backend.layers.common.entities import DatasetArtifactType
 
 logger = logging.getLogger(__name__)
 
@@ -48,15 +48,15 @@ def get_dataset_s3_uris() -> Dict[str, str]:
             and (dataset.metadata.assay is not None)
             and (dataset.metadata.is_primary_data == "PRIMARY")
             and (dataset.metadata.organism is not None)
+            and any(assay.ontology_term_id in INCLUDED_ASSAYS for assay in dataset.metadata.assay)
+            and len(dataset.metadata.organism) < 2
         ):
-            if any(assay.ontology_term_id in INCLUDED_ASSAYS for assay in dataset.metadata.assay):
-                if len(dataset.metadata.organism) < 2:
-                    s3_uri = next(
-                        a.uri
-                        for a in dataset.artifacts
-                        if a.type == DatasetArtifactType.H5AD and a.get_file_name() == "local.h5ad"
-                    )
-                    s3_uris[dataset.dataset_id.id] = s3_uri
+            s3_uri = next(
+                a.uri
+                for a in dataset.artifacts
+                if a.type == DatasetArtifactType.H5AD and a.get_file_name() == "local.h5ad"
+            )
+            s3_uris[dataset.dataset_id.id] = s3_uri
     return s3_uris
 
 

@@ -45,11 +45,11 @@ echo
 [[ $ANS == 'Y' ]] || exit 1
 
 make db/tunnel/up
-PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} ${DB_DUMP_FILE}
+PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} --schema=persistence_schema ${DB_DUMP_FILE}
 make db/tunnel/down
 
 DB_UPDATE_CMDS=$(cat <<EOF
--c "UPDATE dataset SET explorer_url = regexp_replace(explorer_url, '(https:\\/\\/)(.+?)(\\/.+)', '\\1cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology\\3') WHERE explorer_url IS NOT NULL" -c "UPDATE dataset_artifact SET s3_uri = regexp_replace(s3_uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2${DEPLOYMENT_STAGE}\\4') WHERE s3_uri IS NOT NULL;"
+-c "UPDATE persistence_schema.\"DatasetArtifact\" SET uri = regexp_replace(uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2${DEPLOYMENT_STAGE}\\4') WHERE uri IS NOT NULL;"
 EOF
 )
                  

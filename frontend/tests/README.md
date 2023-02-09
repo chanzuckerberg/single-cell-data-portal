@@ -52,7 +52,7 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
    1. Make sure you have your local app running already on https://localhost:3000. If not, in `frontend/` directory, run `npm run dev`
 
    1. In `frontend/` directory, run `npm run e2e`
-   
+
    - NOTE: `SKIP_LOGIN=true npm run e2e` if login is not required for the tests.
 
 1. local -> local container (app started with `make local-init`)

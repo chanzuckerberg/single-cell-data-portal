@@ -1,23 +1,15 @@
 from collections import defaultdict
-from typing import Dict, List, Any, Iterable, Tuple
 from math import isnan
-from backend.layers.business.business import BusinessLogic
-from backend.layers.persistence.persistence import DatabaseProvider
-from backend.layers.common.entities import DatasetId
+from typing import Any, Dict, Iterable, List, Tuple
 
 import connexion
 from flask import jsonify
 from pandas import DataFrame
 
-from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.data.query import (
-    WmgQuery,
-    WmgQueryCriteria,
-    MarkerGeneQueryCriteria,
-    retrieve_top_n_markers,
-)
-from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
+from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.wmg.data.query import MarkerGeneQueryCriteria, WmgQuery, WmgQueryCriteria, retrieve_top_n_markers
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
+from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
@@ -88,47 +80,11 @@ def markers():
     )
 
 
-_business_logic = None
-
-
-def get_business_logic():
-    """
-    Returns an instance of the business logic handler. Use this to interrogate the database
-    """
-    global _business_logic
-    if not _business_logic:
-        _business_logic = BusinessLogic(DatabaseProvider(), None, None, None, None)
-    return _business_logic
-
-
-# TODO: Read this from generated data artifact instead of DB.
-#  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
-#  -portal/2086. This code is without a unit test, but we are intending to replace it.
-def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
-    # We return a DTO because the db entity can't access its attributes after the db session ends,
-    # and we want to keep session management out of the calling method
-
-    business_logic = get_business_logic()
-
-    def get_dataset(dataset_id_):
-
-        dataset = business_logic.get_dataset_version_from_canonical(DatasetId(dataset_id_))
-        if dataset is None:
-            # Handle possible missing dataset due to db state evolving past wmg snapshot
-            return dict(id=dataset_id_, label="", collection_id="", collection_label="")
-        collection = business_logic.get_collection_version_from_canonical(dataset.collection_id)
-        if collection is None:
-            # Handle possible missing dataset due to db state evolving past wmg snapshot
-            return dict(id=dataset_id_, label="", collection_id="", collection_label="")
-
-        return dict(
-            id=dataset.dataset_id.id,
-            label=dataset.metadata.name,
-            collection_id=collection.collection_id.id,
-            collection_label=collection.metadata.name,
-        )
-
-    return [get_dataset(dataset_id) for dataset_id in dataset_ids]
+def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
+    return [
+        snapshot.dataset_dict.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
+        for dataset_id in dataset_ids
+    ]
 
 
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
@@ -157,7 +113,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
             dims[dim] = find_dim_option_values(criteria, snapshot, dim)
 
     response_filter_dims_values = dict(
-        datasets=fetch_datasets_metadata(dims["dataset_id"]),
+        datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
         development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
@@ -171,7 +127,6 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
 
 def build_expression_summary(query_result: DataFrame) -> dict:
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
-    # is_rollup is a flag to indicate whether the expressions should be rolled up or not
     structured_result: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
     for row in query_result.itertuples(index=False):
         structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id].append(

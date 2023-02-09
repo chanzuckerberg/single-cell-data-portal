@@ -1,5 +1,5 @@
-import unittest
 import time
+import unittest
 
 from tests.functional.backend.common import BaseFunctionalTestCase
 

@@ -1,6 +1,7 @@
-from argparse import ArgumentParser
-import boto3
 import logging
+from argparse import ArgumentParser
+
+import boto3
 from owlready2 import get_ontology
 
 
@@ -10,12 +11,12 @@ def extract_ontology_terms_from_file(input_file):
     """
 
     logging.info(f"Reading in input OWL file {input_file}")
-    ontology_file_object = open(input_file, "rb")
-    ontology_object = get_ontology("")
-    ontology_object.load(fileobj=ontology_file_object)
+    with open(input_file, "rb") as ontology_file_object:
+        ontology_object = get_ontology("")
+        ontology_object.load(fileobj=ontology_file_object)
 
-    ontology_classes = [ontology_class.name.replace("_", ":") for ontology_class in list(ontology_object.classes())]
-    logging.info(f"Completed loading OWL file and found {len(ontology_classes)} ontology classes.")
+        ontology_classes = [ontology_class.name.replace("_", ":") for ontology_class in list(ontology_object.classes())]
+        logging.info(f"Completed loading OWL file and found {len(ontology_classes)} ontology classes.")
 
     return ontology_classes
 
@@ -43,9 +44,8 @@ def generate_ontology_list_file(ontologies_list, filename, aws_bucket=None):
         # Create a file locally
         logging.info(f"Writing ontology classes locally to {filename}.")
 
-        output_file_object = open(filename, "w")
-        output_file_object.write(file_contents)
-        output_file_object.close()
+        with open(filename, "w") as output_file_object:
+            output_file_object.write(file_contents)
 
         logging.info("Completed writing ontology classes to local file.")
 
@@ -81,13 +81,11 @@ if __name__ == "__main__":
         if not input_file.endswith(".owl"):
             raise Exception(f"ERROR: Expecting an OWL file! Cannot parse {input_file}!")
 
-    if arguments.upload_to_aws:
-        # Verify that an AWS bucket has also been specified to which the ontologies file should be uploaded.
-        if not arguments.aws_bucket:
-            raise Exception(
-                "ERROR: Required to specify AWS bucket name if the ontologies file should be uploaded to AWS via "
-                "--aws_bucket."
-            )
+    if arguments.upload_to_aws and not arguments.aws_bucket:
+        raise Exception(
+            "ERROR: Required to specify AWS bucket name if the ontologies file should be uploaded to AWS via "
+            "--aws_bucket."
+        )
 
     if not arguments.upload_to_aws and arguments.aws_bucket:
         raise Exception(

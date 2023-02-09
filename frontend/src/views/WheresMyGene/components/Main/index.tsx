@@ -259,10 +259,6 @@ export default function WheresMyGene(): JSX.Element {
     return hasSelectedTissues || hasSelectedGenes;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
-  const handleIsScaledChange = useCallback(() => {
-    setIsScaled((prevIsScaled) => !prevIsScaled);
-  }, [setIsScaled]);
-
   const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
     useState(false);
   const handleSourceDatasetButtonClick = useCallback(() => {
@@ -311,7 +307,7 @@ export default function WheresMyGene(): JSX.Element {
       >
         <Filters isLoading={isLoading} />
 
-        <ColorScale handleIsScaledChange={handleIsScaledChange} />
+        <ColorScale setIsScaled={setIsScaled} />
       </SideBar>
       {cellInfoCellType && tissuesByID && (
         <SideBar

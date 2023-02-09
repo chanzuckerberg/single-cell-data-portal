@@ -1,8 +1,8 @@
 import logging
 
-from backend.common.corpora_orm import Base, DbDatasetProcessingStatus
 from sqlalchemy.orm import Session
 
+from backend.common.corpora_orm import Base, DbDatasetProcessingStatus
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ def clone(model: Base, primary_key: dict = None, **kwargs) -> Base:
     :return: a clone of the original model with any kwargs passed in and the new primary key.
     """
     table = model.__table__
-    non_pk_columns = [key for key in table.columns.keys() if key not in table.primary_key]
+    non_pk_columns = [key for key in table.columns if key not in table.primary_key]
     data = {column: getattr(model, column) for column in non_pk_columns}
     data.update(kwargs)
     if primary_key:

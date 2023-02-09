@@ -1,6 +1,5 @@
 import re
 
-
 USERNAME_REGEX = r"(?P<username>[\w\-\|]+)"
 ID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 DATASET_ID_REGEX = f"(?P<dataset_id>{ID_REGEX})"
