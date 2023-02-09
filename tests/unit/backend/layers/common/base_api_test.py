@@ -51,9 +51,19 @@ class BaseAuthAPITest(unittest.TestCase):
         if token == "owner":
             payload = {"sub": "test_user_id", "email": "fake_user@email.com", "scope": [], "curator_name": "First Last"}
         elif token == "not_owner":
-            payload = {"sub": "someone_else", "email": "fake_user@email.com", "scope": [], "curator_name": "Someone Else"}
+            payload = {
+                "sub": "someone_else",
+                "email": "fake_user@email.com",
+                "scope": [],
+                "curator_name": "Someone Else",
+            }
         elif token == "super":
-            payload = {"sub": "super", "email": "fake_user@email.com", "scope": ["write:collections"], "curator_name": "Super Curator"}
+            payload = {
+                "sub": "super",
+                "email": "fake_user@email.com",
+                "scope": ["write:collections"],
+                "curator_name": "Super Curator",
+            }
         else:
             raise Exception()
         self.payload = payload

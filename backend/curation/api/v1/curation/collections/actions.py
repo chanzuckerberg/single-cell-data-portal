@@ -1,4 +1,4 @@
-from flask import jsonify, make_response, request, g
+from flask import jsonify, make_response
 
 from backend.common.authorizer import get_payload_from_request_context
 from backend.common.corpora_orm import CollectionVisibility, ProjectLinkType

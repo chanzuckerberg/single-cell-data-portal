@@ -236,7 +236,6 @@ class TestPostCollection(BaseAPIPortalTest):
         with self.subTest("Curator name is set correctly"):
             self.assertEqual("First Last", version.curator_name)
 
-
     def test__create_collection__InvalidParameters(self):
         requests = [
             (

@@ -1,8 +1,8 @@
 import os
-from flask import g
 from functools import lru_cache
 
 import requests
+from flask import g
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
