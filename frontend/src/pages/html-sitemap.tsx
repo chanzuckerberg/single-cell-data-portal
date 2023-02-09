@@ -294,7 +294,7 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
             <a href={ROUTES.DOCS}>Docs</a>
           </h2>
           <SitemapSectionGrid>
-            {files.map((file: String, index) => (
+            {files.map((file: string, index) => (
               <a key={`file-${index}`} href={`${ROUTES.DOCS}/${file}`}>
                 {file.split("__")[1]}
               </a>
@@ -304,14 +304,15 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
                 <p>{dir.dirName.split("__")[1]}</p>
                 {dir.files.length || dir.subDirectories.length ? (
                   <ul>
-                    {dir.files.map((file: String, index) => (
-                      <li key={`dirFile-${index}`}>
-                        <a href={`${ROUTES.DOCS}/${file}`}>
-                          {file.split("__")[1]}
-                        </a>
-                      </li>
-                    ))}
-                    {console.log(dir.files)}
+                    {dir.files.map((file: string, index) => {
+                      return (
+                        <li key={`dirFile-${index}`}>
+                          <a href={`${ROUTES.DOCS}/${file}`}>
+                            {file.split("__")[1]}
+                          </a>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : null}
                 <div>
@@ -319,7 +320,7 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
                     <div key={`subDir-${index}`}>
                       <p>{subDir.dirName.split("__")[1]}</p>
                       <ul>
-                        {subDir.files.map((file: String, index) => (
+                        {subDir.files.map((file: string, index) => (
                           <li key={`subDirFile-${index}`}>
                             <a href={`${ROUTES.DOCS}/${file}`}>
                               {file.split("__")[1]}

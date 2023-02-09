@@ -453,6 +453,45 @@
 }
 // END MAIN CONTENT
 
+// FREETHINK VIDEO SECTION
+
+.freethinkVideo {
+  &Section {
+    background: #ebf5ff;
+    margin-bottom: 135px;
+    padding-top: 106px;
+    padding-bottom: 106px;
+    text-align: center;
+    padding-left: 100px;
+    padding-right: 100px;
+
+    @media (max-width: 768px) {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    h2 {
+      font-size: 28px;
+      line-height: 35.28px;
+    }
+
+    p {
+      max-width: 665px;
+      margin: 25px auto 52px;
+      font-size: 16px;
+      line-height: 26px;
+    }
+
+    iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      max-width: 900px;
+    }
+  }
+}
+
+// END FREETHINK VIDEO SECTION
+
 // PUBLICATIONS SECTION
 .publications {
   max-width: 1440px;
