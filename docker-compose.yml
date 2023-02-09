@@ -246,6 +246,7 @@ services:
         - HAPPY_TAG
     restart: always
     command: ["./container_init.sh"]
+    profiles: ["backend-only"]
     depends_on:
       - localstack
       - database

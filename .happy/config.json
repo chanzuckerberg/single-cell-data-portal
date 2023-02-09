@@ -5,6 +5,11 @@
   "app": "data-portal",
   "default_compose_env_file": ".env.ecr",
   "services": ["frontend", "backend"],
+  "slices": {
+    "backend-only": {
+        "profile": "backend-only"
+    }
+  },
   "environments": {
     "rdev": {
       "aws_profile": "single-cell-dev",
