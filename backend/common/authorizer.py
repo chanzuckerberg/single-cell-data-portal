@@ -22,6 +22,14 @@ def get_auth0_session_with_retry():
     return _auth0_session_with_retry
 
 
+def set_payload_on_request_context(payload: dict) -> None:
+    g.access_token_payload = payload
+
+
+def get_payload_from_request_context() -> dict:
+    return g.access_token_payload
+
+
 def assert_authorized_token(token: str, audience: str = None) -> dict:
     """
     Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
@@ -49,7 +57,7 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
         payload = jwt_decode(
             token, public_key, algorithms=algorithms, audience=use_audience, issuer=issuer, options=options
         )
-        g.access_token_payload = payload  # Make it available throughout a request
+        set_payload_on_request_context(payload)  # Make it available throughout a request
         return payload
 
     raise UnauthorizedError(detail="Unable to find appropriate key")

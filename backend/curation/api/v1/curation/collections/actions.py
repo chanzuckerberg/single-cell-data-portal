@@ -1,5 +1,6 @@
 from flask import jsonify, make_response, request, g
 
+from backend.common.authorizer import get_payload_from_request_context
 from backend.common.corpora_orm import CollectionVisibility, ProjectLinkType
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
@@ -66,8 +67,8 @@ def post(body: dict, user: str):
         body.get("consortia", []),
     )
 
-    print(f"\nDJH {g.access_token_payload}\n")
-    curator_name = g.access_token_payload["curator_name"]
+    # Get 'curator_name' from access token
+    curator_name = get_payload_from_request_context()["curator_name"]
 
     try:
         version = get_business_logic().create_collection(user, curator_name, metadata)

@@ -18,6 +18,12 @@ class BaseAuthAPITest(unittest.TestCase):
         )
         self.mock_assert_authorized_token.start()
 
+        self.mock_get_payload_from_request_context = patch(
+            "backend.common.authorizer.get_payload_from_request_context",
+            side_effect=self._mock_get_payload_from_request_context,
+        )
+        self.mock_get_payload_from_request_context.start()
+
         self.mock_config = patch(
             "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
             return_value="https://frontend.corporanet.local:3000",
@@ -27,6 +33,7 @@ class BaseAuthAPITest(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         self.mock_assert_authorized_token.stop()
+        self.mock_get_payload_from_request_context.stop()
 
     def make_owner_header(self):
         return {"Authorization": "Bearer " + "owner", "Content-Type": "application/json"}
@@ -42,13 +49,18 @@ class BaseAuthAPITest(unittest.TestCase):
 
     def _mock_assert_authorized_token(self, token: str, audience: str = None):
         if token == "owner":
-            return {"sub": "test_user_id", "email": "fake_user@email.com", "scope": []}
+            payload = {"sub": "test_user_id", "email": "fake_user@email.com", "scope": [], "curator_name": "First Last"}
         elif token == "not_owner":
-            return {"sub": "someone_else", "email": "fake_user@email.com", "scope": []}
+            payload = {"sub": "someone_else", "email": "fake_user@email.com", "scope": [], "curator_name": "Someone Else"}
         elif token == "super":
-            return {"sub": "super", "email": "fake_user@email.com", "scope": ["write:collections"]}
+            payload = {"sub": "super", "email": "fake_user@email.com", "scope": ["write:collections"], "curator_name": "Super Curator"}
         else:
             raise Exception()
+        self.payload = payload
+        return payload
+
+    def _mock_get_payload_from_request_context(self):
+        return self.payload
 
 
 class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):

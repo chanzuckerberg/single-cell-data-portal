@@ -229,6 +229,14 @@ class TestPostCollection(BaseAPIPortalTest):
         version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         self.assertEqual(version.collection_id.id, collection_id)
 
+        with self.subTest("Collection fields are correct"):
+            for field, value in self.test_collection.items():
+                self.assertEqual(value, getattr(version.metadata, field))
+
+        with self.subTest("Curator name is set correctly"):
+            self.assertEqual("First Last", version.curator_name)
+
+
     def test__create_collection__InvalidParameters(self):
         requests = [
             (
