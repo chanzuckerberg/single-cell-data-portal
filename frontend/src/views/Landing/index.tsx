@@ -662,7 +662,23 @@ const LandingPage = (): JSX.Element => {
               </div>
             </div>
           </div>
-
+          <div className={styles.freethinkVideoSection}>
+            <h2>Behind-the-scenes of Chan Zuckerberg CELLxGENE</h2>
+            <p>
+              Watch a behind-the-scenes look at Chan Zuckerberg CELLxGENE (CZ
+              CELLxGENE) and explore how the platform can help scientists
+              quickly surface important information that could lead to
+              discoveries in treating disease.
+            </p>
+            <iframe
+              title="Wistia video player"
+              frameBorder="0"
+              scrolling="no"
+              className="wistia_embed"
+              name="wistia_embed"
+              src="https://fast.wistia.net/embed/iframe/fgzei2rjkl"
+            ></iframe>
+          </div>
           <div className={styles.publications}>
             <div className={styles.sciencePublications}>
               <span className={styles.pubSectionTitle}>Publications</span>
@@ -683,11 +699,9 @@ const LandingPage = (): JSX.Element => {
                       }`}
                       key={`article-${articleIndex}-link-${linkIndex}`}
                     >
-                      {/* <div> */}
                       <span className={styles.pubArticleDate}>
                         {link.subheading}
                       </span>
-                      {/* </div> */}
                       <div className={styles.pubArticleSubRowInner}>
                         <a
                           className={styles.pubArticleLink}
