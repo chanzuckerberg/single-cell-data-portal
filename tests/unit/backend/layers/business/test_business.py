@@ -796,7 +796,6 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
-
     def test_get_all_datasets_ok(self):
         """
         All dataset that belong to a published collection can be retrieved with `get_all_published_datasets`
