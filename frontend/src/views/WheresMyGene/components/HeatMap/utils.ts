@@ -52,31 +52,26 @@ const CTX =
  * @param name The text to truncate
  * @param maxWidth The max width in pixels the string should be
  * @param font The font family and font size as a string. Ex. "bold 12px sans-serif"
- * @param displayDepth The depth of the cell type name (indentation/padding)
  * @returns The string fixed to a certain pixel width
  */
 export function formatLabel(
   name: string,
   maxWidth: number,
-  font: string,
-  displayDepth = 0
+  font: string
 ): string {
   CTX!.font = font;
   const ellipsisWidth = CTX!.measureText("...").width;
 
-  const padding = " ".repeat(displayDepth * 8);
-  const paddingWidth = CTX!.measureText(padding).width;
-
-  if (CTX!.measureText(name).width + paddingWidth <= maxWidth) {
-    return padding + name;
+  if (CTX!.measureText(name).width <= maxWidth) {
+    return name;
   }
 
-  const labelHalfWidth = (maxWidth - paddingWidth - ellipsisWidth) / 2;
+  const labelHalfWidth = (maxWidth - ellipsisWidth) / 2;
 
   const firstHalf = getFixedWidth(name, labelHalfWidth, font);
   const secondHalf = getFixedWidth(name, labelHalfWidth, font, true);
 
-  return padding + firstHalf + "..." + secondHalf;
+  return firstHalf + "..." + secondHalf;
 }
 
 /**

@@ -150,7 +150,11 @@ interface QueryResponse {
   expression_summary: {
     // gene_ontology_term_id
     [geneId: string]: {
-      [tissueId: string]: RawCellTypeGeneExpressionSummaryData[];
+      [tissueId: string]: {
+        [cellTypeId: string]: {
+          [key: string]: RawCellTypeGeneExpressionSummaryData;
+        };
+      };
     };
   };
   filter_dims: {
@@ -622,7 +626,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
         tissue_ontology_term_ids,
       },
       include_filter_dims: true,
-      is_rollup: get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE,
+      is_rollup: true, // this could be made toggleable by users in the future
     };
   }, [
     selectedGenes,
