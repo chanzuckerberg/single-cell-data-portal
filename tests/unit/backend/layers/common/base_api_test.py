@@ -7,22 +7,26 @@ from unittest.mock import patch
 from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 from tests.unit.backend.layers.api.config import TOKEN_EXPIRES
 from tests.unit.backend.layers.common.base_test import BaseTest
+from tests.unit.backend.utils import FlaskGMock
 
 
 class BaseAuthAPITest(unittest.TestCase):
+
     def setUp(self):
         super().setUp()
+
+        self.mock_get_payload_from_request_context = patch(
+            # Mock where the function is being called, NOT where it lives in its module!
+            "backend.curation.api.v1.curation.collections.actions.get_payload_from_request_context",
+            side_effect=self._mock_get_payload_from_request_context,
+        )
+        self.mock_get_payload_from_request_context.start()
+
         self.mock_assert_authorized_token = patch(
             "backend.portal.api.app.v1.authentication.assert_authorized_token",
             side_effect=self._mock_assert_authorized_token,
         )
         self.mock_assert_authorized_token.start()
-
-        self.mock_get_payload_from_request_context = patch(
-            "backend.common.authorizer.get_payload_from_request_context",
-            side_effect=self._mock_get_payload_from_request_context,
-        )
-        self.mock_get_payload_from_request_context.start()
 
         self.mock_config = patch(
             "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
@@ -66,11 +70,11 @@ class BaseAuthAPITest(unittest.TestCase):
             }
         else:
             raise Exception()
-        self.payload = payload
+        FlaskGMock.g["access_token_payload"] = payload
         return payload
 
     def _mock_get_payload_from_request_context(self):
-        return self.payload
+        return FlaskGMock.g["access_token_payload"]
 
 
 class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
