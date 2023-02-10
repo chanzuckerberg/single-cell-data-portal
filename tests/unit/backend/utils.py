@@ -131,4 +131,5 @@ class FlaskGMock:
     """
     Class to mock the Flask 'g' request context
     """
+
     g = {}

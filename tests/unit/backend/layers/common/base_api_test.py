@@ -11,7 +11,6 @@ from tests.unit.backend.utils import FlaskGMock
 
 
 class BaseAuthAPITest(unittest.TestCase):
-
     def setUp(self):
         super().setUp()
 
