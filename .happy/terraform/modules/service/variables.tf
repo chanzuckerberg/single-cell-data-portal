@@ -131,3 +131,9 @@ variable "execution_role" {
   type        = string
   description = "Execution role to use for fargate tasks - required for fargate services!"
 }
+
+variable "health_check_interval" {
+  type        = number
+  description = "Interval for the health check pings"
+  default     = 15
+}
