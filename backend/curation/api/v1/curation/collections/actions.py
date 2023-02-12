@@ -1,6 +1,5 @@
 from flask import jsonify, make_response
 
-from backend.common.authorizer import get_payload_from_request_context
 from backend.common.corpora_orm import CollectionVisibility, ProjectLinkType
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
@@ -48,7 +47,7 @@ def get(visibility: str, token_info: dict, curator: str = None):
     return jsonify(resp_collections)
 
 
-def post(body: dict, user: str):
+def post(body: dict, token_info: dict):
     # Extract DOI into link
     errors = []
     if (doi_url := body.get("doi")) and (doi_url := doi.curation_get_normalized_doi_url(doi_url, errors)):
@@ -67,11 +66,8 @@ def post(body: dict, user: str):
         body.get("consortia", []),
     )
 
-    # Get 'curator_name' from access token
-    curator_name = get_payload_from_request_context()["curator_name"]
-
     try:
-        version = get_business_logic().create_collection(user, curator_name, metadata)
+        version = get_business_logic().create_collection(token_info["sub"], token_info["curator_name"], metadata)
     except InvalidMetadataException as ex:
         errors.extend(ex.errors)
     except CollectionCreationException as ex:

@@ -2,7 +2,6 @@ import os
 from functools import lru_cache
 
 import requests
-from flask import g
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
@@ -20,14 +19,6 @@ def get_auth0_session_with_retry():
         retry_config = Retry(total=3, backoff_factor=1, status_forcelist=CorporaAuthConfig().retry_status_forcelist)
         _auth0_session_with_retry.mount("https://", HTTPAdapter(max_retries=retry_config))
     return _auth0_session_with_retry
-
-
-def set_payload_on_request_context(payload: dict) -> None:
-    g.access_token_payload = payload
-
-
-def get_payload_from_request_context() -> dict:
-    return g.access_token_payload
 
 
 def assert_authorized_token(token: str, audience: str = None) -> dict:
@@ -57,7 +48,6 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
         payload = jwt_decode(
             token, public_key, algorithms=algorithms, audience=use_audience, issuer=issuer, options=options
         )
-        set_payload_on_request_context(payload)  # Make it available throughout a request
         return payload
 
     raise UnauthorizedError(detail="Unable to find appropriate key")
