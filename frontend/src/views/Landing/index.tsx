@@ -665,10 +665,9 @@ const LandingPage = (): JSX.Element => {
           <div className={styles.freethinkVideoSection}>
             <h2>Behind-the-scenes of Chan Zuckerberg CELLxGENE</h2>
             <p>
-              Watch a behind-the-scenes look at Chan Zuckerberg CELLxGENE (CZ
-              CELLxGENE) and explore how the platform can help scientists
-              quickly surface important information that could lead to
-              discoveries in treating disease.
+              Watch a behind-the-scenes look at CZ CELLxGENE and explore how the
+              platform can help scientists quickly surface important information
+              that could lead to discoveries in treating disease.
             </p>
             <iframe
               title="Wistia video player"
