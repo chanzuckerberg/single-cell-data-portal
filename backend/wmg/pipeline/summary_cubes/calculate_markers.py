@@ -106,18 +106,13 @@ def _query_tiledb_context_memoized(
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
 
-    # explicitly filtering both cell counts and expression summary down to just the healthy cells
-    # we do not want to include diseased cells in the marker gene calculation.
-    healthy_filter_es = query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
-    query = query[healthy_filter_es]
-
-    healthy_filter_cc = (
-        cell_counts_query["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
-    )
-    cell_counts_query = cell_counts_query[healthy_filter_cc]
-
-    if query.shape[0] == 0 or cell_counts_query.shape[0] == 0:
-        raise MarkerGeneCalculationException("No cells match the given query criteria.")
+    # set metrics for all non-healthy cells to zero so they are not included in the rollup
+    # if, after rollup, zeros remain, nothing needs to be done as the test metrics will be
+    # all nan.
+    for df in [query, cell_counts_query]:
+        exclude_filter = df["disease_ontology_term_id"].astype("str") != NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+        numeric_columns = df.select_dtypes("number").columns
+        df.loc[exclude_filter, numeric_columns] = 0
 
     depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
 
