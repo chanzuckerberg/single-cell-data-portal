@@ -18,9 +18,6 @@ import { ROUTES } from "../constants/routes";
 import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
-import { get } from "src/common/featureFlags";
-import { BOOLEAN } from "src/common/localStorage/set";
-import { FEATURES } from "../featureFlags/features";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -150,11 +147,7 @@ interface QueryResponse {
   expression_summary: {
     // gene_ontology_term_id
     [geneId: string]: {
-      [tissueId: string]: {
-        [cellTypeId: string]: {
-          [key: string]: RawCellTypeGeneExpressionSummaryData;
-        };
-      };
+      [tissueId: string]: RawCellTypeGeneExpressionSummaryData[];
     };
   };
   filter_dims: {
