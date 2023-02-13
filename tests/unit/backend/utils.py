@@ -125,11 +125,3 @@ class BogusGenesetParams:
     @staticmethod
     def generate_random_string(length=7):
         return "".join(random.choice(string.ascii_letters) for i in range(length))
-
-
-class FlaskGMock:
-    """
-    Class to mock the Flask 'g' request context
-    """
-
-    g = {}
