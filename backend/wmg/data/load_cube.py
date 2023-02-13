@@ -1,8 +1,14 @@
 import os
+import shutil
 import subprocess
 
 import boto3
 
+from backend.wmg.data.schemas.corpus_schema import (
+    INTEGRATED_ARRAY_NAME,
+    OBS_ARRAY_NAME,
+    VAR_ARRAY_NAME,
+)
 from backend.wmg.data.utils import log_func_runtime
 
 stack_name = os.environ.get("REMOTE_DEV_PREFIX")
@@ -58,6 +64,11 @@ def remove_oldest_datasets(timestamp):
 
 @log_func_runtime
 def upload_artifacts_to_s3(snapshot_path, s3_key):
+    # cleanup files we do not wish to upload
+    shutil.rmtree(f"{snapshot_path}/{INTEGRATED_ARRAY_NAME}")
+    shutil.rmtree(f"{snapshot_path}/{OBS_ARRAY_NAME}")
+    shutil.rmtree(f"{snapshot_path}/{VAR_ARRAY_NAME}")
+
     sync_command = ["aws", "s3", "sync", snapshot_path, f"{_get_wmg_bucket_path()}/{s3_key}"]
     subprocess.run(sync_command)
 
