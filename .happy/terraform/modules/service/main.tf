@@ -103,7 +103,7 @@ resource aws_lb_target_group target_group {
   target_type          = "ip"
   deregistration_delay = 10
   health_check {
-    interval            = 15
+    interval            = var.health_check_interval
     path                = "/"
     protocol            = "HTTP"
     timeout             = 5
