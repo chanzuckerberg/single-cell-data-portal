@@ -1840,7 +1840,9 @@ class TestDataset(BaseAPIPortalTest):
                 publish=False,
             )
 
-            collection_version = self.business_logic.get_collection_version(CollectionVersionId(dataset.collection_version_id))
+            collection_version = self.business_logic.get_collection_version(
+                CollectionVersionId(dataset.collection_version_id)
+            )
 
             replaced_dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
