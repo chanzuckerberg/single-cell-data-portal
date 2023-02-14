@@ -42,11 +42,16 @@ class BaseAuthAPITest(unittest.TestCase):
 
     def _mock_assert_authorized_token(self, token: str, audience: str = None):
         if token == "owner":
-            return {"sub": "test_user_id", "email": "fake_user@email.com", "scope": []}
+            return {"sub": "test_user_id", "email": "fake_user@email.com", "scope": [], "curator_name": "First Last"}
         elif token == "not_owner":
-            return {"sub": "someone_else", "email": "fake_user@email.com", "scope": []}
+            return {"sub": "someone_else", "email": "fake_user@email.com", "scope": [], "curator_name": "Someone Else"}
         elif token == "super":
-            return {"sub": "super", "email": "fake_user@email.com", "scope": ["write:collections"]}
+            return {
+                "sub": "super",
+                "email": "fake_user@email.com",
+                "scope": ["write:collections"],
+                "curator_name": "Super Curator",
+            }
         else:
             raise Exception()
 
