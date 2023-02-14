@@ -24,6 +24,7 @@ def primary_filter_dimensions():
 def query():
     request = connexion.request.json
     is_rollup = request.get("is_rollup", True)
+    compare = request.get("compare", None)
     include_filter_dims = request.get("include_filter_dims", False)
 
     criteria = WmgQueryCriteria(**request["filter"])
@@ -33,21 +34,30 @@ def query():
 
     expression_summary = q.expression_summary(criteria)
     cell_counts = q.cell_counts(criteria)
-    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
+
+    if compare:
+        group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare]
+    else:
+        group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id"]
+
+    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts, group_by_terms)
     if is_rollup:
         dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
     response_filter_dims_values = (
         build_filter_dims_values(criteria, snapshot, expression_summary) if include_filter_dims else {}
     )
+
+    expression_summary = build_expression_summary(dot_plot_matrix_df, compare)
+
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
-            expression_summary=build_expression_summary(dot_plot_matrix_df),
+            expression_summary=expression_summary,
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                 cell_types=build_ordered_cell_types_by_tissue(
-                    cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings
+                    cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings, compare, group_by_terms
                 ),
             ),
             filter_dims=response_filter_dims_values,
@@ -113,7 +123,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
             dims[dim] = find_dim_option_values(criteria, snapshot, dim)
 
     response_filter_dims_values = dict(
-        datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
+        datasets=None,
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
         development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
@@ -125,26 +135,89 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
     return response_filter_dims_values
 
 
-def build_expression_summary(query_result: DataFrame) -> dict:
-    # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, respectively
-    structured_result: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
-    for row in query_result.itertuples(index=False):
-        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id].append(
-            dict(
-                id=row.cell_type_ontology_term_id,
-                n=row.nnz,
-                me=row.sum / row.nnz,
-                pc=row.nnz / row.n_cells_cell_type,
-                tpc=row.nnz / row.n_cells_tissue,
+def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
+    sample = {
+        "ENSG00000000003": {
+            "UBERON:0000178": {
+                "CL:0000003": {
+                    "aggregated": {
+                        "me": 4.982746259810133,
+                        "n": 1835602,
+                        "pc": 0.986583107819399,
+                        "tpc": 0.015415361059678109
+                    },
+                    "female": {
+                        "me": 4.982746259810133,
+                        "n": 1835602,
+                        "pc": 0.986583107819399,
+                        "tpc": 0.015415361059678109
+                    },
+                    "male": {
+                        "me": 4.982746259810133,
+                        "n": 1835602,
+                        "pc": 0.986583107819399,
+                        "tpc": 0.015415361059678109
+                    }
+                },
+                "CL:0000037": {
+                    "aggregated": {
+                        "me": 4.982746259810133,
+                        "n": 1835602,
+                        "pc": 0.986583107819399,
+                        "tpc": 0.015415361059678109
+                    },
+                    "female": {
+                        "me": 4.982746259810133,
+                        "n": 1835602,
+                        "pc": 0.986583107819399,
+                        "tpc": 0.015415361059678109
+                    },
+                    "male": {
+                        "me": 4.982746259810133,
+                        "n": 1835602,
+                        "pc": 0.986583107819399,
+                        "tpc": 0.015415361059678109
+                    }
+                }
+            }
+        }
+    }
+
+    # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
+    structured_result: Dict[str, Dict[str, Dict[str, Dict[str, Any]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+
+    # Populate compare filter gene expressions
+    for i in range(query_result.shape[0]):
+        row = query_result.iloc[i]
+        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = dict(
+                n=row["nnz"],
+                me=row["sum"] / row["nnz"],
+                pc=row["nnz"] / row["n_cells_cell_type"],
+                tpc=row["nnz"] / row["n_cells_tissue"],
             )
-        )
+
+
+    # Populate aggregated gene expressions
+    query_result_agg = query_result.groupby(
+        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+    ).sum()
+
+    for i in range(query_result_agg.shape[0]):
+        row = query_result_agg.iloc[i]
+        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["aggregated"] = dict(
+                n=row["nnz"],
+                me=row["sum"] / row["nnz"],
+                pc=row["nnz"] / row["n_cells_cell_type"],
+                tpc=row["nnz"] / row["n_cells_tissue"],
+            )
+
     return structured_result
 
 
-def agg_cell_type_counts(cell_counts: DataFrame) -> DataFrame:
+def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: list[str]) -> DataFrame:
     # Aggregate cube data by tissue, cell type
     cell_counts_cell_type_agg = cell_counts.groupby(
-        ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=True
+        group_by_terms, as_index=True
     ).sum()
     cell_counts_cell_type_agg.rename(columns={"n_total_cells": "n_cells_cell_type"}, inplace=True)
     return cell_counts_cell_type_agg
@@ -157,11 +230,11 @@ def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
     return cell_counts_tissue_agg
 
 
-def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame) -> Tuple[DataFrame, DataFrame]:
+def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame, group_by_terms: list[str]) -> Tuple[DataFrame, DataFrame]:
     # Get the dot plot matrix dataframe and aggregated cell counts per cell type
-    cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts)
+    cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts, group_by_terms)
     cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
-    dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg)
+    dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg, group_by_terms)
     return dot_plot_matrix_df, cell_counts_cell_type_agg
 
 
@@ -182,14 +255,14 @@ def rollup(dot_plot_matrix_df, cell_counts_cell_type_agg) -> Tuple[DataFrame, Da
 
 
 def build_dot_plot_matrix(
-    query_result: DataFrame, cell_counts_cell_type_agg: DataFrame, cell_counts_tissue_agg: DataFrame
+    query_result: DataFrame, cell_counts_cell_type_agg: DataFrame, cell_counts_tissue_agg: DataFrame, group_by_terms: list[str]
 ) -> DataFrame:
     # Aggregate cube data by gene, tissue, cell type
     expr_summary_agg = query_result.groupby(
-        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+        ["gene_ontology_term_id"] + group_by_terms, as_index=False
     ).sum()
     return expr_summary_agg.join(
-        cell_counts_cell_type_agg, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
+        cell_counts_cell_type_agg, on=group_by_terms, how="left"
     ).join(cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left")
 
 
@@ -204,18 +277,31 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
     return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
 
+# getting only cell type metadata, no genes
 def build_ordered_cell_types_by_tissue(
     cell_counts: DataFrame,
     cell_counts_cell_type_agg_T: DataFrame,
     cell_type_orderings: DataFrame,
-) -> Dict[str, List[Dict[str, str]]]:
+    compare: str,
+    group_by_terms: list[str],
+) -> Dict[str, Dict[str, Dict[str, Any]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
-        ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id", "n_total_cells"]]
+        group_by_terms, as_index=False
+    ).first()[group_by_terms + ["n_total_cells"]]
 
-    joined = cell_type_orderings.merge(
-        distinct_tissues_cell_types, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
-    )
+    # make a multi index 
+    cell_type_orderings = cell_type_orderings.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).first()
+
+    # joined = cell_type_orderings.merge(
+    #     distinct_tissues_cell_types, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
+    # )
+
+    indexer = list(zip(distinct_tissues_cell_types['tissue_ontology_term_id'],distinct_tissues_cell_types['cell_type_ontology_term_id']))
+
+    joined = distinct_tissues_cell_types.copy()
+
+    for column in cell_type_orderings:
+        joined[column] = list(cell_type_orderings[column][indexer])
 
     # Updates depths based on the rows that need to be removed
     joined = build_ordered_cell_types_by_tissue_update_depths(joined)
@@ -223,20 +309,43 @@ def build_ordered_cell_types_by_tissue(
     # Remove cell types without counts
     joined = joined[joined["n_total_cells"].notnull()]
 
-    structured_result: Dict[str, List[Dict[str, str]]] = defaultdict(list)
-    for row in joined.itertuples(index=False):
-        structured_result[row.tissue_ontology_term_id].append(
-            {
-                "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-                "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
-                "total_count": int(
-                    cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
-                        "n_cells_cell_type"
-                    ]
-                ),
-                "depth": row.depth,
-            }
-        )
+    # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
+    structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
+
+    # Populate compare filter gene expressions
+    for i in range(joined.shape[0]):
+        row = joined.iloc[i]
+        structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
+            "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
+            "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+            "total_count": int(
+                cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]][
+                    "n_cells_cell_type"
+                ]
+            ),
+            "depth": row.depth,
+        }
+
+
+    # Populate aggregated gene expressions
+    joined_agg = joined.groupby(
+        ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+    ).sum()
+
+    agg = cell_counts_cell_type_agg_T.T.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).sum().T
+
+    for i in range(joined_agg.shape[0]):
+        row = joined_agg.iloc[i]
+        structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["aggregated"] = {
+            "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
+            "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+            "total_count": int(
+                agg[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
+                    "n_cells_cell_type"
+                ]
+            ),
+            "depth": row.depth,
+        }
 
     return structured_result
 
