@@ -826,13 +826,18 @@ export function useMarkerGenes({
   }, [data]);
 
   return useQuery(
-    [USE_MARKER_GENES, cellTypeID, test],
+    /**
+     * (thuang): Add all arguments to `fetchMarkerGenes()` as dependencies,
+     * so React Query can cache responses correctly without running into
+     * issues like #4161
+     */
+    [USE_MARKER_GENES, cellTypeID, organismID, test, tissueID],
     async () => {
       const output = await fetchMarkerGenes({
         cellTypeID,
         organismID,
-        tissueID,
         test,
+        tissueID,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
         output.marker_genes.reduce(
