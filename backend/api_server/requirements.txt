@@ -3,6 +3,7 @@ connexion[swagger-ui]==2.13.0
 dataclasses-json==0.5.7
 Flask-Cors>=3.0.6
 gunicorn[gevent] >=20.1.0, <21.0.0
+atplotlib==3.6.3 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
 numba # required for where's my gene
 numpy==1.21.2  # required for where's my gene
 pandas==1.4.3 # required for where's my gene
