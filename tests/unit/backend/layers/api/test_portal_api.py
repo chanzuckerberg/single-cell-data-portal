@@ -1831,6 +1831,35 @@ class TestDataset(BaseAPIPortalTest):
             datasets = collections_response["datasets"]
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
+        with self.subTest("Dataset belonging to an unpublished collection, replaced"):
+
+            test_uri = "some_uri_0"
+
+            dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+                publish=False,
+            )
+
+            collection_version = self.business_logic.get_collection_version(CollectionVersionId(dataset.collection_version_id))
+
+            replaced_dataset = self.generate_dataset(
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
+                collection_version=collection_version,
+                replace_dataset_version_id=DatasetVersionId(dataset.dataset_version_id),
+            )
+            # In this case, explorer_url points to the canonical link
+            explorer_url = f"http://base.url/{dataset.dataset_id}.cxg/"
+            meta_response = _call_meta_endpoint(explorer_url)
+
+            returned_collection_id = meta_response["collection_id"]
+            returned_dataset_id = meta_response["dataset_id"]
+
+            self.assertEqual(returned_dataset_id, replaced_dataset.dataset_version_id)
+
+            collections_response = _call_collections_endpoint(returned_collection_id)
+            datasets = collections_response["datasets"]
+            self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
+
         with self.subTest("Dataset belonging to a published collection"):
 
             test_uri = "some_uri_1"
