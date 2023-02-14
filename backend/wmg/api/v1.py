@@ -136,53 +136,6 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
 
 
 def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
-    sample = {
-        "ENSG00000000003": {
-            "UBERON:0000178": {
-                "CL:0000003": {
-                    "aggregated": {
-                        "me": 4.982746259810133,
-                        "n": 1835602,
-                        "pc": 0.986583107819399,
-                        "tpc": 0.015415361059678109
-                    },
-                    "female": {
-                        "me": 4.982746259810133,
-                        "n": 1835602,
-                        "pc": 0.986583107819399,
-                        "tpc": 0.015415361059678109
-                    },
-                    "male": {
-                        "me": 4.982746259810133,
-                        "n": 1835602,
-                        "pc": 0.986583107819399,
-                        "tpc": 0.015415361059678109
-                    }
-                },
-                "CL:0000037": {
-                    "aggregated": {
-                        "me": 4.982746259810133,
-                        "n": 1835602,
-                        "pc": 0.986583107819399,
-                        "tpc": 0.015415361059678109
-                    },
-                    "female": {
-                        "me": 4.982746259810133,
-                        "n": 1835602,
-                        "pc": 0.986583107819399,
-                        "tpc": 0.015415361059678109
-                    },
-                    "male": {
-                        "me": 4.982746259810133,
-                        "n": 1835602,
-                        "pc": 0.986583107819399,
-                        "tpc": 0.015415361059678109
-                    }
-                }
-            }
-        }
-    }
-
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
     structured_result: Dict[str, Dict[str, Dict[str, Dict[str, Any]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
 
