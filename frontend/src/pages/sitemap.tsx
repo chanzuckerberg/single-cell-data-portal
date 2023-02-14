@@ -20,7 +20,7 @@ const DownChevron = () => (
 const SitemapLayout = styled.div`
   max-width: 1400px;
   margin: auto;
-  padding-top: 105px;
+  padding-top: 80px;
   padding-bottom: 120px;
   padding-left: 120px;
   padding-right: 120px;
@@ -35,6 +35,10 @@ const SitemapTitle = styled.h1`
   font-size: 42px;
   line-height: 56.7px;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 28px;
+  }
 `;
 
 const SitemapNav = styled.nav`
@@ -44,7 +48,7 @@ const SitemapNav = styled.nav`
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(auto-fill, 50%);
-    margin-top: 28px;
+    margin-top: 10px;
   }
 `;
 

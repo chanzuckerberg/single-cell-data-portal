@@ -30,12 +30,7 @@ import {
 import { SELECTED_STYLE } from "../../style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
-import { BOOLEAN } from "src/common/localStorage/set";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveImage";
-
-const MAX_DEPTH = 2;
 
 interface Props {
   cellTypes?: CellType[];
@@ -77,7 +72,6 @@ export default memo(function YAxisChart({
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
 
-  const isRollup = get(FEATURES.IS_ROLLUP) === BOOLEAN.TRUE;
   return (
     <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
@@ -104,19 +98,16 @@ export default memo(function YAxisChart({
           .slice()
           .reverse()
           .map((cellType) => {
-            const { name, depth = 0 } = deserializeCellTypeMetadata(
+            const { name } = deserializeCellTypeMetadata(
               cellType as CellTypeMetadata
             );
-            const displayDepth = isRollup ? 0 : Math.min(depth, MAX_DEPTH);
-
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
 
             const paddedName = formatLabel(
               name,
               Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
-              selectedFont, // prevents selected style from overlapping count
-              displayDepth
+              selectedFont // prevents selected style from overlapping count
             );
             return (
               <CellTypeButton
