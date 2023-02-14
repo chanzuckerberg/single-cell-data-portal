@@ -295,12 +295,27 @@ function trackSelectCategoryValueSelected<T extends Categories>(
     getCategoryFilter(categoryFilterId, filters)?.value as CategoryValueId
   );
   if (!categoryFilters.has(categoryValueKey)) {
-    // Build up payload for tracking event and send. Newer filters such as suspension type track events in the format
-    // {payloadKey: payloadValue} whereas older filters such as author track events in the format
-    // {"payload": payloadValue}.
-    const payload = analyticsPayloadKey
-      ? { [analyticsPayloadKey]: categoryValueKey }
-      : { categoryValueKey };
+    const payload = buildAnalyticsPayload(
+      categoryValueKey,
+      analyticsPayloadKey
+    );
     track(analyticsEvent, payload);
   }
+}
+
+/**
+ * Build up payload for tracking event and send. Newer filters such as suspension type track events in the format
+ * {payloadKey: payloadValue} whereas older filters such as author track events in the format
+ * {"payload": payloadValue}.
+ * @param payloadKey Payload field, if any. Defaults to "payload" if not specified.
+ * @param payloadValue Value to send as payload.
+ * @returns
+ */
+export function buildAnalyticsPayload(
+  payloadValue: string,
+  payloadKey?: string
+): Record<string, unknown> {
+  return payloadKey
+    ? { [payloadKey]: payloadValue }
+    : { payload: payloadValue };
 }
