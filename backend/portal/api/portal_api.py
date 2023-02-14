@@ -282,7 +282,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "id": collection_id,
             "links": [_link_to_response(link) for link in collection.metadata.links],
             "name": collection.metadata.name,
-            "published_at": collection.published_at,
+            "published_at": collection.canonical_collection.originally_published_at,
             "publisher_metadata": collection.publisher_metadata,  # TODO: convert
             "revision_of": revision_of,
             "updated_at": collection.published_at or collection.created_at,
