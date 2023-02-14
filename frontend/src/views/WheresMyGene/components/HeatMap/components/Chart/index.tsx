@@ -291,6 +291,14 @@ export default memo(function Chart({
       {
         dataRows: [{ label: "Gene Symbol", value: gene.name || "" }],
       },
+      {
+        dataRows: [
+          {label: "Bad", value: "min - 0.5"},
+          {label: "Poor", value: "0.5 - 1"},
+          {label: "Good", value: "1 - 2"},
+          {label: "Great", value: "2+"},
+        ]
+      }
     ];
 
     return <StyledTooltipTable data={data || undefined} />;
