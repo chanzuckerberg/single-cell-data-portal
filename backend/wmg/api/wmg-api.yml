@@ -99,125 +99,285 @@ paths:
               example:
                 {
                   "snapshot_id": "8ce15034-162a-4e2e-9987-eb1af08bd4d4",
-                  "expression_summary":
-                    {
-                      "gene1":
-                        {
-                          "tissuetype1":
-                            [
-                              {
-                                "id": "CL00000",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                              {
-                                "id": "CL00001",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                              {
-                                "id": "CL00002",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                            ],
-                          "tissuetype2":
-                            [
-                              {
-                                "id": "CL00000",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                              {
-                                "id": "CL00001",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                              {
-                                "id": "CL00002",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                            ],
+                  "expression_summary": {
+                    "gene1": {
+                      "tissuetype1": {
+                        "CL00000": {
+                          "aggregated": {
+                            "id": "CL00000",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "id": "CL00001",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "id": "CL00002",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
                         },
-                      "gene2":
-                        {
-                          "tissuetype1":
-                            [
-                              {
-                                "id": "CL00000",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                              {
-                                "id": "CL00001",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                              {
-                                "id": "CL00002",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                            ],
-                          "tissuetype2":
-                            [
-                              {
-                                "id": "CL00000",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                              {
-                                "id": "CL00001",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                              {
-                                "id": "CL00002",
-                                "me": 0.0,
-                                "n": 0,
-                                "pc": 0.0,
-                                "tpc": 0.0,
-                              },
-                            ],
+                        "CL00001": {
+                          "aggregated": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
                         },
+                        "CL00002": {
+                          "aggregated": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        }
+                      },
+                      "tissuetype2": {
+                        "CL00000": {
+                          "aggregated": {
+                            "id": "CL00000",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "id": "CL00001",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "id": "CL00002",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        },
+                        "CL00001": {
+                          "aggregated": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        },
+                        "CL00002": {
+                          "aggregated": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        }
+                      }
                     },
-                  "term_id_labels":
-                    {
-                      "cell_types":
-                        [
-                          { "CL00000": "CL00000_label" },
-                          { "CL00001": "CL00001_label" },
-                          { "CL00002": "CL00002_label" },
-                        ],
-                      "genes":
-                        [
-                          { "gene1": "gene1_label" },
-                          { "gene2": "gene2_label" },
-                        ],
+                    "gene2": {
+                      "tissuetype1": {
+                        "CL00000": {
+                          "aggregated": {
+                            "id": "CL00000",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "id": "CL00001",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "id": "CL00002",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        },
+                        "CL00000": {
+                          "aggregated": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        },
+                        "CL00001": {
+                          "aggregated": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        }
+                      },
+                      "tissuetype2": {
+                        "CL00000": {
+                          "aggregated": {
+                            "id": "CL00000",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "id": "CL00001",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "id": "CL00002",
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        },
+                        "CL00000": {
+                          "aggregated": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        },
+                        "CL00001": {
+                          "aggregated": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "male": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                          "female": {
+                            "me": 0.0,
+                            "n": 0,
+                            "pc": 0.0,
+                            "tpc": 0.0,
+                          },
+                        }
+                      }
                     },
+                  },
+                  "term_id_labels": {
+                    "cell_types":
+                      [
+                        { "CL00000": "CL00000_label" },
+                        { "CL00001": "CL00001_label" },
+                        { "CL00002": "CL00002_label" },
+                      ],
+                    "genes":
+                      [
+                        { "gene1": "gene1_label" },
+                        { "gene2": "gene2_label" },
+                      ],
+                  },
                 }
               schema:
                 type: object
@@ -244,13 +404,16 @@ paths:
                           and the property value is an ordered array of viz matrix "dots" (data points). The ordering of
                           the array elements (cell types) should be preserved in the client's rendering of this
                           data.
-                        type: array
-                        items:
+                        type: object
+                        additionalProperties:
+                          description: ->
+                            One property per cell type, where the cell type ontology term id is the property name,
+                            and the value has has at least the "aggregated" property. If a user wishes to compare dimensions,
+                            properties will be added to the cell type object per filter for the selected dimension(s).
+                            The ordering of the array elements (cell types) should be preserved in the client's rendering of this
+                            data.
                           type: object
                           properties:
-                            id:
-                              description: cell type ontology term id
-                              type: string
                             me:
                               description: mean expression
                               type: number
