@@ -29,7 +29,7 @@ WORKDIR /corpora-frontend
 ADD ./src/configs/build.js src/configs/configs.js
 RUN mkdir -p node_modules
 RUN ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
-RUN next build
+RUN npm run build
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
