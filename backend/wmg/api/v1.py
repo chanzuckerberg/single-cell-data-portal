@@ -142,16 +142,17 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
     )
 
     # Populate compare filter gene expressions
-    for i in range(query_result.shape[0]):
-        row = query_result.iloc[i]
-        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
-            row[compare]
-        ] = dict(
-            n=int(row["nnz"]),
-            me=float(row["sum"] / row["nnz"]),
-            pc=float(row["nnz"] / row["n_cells_cell_type"]),
-            tpc=float(row["nnz"] / row["n_cells_tissue"]),
-        )
+    if compare:
+        for i in range(query_result.shape[0]):
+            row = query_result.iloc[i]
+            structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
+                row[compare]
+            ] = dict(
+                n=int(row["nnz"]),
+                me=float(row["sum"] / row["nnz"]),
+                pc=float(row["nnz"] / row["n_cells_cell_type"]),
+                tpc=float(row["nnz"] / row["n_cells_tissue"]),
+            )
 
     # Populate aggregated gene expressions
     query_result_agg = query_result.groupby(
@@ -279,18 +280,19 @@ def build_ordered_cell_types_by_tissue(
     structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
 
     # Populate compare filter gene expressions
-    for i in range(joined.shape[0]):
-        row = joined.iloc[i]
-        structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
-            "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-            "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
-            "total_count": int(
-                cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]][
-                    "n_cells_cell_type"
-                ]
-            ),
-            "depth": row.depth,
-        }
+    if compare:
+        for i in range(joined.shape[0]):
+            row = joined.iloc[i]
+            structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
+                "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
+                "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+                "total_count": int(
+                    cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]][
+                        "n_cells_cell_type"
+                    ]
+                ),
+                "depth": row.depth,
+            }
 
     # Populate aggregated gene expressions
     joined_agg = joined.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).sum()
