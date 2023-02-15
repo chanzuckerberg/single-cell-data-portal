@@ -203,9 +203,11 @@ class BusinessLogic(BusinessLogicInterface):
             if predicate(collection_version):
                 yield collection_version
 
-    def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate, ignore_doi_update: bool = False) -> None:
+    def update_collection_version(
+        self, version_id: CollectionVersionId, body: CollectionMetadataUpdate, ignore_doi_update: bool = False
+    ) -> None:
         """
-        Updates a collection version by replacing parts of its metadata. 
+        Updates a collection version by replacing parts of its metadata.
         If the DOI in the links changed, it should also update its publisher metadata.
         If `ignore_doi_update` is set to True, no DOI updates should be issued
 
@@ -231,7 +233,9 @@ class BusinessLogic(BusinessLogicInterface):
         if not ignore_doi_update:
             # Determine if the DOI has changed
             old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
-            new_doi = None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
+            new_doi = (
+                None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
+            )
 
             if old_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field
