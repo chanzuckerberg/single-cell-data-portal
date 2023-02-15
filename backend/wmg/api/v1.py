@@ -123,7 +123,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
             dims[dim] = find_dim_option_values(criteria, snapshot, dim)
 
     response_filter_dims_values = dict(
-        datasets=None,
+        datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
         development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
