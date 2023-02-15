@@ -78,7 +78,7 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps
-          cp src/configs/dev.js src/configs/configs.js
+          cp src/configs/local.js src/configs/configs.js
           npm run dev&
 
       # Run E2E tests
