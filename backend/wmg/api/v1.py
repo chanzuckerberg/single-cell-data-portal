@@ -147,10 +147,10 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
         structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
             row[compare]
         ] = dict(
-            n=row["nnz"],
-            me=row["sum"] / row["nnz"],
-            pc=row["nnz"] / row["n_cells_cell_type"],
-            tpc=row["nnz"] / row["n_cells_tissue"],
+            n=int(row["nnz"]),
+            me=float(row["sum"] / row["nnz"]),
+            pc=float(row["nnz"] / row["n_cells_cell_type"]),
+            tpc=float(row["nnz"] / row["n_cells_tissue"]),
         )
 
     # Populate aggregated gene expressions
@@ -163,10 +163,10 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
         structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
             "aggregated"
         ] = dict(
-            n=row["nnz"],
-            me=row["sum"] / row["nnz"],
-            pc=row["nnz"] / row["n_cells_cell_type"],
-            tpc=row["nnz"] / row["n_cells_tissue"],
+            n=int(row["nnz"]),
+            me=float(row["sum"] / row["nnz"]),
+            pc=float(row["nnz"] / row["n_cells_cell_type"]),
+            tpc=float(row["nnz"] / row["n_cells_tissue"]),
         )
 
     return structured_result
