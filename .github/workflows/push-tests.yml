@@ -41,7 +41,7 @@ jobs:
         uses: pre-commit/action@v3.0.0
       - name: check frontend
         run: |
-          cp src/configs/local.js src/configs/configs.js
+          cp frontend/src/configs/local.js frontend/src/configs/configs.js
           docker-compose run --no-deps --rm frontend make lint
       - uses: 8398a7/action-slack@v3
         with:
