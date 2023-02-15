@@ -148,3 +148,9 @@ tsconfig.tsbuildinfo
 # allure test report files
 allure-results
 /.ruff_cache/
+
+# local snapshot for backend testing
+snapshot
+
+# pylance linting config
+pyrightconfig.json
