@@ -35,9 +35,9 @@ function CellInfoSideBar({
   }
   const { isLoading, data } = useMarkerGenes({
     cellTypeID: cellInfoCellType.cellType.id,
-    tissueID: cellInfoCellType.tissueID,
     organismID: cellInfoCellType.organismID,
     test: testType,
+    tissueID: cellInfoCellType.tissueID,
   });
 
   const dispatch = useContext(DispatchContext);

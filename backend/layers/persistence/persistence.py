@@ -121,6 +121,9 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_collection=canonical_collection,
         )
 
+    def _row_to_canonical_dataset(self, row: Any):
+        return CanonicalDataset(DatasetId(str(row.id)), DatasetVersionId(str(row.version_id)), row.published_at)
+
     def _row_to_dataset_artifact(self, row: Any):
         return DatasetArtifact(
             DatasetArtifactId(str(row.id)),
@@ -150,7 +153,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def _hydrate_dataset_version(self, dataset_version: DatasetVersionTable) -> DatasetVersion:
         """
-        Populates canonical_dataset, artifacts, and status for DatasetVersionRow
+        Populates canonical_dataset, artifacts, and status for single DatasetVersionRow
         """
         canonical_dataset = self.get_canonical_dataset(DatasetId(str(dataset_version.dataset_id)))
         artifacts = self.get_dataset_artifacts(dataset_version.artifacts)
@@ -222,9 +225,29 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_collection = self.get_canonical_collection(collection_id)
             return self._row_to_collection_version(collection_version, canonical_collection)
 
-    def _get_datasets(self, ids: List[DatasetVersionId]):
-        # TODO: can be optimized via in queries, if necessary
-        return [self.get_dataset_version(id) for id in ids]
+    def _get_datasets(self, ids: List[DatasetVersionId]) -> List[DatasetVersion]:
+        ids = [dv_id.id for dv_id in ids]
+        with self._manage_session() as session:
+            versions = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(ids)).all()
+            canonical_ids = []
+            artifact_ids = []
+            for version in versions:
+                canonical_ids.append(version.dataset_id)
+                artifact_ids.extend(version.artifacts)
+            canonical_datasets = session.query(DatasetTable).filter(DatasetTable.id.in_(canonical_ids)).all()
+            canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
+
+            artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
+            artifact_map = {artifact.id: artifact for artifact in artifacts}
+
+            datasets = []
+            for version in versions:
+                canonical_dataset = self._row_to_canonical_dataset(canonical_map.get(version.dataset_id))
+                version_artifacts = [
+                    self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
+                ]
+                datasets.append(self._row_to_dataset_version(version, canonical_dataset, version_artifacts))
+        return datasets
 
     def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         """
@@ -317,14 +340,15 @@ class DatabaseProvider(DatabaseProviderInterface):
                     .all()
                 )
 
-            mapped_version_ids = [i.version_id for i in canonical_collections]
+            mapped_version_ids = {cc.version_id: cc for cc in canonical_collections}
             versions = (
-                session.query(CollectionVersionTable).filter(CollectionVersionTable.id.in_(mapped_version_ids)).all()
+                session.query(CollectionVersionTable)
+                .filter(CollectionVersionTable.id.in_(mapped_version_ids.keys()))
+                .all()
             )  # noqa
 
             for version in versions:
-                # TODO: should be optimized using a map
-                canonical_row = next(cc for cc in canonical_collections if cc.version_id == version.id)
+                canonical_row = mapped_version_ids[version.id]
                 canonical = CanonicalCollection(
                     CollectionId(str(canonical_row.id)),
                     CollectionVersionId(str(canonical_row.version_id)),
@@ -460,19 +484,13 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_all_datasets(self) -> Iterable[DatasetVersion]:
         """
-        Returns all dataset versions.
-        # TODO: Add filtering (tombstoned? remove orphaned datasets? canonical only? published?)
+        Returns all dataset versions in published collections.
         """
         active_collections = self.get_all_mapped_collection_versions()
-        active_datasets = [i.id for s in [c.datasets for c in active_collections] for i in s]
-
-        # TODO: this is doing N fetches - optimize this using INs or by loading the other tables in memory
-        acc = []
-        with self._manage_session() as session:
-            for version in session.query(DatasetVersionTable).all():  # noqa
-                if str(version.id) in active_datasets:
-                    acc.append(self._hydrate_dataset_version(version))
-        return acc
+        dataset_version_ids = []
+        for collection in active_collections:
+            dataset_version_ids.extend(collection.datasets)
+        return self._get_datasets(dataset_version_ids)
 
     def get_dataset_artifacts(self, dataset_artifact_id_list: List[DatasetArtifactId]) -> List[DatasetArtifact]:
         """
