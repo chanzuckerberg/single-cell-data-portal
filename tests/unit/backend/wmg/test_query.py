@@ -48,9 +48,9 @@ class QueryTest(unittest.TestCase):
                 {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 1.8833003044128418},
                 {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7571982145309448},
                 {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.569277048110962},
-                {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.4530354738235474},
-                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.450181245803833},
+                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.4363346099853516},
                 {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4011939764022827},
+                {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.1657075881958008},
                 {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 0.9537287950515747},
                 {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4246297776699066},
             ]
@@ -73,29 +73,29 @@ class QueryTest(unittest.TestCase):
                 {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 1.8833003044128418},
                 {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7571982145309448},
                 {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.569277048110962},
-                {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.4530354738235474},
-                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.450181245803833},
+                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.4363346099853516},
                 {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4011939764022827},
+                {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.1657075881958008},
                 {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 0.9537287950515747},
                 {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4246297776699066},
-                {"gene_ontology_term_id": "ENSG00000173110", "p_value": 0.0, "effect_size": 0.2976669371128082},
+                {"gene_ontology_term_id": "ENSG00000173110", "p_value": 0.0, "effect_size": 0.2983902394771576},
                 {"gene_ontology_term_id": "ENSG00000125844", "p_value": 0.0, "effect_size": 0.26605331897735596},
                 {"gene_ontology_term_id": "ENSG00000103227", "p_value": 0.0, "effect_size": 0.1728391945362091},
                 {"gene_ontology_term_id": "ENSG00000188372", "p_value": 0.0, "effect_size": 0.16158424317836761},
                 {"gene_ontology_term_id": "ENSG00000171311", "p_value": 0.0, "effect_size": -0.08764185011386871},
                 {"gene_ontology_term_id": "ENSG00000102158", "p_value": 0.0, "effect_size": -0.10960438847541809},
                 {"gene_ontology_term_id": "ENSG00000125740", "p_value": 0.0, "effect_size": -0.11696832627058029},
-                {"gene_ontology_term_id": "ENSG00000186818", "p_value": 0.0, "effect_size": -0.12779004871845245},
                 {"gene_ontology_term_id": "ENSG00000031698", "p_value": 0.0, "effect_size": -0.1293913722038269},
-                {"gene_ontology_term_id": "ENSG00000134970", "p_value": 0.0, "effect_size": -0.13458150625228882},
                 {"gene_ontology_term_id": "ENSG00000102007", "p_value": 0.0, "effect_size": -0.19392257928848267},
+                {"gene_ontology_term_id": "ENSG00000186818", "p_value": 0.0, "effect_size": -0.2315862774848938},
                 {"gene_ontology_term_id": "ENSG00000170542", "p_value": 0.0, "effect_size": -0.2412043958902359},
-                {"gene_ontology_term_id": "ENSG00000152818", "p_value": 0.0, "effect_size": -0.3767147362232208},
-                {"gene_ontology_term_id": "ENSG00000159128", "p_value": 0.0, "effect_size": -0.45912280678749084},
+                {"gene_ontology_term_id": "ENSG00000134970", "p_value": 0.0, "effect_size": -0.2585974633693695},
                 {"gene_ontology_term_id": "ENSG00000152061", "p_value": 0.0, "effect_size": -0.5447216629981995},
+                {"gene_ontology_term_id": "ENSG00000152818", "p_value": 0.0, "effect_size": -0.5735313892364502},
+                {"gene_ontology_term_id": "ENSG00000159128", "p_value": 0.0, "effect_size": -0.5896009206771851},
                 {"gene_ontology_term_id": "ENSG00000092820", "p_value": 0.0, "effect_size": -0.6128751039505005},
-                {"gene_ontology_term_id": "ENSG00000113580", "p_value": 0.0, "effect_size": -0.6171842217445374},
-                {"gene_ontology_term_id": "ENSG00000133112", "p_value": 0.0, "effect_size": -0.6768861413002014},
+                {"gene_ontology_term_id": "ENSG00000133112", "p_value": 0.0, "effect_size": -0.6479095220565796},
+                {"gene_ontology_term_id": "ENSG00000113580", "p_value": 0.0, "effect_size": -0.6749405264854431},
                 {"gene_ontology_term_id": "ENSG00000116473", "p_value": 0.0, "effect_size": -0.6956484913825989},
                 {"gene_ontology_term_id": "ENSG00000070831", "p_value": 0.0, "effect_size": -0.8241734504699707},
                 {"gene_ontology_term_id": "ENSG00000186184", "p_value": 0.0, "effect_size": -0.8757268190383911},
@@ -118,7 +118,7 @@ class QueryTest(unittest.TestCase):
             q = WmgQuery(snapshot)
             query_result = q.expression_summary_fmg(criteria)
             query_sum = list(query_result[["sum", "sqsum", "nnz", "nnz_thr"]].sum())
-            expected = [91898.3984375, 259803.84375, 39546.0, 38561.0]
+            expected = [93391.875, 264764.40625, 40042.0, 39054.0]
             [self.assertAlmostEqual(query_sum[i], expected[i], places=3) for i in range(len(query_sum))]
 
     def test__query_all_indexed_dims_single_value__returns_correct_result(self):
