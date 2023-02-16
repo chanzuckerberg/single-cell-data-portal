@@ -17,7 +17,7 @@ module stack {
   backend_instance_count       = 1
   frontend_instance_count      = 1
   backend_memory               = 8192
-  frontend_memory              = 8192
+  frontend_memory              = 4096
 
   wait_for_steady_state        = var.wait_for_steady_state
 }
