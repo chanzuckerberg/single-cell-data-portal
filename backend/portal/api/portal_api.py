@@ -2,6 +2,7 @@ import itertools
 from datetime import datetime
 from typing import List, Optional, Tuple
 from urllib.parse import urlparse
+from uuid import UUID
 
 from flask import Response, jsonify, make_response
 
@@ -715,6 +716,11 @@ def get_dataset_identifiers(url: str):
         id = [segment for segment in path.split("/") if segment][-1].removesuffix(".cxg")
     except Exception:
         raise ServerErrorHTTPException("Cannot parse URL") from None
+
+    try:
+        UUID(id)
+    except ValueError:
+        raise NotFoundHTTPException()
 
     dataset = get_business_logic().get_dataset_version(DatasetVersionId(id))
     if dataset is None:
