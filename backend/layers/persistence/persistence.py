@@ -478,8 +478,15 @@ class DatabaseProvider(DatabaseProviderInterface):
         dataset = self.get_canonical_dataset(dataset_id)
         with self._manage_session() as session:
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
+            artifact_ids = [artifact_id for dv in dataset_versions for artifact_id in dv.artifacts]
+            artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
+            artifact_map = {artifact.id: artifact for artifact in artifacts}
             for i in range(len(dataset_versions)):
-                dataset_versions[i] = self._row_to_dataset_version(dataset_versions[i], dataset)
+                version = dataset_versions[i]
+                version_artifacts = [
+                    self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
+                ]
+                dataset_versions[i] = self._row_to_dataset_version(version, dataset, version_artifacts)
             return dataset_versions
 
     def get_all_datasets(self) -> Iterable[DatasetVersion]:
@@ -525,7 +532,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
         dataset_id = DatasetId()
         dataset_version_id = DatasetVersionId()
-        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=dataset_version_id.id, published_at=None)
+        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=None, published_at=None)
         dataset_version = DatasetVersionTable(
             id=dataset_version_id.id,
             dataset_id=dataset_id.id,

@@ -284,7 +284,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         )
         self.datasets_versions[version_id.id] = version
         self.datasets[dataset_id.id] = CanonicalDataset(
-            dataset_id=dataset_id, dataset_version_id=version_id, published_at=None
+            dataset_id=dataset_id, dataset_version_id=None, published_at=None
         )
         return copy.deepcopy(version)
 
