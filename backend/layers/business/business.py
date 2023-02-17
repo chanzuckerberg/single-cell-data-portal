@@ -562,14 +562,17 @@ class BusinessLogic(BusinessLogicInterface):
             canonical_dataset = self.database_provider.get_canonical_dataset(dataset_id)
             if not canonical_dataset:
                 return None
-            latest = canonical_dataset.published_at if canonical_dataset.published_at is not None else datetime.datetime.fromtimestamp(0)
+            latest = (
+                canonical_dataset.published_at
+                if canonical_dataset.published_at is not None
+                else datetime.datetime.fromtimestamp(0)
+            )
             unpublished_dataset = None
             for dataset in self.database_provider.get_all_versions_for_dataset(dataset_id):
                 if dataset.created_at > latest:
                     latest = dataset.created_at
                     unpublished_dataset = dataset
             return unpublished_dataset
-
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str

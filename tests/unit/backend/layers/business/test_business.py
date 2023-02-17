@@ -825,7 +825,9 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         with self.subTest("Dataset has never been published, get latest unpublished version"):
             unpublished_collection = self.initialize_unpublished_collection()
             init_dataset = unpublished_collection.datasets[0]
-            new_dataset = self.database_provider.replace_dataset_in_collection_version(unpublished_collection.version_id, init_dataset.version_id)
+            new_dataset = self.database_provider.replace_dataset_in_collection_version(
+                unpublished_collection.version_id, init_dataset.version_id
+            )
 
             dataset_version = self.business_logic.get_dataset_version_from_canonical(init_dataset.dataset_id)
             self.assertEqual(dataset_version.version_id, new_dataset.version_id)
