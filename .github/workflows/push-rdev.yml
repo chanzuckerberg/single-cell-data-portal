@@ -43,3 +43,8 @@ jobs:
         shell: bash
         run: |
           happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8}
+      - name: Create Summary With Happy Commands
+        run: |
+          echo "### Happy Commands :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "* `happy create <stack-name> --tag ${GITHUB_SHA:0:8} --create-tag=false`" >> $GITHUB_STEP_SUMMARY
+          echo "* `happy update <stack-name> --tag ${GITHUB_SHA:0:8} --create-tag=false`" >> $GITHUB_STEP_SUMMARY
