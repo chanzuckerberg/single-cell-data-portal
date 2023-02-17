@@ -170,16 +170,23 @@ export default function QuickSelect<
       : (event: React.KeyboardEvent<HTMLInputElement>) => {
           if (event.key === "Enter" && hasComma) {
             event.preventDefault();
-            const newSelected = [...(selected as T[])];
-            const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
+            // DEBUG DEBUG DEBUG
+            // DEBUG DEBUG DEBUG
+            // DEBUG DEBUG DEBUG
+            // DEBUG DEBUG DEBUG
+            // DEBUG DEBUG DEBUG
+            // const newSelected = [...(selected as T[])];
+            // const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
 
-            parsedPaste.map((item) => {
-              const newItem = itemsByName.get(item.toLowerCase());
-              if (!newItem) {
-                onItemNotFound(item);
-              } else if (!newSelected.includes(newItem))
-                newSelected.push(newItem);
-            });
+            // parsedPaste.map((item) => {
+            //   const newItem = itemsByName.get(item.toLowerCase());
+            //   if (!newItem) {
+            //     onItemNotFound(item);
+            //   } else if (!newSelected.includes(newItem))
+            //     newSelected.push(newItem);
+            // });
+
+            const newSelected = [...itemsByName.values()].slice(0, 2500);
 
             setOpen(false);
 

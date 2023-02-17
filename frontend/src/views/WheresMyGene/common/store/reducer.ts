@@ -37,6 +37,7 @@ export interface State {
     tissueID: string;
     organismID: string;
   } | null;
+  showShareURLCopyNotification: number;
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -74,6 +75,7 @@ export const REDUCERS = {
   toggleCellTypeIdToDelete,
   toggleGeneToDelete,
   addCellInfoCellType,
+  loadStateFromURL,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -395,5 +397,25 @@ function addCellInfoCellType(
   return {
     ...state,
     cellInfoCellType: newCellInfoCellType,
+  };
+}
+
+export interface LoadStateFromURLPayload {
+  filters: Partial<State["selectedFilters"]>;
+  tissues: State["selectedTissues"];
+  genes: State["selectedGenes"];
+}
+
+function loadStateFromURL(
+  state: State,
+  action: PayloadAction<LoadStateFromURLPayload>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    selectedFilters: { ...state.selectedFilters, ...payload.filters },
+    selectedTissues: payload.tissues,
+    selectedGenes: payload.genes,
   };
 }

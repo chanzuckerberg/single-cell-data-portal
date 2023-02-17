@@ -58,6 +58,7 @@ export default function WheresMyGene(): JSX.Element {
     sortBy,
     cellInfoCellType,
   } = state;
+
   const selectedOrganismId = state.selectedOrganismId || "";
 
   const { data: { tissues: allTissues } = {} } = usePrimaryFilterDimensions();
