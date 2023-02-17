@@ -1942,7 +1942,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset that is not found"):
-            explorer_url = f"http://base.url/123-example-fake-uuid.cxg/"
+            explorer_url = "http://base.url/123-example-fake-uuid.cxg/"
             test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
             res = self.app.get(test_url, headers)
             self.assertEqual(404, res.status_code)
