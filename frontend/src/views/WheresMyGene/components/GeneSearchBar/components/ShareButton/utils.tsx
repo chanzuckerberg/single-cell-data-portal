@@ -4,7 +4,7 @@ import { removeParams } from "src/common/utils/removeParams";
 import { State } from "src/views/WheresMyGene/common/store";
 import { loadStateFromURL } from "src/views/WheresMyGene/common/store/actions";
 import {
-  loadStateFromURLPayload,
+  LoadStateFromURLPayload,
   PayloadAction,
 } from "src/views/WheresMyGene/common/store/reducer";
 
@@ -43,7 +43,7 @@ const stripEmptyFilters = (
 export const loadStateFromQueryParams = (
   params: URLSearchParams,
   selectedFilters: State["selectedFilters"],
-  dispatch: Dispatch<PayloadAction<loadStateFromURLPayload>>
+  dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>
 ): boolean => {
   if (isSSR()) return false;
 
