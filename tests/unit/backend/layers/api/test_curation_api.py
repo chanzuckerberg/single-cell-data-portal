@@ -862,7 +862,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
             self.assertEqual(403, res.status_code)
         with self.subTest("UUID input invalid"):
-            non_existent_id =  "123-example-fake-uuid"
+            non_existent_id = "123-example-fake-uuid"
             res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
             self.assertEqual(403, res.status_code)
 
