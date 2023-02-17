@@ -1138,6 +1138,30 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(original_collection["doi"], original_collection_unchanged["doi"])
 
+    def test__update_collection__links_None_does_not_remove_publisher_metadata(self):
+        links = [
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
+        ]
+
+        mock_publisher_metadata = generate_mock_publisher_metadata()
+        self.crossref_provider.fetch_metadata = Mock(return_value=mock_publisher_metadata)
+
+        collection = self.generate_collection(links=links, visibility="PRIVATE")
+        collection_id = collection.collection_id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertIsNotNone(original_collection["publisher_metadata"])
+
+        metadata = {"name": "new collection title"}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        updated_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertIsNotNone(updated_collection["publisher_metadata"])
+        self.assertEqual(updated_collection["links"], original_collection["links"])
+
     def test__update_collection__doi_does_not_exist__BAD_REQUEST(self):
         links = [
             {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
