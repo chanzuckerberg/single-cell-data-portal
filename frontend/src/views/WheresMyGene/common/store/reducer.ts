@@ -37,7 +37,6 @@ export interface State {
     tissueID: string;
     organismID: string;
   } | null;
-  showShareURLCopyNotification: number;
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -56,6 +55,7 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
+  cellInfoCellType: null,
 };
 
 export const REDUCERS = {
