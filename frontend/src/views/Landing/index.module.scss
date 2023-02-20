@@ -468,6 +468,8 @@
     @media (max-width: 768px) {
       padding-left: 20px;
       padding-right: 20px;
+      padding-top: 40px;
+      padding-bottom: 40px;
     }
 
     h2 {
@@ -480,12 +482,40 @@
       margin: 25px auto 52px;
       font-size: 16px;
       line-height: 26px;
+
+      @media (max-width: 999px) {
+        margin: 30px auto;
+      }
     }
 
     iframe {
       width: 100%;
       aspect-ratio: 16 / 9;
       max-width: 900px;
+    }
+
+    &Wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      @media (max-width: 999px) {
+        flex-direction: column;
+      }
+    }
+
+    &TextContainer {
+      text-align: left;
+      max-width: 400px;
+      width: 50%;
+      flex-shrink: 0;
+      margin-right: 83px;
+
+      @media (max-width: 999px) {
+        text-align: center;
+        width: 100%;
+        margin-right: unset;
+      }
     }
   }
 }
