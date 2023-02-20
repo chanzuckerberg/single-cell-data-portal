@@ -203,10 +203,14 @@ class BusinessLogic(BusinessLogicInterface):
             if predicate(collection_version):
                 yield collection_version
 
-    def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
+    def update_collection_version(
+        self, version_id: CollectionVersionId, body: CollectionMetadataUpdate, ignore_doi_update: bool = False
+    ) -> None:
         """
-        Updates a collection version by replacing parts of its metadata. If the DOI in the links changed,
-        it should also update its publisher metadata
+        Updates a collection version by replacing parts of its metadata.
+        If the DOI in the links changed, it should also update its publisher metadata.
+        If `ignore_doi_update` is set to True, no DOI updates should be issued
+
         """
 
         # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
@@ -221,21 +225,24 @@ class BusinessLogic(BusinessLogicInterface):
         if current_version.published_at is not None:
             raise CollectionUpdateException(["Cannot update a published collection"])
 
-        # Determine if the DOI has changed
-        old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
-        new_doi = None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
-
         # Determine if publisher metadata should be unset, ignored or set at the end of the method.
         # Note: the update needs to be done at the end to ensure atomicity
         unset_publisher_metadata = False
         publisher_metadata_to_set = None
 
-        if old_doi and new_doi is None:
-            # If the DOI was deleted, remove the publisher_metadata field
-            unset_publisher_metadata = True
-        elif (new_doi is not None) and new_doi != old_doi:
-            # If the DOI has changed, fetch and update the metadata
-            publisher_metadata_to_set = self._get_publisher_metadata(new_doi, errors)
+        if not ignore_doi_update:
+            # Determine if the DOI has changed
+            old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
+            new_doi = (
+                None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
+            )
+
+            if old_doi and new_doi is None:
+                # If the DOI was deleted, remove the publisher_metadata field
+                unset_publisher_metadata = True
+            elif (new_doi is not None) and new_doi != old_doi:
+                # If the DOI has changed, fetch and update the metadata
+                publisher_metadata_to_set = self._get_publisher_metadata(new_doi, errors)
 
         if errors:
             raise CollectionUpdateException(errors)

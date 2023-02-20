@@ -1,5 +1,5 @@
 import { Tooltip } from "czifui";
-import { init } from "echarts";
+import { ECharts, init } from "echarts";
 import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
 import throttle from "lodash/throttle";
@@ -71,7 +71,7 @@ export default memo(function Chart({
 
   const [isChartInitialized, setIsChartInitialized] = useState(false);
 
-  const [chart, setChart] = useState<echarts.ECharts | null>(null);
+  const [chart, setChart] = useState<ECharts | null>(null);
   const ref = useRef<HTMLDivElement | null>(null);
 
   const [heatmapWidth, setHeatmapWidth] = useState(
@@ -89,7 +89,7 @@ export default memo(function Chart({
   }, [cellTypes, selectedGeneData, setIsLoading, tissue]);
 
   const throttledSetCurrentIndices = useMemo(() => {
-    return throttle((params, chart) => {
+    return throttle((params, chart: ECharts) => {
       const { offsetX, offsetY, event } = params;
       const { pageX, pageY } = event;
 
@@ -98,7 +98,7 @@ export default memo(function Chart({
       const pointInGrid = chart.convertFromPixel("grid", [offsetX, offsetY]);
 
       setCursorOffset([pageX, pageY]);
-      setCurrentIndices(pointInGrid);
+      if (pointInGrid) setCurrentIndices(pointInGrid);
     }, TOOLTIP_THROTTLE_MS);
   }, []);
 
@@ -119,8 +119,7 @@ export default memo(function Chart({
     setIsChartInitialized(true);
 
     const chart = init(current, EMPTY_OBJECT, {
-      renderer: "svg",
-      // renderer: echartsRendererMode,
+      renderer: echartsRendererMode,
       useDirtyRect: true,
     });
 

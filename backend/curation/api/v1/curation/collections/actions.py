@@ -47,7 +47,7 @@ def get(visibility: str, token_info: dict, curator: str = None):
     return jsonify(resp_collections)
 
 
-def post(body: dict, user: str):
+def post(body: dict, token_info: dict):
     # Extract DOI into link
     errors = []
     if (doi_url := body.get("doi")) and (doi_url := doi.curation_get_normalized_doi_url(doi_url, errors)):
@@ -67,7 +67,7 @@ def post(body: dict, user: str):
     )
 
     try:
-        version = get_business_logic().create_collection(user, "", metadata)
+        version = get_business_logic().create_collection(token_info["sub"], token_info["curator_name"], metadata)
     except InvalidMetadataException as ex:
         errors.extend(ex.errors)
     except CollectionCreationException as ex:
