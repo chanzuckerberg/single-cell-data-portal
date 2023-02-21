@@ -93,13 +93,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstOption(page);
 
-    await tryUntil(
-      async () => {
-        const heatmap = await page.$$("#blood-chart svg");
-        await expect(heatmap.length).not.toBe(0);
-      },
-      { page }
-    );
+    await waitForHeatmapToRender(page);
 
     const sexSelector = await getSexSelector();
 
@@ -163,13 +157,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstOption(page);
 
-    await tryUntil(
-      async () => {
-        const heatmap = await page.$$("#blood-chart svg");
-        expect(heatmap.length).not.toBe(0);
-      },
-      { page }
-    );
+    await waitForHeatmapToRender(page);
     await clickUntilSidebarShowsUp(getSourceDataButton, page);
     await expect(page).toHaveSelector(
       getText(
@@ -320,13 +308,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstNOptions(3, page);
 
-    await tryUntil(
-      async () => {
-        const heatmap = await page.$$("#blood-chart svg");
-        await expect(heatmap.length).not.toBe(0);
-      },
-      { page }
-    );
+    await waitForHeatmapToRender(page);
 
     const beforeGeneNames = await getNames(
       `${getTestID(GENE_LABELS_ID)} button`,
@@ -496,4 +478,14 @@ async function selectNthOption(number: number, page: Page) {
 
   await page.keyboard.press("Enter");
   await page.keyboard.press("Escape");
+}
+
+async function waitForHeatmapToRender(page: Page) {
+  await tryUntil(
+    async () => {
+      const canvases = await page.$$("canvas");
+      await expect(canvases.length).not.toBe(0);
+    },
+    { page }
+  );
 }
