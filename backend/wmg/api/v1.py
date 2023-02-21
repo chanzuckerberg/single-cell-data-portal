@@ -33,11 +33,12 @@ def query():
 
     default=True
     for dim in criteria.dict():
-        if len(criteria.dict()[dim + "s"]) > 0 and dim not in snapshot.primary_filter_dimensions:
+        if len(criteria.dict()[dim]) > 0 and depluralize(dim) not in snapshot.primary_filter_dimensions:
             default=False 
             break
 
     if default:
+        print("DEFAULT")
         expression_summary = q.expression_summary_default(criteria)
     else:
         expression_summary = q.expression_summary(criteria)
@@ -272,3 +273,6 @@ def build_ordered_cell_types_by_tissue_update_depths(x: DataFrame):
                     break
 
     return x
+
+def depluralize(x):
+    return x[:-1] if x[-1] == "s" else x
