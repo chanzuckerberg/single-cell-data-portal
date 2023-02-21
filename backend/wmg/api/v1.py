@@ -9,6 +9,7 @@ from pandas import DataFrame
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import MarkerGeneQueryCriteria, WmgQuery, WmgQueryCriteria, retrieve_top_n_markers
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
+from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
@@ -31,18 +32,14 @@ def query():
     snapshot: WmgSnapshot = load_snapshot()
     q = WmgQuery(snapshot)
 
-    default=True
+    default = True
     for dim in criteria.dict():
-        if len(criteria.dict()[dim]) > 0 and depluralize(dim) not in snapshot.primary_filter_dimensions:
-            default=False 
+        if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
+            default = False
             break
 
-    if default:
-        print("DEFAULT")
-        expression_summary = q.expression_summary_default(criteria)
-    else:
-        expression_summary = q.expression_summary(criteria)
-    
+    expression_summary = q.expression_summary_default(criteria) if default else q.expression_summary(criteria)
+
     cell_counts = q.cell_counts(criteria)
     dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
     if is_rollup:
@@ -273,6 +270,7 @@ def build_ordered_cell_types_by_tissue_update_depths(x: DataFrame):
                     break
 
     return x
+
 
 def depluralize(x):
     return x[:-1] if x[-1] == "s" else x

@@ -65,11 +65,7 @@ class WmgQuery:
         return self._query(
             cube=self._snapshot.expression_summary_default_cube,
             criteria=criteria,
-            indexed_dims=[
-                "gene_ontology_term_ids",
-                "tissue_ontology_term_ids",
-                "organism_ontology_term_id",
-            ],
+            indexed_dims=["gene_ontology_term_ids"],
         )
 
     def expression_summary_fmg(self, criteria: FmgQueryCriteria) -> DataFrame:
