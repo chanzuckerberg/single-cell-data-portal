@@ -57,7 +57,6 @@ expression_summary_schema = tiledb.ArraySchema(
     sparse=True,
     allows_duplicates=True,
     attrs=expression_summary_physical_attrs,
-    cell_order="row-major",
-    tile_order="row-major",
-    capacity=10000,
+    cell_order="hilbert",
+    capacity=100000,
 )
