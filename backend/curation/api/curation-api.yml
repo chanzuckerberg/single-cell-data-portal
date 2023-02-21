@@ -768,6 +768,7 @@ components:
       description: A unique identifier of a Collection.
       example: fedcba98-7654-3210-fedc-ba9876543210
       type: string
+      format: uuid
     dataset:
       properties:
         assay:
@@ -903,6 +904,7 @@ components:
       description: A unique identifier of a Dataset.
       example: 01234567-89ab-cdef-0123-456789abcdef
       type: string
+      format: uuid
     dataset_preview:
       properties:
         assay:
