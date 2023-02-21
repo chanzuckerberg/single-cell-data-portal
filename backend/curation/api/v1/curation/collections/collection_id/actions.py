@@ -76,9 +76,14 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
         body.get("consortia", []),
     )
 
+    # If update_links is None, then the DOI should not be updated
+    should_ignore_doi_updates = update_links is None
+
     # Update the collection
     try:
-        get_business_logic().update_collection_version(collection_version.version_id, collection_metadata)
+        get_business_logic().update_collection_version(
+            collection_version.version_id, collection_metadata, ignore_doi_update=should_ignore_doi_updates
+        )
     except InvalidMetadataException as ex:
         raise InvalidParametersHTTPException(ext=dict(invalid_parameters=ex.errors)) from None
     except CollectionUpdateException as ex:
