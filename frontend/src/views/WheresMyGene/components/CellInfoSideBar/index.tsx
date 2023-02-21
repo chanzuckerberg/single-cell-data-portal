@@ -10,6 +10,8 @@ import { addSelectedGenes } from "../../common/store/actions";
 import {
   ButtonContainer,
   CopyGenesButton,
+  MarkerStrengthContainer,
+  MarkerStrengthLabel,
   StyledHTMLTable,
   StyledIconImage,
   StyledMarkerGeneHeader,
@@ -144,18 +146,7 @@ function CellInfoSideBar({
       <StyledHTMLTable condensed bordered={false}>
         <thead>
           <tr>
-            <td>
-              Gene{" "}
-              <CopyGenesButton
-                onClick={handleCopyGenes}
-                sdsType="primary"
-                sdsStyle="minimal"
-                isAllCaps={false}
-                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
-              >
-                Copy
-              </CopyGenesButton>
-            </td>
+            <td>Gene </td>
             <td>
               Marker Score
               <Tooltip
@@ -204,6 +195,26 @@ function CellInfoSideBar({
                   <StyledIconImage src={questionMarkIcon} />
                 </TooltipButton>
               </Tooltip>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <CopyGenesButton
+                onClick={handleCopyGenes}
+                sdsType="primary"
+                sdsStyle="minimal"
+                isAllCaps={false}
+                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
+              >
+                Copy
+              </CopyGenesButton>
+            </td>
+            <td style={{ verticalAlign: "middle" }}>
+              <MarkerStrengthContainer>
+                <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel>
+                <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
+                <MarkerStrengthLabel>{"High: >2"}</MarkerStrengthLabel>
+              </MarkerStrengthContainer>
             </td>
           </tr>
         </thead>

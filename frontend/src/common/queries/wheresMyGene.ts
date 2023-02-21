@@ -830,10 +830,9 @@ export function useMarkerGenes({
     return result;
   }, [data]);
 
-
   function filterMarkerGenes(markerGenes: MarkerGene[]): MarkerGene[] {
     return markerGenes
-      .filter(markerGene => markerGene.effect_size >= MARKER_GENE_THRESHOLD)
+      .filter((markerGene) => markerGene.effect_size >= MARKER_GENE_THRESHOLD)
       .slice(0, MARKER_GENE_LIMIT);
   }
 
