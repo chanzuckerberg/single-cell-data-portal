@@ -1,4 +1,4 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from backend.common.corpora_orm import generate_id
 from backend.common.utils.exceptions import (
@@ -72,6 +72,20 @@ class TestDatasetSubmissions(BaseTest):
         mock_ingest = self.business_logic.ingest_dataset = Mock()
 
         s3_event = create_s3_event(key=f"super/{version.version_id}/{dataset_version_id}")
+        dataset_submissions_handler(s3_event, None)
+        mock_ingest.assert_called()
+
+    def test__upload_update_by_dataset_canonical_id__OK(self):
+        """
+        Processing starts when an update of a dataset is uploaded using canonical ids
+
+        """
+        version = self.generate_unpublished_collection()
+        _, dataset_id = self.business_logic.create_empty_dataset(version.version_id)
+
+        mock_ingest = self.business_logic.ingest_dataset = Mock()
+
+        s3_event = create_s3_event(key=f"{self.user_name}/{version.collection_id}/{dataset_id}")
         dataset_submissions_handler(s3_event, None)
         mock_ingest.assert_called()
 

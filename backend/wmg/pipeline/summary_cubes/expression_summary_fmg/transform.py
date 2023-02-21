@@ -3,15 +3,13 @@ import logging
 import numba as nb
 import numpy as np
 import pandas as pd
-
 import tiledb
 
 from backend.common.utils.math_utils import MB
-from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
-
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +22,8 @@ def transform(
     """
     Build the summary cube with rankit expression sum & sum of squares, nnz
     (num cells with non zero expression) values for each gene for each possible
-    group of cell attributes (cube row).
+    group of cell attributes (cube row). All values are aggregated across the
+    descendants of the cell type in each group (row).
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -105,6 +104,7 @@ def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFr
     Create index for queryable dimensions
     """
     cell_labels = extract_obs_data(tdb_group, cube_dims)
+
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
     cube_index["cube_idx"] = range(len(cube_index))

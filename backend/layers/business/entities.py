@@ -1,6 +1,5 @@
-from typing import List, Optional
-
 from dataclasses import dataclass
+from typing import List, Optional
 
 from backend.layers.common.entities import DatasetArtifactType, Link
 
@@ -34,3 +33,4 @@ class CollectionMetadataUpdate:
     contact_name: Optional[str]
     contact_email: Optional[str]
     links: Optional[List[Link]]
+    consortia: Optional[List[str]]

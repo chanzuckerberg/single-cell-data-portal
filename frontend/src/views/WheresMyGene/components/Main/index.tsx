@@ -259,10 +259,6 @@ export default function WheresMyGene(): JSX.Element {
     return hasSelectedTissues || hasSelectedGenes;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
-  const handleIsScaledChange = useCallback(() => {
-    setIsScaled((prevIsScaled) => !prevIsScaled);
-  }, [setIsScaled]);
-
   const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
     useState(false);
   const handleSourceDatasetButtonClick = useCallback(() => {
@@ -290,6 +286,10 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [cellInfoCellType, prevAmount?.cellInfoCellType?.cellType.id, forceOpen]);
 
+  const [echartsRendererMode, setEchartsRendererMode] = useState<
+    "canvas" | "svg"
+  >("canvas");
+
   return (
     <>
       <Head>
@@ -307,7 +307,7 @@ export default function WheresMyGene(): JSX.Element {
       >
         <Filters isLoading={isLoading} />
 
-        <ColorScale handleIsScaledChange={handleIsScaledChange} />
+        <ColorScale setIsScaled={setIsScaled} />
       </SideBar>
       {cellInfoCellType && tissuesByID && (
         <SideBar
@@ -345,6 +345,7 @@ export default function WheresMyGene(): JSX.Element {
               isScaled={isScaled}
               handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
               setIsDownloading={setIsDownloading}
+              setEchartsRendererMode={setEchartsRendererMode}
             />
           </Top>
 
@@ -370,6 +371,7 @@ export default function WheresMyGene(): JSX.Element {
 
           {shouldShowHeatMap ? (
             <HeatMap
+              echartsRendererMode={echartsRendererMode}
               cellTypeSortBy={sortBy.cellTypes}
               geneSortBy={sortBy.genes}
               selectedTissues={selectedTissues}
@@ -386,9 +388,7 @@ export default function WheresMyGene(): JSX.Element {
               scaledMeanExpressionMin={scaledMeanExpressionMin}
               selectedOrganismId={selectedOrganismId}
             />
-          ) : (
-            ""
-          )}
+          ) : null}
         </Wrapper>
         <BetaWrapper>
           <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />

@@ -9,7 +9,9 @@ on:
   pull_request:
     branches:
       - "*"
-      - ebezzi/business-layer-unit-tests
+  merge_group:
+    branches:
+      - "main"
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -36,12 +38,13 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
-      - name: Lint Python
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - name: check backend
+        uses: pre-commit/action@v3.0.0
+      - name: check frontend
         run: |
-          docker-compose run --no-deps --rm backend make -C /single-cell-data-portal lint
-      - name: Lint frontend
-        run: |
+          cp frontend/src/configs/local.js frontend/src/configs/configs.js
           docker-compose run --no-deps --rm frontend make lint
       - uses: 8398a7/action-slack@v3
         with:
@@ -79,7 +82,7 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps
-          cp src/configs/dev.js src/configs/configs.js
+          cp src/configs/local.js src/configs/configs.js
           npm run dev&
 
       # Run E2E tests
@@ -275,7 +278,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-
   backend-wmg-unit-test:
     runs-on: ubuntu-20.04
     steps:
@@ -324,7 +326,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-
   processing-unit-test:
     runs-on: ubuntu-20.04
     steps:
@@ -368,6 +369,12 @@ jobs:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
+          retention-days: 3
 
       - uses: 8398a7/action-slack@v3
         with:
@@ -480,10 +487,52 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
+  submit-codecoverage:
+    needs:
+      - backend-unit-test
+      - backend-wmg-unit-test
+      - wmg-processing-unit-test
+      - processing-unit-test
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: coverage
+          path: .
+      - name: coverage report
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make coverage/report-xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          env_vars: OS,PYTHON
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
   publish-test-report:
     needs:
       - backend-unit-test
       - backend-wmg-unit-test
+      - wmg-processing-unit-test
+      - processing-unit-test
       - e2e-test
     runs-on: ubuntu-20.04
     steps:

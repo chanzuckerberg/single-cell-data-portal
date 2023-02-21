@@ -1,6 +1,8 @@
 import enum
-
 from datetime import datetime
+from typing import Dict, List, Optional
+from uuid import uuid4
+
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
@@ -16,10 +18,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.dialects.postgresql.json import JSON
-from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
+from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import relationship
-from typing import Optional, List, Dict
-from uuid import uuid4
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.exceptions import CorporaException
@@ -51,7 +51,7 @@ class StrippedString(types.TypeDecorator):
         return StrippedString(self.impl.length)
 
 
-class TransformingBase(object):
+class TransformingBase:
     """
     Add functionality to transform a Base object, and recursively transform its linked entities.
     """
@@ -174,12 +174,12 @@ class TransformingBase(object):
         return f"<{self.__class__.__name__}(id={self.id})>"
 
 
-class AuditMixin(object):
+class AuditMixin:
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False, onupdate=datetime.utcnow)
 
 
-class TimestampMixin(object):
+class TimestampMixin:
     published_at = Column(DateTime, nullable=True)
     revised_at = Column(DateTime, nullable=True)
 
@@ -529,5 +529,5 @@ class DbGenesetDatasetLink(Base, AuditMixin):
 
     __tablename__ = "geneset_dataset_link"
 
-    geneset_id = Column(String, ForeignKey("geneset.id"), index=True, nullable=False)
-    dataset_id = Column(String, ForeignKey("dataset.id"), index=True, nullable=False)
+    geneset_id = Column(String, ForeignKey("geneset.id"), nullable=False)
+    dataset_id = Column(String, ForeignKey("dataset.id"), nullable=False)

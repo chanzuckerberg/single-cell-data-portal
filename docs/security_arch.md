@@ -11,7 +11,7 @@ should be created by Shared Infrastructure to supplement and/or replace this doc
 
 The following diagram renders the VPC, subnets, security groups, internet gateway, network address translation
 and their relationships provided by Shared Infrastructure's `cloud-env` environment. Additionally, Corpora-specific
-resources such as the API Lambda and RDS cluster are contextualized against the security infrastructure. 
+resources such as the API Lambda and RDS cluster are contextualized against the security infrastructure.
 
 ![Security Architecture Diagram](security_arch.png)
 [LucidChart](https://app.lucidchart.com/invitations/accept/1f369f01-7d52-4fda-9323-dc018224db3b)
@@ -33,7 +33,7 @@ the project VPC. The CIDR block for the Corpora VPC is 10.15.0.0/16.
 The IP addresses in the VPC are further organized into three subnet groups: public, private and database. Each group
 enables distinct internet traffic via association with a route table. For example, resources in the public subnet are
 granted access to the public internet (via a route to the Internet Gateway resource), whereas the database subnet only
-enables traffic within the VPC (via a route to the VPC CIDR block 10.15.0.0/16). All subnet groups' route tables define 
+enables traffic within the VPC (via a route to the VPC CIDR block 10.15.0.0/16). All subnet groups' route tables define
 a route to the VPC CIDR block.
 
 _Note: route tables are not represented in the diagram._

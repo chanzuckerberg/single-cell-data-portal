@@ -10,6 +10,7 @@ export enum ANALYTICS_PAYLOAD_KEY {
   CELL_SUBCLASS = "cellSubclass",
   CELL_TYPE = "cellType",
   ORGAN = "organ",
+  SUSPENSION_TYPE = "suspension_type",
   SYSTEM = "system",
   TISSUE = "tissue",
 }
@@ -124,6 +125,7 @@ export enum CATEGORY_FILTER_ID {
   "PUBLICATION_AUTHORS" = "PUBLICATION_AUTHORS",
   "PUBLICATION_DATE_VALUES" = "PUBLICATION_DATE_VALUES",
   "SEX" = "SEX",
+  "SUSPENSION_TYPE" = "SUSPENSION_TYPE",
   "TISSUE_CALCULATED" = "TISSUE_CALCULATED",
 }
 
@@ -134,6 +136,7 @@ export enum CATEGORY_FILTER_ID {
  */
 export interface BaseCategoryFilterConfig {
   analyticsEvent?: EVENTS;
+  analyticsPayloadKey?: ANALYTICS_PAYLOAD_KEY;
   categoryFilterId: CATEGORY_FILTER_ID;
   filterOnKey: FilterKey; // Key in result set row values to filter on.
   label: string;
@@ -322,6 +325,7 @@ export interface Categories {
   self_reported_ethnicity: Ontology[];
   organism: Ontology[];
   sex: Ontology[];
+  suspension_type: string[];
   tissue: Ontology[];
   tissue_ancestors: string[];
   tissueCalculated: string[];

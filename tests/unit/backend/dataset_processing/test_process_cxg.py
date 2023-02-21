@@ -2,10 +2,7 @@ import pathlib
 import tempfile
 from unittest.mock import patch
 
-from backend.common.corpora_orm import (
-    DatasetArtifactFileType,
-)
-
+from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.common.entities.dataset import Dataset
 from backend.portal.pipeline.processing.exceptions import ConversionFailed
 from backend.portal.pipeline.processing.process_cxg import process_cxg

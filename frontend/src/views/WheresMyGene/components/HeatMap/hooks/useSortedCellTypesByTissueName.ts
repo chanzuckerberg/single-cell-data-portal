@@ -78,7 +78,6 @@ export function useSortedCellTypesByTissueName({
 
       sortedCellTypesByTissueName[tissueName] = orderedCellTypes;
     }
-
     return sortedCellTypesByTissueName;
   }, [
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,

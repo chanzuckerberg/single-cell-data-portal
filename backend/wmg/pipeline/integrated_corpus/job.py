@@ -1,28 +1,22 @@
 import gc
+import json
 import logging
 import os
-from typing import List, Union, Tuple
-import json
+from typing import List, Tuple, Union
 
 import tiledb
 
-from backend.wmg.pipeline.integrated_corpus import load, extract
-from backend.wmg.pipeline.integrated_corpus.transform import (
-    apply_pre_concatenation_filters,
-    create_high_level_tissue,
-)
-from backend.wmg.pipeline.integrated_corpus.validate import (
-    should_load_dataset,
-    validate_dataset_properties,
-)
 from backend.wmg.data.schemas.corpus_schema import (
+    DATASET_TO_GENE_IDS_NAME,
     INTEGRATED_ARRAY_NAME,
     OBS_ARRAY_NAME,
     VAR_ARRAY_NAME,
-    DATASET_TO_GENE_IDS_NAME,
 )
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.integrated_corpus import extract, load
+from backend.wmg.pipeline.integrated_corpus.transform import apply_pre_concatenation_filters, create_high_level_tissue
+from backend.wmg.pipeline.integrated_corpus.validate import should_load_dataset, validate_dataset_properties
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +42,12 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     """
     with tiledb.scope_ctx(create_ctx()):
         dataset_count = len(os.listdir(dataset_directory))
-        dataset_gene_mapping = {}
+        if os.path.exists(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json"):
+            with open(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json", "r") as fp:
+                dataset_gene_mapping = json.load(fp)
+        else:
+            dataset_gene_mapping = {}
+
         for index, dataset in enumerate(os.listdir(dataset_directory)):
             logger.info(f"Processing dataset {index + 1} of {dataset_count}")
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"

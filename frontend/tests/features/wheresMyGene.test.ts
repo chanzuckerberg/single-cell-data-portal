@@ -93,13 +93,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstOption(page);
 
-    await tryUntil(
-      async () => {
-        const canvases = await page.$$("canvas");
-        await expect(canvases.length).not.toBe(0);
-      },
-      { page }
-    );
+    await waitForHeatmapToRender(page);
 
     const sexSelector = await getSexSelector();
 
@@ -163,13 +157,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstOption(page);
 
-    await tryUntil(
-      async () => {
-        const canvases = await page.$$("canvas");
-        expect(canvases.length).not.toBe(0);
-      },
-      { page }
-    );
+    await waitForHeatmapToRender(page);
     await clickUntilSidebarShowsUp(getSourceDataButton, page);
     await expect(page).toHaveSelector(
       getText(
@@ -252,7 +240,7 @@ describe("Where's My Gene", () => {
     await selectFirstNOptions(GENE_COUNT, page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
@@ -280,7 +268,7 @@ describe("Where's My Gene", () => {
     await selectNthOption(2, page);
 
     const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
@@ -320,16 +308,10 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstNOptions(3, page);
 
-    await tryUntil(
-      async () => {
-        const canvases = await page.$$("canvas");
-        await expect(canvases.length).not.toBe(0);
-      },
-      { page }
-    );
+    await waitForHeatmapToRender(page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
     const beforeCellTypeNames = await getNames(
@@ -346,7 +328,7 @@ describe("Where's My Gene", () => {
         await page.keyboard.press("Backspace");
 
         const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} text`,
+          `${getTestID(GENE_LABELS_ID)} button`,
           page
         );
         const afterCellTypeNames = await getNames(
@@ -359,7 +341,7 @@ describe("Where's My Gene", () => {
         // (thuang): Sometimes when API response is slow, we'll not capture all the
         // cell type names, so a sanity check that we expect at least 100 names
         expect(beforeCellTypeNames.length).toBeGreaterThan(100);
-        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length-1);
+        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length - 1);
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
@@ -496,4 +478,14 @@ async function selectNthOption(number: number, page: Page) {
 
   await page.keyboard.press("Enter");
   await page.keyboard.press("Escape");
+}
+
+async function waitForHeatmapToRender(page: Page) {
+  await tryUntil(
+    async () => {
+      const canvases = await page.$$("canvas");
+      await expect(canvases.length).not.toBe(0);
+    },
+    { page }
+  );
 }

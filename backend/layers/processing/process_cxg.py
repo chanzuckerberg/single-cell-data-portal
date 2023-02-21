@@ -6,13 +6,23 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetVersionId,
 )
+from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
-from backend.portal.pipeline.processing.h5ad_data_file import H5ADDataFile
 
 
 class ProcessCxg(ProcessingLogic):
+    """
+    Base class for handling the `Process CXG` step of the step function.
+    This will:
+    1. Download the labeled h5ad artifact from S3 (uploaded by DownloadAndValidate)
+    2. Convert to cxg
+    3. Upload the cxg artifact (a directory) to S3
+    If this step completes successfully, and ProcessSeurat is completed, the handle_success lambda will be invoked
+    If this step fails, the handle_failures lambda will be invoked
+    """
+
     def __init__(
         self,
         business_logic: BusinessLogicInterface,

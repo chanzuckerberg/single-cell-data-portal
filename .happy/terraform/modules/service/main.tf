@@ -19,7 +19,7 @@ resource aws_ecs_service service {
     subnets          = var.subnets
     assign_public_ip = false
   }
-
+  enable_execute_command = true
   wait_for_steady_state = var.wait_for_steady_state
 }
 
@@ -103,7 +103,7 @@ resource aws_lb_target_group target_group {
   target_type          = "ip"
   deregistration_delay = 10
   health_check {
-    interval            = 15
+    interval            = var.health_check_interval
     path                = "/"
     protocol            = "HTTP"
     timeout             = 5

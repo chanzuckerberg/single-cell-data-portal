@@ -1,9 +1,11 @@
-import unittest
 import json
+import unittest
+
 import pytest
-from tests.unit.backend.wmg.fixtures.test_snapshot import load_test_fmg_snapshot
-from backend.wmg.pipeline.summary_cubes.calculate_markers import _query_tiledb, get_markers
+
 from backend.wmg.data.query import retrieve_top_n_markers
+from backend.wmg.pipeline.summary_cubes.calculate_markers import _prepare_indices_and_metrics, get_markers
+from tests.unit.backend.wmg.fixtures.test_snapshot import load_test_fmg_snapshot
 
 TEST_SNAPSHOT = "test-fmg-snapshot"
 
@@ -23,15 +25,27 @@ CONTEXT_FILTERS = {
 class MarkerGeneCalculationTest(unittest.TestCase):
     def test__query_tiledb(self):
         with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
-            agg, t_n_cells_sum, _ = _query_tiledb(TARGET_FILTERS, corpus=snapshot)
-            test_sum = list(agg.sum(0))
+            output = _prepare_indices_and_metrics(TARGET_FILTERS, CONTEXT_FILTERS, corpus=snapshot)
+            context_agg = output[0]
+            target_agg = output[1]
+            n_cells_per_gene_target = output[3]
+            n_cells_per_gene_context = output[4]
+
+            test_sum_target = list(target_agg.sum(0))
             # check that returned dataframe is correct
-            expected_sum = [28538.255859375, 85875.046875, 11312.0, 11185.0]
-            for i in range(len(test_sum)):
-                assert abs(test_sum[i] - expected_sum[i]) < 0.05
+            expected_sum_target = [34725.328125, 103803.515625, 13914.0, 13777.0]
+            for i in range(len(test_sum_target)):
+                assert abs(test_sum_target[i] - expected_sum_target[i]) < 0.05
+
+            test_sum_context = list(context_agg.sum(0))
+            # check that returned dataframe is correct
+            expected_sum_context = [25811448.0, 54070508.0, 14401558.0, 13712079.0]
+            for i in range(len(test_sum_context)):
+                assert abs(test_sum_context[i] - expected_sum_context[i]) < 0.05
 
             # check that returned population sizes are correct
-            assert sum(list(t_n_cells_sum.values())[0]) == 98974
+            assert n_cells_per_gene_target.sum() == 302270.0
+            assert n_cells_per_gene_context.sum() == 901022918.0
 
     def test__get_markers_ttest(self):
         with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:

@@ -28,7 +28,7 @@ Once you have run the pre-requisite sets, you are ready to begin developing for 
 ### Common Commands
 
 | Command                                                                                 | Description                                                                          | Notes                                             |
-|-----------------------------------------------------------------------------------------| ------------------------------------------------------------------------------------ |---------------------------------------------------|
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------- |
 | `make fmt`                                                                              | Auto-format codebase using [black](https://pypi.org/project/black/).                 | This should be run before merging in any changes. |
 | `make lint`                                                                             | Perform lint checks on codebase using [flake8](https://flake8.pycqa.org/en/latest/). | This should be run before merging in any changes. |
 | `make unit-test`                                                                        | Run all unit tests.                                                                  |                                                   |
@@ -42,7 +42,7 @@ Environment variables are set using the command `export <name>=<value>`. For exa
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `DEPLOYMENT_STAGE`  | Specifies an app deployment stage for tasks such as deployments and functional tests. The `test` value implies local Docker development environment (and should probably be renamed `local`). | `test`, `dev`, `staging`, `prod`      |
 | `AWS_PROFILE`       | Specifies the profile used to interact with AWS resources via the awscli.                                                                                                                     | `single-cell-dev`, `single-cell-prod` |
-| `CORPORA_LOCAL_DEV` | Flag: If this variable is set to any value, the app will look for the database on **localhost:5432** and will use the aws secret `corpora/backend/\${DEPLOYMENT_STAGE}/database_local`.       | Any                                   |
+| `CORPORA_LOCAL_DEV` | Flag: If this variable is set to any value, the app will look for the database on **localhost:5432** and will use the aws secret `corpora/backend/\${DEPLOYMENT_STAGE}/database`.             | Any                                   |
 
 ### Database Procedures
 
@@ -57,7 +57,7 @@ If you need to make a change to the CELLxGENE Discover database, see [CELLxGENE 
 ### Running Functional Tests
 
 1. Set `AWS_PROFILE`.
-2. Set `DEPLOYMENT_STAGE` to deployed environment you want to run tests, as written locally, against (dev, staging, or  prod)
+2. Set `DEPLOYMENT_STAGE` to deployed environment you want to run tests, as written locally, against (dev, staging, or prod)
 3. Run a specific suite of tests using `DEPLOYMENT_STAGE=<deployed_env> python3 -m unittest <path_to_functional_test>`. For example, `DEPLOYMENT_STAGE=dev python3 -m unittest tests/functional/backend/corpora/test_revisions.py`
 4. Run all functional tests by using `DEPLOYMENT_STAGE=<deployed_env> python3 -m unittest discover tests/functional/backend`
 

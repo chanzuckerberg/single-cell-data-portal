@@ -4,6 +4,8 @@ import {
   Tooltip,
 } from "czifui";
 import { useContext, useMemo } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import {
   DispatchContext,
   StateContext,
@@ -13,8 +15,28 @@ import { SORT_BY } from "src/views/WheresMyGene/common/types";
 import { FlexDiv, Label, LabelWrapper, StyledDropdown, Wrapper } from "./style";
 
 interface Props {
-  handleIsScaledChange: () => void;
+  setIsScaled: (prevIsScaled: boolean) => void;
 }
+
+// (ashin-czi): Used by SaveImage to recreate the color scale plasma image in an SVG
+// Not the best solution but importing SVG files creates conflicts with the Loader
+// and can't get the actual content of the SVG file needed for SVG creation
+export const plasmaSvgString = `
+  <rect width="120" height="16" fill="url(#paint0_linear_5151_537460)" />
+  <defs>
+      <linearGradient id="paint0_linear_5151_537460" x1="120" y1="8" x2="8.0516e-07" y2="8.00001"
+          gradientUnits="userSpaceOnUse">
+          <stop stop-color="#090720" />
+          <stop offset="0.145123" stop-color="#36106B" />
+          <stop offset="0.28796" stop-color="#6B1D81" />
+          <stop offset="0.436206" stop-color="#9C2E7F" />
+          <stop offset="0.582062" stop-color="#D3436E" />
+          <stop offset="0.719889" stop-color="#F66E5C" />
+          <stop offset="0.864407" stop-color="#FEA973" />
+          <stop offset="1" stop-color="#FDE2A3" />
+      </linearGradient>
+  </defs>
+`;
 
 const COLOR_SCALE_OPTIONS = [
   { id: SORT_BY.COLOR_SCALED, name: "Scaled" },
@@ -25,9 +47,7 @@ const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
 };
 
-export default function ColorScale({
-  handleIsScaledChange,
-}: Props): JSX.Element {
+export default function ColorScale({ setIsScaled }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { sortBy } = useContext(StateContext);
 
@@ -65,7 +85,11 @@ export default function ColorScale({
   ): void {
     if (!dispatch || !value) return;
 
-    handleIsScaledChange();
+    track(EVENTS.WMG_OPTION_SELECT_COLOR_SCALE, {
+      color_scale_view_option: value.name,
+    });
+
+    setIsScaled(value.id == SORT_BY.COLOR_SCALED ? true : false);
 
     dispatch(selectSortBy({ scaled: value.id as SORT_BY }));
   }

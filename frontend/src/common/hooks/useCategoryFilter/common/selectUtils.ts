@@ -283,7 +283,7 @@ function trackSelectCategoryValueSelected<T extends Categories>(
   categoryValueKey: CategoryValueId,
   filters: Filters<T>
 ) {
-  const { analyticsEvent, categoryFilterId } = config;
+  const { analyticsEvent, analyticsPayloadKey, categoryFilterId } = config;
 
   // No tracking if event isn't specified on category config.
   if (!analyticsEvent) {
@@ -295,8 +295,27 @@ function trackSelectCategoryValueSelected<T extends Categories>(
     getCategoryFilter(categoryFilterId, filters)?.value as CategoryValueId
   );
   if (!categoryFilters.has(categoryValueKey)) {
-    // Build up payload for tracking event and send.
-    const payload = categoryValueKey;
-    track(analyticsEvent, { payload });
+    const payload = buildAnalyticsPayload(
+      categoryValueKey,
+      analyticsPayloadKey
+    );
+    track(analyticsEvent, payload);
   }
+}
+
+/**
+ * Build up payload for tracking event and send. Newer filters such as suspension type track events in the format
+ * {payloadKey: payloadValue} whereas older filters such as author track events in the format
+ * {"payload": payloadValue}.
+ * @param payloadKey Payload field, if any. Defaults to "payload" if not specified.
+ * @param payloadValue Value to send as payload.
+ * @returns
+ */
+export function buildAnalyticsPayload(
+  payloadValue: string,
+  payloadKey?: string
+): Record<string, unknown> {
+  return payloadKey
+    ? { [payloadKey]: payloadValue }
+    : { payload: payloadValue };
 }

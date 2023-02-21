@@ -8,16 +8,18 @@ ifeq ($(AWS_ACCESS_KEY_ID),)
 	export TEST_AWS_PROFILE ?= single-cell-dev
 endif
 export DEPLOYMENT_STAGE ?= test
-
+COVERAGE_DATA_FILE=.coverage.$(shell git rev-parse --short HEAD)
+COVERAGE_FILTER=--omit=*/dist-packages/*,*/backend/database/*,*/backend/scripts/*,*/site-packages/* --include=*/backend/*,*/tests/unit/*
+export COVERAGE_RUN_ARGS:=--data-file=$(COVERAGE_DATA_FILE) --parallel-mode $(COVERAGE_FILTER)
 
 .PHONY: fmt
 fmt:
-	black backend scripts tests
-	flake8 backend tests scripts
+	black --config=pyproject.toml backend scripts tests
+	ruff check --fix --config=pyproject.toml backend tests scripts
 
 .PHONY: lint
 lint:
-	flake8 backend tests
+	ruff check --config=pyproject.toml backend tests
 
 .PHONY: unit-test
 unit-test: local-unit-test
@@ -26,8 +28,8 @@ unit-test: local-unit-test
 .PHONY: wmg-processing-unittest
 wmg-processing-unittest:
 	# This target is intended to be run INSIDE the wmg processing container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning pytest tests/unit/wmg_processing \
-		--rootdir=. --alluredir=./allure-results --verbose;
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning coverage run $(COVERAGE_RUN_ARGS) -m pytest \
+	tests/unit/wmg_processing/ --rootdir=. --alluredir=./allure-results --verbose;
 
 .PHONY: functional-test
 functional-test: local-functional-test
@@ -98,7 +100,7 @@ local-status: ## Show the status of the containers in the dev environment.
 
 .PHONY: local-rebuild
 local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
-	docker-compose $(COMPOSE_OPTS) build frontend backend processing wmg_processing
+	docker-compose $(COMPOSE_OPTS) build frontend backend processing wmg_processing database oidc localstack
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
 
 local-rebuild-backend: .env.ecr local-ecr-login
@@ -143,15 +145,18 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 	docker-compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
-local-unit-test: local-unit-test-backend local-unit-test-wmg-processing# Run all backend and processing unit tests in the dev environment, with code coverage
+local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-wmg-processing local-unit-test-processing
+# Run all backend and processing unit tests in the dev environment, with code coverage
 
 .PHONY: local-unit-test-backend
 local-unit-test-backend: 
-	docker-compose run --rm -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/layers/";
+	docker-compose run --rm -T backend bash -c \
+	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/layers/";
 
 .PHONY: local-unit-test-wmg-backend
 local-unit-test-wmg-backend: 
-	docker-compose run --rm -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/wmg/";
+	docker-compose run --rm -T backend bash -c \
+	"cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/wmg/";
 
 .PHONY: local-integration-test-backend
 local-integration-test-backend:
@@ -160,7 +165,7 @@ local-integration-test-backend:
 .PHONY: local-unit-test-processing
 local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
-	bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/processing/";
+	bash -c "cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/processing/";
 
 .PHONY: local-unit-test-wmg-processing
 local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container
@@ -218,3 +223,15 @@ local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
 	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
+
+.PHONY: coverage/combine
+coverage/combine:
+	- docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage combine --data-file=$(COVERAGE_DATA_FILE)"
+
+.PHONY: coverage/report
+coverage/report-xml: coverage/combine
+	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage xml --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
+
+.PHONY: coverage/report
+coverage/report-html: coverage/combine
+	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage html --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"

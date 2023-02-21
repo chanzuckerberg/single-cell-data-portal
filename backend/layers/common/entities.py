@@ -1,11 +1,11 @@
-from dataclasses import dataclass
+import uuid
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 from urllib.parse import urlparse
 
 from dataclasses_json import dataclass_json
-
 
 # TODO: copy and paste the docs for these
 
@@ -99,43 +99,34 @@ class DatasetStatus:
 
 
 @dataclass
-class CollectionId:
+class EntityId:
     id: str
+
+    def __init__(self, entity_id: str = None):
+        self.id = str(entity_id) if entity_id is not None else str(uuid.uuid4())
 
     def __repr__(self) -> str:
         return self.id
 
 
-@dataclass
-class CollectionVersionId:
-    id: str
-
-    def __repr__(self) -> str:
-        return self.id
+class CollectionId(EntityId):
+    pass
 
 
-@dataclass
-class DatasetId:
-    id: str
-
-    def __repr__(self) -> str:
-        return self.id
+class CollectionVersionId(EntityId):
+    pass
 
 
-@dataclass
-class DatasetVersionId:
-    id: str
-
-    def __repr__(self) -> str:
-        return self.id
+class DatasetId(EntityId):
+    pass
 
 
-@dataclass
-class DatasetArtifactId:
-    id: str
+class DatasetVersionId(EntityId):
+    pass
 
-    def __repr__(self) -> str:
-        return self.id
+
+class DatasetArtifactId(EntityId):
+    pass
 
 
 @dataclass
@@ -218,14 +209,7 @@ class CollectionMetadata:
     contact_name: str
     contact_email: str
     links: List[Link]
-
-    def strip_fields(self):
-        self.name = self.name.strip()
-        self.description = self.description.strip()
-        self.contact_name = self.contact_name.strip()
-        self.contact_email = self.contact_email.strip()
-        for link in self.links:
-            link.strip_fields()
+    consortia: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -233,6 +217,7 @@ class CanonicalCollection:
     id: CollectionId
     version_id: Optional[CollectionVersionId]  # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
+    revised_at: Optional[datetime]
     tombstoned: bool
 
 
@@ -247,6 +232,28 @@ class CollectionVersionBase:
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
+
+    def is_published(self) -> bool:
+        """
+        This collection version has been published.
+        TODO: After old API code is removed consider moving closer to API layer
+        """
+        return self.published_at is not None
+
+    def is_unpublished_version(self) -> bool:
+        """
+        The collection has been published, and this is a unpublished version of the collection.
+        TODO: After old API code is removed consider moving closer to API layer
+        """
+        return self.canonical_collection.originally_published_at is not None and not self.is_published()
+
+    def is_initial_unpublished_version(self) -> bool:
+        """
+        The collection is unpublished, this version is unpublished, and no previous versions have been
+        published.
+        TODO: After old API code is removed consider moving closer to API layer
+        """
+        return not self.is_published() and self.canonical_collection.originally_published_at is None
 
 
 @dataclass

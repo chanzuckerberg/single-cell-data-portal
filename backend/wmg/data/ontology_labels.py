@@ -46,7 +46,7 @@ def __load_ontologies() -> None:
 
     ontology_term_id_labels = {}
     all_ontologies = json.loads(__open_ontology_resource(all_ontologies_json_file).read().decode("utf-8"))
-    for ontology_name, ontology_dict in all_ontologies.items():
+    for _, ontology_dict in all_ontologies.items():
         for term_id, term in ontology_dict.items():
             ontology_term_id_labels[term_id] = term["label"]
 

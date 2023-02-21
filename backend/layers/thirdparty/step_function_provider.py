@@ -21,6 +21,10 @@ class StepFunctionProvider(StepFunctionProviderInterface):
     def start_step_function(
         self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, url: str
     ) -> None:
+        """
+        Starts a step function that will ingest the dataset `dataset_version_id` using the artifact
+        located at `url`
+        """
         input_parameters = {
             "collection_id": version_id.id,
             "url": url,
