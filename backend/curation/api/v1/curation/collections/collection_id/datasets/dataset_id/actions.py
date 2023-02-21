@@ -1,6 +1,7 @@
+from flask import Response, jsonify, make_response
+
 from typing import Tuple
 from uuid import UUID
-from flask import Response, jsonify, make_response
 
 from backend.common.utils.exceptions import MaxFileSizeExceededException
 from backend.common.utils.http_exceptions import (
