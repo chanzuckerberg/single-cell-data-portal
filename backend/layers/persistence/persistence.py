@@ -122,7 +122,11 @@ class DatabaseProvider(DatabaseProviderInterface):
         )
 
     def _row_to_canonical_dataset(self, row: Any):
-        return CanonicalDataset(DatasetId(str(row.id)), DatasetVersionId(str(row.version_id)), row.published_at)
+        return CanonicalDataset(
+            DatasetId(str(row.id)),
+            None if row.version_id is None else DatasetVersionId(str(row.version_id)),
+            row.published_at,
+        )
 
     def _row_to_dataset_artifact(self, row: Any):
         return DatasetArtifact(
@@ -177,7 +181,11 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset = session.query(DatasetTable).filter_by(id=dataset_id.id).one_or_none()
             if dataset is None:
                 return None
-            return CanonicalDataset(dataset_id, DatasetVersionId(str(dataset.version_id)), dataset.published_at)
+            return CanonicalDataset(
+                dataset_id,
+                None if dataset.version_id is None else DatasetVersionId(str(dataset.version_id)),
+                dataset.published_at,
+            )
 
     def create_canonical_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
@@ -546,9 +554,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             session.add(canonical_dataset)
             session.add(dataset_version)
-            return self._row_to_dataset_version(
-                dataset_version, CanonicalDataset(dataset_id, dataset_version_id, None), []
-            )
+            return self._row_to_dataset_version(dataset_version, CanonicalDataset(dataset_id, None, None), [])
 
     def add_dataset_artifact(
         self, version_id: DatasetVersionId, artifact_type: DatasetArtifactType, artifact_uri: str

@@ -236,9 +236,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # END OR
 
-    def get_dataset(self, dataset_id: DatasetId) -> DatasetVersion:
-        version_id = self.datasets[dataset_id.id]
-        return copy.deepcopy(self.datasets_versions[version_id])
+    def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:
+        if dataset_id.id is None or dataset_id.id not in self.datasets:
+            return None
+        return self.datasets[dataset_id.id]
 
     def get_dataset_version(self, version_id: DatasetVersionId) -> DatasetVersion:
         version = self.datasets_versions.get(version_id.id)
@@ -254,6 +255,13 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         for version_id, dataset_version in self.datasets_versions.items():
             if version_id in active_datasets:
                 yield self._update_dataset_version_with_canonical(dataset_version)
+
+    def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+        versions = []
+        for dataset_version in self.datasets_versions.values():
+            if dataset_version.dataset_id == dataset_id:
+                versions.append(dataset_version)
+        return versions
 
     def _get_all_datasets(self) -> Iterable[DatasetVersion]:
         """
@@ -367,5 +375,5 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         cd = self.datasets.get(dataset_id.id)
         if cd is not None:
-            version = self.datasets_versions[cd.dataset_version_id.id]
-            return self._update_dataset_version_with_canonical(version)
+            version = None if cd.dataset_version_id is None else self.datasets_versions[cd.dataset_version_id.id]
+            return None if version is None else self._update_dataset_version_with_canonical(version)

@@ -153,7 +153,8 @@ def reshape_dataset_for_curation_api(
 
     # Determine what columns to include from the dataset
     columns = EntityColumns.dataset_metadata_preview_cols if preview else EntityColumns.dataset_metadata_cols
-
+    # we only use canonical_id for datasets in non-revision collections
+    is_in_revision = not use_canonical_id
     # Get dataset metadata fields.
     # Metadata can be None if the dataset isn't still fully processed, so we account for that
     if dataset_version.metadata is not None:
@@ -181,9 +182,11 @@ def reshape_dataset_for_curation_api(
         else:
             ds["revised_at"] = None
         ds["revision_of"] = (
-            None
-            if dataset_version.canonical_dataset.dataset_version_id == dataset_version.version_id
-            else dataset_version.dataset_id.id
+            dataset_version.dataset_id.id
+            if is_in_revision
+            and dataset_version.canonical_dataset.dataset_version_id is not None
+            and dataset_version.canonical_dataset.dataset_version_id != dataset_version.version_id
+            else None
         )
         ds["revision"] = 0  # TODO this should be the number of times this dataset has been revised and published
         ds["title"] = ds.pop("name", None)
