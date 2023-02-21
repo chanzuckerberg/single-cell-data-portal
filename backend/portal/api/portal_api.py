@@ -719,8 +719,8 @@ def get_dataset_identifiers(url: str):
 
     try:
         UUID(id)
-    except ValueError:
-        raise NotFoundHTTPException()
+    except ValueError as e:
+        raise NotFoundHTTPException() from e
 
     dataset = get_business_logic().get_dataset_version(DatasetVersionId(id))
     if dataset is None:

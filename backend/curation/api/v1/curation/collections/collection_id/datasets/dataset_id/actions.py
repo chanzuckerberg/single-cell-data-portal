@@ -39,8 +39,8 @@ def get(collection_id: str, dataset_id: str = None):
     # Look up assuming that `collection_id` is the canonical id, then look up assuming is the version_id if not found
     try:
         UUID(collection_id)
-    except ValueError:
-        raise NotFoundHTTPException("Collection not found!")
+    except ValueError as e:
+        raise NotFoundHTTPException("Collection not found!") from e
     collection_version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
     if collection_version is None:
         collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
@@ -69,8 +69,8 @@ def _get_collection_and_dataset(
     try:
         UUID(collection_id)
         UUID(dataset_id)
-    except ValueError:
-        raise ForbiddenHTTPException()
+    except ValueError as e:
+        raise ForbiddenHTTPException() from e
     collection_version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
     if collection_version is None:
         collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))

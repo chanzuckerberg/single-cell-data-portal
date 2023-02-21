@@ -327,8 +327,8 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Collect
     """
     try:
         UUID(collection_id)
-    except ValueError:
-        raise ForbiddenHTTPException()
+    except ValueError as e:
+        raise ForbiddenHTTPException() from e
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))

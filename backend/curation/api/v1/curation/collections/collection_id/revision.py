@@ -12,8 +12,8 @@ from backend.portal.api.providers import get_business_logic
 def post(collection_id: str, token_info: dict):
     try:
         UUID(collection_id)
-    except ValueError:
-        raise ForbiddenHTTPException(f"Collection {collection_id} does not exist")
+    except ValueError as e:
+        raise ForbiddenHTTPException(f"Collection {collection_id} does not exist") from e
     published_collection = get_business_logic().get_published_collection_version(CollectionId(collection_id))
 
     if published_collection is None:
