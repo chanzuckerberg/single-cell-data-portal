@@ -111,6 +111,7 @@ module frontend_service {
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
   execution_role             = local.ecs_execution_role
+  health_check_interval      = 15
 
   wait_for_steady_state = local.wait_for_steady_state
 }

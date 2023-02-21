@@ -2,6 +2,7 @@ import itertools
 from datetime import datetime
 from typing import List, Optional, Tuple
 from urllib.parse import urlparse
+from uuid import UUID
 
 from flask import Response, jsonify, make_response
 
@@ -282,7 +283,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "id": collection_id,
             "links": [_link_to_response(link) for link in collection.metadata.links],
             "name": collection.metadata.name,
-            "published_at": collection.published_at,
+            "published_at": collection.canonical_collection.originally_published_at,
             "publisher_metadata": collection.publisher_metadata,  # TODO: convert
             "revision_of": revision_of,
             "updated_at": collection.published_at or collection.created_at,
@@ -716,6 +717,11 @@ def get_dataset_identifiers(url: str):
     except Exception:
         raise ServerErrorHTTPException("Cannot parse URL") from None
 
+    try:
+        UUID(id)
+    except ValueError as e:
+        raise NotFoundHTTPException() from e
+
     dataset = get_business_logic().get_dataset_version(DatasetVersionId(id))
     if dataset is None:
         # Lookup from canonical if the version cannot be found
@@ -730,6 +736,13 @@ def get_dataset_identifiers(url: str):
     collection = get_business_logic().get_collection_version_from_canonical(dataset.collection_id)
     if collection is None:  # orphaned datasets - shouldn't happen, but we should return 404 just in case
         raise NotFoundHTTPException()
+
+    # If we look up by canonical_id (i.e. the if does not hold), we can run into issues if the collection
+    # is unpublished and the dataset has been replaced. In this case, `get_dataset_version_from_canonical` will return
+    # the initial version (not the replaced one), so we need to update `dataset` using the collection mappings (which are
+    # up to date).
+    if dataset.version_id.id != id:
+        dataset = [d for d in collection.datasets if d.dataset_id.id == id][0]
 
     if dataset.version_id not in [d.version_id for d in collection.datasets]:
         # If the dataset is not in the mapped collection version, it means the dataset belongs to the active

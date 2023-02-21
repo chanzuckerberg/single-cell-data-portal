@@ -841,9 +841,11 @@ components:
     collection_id:
       description: A unique identifier of a Collection.
       type: string
+      format: uuid
     dataset_id:
       description: A unique identifier of a Dataset.
       type: string
+      format: uuid
     visibility:
       description: >-
         Determines the visibility of the collection, that will either make the collection visible on the public

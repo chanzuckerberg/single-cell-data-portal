@@ -43,8 +43,7 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
           const formattedLabel = formatLabel(
             geneName,
             X_AXIS_CHART_HEIGHT_PX,
-            currentFont,
-            0
+            currentFont
           );
           return (
             <GeneButtonStyle
