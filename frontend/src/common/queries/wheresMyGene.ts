@@ -797,14 +797,12 @@ export interface MarkerGenesByCellType {
   [cellType: string]: MarkerGeneResponse["marker_genes"];
 }
 
-export interface MarkerGene {
-  gene_ontology_term_id: string;
-  effect_size: number;
-  p_value: number;
-}
-
 export interface MarkerGeneResponse {
-  marker_genes: MarkerGene[];
+  marker_genes: {
+    gene_ontology_term_id: string;
+    effect_size: number;
+    p_value: number;
+  }[];
   snapshot_id: string;
 }
 
@@ -814,9 +812,6 @@ export function useMarkerGenes({
   tissueID,
   test,
 }: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse> {
-  const MARKER_GENE_LIMIT = 5;
-  const MARKER_GENE_THRESHOLD = 0.5;
-
   const { data } = usePrimaryFilterDimensions();
   const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
     let result: { [name: string]: OntologyTerm } = {};
@@ -829,12 +824,6 @@ export function useMarkerGenes({
 
     return result;
   }, [data]);
-
-  function filterMarkerGenes(markerGenes: MarkerGene[]): MarkerGene[] {
-    return markerGenes
-      .filter((markerGene) => markerGene.effect_size >= MARKER_GENE_THRESHOLD)
-      .slice(0, MARKER_GENE_LIMIT);
-  }
 
   return useQuery(
     /**
@@ -851,7 +840,7 @@ export function useMarkerGenes({
         tissueID,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
-        filterMarkerGenes(output.marker_genes).reduce(
+        output.marker_genes.reduce(
           (newEntries, { gene_ontology_term_id, ...data }) => {
             try {
               newEntries.push([genesByID[gene_ontology_term_id].name, data]);
