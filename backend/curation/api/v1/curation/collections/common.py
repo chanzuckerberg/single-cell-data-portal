@@ -182,13 +182,14 @@ def reshape_dataset_for_curation_api(
             ds["revised_at"] = dataset_version.created_at
         else:
             ds["revised_at"] = None
-        ds["revision_of"] = (
-            dataset_version.dataset_id.id
-            if is_in_revision
+        if (
+            is_in_revision
             and dataset_version.canonical_dataset.dataset_version_id is not None
             and dataset_version.canonical_dataset.dataset_version_id != dataset_version.version_id
-            else None
-        )
+        ):
+            ds["revision_of"] = dataset_version.dataset_id.id
+        else:
+            ds["revision_of"] = None
         ds["revision"] = 0  # TODO this should be the number of times this dataset has been revised and published
         ds["title"] = ds.pop("name", None)
         ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_id)
