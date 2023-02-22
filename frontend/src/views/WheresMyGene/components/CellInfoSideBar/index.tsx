@@ -81,8 +81,6 @@ function CellInfoSideBar({
 
   const numMarkerGenes = Object.keys(data.marker_genes).length;
 
-  console.log("******************************************** " + JSON.stringify(data.marker_genes))
-
   if (!cellInfoCellType) return null;
   return (
     <div>
