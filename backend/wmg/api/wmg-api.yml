@@ -89,6 +89,8 @@ paths:
                 is_rollup:
                   type: boolean
                   default: true
+                compare:
+                  type: string
               required:
                 - filter
       responses:

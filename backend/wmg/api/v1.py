@@ -27,6 +27,9 @@ def query():
     compare = request.get("compare", None)
     include_filter_dims = request.get("include_filter_dims", False)
 
+    if compare:
+        compare = find_dimension_id(compare)
+
     criteria = WmgQueryCriteria(**request["filter"])
 
     snapshot: WmgSnapshot = load_snapshot()
@@ -95,6 +98,17 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
         snapshot.dataset_dict.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
         for dataset_id in dataset_ids
     ]
+
+
+def find_dimension_id(compare: str) -> str:
+    if compare == "sex":
+        return "sex_ontology_term_id"
+    elif compare == "self_reported_ethnicity":
+        return "self_reported_ethnicity_ontology_term_id"
+    elif compare == "disease":
+        return "disease_ontology_term_id"
+    else:
+        return ""
 
 
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
@@ -251,12 +265,11 @@ def build_ordered_cell_types_by_tissue(
         group_by_terms + ["n_total_cells"]
     ]
 
+    # building order for cell types for FE to use
+    cell_type_orderings["order"] = range(cell_type_orderings.shape[0])
+
     # make a multi index
     cell_type_orderings = cell_type_orderings.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).first()
-
-    # joined = cell_type_orderings.merge(
-    #     distinct_tissues_cell_types, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
-    # )
 
     indexer = list(
         zip(
@@ -279,23 +292,10 @@ def build_ordered_cell_types_by_tissue(
     # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
     structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
 
-    # Populate compare filter gene expressions
-    if compare:
-        for i in range(joined.shape[0]):
-            row = joined.iloc[i]
-            structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
-                "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-                "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
-                "total_count": int(
-                    cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]][
-                        "n_cells_cell_type"
-                    ]
-                ),
-                "depth": int(row.depth),
-            }
-
     # Populate aggregated gene expressions
-    joined_agg = joined.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).sum()
+    joined_agg = joined.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).agg(
+        {"n_total_cells": "sum", "depth": "first", "order": "first"}
+    )
 
     agg = cell_counts_cell_type_agg_T.T.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).sum().T
 
@@ -305,8 +305,23 @@ def build_ordered_cell_types_by_tissue(
             "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
             "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
             "total_count": int(agg[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["n_cells_cell_type"]),
-            "depth": int(row.depth),
+            "order": int(row.order),
         }
+
+    # Populate compare filter gene expressions
+    if compare:
+        for i in range(joined.shape[0]):
+            row = joined.iloc[i]
+            structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
+                "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
+                "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+                "total_count": int(
+                    cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
+                        row[compare]
+                    ]["n_cells_cell_type"]
+                ),
+                "order": int(row.order),
+            }
 
     return structured_result
 
