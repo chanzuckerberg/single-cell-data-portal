@@ -220,7 +220,7 @@ function CellInfoSideBar({
                   Copy
                 </CopyGenesButton>
               </td>
-              <td style={{ verticalAlign: "middle" }}>
+              <td>
                 <MarkerStrengthContainer>
                   {/* <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel> */}
                   <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
