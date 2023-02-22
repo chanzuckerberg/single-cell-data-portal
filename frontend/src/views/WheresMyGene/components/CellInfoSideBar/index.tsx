@@ -79,6 +79,10 @@ function CellInfoSideBar({
 
   if (isLoading || !data) return null;
 
+  const numMarkerGenes = Object.keys(data.marker_genes).length;
+
+  console.log("******************************************** " + JSON.stringify(data.marker_genes))
+
   if (!cellInfoCellType) return null;
   return (
     <div>
@@ -139,94 +143,104 @@ function CellInfoSideBar({
           sdsType="primary"
           isAllCaps={false}
           style={{ fontWeight: "500" }}
+          disabled={!numMarkerGenes}
         >
           Add to Dot Plot
         </Button>
       </ButtonContainer>
-      <StyledHTMLTable condensed bordered={false}>
-        <thead>
-          <tr>
-            <td>Gene </td>
-            <td>
-              Marker Score
-              <Tooltip
-                sdsStyle="dark"
-                placement="bottom"
-                width="default"
-                className="fmg-tooltip-icon"
-                arrow={true}
-                onOpen={() => setHoverStartTime(Date.now())}
-                onClose={handleMarkerScoreHoverEnd}
-                title={
-                  <StyledTooltip>
-                    <div>
-                      Marker Score indicates the strength and specificity of a
-                      gene as a marker. It is the 5th percentile of the effect
-                      sizes when comparing the expressions in a cell type of
-                      interest to each other cell type in the tissue.
-                    </div>
-                    <br />
-                    <div>
-                      <a
-                        href={ROUTES.FMG_DOCS}
-                        rel="noopener"
-                        target="_blank"
-                        onClick={() => {
-                          track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
-                            label: "marker score",
-                          });
-                          track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
-                            label: "marker score",
-                          });
-                        }}
-                      >
-                        Click to read more about the identification method.
-                      </a>
-                    </div>
-                  </StyledTooltip>
-                }
-              >
-                <TooltipButton
-                  sdsStyle="minimal"
-                  sdsType="secondary"
-                  isAllCaps={false}
-                  style={{ fontWeight: "500" }}
+
+      {!numMarkerGenes
+      ? <div style={{marginTop: "16px", background: "lightgrey", width: "100%", height: 120, display: "flex"}}>
+          <div style={{display: "flex", flexDirection: "column", margin: "auto",textAlign: "center"}}>
+            <span><strong>No Marker Genes</strong></span>
+            <span>No reliable marker genes for this cell type.</span>
+          </div>
+        </div>
+      : <StyledHTMLTable condensed bordered={false}>
+          <thead>
+            <tr>
+              <td>Gene </td>
+              <td>
+                Marker Score
+                <Tooltip
+                  sdsStyle="dark"
+                  placement="bottom"
+                  width="default"
+                  className="fmg-tooltip-icon"
+                  arrow={true}
+                  onOpen={() => setHoverStartTime(Date.now())}
+                  onClose={handleMarkerScoreHoverEnd}
+                  title={
+                    <StyledTooltip>
+                      <div>
+                        Marker Score indicates the strength and specificity of a
+                        gene as a marker. It is the 5th percentile of the effect
+                        sizes when comparing the expressions in a cell type of
+                        interest to each other cell type in the tissue.
+                      </div>
+                      <br />
+                      <div>
+                        <a
+                          href={ROUTES.FMG_DOCS}
+                          rel="noopener"
+                          target="_blank"
+                          onClick={() => {
+                            track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                              label: "marker score",
+                            });
+                            track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                              label: "marker score",
+                            });
+                          }}
+                        >
+                          Click to read more about the identification method.
+                        </a>
+                      </div>
+                    </StyledTooltip>
+                  }
                 >
-                  <StyledIconImage src={questionMarkIcon} />
-                </TooltipButton>
-              </Tooltip>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <CopyGenesButton
-                onClick={handleCopyGenes}
-                sdsType="primary"
-                sdsStyle="minimal"
-                isAllCaps={false}
-                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
-              >
-                Copy
-              </CopyGenesButton>
-            </td>
-            <td>
-              <MarkerStrengthContainer>
-                <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel>
-                <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
-                <MarkerStrengthLabel>{"High: >2"}</MarkerStrengthLabel>
-              </MarkerStrengthContainer>
-            </td>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(data.marker_genes).map((gene) => (
-            <tr key={gene[0]}>
-              <td>{gene[0]}</td>
-              <td>{gene[1].effect_size.toPrecision(4)}</td>
+                  <TooltipButton
+                    sdsStyle="minimal"
+                    sdsType="secondary"
+                    isAllCaps={false}
+                    style={{ fontWeight: "500" }}
+                  >
+                    <StyledIconImage src={questionMarkIcon} />
+                  </TooltipButton>
+                </Tooltip>
+              </td>
             </tr>
-          ))}
-        </tbody>
-      </StyledHTMLTable>
+            <tr>
+              <td>
+                <CopyGenesButton
+                  onClick={handleCopyGenes}
+                  sdsType="primary"
+                  sdsStyle="minimal"
+                  isAllCaps={false}
+                  startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
+                >
+                  Copy
+                </CopyGenesButton>
+              </td>
+              <td style={{ verticalAlign: "middle" }}>
+                <MarkerStrengthContainer>
+                  {/* <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel> */}
+                  <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
+                  <MarkerStrengthLabel>{"High: >2"}</MarkerStrengthLabel>
+                </MarkerStrengthContainer>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(data.marker_genes).map((gene) => (
+              <tr key={gene[0]}>
+                <td>{gene[0]}</td>
+                <td>{gene[1].effect_size.toPrecision(4)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </StyledHTMLTable>
+    }
     </div>
   );
 }
