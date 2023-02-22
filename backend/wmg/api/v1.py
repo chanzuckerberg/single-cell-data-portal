@@ -5,6 +5,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 import connexion
 from flask import jsonify
 from pandas import DataFrame
+from server_timing import Timing as ServerTiming
 
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import MarkerGeneQueryCriteria, WmgQuery, WmgQueryCriteria, retrieve_top_n_markers
@@ -29,38 +30,44 @@ def query():
 
     criteria = WmgQueryCriteria(**request["filter"])
 
-    snapshot: WmgSnapshot = load_snapshot()
-    q = WmgQuery(snapshot)
+    with ServerTiming.time("load_snapshot"):
+        snapshot: WmgSnapshot = load_snapshot()
+        q = WmgQuery(snapshot)
+        default = True
+        for dim in criteria.dict():
+            if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
+                default = False
+                break
 
-    default = True
-    for dim in criteria.dict():
-        if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
-            default = False
-            break
+    with ServerTiming.time(f"expression summary query default={default}"):
+        expression_summary = q.expression_summary_default(criteria) if default else q.expression_summary(criteria)
 
-    expression_summary = q.expression_summary_default(criteria) if default else q.expression_summary(criteria)
+    with ServerTiming.time("cell counts query"):
+        cell_counts = q.cell_counts(criteria)
 
-    cell_counts = q.cell_counts(criteria)
-    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
-    if is_rollup:
-        dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
+    with ServerTiming.time("get dot plot data and rollup"):
+        dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
+        if is_rollup:
+            dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
-    response_filter_dims_values = (
-        build_filter_dims_values(criteria, snapshot, cell_counts) if include_filter_dims else {}
-    )
-    return jsonify(
-        dict(
-            snapshot_id=snapshot.snapshot_identifier,
-            expression_summary=build_expression_summary(dot_plot_matrix_df),
-            term_id_labels=dict(
-                genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
-                cell_types=build_ordered_cell_types_by_tissue(
-                    cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings
-                ),
-            ),
-            filter_dims=response_filter_dims_values,
+    with ServerTiming.time("build response"):
+        response_filter_dims_values = (
+            build_filter_dims_values(criteria, snapshot, cell_counts) if include_filter_dims else {}
         )
-    )
+        response = jsonify(
+            dict(
+                snapshot_id=snapshot.snapshot_identifier,
+                expression_summary=build_expression_summary(dot_plot_matrix_df),
+                term_id_labels=dict(
+                    genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
+                    cell_types=build_ordered_cell_types_by_tissue(
+                        cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings
+                    ),
+                ),
+                filter_dims=response_filter_dims_values,
+            )
+        )
+    return response
 
 
 def markers():
