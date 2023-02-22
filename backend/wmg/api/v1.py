@@ -155,19 +155,6 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
         lambda: defaultdict(lambda: defaultdict(dict))
     )
 
-    # Populate compare filter gene expressions
-    if compare:
-        for i in range(query_result.shape[0]):
-            row = query_result.iloc[i]
-            structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
-                row[compare]
-            ] = dict(
-                n=int(row["nnz"]),
-                me=float(row["sum"] / row["nnz"]),
-                pc=float(row["nnz"] / row["n_cells_cell_type"]),
-                tpc=float(row["nnz"] / row["n_cells_tissue"]),
-            )
-
     # Populate aggregated gene expressions
     query_result_agg = query_result.groupby(
         ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
@@ -183,6 +170,19 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
             pc=float(row["nnz"] / row["n_cells_cell_type"]),
             tpc=float(row["nnz"] / row["n_cells_tissue"]),
         )
+
+    # Populate compare filter gene expressions
+    if compare:
+        for i in range(query_result.shape[0]):
+            row = query_result.iloc[i]
+            structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
+                row[compare]
+            ] = dict(
+                n=int(row["nnz"]),
+                me=float(row["sum"] / row["nnz"]),
+                pc=float(row["nnz"] / row["n_cells_cell_type"]),
+                tpc=float(row["nnz"] / row["n_cells_tissue"]),
+            )
 
     return structured_result
 
