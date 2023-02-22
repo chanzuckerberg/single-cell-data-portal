@@ -12,6 +12,9 @@ import {
   CopyGenesButton,
   MarkerStrengthContainer,
   MarkerStrengthLabel,
+  NoMarkerGenesContainer,
+  NoMarkerGenesDescription,
+  NoMarkerGenesHeader,
   StyledHTMLTable,
   StyledIconImage,
   StyledMarkerGeneHeader,
@@ -148,12 +151,10 @@ function CellInfoSideBar({
       </ButtonContainer>
 
       {!numMarkerGenes
-      ? <div style={{marginTop: "16px", background: "lightgrey", width: "100%", height: 120, display: "flex"}}>
-          <div style={{display: "flex", flexDirection: "column", margin: "auto",textAlign: "center"}}>
-            <span><strong>No Marker Genes</strong></span>
-            <span>No reliable marker genes for this cell type.</span>
-          </div>
-        </div>
+      ? <NoMarkerGenesContainer>
+            <NoMarkerGenesHeader>No Marker Genes</NoMarkerGenesHeader>
+            <NoMarkerGenesDescription>No reliable marker genes for this cell type.</NoMarkerGenesDescription>
+        </NoMarkerGenesContainer>
       : <StyledHTMLTable condensed bordered={false}>
           <thead>
             <tr>
