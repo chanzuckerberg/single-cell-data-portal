@@ -72,6 +72,7 @@ export const MarkerStrengthLabel = styled("div")`
       color: ${colors?.gray[500]};
     `;
   }}
+  line-height: unset;
 `;
 
 export const TissueName = styled.div`
