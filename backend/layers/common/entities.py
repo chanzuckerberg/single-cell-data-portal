@@ -95,33 +95,6 @@ class CollectionVisibility(Enum):
     PRIVATE = "Private"
 
 
-class XApproximateDistribution(Enum):
-    """
-    Describes a DbDataset's x_approximate_distribution.
-
-    COUNT - for data whose distributions are best approximated by counting distributions
-            like Poisson, Binomial, or Negative Binomial.
-    NORMAL - for data whose distributions are best approximated by the Gaussian distribution.
-    """
-
-    COUNT = "count"
-    NORMAL = "normal"
-
-
-class IsPrimaryData(Enum):
-    """
-    Describes a DbDataset's is_primary_data.
-
-    PRIMARY - when all observation values are True.
-    SECONDARY - when all observation values are False.
-    BOTH - when observation values are either True or False.
-    """
-
-    PRIMARY = "primary"
-    SECONDARY = "secondary"
-    BOTH = "both"
-
-
 @dataclass_json
 @dataclass
 class DatasetStatus:
