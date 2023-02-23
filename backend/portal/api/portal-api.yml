@@ -156,7 +156,7 @@ paths:
         - cxguserCookie: []
         - {}
       description: >-
-        This will return a private version of the public collection with all datasets and assoicated attributes of the
+        This will return a private version of the public collection with all datasets and associated attributes of the
         public collection.
       operationId: backend.portal.api.portal_api.post_collection_revision
       parameters:

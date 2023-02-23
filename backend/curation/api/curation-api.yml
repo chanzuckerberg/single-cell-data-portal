@@ -542,6 +542,93 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /v1/collections/versions/{collection_id}:
+    get:
+      summary: List all versions for a Collection
+      tags:
+        - collection
+        - versions
+      description: |
+        List all versions for a given Collection, which may be specified by a Collection id or a Collection version id.
+        May provide access token for access to private Collection versions. **Brian - do we want this endpoint to only
+        ever return published versions? Or is unpublished desired as well?**
+      security:
+        - curatorAccessLenient: [ ]
+        - { }
+      operationId: backend.curation.api.v1.curation.collections.versions.collection_id.get
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/collection_get"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/datasets:
+    get:
+      summary: List Cell Census previews of all Datasets
+      tags:
+        - dataset
+      description: |
+        List previews of all Datasets.
+      operationId: backend.curation.api.v1.curation.datasets.actions.get
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/census_info_dataset"
+
+  /v1/datasets/versions/{dataset_id}:
+    get:
+      summary: List all versions for a Dataset
+      tags:
+        - dataset
+        - versions
+      description: |
+        List all versions for a given Dataset, which may be specified by a Dataset id or a Dataset version id. May
+        provide access token for access to private Dataset versions. **Brian - do we want this endpoint to only ever
+        return published versions? Or is unpublished desired as well?**
+      security:
+        - curatorAccessLenient: [ ]
+        - { }
+      operationId: backend.curation.api.v1.curation.datasets.versions.get
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - type: object
+                      properties:
+                        collection_id:
+                          $ref: "#/components/schemas/collection_id"
+                    - $ref: "#/components/schemas/dataset"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+
 components:
   schemas:
     asset_response:
@@ -578,6 +665,28 @@ components:
         type: string
       nullable: true
       example: ["patient", "seqBatch"]
+    census_info_dataset:
+      type: object
+      properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_name:
+          $ref: "#/components/schemas/collection_name"
+        collection_doi:
+          $ref: "#/components/schemas/doi"
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
+        dataset_title:
+          description: |
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
+          nullable: true
+          type: string
+        dataset_h5ad_path:
+          type: string
+          description: Relative path to the source h5ad file in the Cell Census storage bucket
+        dataset_total_cell_count:
+          type: number
+          description: Total number of cells from the dataset included in the Cell Census.
     collection_list:
       description: Collection metadata
       properties:
@@ -744,6 +853,8 @@ components:
           $ref: "#/components/schemas/collection_revising_in"
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
+        version_id:
+          $ref: "#/components/schemas/collection_id"
         visibility:
           $ref: "#/components/schemas/visibility"
       type: object
@@ -866,6 +977,8 @@ components:
           $ref: "#/components/schemas/suspension_type"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
+        version_id:
+          $ref: "#/components/schemas/dataset_id"
         x_approximate_distribution:
           $ref: "#/components/schemas/distribution"
       type: object
@@ -919,6 +1032,8 @@ components:
           $ref: "#/components/schemas/dataset_tissue"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
+        version_id:
+          $ref: "#/components/schemas/dataset_id"
       type: object
     distribution:
       description:
