@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import tempfile
+import uuid
 from collections import namedtuple
 from itertools import cycle, filterfalse, islice
 from typing import Callable, Dict, List, NamedTuple, Tuple
@@ -13,9 +14,6 @@ import tiledb
 from numpy.random import randint, random
 from pandas import DataFrame
 
-from backend.common.corpora_orm import CollectionVisibility, DbCollection, DbDataset
-from backend.common.entities import Collection
-from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.schemas.cube_schema import (
     cell_counts_indexed_dims,
     cell_counts_logical_attrs,
@@ -64,7 +62,7 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     if dimension_name == "cell_type_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("CL")][:dim_size]
     if dimension_name == "dataset_id":
-        return [create_dataset(i) for i in range(dim_size)]
+        return [str(uuid.UUID()) for i in range(dim_size)]
     if dimension_name == "assay_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("EFO")][:dim_size]
     if dimension_name == "development_stage_ontology_term_id":
@@ -223,28 +221,6 @@ def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> D
                 )
             )
     return pd.concat(cell_type_orderings)
-
-
-def create_dataset(dataset_id_ordinal: int) -> str:
-    coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
-    with db_session_manager() as session:
-        if coll := Collection.get(session, coll_id):
-            Collection.delete(coll)
-
-        collection = DbCollection(
-            id=coll_id,
-            visibility=CollectionVisibility.PUBLIC.name,
-            name=f"dataset_id_{dataset_id_ordinal}_coll_name",
-            owner="owner",
-        )
-        session.add(collection)
-        dataset = DbDataset(
-            id=f"dataset_id_{dataset_id_ordinal}",
-            name=f"dataset_name_{dataset_id_ordinal}",
-            collection_id=coll_id,
-        )
-        session.add(dataset)
-        return dataset.id
 
 
 def create_cubes(
