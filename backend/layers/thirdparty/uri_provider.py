@@ -56,7 +56,7 @@ class UriProvider(UriProviderInterface):
                 file_info["name"],
             )
 
-        except requests.HTTPError:
-            raise FileInfoException("The URL provided causes an error with Dropbox.") from None
+        except requests.HTTPError as ex:
+            raise FileInfoException("The URL provided causes an error with Dropbox.") from ex
         except MissingHeaderException as ex:
             raise FileInfoException from ex
