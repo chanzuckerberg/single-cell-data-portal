@@ -165,16 +165,8 @@ const CellTypeButton = ({
   return (
     <FlexRowJustified data-test-id="cell-type-label-count">
       <FlexRow>
-        <CellTypeButtonStyle
-          active={active}
-          onClick={() => {
-            setActive(!active);
-            onClick();
-          }}
-          data-test-id="cell-type-label"
-        >
-          {name}
-        </CellTypeButtonStyle>
+        <CellTypeButtonStyle>{name}</CellTypeButtonStyle>
+        
         {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
           cellType &&
           cellType.total_count > 25 && (
@@ -182,7 +174,7 @@ const CellTypeButton = ({
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               style={{
                 cursor: "pointer",
-                paddingTop: "3px",
+                margin: "auto"
               }}
               onClick={() => {
                 if (cellType) {
