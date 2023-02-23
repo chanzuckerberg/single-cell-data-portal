@@ -49,7 +49,7 @@ class WmgSnapshot:
     # TileDB array containing expression summary statistics optimized for querying with no
     # secondary filters selected.
     # See the full schema at backend/wmg/data/schemas/cube_schema_default.py.
-    expression_summary_default_cube: Array    
+    expression_summary_default_cube: Array
 
     # TileDB array containing the precomputed marker genes.
     # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
