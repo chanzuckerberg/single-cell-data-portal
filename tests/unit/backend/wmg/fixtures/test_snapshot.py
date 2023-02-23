@@ -2,8 +2,8 @@ import contextlib
 import json
 import os
 import sys
-import uuid
 import tempfile
+import uuid
 from collections import namedtuple
 from itertools import cycle, filterfalse, islice
 from typing import Callable, Dict, List, NamedTuple, Tuple
@@ -221,6 +221,7 @@ def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> D
                 )
             )
     return pd.concat(cell_type_orderings)
+
 
 def create_cubes(
     data_dir,

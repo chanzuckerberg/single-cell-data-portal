@@ -3,8 +3,6 @@ import json
 import unittest
 from enum import Enum
 
-from sqlalchemy import Column, String
-
 from backend.common.utils.json import CurationJSONEncoder, CustomJSONEncoder
 
 
