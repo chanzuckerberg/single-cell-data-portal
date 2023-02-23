@@ -2,12 +2,9 @@ import logging
 import os
 import sys
 import time
-import traceback
 
-import click
 import requests
 from furl import furl
-from requests import HTTPError
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa

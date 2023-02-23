@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from time import sleep, time
+from time import time
 
 import boto3
 import click
@@ -10,8 +10,6 @@ from click import Context
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
-
-from urllib.parse import urlparse
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
