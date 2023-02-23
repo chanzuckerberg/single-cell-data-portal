@@ -203,10 +203,14 @@ class BusinessLogic(BusinessLogicInterface):
             if predicate(collection_version):
                 yield collection_version
 
-    def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
+    def update_collection_version(
+        self, version_id: CollectionVersionId, body: CollectionMetadataUpdate, ignore_doi_update: bool = False
+    ) -> None:
         """
-        Updates a collection version by replacing parts of its metadata. If the DOI in the links changed,
-        it should also update its publisher metadata
+        Updates a collection version by replacing parts of its metadata.
+        If the DOI in the links changed, it should also update its publisher metadata.
+        If `ignore_doi_update` is set to True, no DOI updates should be issued
+
         """
 
         # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
@@ -221,21 +225,24 @@ class BusinessLogic(BusinessLogicInterface):
         if current_version.published_at is not None:
             raise CollectionUpdateException(["Cannot update a published collection"])
 
-        # Determine if the DOI has changed
-        old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
-        new_doi = None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
-
         # Determine if publisher metadata should be unset, ignored or set at the end of the method.
         # Note: the update needs to be done at the end to ensure atomicity
         unset_publisher_metadata = False
         publisher_metadata_to_set = None
 
-        if old_doi and new_doi is None:
-            # If the DOI was deleted, remove the publisher_metadata field
-            unset_publisher_metadata = True
-        elif (new_doi is not None) and new_doi != old_doi:
-            # If the DOI has changed, fetch and update the metadata
-            publisher_metadata_to_set = self._get_publisher_metadata(new_doi, errors)
+        if not ignore_doi_update:
+            # Determine if the DOI has changed
+            old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
+            new_doi = (
+                None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
+            )
+
+            if old_doi and new_doi is None:
+                # If the DOI was deleted, remove the publisher_metadata field
+                unset_publisher_metadata = True
+            elif (new_doi is not None) and new_doi != old_doi:
+                # If the DOI has changed, fetch and update the metadata
+                publisher_metadata_to_set = self._get_publisher_metadata(new_doi, errors)
 
         if errors:
             raise CollectionUpdateException(errors)
@@ -545,9 +552,24 @@ class BusinessLogic(BusinessLogicInterface):
     def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         """
         Given a canonical dataset id, returns its mapped dataset version, i.e. the dataset version
-        that belongs to the most recently published collection
+        that belongs to the most recently published collection. Otherwise will return the most recent
+        unpublished version.
         """
-        return self.database_provider.get_dataset_mapped_version(dataset_id)
+        dataset_version = self.database_provider.get_dataset_mapped_version(dataset_id)
+        if dataset_version is not None:
+            return dataset_version
+        else:
+            canonical_dataset = self.database_provider.get_canonical_dataset(dataset_id)
+            if not canonical_dataset:
+                return None
+            # dataset has never been published, so fetch its most recently created version
+            latest = datetime.datetime.fromtimestamp(0)
+            unpublished_dataset = None
+            for dataset in self.database_provider.get_all_versions_for_dataset(dataset_id):
+                if dataset.created_at > latest:
+                    latest = dataset.created_at
+                    unpublished_dataset = dataset
+            return unpublished_dataset
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str

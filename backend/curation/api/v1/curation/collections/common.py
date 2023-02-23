@@ -1,6 +1,7 @@
 from dataclasses import asdict
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
+from uuid import UUID
 
 from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import (
@@ -153,7 +154,8 @@ def reshape_dataset_for_curation_api(
 
     # Determine what columns to include from the dataset
     columns = EntityColumns.dataset_metadata_preview_cols if preview else EntityColumns.dataset_metadata_cols
-
+    # we only use canonical_id for datasets in non-revision collections
+    is_in_revision = not use_canonical_id
     # Get dataset metadata fields.
     # Metadata can be None if the dataset isn't still fully processed, so we account for that
     if dataset_version.metadata is not None:
@@ -180,11 +182,14 @@ def reshape_dataset_for_curation_api(
             ds["revised_at"] = dataset_version.created_at
         else:
             ds["revised_at"] = None
-        ds["revision_of"] = (
-            None
-            if dataset_version.canonical_dataset.dataset_version_id == dataset_version.version_id
-            else dataset_version.dataset_id.id
-        )
+        if (
+            is_in_revision
+            and dataset_version.canonical_dataset.dataset_version_id is not None
+            and dataset_version.canonical_dataset.dataset_version_id != dataset_version.version_id
+        ):
+            ds["revision_of"] = dataset_version.dataset_id.id
+        else:
+            ds["revision_of"] = None
         ds["revision"] = 0  # TODO this should be the number of times this dataset has been revised and published
         ds["title"] = ds.pop("name", None)
         ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_id)
@@ -324,6 +329,10 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Collect
     :param collection_id: identifies the collection version
     :return: The CollectionVersion if it exists.
     """
+    try:
+        UUID(collection_id)
+    except ValueError as e:
+        raise ForbiddenHTTPException() from e
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
@@ -340,6 +349,10 @@ def get_infered_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
     :param dataset_id: identifies the dataset version
     :return: The DatasetVersion if it exists.
     """
+    try:
+        UUID(dataset_id)
+    except ValueError:
+        return None
     version = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
     if version is None:
         version = get_business_logic().get_dataset_version_from_canonical(DatasetId(dataset_id))
