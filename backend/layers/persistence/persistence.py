@@ -122,7 +122,11 @@ class DatabaseProvider(DatabaseProviderInterface):
         )
 
     def _row_to_canonical_dataset(self, row: Any):
-        return CanonicalDataset(DatasetId(str(row.id)), DatasetVersionId(str(row.version_id)), row.published_at)
+        return CanonicalDataset(
+            DatasetId(str(row.id)),
+            None if row.version_id is None else DatasetVersionId(str(row.version_id)),
+            row.published_at,
+        )
 
     def _row_to_dataset_artifact(self, row: Any):
         return DatasetArtifact(
@@ -177,7 +181,11 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset = session.query(DatasetTable).filter_by(id=dataset_id.id).one_or_none()
             if dataset is None:
                 return None
-            return CanonicalDataset(dataset_id, DatasetVersionId(str(dataset.version_id)), dataset.published_at)
+            return CanonicalDataset(
+                dataset_id,
+                None if dataset.version_id is None else DatasetVersionId(str(dataset.version_id)),
+                dataset.published_at,
+            )
 
     def create_canonical_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
@@ -478,8 +486,15 @@ class DatabaseProvider(DatabaseProviderInterface):
         dataset = self.get_canonical_dataset(dataset_id)
         with self._manage_session() as session:
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
+            artifact_ids = [artifact_id for dv in dataset_versions for artifact_id in dv.artifacts]
+            artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
+            artifact_map = {artifact.id: artifact for artifact in artifacts}
             for i in range(len(dataset_versions)):
-                dataset_versions[i] = self._row_to_dataset_version(dataset_versions[i], dataset)
+                version = dataset_versions[i]
+                version_artifacts = [
+                    self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
+                ]
+                dataset_versions[i] = self._row_to_dataset_version(version, dataset, version_artifacts)
             return dataset_versions
 
     def get_all_datasets(self) -> Iterable[DatasetVersion]:
@@ -525,7 +540,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
         dataset_id = DatasetId()
         dataset_version_id = DatasetVersionId()
-        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=dataset_version_id.id, published_at=None)
+        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=None, published_at=None)
         dataset_version = DatasetVersionTable(
             id=dataset_version_id.id,
             dataset_id=dataset_id.id,
@@ -539,9 +554,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             session.add(canonical_dataset)
             session.add(dataset_version)
-            return self._row_to_dataset_version(
-                dataset_version, CanonicalDataset(dataset_id, dataset_version_id, None), []
-            )
+            return self._row_to_dataset_version(dataset_version, CanonicalDataset(dataset_id, None, None), [])
 
     def add_dataset_artifact(
         self, version_id: DatasetVersionId, artifact_type: DatasetArtifactType, artifact_uri: str
