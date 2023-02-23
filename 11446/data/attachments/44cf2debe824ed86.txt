@@ -1,0 +1,2 @@
+{"levelname": "INFO", "asctime": "2023-02-23T22:13:39.023Z", "name": "root", "message": "Reading in AnnData dataset: 186c5fbe-d00a-4576-ab19-2cc646d5ecdc.h5ad", "lineno": 171, "pathname": "/single-cell-data-portal/backend/layers/processing/h5ad_data_file.py"}
+{"levelname": "INFO", "asctime": "2023-02-23T22:13:39.023Z", "name": "root", "message": "Completed reading in AnnData dataset!", "lineno": 173, "pathname": "/single-cell-data-portal/backend/layers/processing/h5ad_data_file.py"}
