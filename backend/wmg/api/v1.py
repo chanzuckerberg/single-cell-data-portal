@@ -30,27 +30,23 @@ def query():
 
     criteria = WmgQueryCriteria(**request["filter"])
 
-    with ServerTiming.time("load_snapshot"):
+    with ServerTiming.time("query and build response"):
         snapshot: WmgSnapshot = load_snapshot()
         q = WmgQuery(snapshot)
-        default = True
+        default = snapshot.expression_summary_default_cube is not None
         for dim in criteria.dict():
             if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
                 default = False
                 break
 
-    with ServerTiming.time(f"expression summary query default={default}"):
         expression_summary = q.expression_summary_default(criteria) if default else q.expression_summary(criteria)
 
-    with ServerTiming.time("cell counts query"):
         cell_counts = q.cell_counts(criteria)
 
-    with ServerTiming.time("get dot plot data and rollup"):
         dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
         if is_rollup:
             dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
-    with ServerTiming.time("build response"):
         response_filter_dims_values = (
             build_filter_dims_values(criteria, snapshot, cell_counts) if include_filter_dims else {}
         )

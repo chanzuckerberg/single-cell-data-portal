@@ -159,6 +159,7 @@ def load_test_fmg_snapshot(snapshot_name: str) -> WmgSnapshot:
             snapshot_identifier=snapshot_name,
             expression_summary_cube=None,
             expression_summary_fmg_cube=expression_summary_fmg_cube,
+            expression_summary_default_cube=None,
             marker_genes_cube=marker_genes_cube,
             cell_counts_cube=cell_counts_cube,
             cell_type_orderings=None,
@@ -194,6 +195,7 @@ def create_temp_wmg_snapshot(
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
+                expression_summary_default_cube=None,
                 expression_summary_fmg_cube=None,
                 marker_genes_cube=None,
                 cell_counts_cube=cell_counts_cube,
