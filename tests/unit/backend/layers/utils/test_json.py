@@ -3,16 +3,7 @@ import json
 import unittest
 from enum import Enum
 
-from sqlalchemy import Column, String
-
-from backend.common.corpora_orm import Base
 from backend.common.utils.json import CurationJSONEncoder, CustomJSONEncoder
-
-
-class DBTest(Base):
-    __tablename__ = "test"
-    id = Column(String, primary_key=True)
-    name = Column(String)
 
 
 class TestCustomJSONEncoder(unittest.TestCase):
@@ -35,13 +26,6 @@ class TestCustomJSONEncoder(unittest.TestCase):
         test_enum_value = EnumClass.TEST
         expected_enum = f'"{test_enum_value.name}"'
         self._verify_json_encoding(test_enum_value, expected_enum)
-
-    def test_base(self):
-        params = dict(id="foo", name=None)
-        test_base = DBTest(**params)
-        expected_base = json.dumps(params, sort_keys=True)
-        self._verify_json_encoding(test_base, expected_base)
-        self.assertDictEqual({k: v for k, v in test_base}, params)
 
     def test_unsupported_type(self):
         class Unsupported:
