@@ -9,9 +9,9 @@ import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "gene-labels";
+const CELL_TYPE_LABELS_ID = "cell-type-name";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
-const CELL_TYPE_NAME_LABEL = "cell-type-name";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 
@@ -244,7 +244,7 @@ describe("Where's My Gene", () => {
     );
 
     const beforeCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_NAME_LABEL)}`,
+      `${getTestID(CELL_TYPE_LABELS_ID)}`,
       page
     );
 
@@ -272,7 +272,7 @@ describe("Where's My Gene", () => {
     );
 
     const afterCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_NAME_LABEL)}`,
+      `${getTestID(CELL_TYPE_LABELS_ID)}`,
       page
     );
 
