@@ -43,7 +43,7 @@ export const Container = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
 `;
 
-export const CellTypeButtonStyle = styled.div`
+export const CellTypeLabelStyle = styled.div`
   margin: auto;
   font: normal 12px sans-serif;
   white-space: pre;
