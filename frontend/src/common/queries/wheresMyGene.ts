@@ -1,7 +1,7 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
-import { FMG_GENE_COUNT_LIMIT, FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import {
   DispatchContext,
   State,
@@ -613,9 +613,9 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
         dataset_ids: datasets,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
-        self_reported_ethnicity_ontology_term_ids: ethnicities,
         gene_ontology_term_ids,
         organism_ontology_term_id: selectedOrganismId,
+        self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids,
       },
@@ -829,9 +829,9 @@ export function useMarkerGenes({
   }, [data]);
 
   function filterMarkerGenes(markerGenes: MarkerGene[]): MarkerGene[] {
-    return markerGenes
-      .filter((markerGene) => markerGene.effect_size >= FMG_GENE_STRENGTH_THRESHOLD)
-      .slice(0, FMG_GENE_COUNT_LIMIT);
+    return markerGenes.filter(
+      (markerGene) => markerGene.effect_size >= FMG_GENE_STRENGTH_THRESHOLD
+    );
   }
 
   return useQuery(
@@ -848,7 +848,6 @@ export function useMarkerGenes({
         test,
         tissueID,
       });
-      console.log(filterMarkerGenes(output.marker_genes))
       const markerGenesIndexedByGeneName = Object.fromEntries(
         filterMarkerGenes(output.marker_genes).reduce(
           (newEntries, { gene_ontology_term_id, ...data }) => {
