@@ -21,7 +21,7 @@ const FILTERS_PANEL_NOT_FOUND = "Filters panel not found";
 const { describe, skip } = test;
 
 describe("Where's My Gene", () => {
-  // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
