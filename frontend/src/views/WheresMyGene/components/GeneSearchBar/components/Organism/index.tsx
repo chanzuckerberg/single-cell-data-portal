@@ -18,6 +18,13 @@ import { StyledDropdown, Wrapper } from "./style";
 
 const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
 
+const DropdownMenuProps = {
+  isOptionEqualToValue: (
+    option: DefaultMenuSelectOption,
+    value: DefaultMenuSelectOption
+  ) => option.name === value.name,
+};
+
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
   sdsStyle: "square",
 };
@@ -77,6 +84,7 @@ export default function Organism({ isLoading }: Props): JSX.Element {
         onChange={handleOnChange as tempOnChange}
         InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-test-id="add-organism"
+        DropdownMenuProps={DropdownMenuProps}
       />
     </Wrapper>
   );
