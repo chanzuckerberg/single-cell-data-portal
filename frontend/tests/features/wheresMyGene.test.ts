@@ -19,7 +19,7 @@ const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 const { describe, skip } = test;
 
 describe("Where's My Gene", () => {
-  // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
