@@ -282,11 +282,6 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
 
         <Organism isLoading={isLoading} />
 
-        {/* DEBUG */}
-        {/* DEBUG */}
-        {/* DEBUG */}
-        <Foo />
-
         <Sort areFiltersDisabled={areFiltersDisabled} />
       </Wrapper>
     </Tooltip>
@@ -308,15 +303,4 @@ function sortOptions(a: DefaultMenuSelectOption, b: DefaultMenuSelectOption) {
     return 1;
   }
   return 0;
-}
-
-// DEBUG
-// DEBUG
-// DEBUG
-function Foo() {
-  useMemo(() => {
-    console.log("----------Foo calculating...");
-  }, []);
-
-  return null;
 }
