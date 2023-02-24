@@ -48,7 +48,6 @@ function GeneButton({
 
   return (
     <GeneButtonStyle
-      key={geneName}
       onClick={() => handleGeneClick(geneName)}
       data-test-id={`gene-label-${geneName}`}
       onMouseEnter={() => {
@@ -60,6 +59,7 @@ function GeneButton({
     >
       <XAxisLabel active={genesToDelete.includes(geneName)} font={currentFont}>
         <div
+          data-test-id={"gene-delete-button"}
           onClick={() => {
             if (dispatch) {
               dispatch(deleteSingleGene(geneName));

@@ -12,13 +12,14 @@ const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-labels";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
+const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 
 const { describe, skip } = test;
 
 describe("Where's My Gene", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
@@ -327,6 +328,10 @@ describe("Where's My Gene", () => {
         await page.focus(getTestID(GENE_LABELS_ID));
         await page.keyboard.press("Backspace");
 
+        // Testing single gene delete
+        await page.hover(getTestID(GENE_DELETE_BUTTON));
+        await page.click(getTestID(GENE_DELETE_BUTTON));
+
         const afterGeneNames = await getNames(
           `${getTestID(GENE_LABELS_ID)} button`,
           page
@@ -336,7 +341,7 @@ describe("Where's My Gene", () => {
           page
         );
 
-        expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
+        expect(afterGeneNames.length).toBe(beforeGeneNames.length - 2);
 
         // (thuang): Sometimes when API response is slow, we'll not capture all the
         // cell type names, so a sanity check that we expect at least 100 names
