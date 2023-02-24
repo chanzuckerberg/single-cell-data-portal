@@ -34,7 +34,6 @@ export const XAxisLabel = styled.div`
   width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
   text-orientation: sideways;
   writing-mode: vertical-rl;
-  display: inline-block;
   user-select: none;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   display: flex;
