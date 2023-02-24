@@ -92,8 +92,11 @@ class DropBoxURL(URL):
         :param url: a DropBox URL leading to a file.
         :return: The file name and size of the file.
         """
-        resp = requests.head(self.url, allow_redirects=True)
-        resp.raise_for_status()
+        try:
+            resp = requests.head(self.url, allow_redirects=True)
+            resp.raise_for_status()
+        except Exception:
+            return {"size": None, "name": None}
 
         try:
             size = int(self._get_key_with_fallback(resp.headers, "content-length", "x-dropbox-content-length"))
