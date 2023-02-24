@@ -29,7 +29,6 @@ export const XAxisWrapper = styled.div`
 `;
 
 export const XAxisLabel = styled.div`
-  ${selectedStyle}
   height: 100%;
   width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
   text-orientation: sideways;
@@ -39,6 +38,10 @@ export const XAxisLabel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`;
+
+export const XAxisGeneName = styled.div`
+  ${selectedStyle}
 `;
 
 export const GeneButtonStyle = styled.button`

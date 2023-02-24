@@ -15,6 +15,7 @@ import {
   XAxisContainer,
   XAxisLabel,
   GeneButtonStyle,
+  XAxisGeneName,
 } from "./style";
 
 interface Props {
@@ -57,7 +58,7 @@ function GeneButton({
         setHideTrashClass("hide-gene-delete");
       }}
     >
-      <XAxisLabel active={genesToDelete.includes(geneName)} font={currentFont}>
+      <XAxisLabel>
         <div
           data-test-id={"gene-delete-button"}
           onClick={() => {
@@ -73,7 +74,12 @@ function GeneButton({
             className={hideTrash}
           ></Icon>
         </div>
-        <div>{formattedLabel}</div>
+        <XAxisGeneName
+          active={genesToDelete.includes(geneName)}
+          font={currentFont}
+        >
+          {formattedLabel}
+        </XAxisGeneName>
       </XAxisLabel>
     </GeneButtonStyle>
   );
