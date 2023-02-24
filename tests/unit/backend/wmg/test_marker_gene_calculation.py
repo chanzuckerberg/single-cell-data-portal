@@ -33,13 +33,13 @@ class MarkerGeneCalculationTest(unittest.TestCase):
 
             test_sum_target = list(target_agg.sum(0))
             # check that returned dataframe is correct
-            expected_sum_target = [34725.328125, 103803.515625, 13914.0, 13777.0]
+            expected_sum_target = [32572.15625, 97146.5, 13156.0, 13021.0]
             for i in range(len(test_sum_target)):
                 assert abs(test_sum_target[i] - expected_sum_target[i]) < 0.05
 
             test_sum_context = list(context_agg.sum(0))
             # check that returned dataframe is correct
-            expected_sum_context = [25811448.0, 54070508.0, 14401558.0, 13712079.0]
+            expected_sum_context = [23079666.0, 46338608.0, 13278406.0, 12609452.0]
             for i in range(len(test_sum_context)):
                 assert abs(test_sum_context[i] - expected_sum_context[i]) < 0.05
 
