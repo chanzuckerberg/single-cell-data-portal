@@ -30,12 +30,16 @@ export const XAxisWrapper = styled.div`
 
 export const XAxisLabel = styled.div`
   ${selectedStyle}
+  height: 100%;
   width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
   text-orientation: sideways;
   writing-mode: vertical-rl;
   display: inline-block;
   user-select: none;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 export const GeneButtonStyle = styled.button`
@@ -48,6 +52,10 @@ export const GeneButtonStyle = styled.button`
   align-items: end;
   white-space: nowrap;
   overflow: hidden;
+
+  .hide-gene-delete {
+    visibility: hidden;
+  }
 `;
 
 // adjust the left position of CellCountLabel by -20 to center it properly

@@ -7,6 +7,15 @@ import { CellTypeMetadata } from "../../components/HeatMap/utils";
 import { CellType, Tissue } from "../types";
 import { AddCellInfoCellTypePayload, REDUCERS, State } from "./reducer";
 
+export function deleteSingleGene(
+  geneToDelete: string
+): GetActionTypeOfReducer<typeof REDUCERS["deleteSingleGene"]> {
+  return {
+    payload: geneToDelete,
+    type: "deleteSingleGene",
+  };
+}
+
 export function deleteSelectedGenesAndSelectedCellTypeIds(): GetActionTypeOfReducer<
   typeof REDUCERS["deleteSelectedGenesAndSelectedCellTypeIds"]
 > {
