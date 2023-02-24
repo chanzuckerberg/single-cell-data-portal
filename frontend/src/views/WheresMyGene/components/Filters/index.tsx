@@ -288,15 +288,11 @@ function TooltipWrapper({
   areFiltersDisabled: boolean;
   children: ReactElement;
 }) {
-  if (areFiltersDisabled) {
-    return (
-      <Tooltip title="Please select an organism, tissue and at least one gene to use these filters.">
-        {children}
-      </Tooltip>
-    );
-  }
+  const title = areFiltersDisabled
+    ? "Please select an organism, tissue and at least one gene to use these filters."
+    : null;
 
-  return <>{children}</>;
+  return <Tooltip title={title}>{children}</Tooltip>;
 }
 
 function getOptionSelected(
