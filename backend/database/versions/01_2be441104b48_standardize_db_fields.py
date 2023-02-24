@@ -1,15 +1,15 @@
 """standardize db fields
 
-Revision ID: 34_2be441104b48
-Revises: 33_c5aaf6e2ca9e
+Revision ID: 01_2be441104b48
+Revises: 00_c5aaf6e2ca9e
 Create Date: 2023-01-09 16:40:13.184800
 
 """
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "34_2be441104b48"
-down_revision = "33_c5aaf6e2ca9e"
+revision = "01_2be441104b48"
+down_revision = "00_c5aaf6e2ca9e"
 branch_labels = None
 depends_on = None
 
