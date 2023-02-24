@@ -39,7 +39,7 @@ export default function ShareButton(): JSX.Element {
       icon: IconNames.LINK,
       intent: Intent.PRIMARY,
       message: "Share link copied",
-      timeout: 8000,
+      timeout: 1000,
     });
   }, [selectedFilters, selectedTissues, selectedGenes, dispatch]);
 
