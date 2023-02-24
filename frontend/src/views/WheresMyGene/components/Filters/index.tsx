@@ -219,7 +219,14 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   );
 
   return (
-    <TooltipWrapper areFiltersDisabled={areFiltersDisabled}>
+    <Tooltip
+      title={
+        "Please select an organism, tissue and at least one gene to use these filters."
+      }
+      // (thuang): We need to disable the tooltip when filters are enabled
+      disableHoverListener={!areFiltersDisabled}
+      disableFocusListener={!areFiltersDisabled}
+    >
       <Wrapper>
         <div>
           <StyledComplexFilter
@@ -275,25 +282,16 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
 
         <Organism isLoading={isLoading} />
 
+        {/* DEBUG */}
+        {/* DEBUG */}
+        {/* DEBUG */}
+        <Foo />
+
         <Sort areFiltersDisabled={areFiltersDisabled} />
       </Wrapper>
-    </TooltipWrapper>
+    </Tooltip>
   );
 });
-
-function TooltipWrapper({
-  areFiltersDisabled,
-  children,
-}: {
-  areFiltersDisabled: boolean;
-  children: ReactElement;
-}) {
-  const title = areFiltersDisabled
-    ? "Please select an organism, tissue and at least one gene to use these filters."
-    : null;
-
-  return <Tooltip title={title}>{children}</Tooltip>;
-}
 
 function getOptionSelected(
   option: { id: string },
@@ -310,4 +308,15 @@ function sortOptions(a: DefaultMenuSelectOption, b: DefaultMenuSelectOption) {
     return 1;
   }
   return 0;
+}
+
+// DEBUG
+// DEBUG
+// DEBUG
+function Foo() {
+  useMemo(() => {
+    console.log("----------Foo calculating...");
+  }, []);
+
+  return null;
 }
