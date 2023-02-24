@@ -1,7 +1,6 @@
 import { Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { Tooltip } from "czifui";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
@@ -13,7 +12,7 @@ import {
 } from "src/views/WheresMyGene/common/store";
 import { StyledButtonIcon } from "../QuickSelect/style";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveImage";
-import { StyledButtonDiv, StyledLabel, StyledNotification } from "./style";
+import { StyledButtonDiv, StyledLabel } from "./style";
 import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
 
 export default function ShareButton(): JSX.Element {
