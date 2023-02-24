@@ -1,5 +1,7 @@
 import { Icon } from "czifui";
 import React, { useContext, useEffect, useState } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { deleteSingleGene } from "src/views/WheresMyGene/common/store/actions";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
@@ -62,6 +64,8 @@ function GeneButton({
         <div
           data-test-id={"gene-delete-button"}
           onClick={() => {
+            track(EVENTS.WMG_DELETE_GENE, { gene: geneName });
+
             if (dispatch) {
               dispatch(deleteSingleGene(geneName));
             }
