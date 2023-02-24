@@ -1,0 +1,1 @@
+  [38;5;45;1mpw:api [0m  selector resolved to visible <button data-test-id="cell-type-label" class="css-1rgkql…>native cell</button> [38;5;45m+28ms[0m
