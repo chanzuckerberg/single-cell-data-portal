@@ -16,6 +16,7 @@ import {
   MenuSelect,
   SDSTheme,
 } from "czifui";
+import { pull, uniq } from "lodash";
 
 import React, {
   createContext,
@@ -170,23 +171,16 @@ export default function QuickSelect<
       : (event: React.KeyboardEvent<HTMLInputElement>) => {
           if (event.key === "Enter" && hasComma) {
             event.preventDefault();
-            // DEBUG DEBUG DEBUG
-            // DEBUG DEBUG DEBUG
-            // DEBUG DEBUG DEBUG
-            // DEBUG DEBUG DEBUG
-            // DEBUG DEBUG DEBUG
-            // const newSelected = [...(selected as T[])];
-            // const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
+            const newSelected = [...(selected as T[])];
+            const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
 
-            // parsedPaste.map((item) => {
-            //   const newItem = itemsByName.get(item.toLowerCase());
-            //   if (!newItem) {
-            //     onItemNotFound(item);
-            //   } else if (!newSelected.includes(newItem))
-            //     newSelected.push(newItem);
-            // });
-
-            const newSelected = [...itemsByName.values()].slice(0, 2500);
+            parsedPaste.map((item) => {
+              const newItem = itemsByName.get(item.toLowerCase());
+              if (!newItem) {
+                onItemNotFound(item);
+              } else if (!newSelected.includes(newItem))
+                newSelected.push(newItem);
+            });
 
             setOpen(false);
 

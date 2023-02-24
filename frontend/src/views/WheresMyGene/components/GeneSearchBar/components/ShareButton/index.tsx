@@ -2,6 +2,8 @@ import { Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { Tooltip } from "czifui";
 import { useCallback, useContext, useEffect, useState } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import { isSSR } from "src/common/utils/isSSR";
 import Toast from "src/views/Collection/components/Toast";
@@ -24,6 +26,15 @@ export default function ShareButton(): JSX.Element {
   const copyShareUrl = useCallback(() => {
     if (!dispatch) return;
     generateAndCopyShareUrl(selectedFilters, selectedTissues, selectedGenes);
+    track(EVENTS.WMG_SHARE_CLICKED, {
+      tissues: selectedTissues,
+      genes: selectedGenes,
+      dataset_filter: selectedFilters.datasets,
+      disease_filter: selectedFilters.diseases,
+      self_reported_ethnicity_filter: selectedFilters.ethnicities,
+      sex_filter: selectedFilters.sexes,
+      group_by_option: null, //TODO: add group by filter when work is completed
+    });
     // setShowURLCopyNotification((prev) => prev + 1);
     Toast.show({
       icon: IconNames.LINK,

@@ -22,7 +22,6 @@ export const generateAndCopyShareUrl = (
   url.searchParams.set("tissues", tissues.join("-"));
   url.searchParams.set("genes", genes.join("-"));
 
-  console.log("length", url.toString().length);
   // Copy the URL to the clipboard
   navigator.clipboard.writeText(url.toString());
 };
