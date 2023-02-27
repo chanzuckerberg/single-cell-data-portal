@@ -1,7 +1,7 @@
 """adding revised_at for collections
 
-Revision ID: 35_0a5021e09eff
-Revises: 34_2be441104b48
+Revision ID: 02_0a5021e09eff
+Revises: 01_2be441104b48
 Create Date: 2023-01-30 11:31:09.335634
 
 """
@@ -9,8 +9,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "35_0a5021e09eff"
-down_revision = "34_2be441104b48"
+revision = "02_0a5021e09eff"
+down_revision = "01_2be441104b48"
 branch_labels = None
 depends_on = None
 
