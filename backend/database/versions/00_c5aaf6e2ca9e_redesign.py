@@ -1,7 +1,6 @@
 """redesign
 
-Revision ID: 33_c5aaf6e2ca9e
-Revises: 32_c27083d1a76d
+Revision ID: 00_c5aaf6e2ca9e
 Create Date: 2023-01-05 16:06:27.723131
 
 """
@@ -10,8 +9,8 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "33_c5aaf6e2ca9e"
-down_revision = "32_c27083d1a76d"
+revision = "00_c5aaf6e2ca9e"
+down_revision = None
 branch_labels = None
 depends_on = None
 
