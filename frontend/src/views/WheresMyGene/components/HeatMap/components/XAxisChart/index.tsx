@@ -27,7 +27,6 @@ interface Props {
 function GeneButton({
   geneName,
   genesToDelete,
-  handleGeneClick,
 }: {
   geneName: string;
   genesToDelete: string[];
