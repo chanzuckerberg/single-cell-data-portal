@@ -43,35 +43,36 @@ def query():
                 default = False
                 break
 
-    expression_summary = q.expression_summary_default(criteria) if default else q.expression_summary(criteria)
-    cell_counts = q.cell_counts(criteria)
+        expression_summary = q.expression_summary_default(criteria) if default else q.expression_summary(criteria)
 
-    if compare:
-        group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare]
-    else:
-        group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id"]
+        cell_counts = q.cell_counts(criteria)
 
-    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts, group_by_terms)
-    if is_rollup:
-        dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
+        if compare:
+            group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare]
+        else:
+            group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id"]
 
-    response_filter_dims_values = (
-        build_filter_dims_values(criteria, snapshot, cell_counts) if include_filter_dims else {}
-    )
+        dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts, group_by_terms)
+        if is_rollup:
+            dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
-    return jsonify(
-        dict(
-            snapshot_id=snapshot.snapshot_identifier,
-            expression_summary=build_expression_summary(dot_plot_matrix_df, compare),
-            term_id_labels=dict(
-                genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
-                cell_types=build_ordered_cell_types_by_tissue(
-                    cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings, compare, group_by_terms
-                ),
-            ),
-            filter_dims=response_filter_dims_values,
+        response_filter_dims_values = (
+            build_filter_dims_values(criteria, snapshot, cell_counts) if include_filter_dims else {}
         )
-    )
+        response = jsonify(
+            dict(
+                snapshot_id=snapshot.snapshot_identifier,
+                expression_summary=build_expression_summary(dot_plot_matrix_df, compare),
+                term_id_labels=dict(
+                    genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
+                    cell_types=build_ordered_cell_types_by_tissue(
+                        cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings, compare, group_by_terms
+                    ),
+                ),
+                filter_dims=response_filter_dims_values,
+            )
+        )
+    return response
 
 
 def markers():
