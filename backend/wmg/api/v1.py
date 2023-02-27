@@ -37,7 +37,7 @@ def query():
     with ServerTiming.time("query and build response"):
         snapshot: WmgSnapshot = load_snapshot()
         q = WmgQuery(snapshot)
-        default = snapshot.expression_summary_default_cube is not None
+        default = snapshot.expression_summary_default_cube is not None and compare is None
         for dim in criteria.dict():
             if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
                 default = False
@@ -52,7 +52,9 @@ def query():
         else:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id"]
 
-        dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts, group_by_terms)
+        dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(
+            expression_summary, cell_counts, group_by_terms
+        )
         if is_rollup:
             dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
@@ -115,7 +117,7 @@ def find_dimension_id(compare: str) -> str:
     elif compare == "disease":
         return "disease_ontology_term_id"
     else:
-        return ""
+        return None
 
 
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
