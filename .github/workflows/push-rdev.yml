@@ -46,5 +46,5 @@ jobs:
       - name: Create Summary With Happy Commands
         run: |
           echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
-          echo "* `happy create <stack-name> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag`" >> $GITHUB_STEP_SUMMARY
-          echo "* `happy update <stack-name> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag`" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy create <_stack-name_> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy update <_stack-name_> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
