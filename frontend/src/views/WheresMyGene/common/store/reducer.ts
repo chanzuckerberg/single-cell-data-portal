@@ -112,7 +112,6 @@ function deleteSingleGene(
 
   const newSelectedGenes = deleteByItems<State["selectedGenes"][number]>(
     selectedGenes,
-    // eslint-disable-next-line prettier/prettier
     [action.payload]
   );
 
