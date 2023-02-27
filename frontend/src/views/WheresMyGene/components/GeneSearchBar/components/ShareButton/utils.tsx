@@ -43,8 +43,8 @@ export const loadStateFromQueryParams = (
   params: URLSearchParams,
   selectedFilters: State["selectedFilters"],
   dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>
-): boolean => {
-  if (isSSR()) return false;
+): LoadStateFromURLPayload | null => {
+  if (isSSR()) return null;
 
   const paramsToRemove = [];
 
@@ -76,7 +76,7 @@ export const loadStateFromQueryParams = (
     newSelectedTissues.length === 0 &&
     newSelectedGenes.length === 0
   )
-    return false;
+    return null;
 
   removeParams(paramsToRemove);
 
@@ -87,5 +87,9 @@ export const loadStateFromQueryParams = (
       genes: newSelectedGenes,
     })
   );
-  return true;
+  return {
+    filters: newSelectedFilters,
+    tissues: newSelectedTissues,
+    genes: newSelectedGenes,
+  };
 };

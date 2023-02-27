@@ -49,7 +49,22 @@ export default function ShareButton(): JSX.Element {
     const params = new URLSearchParams(search);
     if (params) {
       // If we later want to display a toast on successful load from url, this function returns true/false
-      loadStateFromQueryParams(params, selectedFilters, dispatch);
+      const loadedState = loadStateFromQueryParams(
+        params,
+        selectedFilters,
+        dispatch
+      );
+      if (loadedState) {
+        track(EVENTS.WMG_SHARE_LOADED, {
+          tissues: loadedState.tissues,
+          genes: loadedState.genes,
+          dataset_filter: loadedState.filters.datasets,
+          disease_filter: loadedState.filters.diseases,
+          self_reported_ethnicity_filter: loadedState.filters.ethnicities,
+          sex_filter: loadedState.filters.sexes,
+          group_by_option: null, //TODO: add group by filter when work is completed
+        });
+      }
     }
   }, [isLoadingFilterDims, dispatch, selectedFilters]);
 
