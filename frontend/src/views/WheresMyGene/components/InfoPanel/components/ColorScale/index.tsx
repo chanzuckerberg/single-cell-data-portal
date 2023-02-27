@@ -51,10 +51,10 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { sortBy } = useContext(StateContext);
 
-  const colorScaledOptionLabel = useMemo(() => {
+  const colorScaledOption = useMemo(() => {
     return (
-      COLOR_SCALE_OPTIONS.find((option) => option.id === sortBy.scaled)?.name ||
-      COLOR_SCALE_OPTIONS[0].name
+      COLOR_SCALE_OPTIONS.find((option) => option.id === sortBy.scaled) ||
+      COLOR_SCALE_OPTIONS[0]
     );
   }, [sortBy]);
 
@@ -73,9 +73,10 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
       <StyledDropdown
         data-test-id="color-scale-dropdown"
         onChange={colorScaleOnChange}
-        label={colorScaledOptionLabel}
+        label={colorScaledOption.name}
         options={COLOR_SCALE_OPTIONS}
         InputDropdownProps={DEFAULT_INPUT_DROPDOWN_PROPS}
+        value={colorScaledOption}
       />
     </Wrapper>
   );
