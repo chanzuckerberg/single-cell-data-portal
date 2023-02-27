@@ -1,5 +1,6 @@
 import os
 import unittest
+import uuid
 from datetime import datetime
 from unittest.mock import Mock, patch
 from uuid import uuid4
@@ -25,6 +26,7 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     CollectionVersionWithDatasets,
     DatasetArtifactType,
+    DatasetId,
     DatasetMetadata,
     DatasetProcessingStatus,
     DatasetUploadStatus,
@@ -807,6 +809,31 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         datasets = list(self.business_logic.get_all_published_datasets())
         self.assertEqual(2, len(datasets))
         self.assertCountEqual([d.version_id for d in datasets], [d.version_id for d in published_version.datasets])
+
+    def test_get_dataset_version_from_canonical(self):
+        """
+        Get currently published dataset version using canonical dataset ID, or most recently created unpublished dataset
+        if none are published.
+        """
+        with self.subTest("Dataset is published with a revision open, get published dataset version"):
+            published_version = self.initialize_published_collection()
+            published_dataset = list(self.business_logic.get_all_published_datasets())[0]
+            self.business_logic.create_collection_version(published_version.collection_id)
+
+            dataset_version = self.business_logic.get_dataset_version_from_canonical(published_dataset.dataset_id)
+            self.assertEqual(dataset_version.version_id, published_dataset.version_id)
+        with self.subTest("Dataset has never been published, get latest unpublished version"):
+            unpublished_collection = self.initialize_unpublished_collection()
+            init_dataset = unpublished_collection.datasets[0]
+            new_dataset = self.database_provider.replace_dataset_in_collection_version(
+                unpublished_collection.version_id, init_dataset.version_id
+            )
+
+            dataset_version = self.business_logic.get_dataset_version_from_canonical(init_dataset.dataset_id)
+            self.assertEqual(dataset_version.version_id, new_dataset.version_id)
+        with self.subTest("Dataset does not exist"):
+            dataset_version = self.business_logic.get_dataset_version_from_canonical(DatasetId(str(uuid.uuid4())))
+            self.assertIsNone(dataset_version)
 
     def test_get_dataset_artifacts_ok(self):
         """
