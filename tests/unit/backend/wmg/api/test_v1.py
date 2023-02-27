@@ -19,11 +19,11 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     exclude_all_but_one_gene_per_organism,
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
-    load_test_fmg_snapshot,
+    load_realistic_test_snapshot,
     reverse_cell_type_ordering,
 )
 
-TEST_SNAPSHOT = "test-fmg-snapshot"
+TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
 class WmgApiV1Tests(unittest.TestCase):
@@ -893,7 +893,7 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__markers_returns_200_and_correct_response(self, load_snapshot, ontology_term_label, gene_term_label):
-        with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
+        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
             load_snapshot.return_value = snapshot
@@ -922,13 +922,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 1.8833003044128418},
                     {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7571982145309448},
                     {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.569277048110962},
-                    {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.4363346099853516},
                     {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4011939764022827},
                     {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.1657075881958008},
                     {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 0.9537287950515747},
                     {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4246297776699066},
+                    {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 0.39793750643730164},
                 ],
-                "snapshot_id": "test-fmg-snapshot",
+                "snapshot_id": "realistic-test-snapshot",
             }
             self.assertDictEqual(received, expected)
             self.assertEqual(200, response.status_code)
@@ -939,7 +939,7 @@ class WmgApiV1Tests(unittest.TestCase):
     def test__markers_returns_200_and_empty_dictionary_for_bad_celltypes(
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
-        with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
+        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
             load_snapshot.return_value = snapshot
@@ -961,7 +961,7 @@ class WmgApiV1Tests(unittest.TestCase):
             response = self.app.post("/wmg/v1/markers", json=request)
             received = json.loads(response.data)
 
-            expected = {"marker_genes": [], "snapshot_id": "test-fmg-snapshot"}
+            expected = {"marker_genes": [], "snapshot_id": "realistic-test-snapshot"}
             self.assertDictEqual(received, expected)
             self.assertEqual(200, response.status_code)
 
