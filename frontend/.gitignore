@@ -59,6 +59,7 @@ typings/
 
 # configs
 src/configs/configs.js
+runtime_configs/current_config
 
 # Mac files
 .DS_Store

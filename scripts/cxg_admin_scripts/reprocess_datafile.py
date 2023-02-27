@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from time import sleep, time
+from time import time
 
 import boto3
 import click
@@ -10,12 +10,6 @@ from click import Context
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
-
-from urllib.parse import urlparse
-
-from backend.common.corpora_orm import DatasetArtifactFileType, DbDataset
-from backend.common.entities.dataset import Dataset
-from backend.common.utils.db_session import db_session_manager
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -38,49 +32,7 @@ def get_happy_stack_name(deployment) -> str:
 
 def cxg_remaster(ctx):
     """Cxg remaster v2"""
-
-    with db_session_manager() as session:
-        click.confirm(
-            "Are you sure you want to remaster all the cxgs?",
-            abort=True,
-        )
-
-        client = boto3.client("stepfunctions")
-
-        for record in session.query(DbDataset):
-            if not record.tombstone:
-                dataset = Dataset.get(session, dataset_id=record.id)
-                artifacts = [a.s3_uri for a in dataset.artifacts if a.filetype == DatasetArtifactFileType.CXG]
-                if len(artifacts) > 0:
-                    cxg = artifacts[0]
-
-                    p = urlparse(cxg)
-                    bucket = p.hostname
-                    dataset_id = p.path.strip("/").strip(".cxg")
-
-                    if dataset_id == "2e5273bd-aa36-4478-8f6f-62fa0abcea43":
-                        continue
-
-                    if bucket != "hosted-cellxgene-dev":
-                        continue
-
-                    print(bucket, dataset_id)
-
-                    input = {"dataset_id": dataset_id}
-
-                    aws_account_id = get_aws_account_id()
-                    deployment = ctx.obj["deployment"]
-                    happy_stack_name = get_happy_stack_name(deployment)
-
-                    response = client.start_execution(
-                        stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-"
-                        f"{happy_stack_name}-cxg-remaster-v2-sfn",
-                        name=f"{dataset_id}-{int(time())}",
-                        input=json.dumps(input),
-                    )
-
-                    print(response["executionArn"])
-                    sleep(1)
+    pass
 
 
 def reprocess_seurat(ctx: Context, dataset_id: str) -> None:

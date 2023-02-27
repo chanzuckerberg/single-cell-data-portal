@@ -4,12 +4,12 @@ import uuid
 from dataclasses import asdict
 from unittest.mock import Mock, patch
 
-from backend.common.corpora_orm import CollectionVisibility
 from backend.common.utils.api_key import generate
 from backend.curation.api.v1.curation.collections.common import EntityColumns
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersion,
+    CollectionVisibility,
     DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetStatusKey,
@@ -857,9 +857,14 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertEqual("PIPELINE_FAILURE", actual_dataset["processing_status"])
 
     def test__get_nonexistent_collection__403(self):
-        non_existent_id = str(uuid.uuid4())
-        res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
-        self.assertEqual(403, res.status_code)
+        with self.subTest("UUID input valid, but not found"):
+            non_existent_id = str(uuid.uuid4())
+            res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
+            self.assertEqual(403, res.status_code)
+        with self.subTest("UUID input invalid"):
+            non_existent_id = "123-example-fake-uuid"
+            res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
+            self.assertEqual(403, res.status_code)
 
     def test__get_tombstoned_collection__403(self):
         collection_version = self.generate_published_collection()
@@ -1133,6 +1138,30 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(original_collection["doi"], original_collection_unchanged["doi"])
 
+    def test__update_collection__links_None_does_not_remove_publisher_metadata(self):
+        links = [
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
+        ]
+
+        mock_publisher_metadata = generate_mock_publisher_metadata()
+        self.crossref_provider.fetch_metadata = Mock(return_value=mock_publisher_metadata)
+
+        collection = self.generate_collection(links=links, visibility="PRIVATE")
+        collection_id = collection.collection_id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertIsNotNone(original_collection["publisher_metadata"])
+
+        metadata = {"name": "new collection title"}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        updated_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertIsNotNone(updated_collection["publisher_metadata"])
+        self.assertEqual(updated_collection["links"], original_collection["links"])
+
     def test__update_collection__doi_does_not_exist__BAD_REQUEST(self):
         links = [
             {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
@@ -1336,18 +1365,30 @@ class TestGetDatasets(BaseAPIPortalTest):
 
     def test_get_nonexistent_dataset_404(self):
         collection = self.generate_unpublished_collection()
-        non_existent_dataset_id = str(uuid.uuid4())
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{non_existent_dataset_id}"
-        response = self.app.get(test_url)
-        self.assertEqual(404, response.status_code)
+        with self.subTest("UUID input valid, but not found"):
+            non_existent_dataset_id = str(uuid.uuid4())
+            test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{non_existent_dataset_id}"
+            response = self.app.get(test_url)
+            self.assertEqual(404, response.status_code)
+        with self.subTest("UUID input invalid"):
+            non_existent_dataset_id = "123-example-fake-uuid"
+            test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{non_existent_dataset_id}"
+            response = self.app.get(test_url)
+            self.assertEqual(404, response.status_code)
 
     def test_get_datasets_nonexistent_collection_404(self):
-        non_existent_dataset_id = str(uuid.uuid4())
-        non_existent_collection_id = str(uuid.uuid4())
-        test_url = f"/curation/v1/collections/{non_existent_collection_id}/datasets/{non_existent_dataset_id}"
-        headers = self.make_owner_header()
-        response = self.app.get(test_url, headers=headers)
-        self.assertEqual(404, response.status_code)
+        with self.subTest("UUID input valid, but not found"):
+            non_existent_id = str(uuid.uuid4())
+            test_url = f"/curation/v1/collections/{non_existent_id}/datasets/{non_existent_id}"
+            headers = self.make_owner_header()
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
+        with self.subTest("UUID input invalid"):
+            non_existent_id = "123-example-fake-uuid"
+            test_url = f"/curation/v1/collections/{non_existent_id}/datasets/{non_existent_id}"
+            headers = self.make_owner_header()
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
 
 
 class TestPostDataset(BaseAPIPortalTest):
@@ -1356,11 +1397,18 @@ class TestPostDataset(BaseAPIPortalTest):
     """
 
     def test_post_datasets_nonexistent_collection_403(self):
-        non_existent_collection_id = str(uuid.uuid4())
-        test_url = f"/curation/v1/collections/{non_existent_collection_id}/datasets"
-        headers = self.make_owner_header()
-        response = self.app.post(test_url, headers=headers)
-        self.assertEqual(403, response.status_code)
+        with self.subTest("UUID input valid, but not found"):
+            non_existent_collection_id = str(uuid.uuid4())
+            test_url = f"/curation/v1/collections/{non_existent_collection_id}/datasets"
+            headers = self.make_owner_header()
+            response = self.app.post(test_url, headers=headers)
+            self.assertEqual(403, response.status_code)
+        with self.subTest("UUID input invalid"):
+            non_existent_collection_id = "123-example-fake-uuid"
+            test_url = f"/curation/v1/collections/{non_existent_collection_id}/datasets"
+            headers = self.make_owner_header()
+            response = self.app.post(test_url, headers=headers)
+            self.assertEqual(403, response.status_code)
 
     def test_post_datasets_with_collection_201(self):
         collection = self.generate_unpublished_collection()

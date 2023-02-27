@@ -9,11 +9,14 @@ import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "gene-labels";
-const CELL_TYPE_LABELS_ID = "cell-type-labels";
+const CELL_TYPE_LABELS_ID = "cell-type-name";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
+
+const MUI_CHIP_ROOT = ".MuiChip-root";
+const FILTERS_PANEL_NOT_FOUND = "Filters panel not found";
 
 const { describe, skip } = test;
 
@@ -93,19 +96,13 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstOption(page);
 
-    await tryUntil(
-      async () => {
-        const heatmap = await page.$$("#blood-chart svg");
-        await expect(heatmap.length).not.toBe(0);
-      },
-      { page }
-    );
+    await waitForHeatmapToRender(page);
 
     const sexSelector = await getSexSelector();
 
     if (!sexSelector) throw Error("No sexSelector found");
 
-    const selectedSexesBefore = await sexSelector.$$(".MuiChip-root");
+    const selectedSexesBefore = await sexSelector.$$(MUI_CHIP_ROOT);
 
     await expect(selectedSexesBefore.length).toBe(0);
 
@@ -113,7 +110,7 @@ describe("Where's My Gene", () => {
 
     await selectFirstOption(page);
 
-    const selectedSexesAfter = await sexSelector.$$(".MuiChip-root");
+    const selectedSexesAfter = await sexSelector.$$(MUI_CHIP_ROOT);
 
     await expect(selectedSexesAfter.length).toBe(1);
 
@@ -125,7 +122,7 @@ describe("Where's My Gene", () => {
       const filtersPanel = await getFiltersPanel();
 
       if (!filtersPanel) {
-        throw Error("Filters panel not found");
+        throw Error(FILTERS_PANEL_NOT_FOUND);
       }
 
       return filtersPanel.$("*css=div >> text=Sex");
@@ -135,7 +132,7 @@ describe("Where's My Gene", () => {
       const filtersPanel = await getFiltersPanel();
 
       if (!filtersPanel) {
-        throw Error("Filters panel not found");
+        throw Error(FILTERS_PANEL_NOT_FOUND);
       }
 
       await filtersPanel.$("*css=div >> text=Sex");
@@ -163,13 +160,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstOption(page);
 
-    await tryUntil(
-      async () => {
-        const heatmap = await page.$$("#blood-chart svg");
-        expect(heatmap.length).not.toBe(0);
-      },
-      { page }
-    );
+    await waitForHeatmapToRender(page);
     await clickUntilSidebarShowsUp(getSourceDataButton, page);
     await expect(page).toHaveSelector(
       getText(
@@ -198,16 +189,14 @@ describe("Where's My Gene", () => {
           const filtersPanel = await getFiltersPanel();
 
           if (!filtersPanel) {
-            throw Error("Filters panel not found");
+            throw Error(FILTERS_PANEL_NOT_FOUND);
           }
 
           return filtersPanel.$("*css=button >> text=Dataset");
         }
         const datasetSelector = await getDatasetSelector();
         if (!datasetSelector) throw Error("No datasetSelector found");
-        const selectedDatasetsBefore = await datasetSelector.$$(
-          ".MuiChip-root"
-        );
+        const selectedDatasetsBefore = await datasetSelector.$$(MUI_CHIP_ROOT);
         await expect(selectedDatasetsBefore.length).toBe(0);
         await clickUntilOptionsShowUp(getDatasetSelector, page);
         await selectFirstOption(page);
@@ -244,8 +233,6 @@ describe("Where's My Gene", () => {
     const GENE_COUNT = 3;
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const texts = await page.getByRole("option").allTextContents();
-    const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(TISSUE_COUNT, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
@@ -257,7 +244,7 @@ describe("Where's My Gene", () => {
     );
 
     const beforeCellTypeNames = await getNames(
-      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
+      `${getTestID(CELL_TYPE_LABELS_ID)}`,
       page
     );
 
@@ -285,7 +272,7 @@ describe("Where's My Gene", () => {
     );
 
     const afterCellTypeNames = await getNames(
-      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
+      `${getTestID(CELL_TYPE_LABELS_ID)}`,
       page
     );
 
@@ -301,7 +288,7 @@ describe("Where's My Gene", () => {
     );
   });
 
-  test("delete genes and cell types", async ({ page }) => {
+  test("delete genes", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     async function getTissueSelectorButton() {
@@ -313,32 +300,19 @@ describe("Where's My Gene", () => {
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const texts = await page.getByRole("option").allTextContents();
-    const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(1, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstNOptions(3, page);
 
-    await tryUntil(
-      async () => {
-        const heatmap = await page.$$("#blood-chart svg");
-        await expect(heatmap.length).not.toBe(0);
-      },
-      { page }
-    );
+    await waitForHeatmapToRender(page);
 
     const beforeGeneNames = await getNames(
       `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
-    const beforeCellTypeNames = await getNames(
-      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
-      page
-    );
 
     await page.click(getText(beforeGeneNames[0]));
-    await page.click(getText(beforeCellTypeNames[0]));
 
     await tryUntil(
       async () => {
@@ -349,48 +323,9 @@ describe("Where's My Gene", () => {
           `${getTestID(GENE_LABELS_ID)} button`,
           page
         );
-        const afterCellTypeNames = await getNames(
-          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
-          page
-        );
 
         expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
-
-        // (thuang): Sometimes when API response is slow, we'll not capture all the
-        // cell type names, so a sanity check that we expect at least 100 names
-        expect(beforeCellTypeNames.length).toBeGreaterThan(100);
-        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length - 1);
-
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
-        expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
-      },
-      { page }
-    );
-
-    const RESET_CELL_TYPES_BUTTON_ID = "reset-cell-types";
-
-    await tryUntil(
-      async () => {
-        await page.click(getTestID(RESET_CELL_TYPES_BUTTON_ID));
-
-        const resetCellTypesButton = await page.$(
-          getTestID(RESET_CELL_TYPES_BUTTON_ID)
-        );
-
-        expect(resetCellTypesButton).toBe(null);
-      },
-      { page }
-    );
-
-    await tryUntil(
-      async () => {
-        const afterCellTypeNames = await getNames(
-          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
-          page
-        );
-
-        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length);
-        expect(afterCellTypeNames).toEqual(beforeCellTypeNames);
       },
       { page }
     );
@@ -496,4 +431,14 @@ async function selectNthOption(number: number, page: Page) {
 
   await page.keyboard.press("Enter");
   await page.keyboard.press("Escape");
+}
+
+async function waitForHeatmapToRender(page: Page) {
+  await tryUntil(
+    async () => {
+      const canvases = await page.$$("canvas");
+      await expect(canvases.length).not.toBe(0);
+    },
+    { page }
+  );
 }

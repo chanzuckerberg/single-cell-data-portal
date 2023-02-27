@@ -8,7 +8,6 @@ import {
 import isEqual from "lodash/isEqual";
 import {
   memo,
-  ReactElement,
   useCallback,
   useContext,
   useEffect,
@@ -42,6 +41,27 @@ const filterOptions = createFilterOptions({
 const DropdownMenuProps = {
   filterOptions,
   getOptionSelected,
+};
+
+const ANALYTIC_MAPPING: {
+  [key in keyof IFilters]: { eventName: EVENTS; label: string };
+} = {
+  datasets: {
+    eventName: EVENTS.FILTER_SELECT_DATASET,
+    label: "dataset_name",
+  },
+  diseases: {
+    eventName: EVENTS.FILTER_SELECT_DISEASE,
+    label: "disease",
+  },
+  ethnicities: {
+    eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
+    label: "ethnicity",
+  },
+  sexes: {
+    eventName: EVENTS.FILTER_SELECT_SEX,
+    label: "gender",
+  },
 };
 
 export interface Props {
@@ -131,27 +151,6 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
   }, [sex_terms, sexes]);
 
-  const analyticMapping: {
-    [key in keyof IFilters]: { eventName: EVENTS; label: string };
-  } = {
-    datasets: {
-      eventName: EVENTS.FILTER_SELECT_DATASET,
-      label: "dataset_name",
-    },
-    diseases: {
-      eventName: EVENTS.FILTER_SELECT_DISEASE,
-      label: "disease",
-    },
-    ethnicities: {
-      eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
-      label: "ethnicity",
-    },
-    sexes: {
-      eventName: EVENTS.FILTER_SELECT_SEX,
-      label: "gender",
-    },
-  };
-
   const handleFilterChange = useCallback(
     function handleFilterChange_(
       key: keyof IFilters
@@ -178,7 +177,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         // If there are newly selected filters, send an analytic event for each of them
         if (newlySelected.length) {
           newlySelected.forEach((selected) => {
-            const { eventName, label } = analyticMapping[key]!;
+            const { eventName, label } = ANALYTIC_MAPPING[key]!;
             track(eventName, {
               [label]: selected.name,
             });
@@ -219,7 +218,14 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   );
 
   return (
-    <TooltipWrapper>
+    <Tooltip
+      title={
+        "Please select an organism, tissue and at least one gene to use these filters."
+      }
+      // (thuang): We need to disable the tooltip when filters are enabled
+      disableHoverListener={!areFiltersDisabled}
+      disableFocusListener={!areFiltersDisabled}
+    >
       <Wrapper>
         <div>
           <StyledComplexFilter
@@ -277,20 +283,8 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
 
         <Sort areFiltersDisabled={areFiltersDisabled} />
       </Wrapper>
-    </TooltipWrapper>
+    </Tooltip>
   );
-
-  function TooltipWrapper({ children }: { children: ReactElement }) {
-    if (areFiltersDisabled) {
-      return (
-        <Tooltip title="Please select an organism, tissue and at least one gene to use these filters.">
-          {children}
-        </Tooltip>
-      );
-    }
-
-    return <>{children}</>;
-  }
 });
 
 function getOptionSelected(
