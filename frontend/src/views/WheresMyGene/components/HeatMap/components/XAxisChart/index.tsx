@@ -51,7 +51,6 @@ function GeneButton({
 
   return (
     <GeneButtonStyle
-      onClick={() => handleGeneClick(geneName)}
       data-test-id={`gene-label-${geneName}`}
       onMouseEnter={() => {
         setHideTrashClass("");
