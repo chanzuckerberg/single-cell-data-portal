@@ -162,6 +162,7 @@ def load_test_fmg_snapshot(snapshot_name: str) -> WmgSnapshot:
             cell_type_orderings=None,
             primary_filter_dimensions=None,
             dataset_to_gene_ids=dataset_to_gene_ids,
+            filter_relationships={},
         )
 
 
@@ -198,6 +199,7 @@ def create_temp_wmg_snapshot(
                 cell_type_orderings=cell_type_orderings,
                 primary_filter_dimensions=primary_filter_dimensions,
                 dataset_to_gene_ids=None,
+                filter_relationships={},
             )
 
 

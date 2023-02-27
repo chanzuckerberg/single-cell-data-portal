@@ -35,6 +35,7 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
         expression_summary_fmg_cube=cube_fmg,
         dataset_to_gene_ids={},
         marker_genes_cube=None,
+        filter_relationships={},
     )
 
 
