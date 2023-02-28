@@ -42,6 +42,7 @@ export interface State {
 // (thuang): If you have derived states based on the state, use `useMemo`
 // to cache the derived states instead of putting them in the state.
 export const INITIAL_STATE: State = {
+  cellInfoCellType: null,
   cellTypeIdsToDelete: [],
   genesToDelete: [],
   selectedCellTypeIds: {},
@@ -55,12 +56,13 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
-  cellInfoCellType: null,
 };
 
 export const REDUCERS = {
+  addCellInfoCellType,
   addSelectedGenes,
   deleteSelectedGenesAndSelectedCellTypeIds,
+  deleteSingleGene,
   resetGenesToDeleteAndCellTypeIdsToDelete,
   resetTissueCellTypes,
   selectCellTypeIds,
@@ -73,7 +75,7 @@ export const REDUCERS = {
   tissueCellTypesFetched,
   toggleCellTypeIdToDelete,
   toggleGeneToDelete,
-  addCellInfoCellType,
+  loadStateFromURL,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -98,6 +100,27 @@ export function reducer(state: State, action: PayloadAction<unknown>): State {
  * Individual action type reducers below. Please add their corresponding action
  * creators in `./actions.ts`
  */
+
+function deleteSingleGene(
+  state: State,
+  action: PayloadAction<string | null>
+): State {
+  if (!action.payload) {
+    return state;
+  }
+
+  const { selectedGenes } = state;
+
+  const newSelectedGenes = deleteByItems<State["selectedGenes"][number]>(
+    selectedGenes,
+    [action.payload]
+  );
+
+  return {
+    ...state,
+    selectedGenes: newSelectedGenes,
+  };
+}
 
 function deleteSelectedGenesAndSelectedCellTypeIds(
   state: State,
@@ -395,5 +418,25 @@ function addCellInfoCellType(
   return {
     ...state,
     cellInfoCellType: newCellInfoCellType,
+  };
+}
+
+export interface LoadStateFromURLPayload {
+  filters: Partial<State["selectedFilters"]>;
+  tissues: State["selectedTissues"];
+  genes: State["selectedGenes"];
+}
+
+function loadStateFromURL(
+  state: State,
+  action: PayloadAction<LoadStateFromURLPayload>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    selectedFilters: { ...state.selectedFilters, ...payload.filters },
+    selectedTissues: payload.tissues,
+    selectedGenes: payload.genes,
   };
 }

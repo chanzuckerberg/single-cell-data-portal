@@ -3,7 +3,6 @@ import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
-import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
@@ -16,7 +15,7 @@ import InfoSVG from "./icons/info-sign-icon.svg";
 import ReplaySVG from "./icons/replay.svg";
 import {
   CellCountLabelStyle,
-  CellTypeButtonStyle,
+  CellTypeLabelStyle,
   Container,
   FlexRow,
   FlexRowJustified,
@@ -56,8 +55,6 @@ export default memo(function YAxisChart({
   const tissueKey = tissue.replace(/\s+/g, "-");
 
   const dispatch = useContext(DispatchContext);
-
-  const { handleCellTypeClick } = useDeleteGenesAndCellTypes();
 
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
@@ -114,7 +111,6 @@ export default memo(function YAxisChart({
                 key={`${cellType}-cell-type-button`}
                 name={paddedName}
                 metadata={cellType}
-                onClick={() => handleCellTypeClick(cellType)}
                 tissueID={tissueID}
                 tissue={tissue}
                 generateMarkerGenes={generateMarkerGenes}
@@ -136,23 +132,16 @@ export default memo(function YAxisChart({
 const CellTypeButton = ({
   name,
   metadata,
-  onClick,
   generateMarkerGenes,
   tissueID,
   tissue,
 }: {
   name: string;
   metadata: CellTypeMetadata;
-  onClick: () => void;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
   tissueID: string;
   tissue: Tissue;
 }) => {
-  const [active, setActive] = useState(false);
-  useEffect(() => {
-    setActive(false);
-  }, [metadata]);
-
   const { total_count } = deserializeCellTypeMetadata(metadata);
   const formattedString = Intl.NumberFormat("en-US", {
     maximumFractionDigits: 1,
@@ -165,16 +154,10 @@ const CellTypeButton = ({
   return (
     <FlexRowJustified data-test-id="cell-type-label-count">
       <FlexRow>
-        <CellTypeButtonStyle
-          active={active}
-          onClick={() => {
-            setActive(!active);
-            onClick();
-          }}
-          data-test-id="cell-type-label"
-        >
+        <CellTypeLabelStyle data-test-id="cell-type-name">
           {name}
-        </CellTypeButtonStyle>
+        </CellTypeLabelStyle>
+
         {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
           cellType &&
           cellType.total_count > 25 && (
@@ -182,7 +165,7 @@ const CellTypeButton = ({
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               style={{
                 cursor: "pointer",
-                paddingTop: "3px",
+                margin: "auto",
               }}
               onClick={() => {
                 if (cellType) {

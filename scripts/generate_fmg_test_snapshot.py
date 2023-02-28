@@ -530,11 +530,16 @@ if __name__ == "__main__":
 
     with tiledb.open(f"{snapshot}/expression_summary") as es_arr, tiledb.open(
         f"{snapshot}/expression_summary_fmg"
-    ) as esfmg_arr, tiledb.open(f"{snapshot}/cell_counts") as cc_arr, open(
+    ) as esfmg_arr, tiledb.open(f"{snapshot}/expression_summary_default") as es_def_arr, tiledb.open(
+        f"{snapshot}/expression_summary_fmg"
+    ) as esfmg_arr, tiledb.open(
+        f"{snapshot}/cell_counts"
+    ) as cc_arr, open(
         f"{snapshot}/dataset_to_gene_ids.json", "r"
     ) as dtg_file:
         print("Subsetting existing snapshot...")
         es = es_arr.df[(test_genes, test_tissue, [], test_organism)]
+        esdef = es_def_arr.df[(test_genes, test_tissue, test_organism)]
         esfmg = esfmg_arr.query(attr_cond=tiledb.QueryCondition(f"gene_ontology_term_id in {test_genes}")).df[
             (test_tissue, test_organism, [])
         ]
@@ -543,10 +548,12 @@ if __name__ == "__main__":
         print("Creating new snapshot...")
         tiledb.Array.create(f"{new_snapshot}/expression_summary", es_arr.schema, overwrite=True)
         tiledb.Array.create(f"{new_snapshot}/expression_summary_fmg", esfmg_arr.schema, overwrite=True)
+        tiledb.Array.create(f"{new_snapshot}/expression_summary_default", es_def_arr.schema, overwrite=True)
         tiledb.Array.create(f"{new_snapshot}/cell_counts", cc_arr.schema, overwrite=True)
 
         tiledb.from_pandas(f"{new_snapshot}/expression_summary", es, mode="append")
         tiledb.from_pandas(f"{new_snapshot}/expression_summary_fmg", esfmg, mode="append")
+        tiledb.from_pandas(f"{new_snapshot}/expression_summary_default", esdef, mode="append")
         tiledb.from_pandas(f"{new_snapshot}/cell_counts", cc, mode="append")
 
         dtg = json.load(dtg_file)
