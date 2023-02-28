@@ -223,7 +223,7 @@ function CellInfoSideBar({
               </td>
               <td>
                 <MarkerStrengthContainer>
-                  {/* <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel> */}
+                  <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel>
                   <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
                   <MarkerStrengthLabel>{"High: >2"}</MarkerStrengthLabel>
                 </MarkerStrengthContainer>
