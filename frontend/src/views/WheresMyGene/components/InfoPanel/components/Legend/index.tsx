@@ -1,6 +1,7 @@
 import { Dispatch, memo, MouseEventHandler } from "react";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import SaveImage from "../../../GeneSearchBar/components/SaveImage";
+import ShareButton from "../../../GeneSearchBar/components/ShareButton";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
@@ -34,7 +35,7 @@ export default memo(function Legend({
         setIsDownloading={setIsDownloading}
         setEchartsRendererMode={setEchartsRendererMode}
       />
-
+      <ShareButton />
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}
       />
