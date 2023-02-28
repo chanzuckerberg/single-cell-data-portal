@@ -150,12 +150,15 @@ function CellInfoSideBar({
         </Button>
       </ButtonContainer>
 
-      {!numMarkerGenes
-      ? <NoMarkerGenesContainer>
-            <NoMarkerGenesHeader>No Marker Genes</NoMarkerGenesHeader>
-            <NoMarkerGenesDescription>No reliable marker genes for this cell type.</NoMarkerGenesDescription>
+      {!numMarkerGenes ? (
+        <NoMarkerGenesContainer>
+          <NoMarkerGenesHeader>No Marker Genes</NoMarkerGenesHeader>
+          <NoMarkerGenesDescription>
+            No reliable marker genes for this cell type.
+          </NoMarkerGenesDescription>
         </NoMarkerGenesContainer>
-      : <StyledHTMLTable condensed bordered={false}>
+      ) : (
+        <StyledHTMLTable condensed bordered={false}>
           <thead>
             <tr>
               <td>Gene </td>
@@ -216,7 +219,9 @@ function CellInfoSideBar({
                   sdsType="primary"
                   sdsStyle="minimal"
                   isAllCaps={false}
-                  startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
+                  startIcon={
+                    <Icon sdsIcon="copy" sdsSize="s" sdsType="button" />
+                  }
                 >
                   Copy
                 </CopyGenesButton>
@@ -239,7 +244,7 @@ function CellInfoSideBar({
             ))}
           </tbody>
         </StyledHTMLTable>
-    }
+      )}
     </div>
   );
 }
