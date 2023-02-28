@@ -34,8 +34,6 @@ function GeneButton({
 }): JSX.Element {
   const dispatch = useContext(DispatchContext);
 
-  const [hideTrash, setHideTrashClass] = useState("hide-gene-delete");
-
   const active = genesToDelete.includes(geneName);
   const currentFont = `
     normal
@@ -49,18 +47,11 @@ function GeneButton({
   );
 
   return (
-    <GeneButtonStyle
-      data-test-id={`gene-label-${geneName}`}
-      onMouseEnter={() => {
-        setHideTrashClass("");
-      }}
-      onMouseLeave={() => {
-        setHideTrashClass("hide-gene-delete");
-      }}
-    >
-      <XAxisLabel>
+    <GeneButtonStyle data-test-id={`gene-label-${geneName}`}>
+      <XAxisLabel className={"gene-label-container"}>
         <div
           data-test-id={"gene-delete-button"}
+          className="gene-delete-icon"
           onClick={() => {
             track(EVENTS.WMG_DELETE_GENE, { gene: geneName });
 
@@ -69,12 +60,7 @@ function GeneButton({
             }
           }}
         >
-          <Icon
-            sdsIcon="trashCan"
-            sdsSize="s"
-            sdsType="interactive"
-            className={hideTrash}
-          ></Icon>
+          <Icon sdsIcon="trashCan" sdsSize="s" sdsType="interactive"></Icon>
         </div>
         <XAxisGeneName
           active={genesToDelete.includes(geneName)}

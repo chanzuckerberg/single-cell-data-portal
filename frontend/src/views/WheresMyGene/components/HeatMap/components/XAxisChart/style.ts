@@ -53,8 +53,11 @@ export const GeneButtonStyle = styled.div`
   white-space: nowrap;
   overflow: hidden;
 
-  .hide-gene-delete {
+  .gene-delete-icon {
     visibility: hidden;
+  }
+  .gene-label-container:hover .gene-delete-icon {
+    visibility: visible;
   }
 `;
 
