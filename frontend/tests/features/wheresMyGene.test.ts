@@ -218,6 +218,7 @@ describe("Where's My Gene", () => {
       { page }
     );
   });
+
   test("Hierarchical Clustering", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
@@ -425,7 +426,10 @@ async function selectFirstNOptions(count: number, page: Page) {
 }
 
 async function selectNthOption(number: number, page: Page) {
-  for (let i = 0; i < number; i++) {
+  // (thuang): Since the first option is now active, we need to offset by 1
+  const step = number - 1;
+
+  for (let i = 0; i < step; i++) {
     await page.keyboard.press("ArrowDown");
   }
 
