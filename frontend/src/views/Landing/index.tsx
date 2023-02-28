@@ -51,9 +51,9 @@ const LandingPage = (): JSX.Element => {
   });
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
-  const [cellsHeroNum] = useState("38M+");
-  const [datasetsHeroNum] = useState("700+");
-  const [cellTypesHeroNum] = useState("650+");
+  const [cellsHeroNum] = useState("38.1M");
+  const [datasetsHeroNum] = useState("723");
+  const [cellTypesHeroNum] = useState("637");
 
   const publications = [
     {
