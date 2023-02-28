@@ -75,6 +75,7 @@ export const REDUCERS = {
   tissueCellTypesFetched,
   toggleCellTypeIdToDelete,
   toggleGeneToDelete,
+  loadStateFromURL,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -417,5 +418,25 @@ function addCellInfoCellType(
   return {
     ...state,
     cellInfoCellType: newCellInfoCellType,
+  };
+}
+
+export interface LoadStateFromURLPayload {
+  filters: Partial<State["selectedFilters"]>;
+  tissues: State["selectedTissues"];
+  genes: State["selectedGenes"];
+}
+
+function loadStateFromURL(
+  state: State,
+  action: PayloadAction<LoadStateFromURLPayload>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    selectedFilters: { ...state.selectedFilters, ...payload.filters },
+    selectedTissues: payload.tissues,
+    selectedGenes: payload.genes,
   };
 }
