@@ -19,6 +19,7 @@ from backend.wmg.data.tiledb import create_ctx
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
+EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
 EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
@@ -44,6 +45,11 @@ class WmgSnapshot:
     # TileDB array containing expression summary statistics optimized for marker gene computation.
     # See the full schema at backend/wmg/data/schemas/expression_summary_fmg_cube_schema.py.
     expression_summary_fmg_cube: Array
+
+    # TileDB array containing expression summary statistics optimized for querying with no
+    # secondary filters selected.
+    # See the full schema at backend/wmg/data/schemas/cube_schema_default.py.
+    expression_summary_default_cube: Array
 
     # TileDB array containing the precomputed marker genes.
     # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
@@ -130,6 +136,7 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     return WmgSnapshot(
         snapshot_identifier=new_snapshot_identifier,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        expression_summary_default_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
         expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
@@ -140,7 +147,15 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
 
 
 def _open_cube(cube_uri) -> Array:
-    return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+    # conditionally use a try-except block to open the default expression summary cube
+    # to cover the transition period where the default cube is not yet available
+    if EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME in cube_uri:
+        try:
+            return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+        except tiledb.TileDBError:
+            return None
+    else:
+        return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
 
 
 def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:

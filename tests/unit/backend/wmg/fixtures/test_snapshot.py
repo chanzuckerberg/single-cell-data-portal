@@ -142,8 +142,12 @@ def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
 
 
 @contextlib.contextmanager
-def load_test_fmg_snapshot(snapshot_name: str) -> WmgSnapshot:
+def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
     with tiledb.open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary", ctx=create_ctx()
+    ) as expression_summary_cube, tiledb.open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default", ctx=create_ctx()
+    ) as expression_summary_default_cube, tiledb.open(
         f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_fmg", ctx=create_ctx()
     ) as expression_summary_fmg_cube, tiledb.open(
         f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts", ctx=create_ctx()
@@ -155,8 +159,9 @@ def load_test_fmg_snapshot(snapshot_name: str) -> WmgSnapshot:
         dataset_to_gene_ids = json.load(f)
         yield WmgSnapshot(
             snapshot_identifier=snapshot_name,
-            expression_summary_cube=None,
+            expression_summary_cube=expression_summary_cube,
             expression_summary_fmg_cube=expression_summary_fmg_cube,
+            expression_summary_default_cube=expression_summary_default_cube,
             marker_genes_cube=marker_genes_cube,
             cell_counts_cube=cell_counts_cube,
             cell_type_orderings=None,
@@ -192,6 +197,7 @@ def create_temp_wmg_snapshot(
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
+                expression_summary_default_cube=None,
                 expression_summary_fmg_cube=None,
                 marker_genes_cube=None,
                 cell_counts_cube=cell_counts_cube,
