@@ -12,6 +12,7 @@ const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
+const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 
@@ -240,7 +241,7 @@ describe("Where's My Gene", () => {
     await selectFirstNOptions(GENE_COUNT, page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} button`,
+      `${getTestID(GENE_LABELS_ID)} span`,
       page
     );
 
@@ -259,16 +260,16 @@ describe("Where's My Gene", () => {
       getTestID("cell-type-sort-dropdown")
     );
     await cellTypeSortDropdown.click();
-    await selectNthOption(2, page);
+    await selectNthOption(1, page);
 
     const geneSortDropdown = await page.locator(
       getTestID("gene-sort-dropdown")
     );
     await geneSortDropdown.click();
-    await selectNthOption(2, page);
+    await selectNthOption(1, page);
 
     const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} button`,
+      `${getTestID(GENE_LABELS_ID)} span`,
       page
     );
 
@@ -309,19 +310,20 @@ describe("Where's My Gene", () => {
     await waitForHeatmapToRender(page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} button`,
+      `${getTestID(GENE_LABELS_ID)} span`,
       page
     );
 
-    await page.click(getText(beforeGeneNames[0]));
-
     await tryUntil(
       async () => {
-        await page.focus(getTestID(GENE_LABELS_ID));
         await page.keyboard.press("Backspace");
 
+        // Testing single gene delete
+        await page.hover(".gene-label-container");
+        await page.click(getTestID(GENE_DELETE_BUTTON));
+
         const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} button`,
+          `${getTestID(GENE_LABELS_ID)} span`,
           page
         );
 
