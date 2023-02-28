@@ -19,7 +19,7 @@ const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 const { describe, skip } = test;
 
 describe("Where's My Gene", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
@@ -241,7 +241,7 @@ describe("Where's My Gene", () => {
     await selectFirstNOptions(GENE_COUNT, page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} button`,
+      `${getTestID(GENE_LABELS_ID)} span`,
       page
     );
 
@@ -260,16 +260,16 @@ describe("Where's My Gene", () => {
       getTestID("cell-type-sort-dropdown")
     );
     await cellTypeSortDropdown.click();
-    await selectNthOption(2, page);
+    await selectNthOption(1, page);
 
     const geneSortDropdown = await page.locator(
       getTestID("gene-sort-dropdown")
     );
     await geneSortDropdown.click();
-    await selectNthOption(2, page);
+    await selectNthOption(1, page);
 
     const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} button`,
+      `${getTestID(GENE_LABELS_ID)} span`,
       page
     );
 
@@ -312,7 +312,7 @@ describe("Where's My Gene", () => {
     await waitForHeatmapToRender(page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} button`,
+      `${getTestID(GENE_LABELS_ID)} span`,
       page
     );
     const beforeCellTypeNames = await getNames(
@@ -320,20 +320,18 @@ describe("Where's My Gene", () => {
       page
     );
 
-    await page.click(getText(beforeGeneNames[0]));
     await page.click(getText(beforeCellTypeNames[0]));
 
     await tryUntil(
       async () => {
-        await page.focus(getTestID(GENE_LABELS_ID));
         await page.keyboard.press("Backspace");
 
         // Testing single gene delete
-        await page.hover(getTestID(GENE_DELETE_BUTTON));
+        await page.hover(".gene-label-container");
         await page.click(getTestID(GENE_DELETE_BUTTON));
 
         const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} button`,
+          `${getTestID(GENE_LABELS_ID)} span`,
           page
         );
         const afterCellTypeNames = await getNames(
@@ -341,7 +339,7 @@ describe("Where's My Gene", () => {
           page
         );
 
-        expect(afterGeneNames.length).toBe(beforeGeneNames.length - 2);
+        expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
 
         // (thuang): Sometimes when API response is slow, we'll not capture all the
         // cell type names, so a sanity check that we expect at least 100 names

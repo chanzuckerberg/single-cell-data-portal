@@ -39,7 +39,7 @@ export const XAxisLabel = styled.div`
   align-items: center;
 `;
 
-export const XAxisGeneName = styled.div`
+export const XAxisGeneName = styled.span`
   ${selectedStyle}
 `;
 
