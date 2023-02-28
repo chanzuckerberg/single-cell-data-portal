@@ -260,13 +260,13 @@ describe("Where's My Gene", () => {
       getTestID("cell-type-sort-dropdown")
     );
     await cellTypeSortDropdown.click();
-    await selectNthOption(1, page);
+    await selectNthOption(2, page);
 
     const geneSortDropdown = await page.locator(
       getTestID("gene-sort-dropdown")
     );
     await geneSortDropdown.click();
-    await selectNthOption(1, page);
+    await selectNthOption(2, page);
 
     const afterGeneNames = await getNames(
       `${getTestID(GENE_LABELS_ID)} span`,
