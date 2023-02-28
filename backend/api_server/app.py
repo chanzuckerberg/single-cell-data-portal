@@ -7,6 +7,7 @@ import connexion
 from connexion import FlaskApi, ProblemException, problem
 from flask import Response, g, request
 from flask_cors import CORS
+from server_timing import Timing as ServerTiming
 from swagger_ui_bundle import swagger_ui_path
 
 from backend.api_server.logger import configure_logging
@@ -86,7 +87,7 @@ def configure_flask_app(flask_app):
                 allowed_origins.append(f"{frontend_parse.scheme}://{frontend_parse.netloc}")
     flask_app.logger.info(f"CORS allowed_origins: {allowed_origins}")
     CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origins, allow_headers=["Content-Type"])
-
+    ServerTiming(flask_app, force_debug=True)
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
     require_secure_cookies = not bool(os.getenv("DEV_MODE_COOKIES"))
     flask_app.config.update(
