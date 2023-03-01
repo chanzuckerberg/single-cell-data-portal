@@ -156,7 +156,8 @@ paths:
     get:
       summary: Fetch a Collection with Datasets
       description: >
-        Fetch full metadata for the Collection and its Datasets.
+        Fetch full metadata for a Collection and its Datasets. The Collection, as specified by `collection_id`, may be
+        either a Collection or a Collection version.
 
         An Authorization token must be provided in order to retrieve the id of an associated Revision for this Collection (the `revising_in` field), if such a Revision currently exists.
 
@@ -262,13 +263,37 @@ paths:
         "405":
           $ref: "#/components/responses/405"
 
+  /v1/collections/{collection_id}/versions:
+    get:
+      summary: Fetch all versions of a Collection with Datasets
+      description: >
+        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The identifier
+        for the Collection, as specified by `collection_id`, **MUST** be a Collection and **NOT** a Collection version.
+      operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
+      tags:
+        - collection
+        - versions
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/collection_get"
+        "403":
+          $ref: "#/components/responses/403"
+
   /v1/collections/{collection_id}/revision:
     post:
       summary: Start a Revision of a published Collection
       description: |
-        This starts a Revision of a published Collection. A Revision is a private Collection that is a copy of a
-        published Collection. When published, a Revision replaces the original published Collection in-place. Only one
-        ongoing Revision may exist per published Collection at any given time.
+        This starts a Revision of a published Collection, as specified by `collection_id`. A Revision is a private
+        Collection that is a copy of a published Collection. When published, a Revision replaces the original published
+        Collection in-place. Only one ongoing Revision may exist per published Collection at any given time.
 
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
 
@@ -299,8 +324,8 @@ paths:
     post:
       summary: Create an empty Dataset and return the `id` to be used in a future upload.
       description: |
-        Create a new empty Dataset and return the `id`. The `id` is used when uploading a datafile 
-        to S3 to identify what Dataset the file belongs to.
+        Create a new empty Dataset in the specified Collection and return the `id`. The `id` is used when uploading a
+        datafile to S3 to identify what Dataset the file belongs to.
 
         * Required: provide your access token in the request header as `Authorization: bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.actions.post
@@ -336,7 +361,8 @@ paths:
         Revision.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
-        the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes, but will eventually be removed.
+        the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes,
+        but will eventually be removed.
 
         * Required: provide your access token in the request header as `Authorization: bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.delete
@@ -367,7 +393,8 @@ paths:
     get:
       summary: Fetch Dataset metadata from a Collection.
       description: |
-        Fetch Dataset metadata for `dataset_id` in a `collection_id`.
+        Fetch Dataset metadata for  Dataset `dataset_id` in the Collection `collection_id`, which may be either a
+        Collection or a Collection version.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.get
       tags:
         - collection
@@ -517,9 +544,9 @@ paths:
       tags:
         - collection
       description: |
-        Generate Presigned S3 URLs to download the files associated with the `dataset_id`. 
-        Pre-signed S3 URLs have a life span of up to 1 hour. You should
-        generate a pre-signed URL immediately before each download to ensure it is current.
+        Generate Presigned S3 URLs to download the files associated with the `dataset_id` in the Collection specified
+        by the `collection_id`. Pre-signed S3 URLs have a life span of up to 1 hour. You should generate a pre-signed
+        URL immediately before each download to ensure it is current.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
@@ -542,38 +569,6 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/collections/versions/{collection_id}:
-    get:
-      summary: List all versions for a Collection
-      tags:
-        - collection
-        - versions
-      description: |
-        List all versions for a given Collection, which may be specified by a Collection id or a Collection version id.
-        May provide access token for access to private Collection versions. **Brian - do we want this endpoint to only
-        ever return published versions? Or is unpublished desired as well?**
-      security:
-        - curatorAccessLenient: [ ]
-        - { }
-      operationId: backend.curation.api.v1.curation.collections.versions.collection_id.get
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/collection_get"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
-        "404":
-          $ref: "#/components/responses/404"
-
   /v1/datasets:
     get:
       summary: List Cell Census previews of all Datasets
@@ -592,7 +587,43 @@ paths:
                 items:
                   $ref: "#/components/schemas/census_info_dataset"
 
-  /v1/datasets/versions/{dataset_id}:
+#  /v1/datasets/{dataset_id}:
+#    get:
+#      summary: Get metadata for a Dataset
+#      tags:
+#        - dataset
+#        - versions
+#      description: |
+#        Fetch Dataset metadata for a Dataset as specified by `dataset_id`, which may be either a Dataset or a Dataset
+#        version.
+#      security:
+#        - curatorAccessLenient: [ ]
+#        - { }
+#      operationId: backend.curation.api.v1.curation.datasets.dataset_id.actions.get
+#      parameters:
+#        - $ref: "#/components/parameters/path_dataset_id"
+#      responses:
+#        "200":
+#          description: OK
+#          content:
+#            application/json:
+#              schema:
+#                type: array
+#                items:
+#                  allOf:
+#                    - type: object
+#                      properties:
+#                        collection_id:
+#                          $ref: "#/components/schemas/collection_id"
+#                    - $ref: "#/components/schemas/dataset"
+#        "400":
+#          $ref: "#/components/responses/400"
+#        "401":
+#          $ref: "#/components/responses/401"
+#        "404":
+#          $ref: "#/components/responses/404"
+
+  /v1/datasets/{dataset_id}/versions:
     get:
       summary: List all versions for a Dataset
       tags:
