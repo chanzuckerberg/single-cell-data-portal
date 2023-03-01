@@ -100,7 +100,7 @@ export const StyledHTMLTable = styled(HTMLTable)`
 
 export const NoMarkerGenesContainer = styled("div")`
   margin-top: 16px;
-  background: #F8F8F8;
+  background: #f8f8f8;
 
   width: 100%;
   height: 120px;
