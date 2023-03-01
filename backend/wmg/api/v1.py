@@ -98,13 +98,13 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
     ]
 
 
-def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
+def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
 
     filter_options_criteria = dict(criteria)
     # Remove gene_ontology_term_ids from the criteria as it is not an eligible cross-filter dimension.
-    del filter_options_criteria["gene_ontology_term_ids"]
+    filter_options_criteria.pop("gene_ontology_term_ids", None)
 
     # depluralize `dimension` if necessary
     dimension = dimension[:-1] if dimension[-1] == "s" else dimension
@@ -113,10 +113,10 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
     linked_filter_sets = []
 
     # `all_criteria_attributes` is the set of all attributes specified across all criteria
-    all_criteria_attributes = {}
+    all_criteria_attributes = set()
 
-    for key in criteria:
-        attrs = criteria[key]
+    for key in filter_options_criteria:
+        attrs = filter_options_criteria[key]
 
         # depluralize `key` if necessary
         key = key[:-1] if key[-1] == "s" else key
@@ -131,7 +131,7 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
 
                     # for each attribute (attr) in `prefixed_attributes`,
                     # get the set of filters for the specified dimension that are linked to `attr`
-                    linked_filter_set = {}
+                    linked_filter_set = set()
                     for attr in prefixed_attributes:
                         if dimension in snapshot.filter_relationships[attr]:
                             linked_filter_set = linked_filter_set.union(
@@ -158,7 +158,11 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
     valid_options = []
     for v in candidate_options:
         loop_back_options = snapshot.filter_relationships[v]
-        if len(set(loop_back_options).intersection(all_criteria_attributes)) > 0:
+        all_loop_back_options = []
+        for dim in loop_back_options:
+            all_loop_back_options.extend(loop_back_options[dim])
+
+        if len(set(all_loop_back_options).intersection(all_criteria_attributes)) > 0:
             valid_options.append(v)
 
     # remove the prefix from each valid option and return the result

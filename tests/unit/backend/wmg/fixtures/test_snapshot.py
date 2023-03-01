@@ -24,7 +24,12 @@ from backend.wmg.data.schemas.cube_schema import (
     expression_summary_logical_dims,
     expression_summary_schema,
 )
-from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME, WmgSnapshot
+from backend.wmg.data.snapshot import (
+    CELL_TYPE_ORDERINGS_FILENAME,
+    DATASET_TO_GENE_IDS_FILENAME,
+    FILTER_RELATIONSHIPS_FILENAME,
+    WmgSnapshot,
+)
 from backend.wmg.data.tiledb import create_ctx
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
@@ -154,9 +159,12 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
     ) as cell_counts_cube, tiledb.open(
         f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes", ctx=create_ctx()
     ) as marker_genes_cube, open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/dataset_to_gene_ids.json", "r"
-    ) as f:
+        f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_TO_GENE_IDS_FILENAME}", "r"
+    ) as f, open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}", "r"
+    ) as fr:
         dataset_to_gene_ids = json.load(f)
+        filter_relationships = json.load(fr)
         yield WmgSnapshot(
             snapshot_identifier=snapshot_name,
             expression_summary_cube=expression_summary_cube,
@@ -167,7 +175,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             cell_type_orderings=None,
             primary_filter_dimensions=None,
             dataset_to_gene_ids=dataset_to_gene_ids,
-            filter_relationships={},
+            filter_relationships=filter_relationships,
         )
 
 
