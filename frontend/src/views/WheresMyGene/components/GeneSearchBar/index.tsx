@@ -89,7 +89,7 @@ export default function GeneSearchBar({
           multiple
           selected={selectedTissueOptions}
           setSelected={handleSelectTissues}
-          label="Tissues"
+          label=""
           text="Tissue"
           dataTestId="add-tissue"
           placeholder="Search"
@@ -104,7 +104,7 @@ export default function GeneSearchBar({
           multiple
           setSelected={handleSelectGenes}
           onItemNotFound={handleGeneNotFound}
-          label="Genes"
+          label=""
           text="Gene"
           dataTestId="add-gene"
           placeholder="Search or paste comma separated gene names"
