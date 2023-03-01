@@ -216,7 +216,7 @@ export function renderXAxis({
 
   const cellTypeCountAttributes = {
     "text-anchor": "end",
-    transform: `translate(40, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
+    transform: `translate(35, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
     width: `100px`,
     x: 0,
   };
@@ -230,7 +230,7 @@ export function renderXAxis({
   const geneLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
 
   Array.from(
-    xAxis?.querySelectorAll(`[data-test-id*='gene-label-'] div`) || []
+    xAxis?.querySelectorAll(`[data-test-id*='gene-label-'] span`) || []
   ).forEach((label, index) => {
     const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
 
@@ -301,7 +301,7 @@ export function renderYAxis({
     yAxis?.querySelectorAll("[data-test-id='cell-type-label-count']") || []
   ).forEach((labelCount, index) => {
     const label = labelCount.querySelector(
-      "[data-test-id='cell-type-label']"
+      "[data-test-id='cell-type-name']"
     )?.textContent;
 
     const count = labelCount.querySelector(
