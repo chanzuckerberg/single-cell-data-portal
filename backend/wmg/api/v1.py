@@ -96,17 +96,6 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
     ]
 
 
-def find_dim_option_values_brute_force(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
-    """Find values for the specified dimension that satisfy the given filtering criteria,
-    ignoring any criteria specified for the given dimension."""
-    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
-    # todo can we query cell_counts for a performance gain?
-    q = WmgQuery(snapshot)
-    query_result = q.cell_counts(filter_options_criteria)
-    filter_dims = query_result.groupby(dimension).groups.keys()
-    return filter_dims
-
-
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
@@ -185,14 +174,10 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot) 
         "sex_ontology_term_id": "",
         "development_stage_ontology_term_id": "",
         "self_reported_ethnicity_ontology_term_id": "",
-        "tissue_ontology_term_id": criteria.tissue_ontology_term_ids,
+        "tissue_ontology_term_id": "",
     }
     for dim in dims:
-        if snapshot.filter_relationships is not None:
-            dims[dim] = find_dim_option_values(criteria, snapshot, dim)
-        elif dim != "tissue_ontology_term_id":
-            # this is a backwards compatibility patch that can be removed after successful deployment
-            dims[dim] = find_dim_option_values_brute_force(criteria, snapshot, dim)
+        dims[dim] = find_dim_option_values(criteria, snapshot, dim)
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
