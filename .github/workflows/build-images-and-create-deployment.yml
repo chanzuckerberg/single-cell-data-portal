@@ -17,7 +17,7 @@ env:
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
 jobs:
- build-frontend-backend-images:
+  build-frontend-backend-images:
     runs-on: ubuntu-20.04
     steps:
       - name: Configure AWS Credentials
