@@ -98,10 +98,10 @@ def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
         A dictionary containing the filter relationships for each unique filter value.
         Filter values are their column name + __ + their value (e.g. "dataset_id__Single cell transcriptome analysis of human pancreas").
         The dictionary values are lists of filter values that are related to the key filter value. Relatedness indicates that these filters
-        are compresent in at least one cell.
+        are co-occuring in at least one cell.
     """
     # get a dataframe of the columns that are not numeric
-    df_filters = df.select_dtypes(exclude="numeric")
+    df_filters = df.select_dtypes(exclude="number")
     # get a numpy array of the column names with shape (1, n_cols)
     cols = df_filters.columns.values[None, :]
 
