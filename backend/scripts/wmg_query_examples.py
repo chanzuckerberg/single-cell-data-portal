@@ -29,13 +29,13 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
     return WmgSnapshot(
         snapshot_identifier=snapshot_id,
         expression_summary_cube=cube,
-        cell_counts_cube=None,  # _open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
+        cell_counts_cube=None,
         cell_type_orderings=pd.DataFrame(),
         primary_filter_dimensions=pd.DataFrame(),
         expression_summary_fmg_cube=cube_fmg,
         dataset_to_gene_ids={},
         marker_genes_cube=None,
-        filter_relationships={},
+        filter_relationships=None,
     )
 
 

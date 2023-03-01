@@ -213,7 +213,7 @@ def create_temp_wmg_snapshot(
                 cell_type_orderings=cell_type_orderings,
                 primary_filter_dimensions=primary_filter_dimensions,
                 dataset_to_gene_ids=None,
-                filter_relationships={},
+                filter_relationships=None,
             )
 
 

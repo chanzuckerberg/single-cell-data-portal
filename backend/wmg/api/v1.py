@@ -98,6 +98,17 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
     ]
 
 
+def find_dim_option_values_brute_force(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
+    """Find values for the specified dimension that satisfy the given filtering criteria,
+    ignoring any criteria specified for the given dimension."""
+    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
+    # todo can we query cell_counts for a performance gain?
+    q = WmgQuery(snapshot)
+    query_result = q.cell_counts(filter_options_criteria)
+    filter_dims = query_result.groupby(dimension).groups.keys()
+    return filter_dims
+
+
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
@@ -181,7 +192,10 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
         if len(criteria.dict()[dim + "s"]) == 0:
             dims[dim] = cell_counts.groupby(dim).groups.keys()
         else:
-            dims[dim] = find_dim_option_values(criteria, snapshot, dim)
+            if snapshot.filter_relationships is not None:
+                dims[dim] = find_dim_option_values(criteria, snapshot, dim)
+            else:
+                dims[dim] = find_dim_option_values_brute_force(criteria, snapshot, dim)
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),

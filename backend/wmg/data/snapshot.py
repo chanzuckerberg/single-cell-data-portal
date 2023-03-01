@@ -172,7 +172,10 @@ def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
 
 
 def _load_filter_graph_data(snapshot_identifier: str) -> str:
-    return json.loads(_read_s3obj(f"{snapshot_identifier}/{FILTER_RELATIONSHIPS_FILENAME}"))
+    try:
+        return json.loads(_read_s3obj(f"{snapshot_identifier}/{FILTER_RELATIONSHIPS_FILENAME}"))
+    except Exception:
+        return None
 
 
 def _read_s3obj(relative_path: str) -> str:
