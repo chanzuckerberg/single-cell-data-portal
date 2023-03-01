@@ -101,7 +101,7 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
-    
+
     filter_options_criteria = dict(criteria)
     # Remove gene_ontology_term_ids from the criteria as it is not an eligible cross-filter dimension.
     del filter_options_criteria["gene_ontology_term_ids"]
