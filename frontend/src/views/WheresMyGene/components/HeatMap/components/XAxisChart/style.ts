@@ -29,17 +29,21 @@ export const XAxisWrapper = styled.div`
 `;
 
 export const XAxisLabel = styled.div`
-  ${selectedStyle}
+  height: 100%;
   width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
   text-orientation: sideways;
   writing-mode: vertical-rl;
-  display: inline-block;
-  user-select: none;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
-export const GeneButtonStyle = styled.button`
-  cursor: pointer;
+export const XAxisGeneName = styled.span`
+  ${selectedStyle}
+`;
+
+export const GeneButtonStyle = styled.div`
   background-color: white;
   border: none;
   z-index: 2;
@@ -48,6 +52,13 @@ export const GeneButtonStyle = styled.button`
   align-items: end;
   white-space: nowrap;
   overflow: hidden;
+
+  .gene-delete-icon {
+    visibility: hidden;
+  }
+  .gene-label-container:hover .gene-delete-icon {
+    visibility: visible;
+  }
 `;
 
 // adjust the left position of CellCountLabel by -20 to center it properly
