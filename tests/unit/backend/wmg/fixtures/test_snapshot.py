@@ -31,6 +31,7 @@ from backend.wmg.data.snapshot import (
     WmgSnapshot,
 )
 from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.pipeline.summary_cubes.cell_count import create_filter_relationships_graph
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
 
@@ -203,6 +204,8 @@ def create_temp_wmg_snapshot(
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube, tiledb.open(
             cell_counts_cube_dir, ctx=create_ctx()
         ) as cell_counts_cube:
+            cc = cell_counts_cube.df[:]
+            filter_relationships = create_filter_relationships_graph(cc)
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
@@ -213,7 +216,7 @@ def create_temp_wmg_snapshot(
                 cell_type_orderings=cell_type_orderings,
                 primary_filter_dimensions=primary_filter_dimensions,
                 dataset_to_gene_ids=None,
-                filter_relationships=None,
+                filter_relationships=filter_relationships,
             )
 
 
