@@ -4,12 +4,12 @@ import uuid
 from dataclasses import asdict
 from unittest.mock import Mock, patch
 
-from backend.common.corpora_orm import CollectionVisibility
 from backend.common.utils.api_key import generate
 from backend.curation.api.v1.curation.collections.common import EntityColumns
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersion,
+    CollectionVisibility,
     DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetStatusKey,

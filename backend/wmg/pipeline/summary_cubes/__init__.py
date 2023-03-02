@@ -19,6 +19,7 @@ def run(corpus_path: str, validate_cube: bool) -> dict:
     if indicated by param
     """
     create_expression_summary_cube(corpus_path)
+    create_expression_summary_cube(corpus_path, default=True)
     create_expression_summary_fmg_cube(corpus_path)
     create_cell_count_cube(corpus_path)
     create_marker_genes_cube(corpus_path)

@@ -4,13 +4,6 @@ from urllib.parse import urlparse
 from uuid import UUID
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.corpora_orm import (
-    DbCollection,
-    DbCollectionLink,
-    DbDataset,
-    DbDatasetArtifact,
-    DbDatasetProcessingStatus,
-)
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.common.entities import (
@@ -280,27 +273,6 @@ class EntityColumns:
     ]
 
     dataset_processing_status_cols = ["processing_status", "validation_message", "validation_status"]
-
-    columns_for_collections = {
-        DbCollectionLink: link_cols,
-        DbCollection: collections_cols,
-        DbDataset: dataset_metadata_preview_cols,
-        DbDatasetProcessingStatus: dataset_processing_status_cols,
-    }
-
-    columns_for_collection_id = {
-        DbCollectionLink: link_cols,
-        DbCollection: collections_cols,
-        DbDataset: dataset_metadata_cols,
-        DbDatasetArtifact: dataset_asset_cols,
-        DbDatasetProcessingStatus: dataset_processing_status_cols,
-    }
-
-    columns_for_dataset = {
-        DbDataset: dataset_metadata_cols,
-        DbDatasetArtifact: dataset_asset_cols,
-        DbDatasetProcessingStatus: dataset_processing_status_cols,
-    }
 
 
 def get_visibility(collection_version: CollectionVersion) -> str:

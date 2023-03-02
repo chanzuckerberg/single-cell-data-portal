@@ -1,19 +1,6 @@
 """
-Drops and recreates all tables according to corpora_orm.py and orm.py
+Drops and recreates all tables according to orm.py
 """
-
-
-def legacy_db():
-    from sqlalchemy import create_engine
-
-    from backend.common.corpora_config import CorporaDbConfig
-    from backend.common.corpora_orm import Base
-
-    engine = create_engine(CorporaDbConfig().database_uri)
-    print("legacy db: Dropping tables")
-    Base.metadata.drop_all(engine)
-    print("legacy db: Recreating tables")
-    Base.metadata.create_all(engine)
 
 
 def current_db():
@@ -27,7 +14,6 @@ def current_db():
 
 
 def create_db():
-    legacy_db()
     current_db()
 
 

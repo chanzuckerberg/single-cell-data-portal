@@ -737,13 +737,6 @@ def get_dataset_identifiers(url: str):
     if collection is None:  # orphaned datasets - shouldn't happen, but we should return 404 just in case
         raise NotFoundHTTPException()
 
-    # If we look up by canonical_id (i.e. the if does not hold), we can run into issues if the collection
-    # is unpublished and the dataset has been replaced. In this case, `get_dataset_version_from_canonical` will return
-    # the initial version (not the replaced one), so we need to update `dataset` using the collection mappings (which are
-    # up to date).
-    if dataset.version_id.id != id:
-        dataset = [d for d in collection.datasets if d.dataset_id.id == id][0]
-
     if dataset.version_id not in [d.version_id for d in collection.datasets]:
         # If the dataset is not in the mapped collection version, it means the dataset belongs to the active
         # unpublished version. We should return that one

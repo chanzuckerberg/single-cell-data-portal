@@ -77,6 +77,7 @@ export default function Organism({ isLoading }: Props): JSX.Element {
         onChange={handleOnChange as tempOnChange}
         InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-test-id="add-organism"
+        value={organism}
       />
     </Wrapper>
   );

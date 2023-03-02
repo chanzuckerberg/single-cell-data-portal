@@ -8,7 +8,7 @@ import tiledb
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 
-TEST_SNAPSHOT = "test-fmg-snapshot"
+TEST_SNAPSHOT = "realistic-test-snapshot"
 
 # creates the marker gene cube de novo and compares to the existing fixture
 # note, this test only implicitly tests the marker gene computation logic

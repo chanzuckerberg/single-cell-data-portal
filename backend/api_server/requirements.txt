@@ -17,3 +17,4 @@ rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
 scanpy
 SQLAlchemy-Utils>=0.36.8
 SQLAlchemy>=1.4.0,<1.5
+flask-server-timing==0.1.2

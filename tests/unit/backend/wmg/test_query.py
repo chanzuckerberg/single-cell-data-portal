@@ -15,10 +15,10 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     all_tens_cell_counts_values,
     all_X_cell_counts_values,
     create_temp_wmg_snapshot,
-    load_test_fmg_snapshot,
+    load_realistic_test_snapshot,
 )
 
-TEST_SNAPSHOT = "test-fmg-snapshot"
+TEST_SNAPSHOT = "realistic-test-snapshot"
 
 ALL_INDEXED_DIMS_FOR_QUERY = [
     "gene_ontology_term_ids",
@@ -38,7 +38,7 @@ class QueryTest(unittest.TestCase):
             cell_type_ontology_term_id="CL:0000786",
             organism_ontology_term_id="NCBITaxon:9606",
         )
-        with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
+        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             q = WmgQuery(snapshot)
             result = q.marker_genes(criteria)
             marker_genes = retrieve_top_n_markers(result, "ttest", 10)
@@ -48,11 +48,11 @@ class QueryTest(unittest.TestCase):
                 {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 1.8833003044128418},
                 {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7571982145309448},
                 {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.569277048110962},
-                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.4363346099853516},
                 {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4011939764022827},
                 {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.1657075881958008},
                 {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 0.9537287950515747},
                 {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4246297776699066},
+                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 0.39793750643730164},
             ]
 
             self.assertEqual(marker_genes, expected)
@@ -63,7 +63,7 @@ class QueryTest(unittest.TestCase):
             cell_type_ontology_term_id="CL:0000786",
             organism_ontology_term_id="NCBITaxon:9606",
         )
-        with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
+        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             q = WmgQuery(snapshot)
             result = q.marker_genes(criteria)
             marker_genes = retrieve_top_n_markers(result, "ttest", 0)
@@ -73,11 +73,11 @@ class QueryTest(unittest.TestCase):
                 {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 1.8833003044128418},
                 {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7571982145309448},
                 {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.569277048110962},
-                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.4363346099853516},
                 {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.4011939764022827},
                 {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.1657075881958008},
                 {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 0.9537287950515747},
                 {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4246297776699066},
+                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 0.39793750643730164},
                 {"gene_ontology_term_id": "ENSG00000173110", "p_value": 0.0, "effect_size": 0.2983902394771576},
                 {"gene_ontology_term_id": "ENSG00000125844", "p_value": 0.0, "effect_size": 0.26605331897735596},
                 {"gene_ontology_term_id": "ENSG00000103227", "p_value": 0.0, "effect_size": 0.1728391945362091},
@@ -87,20 +87,17 @@ class QueryTest(unittest.TestCase):
                 {"gene_ontology_term_id": "ENSG00000125740", "p_value": 0.0, "effect_size": -0.11696832627058029},
                 {"gene_ontology_term_id": "ENSG00000031698", "p_value": 0.0, "effect_size": -0.1293913722038269},
                 {"gene_ontology_term_id": "ENSG00000102007", "p_value": 0.0, "effect_size": -0.19392257928848267},
-                {"gene_ontology_term_id": "ENSG00000186818", "p_value": 0.0, "effect_size": -0.2315862774848938},
+                {"gene_ontology_term_id": "ENSG00000186818", "p_value": 0.0, "effect_size": -0.2285975217819214},
                 {"gene_ontology_term_id": "ENSG00000170542", "p_value": 0.0, "effect_size": -0.2412043958902359},
-                {"gene_ontology_term_id": "ENSG00000134970", "p_value": 0.0, "effect_size": -0.2585974633693695},
                 {"gene_ontology_term_id": "ENSG00000152061", "p_value": 0.0, "effect_size": -0.5447216629981995},
-                {"gene_ontology_term_id": "ENSG00000152818", "p_value": 0.0, "effect_size": -0.5735313892364502},
-                {"gene_ontology_term_id": "ENSG00000159128", "p_value": 0.0, "effect_size": -0.5896009206771851},
+                {"gene_ontology_term_id": "ENSG00000159128", "p_value": 0.0, "effect_size": -0.6061922311782837},
                 {"gene_ontology_term_id": "ENSG00000092820", "p_value": 0.0, "effect_size": -0.6128751039505005},
-                {"gene_ontology_term_id": "ENSG00000133112", "p_value": 0.0, "effect_size": -0.6479095220565796},
-                {"gene_ontology_term_id": "ENSG00000113580", "p_value": 0.0, "effect_size": -0.6749405264854431},
                 {"gene_ontology_term_id": "ENSG00000116473", "p_value": 0.0, "effect_size": -0.6956484913825989},
                 {"gene_ontology_term_id": "ENSG00000070831", "p_value": 0.0, "effect_size": -0.8241734504699707},
                 {"gene_ontology_term_id": "ENSG00000186184", "p_value": 0.0, "effect_size": -0.8757268190383911},
                 {"gene_ontology_term_id": "ENSG00000161547", "p_value": 0.0, "effect_size": -0.9740869402885437},
                 {"gene_ontology_term_id": "ENSG00000135940", "p_value": 0.0, "effect_size": -0.9752552509307861},
+                {"gene_ontology_term_id": "ENSG00000133112", "p_value": 0.0, "effect_size": -1.1682054996490479},
                 {"gene_ontology_term_id": "ENSG00000168028", "p_value": 0.0, "effect_size": -1.3461538553237915},
                 {"gene_ontology_term_id": "ENSG00000075415", "p_value": 0.0, "effect_size": -1.585504174232483},
                 {"gene_ontology_term_id": "ENSG00000170296", "p_value": 0.0, "effect_size": -1.8918966054916382},
@@ -114,11 +111,24 @@ class QueryTest(unittest.TestCase):
             tissue_ontology_term_ids=["UBERON:0002048"],
             cell_type_ontology_term_ids=["CL:0000786"],
         )
-        with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
+        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             q = WmgQuery(snapshot)
             query_result = q.expression_summary_fmg(criteria)
             query_sum = list(query_result[["sum", "sqsum", "nnz", "nnz_thr"]].sum())
-            expected = [93391.875, 264764.40625, 40042.0, 39054.0]
+            expected = [85958.453125, 241523.03125, 37404.0, 36434.0]
+            [self.assertAlmostEqual(query_sum[i], expected[i], places=3) for i in range(len(query_sum))]
+
+    def test__query_expression_summary_default_cube__returns_correct_results(self):
+        criteria = WmgQueryCriteria(
+            gene_ontology_term_ids=["ENSG00000238042", "ENSG00000168028"],
+            organism_ontology_term_id="NCBITaxon:9606",
+            tissue_ontology_term_ids=["UBERON:0002048"],
+        )
+        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
+            q = WmgQuery(snapshot)
+            query_result = q.expression_summary_default(criteria)
+            query_sum = list(query_result[["sum", "nnz"]].sum())
+            expected = [553378.625, 261191.0]
             [self.assertAlmostEqual(query_sum[i], expected[i], places=3) for i in range(len(query_sum))]
 
     def test__query_all_indexed_dims_single_value__returns_correct_result(self):

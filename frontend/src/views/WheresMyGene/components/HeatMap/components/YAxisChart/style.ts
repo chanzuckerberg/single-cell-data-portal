@@ -43,18 +43,10 @@ export const Container = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
 `;
 
-export const CellTypeButtonStyle = styled.button`
-  height: ${HEAT_MAP_BASE_CELL_PX}px;
-  background-color: ${({ active }: { active: boolean }) =>
-    active ? SELECTED_STYLE.backgroundColor : "white"};
-  font: normal
-    ${({ active }: { active: boolean }) =>
-      active ? SELECTED_STYLE.fontWeight : "normal"}
-    ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
-  padding: ${({ active }: { active: boolean }) =>
-    active ? SELECTED_STYLE.padding : "unset"};
+export const CellTypeLabelStyle = styled.div`
+  margin: auto;
+  font: normal 12px sans-serif;
   white-space: pre;
-  cursor: pointer;
   border: none;
   width: 100%;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};

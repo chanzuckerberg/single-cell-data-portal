@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import tempfile
+import uuid
 from collections import namedtuple
 from itertools import cycle, filterfalse, islice
 from typing import Callable, Dict, List, NamedTuple, Tuple
@@ -13,9 +14,6 @@ import tiledb
 from numpy.random import randint, random
 from pandas import DataFrame
 
-from backend.common.corpora_orm import CollectionVisibility, DbCollection, DbDataset
-from backend.common.entities import Collection
-from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.schemas.cube_schema import (
     cell_counts_indexed_dims,
     cell_counts_logical_attrs,
@@ -64,7 +62,7 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     if dimension_name == "cell_type_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("CL")][:dim_size]
     if dimension_name == "dataset_id":
-        return [create_dataset(i) for i in range(dim_size)]
+        return [str(uuid.UUID()) for i in range(dim_size)]
     if dimension_name == "assay_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("EFO")][:dim_size]
     if dimension_name == "development_stage_ontology_term_id":
@@ -144,8 +142,12 @@ def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
 
 
 @contextlib.contextmanager
-def load_test_fmg_snapshot(snapshot_name: str) -> WmgSnapshot:
+def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
     with tiledb.open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary", ctx=create_ctx()
+    ) as expression_summary_cube, tiledb.open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default", ctx=create_ctx()
+    ) as expression_summary_default_cube, tiledb.open(
         f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_fmg", ctx=create_ctx()
     ) as expression_summary_fmg_cube, tiledb.open(
         f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts", ctx=create_ctx()
@@ -157,8 +159,9 @@ def load_test_fmg_snapshot(snapshot_name: str) -> WmgSnapshot:
         dataset_to_gene_ids = json.load(f)
         yield WmgSnapshot(
             snapshot_identifier=snapshot_name,
-            expression_summary_cube=None,
+            expression_summary_cube=expression_summary_cube,
             expression_summary_fmg_cube=expression_summary_fmg_cube,
+            expression_summary_default_cube=expression_summary_default_cube,
             marker_genes_cube=marker_genes_cube,
             cell_counts_cube=cell_counts_cube,
             cell_type_orderings=None,
@@ -194,6 +197,7 @@ def create_temp_wmg_snapshot(
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
+                expression_summary_default_cube=None,
                 expression_summary_fmg_cube=None,
                 marker_genes_cube=None,
                 cell_counts_cube=cell_counts_cube,
@@ -223,28 +227,6 @@ def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> D
                 )
             )
     return pd.concat(cell_type_orderings)
-
-
-def create_dataset(dataset_id_ordinal: int) -> str:
-    coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
-    with db_session_manager() as session:
-        if coll := Collection.get(session, coll_id):
-            Collection.delete(coll)
-
-        collection = DbCollection(
-            id=coll_id,
-            visibility=CollectionVisibility.PUBLIC.name,
-            name=f"dataset_id_{dataset_id_ordinal}_coll_name",
-            owner="owner",
-        )
-        session.add(collection)
-        dataset = DbDataset(
-            id=f"dataset_id_{dataset_id_ordinal}",
-            name=f"dataset_name_{dataset_id_ordinal}",
-            collection_id=coll_id,
-        )
-        session.add(dataset)
-        return dataset.id
 
 
 def create_cubes(

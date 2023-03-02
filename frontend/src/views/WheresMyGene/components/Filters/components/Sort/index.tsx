@@ -40,17 +40,17 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
     [areFiltersDisabled]
   );
 
-  const cellTypeSelectedOptionLabel = useMemo(() => {
+  const cellTypeSelectedOption = useMemo(() => {
     return (
-      CELL_TYPE_OPTIONS.find((option) => option.id === sortBy.cellTypes)
-        ?.name || CELL_TYPE_OPTIONS[0].name
+      CELL_TYPE_OPTIONS.find((option) => option.id === sortBy.cellTypes) ||
+      CELL_TYPE_OPTIONS[0]
     );
   }, [sortBy]);
 
-  const geneSelectedOptionLabel = useMemo(() => {
+  const geneSelectedOption = useMemo(() => {
     return (
-      GENE_OPTIONS.find((option) => option.id === sortBy.genes)?.name ||
-      GENE_OPTIONS[0].name
+      GENE_OPTIONS.find((option) => option.id === sortBy.genes) ||
+      GENE_OPTIONS[0]
     );
   }, [sortBy]);
 
@@ -62,9 +62,10 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
         <StyledDropdown
           data-test-id="cell-type-sort-dropdown"
           onChange={cellTypesOnChange}
-          label={cellTypeSelectedOptionLabel}
+          label={cellTypeSelectedOption.name}
           options={CELL_TYPE_OPTIONS}
           InputDropdownProps={InputDropdownProps}
+          value={cellTypeSelectedOption}
         />
       </FilterWrapper>
       <FilterWrapper>
@@ -72,9 +73,10 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
         <StyledDropdown
           data-test-id="gene-sort-dropdown"
           onChange={genesOnChange}
-          label={geneSelectedOptionLabel}
+          label={geneSelectedOption.name}
           options={GENE_OPTIONS}
           InputDropdownProps={InputDropdownProps}
+          value={geneSelectedOption}
         />
       </FilterWrapper>
     </div>
