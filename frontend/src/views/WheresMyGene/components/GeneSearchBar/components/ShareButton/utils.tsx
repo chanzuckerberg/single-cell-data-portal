@@ -21,6 +21,7 @@ export const generateAndCopyShareUrl = (
   });
   url.searchParams.set("tissues", tissues.join(","));
   url.searchParams.set("genes", genes.join(","));
+  url.searchParams.set("ver", "2");
 
   // Copy the URL to the clipboard
   navigator.clipboard.writeText(url.toString());
@@ -63,12 +64,15 @@ export const loadStateFromQueryParams = (
     }
   });
 
+  // Check for version
+  const version = params.get("ver");
+  const delimiter = version === "1" ? "-" : ",";
   // Check for tissues
-  const newSelectedTissues = params.get("tissues")?.split(",") || [];
+  const newSelectedTissues = params.get("tissues")?.split(delimiter) || [];
   if (newSelectedTissues.length > 0) paramsToRemove.push("tissues");
 
   //Check for genes
-  const newSelectedGenes = params.get("genes")?.split(",") || [];
+  const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
 
   if (
