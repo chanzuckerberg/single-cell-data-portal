@@ -67,85 +67,58 @@ For each dataset and workflow, we report the adjusted rand index (ARI) and norma
 
 ### Tabula Sapiens blood data
 
-#### UMAP
-
 **Standard analysis**
 
 <Image src={"/doc-site/4-2_blood1_standard_umap.png"} height={250} />
+ARI: 0.35, NMI: 0.69
+
 **Marker gene analysis**
+
 <Image src={"/doc-site/4-2_blood1_marker_umap.png"} height={250} />
+ARI: 0.31, NMI: 0.68
+
 **Random analysis**
+
 <Image src={"/doc-site/4-2_blood1_random_umap.png"} height={250} />
-
-#### ARI and NMI
-
-**ARI**
-
-1. Standard analysis: 0.35
-2. Marker gene analysis: 0.31
-3. Random gene analysis: 0.16
-
-**NMI**
-
-1. Standard analysis: 0.69
-2. Marker gene analysis: 0.68
-3. Random gene analysis: 0.45
+ARI: 0.16, NMI: 0.45
 
 ### COVID blood data (Arunachalam et al.)
-
-#### UMAP
 
 **Standard analysis**
 
 <Image src={"/doc-site/4-2_blood2_standard_umap.png"} height={250} />
+ARI: 0.50, NMI: 0.75
+
 **Marker gene analysis**
+
 <Image src={"/doc-site/4-2_blood2_marker_umap.png"} height={250} />
+ARI: 0.56, NMI: 0.75
+
 **Random analysis**
+
 <Image src={"/doc-site/4-2_blood2_random_umap.png"} height={250} />
-
-#### ARI and NMI
-
-**ARI**
-
-1. Standard analysis: 0.50
-2. Marker gene analysis: 0.56
-3. Random gene analysis: 0.17
-
-**NMI**
-
-1. Standard analysis: 0.75
-2. Marker gene analysis: 0.75
-3. Random gene analysis: 0.33
+ARI: 0.17, NMI: 0.33
 
 ### Human Lung Cell Atlas lung data
-
-#### UMAP
 
 **Standard analysis**
 
 <Image src={"/doc-site/4-2_lung_standard_umap.png"} height={250} />
+ARI: 0.50, NMI: 0.80
+
 **Marker gene analysis**
+
 <Image src={"/doc-site/4-2_lung_marker_umap.png"} height={250} />
+ARI: 0.50, NMI: 0.79
+
 **Random analysis**
+
 <Image src={"/doc-site/4-2_lung_random_umap.png"} height={250} />
-
-#### ARI and NMI
-
-**ARI**
-
-1. Standard analysis: 0.50
-2. Marker gene analysis: 0.50
-3. Random gene analysis: 0.18
-
-**NMI**
-
-1. Standard analysis: 0.80
-2. Marker gene analysis: 0.79
-3. Random gene analysis: 0.41
+ARI: 0.18, NMI: 0.41
 
 ### Discussion
 
-Subsampling the data down to the union of the top 5 marker genes per cell type typically yields around 250-350 unique genes. If this set of genes were not enriched in biologically relevant genes, subsetting the data down to such a small number of genes would give very low quality results. This is evident in the random gene analysis results. Encouragingly, we do not observe any decrease in clustering accuracy when subsetting down to ~300 marker genes in any of the datasets tested.
+Subsampling the data down to the union of the top 5 marker genes per cell type typically yields around 250-350 unique genes. If this set of genes were not enriched in biologically relevant genes, subsetting the data down to such a small number of genes would give very low quality results (as shown in the random gene analysis results). Encouragingly, we do not observe any significant decrease in clustering accuracy when subsetting down to the marker genes in any of the datasets tested.
 
 ### Reproducibility notebooks
 
