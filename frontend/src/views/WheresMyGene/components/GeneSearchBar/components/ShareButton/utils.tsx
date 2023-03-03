@@ -64,11 +64,11 @@ export const loadStateFromQueryParams = (
   });
 
   // Check for tissues
-  const newSelectedTissues = params.get("tissues")?.split("-") || [];
+  const newSelectedTissues = params.get("tissues")?.split(",") || [];
   if (newSelectedTissues.length > 0) paramsToRemove.push("tissues");
 
   //Check for genes
-  const newSelectedGenes = params.get("genes")?.split("-") || [];
+  const newSelectedGenes = params.get("genes")?.split(",") || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
 
   if (
