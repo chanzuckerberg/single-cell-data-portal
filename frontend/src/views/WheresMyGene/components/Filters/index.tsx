@@ -92,7 +92,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions({ includeAllFilterOptions: false });
+  } = useFilterDimensions();
 
   const areFiltersDisabled = !selectedTissues.length || !selectedGenes.length;
 
