@@ -17,10 +17,11 @@ export const generateAndCopyShareUrl = (
   // This URL can be shared with others to reproduce the same view
   const url = new URL(window.location.href);
   Object.entries(stripEmptyFilters(filters)).forEach(([key, value]) => {
-    url.searchParams.set(key, value.join("-"));
+    url.searchParams.set(key, value.join(","));
   });
-  url.searchParams.set("tissues", tissues.join("-"));
-  url.searchParams.set("genes", genes.join("-"));
+  url.searchParams.set("tissues", tissues.join(","));
+  url.searchParams.set("genes", genes.join(","));
+  url.searchParams.set("ver", "2");
 
   // Copy the URL to the clipboard
   navigator.clipboard.writeText(url.toString());
@@ -63,14 +64,18 @@ export const loadStateFromQueryParams = (
     }
   });
 
+  // Check for version
+  let version = params.get("ver");
+  if (!version) version = "1";
+  const delimiter = version === "1" ? "-" : ",";
   // Check for tissues
-  const newSelectedTissues = params.get("tissues")?.split("-") || [];
+  const newSelectedTissues = params.get("tissues")?.split(delimiter) || [];
   if (newSelectedTissues.length > 0) paramsToRemove.push("tissues");
 
   //Check for genes
-  const newSelectedGenes = params.get("genes")?.split("-") || [];
+  const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
-
+  if (params.get("ver")) paramsToRemove.push("ver");
   if (
     Object.values(Object.keys(newSelectedFilters)).length === 0 &&
     newSelectedTissues.length === 0 &&
