@@ -65,7 +65,8 @@ export const loadStateFromQueryParams = (
   });
 
   // Check for version
-  const version = params.get("ver");
+  let version = params.get("ver");
+  if (!version) version = "1";
   const delimiter = version === "1" ? "-" : ",";
   // Check for tissues
   const newSelectedTissues = params.get("tissues")?.split(delimiter) || [];
@@ -74,7 +75,7 @@ export const loadStateFromQueryParams = (
   //Check for genes
   const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
-
+  if (params.get("ver")) paramsToRemove.push("ver");
   if (
     Object.values(Object.keys(newSelectedFilters)).length === 0 &&
     newSelectedTissues.length === 0 &&
