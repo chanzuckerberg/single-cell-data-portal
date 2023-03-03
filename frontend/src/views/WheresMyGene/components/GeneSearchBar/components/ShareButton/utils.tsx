@@ -17,10 +17,10 @@ export const generateAndCopyShareUrl = (
   // This URL can be shared with others to reproduce the same view
   const url = new URL(window.location.href);
   Object.entries(stripEmptyFilters(filters)).forEach(([key, value]) => {
-    url.searchParams.set(key, value.join("-"));
+    url.searchParams.set(key, value.join(","));
   });
-  url.searchParams.set("tissues", tissues.join("-"));
-  url.searchParams.set("genes", genes.join("-"));
+  url.searchParams.set("tissues", tissues.join(","));
+  url.searchParams.set("genes", genes.join(","));
 
   // Copy the URL to the clipboard
   navigator.clipboard.writeText(url.toString());
