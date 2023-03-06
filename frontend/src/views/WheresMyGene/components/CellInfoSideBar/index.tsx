@@ -1,9 +1,10 @@
+/* eslint-disable prettier/prettier */
 import { Button, Icon, Tooltip } from "czifui";
 import React, { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
-import { useMarkerGenes } from "src/common/queries/wheresMyGene";
+import { OntologyTerm, useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
 import { DispatchContext, State } from "../../common/store";
 import { addSelectedGenes } from "../../common/store/actions";
@@ -25,12 +26,12 @@ import {
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 export interface CellInfoBarProps {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
-  tissueName: string;
+  tissueInfo: OntologyTerm;
 }
 
 function CellInfoSideBar({
   cellInfoCellType,
-  tissueName,
+  tissueInfo,
 }: CellInfoBarProps): JSX.Element | null {
   const urlParams = new URLSearchParams(window.location.search);
   let testType: "binomtest" | undefined = undefined;
@@ -87,7 +88,7 @@ function CellInfoSideBar({
   if (!cellInfoCellType) return null;
   return (
     <div>
-      <TissueName>{tissueName}</TissueName>
+      <TissueName>{tissueInfo.name}</TissueName>
       <ButtonContainer>
         <div>
           <StyledMarkerGeneHeader>Marker Genes</StyledMarkerGeneHeader>
@@ -151,13 +152,14 @@ function CellInfoSideBar({
       </ButtonContainer>
 
       {!numMarkerGenes ? (
+        track(EVENTS.WMG_FMG_NO_MARKER_GENES, {combination: `${cellInfoCellType.cellType.id}, ${tissueInfo.id}`}), (
         <NoMarkerGenesContainer>
           <NoMarkerGenesHeader>No Marker Genes</NoMarkerGenesHeader>
           <NoMarkerGenesDescription>
             No reliable marker genes for this cell type.
           </NoMarkerGenesDescription>
         </NoMarkerGenesContainer>
-      ) : (
+      )) : (
         <StyledHTMLTable condensed bordered={false}>
           <thead>
             <tr>
@@ -249,4 +251,4 @@ function CellInfoSideBar({
   );
 }
 
-export default CellInfoSideBar;
+export default React.memo(CellInfoSideBar);
