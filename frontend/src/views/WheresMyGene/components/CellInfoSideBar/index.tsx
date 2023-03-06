@@ -152,14 +152,18 @@ function CellInfoSideBar({
       </ButtonContainer>
 
       {!numMarkerGenes ? (
-        track(EVENTS.WMG_FMG_NO_MARKER_GENES, {combination: `${cellInfoCellType.cellType.id}, ${tissueInfo.id}`}), (
-        <NoMarkerGenesContainer>
-          <NoMarkerGenesHeader>No Marker Genes</NoMarkerGenesHeader>
-          <NoMarkerGenesDescription>
-            No reliable marker genes for this cell type.
-          </NoMarkerGenesDescription>
-        </NoMarkerGenesContainer>
-      )) : (
+        (track(EVENTS.WMG_FMG_NO_MARKER_GENES, {
+          combination: `${cellInfoCellType.cellType.id}, ${tissueInfo.id}`,
+        }),
+        (
+          <NoMarkerGenesContainer>
+            <NoMarkerGenesHeader>No Marker Genes</NoMarkerGenesHeader>
+            <NoMarkerGenesDescription>
+              No reliable marker genes for this cell type.
+            </NoMarkerGenesDescription>
+          </NoMarkerGenesContainer>
+        ))
+      ) : (
         <StyledHTMLTable condensed bordered={false}>
           <thead>
             <tr>
