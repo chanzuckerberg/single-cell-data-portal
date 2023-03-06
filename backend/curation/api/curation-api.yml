@@ -763,6 +763,8 @@ components:
           $ref: "#/components/schemas/collection_revising_in"
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
+        version_id:
+          $ref: "#/components/schemas/collection_id"
         visibility:
           $ref: "#/components/schemas/visibility"
       type: object
