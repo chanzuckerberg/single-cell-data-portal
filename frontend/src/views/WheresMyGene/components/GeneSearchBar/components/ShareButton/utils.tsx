@@ -10,18 +10,20 @@ import {
 
 export const generateAndCopyShareUrl = (
   filters: State["selectedFilters"],
+  organism: State["selectedOrganismId"],
   tissues: State["selectedTissues"],
   genes: State["selectedGenes"]
 ) => {
   // Create a URL that contains the selected filters, tissues, and genes as params in the URL
   // This URL can be shared with others to reproduce the same view
   const url = new URL(window.location.href);
+  url.searchParams.set("organism", organism ?? "");
   Object.entries(stripEmptyFilters(filters)).forEach(([key, value]) => {
     url.searchParams.set(key, value.join(","));
   });
   url.searchParams.set("tissues", tissues.join(","));
   url.searchParams.set("genes", genes.join(","));
-  url.searchParams.set("ver", "2");
+  url.searchParams.set("ver", "3");
 
   // Copy the URL to the clipboard
   navigator.clipboard.writeText(url.toString());
@@ -67,7 +69,13 @@ export const loadStateFromQueryParams = (
   // Check for version
   let version = params.get("ver");
   if (!version) version = "1";
-  const delimiter = version === "1" ? "-" : ",";
+  const delimiter = version > "1" ? "," : "_";
+  //Check for organism (default to human)
+  let newSelectedOrganism = "NCBITaxon:9606";
+  if (version > "2") {
+    newSelectedOrganism = params.get("organism") || "";
+    paramsToRemove.push("organism");
+  }
   // Check for tissues
   const newSelectedTissues = params.get("tissues")?.split(delimiter) || [];
   if (newSelectedTissues.length > 0) paramsToRemove.push("tissues");
@@ -88,12 +96,14 @@ export const loadStateFromQueryParams = (
   dispatch(
     loadStateFromURL({
       filters: newSelectedFilters,
+      organism: newSelectedOrganism,
       tissues: newSelectedTissues,
       genes: newSelectedGenes,
     })
   );
   return {
     filters: newSelectedFilters,
+    organism: newSelectedOrganism,
     tissues: newSelectedTissues,
     genes: newSelectedGenes,
   };
