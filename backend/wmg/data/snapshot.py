@@ -147,15 +147,7 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
 
 
 def _open_cube(cube_uri) -> Array:
-    # conditionally use a try-except block to open the default expression summary cube
-    # to cover the transition period where the default cube is not yet available
-    if EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME in cube_uri:
-        try:
-            return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
-        except tiledb.TileDBError:
-            return None
-    else:
-        return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+    return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
 
 
 def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:

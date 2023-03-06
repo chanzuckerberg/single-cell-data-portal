@@ -267,19 +267,11 @@ export interface FilterDimensions {
   sex_terms: { id: string; name: string }[];
 }
 
-/**
- * (thuang): For Filters panel, `includeAllFilterOptions` should be `true`, so BE
- * returns all available secondary filter options for us to display
- */
-export function useFilterDimensions(
-  options = { includeAllFilterOptions: false }
-): {
+export function useFilterDimensions(): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const { includeAllFilterOptions } = options;
-
-  const requestBody = useWMGQueryRequestBody({ includeAllFilterOptions });
+  const requestBody = useWMGQueryRequestBody();
 
   const { data, isLoading } = useWMGQuery(requestBody);
 
@@ -549,9 +541,7 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
-  const { includeAllFilterOptions } = options;
-
+function useWMGQueryRequestBody() {
   const {
     selectedGenes,
     selectedTissues,
@@ -560,13 +550,8 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   } = useContext(StateContext);
   const { data } = usePrimaryFilterDimensions();
 
-  /**
-   * (thuang): When `includeAllFilterOptions` is `true`, we don't want to pass
-   * any selected secondary filter options to the query, otherwise BE will return
-   * only the filtered options back to us.
-   */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
-    includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
+    selectedFilters;
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
