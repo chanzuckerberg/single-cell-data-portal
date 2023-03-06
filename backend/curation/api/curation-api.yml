@@ -587,41 +587,41 @@ paths:
                 items:
                   $ref: "#/components/schemas/census_info_dataset"
 
-#  /v1/datasets/{dataset_id}:
-#    get:
-#      summary: Get metadata for a Dataset
-#      tags:
-#        - dataset
-#        - versions
-#      description: |
-#        Fetch Dataset metadata for a Dataset as specified by `dataset_id`, which may be either a Dataset or a Dataset
-#        version.
-#      security:
-#        - curatorAccessLenient: [ ]
-#        - { }
-#      operationId: backend.curation.api.v1.curation.datasets.dataset_id.actions.get
-#      parameters:
-#        - $ref: "#/components/parameters/path_dataset_id"
-#      responses:
-#        "200":
-#          description: OK
-#          content:
-#            application/json:
-#              schema:
-#                type: array
-#                items:
-#                  allOf:
-#                    - type: object
-#                      properties:
-#                        collection_id:
-#                          $ref: "#/components/schemas/collection_id"
-#                    - $ref: "#/components/schemas/dataset"
-#        "400":
-#          $ref: "#/components/responses/400"
-#        "401":
-#          $ref: "#/components/responses/401"
-#        "404":
-#          $ref: "#/components/responses/404"
+  /v1/datasets/{dataset_id}:
+    get:
+      summary: Get metadata for a Dataset
+      tags:
+        - dataset
+        - versions
+      description: |
+        Fetch Dataset metadata for a Dataset as specified by `dataset_id`, which may be either a Dataset or a Dataset
+        version.
+      security:
+        - curatorAccessLenient: [ ]
+        - { }
+      operationId: backend.curation.api.v1.curation.datasets.dataset_id.actions.get
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - type: object
+                      properties:
+                        collection_id:
+                          $ref: "#/components/schemas/collection_id"
+                    - $ref: "#/components/schemas/dataset"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/datasets/{dataset_id}/versions:
     get:
