@@ -12,6 +12,7 @@ const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
+const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 
@@ -218,6 +219,7 @@ describe("Where's My Gene", () => {
       { page }
     );
   });
+
   test("Hierarchical Clustering", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
@@ -239,7 +241,7 @@ describe("Where's My Gene", () => {
     await selectFirstNOptions(GENE_COUNT, page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} button`,
+      `${getTestID(GENE_LABELS_ID)} span`,
       page
     );
 
@@ -267,7 +269,7 @@ describe("Where's My Gene", () => {
     await selectNthOption(2, page);
 
     const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} button`,
+      `${getTestID(GENE_LABELS_ID)} span`,
       page
     );
 
@@ -308,19 +310,20 @@ describe("Where's My Gene", () => {
     await waitForHeatmapToRender(page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} button`,
+      `${getTestID(GENE_LABELS_ID)} span`,
       page
     );
 
-    await page.click(getText(beforeGeneNames[0]));
-
     await tryUntil(
       async () => {
-        await page.focus(getTestID(GENE_LABELS_ID));
         await page.keyboard.press("Backspace");
 
+        // Testing single gene delete
+        await page.hover(".gene-label-container");
+        await page.click(getTestID(GENE_DELETE_BUTTON));
+
         const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} button`,
+          `${getTestID(GENE_LABELS_ID)} span`,
           page
         );
 
@@ -425,7 +428,10 @@ async function selectFirstNOptions(count: number, page: Page) {
 }
 
 async function selectNthOption(number: number, page: Page) {
-  for (let i = 0; i < number; i++) {
+  // (thuang): Since the first option is now active, we need to offset by 1
+  const step = number - 1;
+
+  for (let i = 0; i < step; i++) {
     await page.keyboard.press("ArrowDown");
   }
 
