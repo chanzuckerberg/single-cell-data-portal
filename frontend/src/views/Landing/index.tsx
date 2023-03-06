@@ -254,7 +254,7 @@ const LandingPage = (): JSX.Element => {
             </p>
             <div className={styles.heroStatsContainer}>
               <div>
-                <span>Cells</span>
+                <span>unique cells</span>
                 <p>{cellsHeroNum}</p>
               </div>
               <div>
