@@ -8,7 +8,13 @@ from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
-from backend.wmg.data.query import MarkerGeneQueryCriteria, WmgQuery, WmgQueryCriteria, retrieve_top_n_markers
+from backend.wmg.data.query import (
+    MarkerGeneQueryCriteria,
+    WmgFiltersQueryCriteria,
+    WmgQuery,
+    WmgQueryCriteria,
+    retrieve_top_n_markers,
+)
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
@@ -26,7 +32,6 @@ def primary_filter_dimensions():
 def query():
     request = connexion.request.json
     is_rollup = request.get("is_rollup", True)
-    include_filter_dims = request.get("include_filter_dims", False)
 
     criteria = WmgQueryCriteria(**request["filter"])
 
@@ -47,7 +52,6 @@ def query():
         if is_rollup:
             dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
-        response_filter_dims_values = build_filter_dims_values(criteria, snapshot) if include_filter_dims else {}
         response = jsonify(
             dict(
                 snapshot_id=snapshot.snapshot_identifier,
@@ -58,6 +62,21 @@ def query():
                         cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings
                     ),
                 ),
+            )
+        )
+    return response
+
+
+def filters():
+    request = connexion.request.json
+    criteria = WmgFiltersQueryCriteria(**request["filter"])
+
+    with ServerTiming.time("calculate filters and build response"):
+        snapshot: WmgSnapshot = load_snapshot()
+        response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
+        response = jsonify(
+            dict(
+                snapshot_id=snapshot.snapshot_identifier,
                 filter_dims=response_filter_dims_values,
             )
         )
@@ -167,7 +186,7 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
     return [i.split("__")[1] for i in valid_options]
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot) -> Dict:
+def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",

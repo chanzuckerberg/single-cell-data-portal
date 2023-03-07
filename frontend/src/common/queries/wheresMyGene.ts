@@ -139,8 +139,21 @@ interface Filter {
   self_reported_ethnicity_ontology_term_ids: string[];
 }
 
+interface FilterSecondary {
+  organism_ontology_term_id: string;
+  tissue_ontology_term_ids: string[];
+  dataset_ids: string[];
+  disease_ontology_term_ids: string[];
+  sex_ontology_term_ids: string[];
+  development_stage_ontology_term_ids: string[];
+  self_reported_ethnicity_ontology_term_ids: string[];
+}
+
+export interface FiltersQuery {
+  filter: FilterSecondary;
+}
+
 export interface Query {
-  include_filter_dims: boolean;
   filter: Filter;
 }
 
@@ -150,18 +163,6 @@ interface QueryResponse {
     [geneId: string]: {
       [tissueId: string]: RawCellTypeGeneExpressionSummaryData[];
     };
-  };
-  filter_dims: {
-    datasets: {
-      collection_id: string;
-      collection_label: string;
-      id: string;
-      label: string;
-    }[];
-    disease_terms: { [id: string]: string }[];
-    sex_terms: { [id: string]: string }[];
-    development_stage_terms: { [id: string]: string }[];
-    self_reported_ethnicity_terms: { [id: string]: string }[];
   };
   snapshot_id: string;
   term_id_labels: {
@@ -177,6 +178,50 @@ interface QueryResponse {
       [id: string]: string;
     }[];
   };
+}
+
+interface FiltersQueryResponse {
+  filter_dims: {
+    datasets: {
+      collection_id: string;
+      collection_label: string;
+      id: string;
+      label: string;
+    }[];
+    disease_terms: { [id: string]: string }[];
+    sex_terms: { [id: string]: string }[];
+    development_stage_terms: { [id: string]: string }[];
+    self_reported_ethnicity_terms: { [id: string]: string }[];
+    tissue_terms: { [id: string]: string }[];
+  };
+  snapshot_id: string;
+}
+
+async function fetchFiltersQuery({
+  query,
+  signal,
+}: {
+  query: FiltersQuery | null;
+  signal?: AbortSignal;
+}): Promise<FiltersQueryResponse | undefined> {
+  if (!query) return;
+
+  const url = API_URL + API.WMG_FILTERS_QUERY;
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(query),
+    method: "POST",
+    signal,
+  });
+  const json: FiltersQueryResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
 }
 
 async function fetchQuery({
@@ -209,6 +254,11 @@ async function fetchQuery({
 export const USE_QUERY = {
   entities: [ENTITIES.WMG_QUERY],
   id: "wmg-query",
+};
+
+export const USE_FILTERS_QUERY = {
+  entities: [ENTITIES.WMG_FILTERS_QUERY],
+  id: "wmg-filters-query",
 };
 
 export function useWMGQuery(
@@ -244,12 +294,41 @@ export function useWMGQuery(
   );
 }
 
+export function useWMGFiltersQuery(
+  query: FiltersQuery | null
+): UseQueryResult<FiltersQueryResponse> {
+  const dispatch = useContext(DispatchContext);
+
+  // (thuang): Refresh query when the snapshotId changes
+  const currentSnapshotId = useSnapshotId();
+
+  return useQuery(
+    [USE_FILTERS_QUERY, query, currentSnapshotId],
+    ({ signal }) => fetchFiltersQuery({ query, signal }),
+    {
+      enabled: Boolean(query),
+      onSuccess(response) {
+        if (!response || !dispatch) return;
+
+        const { snapshot_id } = response;
+
+        if (currentSnapshotId !== snapshot_id) {
+          dispatch(setSnapshotId(snapshot_id));
+        }
+      },
+      // (thuang): We don't need to refetch during the session
+      staleTime: Infinity,
+    }
+  );
+}
+
 const EMPTY_FILTER_DIMENSIONS = {
   datasets: [],
   development_stage_terms: [],
   disease_terms: [],
   self_reported_ethnicity_terms: [],
   sex_terms: [],
+  tissue_terms: [],
 };
 
 export interface RawDataset {
@@ -265,15 +344,16 @@ export interface FilterDimensions {
   disease_terms: { id: string; name: string }[];
   self_reported_ethnicity_terms: { id: string; name: string }[];
   sex_terms: { id: string; name: string }[];
+  tissue_terms: { id: string; name: string }[];
 }
 
 export function useFilterDimensions(): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const requestBody = useWMGQueryRequestBody();
+  const requestBody = useWMGFiltersQueryRequestBody();
 
-  const { data, isLoading } = useWMGQuery(requestBody);
+  const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
@@ -286,6 +366,7 @@ export function useFilterDimensions(): {
       disease_terms,
       self_reported_ethnicity_terms,
       sex_terms,
+      tissue_terms,
     } = filter_dims;
 
     const sortedDatasets = Object.values(
@@ -303,6 +384,7 @@ export function useFilterDimensions(): {
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
+        tissue_terms: tissue_terms.map(toEntity),
       },
       isLoading: false,
     };
@@ -604,7 +686,6 @@ function useWMGQueryRequestBody() {
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids,
       },
-      include_filter_dims: true,
       is_rollup: true, // this could be made toggleable by users in the future
     };
   }, [
@@ -621,6 +702,59 @@ function useWMGQueryRequestBody() {
     sexes,
   ]);
 }
+
+function useWMGFiltersQueryRequestBody() {
+  const { selectedTissues, selectedOrganismId, selectedFilters } =
+    useContext(StateContext);
+  const { data } = usePrimaryFilterDimensions();
+
+  const { datasets, developmentStages, diseases, ethnicities, sexes } =
+    selectedFilters;
+
+  const tissuesByName = useMemo(() => {
+    let result: { [name: string]: OntologyTerm } = {};
+
+    if (!data) return result;
+
+    const { tissues } = data;
+
+    result = generateTermsByKey(tissues, "name");
+
+    return result;
+  }, [data]);
+
+  return useMemo(() => {
+    if (!data || !selectedOrganismId || !selectedTissues.length) {
+      return null;
+    }
+    const tissue_ontology_term_ids = selectedTissues.map((tissueName) => {
+      return tissuesByName[tissueName].id;
+    });
+
+    return {
+      filter: {
+        dataset_ids: datasets,
+        development_stage_ontology_term_ids: developmentStages,
+        disease_ontology_term_ids: diseases,
+        organism_ontology_term_id: selectedOrganismId,
+        self_reported_ethnicity_ontology_term_ids: ethnicities,
+        sex_ontology_term_ids: sexes,
+        tissue_ontology_term_ids,
+      },
+    };
+  }, [
+    selectedTissues,
+    selectedOrganismId,
+    data,
+    tissuesByName,
+    datasets,
+    developmentStages,
+    diseases,
+    ethnicities,
+    sexes,
+  ]);
+}
+
 let prevQuery: Query | null;
 
 function clobberQueryIfSubsetOfPrev(
@@ -628,10 +762,7 @@ function clobberQueryIfSubsetOfPrev(
   filtersToCheck: (keyof Filter)[]
 ): Query | null {
   if (prevQuery == query) return prevQuery;
-  if (
-    !prevQuery ||
-    prevQuery?.include_filter_dims !== query?.include_filter_dims
-  ) {
+  if (!prevQuery || !query) {
     prevQuery = query;
     return query;
   }

@@ -83,9 +83,6 @@ paths:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     self_reported_ethnicity_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                include_filter_dims:
-                  type: boolean
-                  default: false
                 is_rollup:
                   type: boolean
                   default: true
@@ -287,6 +284,56 @@ paths:
                         # TODO: specify further (grouped by tissue now): https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
                   #                        items:
                   #                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+
+  /v1/filters:
+    post:
+      summary: Given a set of query criteria, returns the valid secondary filter and tissue terms
+      tags:
+        - wmg
+      operationId: backend.wmg.api.v1.filters
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filter:
+                  type: object
+                  required:
+                    - organism_ontology_term_id
+                  properties:
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    dataset_ids:
+                      type: array
+                      items:
+                        type: string
+                        format: uuid
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    development_ontology_stage_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+              required:
+                - filter
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - filter_dimensions
+                properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/wmg_snapshot_id"
                   filter_dimensions:
                     type: object
                     properties:
@@ -315,6 +362,7 @@ paths:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                       tissue_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+
   /v1/markers:
     post:
       summary: Given a cell type, organism, and tissue, returns the top `n_markers` precomputed marker genes for one of two statistical tests, the t-test or binomial test (`test="ttest"` or `test="binomtest"`, respectively). By default, `n_markers=10`. If `n_markers=0`, all marker genes will be returned.
