@@ -115,6 +115,13 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
     ]
 
 
+def find_all_dim_option_values(snapshot: WmgSnapshot, dimension: str) -> list:
+    all_filter_options = []
+    for key in snapshot.filter_relationships:
+        if dimension in snapshot.filter_relationships[key]:
+            all_filter_options = list(set(all_filter_options).union(snapshot.filter_relationships[key][dimension]))
+
+
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
@@ -186,6 +193,18 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
     return [i.split("__")[1] for i in valid_options]
 
 
+def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
+    for key in criteria:
+        if key != "organism_ontology_term_id":
+            if isinstance(criteria[key], list):
+                if len(criteria[key]) > 0:
+                    return False
+            else:
+                if criteria[key] != "":
+                    return False
+    return True
+
+
 def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
@@ -196,7 +215,11 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
         "tissue_ontology_term_id": "",
     }
     for dim in dims:
-        dims[dim] = find_dim_option_values(criteria, snapshot, dim)
+        dims[dim] = (
+            find_all_dim_option_values(snapshot, dim)
+            if is_criteria_empty(criteria)
+            else find_dim_option_values(criteria, snapshot, dim)
+        )
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),

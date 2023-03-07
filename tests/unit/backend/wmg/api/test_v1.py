@@ -564,7 +564,6 @@ class WmgApiV1Tests(unittest.TestCase):
             filter_0_request = dict(
                 filter=filter_0,
                 # matters for this test
-                include_filter_dims=True,
                 is_rollup=True,
             )
 
@@ -631,7 +630,6 @@ class WmgApiV1Tests(unittest.TestCase):
                 filter_0_request = dict(
                     filter=filter_0,
                     # matters for this test
-                    include_filter_dims=True,
                     is_rollup=True,
                 )
 
@@ -648,7 +646,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                 )
                 filter_0_no_dev_stage_request = dict(
-                    filter=filter_0_no_dev_stage_filter, include_filter_dims=True, is_rollup=True
+                    filter=filter_0_no_dev_stage_filter, is_rollup=True
                 )
 
                 filter_0_no_ethnicity_filter = dict(
@@ -664,7 +662,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     self_reported_ethnicity_ontology_term_ids=[],
                 )
                 filter_0_no_ethnicity_request = dict(
-                    filter=filter_0_no_ethnicity_filter, include_filter_dims=True, is_rollup=True
+                    filter=filter_0_no_ethnicity_filter, is_rollup=True
                 )
                 # the values for dev_stage terms when a dev stage filter is included should match the values returned
                 # if no filter is passed in for dev stage
@@ -720,7 +718,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"self_reported_ethnicity_ontology_term_id_2": "self_reported_ethnicity_ontology_term_id_2_label"},
                 ]
                 self_reported_ethnicity_0_request = dict(
-                    filter=self_reported_ethnicity_0_filter, include_filter_dims=True, is_rollup=True
+                    filter=self_reported_ethnicity_0_filter, is_rollup=True
                 )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_0_request)
                 dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
@@ -749,7 +747,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
                 ]
                 self_reported_ethnicity_1_request = dict(
-                    filter=self_reported_ethnicity_1_filter, include_filter_dims=True, is_rollup=True
+                    filter=self_reported_ethnicity_1_filter, is_rollup=True
                 )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_request)
                 dev_stage_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
@@ -769,7 +767,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_1"],
                 )
                 self_reported_ethnicity_1_dev_1_request = dict(
-                    filter=self_reported_ethnicity_1_dev_1_filter, include_filter_dims=True, is_rollup=True
+                    filter=self_reported_ethnicity_1_dev_1_filter, is_rollup=True
                 )
 
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_dev_1_request)
@@ -805,10 +803,10 @@ class WmgApiV1Tests(unittest.TestCase):
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_2"],
                 )
                 self_reported_ethnicity_2_request = dict(
-                    filter=self_reported_ethnicity_2_filter, include_filter_dims=True, is_rollup=True
+                    filter=self_reported_ethnicity_2_filter, is_rollup=True
                 )
                 eth_2_dev_2_request = dict(
-                    filter=self_reported_ethnicity_2_dev_2_filter, include_filter_dims=True, is_rollup=True
+                    filter=self_reported_ethnicity_2_dev_2_filter, is_rollup=True
                 )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_2_request)
                 dev_stage_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
