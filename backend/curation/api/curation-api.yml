@@ -627,6 +627,8 @@ paths:
                       properties:
                         collection_id:
                           $ref: "#/components/schemas/collection_id"
+                        collection_version_id:
+                          $ref: "#/components/schemas/collection_version_id"
                     - $ref: "#/components/schemas/dataset"
         "400":
           $ref: "#/components/responses/400"
