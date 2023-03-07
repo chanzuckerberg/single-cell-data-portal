@@ -664,6 +664,9 @@ paths:
                       properties:
                         collection_id:
                           $ref: "#/components/schemas/collection_id"
+                        collection_version_id:
+                          description:
+                          $ref: "#/components/schemas/collection_version_id"
                     - $ref: "#/components/schemas/dataset"
         "400":
           $ref: "#/components/responses/400"
@@ -771,7 +774,7 @@ components:
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
         version_id:
-          $ref: "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_version_id"
         visibility:
           $ref: "#/components/schemas/visibility"
       type: object
@@ -894,7 +897,7 @@ components:
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
         version_id:
-          $ref: "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_version_id"
         visibility:
           $ref: "#/components/schemas/visibility"
       type: object
@@ -918,6 +921,11 @@ components:
     collection_id:
       description: A unique identifier of a Collection.
       example: fedcba98-7654-3210-fedc-ba9876543210
+      type: string
+      format: uuid
+    collection_version_id:
+      description: A unique identifier of a Collection version.
+      example: ba987654-3210-fedc-ba98-76543210fedc
       type: string
       format: uuid
     dataset:
@@ -1001,7 +1009,7 @@ components:
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
         version_id:
-          $ref: "#/components/schemas/dataset_id"
+          $ref: "#/components/schemas/dataset_version_id"
         x_approximate_distribution:
           $ref: "#/components/schemas/distribution"
       type: object
@@ -1041,6 +1049,11 @@ components:
       example: 01234567-89ab-cdef-0123-456789abcdef
       type: string
       format: uuid
+    dataset_version_id:
+      description: A unique identifier of a Dataset version.
+      example: 456789ab-cdef-0123-4567-89abcdef0123
+      type: string
+      format: uuid
     dataset_preview:
       properties:
         assay:
@@ -1056,7 +1069,7 @@ components:
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
         version_id:
-          $ref: "#/components/schemas/dataset_id"
+          $ref: "#/components/schemas/dataset_version_id"
       type: object
     distribution:
       description:
