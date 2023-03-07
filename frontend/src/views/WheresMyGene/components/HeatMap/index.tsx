@@ -41,8 +41,6 @@ interface Props {
   selectedTissues: string[];
   cellTypes: { [tissue: Tissue]: CellType[] };
   genes: State["selectedGenes"];
-  tissuesWithDeletedCellTypes: string[];
-  allTissueCellTypes: { [tissue: Tissue]: CellType[] };
   selectedGeneExpressionSummariesByTissueName: {
     [tissueName: string]: GeneExpressionSummary[];
   };
@@ -61,8 +59,6 @@ export default memo(function HeatMap({
   selectedTissues,
   cellTypes,
   genes,
-  tissuesWithDeletedCellTypes,
-  allTissueCellTypes,
   selectedGeneExpressionSummariesByTissueName,
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
@@ -173,10 +169,6 @@ export default memo(function HeatMap({
                 tissue={tissue}
                 tissueID={tissuesByName[tissue].id}
                 cellTypes={tissueCellTypes}
-                hasDeletedCellTypes={tissuesWithDeletedCellTypes.includes(
-                  tissue
-                )}
-                availableCellTypes={allTissueCellTypes[tissue]}
                 generateMarkerGenes={generateMarkerGenes}
                 selectedOrganismId={selectedOrganismId}
               />

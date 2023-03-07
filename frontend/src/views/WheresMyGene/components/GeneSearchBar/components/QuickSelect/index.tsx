@@ -26,6 +26,7 @@ import React, {
   SyntheticEvent,
   useRef,
   useState,
+  useEffect,
 } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
@@ -253,9 +254,16 @@ export default function QuickSelect<
   };
   const selectedAsArray = Array.isArray(selected) ? selected : [selected];
 
-  const itemOptionsWithSelectedOnTop = [
-    ...new Set([...selectedAsArray, ...items]),
-  ];
+  const [itemOptions, setItemOptions] = useState<T[]>(items);
+  useEffect(() => {
+    if (!isLoading) {
+      const itemOptionsWithSelectedOnTop = [
+        ...new Set([...selectedAsArray, ...items]),
+      ];
+      setItemOptions(itemOptionsWithSelectedOnTop);
+    }
+  }, [items, selectedAsArray, isLoading]);
+
   return (
     <>
       <ButtonWrapper>
@@ -301,7 +309,7 @@ export default function QuickSelect<
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={multiple ? handleEnter : undefined}
-          options={itemOptionsWithSelectedOnTop}
+          options={itemOptions}
           ListboxComponent={
             ListboxComponent as React.ComponentType<
               React.HTMLAttributes<HTMLElement>
