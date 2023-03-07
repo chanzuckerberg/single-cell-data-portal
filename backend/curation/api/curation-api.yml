@@ -927,13 +927,6 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
-        dataset_assets:
-          description: |
-            The assets associated with the Dataset. Links to download the files can be generated using
-            *GET /v1/collections/{collection_id}/datasets/{dataset_id}/assets*
-          items:
-            $ref: "#/components/schemas/asset_filetype"
-          type: array
         development_stage:
           description: |
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
