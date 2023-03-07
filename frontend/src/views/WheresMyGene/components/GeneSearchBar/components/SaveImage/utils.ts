@@ -8,7 +8,7 @@ import {
   X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../../HeatMap/utils";
-import { plasmaSvgString } from "../../../InfoPanel/components/ColorScale";
+import { plasmaSvgString } from "../../../Filters/components/ColorScale";
 
 export const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
 const FONT_FAMILY = "sans-serif";

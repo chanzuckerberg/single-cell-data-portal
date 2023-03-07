@@ -23,18 +23,6 @@ export const Label = styled.label`
   }}
 `;
 
-export const OrganismLabel = styled.label`
-  ${fontBodyS}
-
-  ${(props) => {
-    const fontWeights = getFontWeights(props);
-
-    return `
-      font-weight: ${fontWeights?.semibold};
-    `;
-  }}
-`;
-
 export const LoadingIndicatorWrapper = styled.div`
   display: flex;
   align-items: center;

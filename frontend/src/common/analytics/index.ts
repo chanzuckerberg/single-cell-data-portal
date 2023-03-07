@@ -20,6 +20,8 @@ export function track(event: EVENTS, props?: Record<string, unknown>): void {
   const options = serializeProps(props);
 
   window.plausible(event, options);
-  if (API_URL !== "https://api.cellxgene.cziscience.com")
+
+  if (API_URL !== "https://api.cellxgene.cziscience.com") {
     console.info(`Tracking event: ${event}`, options);
+  }
 }

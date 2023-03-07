@@ -2,6 +2,7 @@ import cloneDeep from "lodash/cloneDeep";
 import { memo, useContext, useMemo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
+  CellTypeRow,
   generateTermsByKey,
   OntologyTerm,
   usePrimaryFilterDimensions,
@@ -39,7 +40,7 @@ import {
 interface Props {
   className?: string;
   selectedTissues: string[];
-  cellTypes: { [tissue: Tissue]: CellType[] };
+  cellTypes: { [tissue: Tissue]: CellTypeRow[] };
   genes: State["selectedGenes"];
   tissuesWithDeletedCellTypes: string[];
   allTissueCellTypes: { [tissue: Tissue]: CellType[] };
@@ -82,6 +83,7 @@ export default memo(function HeatMap({
   const dispatch = useContext(DispatchContext);
 
   const { data } = usePrimaryFilterDimensions();
+
   // Get tissueName to ID map for use in find marker genes
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
@@ -167,6 +169,7 @@ export default memo(function HeatMap({
               sortedCellTypesByTissueName,
               tissue,
             });
+
             return (
               <YAxisChart
                 key={tissue}
@@ -234,8 +237,8 @@ function getTissueCellTypes({
   tissue,
   cellTypeSortBy,
 }: {
-  cellTypes: { [tissue: Tissue]: CellType[] };
-  sortedCellTypesByTissueName: { [tissue: string]: CellType[] };
+  cellTypes: { [tissue: Tissue]: CellTypeRow[] };
+  sortedCellTypesByTissueName: { [tissue: string]: CellTypeRow[] };
   tissue: Tissue;
   cellTypeSortBy: SORT_BY;
 }) {

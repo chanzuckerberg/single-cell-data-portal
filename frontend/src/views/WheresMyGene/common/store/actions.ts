@@ -102,6 +102,15 @@ export function selectSortBy(
   };
 }
 
+export function selectCompare(
+  Compare: Partial<State["Compare"]>
+): GetActionTypeOfReducer<typeof REDUCERS["selectCompare"]> {
+  return {
+    payload: Compare,
+    type: "selectCompare",
+  };
+}
+
 export function resetGenesToDeleteAndCellTypeIdsToDelete(): GetActionTypeOfReducer<
   typeof REDUCERS["resetGenesToDeleteAndCellTypeIdsToDelete"]
 > {

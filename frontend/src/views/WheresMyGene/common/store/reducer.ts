@@ -5,6 +5,7 @@ import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
 } from "../../components/HeatMap/utils";
+import { CompareId } from "../constants";
 import { CellType, SORT_BY, Tissue } from "../types";
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
@@ -37,6 +38,7 @@ export interface State {
     tissueID: string;
     organismID: string;
   } | null;
+  compare?: CompareId;
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -63,9 +65,11 @@ export const REDUCERS = {
   addSelectedGenes,
   deleteSelectedGenesAndSelectedCellTypeIds,
   deleteSingleGene,
+  loadStateFromURL,
   resetGenesToDeleteAndCellTypeIdsToDelete,
   resetTissueCellTypes,
   selectCellTypeIds,
+  selectCompare,
   selectFilters,
   selectGenes,
   selectOrganism,
@@ -75,7 +79,6 @@ export const REDUCERS = {
   tissueCellTypesFetched,
   toggleCellTypeIdToDelete,
   toggleGeneToDelete,
-  loadStateFromURL,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -277,9 +280,9 @@ function deleteSelectedCellTypeIdsByMetadata(
 
   const cellTypeIdsToDeleteByTissue = cellTypeMetadata.reduce(
     (memo, metadata) => {
-      const { tissue, id } = deserializeCellTypeMetadata(metadata);
+      const { tissue, viewId } = deserializeCellTypeMetadata(metadata);
       const cellTypeIds = memo[tissue] || [];
-      memo[tissue] = [...cellTypeIds, id];
+      memo[tissue] = [...cellTypeIds, viewId];
 
       return memo;
     },
@@ -306,21 +309,12 @@ function tissueCellTypesFetched(
     cellTypes: CellType[];
   }>
 ): State {
-  const { tissue, cellTypes } = action.payload;
-
-  const newCellTypeIds = cellTypes.map((cellType) => cellType.id);
-
-  const { selectedCellTypeIds } = state;
-
-  const oldCellTypeIds = selectedCellTypeIds[tissue];
-
-  return {
-    ...state,
-    selectedCellTypeIds: {
-      ...selectedCellTypeIds,
-      [tissue]: oldCellTypeIds || newCellTypeIds,
-    },
-  };
+  /**
+   * (thuang): If we want to allow users to manipulate the amount of cell
+   * types to be shown in the heatmap, we will need to retain the existing
+   * cell types instead of always using `newCellTypeIds` via `resetTissueCellTypes()`
+   */
+  return resetTissueCellTypes(state, action);
 }
 
 function resetTissueCellTypes(
@@ -332,7 +326,7 @@ function resetTissueCellTypes(
 ): State {
   const { tissue, cellTypes } = action.payload;
 
-  const newCellTypeIds = cellTypes.map((cellType) => cellType.id);
+  const newCellTypeIds = cellTypes.map((cellType) => cellType.viewId);
 
   const { selectedCellTypeIds } = state;
 
@@ -436,7 +430,17 @@ function loadStateFromURL(
   return {
     ...state,
     selectedFilters: { ...state.selectedFilters, ...payload.filters },
-    selectedTissues: payload.tissues,
     selectedGenes: payload.genes,
+    selectedTissues: payload.tissues,
+  };
+}
+
+function selectCompare(
+  state: State,
+  action: PayloadAction<State["compare"]>
+): State {
+  return {
+    ...state,
+    compare: action.payload,
   };
 }
