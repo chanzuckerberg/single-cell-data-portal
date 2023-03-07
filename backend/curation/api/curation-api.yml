@@ -538,36 +538,36 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-  /v1/collections/{collection_id}/datasets/{dataset_id}/assets:
-    get:
-      summary: Retrieve links for downloading a Dataset
-      tags:
-        - collection
-      description: |
-        Generate Presigned S3 URLs to download the files associated with the `dataset_id` in the Collection specified
-        by the `collection_id`. Pre-signed S3 URLs have a life span of up to 1 hour. You should generate a pre-signed
-        URL immediately before each download to ensure it is current.
-      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.assets.get
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/path_dataset_id"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/asset_response"
-        "202":
-          description: Unable to retrieve one or more asset response fields.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/asset_response"
-        "400":
-          $ref: "#/components/responses/400"
-        "404":
-          $ref: "#/components/responses/404"
+#  /v1/collections/{collection_id}/datasets/{dataset_id}/assets:
+#    get:
+#      summary: Retrieve links for downloading a Dataset
+#      tags:
+#        - collection
+#      description: |
+#        Generate Presigned S3 URLs to download the files associated with the `dataset_id` in the Collection specified
+#        by the `collection_id`. Pre-signed S3 URLs have a life span of up to 1 hour. You should generate a pre-signed
+#        URL immediately before each download to ensure it is current.
+#      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.assets.get
+#      parameters:
+#        - $ref: "#/components/parameters/path_collection_id"
+#        - $ref: "#/components/parameters/path_dataset_id"
+#      responses:
+#        "200":
+#          description: OK
+#          content:
+#            application/json:
+#              schema:
+#                $ref: "#/components/schemas/asset_response"
+#        "202":
+#          description: Unable to retrieve one or more asset response fields.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: "#/components/schemas/asset_response"
+#        "400":
+#          $ref: "#/components/responses/400"
+#        "404":
+#          $ref: "#/components/responses/404"
 
   /v1/datasets:
     get:
@@ -670,8 +670,8 @@ components:
             type: number
           filetype:
             $ref: "#/components/schemas/asset_filetype"
-          presigned_url:
-            description: A URL to download this asset.
+          url:
+            description: the url for accessing the asset
             type: string
         type: object
       type: array
@@ -912,6 +912,8 @@ components:
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
+        assets:
+          $ref: "#/components/schemas/asset_response"
         batch_condition:
           $ref: "#/components/schemas/batch_condition"
         cell_count:
