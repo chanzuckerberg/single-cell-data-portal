@@ -579,10 +579,15 @@ paths:
       operationId: backend.curation.api.v1.curation.datasets.actions.get
       parameters:
         - name: query_dataset_fields
+          description: |
+            List of Dataset fields to return, by name. See top-level attributes of `GET /v1/datasets/{dataset_id}`
+            response schema for available fields.
           in: query
           required: false
           schema:
-            $ref: "#/components/schemas/dataset_fields"
+            type: array
+            items:
+              type: string
           example: [ "collection_id", "assets", "id", "title" ]
       responses:
         "200":
@@ -1002,13 +1007,6 @@ components:
         x_approximate_distribution:
           $ref: "#/components/schemas/distribution"
       type: object
-    dataset_fields:
-      type: array
-      items:
-        type: string
-        description: |
-          List of Dataset fields to return, by name. See top-level attributes of `GET /v1/datasets/{dataset_id}`
-          response schema for available fields.
     dataset_assay:
       description: |
         [assay label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#assay)
