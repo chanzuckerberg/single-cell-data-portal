@@ -970,10 +970,6 @@ components:
           nullable: true
         revised_at:
           $ref: "#/components/schemas/dataset_revised_at"
-        revision:
-          description: The number of times the Dataset has been revised.
-          nullable: true
-          type: integer
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
