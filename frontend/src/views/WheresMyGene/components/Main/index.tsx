@@ -11,6 +11,7 @@ import React, {
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
+  CellTypeRow,
   GeneExpressionSummariesByTissueName,
   generateTermsByKey,
   useCellTypesByTissueName,
@@ -28,7 +29,7 @@ import {
   deleteSelectedGenesAndSelectedCellTypeIds,
   tissueCellTypesFetched,
 } from "../../common/store/actions";
-import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
+import { GeneExpressionSummary, Tissue } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import CellInfoBar from "../CellInfoSideBar";
@@ -39,7 +40,6 @@ import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/Sa
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
-import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
@@ -132,7 +132,7 @@ export default function WheresMyGene(): JSX.Element {
           for (const cellTypeGeneExpressionSummary of cellTypeGeneExpressionSummaries) {
             if (
               !tissueSelectedCellTypeIds.includes(
-                cellTypeGeneExpressionSummary.id
+                cellTypeGeneExpressionSummary.viewId
               )
             ) {
               continue;
@@ -158,14 +158,18 @@ export default function WheresMyGene(): JSX.Element {
    * `state.selectedCellTypeIds`.
    */
   const selectedCellTypes = useMemo(() => {
-    const result: { [tissueName: Tissue]: CellType[] } = {};
+    const result: { [tissueName: Tissue]: CellTypeRow[] } = {};
 
     for (const [tissue, selectedIds] of Object.entries(selectedCellTypeIds)) {
       const tissueCellTypes = cellTypesByTissueName[tissue];
 
       for (const selectedId of selectedIds) {
         const cellType = tissueCellTypes?.find(
-          (cellType) => cellType.id === selectedId
+          /**
+           * (thuang): This is viewId instead of cell type id, so we take
+           * compare option rows into account
+           */
+          (cellType) => cellType.viewId === selectedId
         );
 
         if (cellType !== undefined) {
@@ -306,9 +310,7 @@ export default function WheresMyGene(): JSX.Element {
         forceToggle={true}
         wmgSideBar
       >
-        <Filters isLoading={isLoading} />
-
-        <ColorScale setIsScaled={setIsScaled} />
+        <Filters isLoading={isLoading} setIsScaled={setIsScaled} />
       </SideBar>
       {cellInfoCellType && tissuesByID && (
         <SideBar

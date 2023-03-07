@@ -19,6 +19,10 @@ const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 const MUI_CHIP_ROOT = ".MuiChip-root";
 const FILTERS_PANEL_NOT_FOUND = "Filters panel not found";
 
+const CELL_TYPE_SANITY_CHECK_NUMBER = 100;
+
+const COMPARE_DROPDOWN_ID = "compare-dropdown";
+
 const { describe, skip } = test;
 
 describe("Where's My Gene", () => {
@@ -126,7 +130,7 @@ describe("Where's My Gene", () => {
         throw Error(FILTERS_PANEL_NOT_FOUND);
       }
 
-      return filtersPanel.$("*css=div >> text=Sex");
+      return filtersPanel.$(getTestID("sex-filter"));
     }
 
     async function getSexSelectorButton() {
@@ -136,7 +140,7 @@ describe("Where's My Gene", () => {
         throw Error(FILTERS_PANEL_NOT_FOUND);
       }
 
-      await filtersPanel.$("*css=div >> text=Sex");
+      await filtersPanel.$(getTestID("sex-filter"));
       return filtersPanel.$("*css=button >> text=Sex");
     }
   });
@@ -254,7 +258,9 @@ describe("Where's My Gene", () => {
 
     // (thuang): Sometimes when API response is slow, we'll not capture all the
     // cell type names, so a sanity check that we expect at least 100 names
-    expect(beforeCellTypeNames.length).toBeGreaterThan(100);
+    expect(beforeCellTypeNames.length).toBeGreaterThan(
+      CELL_TYPE_SANITY_CHECK_NUMBER
+    );
 
     const cellTypeSortDropdown = await page.locator(
       getTestID("cell-type-sort-dropdown")
@@ -358,6 +364,123 @@ describe("Where's My Gene", () => {
       expect(hasDeniedTissue).toBe(false);
     });
   });
+
+  describe("Compare", () => {
+    test("Display stratified labels in y-axis as expected", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      async function getTissueSelectorButton() {
+        return page.$(getTestID(ADD_TISSUE_ID));
+      }
+
+      async function getGeneSelectorButton() {
+        return page.$(getTestID(ADD_GENE_ID));
+      }
+
+      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await selectFirstNOptions(1, page);
+
+      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await selectFirstNOptions(3, page);
+
+      await waitForHeatmapToRender(page);
+
+      const beforeCellTypeNames = await getNames(
+        `${getTestID(CELL_TYPE_LABELS_ID)}`,
+        page
+      );
+
+      // (thuang): Sometimes when API response is slow, we'll not capture all the
+      // cell type names, so a sanity check that we expect at least 100 names
+      expect(beforeCellTypeNames.length).toBeGreaterThan(
+        CELL_TYPE_SANITY_CHECK_NUMBER
+      );
+
+      // beforeCellTypeNames array does not contain "normal"
+
+      /**
+       * (thuang): Make sure the default y axis is not stratified by checking
+       * that there are no 2 spaces in the cell type names for indentation
+       */
+      expect(
+        beforeCellTypeNames.find((name) => name.includes("  "))
+      ).toBeFalsy();
+
+      // Check all 3 Compare options work
+      await clickDropdownOptionByName({
+        name: "Disease",
+        page,
+        selector: getTestID(COMPARE_DROPDOWN_ID),
+      });
+
+      await tryUntil(
+        async () => {
+          const afterCellTypeNames = await getNames(
+            `${getTestID(CELL_TYPE_LABELS_ID)}`,
+            page
+          );
+
+          expect(
+            afterCellTypeNames.find((name) => name.includes("  normal"))
+          ).toBeTruthy();
+        },
+        { page }
+      );
+
+      await clickDropdownOptionByName({
+        name: "Sex",
+        page,
+        selector: getTestID(COMPARE_DROPDOWN_ID),
+      });
+
+      await tryUntil(
+        async () => {
+          const afterCellTypeNames = await getNames(
+            `${getTestID(CELL_TYPE_LABELS_ID)}`,
+            page
+          );
+
+          expect(
+            afterCellTypeNames.find((name) => name.includes("  female"))
+          ).toBeTruthy();
+        },
+        { page }
+      );
+
+      await clickDropdownOptionByName({
+        name: "Ethnicity",
+        page,
+        selector: getTestID(COMPARE_DROPDOWN_ID),
+      });
+
+      await tryUntil(
+        async () => {
+          const afterCellTypeNames = await getNames(
+            `${getTestID(CELL_TYPE_LABELS_ID)}`,
+            page
+          );
+
+          expect(
+            afterCellTypeNames.find((name) => name.includes("  multiethnic"))
+          ).toBeTruthy();
+        },
+        { page }
+      );
+
+      // Check selecting None removes stratification
+      await clickDropdownOptionByName({
+        name: "None",
+        page,
+        selector: getTestID(COMPARE_DROPDOWN_ID),
+      });
+
+      expect(
+        beforeCellTypeNames.find((name) => name.includes("  "))
+      ).toBeFalsy();
+    });
+  });
 });
 
 async function getNames(selector: string, page: Page): Promise<string[]> {
@@ -447,4 +570,20 @@ async function waitForHeatmapToRender(page: Page) {
     },
     { page }
   );
+}
+
+async function clickDropdownOptionByName({
+  page,
+  selector,
+  name,
+}: {
+  page: Page;
+  selector: string;
+  name: string;
+}) {
+  const dropdown = await page.locator(selector);
+  await dropdown.click();
+
+  const option = await page.locator(`[role=option] >> text=${name}`);
+  await option.click();
 }

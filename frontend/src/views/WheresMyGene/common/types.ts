@@ -11,20 +11,22 @@ export type Tissue = string;
 
 /** This object holds a cell type and its gene expressions. */
 export interface CellTypeSummary {
-  /** cellType id */
-  id: string;
-  /** cellType name */
-  name: string;
+  id: CellType["id"];
+  viewId: CellType["viewId"];
+  name: CellType["name"];
   total_count: number;
   geneExpressions?: {
     [geneName: string]: CellTypeGeneExpressionSummaryData;
   };
+  order: CellType["order"];
 }
 
 export interface CellType {
+  viewId: ViewId;
+  // ontology term id
   id: string;
   name: string;
-  depth?: number;
+  order: number;
   total_count: number;
 }
 
@@ -39,8 +41,6 @@ export interface GeneExpressionSummary {
 
 /** This is the original data shape in API response for `CellTypeGeneExpressionSummaryData` */
 export interface RawCellTypeGeneExpressionSummaryData {
-  /** cellTypeId */
-  id: string;
   /** percentage of the current subset of cells that express this gene */
   pc: number;
   /** mean expression of the current subset of cells that express this gene */
@@ -51,13 +51,22 @@ export interface RawCellTypeGeneExpressionSummaryData {
   tpc: number;
 }
 
+export type CellTypeId = string;
+export type CompareOptionId = string;
+
+/**
+ * (thuang): This ID is used to uniquely identify a cell type and its compare option
+ * cellTypeId$compareOptionId
+ * E.g., "CL:0000003$PATO:0000383", "CL:0000003$aggregated"
+ **/
+export type ViewId = `${CellTypeId}$${CompareOptionId}`;
+
 /**
  * This object describes the cell type id and its gene expression metadata given
  * the current subset of cells.
  */
 export interface CellTypeGeneExpressionSummaryData {
-  /** cellTypeId */
-  id: string;
+  viewId: ViewId;
   /** percentage of the current subset of cells that express this gene */
   percentage: number;
   /** mean expression of the current subset of cells that express this gene */
