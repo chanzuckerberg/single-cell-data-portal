@@ -169,7 +169,7 @@ paths:
       tags:
         - collection
       parameters:
-        - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_collection_id_or_version_id"
       responses:
         "200":
           description: OK
@@ -613,7 +613,7 @@ paths:
         - { }
       operationId: backend.curation.api.v1.curation.datasets.dataset_id.actions.get
       parameters:
-        - $ref: "#/components/parameters/path_dataset_id"
+        - $ref: "#/components/parameters/path_dataset_id_or_version_id"
       responses:
         "200":
           description: OK
@@ -696,7 +696,7 @@ components:
         - H5AD
         - RDS
       type: string
-      description: the file type of the asset.
+      description: The file type of the asset.
     batch_condition:
       description: |
         These keys define the batches that a normalization or integration algorithm should be aware of.
@@ -1241,8 +1241,22 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/collection_id"
+    path_collection_id_or_version_id:
+      description: The uuid of a Collection or a Collection version.
+      in: path
+      name: collection_id
+      required: true
+      schema:
+        $ref: "#/components/schemas/collection_id"
     path_dataset_id:
       description: The uuid of the Dataset.
+      in: path
+      name: dataset_id
+      required: true
+      schema:
+        $ref: "#/components/schemas/dataset_id"
+    path_dataset_id_or_version_id:
+      description: The uuid of the Dataset or a Dataset version.
       in: path
       name: dataset_id
       required: true
