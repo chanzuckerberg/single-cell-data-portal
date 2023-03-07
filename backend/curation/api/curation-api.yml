@@ -265,10 +265,10 @@ paths:
 
   /v1/collections/{collection_id}/versions:
     get:
-      summary: Fetch all versions of a Collection with their corresponding Dataset versions
+      summary: Fetch all versions of a Collection with corresponding Dataset versions
       description: >
-        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The identifier
-        for the Collection, as specified by `collection_id`, **MUST** be a Collection and **NOT** a Collection version.
+        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The Collection,
+        as specified by `collection_id`, must be a *Collection* and not a *Collection version*.
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
         - collection
@@ -644,9 +644,8 @@ paths:
         - dataset
         - versions
       description: |
-        List all versions for a given Dataset, which may be specified by a Dataset id or a Dataset version id. May
-        provide access token for access to private Dataset versions. **Brian - do we want this endpoint to only ever
-        return published versions? Or is unpublished desired as well?**
+        List all versions for a given Dataset. The Dataset, as specified by `dataset_id`, must be a *Dataset* and not a
+        *Dataset version*.
       security:
         - curatorAccessLenient: [ ]
         - { }
