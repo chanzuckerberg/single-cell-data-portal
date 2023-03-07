@@ -255,7 +255,7 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
   return (
     <SitemapLayout>
       <Head>
-        <title>CELL&times;GENE | Sitemap</title>
+        <title>Website Sitemap - CZ CELLxGENE Discover</title>
       </Head>
       <header>
         <SitemapTitle>Sitemap</SitemapTitle>
