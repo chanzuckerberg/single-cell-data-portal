@@ -157,7 +157,7 @@ paths:
       summary: Fetch a Collection with Datasets
       description: >
         Fetch full metadata for a Collection and its Datasets. The Collection, as specified by `collection_id`, may be
-        either a Collection or a Collection version.
+        either a *Collection* or a *Collection version*.
 
         An Authorization token must be provided in order to retrieve the id of an associated Revision for this Collection (the `revising_in` field), if such a Revision currently exists.
 
@@ -265,7 +265,7 @@ paths:
 
   /v1/collections/{collection_id}/versions:
     get:
-      summary: Fetch all versions of a Collection with Datasets
+      summary: Fetch all versions of a Collection with their corresponding Dataset versions
       description: >
         Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The identifier
         for the Collection, as specified by `collection_id`, **MUST** be a Collection and **NOT** a Collection version.
@@ -597,9 +597,7 @@ paths:
               schema:
                 type: array
                 items:
-                  oneOf:
-                    - $ref: "#/components/schemas/census_info_dataset"
-                    - type: array
+                  $ref: "#/components/schemas/dataset"
 
   /v1/datasets/{dataset_id}:
     get:
