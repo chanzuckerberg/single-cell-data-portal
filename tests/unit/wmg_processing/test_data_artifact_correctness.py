@@ -3,7 +3,11 @@ from typing import Dict
 
 import numpy as np
 
-from backend.wmg.api.v1 import find_all_dim_option_values, find_dim_option_values
+from backend.wmg.api.v1 import (
+    find_all_dim_option_values,
+    find_dim_option_values,
+    get_available_options_from_cell_counts_query,
+)
 from backend.wmg.data.query import WmgQuery, WmgQueryCriteria, WmgSnapshot
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_logical_dims as expression_summary_default_logical_dims,
@@ -82,9 +86,11 @@ class DataArtifactCorrectness(unittest.TestCase):
                 "self_reported_ethnicity_ontology_term_id": "",
                 "tissue_ontology_term_id": "",
             }
+            available_options = get_available_options_from_cell_counts_query(criteria, snapshot)
+
             dims_expected = dims.copy()
             for dim in dims:
-                dims[dim] = find_dim_option_values(criteria, snapshot, dim)
+                dims[dim] = find_dim_option_values(criteria, snapshot, dim, available_options)
                 dims_expected[dim] = find_dim_option_values_tiledb(criteria, snapshot, dim)
                 dims[dim].sort()
                 dims_expected[dim].sort()

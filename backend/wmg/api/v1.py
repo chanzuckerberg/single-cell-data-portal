@@ -209,6 +209,16 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
     return True
 
 
+def get_available_options_from_cell_counts_query(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot):
+    q = WmgQuery(snapshot)
+    cell_counts = q.cell_counts(criteria)
+    available_options_dict = {col: cell_counts[col].unique() for col in cell_counts.select_dtypes(exclude="number")}
+    available_options = []
+    for dim in available_options_dict:
+        available_options.extend([dim + "__" + option for option in available_options_dict[dim]])
+    return available_options
+
+
 def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
@@ -220,12 +230,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     }
     criteria_is_empty = is_criteria_empty(criteria)
     if not criteria_is_empty:
-        q = WmgQuery(snapshot)
-        cell_counts = q.cell_counts(criteria)
-        available_options_dict = {col: cell_counts[col].unique() for col in cell_counts.select_dtypes(exclude="number")}
-        available_options = []
-        for dim in available_options_dict:
-            available_options.extend([dim + "__" + option for option in available_options_dict[dim]])
+        available_options = get_available_options_from_cell_counts_query(criteria, snapshot)
 
     for dim in dims:
         if criteria_is_empty:
