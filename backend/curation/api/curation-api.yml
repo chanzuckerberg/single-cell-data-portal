@@ -273,6 +273,12 @@ paths:
         Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The Collection,
         as specified by `collection_id`, must be a *Collection* and not a *Collection version*. Collection versions
         are returned in reverse-chronological order.
+
+        In order to retrieve the following curator-specific attributes, include an access token in your API request:
+
+        - `SUBMITTED` asset (returned in `assets` array)
+
+        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
         - collection
@@ -623,7 +629,12 @@ paths:
         - versions
       description: |
         Fetch Dataset metadata for a Dataset as specified by `dataset_id`, which may be either a Dataset or a Dataset
-        version.
+        version. In order to retrieve the following curator-specific attributes, include an access token in your API
+        request:
+
+        - `SUBMITTED` asset (returned in `assets` array)
+
+        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       security:
         - curatorAccessLenient: [ ]
         - { }
@@ -661,7 +672,12 @@ paths:
         - versions
       description: |
         List all versions for a given Dataset. The Dataset, as specified by `dataset_id`, must be a *Dataset* and not a
-        *Dataset version*. Dataset versions are returned in reverse-chronological order.
+        *Dataset version*. Dataset versions are returned in reverse-chronological order. In order to retrieve the
+        following curator-specific attributes, include an access token in your API request:
+
+        - `SUBMITTED` asset (returned in `assets` array)
+
+        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       security:
         - curatorAccessLenient: [ ]
         - { }
