@@ -159,7 +159,10 @@ paths:
         Fetch full metadata for a Collection and its Datasets. The Collection, as specified by `collection_id`, may be
         either a *Collection* or a *Collection version*.
 
-        An Authorization token must be provided in order to retrieve the id of an associated Revision for this Collection (the `revising_in` field), if such a Revision currently exists.
+        In order to retrieve the following curator-specific attributes, include an access token in your API request:
+
+        - `SUBMITTED` asset (returned in `assets` array)
+        - `revising_in` (the id of an associated Revision for this Collection, if one exists)
 
         * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.actions.get
@@ -399,6 +402,8 @@ paths:
         include an access token in your API request:
 
         - `SUBMITTED` asset (returned in `.assets` array)
+
+        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.get
       tags:
         - collection
@@ -585,6 +590,8 @@ paths:
         attributes, include an access token in your API request:
 
         - `SUBMITTED` asset (returned in `assets` array)
+
+        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.datasets.actions.get
       parameters:
         - name: query_dataset_fields
