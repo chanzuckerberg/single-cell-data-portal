@@ -138,7 +138,6 @@ class WmgApiV1Tests(unittest.TestCase):
                     },
                     "genes": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
                 },
-                "filter_dims": {},
             }
             self.assertEqual(expected_response, json.loads(response.data))
 
