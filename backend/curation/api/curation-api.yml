@@ -271,7 +271,7 @@ paths:
       summary: Fetch all versions of a Collection with corresponding Dataset versions
       description: >
         Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The Collection,
-        as specified by `collection_id`, must be a *Collection* and not a *Collection version*. Collection versions
+        as specified by `collection_id`, must be a *Collection*, **NOT** a *Collection version*. Collection versions
         are returned in reverse-chronological order.
 
         In order to retrieve the following curator-specific attributes, include an access token in your API request:
@@ -282,7 +282,6 @@ paths:
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
         - collection
-        - versions
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -366,9 +365,8 @@ paths:
     delete:
       summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
       description: >-
-        Delete or cancel processing for a Dataset with `dataset_id` in `collection_id`. 
-        The `collection_id` MUST reference either a private Collection OR a 
-        Revision.
+        Delete or cancel processing for a Dataset, as specified `dataset_id`, which must reference a *Dataset*, **NOT**
+        a *Dataset version*.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
         the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes,
@@ -403,9 +401,10 @@ paths:
     get:
       summary: Fetch Dataset metadata from a Collection.
       description: |
-        Fetch Dataset metadata for  Dataset `dataset_id` in the Collection `collection_id`, which may be either a
-        Collection or a Collection version. In order to retrieve the following curator-specific attributes,
-        include an access token in your API request:
+        Fetch Dataset metadata for a Dataset, as specified by `dataset_id`, which must reference a *Dataset*, **NOT** a
+        *Dataset version*. Similarly, the Collection, as specified by `collection_id`, must be a *Collection*, **NOT**
+        a *Collection version*. In order to retrieve the following curator-specific attributes, include an access token
+        in your API request:
 
         - `SUBMITTED` asset (returned in `.assets` array)
 
@@ -430,9 +429,9 @@ paths:
     put:
       summary: Upload a Dataset by providing a link
       description: |
-        Upload a datafile to become a Dataset. MUST use an existing Dataset id for the `dataset_id` path parameter. The
-        Dataset will be uploaded from the provided `link` which MUST either be a presigned AWS S3 URL or Dropbox shared
-        file URL.
+        Upload a datafile to become a Dataset. The Dataset, as specified by `dataset_id`, must reference a *Dataset*,
+        **NOT** a *Dataset version*. The Dataset will be uploaded from the provided `link` which MUST either be a
+        presigned AWS S3 URL or Dropbox shared file URL.
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.put
@@ -553,37 +552,6 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-#  /v1/collections/{collection_id}/datasets/{dataset_id}/assets:
-#    get:
-#      summary: Retrieve links for downloading a Dataset
-#      tags:
-#        - collection
-#      description: |
-#        Generate Presigned S3 URLs to download the files associated with the `dataset_id` in the Collection specified
-#        by the `collection_id`. Pre-signed S3 URLs have a life span of up to 1 hour. You should generate a pre-signed
-#        URL immediately before each download to ensure it is current.
-#      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.assets.get
-#      parameters:
-#        - $ref: "#/components/parameters/path_collection_id"
-#        - $ref: "#/components/parameters/path_dataset_id"
-#      responses:
-#        "200":
-#          description: OK
-#          content:
-#            application/json:
-#              schema:
-#                $ref: "#/components/schemas/asset_response"
-#        "202":
-#          description: Unable to retrieve one or more asset response fields.
-#          content:
-#            application/json:
-#              schema:
-#                $ref: "#/components/schemas/asset_response"
-#        "400":
-#          $ref: "#/components/responses/400"
-#        "404":
-#          $ref: "#/components/responses/404"
-
   /v1/datasets:
     get:
       summary: List Cell Census previews of all Datasets
@@ -591,9 +559,38 @@ paths:
         - dataset
       description: |
         List a user-specified subset of metadata for all public Datasets. The list of Dataset fields should be passed
-        in a url-encoded array. Available fields include all top-level attributes of `GET /v1/datasets/{dataset_id} as
-        well as `collection_id` and `collection_version_id`. In order to retrieve the following curator-specific
-        attributes, include an access token in your API request:
+        in a url-encoded array. Available fields are as follows; descriptions for each may be found in the response
+        schema for this endpoint below:
+
+        - **collection_id**
+        - **collection_version_id**
+        - **assay**
+        - **assets**
+        - **batch_condition**
+        - **cell_count**
+        - **cell_type**
+        - **development_stage**
+        - **disease**
+        - **donor_id**
+        - **explorer_url**
+        - **id**
+        - **is_primary_data**
+        - **mean_genes_per_cell**
+        - **title**
+        - **organism**
+        - **processing_status**
+        - **processing_status_detail**
+        - **revised_at**
+        - **schema_version**
+        - **self_reported_ethnicity**
+        - **sex**
+        - **suspension_type**
+        - **tissue**
+        - **version_id**
+        - **x_approximate_distribution**
+
+
+        In order to retrieve the following curator-specific attributes, include an access token in your API request:
 
         - `SUBMITTED` asset (returned in `assets` array)
 
@@ -619,18 +616,24 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/dataset"
+                  allOf:
+                    - type: object
+                      properties:
+                        collection_id:
+                          $ref: "#/components/schemas/collection_id"
+                        collection_version_id:
+                          $ref: "#/components/schemas/collection_version_id"
+                    - $ref: "#/components/schemas/dataset"
 
   /v1/datasets/{dataset_id}:
     get:
       summary: Get metadata for a Dataset
       tags:
         - dataset
-        - versions
       description: |
-        Fetch Dataset metadata for a Dataset as specified by `dataset_id`, which may be either a Dataset or a Dataset
-        version. In order to retrieve the following curator-specific attributes, include an access token in your API
-        request:
+        Fetch Dataset metadata for a Dataset as specified by `dataset_id`, which may reference either a *Dataset* or a
+        *Dataset version*. In order to retrieve the following curator-specific attributes, include an access token in
+        your API request:
 
         - `SUBMITTED` asset (returned in `assets` array)
 
@@ -669,10 +672,9 @@ paths:
       summary: List all versions for a Dataset
       tags:
         - dataset
-        - versions
       description: |
-        List all versions for a given Dataset. The Dataset, as specified by `dataset_id`, must be a *Dataset* and not a
-        *Dataset version*. Dataset versions are returned in reverse-chronological order. In order to retrieve the
+        List all versions for a given Dataset. The Dataset, as specified by `dataset_id`, must be a *Dataset*, **NOT**
+        a *Dataset version*. Dataset versions are returned in reverse-chronological order. In order to retrieve the
         following curator-specific attributes, include an access token in your API request:
 
         - `SUBMITTED` asset (returned in `assets` array)
@@ -1014,7 +1016,7 @@ components:
         processing_status_detail:
           type: string
           description: |
-            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for 
+            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
             the dataset can be found in `processing_status_detail`.
           nullable: true
         revised_at:
