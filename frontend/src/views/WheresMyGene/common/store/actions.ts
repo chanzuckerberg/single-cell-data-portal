@@ -3,7 +3,6 @@
  * in `./reducer.ts`.
  */
 
-import { CellTypeMetadata } from "../../components/HeatMap/utils";
 import {
   AddCellInfoCellTypePayload,
   LoadStateFromURLPayload,

@@ -1,6 +1,6 @@
 import isEqual from "lodash/isEqual";
 import { EMPTY_FILTERS } from "src/common/queries/wheresMyGene";
-import { CellType, SORT_BY, Tissue } from "../types";
+import { CellType, SORT_BY } from "../types";
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
