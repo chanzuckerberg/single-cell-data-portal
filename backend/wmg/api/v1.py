@@ -116,10 +116,13 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
 
 
 def find_all_dim_option_values(snapshot: WmgSnapshot, dimension: str) -> list:
-    all_filter_options = []
+    all_filter_options = set()
     for key in snapshot.filter_relationships:
+        if key.startswith(dimension):
+            all_filter_options.add(key)
         if dimension in snapshot.filter_relationships[key]:
-            all_filter_options = list(set(all_filter_options).union(snapshot.filter_relationships[key][dimension]))
+            all_filter_options = set(all_filter_options).union(snapshot.filter_relationships[key][dimension])
+    return [option.split("__")[1] for option in all_filter_options]
 
 
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
