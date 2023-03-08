@@ -330,7 +330,7 @@ paths:
               schema:
                 type: object
                 required:
-                  - filter_dimensions
+                  - filter_dims
                 properties:
                   snapshot_id:
                     $ref: "#/components/schemas/wmg_snapshot_id"
