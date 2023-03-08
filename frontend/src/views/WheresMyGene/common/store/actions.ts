@@ -38,15 +38,6 @@ export function toggleGeneToDelete(
   };
 }
 
-export function toggleCellTypeIdToDelete(
-  cellTypeIdToDelete: CellTypeMetadata
-): GetActionTypeOfReducer<typeof REDUCERS["toggleCellTypeIdToDelete"]> {
-  return {
-    payload: cellTypeIdToDelete,
-    type: "toggleCellTypeIdToDelete",
-  };
-}
-
 export function selectOrganism(
   organismId: State["selectedOrganismId"]
 ): GetActionTypeOfReducer<typeof REDUCERS["selectOrganism"]> {
