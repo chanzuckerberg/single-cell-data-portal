@@ -101,7 +101,7 @@ class WmgQuery:
             ],
         )
 
-    def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
+    def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria, WmgFiltersQueryCriteria]) -> DataFrame:
         cell_counts = self._query(
             cube=self._snapshot.cell_counts_cube,
             criteria=criteria.copy(exclude={"gene_ontology_term_ids"}),

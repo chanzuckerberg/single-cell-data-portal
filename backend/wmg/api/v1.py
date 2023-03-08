@@ -125,7 +125,7 @@ def find_all_dim_option_values(snapshot: WmgSnapshot, dimension: str) -> list:
     return [option.split("__")[1] for option in all_filter_options]
 
 
-def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
+def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str, available_options: list) -> list:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
 
@@ -193,7 +193,7 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
             valid_options.append(v)
 
     # remove the prefix from each valid option and return the result
-    return [option.split("__")[1] for option in valid_options]
+    return [option.split("__")[1] for option in valid_options if option in available_options]
 
 
 def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
@@ -218,12 +218,20 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
         "self_reported_ethnicity_ontology_term_id": "",
         "tissue_ontology_term_id": "",
     }
+    criteria_is_empty = is_criteria_empty(criteria)
+    if not criteria_is_empty:
+        q = WmgQuery(snapshot)
+        cell_counts = q.cell_counts(criteria)
+        available_options_dict = {col: cell_counts[col].unique() for col in cell_counts.select_dtypes(exclude="number")}
+        available_options = []
+        for dim in available_options_dict:
+            available_options.extend([dim + "__" + option for option in available_options_dict[dim]])
+
     for dim in dims:
-        dims[dim] = (
-            find_all_dim_option_values(snapshot, dim)
-            if is_criteria_empty(criteria)
-            else find_dim_option_values(criteria, snapshot, dim)
-        )
+        if criteria_is_empty:
+            dims[dim] = find_all_dim_option_values(snapshot, dim)
+        else:
+            dims[dim] = find_dim_option_values(criteria, snapshot, dim, available_options)
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
