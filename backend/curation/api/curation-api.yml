@@ -696,6 +696,7 @@ components:
       enum:
         - H5AD
         - RDS
+        - SUBMITTED
       type: string
       description: The file type of the asset.
     batch_condition:
@@ -931,6 +932,11 @@ components:
       type: string
       format: uuid
     dataset:
+      description: |
+        Full metadata for a Dataset or Dataset version. In order to retrieve the following curator-specific attributes,
+        include an access token in your API request:
+
+        - `SUBMITTED` asset (returned in `assets` array)
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
