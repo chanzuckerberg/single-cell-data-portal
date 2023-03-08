@@ -54,10 +54,7 @@ class DataArtifactCorrectness(unittest.TestCase):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts = snapshot.cell_counts_cube.df[:]
             cell_counts = cell_counts.select_dtypes(exclude="number")
-            expected_filter_options = {
-                dimension: [dimension + "__" + f for f in list(set(cell_counts[dimension]))]
-                for dimension in cell_counts
-            }
+            expected_filter_options = {dimension: list(set(cell_counts[dimension])) for dimension in cell_counts}
             test_filter_options = {
                 dimension: find_all_dim_option_values(snapshot, dimension) for dimension in cell_counts
             }

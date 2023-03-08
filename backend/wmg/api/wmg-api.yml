@@ -334,7 +334,7 @@ paths:
                 properties:
                   snapshot_id:
                     $ref: "#/components/schemas/wmg_snapshot_id"
-                  filter_dimensions:
+                  filter_dims:
                     type: object
                     properties:
                       datasets:

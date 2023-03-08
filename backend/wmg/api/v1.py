@@ -193,7 +193,7 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
             valid_options.append(v)
 
     # remove the prefix from each valid option and return the result
-    return [i.split("__")[1] for i in valid_options]
+    return [option.split("__")[1] for option in valid_options]
 
 
 def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
