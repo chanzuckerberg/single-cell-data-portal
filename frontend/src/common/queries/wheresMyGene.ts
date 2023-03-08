@@ -352,7 +352,6 @@ export function useFilterDimensions(): {
   isLoading: boolean;
 } {
   const requestBody = useWMGFiltersQueryRequestBody();
-
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
   return useMemo(() => {
@@ -724,7 +723,7 @@ function useWMGFiltersQueryRequestBody() {
   }, [data]);
 
   return useMemo(() => {
-    if (!data || !selectedOrganismId || !selectedTissues.length) {
+    if (!data || !selectedOrganismId) {
       return null;
     }
     const tissue_ontology_term_ids = selectedTissues.map((tissueName) => {

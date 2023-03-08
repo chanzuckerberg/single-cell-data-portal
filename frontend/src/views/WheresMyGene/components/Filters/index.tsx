@@ -94,14 +94,11 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     isLoading: rawIsLoading,
   } = useFilterDimensions();
 
-  const areFiltersDisabled = !selectedTissues.length || !selectedGenes.length;
+  const isHeatmapShown = selectedTissues.length && selectedGenes.length;
 
-  const InputDropdownProps = useMemo(() => {
-    return {
-      disabled: areFiltersDisabled,
-      sdsStyle: "minimal",
-    } as Partial<InputDropdownProps>;
-  }, [areFiltersDisabled]);
+  const InputDropdownProps = {
+    sdsStyle: "minimal",
+  } as Partial<InputDropdownProps>;
 
   // (thuang): We only update available filters when API call is done,
   // otherwise when `useFilterDimensions()` is still loading, its filters
@@ -222,9 +219,6 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
       title={
         "Please select an organism, tissue and at least one gene to use these filters."
       }
-      // (thuang): We need to disable the tooltip when filters are enabled
-      disableHoverListener={!areFiltersDisabled}
-      disableFocusListener={!areFiltersDisabled}
     >
       <Wrapper>
         <div>
@@ -281,7 +275,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
 
         <Organism isLoading={isLoading} />
 
-        <Sort areFiltersDisabled={areFiltersDisabled} />
+        <Sort areFiltersDisabled={!isHeatmapShown} />
       </Wrapper>
     </Tooltip>
   );

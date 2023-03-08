@@ -194,6 +194,7 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
 
 
 def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
+    criteria = criteria.dict()
     for key in criteria:
         if key != "organism_ontology_term_id":
             if isinstance(criteria[key], list):
