@@ -395,7 +395,10 @@ paths:
       summary: Fetch Dataset metadata from a Collection.
       description: |
         Fetch Dataset metadata for  Dataset `dataset_id` in the Collection `collection_id`, which may be either a
-        Collection or a Collection version.
+        Collection or a Collection version. In order to retrieve the following curator-specific attributes,
+        include an access token in your API request:
+
+        - `SUBMITTED` asset (returned in `.assets` array)
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.get
       tags:
         - collection
@@ -576,7 +579,12 @@ paths:
       tags:
         - dataset
       description: |
-        List previews of all Datasets.
+        List a user-specified subset of metadata for all public Datasets. The list of Dataset fields should be passed
+        in a url-encoded array. Available fields include all top-level attributes of `GET /v1/datasets/{dataset_id} as
+        well as `collection_id` and `collection_version_id`. In order to retrieve the following curator-specific
+        attributes, include an access token in your API request:
+
+        - `SUBMITTED` asset (returned in `assets` array)
       operationId: backend.curation.api.v1.curation.datasets.actions.get
       parameters:
         - name: query_dataset_fields
@@ -932,11 +940,6 @@ components:
       type: string
       format: uuid
     dataset:
-      description: |
-        Full metadata for a Dataset or Dataset version. In order to retrieve the following curator-specific attributes,
-        include an access token in your API request:
-
-        - `SUBMITTED` asset (returned in `assets` array)
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
