@@ -4,7 +4,6 @@
  */
 
 import { CellTypeMetadata } from "../../components/HeatMap/utils";
-import { CellType, Tissue } from "../types";
 import {
   AddCellInfoCellTypePayload,
   LoadStateFromURLPayload,
