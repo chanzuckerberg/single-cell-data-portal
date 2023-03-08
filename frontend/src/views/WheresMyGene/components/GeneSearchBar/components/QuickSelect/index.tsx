@@ -110,248 +110,253 @@ interface Props<T, Multiple> {
   analyticsEvent: EVENTS;
   isLoading: boolean;
 }
-export default function QuickSelect<
-  T extends DefaultMenuSelectOption,
-  Multiple extends boolean | undefined = false
->({
-  items,
-  multiple,
-  setSelected,
-  selected,
-  /**
-   * name is lowercase for case insensitive CSV paste
-   */
-  itemsByName,
-  onItemNotFound,
-  label,
-  text,
-  dataTestId,
-  placeholder,
-  analyticsEvent,
-  isLoading,
-}: Props<T, Multiple>): JSX.Element {
-  const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
-  const [hasComma, setHasComma] = useState(false);
-
-  const useStyles = makeStyles((theme: SDSTheme) => {
-    const colors = getColors({ theme });
-    const shadows = getShadows({ theme });
-    const corners = getCorners({ theme });
-    return {
-      paper: {
-        boxShadow: "none",
-        margin: 0,
-      },
-      popper: {
-        backgroundColor: "white",
-        border: `1px solid ${colors?.gray[100]}`,
-        borderRadius: corners?.m,
-        boxShadow: shadows?.m,
-        color: "#586069",
-        fontSize: 13,
-        width: 377,
-        zIndex: 99, // The x axis wrapper is set at 2
-      },
-      popperDisablePortal: {
-        position: "relative",
-        width: "100% !important",
-      },
-    };
-  });
-
-  const classes = useStyles();
-
-  // `HandleEnter()` handles the enter key press when we detect comma(",") in the search bar
-  // Since this functionality is currently only used in the gene search bar, we'll be assuming that `itemsByName` is a Map<string, Gene>.
-  // NOTE that `itemsByName` the key is lowercase!
-  const handleEnter =
-    !multiple || !Array.isArray(selected) || onItemNotFound === undefined
-      ? noop
-      : (event: React.KeyboardEvent<HTMLInputElement>) => {
-          if (event.key === "Enter" && hasComma) {
-            event.preventDefault();
-            const newSelected = [...(selected as T[])];
-            const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
-
-            parsedPaste.map((item) => {
-              const newItem = itemsByName.get(item.toLowerCase());
-              if (!newItem) {
-                onItemNotFound(item);
-              } else if (!newSelected.includes(newItem))
-                newSelected.push(newItem);
-            });
-
-            setOpen(false);
-
-            return setSelected(
-              newSelected as AutocompleteValue<
-                T,
-                Multiple,
-                undefined,
-                undefined
-              >
-            );
-          }
-        };
-
-  const handleClose = (
-    e: SyntheticEvent<Element, Event>,
-    reason: AutocompleteCloseReason
-  ) => {
-    if (reason === "toggleInput") {
-      return;
-    }
-    const { nativeEvent } = e;
-
-    if (
-      (nativeEvent instanceof FocusEvent &&
-        nativeEvent.relatedTarget instanceof Element &&
-        nativeEvent.relatedTarget?.id !== `${dataTestId}-id`) ||
-      (nativeEvent instanceof FocusEvent &&
-        !(nativeEvent.relatedTarget instanceof Element)) ||
-      !(nativeEvent instanceof FocusEvent)
-    ) {
-      setOpen(false);
-    }
-
-    setInput("");
-  };
-  const handleChange = (
-    _: SyntheticEvent<Element, Event>,
-    newValue: DefaultMenuSelectOption | DefaultMenuSelectOption[] | null
-  ) => {
-    return setSelected(
-      newValue as AutocompleteValue<T, Multiple, undefined, undefined>
-    );
-  };
-
-  const handleClick = () => {
-    setOpen(!open);
-  };
-
-  const ref = useRef(null);
-
-  const handleInputChange = (
-    _: SyntheticEvent<Element, Event>,
-    value: string,
-    reason: AutocompleteInputChangeReason
-  ) => {
-    if (reason === "reset") {
-      return;
-    }
-
-    setInput(value);
-
-    if (value.includes(",")) {
-      if (hasComma) return;
-      setHasComma(true);
-    } else {
-      if (!hasComma) return;
-      setHasComma(false);
-    }
-  };
-  const selectedAsArray = Array.isArray(selected) ? selected : [selected];
-
-  const itemOptionsWithSelectedOnTop = [
-    ...new Set([...selectedAsArray, ...items]),
-  ];
-  return (
-    <>
-      <ButtonWrapper>
-        <Label>{label}</Label>
-        <StyledSelectButton
-          disabled={isLoading}
-          id={`${dataTestId}-id`}
-          data-test-id={dataTestId}
-          ref={ref}
-          onClick={handleClick}
-          sdsType="primary"
-          sdsSize="medium"
-          sdsStyle="square"
-        >
-          <StyledButtonText>
-            <Icon sdsIcon="plus" sdsSize="s" sdsType="button" />
-          </StyledButtonText>
-          {text}
-        </StyledSelectButton>
-      </ButtonWrapper>
-      <StyledPopper
-        open={open}
-        className={classes.popper}
-        anchorEl={ref.current}
-        // (thuang): MUI types require `onResize` and `onResizeCapture` for
-        // some reason. Please recheck if we can remove them in the future
-        onResize={noop}
-        onResizeCapture={noop}
-      >
-        <MenuSelect
-          open
-          PopperComponent={DropdownPopper}
-          PaperComponent={DropdownPaper}
-          search
-          onClose={handleClose}
-          multiple={multiple}
-          classes={{
-            paper: classes.paper,
-            popperDisablePortal: classes.popperDisablePortal,
-          }}
-          value={selected}
-          onChange={handleChange}
-          disableCloseOnSelect
-          disableListWrap
-          onKeyDownCapture={multiple ? handleEnter : undefined}
-          options={itemOptionsWithSelectedOnTop}
-          ListboxComponent={
-            ListboxComponent as React.ComponentType<
-              React.HTMLAttributes<HTMLElement>
-            >
-          }
-          renderOption={renderOption}
-          InputBaseProps={{
-            placeholder,
-          }}
-          inputValue={input}
-          onInputChange={handleInputChange}
-          noOptionsText={
-            hasComma
-              ? "You can add multiple genes using a comma-separated list. Press enter to add."
-              : "No options"
-          }
-        />
-      </StyledPopper>
-    </>
-  );
-
-  function renderOption(
+export default React.memo(
+  function QuickSelect<
+    T extends DefaultMenuSelectOption,
+    Multiple extends boolean | undefined = false
+  >({
+    items,
+    multiple,
+    setSelected,
+    selected,
     /**
-     * (thuang): MUI passes their own event handlers via `optionProps`, so if we
-     * need our own event handlers, we need to make sure to call their handlers
-     * too
+     * name is lowercase for case insensitive CSV paste
      */
-    optionProps: HTMLAttributes<HTMLLIElement>,
-    option: T,
-    { selected }: AutocompleteRenderOptionState
-  ) {
+    itemsByName,
+    onItemNotFound,
+    label,
+    text,
+    dataTestId,
+    placeholder,
+    analyticsEvent,
+    isLoading,
+  }: Props<T, Multiple>): JSX.Element {
+    const [open, setOpen] = useState(false);
+    const [input, setInput] = useState("");
+    const [hasComma, setHasComma] = useState(false);
+
+    const useStyles = makeStyles((theme: SDSTheme) => {
+      const colors = getColors({ theme });
+      const shadows = getShadows({ theme });
+      const corners = getCorners({ theme });
+      return {
+        paper: {
+          boxShadow: "none",
+          margin: 0,
+        },
+        popper: {
+          backgroundColor: "white",
+          border: `1px solid ${colors?.gray[100]}`,
+          borderRadius: corners?.m,
+          boxShadow: shadows?.m,
+          color: "#586069",
+          fontSize: 13,
+          width: 377,
+          zIndex: 99, // The x axis wrapper is set at 2
+        },
+        popperDisablePortal: {
+          position: "relative",
+          width: "100% !important",
+        },
+      };
+    });
+
+    const classes = useStyles();
+
+    // `HandleEnter()` handles the enter key press when we detect comma(",") in the search bar
+    // Since this functionality is currently only used in the gene search bar, we'll be assuming that `itemsByName` is a Map<string, Gene>.
+    // NOTE that `itemsByName` the key is lowercase!
+    const handleEnter =
+      !multiple || !Array.isArray(selected) || onItemNotFound === undefined
+        ? noop
+        : (event: React.KeyboardEvent<HTMLInputElement>) => {
+            if (event.key === "Enter" && hasComma) {
+              event.preventDefault();
+              const newSelected = [...(selected as T[])];
+              const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
+
+              parsedPaste.map((item) => {
+                const newItem = itemsByName.get(item.toLowerCase());
+                if (!newItem) {
+                  onItemNotFound(item);
+                } else if (!newSelected.includes(newItem))
+                  newSelected.push(newItem);
+              });
+
+              setOpen(false);
+
+              return setSelected(
+                newSelected as AutocompleteValue<
+                  T,
+                  Multiple,
+                  undefined,
+                  undefined
+                >
+              );
+            }
+          };
+
+    const handleClose = (
+      e: SyntheticEvent<Element, Event>,
+      reason: AutocompleteCloseReason
+    ) => {
+      if (reason === "toggleInput") {
+        return;
+      }
+      const { nativeEvent } = e;
+
+      if (
+        (nativeEvent instanceof FocusEvent &&
+          nativeEvent.relatedTarget instanceof Element &&
+          nativeEvent.relatedTarget?.id !== `${dataTestId}-id`) ||
+        (nativeEvent instanceof FocusEvent &&
+          !(nativeEvent.relatedTarget instanceof Element)) ||
+        !(nativeEvent instanceof FocusEvent)
+      ) {
+        setOpen(false);
+      }
+
+      setInput("");
+    };
+    const handleChange = (
+      _: SyntheticEvent<Element, Event>,
+      newValue: DefaultMenuSelectOption | DefaultMenuSelectOption[] | null
+    ) => {
+      return setSelected(
+        newValue as AutocompleteValue<T, Multiple, undefined, undefined>
+      );
+    };
+
+    const handleClick = () => {
+      setOpen(!open);
+    };
+
+    const ref = useRef(null);
+
+    const handleInputChange = (
+      _: SyntheticEvent<Element, Event>,
+      value: string,
+      reason: AutocompleteInputChangeReason
+    ) => {
+      if (reason === "reset") {
+        return;
+      }
+
+      setInput(value);
+
+      if (value.includes(",")) {
+        if (hasComma) return;
+        setHasComma(true);
+      } else {
+        if (!hasComma) return;
+        setHasComma(false);
+      }
+    };
+    const selectedAsArray = Array.isArray(selected) ? selected : [selected];
+
+    const itemOptionsWithSelectedOnTop = [
+      ...new Set([...selectedAsArray, ...items]),
+    ];
     return (
-      <StyledMenuItem
-        {...{ component: "li" }}
-        {...optionProps}
-        isMultiSelect={multiple}
-        selected={selected}
-        onClick={onClick}
-      >
-        {option.name}
-      </StyledMenuItem>
+      <>
+        <ButtonWrapper>
+          <Label>{label}</Label>
+          <StyledSelectButton
+            disabled={isLoading}
+            id={`${dataTestId}-id`}
+            data-test-id={dataTestId}
+            ref={ref}
+            onClick={handleClick}
+            sdsType="primary"
+            sdsSize="medium"
+            sdsStyle="square"
+          >
+            <StyledButtonText>
+              <Icon sdsIcon="plus" sdsSize="s" sdsType="button" />
+            </StyledButtonText>
+            {text}
+          </StyledSelectButton>
+        </ButtonWrapper>
+        <StyledPopper
+          open={open}
+          className={classes.popper}
+          anchorEl={ref.current}
+          // (thuang): MUI types require `onResize` and `onResizeCapture` for
+          // some reason. Please recheck if we can remove them in the future
+          onResize={noop}
+          onResizeCapture={noop}
+        >
+          <MenuSelect
+            open
+            PopperComponent={DropdownPopper}
+            PaperComponent={DropdownPaper}
+            search
+            onClose={handleClose}
+            multiple={multiple}
+            classes={{
+              paper: classes.paper,
+              popperDisablePortal: classes.popperDisablePortal,
+            }}
+            value={selected}
+            onChange={handleChange}
+            disableCloseOnSelect
+            disableListWrap
+            onKeyDownCapture={multiple ? handleEnter : undefined}
+            options={itemOptionsWithSelectedOnTop}
+            ListboxComponent={
+              ListboxComponent as React.ComponentType<
+                React.HTMLAttributes<HTMLElement>
+              >
+            }
+            renderOption={renderOption}
+            InputBaseProps={{
+              placeholder,
+            }}
+            inputValue={input}
+            onInputChange={handleInputChange}
+            noOptionsText={
+              hasComma
+                ? "You can add multiple genes using a comma-separated list. Press enter to add."
+                : "No options"
+            }
+          />
+        </StyledPopper>
+      </>
     );
 
-    function onClick(event: MouseEvent<HTMLLIElement>): void {
-      optionProps.onClick && optionProps.onClick(event);
+    function renderOption(
+      /**
+       * (thuang): MUI passes their own event handlers via `optionProps`, so if we
+       * need our own event handlers, we need to make sure to call their handlers
+       * too
+       */
+      optionProps: HTMLAttributes<HTMLLIElement>,
+      option: T,
+      { selected }: AutocompleteRenderOptionState
+    ) {
+      return (
+        <StyledMenuItem
+          {...{ component: "li" }}
+          {...optionProps}
+          isMultiSelect={multiple}
+          selected={selected}
+          onClick={onClick}
+        >
+          {option.name}
+        </StyledMenuItem>
+      );
 
-      // (thuang): Only track select, not deselect
-      if (selected) return;
+      function onClick(event: MouseEvent<HTMLLIElement>): void {
+        optionProps.onClick && optionProps.onClick(event);
 
-      track(analyticsEvent, { payload: option.name });
+        // (thuang): Only track select, not deselect
+        if (selected) return;
+
+        track(analyticsEvent, { payload: option.name });
+      }
     }
+  },
+  (_props, nextProps) => {
+    return nextProps.isLoading;
   }
-}
+);

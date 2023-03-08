@@ -21,12 +21,12 @@ export function deleteSingleGene(
   };
 }
 
-export function deleteSelectedGenesAndSelectedCellTypeIds(): GetActionTypeOfReducer<
-  typeof REDUCERS["deleteSelectedGenesAndSelectedCellTypeIds"]
+export function deleteSelectedGenes(): GetActionTypeOfReducer<
+  typeof REDUCERS["deleteSelectedGenes"]
 > {
   return {
     payload: null,
-    type: "deleteSelectedGenesAndSelectedCellTypeIds",
+    type: "deleteSelectedGenes",
   };
 }
 
@@ -75,15 +75,6 @@ export function addSelectedGenes(
   };
 }
 
-export function selectCellTypeIds(
-  cellTypeIndices: State["selectedCellTypeIds"]
-): GetActionTypeOfReducer<typeof REDUCERS["selectCellTypeIds"]> {
-  return {
-    payload: cellTypeIndices,
-    type: "selectCellTypeIds",
-  };
-}
-
 export function selectTissues(
   tissues: State["selectedTissues"]
 ): GetActionTypeOfReducer<typeof REDUCERS["selectTissues"]> {
@@ -102,32 +93,12 @@ export function selectSortBy(
   };
 }
 
-export function resetGenesToDeleteAndCellTypeIdsToDelete(): GetActionTypeOfReducer<
-  typeof REDUCERS["resetGenesToDeleteAndCellTypeIdsToDelete"]
+export function resetGenesToDelete(): GetActionTypeOfReducer<
+  typeof REDUCERS["resetGenesToDelete"]
 > {
   return {
     payload: null,
-    type: "resetGenesToDeleteAndCellTypeIdsToDelete",
-  };
-}
-
-export function tissueCellTypesFetched(
-  tissue: Tissue,
-  cellTypes: CellType[]
-): GetActionTypeOfReducer<typeof REDUCERS["tissueCellTypesFetched"]> {
-  return {
-    payload: { cellTypes, tissue },
-    type: "tissueCellTypesFetched",
-  };
-}
-
-export function resetTissueCellTypes(
-  tissue: Tissue,
-  cellTypes: CellType[]
-): GetActionTypeOfReducer<typeof REDUCERS["resetTissueCellTypes"]> {
-  return {
-    payload: { cellTypes, tissue },
-    type: "resetTissueCellTypes",
+    type: "resetGenesToDelete",
   };
 }
 

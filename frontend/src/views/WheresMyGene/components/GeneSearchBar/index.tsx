@@ -26,11 +26,14 @@ export default function GeneSearchBar({
   const { selectedGenes, selectedTissues, selectedOrganismId } =
     useContext(StateContext);
 
-  const { data, isLoading } = usePrimaryFilterDimensions();
-  const { data: filterData } = useFilterDimensions();
-  const { tissue_terms: rawTissues } = filterData;
+  const { data, isLoading: isLoadingPrimaryFilters } =
+    usePrimaryFilterDimensions();
+  const { data: filterData, isLoading: isLoadingFilters } =
+    useFilterDimensions();
+  const isLoading = isLoadingPrimaryFilters || isLoadingFilters;
 
-  const { genes: rawGenes } = data || {};
+  const { tissue_terms: filteredTissues } = filterData;
+  const { genes: rawGenes, tissues: rawTissues } = data || {};
 
   const genes: Gene[] = useMemo(() => {
     if (!rawGenes) return [];
@@ -41,12 +44,17 @@ export default function GeneSearchBar({
   const tissues: Tissue[] = useMemo(() => {
     if (!rawTissues) return [];
 
+    const temp = rawTissues[selectedOrganismId || ""] || [];
     // (thuang): Product requirement to exclude "cell culture" from the list
     // https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/2335
-    return rawTissues.filter(
-      (tissue) => !tissue.name.includes("(cell culture)")
-    );
-  }, [rawTissues, selectedOrganismId]);
+    return temp.filter((tissue) => {
+      const notCellCulture = !tissue.name.includes("(cell culture)");
+      const notFiltered =
+        !filteredTissues.length ||
+        filteredTissues.map((val) => val.name).includes(tissue.name);
+      return notCellCulture && notFiltered;
+    });
+  }, [rawTissues, filteredTissues, selectedOrganismId]);
 
   /**
    * NOTE: key is gene name in lowercase
@@ -117,7 +125,7 @@ export default function GeneSearchBar({
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
 
-        {isLoading && (
+        {isLoadingPrimaryFilters && (
           <LoadingIndicatorWrapper>
             <LoadingIndicator sdsStyle="tag" />
           </LoadingIndicatorWrapper>

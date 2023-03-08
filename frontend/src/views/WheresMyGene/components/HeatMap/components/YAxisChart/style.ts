@@ -81,11 +81,6 @@ export const InfoButtonWrapper = styled.div`
   cursor: pointer;
 `;
 
-export const ResetImageWrapper = styled.div`
-  margin-top: 3px;
-  cursor: pointer;
-`;
-
 function yAxisHeight({ height }: { height: number }) {
   return `
     height: ${height}px;
