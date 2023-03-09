@@ -66,7 +66,12 @@ def query():
                 term_id_labels=dict(
                     genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                     cell_types=build_ordered_cell_types_by_tissue(
-                        cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings, compare, group_by_terms
+                        cell_counts,
+                        cell_counts_cell_type_agg.T,
+                        snapshot.cell_type_orderings,
+                        compare,
+                        group_by_terms,
+                        response_filter_dims_values,
                     ),
                 ),
                 filter_dims=response_filter_dims_values,
@@ -116,6 +121,29 @@ def find_dimension_id(compare: str) -> str:
         return "disease_ontology_term_id"
     else:
         return None
+
+
+def get_names_for_dimension(response_filter_dims_values: dict, dim_id: str) -> str:
+    """
+    Gets the names for the specified dimension id as a map
+    """
+
+    if dim_id == "sex_ontology_term_id":
+        dimension_name = "sex_terms"
+    elif dim_id == "self_reported_ethnicity_ontology_term_id":
+        dimension_name = "self_reported_ethnicity_terms"
+    elif dim_id == "disease_ontology_term_id":
+        dimension_name = "disease_terms"
+    else:
+        dimension_name = None
+
+    result = {}
+
+    for dim_values in response_filter_dims_values[dimension_name]:
+        for key in dim_values:
+            result[key] = dim_values[key]
+
+    return result
 
 
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
@@ -326,6 +354,7 @@ def build_ordered_cell_types_by_tissue(
     cell_type_orderings: DataFrame,
     compare: str,
     group_by_terms: list[str],
+    response_filter_dims_values: dict,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(group_by_terms, as_index=False).first()[
         group_by_terms + ["n_total_cells"]
@@ -375,18 +404,20 @@ def build_ordered_cell_types_by_tissue(
         row = joined_agg.iloc[i]
         structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["aggregated"] = {
             "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-            "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+            "name": ontology_term_label(row.cell_type_ontology_term_id),
             "total_count": int(agg[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["n_cells_cell_type"]),
             "order": int(row.order),
         }
 
     # Populate compare filter gene expressions
     if compare:
+        dimension_names = get_names_for_dimension(response_filter_dims_values, compare)
+
         for i in range(joined.shape[0]):
             row = joined.iloc[i]
             structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
                 "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-                "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+                "name": dimension_names[row[compare]],
                 "total_count": int(
                     cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
                         row[compare]
