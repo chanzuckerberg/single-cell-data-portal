@@ -554,41 +554,11 @@ paths:
 
   /v1/datasets:
     get:
-      summary: List Cell Census previews of all Datasets
+      summary: List all Datasets
       tags:
         - dataset
       description: |
-        List a user-specified subset of metadata for all public Datasets. The list of Dataset fields should be passed
-        in a url-encoded array. Available fields are as follows; descriptions for each may be found in the response
-        schema for this endpoint below:
-
-        - **collection_id**
-        - **collection_version_id**
-        - **assay**
-        - **assets**
-        - **batch_condition**
-        - **cell_count**
-        - **cell_type**
-        - **development_stage**
-        - **disease**
-        - **donor_id**
-        - **explorer_url**
-        - **id**
-        - **is_primary_data**
-        - **mean_genes_per_cell**
-        - **title**
-        - **organism**
-        - **processing_status**
-        - **processing_status_detail**
-        - **revised_at**
-        - **schema_version**
-        - **self_reported_ethnicity**
-        - **sex**
-        - **suspension_type**
-        - **tissue**
-        - **dataset_version_id**
-        - **x_approximate_distribution**
-
+        List all public Datasets with full metadata and additional Cell Census attributes.
 
         In order to retrieve the following curator-specific attributes, include an access token in your API request:
 
@@ -596,18 +566,6 @@ paths:
 
         * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.datasets.actions.get
-      parameters:
-        - name: query_dataset_fields
-          description: |
-            List of Dataset fields to return, by name. See top-level attributes of `GET /v1/datasets/{dataset_id}`
-            response schema for available fields.
-          in: query
-          required: false
-          schema:
-            type: array
-            items:
-              type: string
-          example: [ "collection_id", "assets", "id", "title" ]
       responses:
         "200":
           description: OK
@@ -617,12 +575,7 @@ paths:
                 type: array
                 items:
                   allOf:
-                    - type: object
-                      properties:
-                        collection_id:
-                          $ref: "#/components/schemas/collection_id"
-                        collection_version_id:
-                          $ref: "#/components/schemas/collection_version_id"
+                    - $ref: "#/components/schemas/census_info_dataset"
                     - $ref: "#/components/schemas/dataset"
 
   /v1/datasets/{dataset_id}:
