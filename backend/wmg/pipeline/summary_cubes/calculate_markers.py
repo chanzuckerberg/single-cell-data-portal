@@ -8,7 +8,6 @@ import tiledb
 from scipy import stats
 
 from backend.common.utils.exceptions import MarkerGeneCalculationException
-from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
 from backend.wmg.data.rollup import (
     are_cell_types_colinear,
@@ -102,18 +101,11 @@ def _query_tiledb_context_memoized(
         expression_summary_default_cube=None,
         cell_type_orderings=None,
         primary_filter_dimensions=None,
+        filter_relationships=None,
     )
     q = WmgQuery(snapshot)
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
-
-    # set metrics for all non-healthy cells to zero so they are not included in the rollup
-    # if, after rollup, zeros remain, nothing needs to be done as the test metrics will be
-    # all nan.
-    for df in [query, cell_counts_query]:
-        exclude_filter = df["disease_ontology_term_id"].astype("str") != NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
-        numeric_columns = df.select_dtypes("number").columns
-        df.loc[exclude_filter, numeric_columns] = 0
 
     depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
 

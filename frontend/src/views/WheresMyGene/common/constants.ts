@@ -18,3 +18,4 @@ export const getCompareOptionNameById = (id: CompareId) => {
 
   return option?.name || "None";
 };
+

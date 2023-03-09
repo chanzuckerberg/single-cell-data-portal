@@ -4,6 +4,11 @@ import sys
 
 import tiledb
 
+from backend.wmg.data.snapshot import (
+    DATASET_TO_GENE_IDS_FILENAME,
+    FILTER_RELATIONSHIPS_FILENAME,
+)
+from backend.wmg.pipeline.summary_cubes.cell_count import create_filter_relationships_graph
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 
 test_tissue = "UBERON:0002048"
@@ -544,8 +549,13 @@ if __name__ == "__main__":
             (test_tissue, test_organism, [])
         ]
         cc = cc_arr.df[(test_tissue, [], test_organism)]
-
+        print(cc)
+        filter_relationships = create_filter_relationships_graph(cc)
+        print(filter_relationships)
         print("Creating new snapshot...")
+        with open(f"{new_snapshot}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as new_fr_file:
+            json.dump(filter_relationships, new_fr_file)
+
         tiledb.Array.create(f"{new_snapshot}/expression_summary", es_arr.schema, overwrite=True)
         tiledb.Array.create(f"{new_snapshot}/expression_summary_fmg", esfmg_arr.schema, overwrite=True)
         tiledb.Array.create(f"{new_snapshot}/expression_summary_default", es_def_arr.schema, overwrite=True)
@@ -560,7 +570,7 @@ if __name__ == "__main__":
         genes = set(es["gene_ontology_term_id"])
         for k in dtg:
             dtg[k] = list(genes.intersection(dtg[k]))
-        with open(f"{new_snapshot}/dataset_to_gene_ids.json", "w") as fp:
+        with open(f"{new_snapshot}/{DATASET_TO_GENE_IDS_FILENAME}", "w") as fp:
             json.dump(dtg, fp)
 
     print("Creating marker genes cube...")
