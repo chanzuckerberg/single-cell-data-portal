@@ -1,6 +1,7 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import {
   DispatchContext,
   State,
@@ -266,19 +267,11 @@ export interface FilterDimensions {
   sex_terms: { id: string; name: string }[];
 }
 
-/**
- * (thuang): For Filters panel, `includeAllFilterOptions` should be `true`, so BE
- * returns all available secondary filter options for us to display
- */
-export function useFilterDimensions(
-  options = { includeAllFilterOptions: false }
-): {
+export function useFilterDimensions(): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const { includeAllFilterOptions } = options;
-
-  const requestBody = useWMGQueryRequestBody({ includeAllFilterOptions });
+  const requestBody = useWMGQueryRequestBody();
 
   const { data, isLoading } = useWMGQuery(requestBody);
 
@@ -548,9 +541,7 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
-  const { includeAllFilterOptions } = options;
-
+function useWMGQueryRequestBody() {
   const {
     selectedGenes,
     selectedTissues,
@@ -559,13 +550,8 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   } = useContext(StateContext);
   const { data } = usePrimaryFilterDimensions();
 
-  /**
-   * (thuang): When `includeAllFilterOptions` is `true`, we don't want to pass
-   * any selected secondary filter options to the query, otherwise BE will return
-   * only the filtered options back to us.
-   */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
-    includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
+    selectedFilters;
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
@@ -612,9 +598,9 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
         dataset_ids: datasets,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
-        self_reported_ethnicity_ontology_term_ids: ethnicities,
         gene_ontology_term_ids,
         organism_ontology_term_id: selectedOrganismId,
+        self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids,
       },
@@ -797,12 +783,14 @@ export interface MarkerGenesByCellType {
   [cellType: string]: MarkerGeneResponse["marker_genes"];
 }
 
-export interface MarkerGeneResponse {
-  marker_genes: {
-    gene_ontology_term_id: string;
-    effect_size: number;
-    p_value: number;
-  }[];
+export interface MarkerGene {
+  gene_ontology_term_id: string;
+  effect_size: number;
+  p_value: number;
+}
+
+export interface MarkerGeneResponse<T = MarkerGene[]> {
+  marker_genes: T;
   snapshot_id: string;
 }
 
@@ -811,7 +799,7 @@ export function useMarkerGenes({
   organismID,
   tissueID,
   test,
-}: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse> {
+}: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse<MarkerGene>> {
   const { data } = usePrimaryFilterDimensions();
   const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
     let result: { [name: string]: OntologyTerm } = {};
@@ -824,6 +812,12 @@ export function useMarkerGenes({
 
     return result;
   }, [data]);
+
+  function filterMarkerGenes(markerGenes: MarkerGene[]): MarkerGene[] {
+    return markerGenes.filter(
+      (markerGene) => markerGene.effect_size >= FMG_GENE_STRENGTH_THRESHOLD
+    );
+  }
 
   return useQuery(
     /**
@@ -840,7 +834,7 @@ export function useMarkerGenes({
         tissueID,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
-        output.marker_genes.reduce(
+        filterMarkerGenes(output.marker_genes).reduce(
           (newEntries, { gene_ontology_term_id, ...data }) => {
             try {
               newEntries.push([genesByID[gene_ontology_term_id].name, data]);
@@ -849,7 +843,7 @@ export function useMarkerGenes({
             }
             return newEntries;
           },
-          [] as [string, { effect_size: number; p_value: number }][]
+          [] as [string, Partial<MarkerGene>][]
         )
       );
       return { ...output, marker_genes: markerGenesIndexedByGeneName };
