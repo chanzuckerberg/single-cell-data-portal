@@ -343,8 +343,14 @@ def build_ordered_cell_types_by_tissue(
             distinct_tissues_cell_types["cell_type_ontology_term_id"],
         )
     )
+    indexer_bool_filter = []
+    indexer_filter = []
+    for index in indexer:
+        indexer_bool_filter.append(index in cell_type_orderings.index)
+        if index in cell_type_orderings.index:
+            indexer_filter.append(index)
 
-    joined = distinct_tissues_cell_types.copy()
+    joined = distinct_tissues_cell_types[indexer_bool_filter]
 
     for column in cell_type_orderings:
         joined[column] = list(cell_type_orderings[column][indexer])
