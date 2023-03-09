@@ -3,6 +3,7 @@ import { CellType } from "src/views/WheresMyGene/common/types";
 import SaveImage from "../../../GeneSearchBar/components/SaveImage";
 import ShareButton from "../../../GeneSearchBar/components/ShareButton";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
+import { ChartProps } from "../../../HeatMap/hooks/common/types";
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
@@ -15,6 +16,7 @@ interface Props {
   selectedCellTypes: { [tissue: string]: CellType[] };
   setIsDownloading: (isDownloading: boolean) => void;
   setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
+  allChartProps: { [tissue: string]: ChartProps };
 }
 
 export default memo(function Legend({
@@ -25,6 +27,7 @@ export default memo(function Legend({
   selectedCellTypes,
   setIsDownloading,
   setEchartsRendererMode,
+  allChartProps,
 }: Props): JSX.Element {
   return (
     <LegendWrapper>
@@ -34,6 +37,7 @@ export default memo(function Legend({
         selectedCellTypes={selectedCellTypes}
         setIsDownloading={setIsDownloading}
         setEchartsRendererMode={setEchartsRendererMode}
+        allChartProps={allChartProps}
       />
       <ShareButton />
       <SourceDataButton

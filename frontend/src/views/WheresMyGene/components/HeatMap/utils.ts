@@ -227,6 +227,7 @@ export function convertPercentageToDiameter(percentage: number): number {
   return Math.round(2 * radius);
 }
 export interface ChartFormat {
+  id?: string;
   cellTypeIndex: number;
   geneIndex: number;
   percentage: number;

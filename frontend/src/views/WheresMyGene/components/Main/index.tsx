@@ -38,6 +38,7 @@ import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
+import { ChartProps } from "../HeatMap/hooks/common/types";
 import InfoPanel from "../InfoPanel";
 import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
@@ -67,6 +68,10 @@ export default function WheresMyGene(): JSX.Element {
   if (allTissues) {
     tissuesByID = generateTermsByKey(allTissues, "id");
   }
+
+  const [allChartProps, setAllChartProps] = useState<{
+    [tissue: string]: ChartProps;
+  }>({});
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -347,6 +352,7 @@ export default function WheresMyGene(): JSX.Element {
               handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
               setIsDownloading={setIsDownloading}
               setEchartsRendererMode={setEchartsRendererMode}
+              allChartProps={allChartProps}
             />
           </Top>
 
@@ -388,6 +394,8 @@ export default function WheresMyGene(): JSX.Element {
               scaledMeanExpressionMax={scaledMeanExpressionMax}
               scaledMeanExpressionMin={scaledMeanExpressionMin}
               selectedOrganismId={selectedOrganismId}
+              allChartProps={allChartProps}
+              setAllChartProps={setAllChartProps}
             />
           ) : null}
         </Wrapper>

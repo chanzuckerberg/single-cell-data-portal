@@ -1,6 +1,7 @@
+/* eslint-disable prettier/prettier */
 import { Classes, Intent } from "@blueprintjs/core";
 import { FormControlLabel } from "@mui/material";
-import { InputRadio } from "czifui";
+import { InputCheckbox } from "czifui";
 import { toPng, toSvg } from "html-to-image";
 import { debounce } from "lodash";
 import { Dispatch, useCallback, useState } from "react";
@@ -12,9 +13,14 @@ import {
 } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
 import Modal from "src/components/common/Modal";
 import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
-import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
+import {
+  CellType,
+  Tissue,
+} from "src/views/WheresMyGene/common/types";
+import { ChartProps } from "../../../HeatMap/hooks/common/types";
 
 import {
+  deserializeCellTypeMetadata,
   getHeatmapHeight,
   getHeatmapWidth,
   X_AXIS_CHART_HEIGHT_PX,
@@ -75,6 +81,12 @@ interface Props {
   selectedCellTypes: { [tissue: string]: CellType[] };
   setIsDownloading: (isDownloading: boolean) => void;
   setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
+  allChartProps: { [tissue: string]: ChartProps };
+}
+
+interface ExportData {
+  input: string | ArrayBuffer;
+  name: string;
 }
 
 export default function SaveImage({
@@ -83,13 +95,25 @@ export default function SaveImage({
   selectedCellTypes,
   setIsDownloading,
   setEchartsRendererMode,
+  allChartProps,
 }: Props): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
-  const [fileType, setFileType] = useState<"png" | "svg">("png");
+  const [selectedFileTypes, setFileTypes] = useState<("png" | "svg" | "csv")[]>(["png"]);
   const handleButtonClick = useCallback(() => {
     if (!isOpen) track(EVENTS.WMG_DOWNLOAD_CLICKED);
     setIsOpen(!isOpen);
   }, [isOpen]);
+
+  function selectFileType(fileType: "png" | "svg" | "csv") {
+    const index = selectedFileTypes.indexOf(fileType);
+    if(index >= 0) {
+      selectedFileTypes.splice(index, 1);
+    } else {
+      selectedFileTypes.push(fileType);
+    }
+    console.log(selectedFileTypes);
+    setFileTypes([...selectedFileTypes]);
+  }
 
   const handleDownload = useCallback(async () => {
     setIsOpen(false);
@@ -114,10 +138,11 @@ export default function SaveImage({
      */
     const download = debounce(
       download_({
-        fileType,
+        allChartProps,
         heatmapNode,
         observer,
         selectedCellTypes,
+        selectedFileTypes,
         selectedGenes,
         selectedTissues,
         setEchartsRendererMode,
@@ -129,14 +154,7 @@ export default function SaveImage({
     observer.observe(heatmapNode, config);
 
     setEchartsRendererMode("svg");
-  }, [
-    fileType,
-    selectedCellTypes,
-    selectedTissues,
-    selectedGenes,
-    setIsDownloading,
-    setEchartsRendererMode,
-  ]);
+  }, [setIsDownloading, allChartProps, selectedCellTypes, selectedFileTypes, selectedGenes, selectedTissues, setEchartsRendererMode]);
 
   return (
     <>
@@ -153,32 +171,46 @@ export default function SaveImage({
       </ButtonWrapper>
       <Modal
         isOpen={isOpen}
-        title="Download Figure"
+        title="DOWNLOAD"
         onClose={handleButtonClick}
         isCloseButtonShown={false}
       >
         <div className={Classes.DIALOG_BODY}>
           <Section>
-            <Title>Image Format</Title>
+            <Title>FIGURE</Title>
             <StyledDiv>
               <FormControlLabel
                 control={
-                  <InputRadio
-                    stage={fileType === "png" ? "checked" : "unchecked"}
+                  <InputCheckbox 
+                    checked={selectedFileTypes.includes("png")}
                   />
                 }
                 label="PNG"
-                onChange={() => setFileType("png")}
+                onChange={() => selectFileType("png")}
               />
 
               <FormControlLabel
                 control={
-                  <InputRadio
-                    stage={fileType === "svg" ? "checked" : "unchecked"}
+                  <InputCheckbox 
+                    checked={selectedFileTypes.includes("svg")}
                   />
                 }
                 label="SVG"
-                onChange={() => setFileType("svg")}
+                onChange={() => selectFileType("svg")}
+              />
+            </StyledDiv>
+          </Section>
+          <Section>
+            <Title>DATA</Title>
+            <StyledDiv>
+              <FormControlLabel
+                control={
+                  <InputCheckbox 
+                    checked={selectedFileTypes.includes("csv")}
+                  />
+                }
+                label="CSV"
+                onChange={() => selectFileType("csv")}
               />
             </StyledDiv>
           </Section>
@@ -188,7 +220,7 @@ export default function SaveImage({
           <DownloadButton onClick={handleButtonClick} minimal>
             Cancel
           </DownloadButton>
-          <DownloadButton intent={Intent.PRIMARY} onClick={handleDownload}>
+          <DownloadButton intent={Intent.PRIMARY} onClick={handleDownload} disabled={!selectedFileTypes.length}>
             Download
           </DownloadButton>
         </div>
@@ -273,21 +305,145 @@ function renderDots({
   return chart;
 }
 
+/**
+ * Generates a CSV string for the tissue, cell type, and gene expression combinations
+ * @param selectedCellTypes 
+ * @param selectedGenes 
+ * @returns {string}
+ */
+function generateCsv(
+  allChartProps: { [tissue: string]: ChartProps },
+  selectedGenes:  Props["selectedGenes"],
+  tissue: string,
+) {
+  
+  let rows: string = 
+  [
+    '"Tissue"',
+    '"Cell Type"',
+    '"Cell Count"',
+    '"Tissue Composition"',
+    '"Gene Symbol"',
+    '"Expression"',
+    '"Expression, Scaled"',
+    '"Number of Cells Expressing Genes"\n',
+  ].join();
+  
+  console.log(JSON.stringify(allChartProps, null, 4));
+
+  for (const cellTypeMetaData of allChartProps[tissue].cellTypeMetadata.reverse()) {
+    const { 
+      id, 
+      name, 
+      tissue, 
+      total_count 
+    } = deserializeCellTypeMetadata(cellTypeMetaData);
+
+    for (const geneName of selectedGenes) {
+      const geneExpression = allChartProps[tissue].chartData.find((value) => value.id === `${id}-${geneName}`);
+
+      // console.log("expression " + JSON.stringify(geneExpression))
+
+      rows += (`"${[
+        tissue,
+        name,
+        total_count,
+        Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) + "%",
+        geneName,
+        geneExpression?.meanExpression ?? "",
+        geneExpression?.scaledMeanExpression ?? "",
+        geneExpression?.expressedCellCount ?? "",
+      ].join('","')}"\n`);
+    }
+  }
+
+  return rows;
+}
+
+async function generateImage(
+  fileType: string,
+  heatmapNode: HTMLDivElement,
+  height: number,
+  tissueName: string,
+  isMultipleTissues = false,
+): Promise<string | ArrayBuffer> {
+  const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
+  
+  const imageURL = await convertHTMLtoImage(heatmapNode, {
+    backgroundColor: "white",
+    filter: screenshotFilter(tissueName),
+    height: height + X_AXIS_CHART_HEIGHT_PX + 120,
+    pixelRatio: 4,
+    width: heatmapNode.offsetWidth,
+  });
+
+  let input: string | ArrayBuffer = imageURL;
+
+  if (fileType === "svg") {
+    input = processSvg({
+      height,
+      svg: decodeURIComponent(imageURL.split(",")[1]),
+      tissueName,
+    });
+  } else if (fileType === "png" && isMultipleTissues) {
+    input = base64URLToArrayBuffer(imageURL);
+  }
+
+  return input;
+}
+
+/**
+ * Generates an anchor element, populates the href and download properties, and clicks the element to download. 
+ * Element is deleted after clicked
+ * @param selectedFileTypes 
+ * @param exports 
+ */
+async function initiateDownload(selectedFileTypes: string[], exports: ExportData[]) {
+  const link = document.createElement("a");
+
+  if (exports.length > 1) {
+    const { downloadZip } = await import("client-zip");
+    const blob = await downloadZip(exports).blob();
+
+    link.download = `CELLxGENE_gene_expression.zip`;
+    link.href = URL.createObjectURL(blob);
+  } else {
+    // If there's only one export then there will be one filetype selected
+    const fileType = selectedFileTypes[0];
+
+    link.download = exports[0].name;
+
+    if (fileType === "png") {
+      link.href = exports[0].input as string;
+    } else if (fileType === "svg") {
+      // (ashin-czi): Fixes SVG string breaking when encountering a "#" character
+      link.href = `data:image/svg+xml,${(exports[0].input as string).replace(/#/g, "%23")}`;
+    } else if (fileType === "csv") {
+      link.href = `data:text/csv,${exports[0].input as string}`;
+    }
+  }
+
+  link.click();
+  link.remove();
+}
+
 function download_({
+  allChartProps,
   heatmapNode,
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
-  fileType,
+  selectedFileTypes,
   observer,
   setIsDownloading,
   setEchartsRendererMode,
 }: {
+  allChartProps: { [tissue: string]: ChartProps };
   heatmapNode: HTMLDivElement;
   selectedTissues: Props["selectedTissues"];
   selectedGenes: Props["selectedGenes"];
   selectedCellTypes: Props["selectedCellTypes"];
-  fileType: "png" | "svg";
+  selectedFileTypes: ("png" | "svg" | "csv")[];
   observer: MutationObserver;
   setIsDownloading: (isDownloading: boolean) => void;
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
@@ -306,40 +462,41 @@ function download_({
       heatmapNode.style.width = `${
         getHeatmapWidth(selectedGenes) + Y_AXIS_CHART_WIDTH_PX + 100
       }px`;
-      const isPNG = fileType === "png";
-      const convertHTMLtoImage = isPNG ? toPng : toSvg;
-      const images = await Promise.all(
+
+      const exports: ExportData[] = (await Promise.all(
         selectedTissues.map(async (tissueName) => {
-          const height = getHeatmapHeight(selectedCellTypes[tissueName]);
-
           // Handles if whitespace is in the tissue name for the element ID
-          tissueName = tissueName.replace(/\s+/g, "-");
+          const formattedTissueName = tissueName.replace(/\s+/g, "-");
 
-          const imageURL = await convertHTMLtoImage(heatmapNode, {
-            backgroundColor: "white",
-            filter: screenshotFilter(tissueName),
-            height: height + X_AXIS_CHART_HEIGHT_PX + 120,
-            pixelRatio: 4,
-            width: heatmapNode.offsetWidth,
-          });
-          // raw URI if only one tissue is selected
+          // Generate exports for each filetype for the tissue
+          return await Promise.all(selectedFileTypes.map(async (fileType) => {
+            let input; 
 
-          const input = isPNG
-            ? selectedTissues.length === 1
-              ? imageURL
-              : base64URLToArrayBuffer(imageURL)
-            : processSvg({
+            if (fileType === "csv") {
+              input = generateCsv(allChartProps, selectedGenes, tissueName);
+              // console.log(input)
+            } else {
+              const height = getHeatmapHeight(selectedCellTypes[tissueName]);
+
+              input = await generateImage(
+                fileType,
+                heatmapNode,
                 height,
-                svg: decodeURIComponent(imageURL.split(",")[1]),
-                tissueName,
-              });
-
-          return {
-            input,
-            name: `${tissueName}.${fileType}`,
-          };
+                formattedTissueName,
+                selectedTissues.length > 1 || selectedFileTypes.length > 1
+              );
+            }
+  
+            return {
+              input,
+              name: `${formattedTissueName}.${fileType}`,
+            };
+          }))
         })
-      );
+      )).flat();
+
+      
+      console.log(exports);
 
       //(thuang): #3569 Restore scrollTop position
       heatmapNode.classList.remove("CLONED");
@@ -347,32 +504,11 @@ function download_({
       if (heatmapContainer) {
         heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
       }
+      
+      await initiateDownload(selectedFileTypes, exports);
 
-      const link = document.createElement("a");
-
-      if (images.length > 1) {
-        const { downloadZip } = await import("client-zip");
-        const blob = await downloadZip(images).blob();
-        link.href = URL.createObjectURL(blob);
-        link.download = `CELLxGENE_gene_expression.zip`;
-      } else {
-        if (isPNG) {
-          // PNG download link
-          link.href = images[0].input as string;
-          link.download = images[0].name;
-        } else {
-          // SVG download link
-          // (ashin-czi): Fixes SVG string breaking when encountering a "#" character
-          link.href =
-            "data:image/svg+xml," +
-            (images[0].input as string).replace(/#/g, "%23");
-          link.download = images[0].name;
-        }
-      }
-      link.click();
-      link.remove();
       track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
-        file_type: fileType,
+        file_type: selectedFileTypes.join(","),
         genes: selectedGenes.toString(),
         tissues: selectedTissues.toString(),
       });

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Tooltip } from "czifui";
 import { ECharts, init } from "echarts";
 import cloneDeep from "lodash/cloneDeep";
@@ -46,6 +47,10 @@ interface Props {
   scaledMeanExpressionMin: number;
   isScaled: boolean;
   echartsRendererMode: "svg" | "canvas";
+  setAllChartProps: React.Dispatch<React.SetStateAction<{
+    [tissue: string]: ChartProps;
+  }>>;
+  allChartProps: {[tissue: string]: ChartProps};
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -65,6 +70,8 @@ export default memo(function Chart({
   scaledMeanExpressionMin,
   isScaled,
   echartsRendererMode,
+  setAllChartProps,
+  allChartProps,
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -193,8 +200,28 @@ export default memo(function Chart({
     return debounce(
       (
         cellTypeSummaries: CellTypeSummary[],
-        selectedGeneData: Props["selectedGeneData"] = EMPTY_ARRAY
+        selectedGeneData: Props["selectedGeneData"] = EMPTY_ARRAY,
+        setAllChartProps: React.Dispatch<React.SetStateAction<{
+          [tissue: string]: ChartProps;
+        }>>,
+        allChartProps: {[tissue: string]: ChartProps},
       ) => {
+        // const result = {
+        //   [tissue]: {
+        //     cellTypeMetadata: getAllSerializedCellTypeMetadata(
+        //       cellTypeSummaries,
+        //       tissue
+        //     ),
+        //     chartData: dataToChartFormat({
+        //       cellTypeSummaries,
+        //       genes: selectedGeneData,
+        //       scaledMeanExpressionMax,
+        //       scaledMeanExpressionMin,
+        //     }),
+        //     geneNames: getGeneNames(selectedGeneData),
+        //   },
+        // };
+
         const result = {
           cellTypeMetadata: getAllSerializedCellTypeMetadata(
             cellTypeSummaries,
@@ -211,6 +238,9 @@ export default memo(function Chart({
 
         setChartProps(result);
 
+        allChartProps[tissue] = result;
+        setAllChartProps(allChartProps);
+
         setIsLoading((isLoading) => ({ ...isLoading, [tissue]: false }));
       },
       getDebounceMs(selectedGeneData.length),
@@ -225,8 +255,13 @@ export default memo(function Chart({
   ]);
 
   useEffect(() => {
-    debouncedDataToChartFormat(cellTypeSummaries, selectedGeneData);
-  }, [cellTypeSummaries, selectedGeneData, debouncedDataToChartFormat]);
+    debouncedDataToChartFormat(
+      cellTypeSummaries,
+      selectedGeneData,
+      setAllChartProps,
+      allChartProps
+    );
+  }, [cellTypeSummaries, selectedGeneData, debouncedDataToChartFormat, setAllChartProps, allChartProps]);
 
   // Cancel debounce when unmounting
   useEffect(() => {
