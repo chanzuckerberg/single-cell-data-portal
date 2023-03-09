@@ -8,3 +8,4 @@ psutil>=5.9.4
 dataclasses_json>=0.5.7
 pyarrow>=11.0.0
 pygraphviz>=1.10
+pronto>=2.5.3
