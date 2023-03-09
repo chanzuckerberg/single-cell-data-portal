@@ -145,7 +145,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  collection_id:
                     $ref: "#/components/schemas/collection_id"
         "400":
           $ref: "#/components/responses/400"
@@ -322,7 +322,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  collection_id:
                     $ref: "#/components/schemas/collection_id"
         "401":
           $ref: "#/components/responses/401"
@@ -352,7 +352,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  dataset_id:
                     $ref: "#/components/schemas/dataset_id"
         "401":
           $ref: "#/components/responses/401"
@@ -586,7 +586,7 @@ paths:
         - **sex**
         - **suspension_type**
         - **tissue**
-        - **version_id**
+        - **dataset_version_id**
         - **x_approximate_distribution**
 
 
@@ -791,7 +791,7 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
-        id:
+        collection_id:
           $ref: "#/components/schemas/collection_id"
         links:
           $ref: "#/components/schemas/links"
@@ -809,7 +809,7 @@ components:
           $ref: "#/components/schemas/collection_revising_in"
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
-        version_id:
+        collection_version_id:
           $ref: "#/components/schemas/collection_version_id"
         visibility:
           $ref: "#/components/schemas/visibility"
@@ -914,7 +914,7 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
-        id:
+        collection_id:
           $ref: "#/components/schemas/collection_id"
         links:
           $ref: "#/components/schemas/links"
@@ -932,7 +932,7 @@ components:
           $ref: "#/components/schemas/collection_revising_in"
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
-        version_id:
+        collection_version_id:
           $ref: "#/components/schemas/collection_version_id"
         visibility:
           $ref: "#/components/schemas/visibility"
@@ -997,7 +997,7 @@ components:
           $ref: "#/components/schemas/donor_id"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
-        id:
+        dataset_id:
           $ref: "#/components/schemas/dataset_id"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
@@ -1044,7 +1044,7 @@ components:
           $ref: "#/components/schemas/suspension_type"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
-        version_id:
+        dataset_version_id:
           $ref: "#/components/schemas/dataset_version_id"
         x_approximate_distribution:
           $ref: "#/components/schemas/distribution"
@@ -1096,7 +1096,7 @@ components:
           $ref: "#/components/schemas/dataset_assay"
         disease:
           $ref: "#/components/schemas/dataset_disease"
-        id:
+        dataset_id:
           $ref: "#/components/schemas/dataset_id"
         organism:
           $ref: "#/components/schemas/dataset_organism"
@@ -1104,7 +1104,7 @@ components:
           $ref: "#/components/schemas/dataset_tissue"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
-        version_id:
+        dataset_version_id:
           $ref: "#/components/schemas/dataset_version_id"
       type: object
     distribution:
