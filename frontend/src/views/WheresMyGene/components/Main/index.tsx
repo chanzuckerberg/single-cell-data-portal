@@ -330,7 +330,7 @@ export default function WheresMyGene(): JSX.Element {
         >
           <CellInfoBar
             cellInfoCellType={cellInfoCellType}
-            tissueName={tissuesByID[cellInfoCellType.tissueID].name}
+            tissueInfo={tissuesByID[cellInfoCellType.tissueID]}
           />
         </SideBar>
       )}

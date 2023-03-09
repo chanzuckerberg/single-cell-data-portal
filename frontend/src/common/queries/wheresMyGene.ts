@@ -784,7 +784,6 @@ function useWMGQueryRequestBody() {
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
-
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
