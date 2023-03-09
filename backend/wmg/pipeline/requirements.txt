@@ -52,7 +52,7 @@ patsy==0.5.2
 pbr==5.8.1
 pexpect==4.8.0
 pickleshare==0.7.5
-Pillow==9.0.1
+Pillow==9.3.0
 platformdirs==2.5.0
 prompt-toolkit==3.0.28
 pronto==2.4.4
