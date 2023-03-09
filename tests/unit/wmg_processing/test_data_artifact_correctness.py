@@ -3,11 +3,11 @@ from typing import Dict
 
 import numpy as np
 
-from backend.wmg.data.utils import find_dim_option_values
 from backend.wmg.data.query import WmgQuery, WmgQueryCriteria, WmgSnapshot
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_logical_dims as expression_summary_default_logical_dims,
 )
+from backend.wmg.data.utils import find_dim_option_values
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
