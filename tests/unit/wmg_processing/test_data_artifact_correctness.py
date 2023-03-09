@@ -3,7 +3,7 @@ from typing import Dict
 
 import numpy as np
 
-from backend.wmg.api.v1 import find_dim_option_values
+from backend.wmg.data.utils import find_dim_option_values
 from backend.wmg.data.query import WmgQuery, WmgQueryCriteria, WmgSnapshot
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_logical_dims as expression_summary_default_logical_dims,
