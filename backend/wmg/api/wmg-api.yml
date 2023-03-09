@@ -548,7 +548,7 @@ paths:
                             and the value is an object of aggregated and compare dimension filters if applicable
                           type: object
                           additionalProperties:
-                            descripton: ->
+                            description: ->
                               At least a property "aggregated" for aggregated cell types,
                               and properties for each compare dimension filter if a compare dimension is selected.
                               ex. 'male', 'female', 'unknown'
@@ -566,7 +566,7 @@ paths:
                               total_count:
                                 description: The total count
                                 type: number
-                  filter_dimensions:
+                  filter_dims:
                     type: object
                     properties:
                       datasets:
