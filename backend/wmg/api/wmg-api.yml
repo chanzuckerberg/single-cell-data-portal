@@ -263,7 +263,7 @@ paths:
                             "tpc": 0.0,
                           },
                         },
-                        "CL00000": {
+                        "CL00001": {
                           "aggregated": {
                             "me": 0.0,
                             "n": 0,
@@ -283,7 +283,7 @@ paths:
                             "tpc": 0.0,
                           },
                         },
-                        "CL00001": {
+                        "CL00002": {
                           "aggregated": {
                             "me": 0.0,
                             "n": 0,
@@ -328,7 +328,7 @@ paths:
                             "tpc": 0.0,
                           },
                         },
-                        "CL00000": {
+                        "CL00001": {
                           "aggregated": {
                             "me": 0.0,
                             "n": 0,
@@ -348,7 +348,7 @@ paths:
                             "tpc": 0.0,
                           },
                         },
-                        "CL00001": {
+                        "CL00002": {
                           "aggregated": {
                             "me": 0.0,
                             "n": 0,
@@ -496,7 +496,7 @@ paths:
                               cell_type_ontology_term_id: 
                                 description: The cell type ontology term id
                                 type: string
-                              order: number
+                              order:
                                 description: The order for how the cell type should be displayed on the front end
                                 type: number
                               total_count:
