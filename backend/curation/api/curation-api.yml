@@ -67,8 +67,9 @@ paths:
         public Collections that the user is authorized to access is returned. An access token MUST be set in the request
         header as: `Authorization: Bearer <access_token>`
 
-        If a Collection in the list is a private revision of a public Collection, then it is annotated with 
-        `revision_of`.
+        In order to retrieve the following curator-specific attributes, include an access token in your API request:
+
+        - `revising_in` (the id of an associated Revision for this Collection, if one exists)
 
         * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.actions.get
@@ -156,12 +157,11 @@ paths:
     get:
       summary: Fetch a Collection with Datasets
       description: >
-        Fetch full metadata for a Collection and its Datasets. The Collection, as specified by `collection_id`, may be
-        either a *Collection* or a *Collection version*.
+        Fetch full metadata for a Collection and its Datasets. The Collection, as specified by `collection_id`, must be
+        a *Collection*, **NOT** a *Collection version*
 
         In order to retrieve the following curator-specific attributes, include an access token in your API request:
 
-        - `SUBMITTED` asset (returned in `assets` array)
         - `revising_in` (the id of an associated Revision for this Collection, if one exists)
 
         * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
@@ -246,7 +246,8 @@ paths:
     delete:
       summary: Delete a private Collection.
       description: |
-        Delete a private Collection or cancel a Revision.
+        Delete a private Collection or cancel a Revision. The Collection, as specified by `collection_id`, must be a
+        *Collection*, **NOT** a *Collection version*.
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.actions.delete
@@ -273,12 +274,6 @@ paths:
         Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The Collection,
         as specified by `collection_id`, must be a *Collection*, **NOT** a *Collection version*. Collection versions
         are returned in reverse-chronological order.
-
-        In order to retrieve the following curator-specific attributes, include an access token in your API request:
-
-        - `SUBMITTED` asset (returned in `assets` array)
-
-        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
         - collection
@@ -331,10 +326,10 @@ paths:
 
   /v1/collections/{collection_id}/datasets:
     post:
-      summary: Create an empty Dataset and return the `id` to be used in a future upload.
+      summary: Create an empty Dataset and return the `dataset_id` to be used in a future upload.
       description: |
-        Create a new empty Dataset in the specified Collection and return the `id`. The `id` is used when uploading a
-        datafile to S3 to identify what Dataset the file belongs to.
+        Create a new empty Dataset in the specified Collection and return the `dataset_id`. The `dataset_id` is used
+        when uploading a datafile to S3 to identify what Dataset the file belongs to.
 
         * Required: provide your access token in the request header as `Authorization: bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.actions.post
@@ -366,7 +361,8 @@ paths:
       summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
       description: >-
         Delete or cancel processing for a Dataset, as specified `dataset_id`, which must reference a *Dataset*, **NOT**
-        a *Dataset version*.
+        a *Dataset version*. Similarly, the Collection, as specified by `collection_id`, must be a *Collection*, **NOT**
+        a *Collection version*.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
         the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes,
@@ -403,12 +399,7 @@ paths:
       description: |
         Fetch Dataset metadata for a Dataset, as specified by `dataset_id`, which must reference a *Dataset*, **NOT** a
         *Dataset version*. Similarly, the Collection, as specified by `collection_id`, must be a *Collection*, **NOT**
-        a *Collection version*. In order to retrieve the following curator-specific attributes, include an access token
-        in your API request:
-
-        - `SUBMITTED` asset (returned in `.assets` array)
-
-        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
+        a *Collection version*.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.get
       tags:
         - collection
@@ -429,9 +420,10 @@ paths:
     put:
       summary: Upload a Dataset by providing a link
       description: |
-        Upload a datafile to become a Dataset. The Dataset, as specified by `dataset_id`, must reference a *Dataset*,
-        **NOT** a *Dataset version*. The Dataset will be uploaded from the provided `link` which MUST either be a
-        presigned AWS S3 URL or Dropbox shared file URL.
+        Upload a datafile to become a Dataset. The Dataset will be uploaded from the provided `link` which MUST either
+        be a presigned AWS S3 URL or Dropbox shared file URL. The Dataset, as specified by `dataset_id`, must reference
+        a *Dataset*, **NOT** a *Dataset version*. Similarly, the Collection, as specified by `collection_id`, must be a
+        *Collection*, **NOT** a *Collection version*.
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.put
@@ -559,12 +551,6 @@ paths:
         - dataset
       description: |
         List all public Datasets with full metadata and additional Cell Census attributes.
-
-        In order to retrieve the following curator-specific attributes, include an access token in your API request:
-
-        - `SUBMITTED` asset (returned in `assets` array)
-
-        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.datasets.actions.get
       responses:
         "200":
@@ -578,19 +564,14 @@ paths:
                     - $ref: "#/components/schemas/census_info_dataset"
                     - $ref: "#/components/schemas/dataset"
 
-  /v1/datasets/{dataset_id}:
+  /v1/dataset_versions/{dataset_version_id}:
     get:
       summary: Get metadata for a Dataset
       tags:
         - dataset
       description: |
-        Fetch Dataset metadata for a Dataset as specified by `dataset_id`, which may reference either a *Dataset* or a
-        *Dataset version*. In order to retrieve the following curator-specific attributes, include an access token in
-        your API request:
-
-        - `SUBMITTED` asset (returned in `assets` array)
-
-        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
+        Fetch Dataset metadata for a Dataset as specified by `dataset_version_id`, which must reference a *Dataset
+        version*.
       security:
         - curatorAccessLenient: [ ]
         - { }
@@ -627,12 +608,7 @@ paths:
         - dataset
       description: |
         List all versions for a given Dataset. The Dataset, as specified by `dataset_id`, must be a *Dataset*, **NOT**
-        a *Dataset version*. Dataset versions are returned in reverse-chronological order. In order to retrieve the
-        following curator-specific attributes, include an access token in your API request:
-
-        - `SUBMITTED` asset (returned in `assets` array)
-
-        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
+        a *Dataset version*. Dataset versions are returned in reverse-chronological order.
       security:
         - curatorAccessLenient: [ ]
         - { }
