@@ -172,7 +172,7 @@ paths:
       tags:
         - collection
       parameters:
-        - $ref: "#/components/parameters/path_collection_id_or_version_id"
+        - $ref: "#/components/parameters/path_collection_id"
       responses:
         "200":
           description: OK
@@ -246,8 +246,8 @@ paths:
     delete:
       summary: Delete a private Collection.
       description: |
-        Delete a private Collection or cancel a Revision. The Collection, as specified by `collection_id`, must be a
-        *Collection*, **NOT** a *Collection version*.
+        Delete a private Collection or cancel a Revision. The `collection_id` must reference a *Collection*, **NOT** a
+        *Collection version*.
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.actions.delete
@@ -271,9 +271,9 @@ paths:
     get:
       summary: Fetch all versions of a Collection with corresponding Dataset versions
       description: >
-        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The Collection,
-        as specified by `collection_id`, must be a *Collection*, **NOT** a *Collection version*. Collection versions
-        are returned in reverse-chronological order.
+        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The
+        `collection_id` must reference a *Collection*, **NOT** a *Collection version*. Collection versions are returned
+        in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
         - collection
@@ -329,7 +329,8 @@ paths:
       summary: Create an empty Dataset and return the `dataset_id` to be used in a future upload.
       description: |
         Create a new empty Dataset in the specified Collection and return the `dataset_id`. The `dataset_id` is used
-        when uploading a datafile to S3 to identify what Dataset the file belongs to.
+        when uploading a datafile to S3 to identify what Dataset the file belongs to. The `collection_id` must reference
+        a *Collection*, **NOT** a *Collection version*.
 
         * Required: provide your access token in the request header as `Authorization: bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.actions.post
@@ -360,9 +361,8 @@ paths:
     delete:
       summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
       description: >-
-        Delete or cancel processing for a Dataset, as specified `dataset_id`, which must reference a *Dataset*, **NOT**
-        a *Dataset version*. Similarly, the Collection, as specified by `collection_id`, must be a *Collection*, **NOT**
-        a *Collection version*.
+        Delete or cancel processing for `dataset_id`, which must reference a *Dataset*, **NOT** a *Dataset version*.
+        Similarly, the `collection_id` must reference a *Collection*, **NOT** a *Collection version*.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
         the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes,
@@ -398,8 +398,7 @@ paths:
       summary: Fetch Dataset metadata from a Collection.
       description: |
         Fetch Dataset metadata for a Dataset, as specified by `dataset_id`, which must reference a *Dataset*, **NOT** a
-        *Dataset version*. Similarly, the Collection, as specified by `collection_id`, must be a *Collection*, **NOT**
-        a *Collection version*.
+        *Dataset version*. Similarly, the `collection_id` must reference a *Collection*, **NOT** a *Collection version*.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.get
       tags:
         - collection
@@ -422,8 +421,8 @@ paths:
       description: |
         Upload a datafile to become a Dataset. The Dataset will be uploaded from the provided `link` which MUST either
         be a presigned AWS S3 URL or Dropbox shared file URL. The Dataset, as specified by `dataset_id`, must reference
-        a *Dataset*, **NOT** a *Dataset version*. Similarly, the Collection, as specified by `collection_id`, must be a
-        *Collection*, **NOT** a *Collection version*.
+        a *Dataset*, **NOT** a *Dataset version*. Similarly, the `collection_id` must reference a *Collection*, **NOT**
+        a *Collection version*.
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.put
@@ -544,6 +543,28 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
+  /v1/collection_versions/{collection_version_id}:
+    get:
+      summary: Fetch a Collection version with Dataset versions
+      description: >
+        Fetch full metadata for a Collection version and its Dataset versions. The `collection_version_id` must
+        reference a *Collection version*, **NOT** a *Collection*.
+      operationId: backend.curation.api.v1.curation.collections.collection_id.actions.get
+      tags:
+        - collection_version
+      parameters:
+        - $ref: "#/components/parameters/path_collection_version_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/collection_get"
+        "403":
+          $ref: "#/components/responses/403"
+
   /v1/datasets:
     get:
       summary: List all Datasets
@@ -564,20 +585,39 @@ paths:
                     - $ref: "#/components/schemas/census_info_dataset"
                     - $ref: "#/components/schemas/dataset"
 
-  /v1/dataset_versions/{dataset_version_id}:
+  /v1/datasets/{dataset_id}:
     get:
-      summary: Get metadata for a Dataset
+      summary: Fetch full metadata for a Dataset.
+      description: |
+        Fetch Dataset metadata for a Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
+      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.get
       tags:
         - dataset
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dataset"
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/dataset_versions/{dataset_version_id}:
+    get:
+      summary: Get full metadata for a Dataset version
+      tags:
+        - dataset_version
       description: |
-        Fetch Dataset metadata for a Dataset as specified by `dataset_version_id`, which must reference a *Dataset
-        version*.
-      security:
-        - curatorAccessLenient: [ ]
-        - { }
+        Fetch Dataset metadata for a Dataset version. The `dataset_version_id` must reference a *Dataset version*,
+        **NOT** a *Dataset*.
       operationId: backend.curation.api.v1.curation.datasets.dataset_id.actions.get
       parameters:
-        - $ref: "#/components/parameters/path_dataset_id_or_version_id"
+        - $ref: "#/components/parameters/path_dataset_version_id"
       responses:
         "200":
           description: OK
@@ -607,11 +647,8 @@ paths:
       tags:
         - dataset
       description: |
-        List all versions for a given Dataset. The Dataset, as specified by `dataset_id`, must be a *Dataset*, **NOT**
-        a *Dataset version*. Dataset versions are returned in reverse-chronological order.
-      security:
-        - curatorAccessLenient: [ ]
-        - { }
+        List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
+        Dataset versions are returned in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.datasets.versions.get
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
@@ -1205,24 +1242,24 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/collection_id"
-    path_collection_id_or_version_id:
-      description: The uuid of a Collection or a Collection version.
+    path_collection_version_id:
+      description: The uuid of a Collection version.
       in: path
-      name: collection_id
+      name: collection_version_id
       required: true
       schema:
         $ref: "#/components/schemas/collection_id"
     path_dataset_id:
-      description: The uuid of the Dataset.
+      description: The uuid of a Dataset.
       in: path
       name: dataset_id
       required: true
       schema:
         $ref: "#/components/schemas/dataset_id"
-    path_dataset_id_or_version_id:
-      description: The uuid of the Dataset or a Dataset version.
+    path_dataset_version_id:
+      description: The uuid of a Dataset version.
       in: path
-      name: dataset_id
+      name: dataset_version_id
       required: true
       schema:
         $ref: "#/components/schemas/dataset_id"
