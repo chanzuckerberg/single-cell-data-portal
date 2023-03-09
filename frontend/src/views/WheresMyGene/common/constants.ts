@@ -13,7 +13,7 @@ export const COMPARE_OPTIONS = [
 
 export type CompareId = "disease" | "ethnicity" | "sex";
 
-export const getCompareOptionNameById = (id: CompareId) => {
+export const getCompareOptionNameById = (id?: CompareId) => {
   const option = COMPARE_OPTIONS.find((option) => option.id === id);
 
   return option?.name || "None";
