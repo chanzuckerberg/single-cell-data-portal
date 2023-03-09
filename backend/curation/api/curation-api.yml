@@ -549,7 +549,7 @@ paths:
       description: >
         Fetch full metadata for a Collection version and its Dataset versions. The `collection_version_id` must
         reference a *Collection version*, **NOT** a *Collection*.
-      operationId: backend.curation.api.v1.curation.collections.collection_id.actions.get
+      operationId: backend.curation.api.v1.curation.collection_versions.collection_id.actions.get
       tags:
         - collection_version
       parameters:
@@ -590,7 +590,7 @@ paths:
       summary: Fetch full metadata for a Dataset.
       description: |
         Fetch Dataset metadata for a Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
-      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.get
+      operationId: backend.curation.api.v1.curation.datasets.dataset_id.actions.get
       tags:
         - dataset
       parameters:
@@ -615,7 +615,7 @@ paths:
       description: |
         Fetch Dataset metadata for a Dataset version. The `dataset_version_id` must reference a *Dataset version*,
         **NOT** a *Dataset*.
-      operationId: backend.curation.api.v1.curation.datasets.dataset_id.actions.get
+      operationId: backend.curation.api.v1.curation.dataset_versions.dataset_id.actions.get
       parameters:
         - $ref: "#/components/parameters/path_dataset_version_id"
       responses:
