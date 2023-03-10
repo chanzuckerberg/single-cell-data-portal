@@ -141,7 +141,10 @@ def get_names_for_dimension(response_filter_dims_values: dict, dim_id: str) -> s
 
     for dim_values in response_filter_dims_values[dimension_name]:
         for key in dim_values:
-            result[key] = dim_values[key]
+            if not dim_values[key]:
+                result[key] = key
+            else:
+                result[key] = dim_values[key]
 
     return result
 
