@@ -123,10 +123,10 @@ function separateCellTypes(cellTypes: CellTypeRow[]): {
   const optionOnly: CellTypeRow[] = [];
 
   cellTypes.forEach((cellType) => {
-    if (cellType.optionName) {
-      optionOnly.push(cellType);
-    } else {
+    if (cellType.isAggregated) {
       aggregatedOnly.push(cellType);
+    } else {
+      optionOnly.push(cellType);
     }
   });
 

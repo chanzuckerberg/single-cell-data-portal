@@ -21,7 +21,6 @@ import {
   CellTypeRow,
   COMPARE_OPTION_ID_FOR_AGGREGATED,
   getOptionIdFromCellTypeViewId,
-  useFilterOptionNamesById,
 } from "src/common/queries/wheresMyGene";
 import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
 import { StateContext } from "src/views/WheresMyGene/common/store";
@@ -247,7 +246,6 @@ export default memo(function Chart({
   const [hoveredGeneIndex, hoveredCellTypeIndex] = currentIndices;
 
   const { compare } = useContext(StateContext);
-  const filterOptionNamesById = useFilterOptionNamesById() || EMPTY_OBJECT;
 
   const tooltipContent = useMemo(() => {
     clearTimeout(handleDotHoverAnalytic);
@@ -312,7 +310,7 @@ export default memo(function Chart({
         secondPanel.dataRows[0],
         {
           label: getCompareOptionNameById(compare),
-          value: getFilterOptionById(filterOptionNamesById, optionId),
+          value: capitalize(cellType.name),
         },
         ...secondPanel.dataRows.slice(1),
       ];
@@ -332,7 +330,6 @@ export default memo(function Chart({
     hoveredCellTypeIndex,
     selectedGeneData,
     compare,
-    filterOptionNamesById,
   ]);
 
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);

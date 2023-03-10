@@ -182,7 +182,7 @@ export interface QueryResponse {
       [tissue_type_ontology_term_id: string]: {
         [cell_type_ontology_term_id: string]: {
           [compareOptionId: CompareOptionId]: {
-            cell_type: string;
+            name: string;
             cell_type_ontology_term_id: CellTypeId;
             order: number;
             total_count: number;
@@ -556,7 +556,8 @@ export interface CellTypeRow {
   total_count: CellTypeSummary["total_count"];
   viewId: CellTypeSummary["viewId"];
   id: CellTypeSummary["id"];
-  optionName: string;
+  // (thuang): boolean flag if the cell type is an aggregated option or not
+  isAggregated: boolean;
   cellTypeName: string;
 }
 
@@ -568,10 +569,8 @@ export function useTermIdLabels(): {
 
   const { data, isLoading } = useWMGQuery(requestBody);
 
-  const filterOptionNamesById = useFilterOptionNamesById();
-
   return useMemo(() => {
-    if (isLoading || !filterOptionNamesById || !data) {
+    if (isLoading || !data) {
       return {
         data: { cell_types: EMPTY_OBJECT, genes: EMPTY_OBJECT },
         isLoading,
@@ -601,7 +600,6 @@ export function useTermIdLabels(): {
           );
 
           addCellTypeRowToResult({
-            filterOptionNamesById,
             result,
             sortedCellTypeCompareOptions,
           });
@@ -618,7 +616,7 @@ export function useTermIdLabels(): {
       },
       isLoading: false,
     };
-  }, [data, isLoading, filterOptionNamesById]);
+  }, [data, isLoading]);
 }
 
 /**
@@ -699,7 +697,6 @@ function getSortedCellTypeCompareOptions(
 function addCellTypeRowToResult({
   result,
   sortedCellTypeCompareOptions,
-  filterOptionNamesById,
 }: {
   result: {
     [viewId: CellTypeRow["viewId"]]: CellTypeRow;
@@ -709,24 +706,31 @@ function addCellTypeRowToResult({
     string,
     QueryResponse["term_id_labels"]["cell_types"][string][string][string]
   ][];
-  filterOptionNamesById: { [filterOptionId: string]: string };
 }) {
+  let cellTypeName = "";
+
   for (const [
     compareOptionId,
     compareOptionData,
   ] of sortedCellTypeCompareOptions) {
     const isAggregated = compareOptionId === COMPARE_OPTION_ID_FOR_AGGREGATED;
 
-    const optionName = filterOptionNamesById[compareOptionId];
-
-    const { cell_type_ontology_term_id, cell_type, total_count, order } =
-      compareOptionData;
+    const {
+      cell_type_ontology_term_id,
+      name: rawName,
+      total_count,
+      order,
+    } = compareOptionData;
 
     /**
      * (thuang): We manually indent 4 spaces instead of using CSS, so we don't
      * have to update SVG render function to mimic CSS padding
      */
-    const name = isAggregated ? cell_type : `    ${optionName || "unknown"}`;
+    const name = isAggregated ? rawName : `    ${rawName || "unknown"}`;
+
+    if (isAggregated) {
+      cellTypeName = rawName;
+    }
 
     const viewId = getCellTypeViewId(
       cell_type_ontology_term_id,
@@ -734,36 +738,15 @@ function addCellTypeRowToResult({
     );
 
     result[viewId] = {
-      cellTypeName: cell_type,
+      cellTypeName,
       id: cell_type_ontology_term_id,
+      isAggregated,
       name,
-      optionName,
       order,
       total_count,
       viewId,
     };
   }
-}
-
-export function useFilterOptionNamesById() {
-  const { data: filterDimensions, isLoading: isFilterDimensionsLoading } =
-    useFilterDimensions();
-
-  return useMemo(() => {
-    if (isFilterDimensionsLoading) {
-      return null;
-    }
-
-    const result: { [id: string]: string } = {};
-
-    for (const filterCategoryOptions of Object.values(filterDimensions)) {
-      for (const filterOption of filterCategoryOptions) {
-        result[filterOption.id] = filterOption.name;
-      }
-    }
-
-    return result;
-  }, [filterDimensions, isFilterDimensionsLoading]);
 }
 
 function aggregateIdLabels(items: { [id: string]: string }[]): {
