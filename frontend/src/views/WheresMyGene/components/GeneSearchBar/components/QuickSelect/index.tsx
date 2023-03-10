@@ -254,13 +254,9 @@ export default function QuickSelect<
   };
   const selectedAsArray = Array.isArray(selected) ? selected : [selected];
 
-  const [itemOptions, setItemOptions] = useState<T[]>(items);
-  useEffect(() => {
-    const itemOptionsWithSelectedOnTop = [
-      ...new Set([...selectedAsArray, ...(isLoading ? itemOptions : items)]),
-    ];
-    setItemOptions(itemOptionsWithSelectedOnTop);
-  }, [items, selectedAsArray, isLoading]);
+  const itemOptionsWithSelectedOnTop = [
+    ...new Set([...selectedAsArray, ...items]),
+  ];
 
   return (
     <>
@@ -307,7 +303,7 @@ export default function QuickSelect<
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={multiple ? handleEnter : undefined}
-          options={itemOptions}
+          options={itemOptionsWithSelectedOnTop}
           ListboxComponent={
             ListboxComponent as React.ComponentType<
               React.HTMLAttributes<HTMLElement>
