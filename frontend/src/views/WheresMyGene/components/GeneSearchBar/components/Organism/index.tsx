@@ -83,7 +83,7 @@ export default function Organism({ isLoading }: Props): JSX.Element {
   );
 
   function handleOnChange(organism: IOrganism | null): void {
-    if (!dispatch || !organism) return;
+    if (!dispatch || !organism || selectedOrganismId === organism.id) return;
 
     track(EVENTS.WMG_SELECT_ORGANISM, { payload: organism?.name });
 
