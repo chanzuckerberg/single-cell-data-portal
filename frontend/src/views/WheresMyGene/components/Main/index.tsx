@@ -106,7 +106,7 @@ export default function WheresMyGene(): JSX.Element {
       cellTypesByTissueName
     )) {
       const tissueSelectedCellTypeIds = tissueSelectedCellTypes.map(
-        (cellType) => cellType.id
+        (cellType) => cellType.viewId
       );
       const tissueGeneExpressionSummaries =
         geneExpressionSummariesByTissueName[tissueName];
