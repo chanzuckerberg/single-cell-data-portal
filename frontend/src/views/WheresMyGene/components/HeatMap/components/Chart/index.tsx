@@ -444,10 +444,3 @@ function getDebounceMs(geneCount: number): number {
 
   return Math.floor(geneCount / BROWSER_PARALLEL_CALL_LIMIT) * BASE_DEBOUNCE_MS;
 }
-
-function getFilterOptionById(
-  filterOptionNamesById: { [id: string]: string },
-  optionId: string
-) {
-  return capitalize(filterOptionNamesById[optionId]);
-}
