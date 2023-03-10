@@ -8,6 +8,8 @@ import {
   PayloadAction,
 } from "src/views/WheresMyGene/common/store/reducer";
 
+const HUMAN_ORGANISM_ID = "NCBITaxon:9606";
+
 export const generateAndCopyShareUrl = (
   filters: State["selectedFilters"],
   organism: State["selectedOrganismId"],
@@ -17,13 +19,16 @@ export const generateAndCopyShareUrl = (
   // Create a URL that contains the selected filters, tissues, and genes as params in the URL
   // This URL can be shared with others to reproduce the same view
   const url = new URL(window.location.href);
-  url.searchParams.set("organism", organism ?? "");
+  // human is empty default
+  if (organism && organism !== HUMAN_ORGANISM_ID) {
+    url.searchParams.set("organism", organism);
+  }
   Object.entries(stripEmptyFilters(filters)).forEach(([key, value]) => {
     url.searchParams.set(key, value.join(","));
   });
   url.searchParams.set("tissues", tissues.join(","));
   url.searchParams.set("genes", genes.join(","));
-  url.searchParams.set("ver", "3");
+  url.searchParams.set("ver", "2");
 
   // Copy the URL to the clipboard
   navigator.clipboard.writeText(url.toString());
@@ -61,21 +66,24 @@ export const loadStateFromQueryParams = (
     const value = params.get(key);
     if (value) {
       newSelectedFilters[key as keyof State["selectedFilters"]] =
-        value.split("-");
+        value.split("_");
       paramsToRemove.push(key);
     }
   });
 
   // Check for version
-  let version = params.get("ver");
-  if (!version) version = "1";
+  const version = params.get("ver") || "1";
+  if (params.get("ver")) paramsToRemove.push("ver");
+
+  // delimiter changed from _ to , in version 2
   const delimiter = version > "1" ? "," : "_";
-  //Check for organism (default to human)
-  let newSelectedOrganism = "NCBITaxon:9606";
-  if (version > "2") {
-    newSelectedOrganism = params.get("organism") || "";
+
+  //Check for organism
+  const newSelectedOrganism = params.get("organism") || HUMAN_ORGANISM_ID;
+  if (newSelectedOrganism) {
     paramsToRemove.push("organism");
   }
+
   // Check for tissues
   const newSelectedTissues = params.get("tissues")?.split(delimiter) || [];
   if (newSelectedTissues.length > 0) paramsToRemove.push("tissues");
@@ -83,15 +91,16 @@ export const loadStateFromQueryParams = (
   //Check for genes
   const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
-  if (params.get("ver")) paramsToRemove.push("ver");
+
+  removeParams(paramsToRemove);
+
+  // If there are no filters, tissues, or genes selected, don't update the state
   if (
     Object.values(Object.keys(newSelectedFilters)).length === 0 &&
     newSelectedTissues.length === 0 &&
     newSelectedGenes.length === 0
   )
     return null;
-
-  removeParams(paramsToRemove);
 
   dispatch(
     loadStateFromURL({
