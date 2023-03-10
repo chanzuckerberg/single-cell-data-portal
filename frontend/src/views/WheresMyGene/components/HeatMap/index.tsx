@@ -163,7 +163,7 @@ export default memo(function HeatMap({
               sortedCellTypesByTissueName,
               tissue,
             });
-            return (
+            return tissueCellTypes.length ? (
               <YAxisChart
                 key={tissue}
                 tissue={tissue}
@@ -172,7 +172,7 @@ export default memo(function HeatMap({
                 generateMarkerGenes={generateMarkerGenes}
                 selectedOrganismId={selectedOrganismId}
               />
-            );
+            ) : null;
           })}
         </YAxisWrapper>
         <ChartWrapper ref={chartWrapperRef}>

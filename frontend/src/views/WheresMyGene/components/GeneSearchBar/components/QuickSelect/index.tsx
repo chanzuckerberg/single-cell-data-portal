@@ -256,12 +256,10 @@ export default function QuickSelect<
 
   const [itemOptions, setItemOptions] = useState<T[]>(items);
   useEffect(() => {
-    if (!isLoading) {
-      const itemOptionsWithSelectedOnTop = [
-        ...new Set([...selectedAsArray, ...items]),
-      ];
-      setItemOptions(itemOptionsWithSelectedOnTop);
-    }
+    const itemOptionsWithSelectedOnTop = [
+      ...new Set([...selectedAsArray, ...(isLoading ? itemOptions : items)]),
+    ];
+    setItemOptions(itemOptionsWithSelectedOnTop);
   }, [items, selectedAsArray, isLoading]);
 
   return (
