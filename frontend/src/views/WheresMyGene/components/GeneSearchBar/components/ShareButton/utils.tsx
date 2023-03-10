@@ -66,7 +66,7 @@ export const loadStateFromQueryParams = (
     const value = params.get(key);
     if (value) {
       newSelectedFilters[key as keyof State["selectedFilters"]] =
-        value.split("_");
+        value.split("-");
       paramsToRemove.push(key);
     }
   });
@@ -75,8 +75,8 @@ export const loadStateFromQueryParams = (
   const version = params.get("ver") || "1";
   if (params.get("ver")) paramsToRemove.push("ver");
 
-  // delimiter changed from _ to , in version 2
-  const delimiter = version > "1" ? "," : "_";
+  // delimiter changed from - to , in version 2
+  const delimiter = version > "1" ? "," : "-";
 
   //Check for organism
   const newSelectedOrganism = params.get("organism") || HUMAN_ORGANISM_ID;
