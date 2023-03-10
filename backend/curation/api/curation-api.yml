@@ -542,6 +542,26 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /v1/datasets:
+    get:
+      summary: List all Datasets
+      tags:
+        - dataset
+      description: |
+        List all public Datasets with full metadata and additional Cell Census attributes.
+      operationId: backend.curation.api.v1.curation.datasets.actions.get
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/census_info_dataset"
+                    - $ref: "#/components/schemas/dataset"
+
 components:
   schemas:
     asset_response:
@@ -578,6 +598,28 @@ components:
         type: string
       nullable: true
       example: ["patient", "seqBatch"]
+    census_info_dataset:
+      type: object
+      properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_name:
+          $ref: "#/components/schemas/collection_name"
+        collection_doi:
+          $ref: "#/components/schemas/doi"
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
+        dataset_title:
+          description: |
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
+          nullable: true
+          type: string
+        dataset_h5ad_path:
+          type: string
+          description: Relative path to the source h5ad file in the Cell Census storage bucket
+        dataset_total_cell_count:
+          type: number
+          description: Total number of cells from the dataset included in the Cell Census.
     collection_list:
       description: Collection metadata
       properties:
