@@ -26,7 +26,6 @@ import React, {
   SyntheticEvent,
   useRef,
   useState,
-  useEffect,
 } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
@@ -257,7 +256,6 @@ export default function QuickSelect<
   const itemOptionsWithSelectedOnTop = [
     ...new Set([...selectedAsArray, ...items]),
   ];
-
   return (
     <>
       <ButtonWrapper>
