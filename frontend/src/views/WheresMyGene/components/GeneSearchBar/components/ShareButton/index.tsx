@@ -75,6 +75,7 @@ export default function ShareButton(): JSX.Element {
         track(EVENTS.WMG_SHARE_LOADED, {
           tissues: loadedState.tissues,
           genes: loadedState.genes,
+          organism: loadedState.organism,
           dataset_filter: loadedState.filters.datasets,
           disease_filter: loadedState.filters.diseases,
           self_reported_ethnicity_filter: loadedState.filters.ethnicities,
