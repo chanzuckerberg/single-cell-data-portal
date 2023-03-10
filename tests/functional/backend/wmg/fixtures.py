@@ -442,7 +442,6 @@ secondary_filter_common_case_request_data = {
         "sex_ontology_term_ids": ["PATO:0000383"],
         "tissue_ontology_term_ids": ["UBERON:0000178"],
     },  # blood (more than 50 cell types)
-    "include_filter_dims": True,
 }
 secondary_filter_extreme_case_request_data = {
     "filter": {
@@ -460,5 +459,4 @@ secondary_filter_extreme_case_request_data = {
             "UBERON:0000362",
         ],
     },
-    "include_filter_dims": True,
 }

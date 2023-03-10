@@ -58,6 +58,7 @@ export const GeneButtonStyle = styled.div`
   }
   .gene-label-container:hover .gene-delete-icon {
     visibility: visible;
+    cursor: pointer;
   }
 `;
 
