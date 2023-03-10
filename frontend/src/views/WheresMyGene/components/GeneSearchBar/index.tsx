@@ -51,7 +51,8 @@ export default function GeneSearchBar({
       const notCellCulture = !tissue.name.includes("(cell culture)");
       const notFiltered =
         !filteredTissues.length ||
-        filteredTissues.map((val) => val.name).includes(tissue.name);
+        filteredTissues.map((val) => val.name).includes(tissue.name) ||
+        selectedTissues.includes(tissue.name);
       return notCellCulture && notFiltered;
     });
   }, [rawTissues, filteredTissues, selectedOrganismId]);
