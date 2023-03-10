@@ -145,6 +145,93 @@ describe("Where's My Gene", () => {
     }
   });
 
+  test("Primary and secondary filter crossfiltering", async ({ page }) => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+    const diseaseSelector = await getDiseaseSelector();
+    const datasetSelector = await getDatasetSelector();
+
+    if (!diseaseSelector) throw Error("No diseaseSelector found");
+    if (!datasetSelector) throw Error("No datasetSelector found");
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    const tissueOptionsBefore = await page.$$("[role=option]");
+    const numberOfTissuesBefore = tissueOptionsBefore.length;
+    await page.keyboard.press("Escape");
+
+    await clickUntilOptionsShowUp(getDiseaseSelectorButton, page);
+    const diseaseOptionsBefore = await page.$$("[role=option]");
+    const numberOfDiseasesBefore = diseaseOptionsBefore.length;
+
+    await clickUntilOptionsShowUp(getDatasetSelectorButton, page);
+    const datasetOptions = await page.$$("[role=option]");
+    await datasetOptions[0].click();
+    await page.keyboard.press("Escape");
+
+    await clickUntilOptionsShowUp(getDiseaseSelectorButton, page);
+    const diseaseOptionsAfter = await page.$$("[role=option]");
+    const numberOfDiseasesAfter = diseaseOptionsAfter.length;
+    await page.keyboard.press("Escape");
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    const tissueOptionsAfter = await page.$$("[role=option]");
+    const numberOfTissuesAfter = tissueOptionsAfter.length;
+    await page.keyboard.press("Escape");
+
+    expect(numberOfDiseasesBefore).toBeGreaterThan(numberOfDiseasesAfter);
+    expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID(ADD_TISSUE_ID));
+    }
+
+    async function getFiltersPanel() {
+      return page.$(getTestID("filters-panel"));
+    }
+
+    async function getDiseaseSelector() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error(FILTERS_PANEL_NOT_FOUND);
+      }
+
+      return filtersPanel.$("*css=div >> text=Disease");
+    }
+
+    async function getDiseaseSelectorButton() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error(FILTERS_PANEL_NOT_FOUND);
+      }
+
+      await filtersPanel.$("*css=div >> text=Disease");
+      return filtersPanel.$("*css=button >> text=Disease");
+    }
+
+    async function getDatasetSelector() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error(FILTERS_PANEL_NOT_FOUND);
+      }
+
+      return filtersPanel.$("*css=div >> text=Dataset");
+    }
+
+    async function getDatasetSelectorButton() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error(FILTERS_PANEL_NOT_FOUND);
+      }
+
+      await filtersPanel.$("*css=div >> text=Dataset");
+      return filtersPanel.$("*css=button >> text=Dataset");
+    }
+  });
+
   test("Source Data", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
