@@ -1,8 +1,17 @@
 import { Intent } from "@blueprintjs/core";
 import { LoadingIndicator } from "czifui";
-import React, { useCallback, useContext, useMemo } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 import { EVENTS } from "src/common/analytics/events";
-import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
+import {
+  usePrimaryFilterDimensions,
+  useFilterDimensions,
+} from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
@@ -23,8 +32,13 @@ export default function GeneSearchBar({
   const { selectedGenes, selectedTissues, selectedOrganismId } =
     useContext(StateContext);
 
-  const { data, isLoading } = usePrimaryFilterDimensions();
+  const { data, isLoading: isLoadingPrimaryFilters } =
+    usePrimaryFilterDimensions();
+  const { data: filterData, isLoading: isLoadingFilters } =
+    useFilterDimensions();
+  const isLoading = isLoadingPrimaryFilters || isLoadingFilters;
 
+  const { tissue_terms: filteredTissues } = filterData;
   const { genes: rawGenes, tissues: rawTissues } = data || {};
 
   const genes: Gene[] = useMemo(() => {
@@ -32,16 +46,22 @@ export default function GeneSearchBar({
 
     return rawGenes[selectedOrganismId || ""] || [];
   }, [rawGenes, selectedOrganismId]);
-
-  const tissues: Tissue[] = useMemo(() => {
-    if (!rawTissues) return [];
-
-    const temp = rawTissues[selectedOrganismId || ""] || [];
-
-    // (thuang): Product requirement to exclude "cell culture" from the list
-    // https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/2335
-    return temp.filter((tissue) => !tissue.name.includes("(cell culture)"));
-  }, [rawTissues, selectedOrganismId]);
+  const [tissues, setTissues] = useState<Tissue[]>([]);
+  useEffect(() => {
+    if (rawTissues && filteredTissues.length) {
+      const temp = rawTissues[selectedOrganismId || ""] || [];
+      // (thuang): Product requirement to exclude "cell culture" from the list
+      // https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/2335
+      const newTissues = temp.filter((tissue) => {
+        const notCellCulture = !tissue.name.includes("(cell culture)");
+        const notFiltered =
+          filteredTissues.map((val) => val.name).includes(tissue.name) ||
+          selectedTissues.includes(tissue.name);
+        return notCellCulture && notFiltered;
+      });
+      setTissues(newTissues);
+    }
+  }, [rawTissues, filteredTissues, selectedOrganismId, setTissues]);
 
   /**
    * NOTE: key is gene name in lowercase
@@ -108,11 +128,11 @@ export default function GeneSearchBar({
           text="Gene"
           dataTestId="add-gene"
           placeholder="Search or paste comma separated gene names"
-          isLoading={isLoading}
+          isLoading={isLoadingPrimaryFilters}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
 
-        {isLoading && (
+        {isLoadingPrimaryFilters && (
           <LoadingIndicatorWrapper>
             <LoadingIndicator sdsStyle="tag" />
           </LoadingIndicatorWrapper>

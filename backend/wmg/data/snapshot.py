@@ -12,7 +12,10 @@ from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.schemas.corpus_schema import DATASET_TO_GENE_IDS_NAME
+from backend.wmg.data.schemas.corpus_schema import (
+    DATASET_TO_GENE_IDS_NAME,
+    FILTER_RELATIONSHIPS_NAME,
+)
 from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
@@ -24,6 +27,7 @@ EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
 DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
+FILTER_RELATIONSHIPS_FILENAME = f"{FILTER_RELATIONSHIPS_NAME}.json"
 
 logger = logging.getLogger("wmg")
 
@@ -69,6 +73,9 @@ class WmgSnapshot:
 
     # dictionary of gene IDs mapped to dataset IDs
     dataset_to_gene_ids: Dict
+
+    # precomputed filter relationships graph
+    filter_relationships: Dict
 
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot
@@ -126,6 +133,7 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     cell_type_orderings = _load_cell_type_order(new_snapshot_identifier)
     primary_filter_dimensions = _load_primary_filter_data(new_snapshot_identifier)
     dataset_to_gene_ids = _load_dataset_to_gene_ids_data(new_snapshot_identifier)
+    filter_relationships = _load_filter_graph_data(new_snapshot_identifier)
 
     snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
     logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
@@ -143,6 +151,7 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
         cell_type_orderings=cell_type_orderings,
         primary_filter_dimensions=primary_filter_dimensions,
         dataset_to_gene_ids=dataset_to_gene_ids,
+        filter_relationships=filter_relationships,
     )
 
 
@@ -160,6 +169,13 @@ def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
 
 def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
     return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
+
+
+def _load_filter_graph_data(snapshot_identifier: str) -> str:
+    try:
+        return json.loads(_read_s3obj(f"{snapshot_identifier}/{FILTER_RELATIONSHIPS_FILENAME}"))
+    except Exception:
+        return None
 
 
 def _read_s3obj(relative_path: str) -> str:

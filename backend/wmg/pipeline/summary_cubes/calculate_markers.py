@@ -101,6 +101,7 @@ def _query_tiledb_context_memoized(
         expression_summary_default_cube=None,
         cell_type_orderings=None,
         primary_filter_dimensions=None,
+        filter_relationships=None,
     )
     q = WmgQuery(snapshot)
     query = q.expression_summary_fmg(criteria)

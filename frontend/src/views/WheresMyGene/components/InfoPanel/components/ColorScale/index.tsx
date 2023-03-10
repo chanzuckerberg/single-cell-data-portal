@@ -84,7 +84,7 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
   function colorScaleOnChange(
     value: { id?: SORT_BY; name: string } | null
   ): void {
-    if (!dispatch || !value) return;
+    if (!dispatch || !value || colorScaledOption.name === value.name) return;
 
     track(EVENTS.WMG_OPTION_SELECT_COLOR_SCALE, {
       color_scale_view_option: value.name,

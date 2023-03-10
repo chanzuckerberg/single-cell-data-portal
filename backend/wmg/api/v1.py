@@ -8,7 +8,13 @@ from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
-from backend.wmg.data.query import MarkerGeneQueryCriteria, WmgQuery, WmgQueryCriteria, retrieve_top_n_markers
+from backend.wmg.data.query import (
+    MarkerGeneQueryCriteria,
+    WmgFiltersQueryCriteria,
+    WmgQuery,
+    WmgQueryCriteria,
+    retrieve_top_n_markers,
+)
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
@@ -26,7 +32,6 @@ def primary_filter_dimensions():
 def query():
     request = connexion.request.json
     is_rollup = request.get("is_rollup", True)
-    include_filter_dims = request.get("include_filter_dims", False)
 
     criteria = WmgQueryCriteria(**request["filter"])
 
@@ -47,9 +52,6 @@ def query():
         if is_rollup:
             dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
-        response_filter_dims_values = (
-            build_filter_dims_values(criteria, snapshot, cell_counts) if include_filter_dims else {}
-        )
         response = jsonify(
             dict(
                 snapshot_id=snapshot.snapshot_identifier,
@@ -60,6 +62,21 @@ def query():
                         cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings
                     ),
                 ),
+            )
+        )
+    return response
+
+
+def filters():
+    request = connexion.request.json
+    criteria = WmgFiltersQueryCriteria(**request["filter"])
+
+    with ServerTiming.time("calculate filters and build response"):
+        snapshot: WmgSnapshot = load_snapshot()
+        response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
+        response = jsonify(
+            dict(
+                snapshot_id=snapshot.snapshot_identifier,
                 filter_dims=response_filter_dims_values,
             )
         )
@@ -98,30 +115,115 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
     ]
 
 
-def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
+def find_all_dim_option_values(snapshot: WmgSnapshot, dimension: str) -> list:
+    all_filter_options = set()
+    for key in snapshot.filter_relationships:
+        if key.startswith(dimension):
+            all_filter_options.add(key)
+        if dimension in snapshot.filter_relationships[key]:
+            all_filter_options = set(all_filter_options).union(snapshot.filter_relationships[key][dimension])
+    return [option.split("__")[1] for option in all_filter_options]
+
+
+def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
-    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
-    # todo can we query cell_counts for a performance gain?
-    q = WmgQuery(snapshot)
-    query_result = q.cell_counts(filter_options_criteria)
-    filter_dims = query_result.groupby(dimension).groups.keys()
-    return filter_dims
+
+    filter_options_criteria = dict(criteria)
+    # Remove gene_ontology_term_ids from the criteria as it is not an eligible cross-filter dimension.
+    filter_options_criteria.pop("gene_ontology_term_ids", None)
+
+    # depluralize `dimension` if necessary
+    dimension = dimension[:-1] if dimension[-1] == "s" else dimension
+
+    # each element  in `linked_filter_sets` corresponds to the set of filters linked to the attributes specified for a corresponding criteria key
+    linked_filter_sets = []
+
+    # `all_criteria_attributes` is the set of all attributes specified across all criteria
+    all_criteria_attributes = set()
+
+    for key in filter_options_criteria:
+        attrs = filter_options_criteria[key]
+
+        # depluralize `key` if necessary
+        key = key[:-1] if key[-1] == "s" else key
+
+        # ignore the criteria for the specified dimension
+        if key != dimension:
+            if isinstance(attrs, list):
+                if len(attrs) > 0:
+                    # prepend the key to each attribute value
+                    prefixed_attributes = [key + "__" + val for val in attrs]
+                    all_criteria_attributes = all_criteria_attributes.union(prefixed_attributes)
+
+                    # for each attribute (attr) in `prefixed_attributes`,
+                    # get the set of filters for the specified dimension that are linked to `attr`
+                    linked_filter_set = set()
+                    for attr in prefixed_attributes:
+                        if dimension in snapshot.filter_relationships[attr]:
+                            linked_filter_set = linked_filter_set.union(
+                                set(snapshot.filter_relationships[attr][dimension])
+                            )
+
+                    linked_filter_sets.append(linked_filter_set)
+            else:
+                if attrs != "":
+                    prefixed_attribute = key + "__" + attrs
+                    all_criteria_attributes.add(prefixed_attribute)
+                    if dimension in snapshot.filter_relationships[prefixed_attribute]:
+                        linked_filter_sets.append(set(snapshot.filter_relationships[prefixed_attribute][dimension]))
+
+    # the candidate options are the intersection of the sets of linked filters for each criteria key
+    if len(linked_filter_sets) > 1:
+        candidate_options = linked_filter_sets[0].intersection(*linked_filter_sets[1:])
+    else:
+        candidate_options = linked_filter_sets[0]
+
+    # each valid option MUST be linked to at least one attribute specified in the criteria
+    # otherwise, there will be no data to display if that particular option is selected because
+    # the intersection will be null.
+    valid_options = []
+    for v in candidate_options:
+        loop_back_options = snapshot.filter_relationships[v]
+        all_loop_back_options = []
+        for dim in loop_back_options:
+            all_loop_back_options.extend(loop_back_options[dim])
+
+        if len(set(all_loop_back_options).intersection(all_criteria_attributes)) > 0:
+            valid_options.append(v)
+
+    # remove the prefix from each valid option and return the result
+    return [option.split("__")[1] for option in valid_options]
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, cell_counts: DataFrame) -> Dict:
+def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
+    criteria = criteria.dict()
+    for key in criteria:
+        if key != "organism_ontology_term_id":
+            if isinstance(criteria[key], list):
+                if len(criteria[key]) > 0:
+                    return False
+            else:
+                if criteria[key] != "":
+                    return False
+    return True
+
+
+def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
         "sex_ontology_term_id": "",
         "development_stage_ontology_term_id": "",
         "self_reported_ethnicity_ontology_term_id": "",
+        "tissue_ontology_term_id": "",
     }
     for dim in dims:
-        if len(criteria.dict()[dim + "s"]) == 0:
-            dims[dim] = cell_counts.groupby(dim).groups.keys()
-        else:
-            dims[dim] = find_dim_option_values(criteria, snapshot, dim)
+        dims[dim] = (
+            find_all_dim_option_values(snapshot, dim)
+            if is_criteria_empty(criteria)
+            else find_dim_option_values(criteria, snapshot, dim)
+        )
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
@@ -131,6 +233,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
         self_reported_ethnicity_terms=build_ontology_term_id_label_mapping(
             dims["self_reported_ethnicity_ontology_term_id"]
         ),
+        tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
     )
 
     return response_filter_dims_values

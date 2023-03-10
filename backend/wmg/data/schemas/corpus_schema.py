@@ -20,6 +20,7 @@ INTEGRATED_ARRAY_NAME = "integrated"
 OBS_ARRAY_NAME = "obs"
 VAR_ARRAY_NAME = "var"
 DATASET_TO_GENE_IDS_NAME = "dataset_to_gene_ids"
+FILTER_RELATIONSHIPS_NAME = "filter_relationships"
 
 
 class LabelType(
