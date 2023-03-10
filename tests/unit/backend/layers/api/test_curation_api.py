@@ -1390,6 +1390,23 @@ class TestGetDatasets(BaseAPIPortalTest):
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(404, response.status_code)
 
+    def test_get_datasets_200(self):
+        published_collection_1 = self.generate_published_collection(add_datasets=2)
+        self.generate_published_collection(
+            owner="other owner", curator_name="other curator", add_datasets=1
+        )
+        self.generate_unpublished_collection(add_datasets=4)
+        self.generate_revision(published_collection_1.collection_id)
+
+        with self.subTest("With super curator credentials"):
+            headers = self.make_super_curator_header()
+            response = self.app.get("/curation/v1/datasets", headers=headers)
+            self.assertEqual(3, len(response.json))
+
+        with self.subTest("With no credentials"):
+            response = self.app.get("/curation/v1/datasets")
+            self.assertEqual(3, len(response.json))
+
 
 class TestPostDataset(BaseAPIPortalTest):
     """
