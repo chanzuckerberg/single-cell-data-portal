@@ -2,8 +2,8 @@ import os
 import shutil
 import unittest
 
-import numpy as np
 import tiledb
+from pandas.testing import assert_series_equal
 
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
@@ -30,11 +30,17 @@ class MarkerGeneCubeCreationTest(unittest.TestCase):
             f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes_old"
         ) as ref_cube:
             self.assertEqual(str(new_cube.schema), str(ref_cube.schema))
-            df1 = ref_cube.df[:].sort_values(["cell_type_ontology_term_id", "gene_ontology_term_id"])
-            df2 = new_cube.df[:].sort_values(["cell_type_ontology_term_id", "gene_ontology_term_id"])
-            rec1 = df1.to_dict(orient="records")
-            rec2 = df2.to_dict(orient="records")
-            [np.testing.assert_equal(rec1[i], rec2[i]) for i in range(len(rec1))]
+            df1 = (
+                ref_cube.df[:]
+                .sort_values(["cell_type_ontology_term_id", "gene_ontology_term_id"])
+                .reset_index(drop=True)
+            )
+            df2 = (
+                new_cube.df[:]
+                .sort_values(["cell_type_ontology_term_id", "gene_ontology_term_id"])
+                .reset_index(drop=True)
+            )
+            [assert_series_equal(df1[col], df2[col]) for col in df1]
 
     def tearDown(self):
         if os.path.exists(f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes"):

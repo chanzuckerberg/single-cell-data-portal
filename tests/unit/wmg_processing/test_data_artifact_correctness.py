@@ -1,13 +1,13 @@
 import unittest
 from typing import Dict
 
-import numpy as np
+from pandas.testing import assert_series_equal
 
-from backend.wmg.api.v1 import find_all_dim_option_values, find_dim_option_values
 from backend.wmg.data.query import WmgQuery, WmgQueryCriteria, WmgSnapshot
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_logical_dims as expression_summary_default_logical_dims,
 )
+from backend.wmg.data.utils import find_all_dim_option_values, find_dim_option_values
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
@@ -36,16 +36,19 @@ class DataArtifactCorrectness(unittest.TestCase):
 
             # generate expression summary default cube by group-by and summing the expression summary cube
             test_expression_summary_default_df = (
-                expression_summary_df.groupby(expression_summary_default_logical_dims).sum().reset_index()
+                expression_summary_df.groupby(expression_summary_default_logical_dims)
+                .sum(numeric_only=True)
+                .reset_index()
             )
 
             # check that the two cubes are equal
-            df1 = expression_summary_default_df.sort_values(expression_summary_default_logical_dims)
-            df2 = test_expression_summary_default_df.sort_values(expression_summary_default_logical_dims)
-            rec1 = df1.to_dict(orient="records")
-            rec2 = df2.to_dict(orient="records")
-            # return expression_summary_default_df,test_expression_summary_default_df,rec1,rec2
-            [np.testing.assert_equal(rec1[i], rec2[i]) for i in range(len(rec1))]
+            df1 = expression_summary_default_df.sort_values(expression_summary_default_logical_dims).reset_index(
+                drop=True
+            )
+            df2 = test_expression_summary_default_df.sort_values(expression_summary_default_logical_dims).reset_index(
+                drop=True
+            )
+            [assert_series_equal(df1[col], df2[col]) for col in df1]
 
     # creates filter dim options by querying the cell counts cube and checks to make sure that the result
     # is equal to the current approach of creating filter dim options via the precomputed filter relationships
