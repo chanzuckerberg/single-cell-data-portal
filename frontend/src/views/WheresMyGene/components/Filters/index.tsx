@@ -6,19 +6,13 @@ import {
   Tooltip,
 } from "czifui";
 import isEqual from "lodash/isEqual";
-import {
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { memo, useCallback, useContext, useEffect, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   FilterDimensions,
+  OntologyTerm,
   RawDataset,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
@@ -66,13 +60,23 @@ const ANALYTIC_MAPPING: {
 
 export interface Props {
   isLoading: boolean;
+  availableFilters: Partial<FilterDimensions>;
+  setAvailableFilters: React.Dispatch<
+    React.SetStateAction<Partial<FilterDimensions>>
+  >;
+  setAvailableOrganisms: React.Dispatch<React.SetStateAction<OntologyTerm[]>>;
 }
 
-export default memo(function Filters({ isLoading }: Props): JSX.Element {
+export default memo(function Filters({
+  isLoading,
+  availableFilters,
+  setAvailableFilters,
+  setAvailableOrganisms,
+}: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
-  const [availableFilters, setAvailableFilters] =
-    useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
+  // const [availableFilters, setAvailableFilters] =
+  //   useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
   const { selectedFilters, selectedTissues, selectedGenes } = state;
 
@@ -124,7 +128,16 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     if (isEqual(availableFilters, newAvailableFilters)) return;
 
     setAvailableFilters(newAvailableFilters);
-  }, [rawDatasets, rawDevelopmentStages, rawDiseases, rawEthnicities, rawSexes, rawIsLoading, availableFilters, setAvailableFilters]);
+  }, [
+    rawDatasets,
+    rawDevelopmentStages,
+    rawDiseases,
+    rawEthnicities,
+    rawSexes,
+    rawIsLoading,
+    availableFilters,
+    setAvailableFilters,
+  ]);
 
   const {
     datasets = EMPTY_ARRAY,
@@ -279,7 +292,10 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           />
         </div>
 
-        <Organism isLoading={isLoading} />
+        <Organism
+          isLoading={isLoading}
+          setAvailableOrganisms={setAvailableOrganisms}
+        />
 
         <Sort areFiltersDisabled={areFiltersDisabled} />
       </Wrapper>

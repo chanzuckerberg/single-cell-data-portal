@@ -6,7 +6,10 @@ import { useContext, useEffect, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
+import {
+  OntologyTerm,
+  usePrimaryFilterDimensions,
+} from "src/common/queries/wheresMyGene";
 import {
   DispatchContext,
   StateContext,
@@ -24,9 +27,13 @@ const InputDropdownProps: Partial<RawInputDropdownProps> = {
 
 interface Props {
   isLoading: boolean;
+  setAvailableOrganisms: React.Dispatch<React.SetStateAction<OntologyTerm[]>>;
 }
 
-export default function Organism({ isLoading }: Props): JSX.Element {
+export default function Organism({
+  isLoading,
+  setAvailableOrganisms,
+}: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedOrganismId } = useContext(StateContext);
   const { data } = usePrimaryFilterDimensions();
@@ -37,10 +44,14 @@ export default function Organism({ isLoading }: Props): JSX.Element {
       return EMPTY_ARRAY;
     }
 
-    return organisms.filter((organism: IOrganism) =>
+    const availableOrganisms = organisms.filter((organism: IOrganism) =>
       TEMP_ALLOW_NAME_LIST.includes(organism.name)
     );
-  }, [organisms]);
+
+    setAvailableOrganisms(availableOrganisms);
+
+    return availableOrganisms;
+  }, [organisms, setAvailableOrganisms]);
 
   // (thuang): Default to "Homo sapiens" on first load
   useEffect(() => {

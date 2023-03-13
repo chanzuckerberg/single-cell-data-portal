@@ -11,8 +11,10 @@ import React, {
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
+  FilterDimensions,
   GeneExpressionSummariesByTissueName,
   generateTermsByKey,
+  OntologyTerm,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
   usePrimaryFilterDimensions,
@@ -72,6 +74,12 @@ export default function WheresMyGene(): JSX.Element {
   const [allChartProps, setAllChartProps] = useState<{
     [tissue: string]: ChartProps;
   }>({});
+
+  const [availableFilters, setAvailableFilters] =
+    useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
+
+  const [availableOrganisms, setAvailableOrganisms] =
+    useState<OntologyTerm[]>(EMPTY_ARRAY);
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -311,7 +319,12 @@ export default function WheresMyGene(): JSX.Element {
         forceToggle={true}
         wmgSideBar
       >
-        <Filters isLoading={isLoading} />
+        <Filters
+          isLoading={isLoading}
+          availableFilters={availableFilters}
+          setAvailableFilters={setAvailableFilters}
+          setAvailableOrganisms={setAvailableOrganisms}
+        />
 
         <ColorScale setIsScaled={setIsScaled} />
       </SideBar>
@@ -353,6 +366,8 @@ export default function WheresMyGene(): JSX.Element {
               setIsDownloading={setIsDownloading}
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
+              availableFilters={availableFilters}
+              availableOrganisms={availableOrganisms}
             />
           </Top>
 

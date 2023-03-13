@@ -4,9 +4,10 @@ import { FormControlLabel } from "@mui/material";
 import { InputCheckbox } from "czifui";
 import { toPng, toSvg } from "html-to-image";
 import { debounce } from "lodash";
-import { Dispatch, useCallback, useState } from "react";
+import { Dispatch, useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { stringify as csvStringify }from "csv-stringify/sync";
 import {
   Section,
   Title,
@@ -36,6 +37,8 @@ import {
   renderXAxis,
   renderYAxis,
 } from "./utils";
+import { FilterDimensions, OntologyTerm, SelectedFilters } from "src/common/queries/wheresMyGene";
+import { StateContext } from "src/views/WheresMyGene/common/store";
 
 let heatmapContainerScrollTop: number | undefined;
 
@@ -82,6 +85,8 @@ interface Props {
   setIsDownloading: (isDownloading: boolean) => void;
   setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
+  availableFilters: Partial<FilterDimensions>;
+  availableOrganisms: OntologyTerm[];
 }
 
 interface ExportData {
@@ -96,7 +101,10 @@ export default function SaveImage({
   setIsDownloading,
   setEchartsRendererMode,
   allChartProps,
+  availableFilters,
+  availableOrganisms,
 }: Props): JSX.Element {
+  const { selectedFilters, selectedOrganismId } = useContext(StateContext);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFileTypes, setFileTypes] = useState<("png" | "svg" | "csv")[]>(["png"]);
   const handleButtonClick = useCallback(() => {
@@ -139,11 +147,15 @@ export default function SaveImage({
     const download = debounce(
       download_({
         allChartProps,
+        availableFilters,
+        availableOrganisms,
         heatmapNode,
         observer,
         selectedCellTypes,
         selectedFileTypes,
+        selectedFilters,
         selectedGenes,
+        selectedOrganismId,
         selectedTissues,
         setEchartsRendererMode,
         setIsDownloading,
@@ -154,7 +166,7 @@ export default function SaveImage({
     observer.observe(heatmapNode, config);
 
     setEchartsRendererMode("svg");
-  }, [setIsDownloading, allChartProps, selectedCellTypes, selectedFileTypes, selectedGenes, selectedTissues, setEchartsRendererMode]);
+  }, [setIsDownloading, allChartProps, availableFilters, availableOrganisms, selectedCellTypes, selectedFileTypes, selectedFilters, selectedGenes, selectedOrganismId, selectedTissues, setEchartsRendererMode]);
 
   return (
     <>
@@ -315,36 +327,110 @@ function generateCsv(
   allChartProps: { [tissue: string]: ChartProps },
   selectedGenes:  Props["selectedGenes"],
   tissue: string,
+  availableFilters: Partial<FilterDimensions>,
+  selectedFilters: SelectedFilters,
+  selectedOrganismId: string | null,
+  availableOrganisms: OntologyTerm[],
 ) {
-  
-  let rows: string = 
-  [
-    '"Tissue"',
-    '"Cell Type"',
-    '"Cell Count"',
-    '"Tissue Composition"',
-    '"Gene Symbol"',
-    '"Expression"',
-    '"Expression, Scaled"',
-    '"Number of Cells Expressing Genes"\n',
-  ].join();
-  
-  console.log(JSON.stringify(allChartProps, null, 4));
+  const { datasets, disease_terms, self_reported_ethnicity_terms, sex_terms } = availableFilters;
+
+  const output: (string | number)[][] = [];
+
+  // const filterNames: {[filterName: keyof SelectedFilters]: string} = {
+  //   datasets: "Datasets",
+  //   apple: "asdf",
+  //   diseases: "Diseases",
+  //   ethnicities: "Self-Reported Ethnicity",
+  //   sexes: "Sex",
+  // };
+
+  // for ( const filterName of Object.keys(filterNames)) {
+
+  //   const names = availableFilters[filterName]
+  //     .filter((option:  RawDataset | {id: string, name: string}) => selectedFilters[filterName].includes(option.id))
+  //     .map((selectedOption: RawDataset | {id: string, name: string}) => {
+  //       if (selectedOption typeof RawDataset) {
+
+  //       } else {
+
+  //       }
+  //     });
+
+  //   output.push([
+  //     `# ${filterNames[filterNames]}: ${names.join()}`
+  //   ]);
+  // }
+
+  // Metadata as comments
+  output.push([
+    `# ${new Date().toString()}`
+  ]);
+
+  // Dataset
+  output.push(["# Dataset"]);
+  output.push([
+    `${datasets?.filter((option) => {
+      return selectedFilters.datasets.includes(option.id)
+    }).map((selected) => selected.label).join(", ") || ""}`
+  ]);
+
+  // Disease
+  output.push(["# Disease"]);
+  output.push([
+    `${disease_terms?.filter((option) => {
+      return selectedFilters.diseases.includes(option.id)
+    }).map((selected) => selected.name).join(", ") || ""}`
+  ]);
+
+  // Organism
+  output.push(["# Self-Reported Ethnicity"]);
+  output.push([
+    `${self_reported_ethnicity_terms?.filter((option) => {
+      return selectedFilters.ethnicities.includes(option.id)
+    }).map((selected) => selected.name).join(", ") || ""}`
+  ]);
+
+  // Sex
+  output.push(["# Sex"]);
+  output.push([
+    `${sex_terms?.filter((option) => {
+      return selectedFilters.sexes.includes(option.id)
+    }).map((selected) => selected.name).join(", ") || ""}`
+  ]);
+
+  // Organism
+  output.push(["# Organism"]);
+  output.push([
+    `${availableOrganisms.find((organism) => organism.id === selectedOrganismId)?.name}`
+  ]);
+
+  // Column Names
+  output.push([
+    "Tissue",
+    "Cell Type",
+    "Cell Count",
+    "Tissue Composition",
+    "Gene Symbol",
+    "Expression",
+    "Expression, Scaled",
+    "Number of Cells Expressing Genes"
+  ]);
 
   for (const cellTypeMetaData of allChartProps[tissue].cellTypeMetadata.reverse()) {
     const { 
       id, 
-      name, 
-      tissue, 
+      name,
       total_count 
     } = deserializeCellTypeMetadata(cellTypeMetaData);
 
     for (const geneName of selectedGenes) {
       const geneExpression = allChartProps[tissue].chartData.find((value) => value.id === `${id}-${geneName}`);
 
+      console.log(JSON.stringify(geneExpression))
+
       // console.log("expression " + JSON.stringify(geneExpression))
 
-      rows += (`"${[
+      output.push([
         tissue,
         name,
         total_count,
@@ -353,11 +439,11 @@ function generateCsv(
         geneExpression?.meanExpression ?? "",
         geneExpression?.scaledMeanExpression ?? "",
         geneExpression?.expressedCellCount ?? "",
-      ].join('","')}"\n`);
+      ]);
     }
   }
 
-  return rows;
+  return csvStringify(output);
 }
 
 async function generateImage(
@@ -415,12 +501,16 @@ async function initiateDownload(selectedFileTypes: string[], exports: ExportData
 
     if (fileType === "png") {
       link.href = exports[0].input as string;
-    } else if (fileType === "svg") {
-      // (ashin-czi): Fixes SVG string breaking when encountering a "#" character
-      link.href = `data:image/svg+xml,${(exports[0].input as string).replace(/#/g, "%23")}`;
-    } else if (fileType === "csv") {
-      link.href = `data:text/csv,${exports[0].input as string}`;
-    }
+    } else {
+      const encodedContent = encodeURIComponent(exports[0].input as string);
+      
+      if (fileType === "svg") {
+        // (ashin-czi): Fixes SVG string breaking when encountering a "#" character
+        link.href = `data:image/svg+xml,${encodedContent}`;
+      } else if (fileType === "csv") {
+        link.href = `data:text/csv,${encodedContent}`;
+      } 
+    } 
   }
 
   link.click();
@@ -434,6 +524,10 @@ function download_({
   selectedGenes,
   selectedCellTypes,
   selectedFileTypes,
+  availableFilters,
+  availableOrganisms,
+  selectedOrganismId,
+  selectedFilters,
   observer,
   setIsDownloading,
   setEchartsRendererMode,
@@ -444,6 +538,10 @@ function download_({
   selectedGenes: Props["selectedGenes"];
   selectedCellTypes: Props["selectedCellTypes"];
   selectedFileTypes: ("png" | "svg" | "csv")[];
+  availableFilters: Partial<FilterDimensions>;
+  availableOrganisms: OntologyTerm[];
+  selectedOrganismId: string | null;
+  selectedFilters: SelectedFilters;
   observer: MutationObserver;
   setIsDownloading: (isDownloading: boolean) => void;
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
@@ -473,8 +571,15 @@ function download_({
             let input; 
 
             if (fileType === "csv") {
-              input = generateCsv(allChartProps, selectedGenes, tissueName);
-              // console.log(input)
+              input = generateCsv(
+                allChartProps, 
+                selectedGenes, 
+                tissueName, 
+                availableFilters, 
+                selectedFilters, 
+                selectedOrganismId, 
+                availableOrganisms
+              );
             } else {
               const height = getHeatmapHeight(selectedCellTypes[tissueName]);
 

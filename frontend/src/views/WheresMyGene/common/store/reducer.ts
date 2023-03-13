@@ -1,6 +1,9 @@
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
-import { EMPTY_FILTERS } from "src/common/queries/wheresMyGene";
+import {
+  EMPTY_FILTERS,
+  SelectedFilters,
+} from "src/common/queries/wheresMyGene";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
@@ -19,13 +22,7 @@ export interface State {
   };
   selectedOrganismId: string | null;
   selectedTissues: string[];
-  selectedFilters: {
-    datasets: string[];
-    developmentStages: string[];
-    diseases: string[];
-    ethnicities: string[];
-    sexes: string[];
-  };
+  selectedFilters: SelectedFilters;
   /**
    * (thuang): BE API response always returns a snapshot ID. When the ID changes,
    * FE needs refresh the queries
