@@ -17,15 +17,26 @@ import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
 
 export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
-  const { selectedFilters, selectedTissues, selectedGenes } = state;
+  const {
+    selectedFilters,
+    selectedTissues,
+    selectedGenes,
+    selectedOrganismId,
+  } = state;
   const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions();
   const dispatch = useContext(DispatchContext);
   // const [showURLCopyNotification, setShowURLCopyNotification] = useState(0);
 
   const copyShareUrl = useCallback(() => {
     if (!dispatch) return;
-    generateAndCopyShareUrl(selectedFilters, selectedTissues, selectedGenes);
+    generateAndCopyShareUrl(
+      selectedFilters,
+      selectedOrganismId,
+      selectedTissues,
+      selectedGenes
+    );
     track(EVENTS.WMG_SHARE_CLICKED, {
+      organism: selectedOrganismId,
       tissues: selectedTissues,
       genes: selectedGenes,
       dataset_filter: selectedFilters.datasets,
@@ -41,7 +52,13 @@ export default function ShareButton(): JSX.Element {
       message: "Share link copied",
       timeout: 1000,
     });
-  }, [selectedFilters, selectedTissues, selectedGenes, dispatch]);
+  }, [
+    selectedFilters,
+    selectedTissues,
+    selectedGenes,
+    selectedOrganismId,
+    dispatch,
+  ]);
 
   useEffect(() => {
     if (isSSR() || isLoadingFilterDims || !dispatch) return;
@@ -58,6 +75,7 @@ export default function ShareButton(): JSX.Element {
         track(EVENTS.WMG_SHARE_LOADED, {
           tissues: loadedState.tissues,
           genes: loadedState.genes,
+          organism: loadedState.organism,
           dataset_filter: loadedState.filters.datasets,
           disease_filter: loadedState.filters.diseases,
           self_reported_ethnicity_filter: loadedState.filters.ethnicities,

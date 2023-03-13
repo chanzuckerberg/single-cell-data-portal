@@ -1,7 +1,4 @@
-import Image from "next/image";
-import { memo, useContext, useEffect, useMemo, useState } from "react";
-import { DispatchContext } from "src/views/WheresMyGene/common/store";
-import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
+import { memo, useEffect, useMemo, useState } from "react";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import {
   CellTypeMetadata,
@@ -12,7 +9,6 @@ import {
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
 import InfoSVG from "./icons/info-sign-icon.svg";
-import ReplaySVG from "./icons/replay.svg";
 import {
   CellCountLabelStyle,
   CellTypeLabelStyle,
@@ -20,7 +16,6 @@ import {
   FlexRow,
   FlexRowJustified,
   InfoButtonWrapper,
-  ResetImageWrapper,
   StyledImage,
   TissueName,
   TissueWrapper,
@@ -33,8 +28,6 @@ import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/compone
 
 interface Props {
   cellTypes?: CellType[];
-  hasDeletedCellTypes: boolean;
-  availableCellTypes: CellType[];
   tissue: Tissue;
   tissueID: string;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
@@ -46,15 +39,11 @@ const FMG_EXCLUDE_TISSUES = ["blood"];
 
 export default memo(function YAxisChart({
   cellTypes = [],
-  hasDeletedCellTypes,
-  availableCellTypes,
   tissue,
   generateMarkerGenes,
   tissueID,
 }: Props): JSX.Element {
   const tissueKey = tissue.replace(/\s+/g, "-");
-
-  const dispatch = useContext(DispatchContext);
 
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
@@ -73,19 +62,6 @@ export default memo(function YAxisChart({
     <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
         <TissueName>{capitalize(tissue)}</TissueName>
-        {hasDeletedCellTypes && (
-          <ResetImageWrapper
-            data-test-id="reset-cell-types"
-            onClick={() => handleResetTissue(tissue)}
-          >
-            <Image
-              src={ReplaySVG.src}
-              width="12"
-              height="12"
-              alt="reset tissue cell types"
-            />
-          </ResetImageWrapper>
-        )}
       </TissueWrapper>
       <Container
         data-test-id={`cell-type-labels-${tissueKey}`}
@@ -121,12 +97,6 @@ export default memo(function YAxisChart({
       </Container>
     </Wrapper>
   );
-
-  function handleResetTissue(tissue: Tissue) {
-    if (!dispatch) return;
-
-    dispatch(resetTissueCellTypes(tissue, availableCellTypes));
-  }
 });
 
 const CellTypeButton = ({

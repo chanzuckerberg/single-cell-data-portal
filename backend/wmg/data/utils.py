@@ -49,6 +49,16 @@ def create_empty_cube(uri: str, schema):
     tiledb.Array.create(uri, schema, overwrite=True)
 
 
+def find_all_dim_option_values(snapshot: WmgSnapshot, dimension: str) -> list:
+    all_filter_options = set()
+    for key in snapshot.filter_relationships:
+        if key.startswith(dimension):
+            all_filter_options.add(key)
+        if dimension in snapshot.filter_relationships[key]:
+            all_filter_options = set(all_filter_options).union(snapshot.filter_relationships[key][dimension])
+    return [option.split("__")[1] for option in all_filter_options]
+
+
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
@@ -58,7 +68,7 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
     filter_options_criteria.pop("gene_ontology_term_ids", None)
 
     # depluralize `dimension` if necessary
-    dimension = dimension[:-1] if dimension[-1] == "s" else dimension
+    dimension = depluralize(dimension)
 
     # each element  in `linked_filter_sets` corresponds to the set of filters linked to the attributes specified for a corresponding criteria key
     linked_filter_sets = []
@@ -70,7 +80,7 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
         attrs = filter_options_criteria[key]
 
         # depluralize `key` if necessary
-        key = key[:-1] if key[-1] == "s" else key
+        key = depluralize(key)
 
         # ignore the criteria for the specified dimension
         if key != dimension:
@@ -117,4 +127,8 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
             valid_options.append(v)
 
     # remove the prefix from each valid option and return the result
-    return [i.split("__")[1] for i in valid_options]
+    return [option.split("__")[1] for option in valid_options]
+
+
+def depluralize(x):
+    return x[:-1] if x[-1] == "s" else x

@@ -4,7 +4,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { deleteSingleGene } from "src/views/WheresMyGene/common/store/actions";
-import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
+import { useDeleteGenes } from "../../hooks/useDeleteGenes";
 import { CHART_LEFT_PADDING, SELECTED_STYLE } from "../../style";
 import {
   getHeatmapWidth,
@@ -74,7 +74,7 @@ function GeneButton({
 }
 
 export default function XAxisChart({ geneNames }: Props): JSX.Element {
-  const { genesToDelete, handleGeneClick } = useDeleteGenesAndCellTypes();
+  const { genesToDelete, handleGeneClick } = useDeleteGenes();
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
 
   // Update heatmap size

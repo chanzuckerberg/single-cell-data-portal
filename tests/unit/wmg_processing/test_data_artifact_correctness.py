@@ -7,7 +7,7 @@ from backend.wmg.data.query import WmgQuery, WmgQueryCriteria, WmgSnapshot
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_logical_dims as expression_summary_default_logical_dims,
 )
-from backend.wmg.data.utils import find_dim_option_values
+from backend.wmg.data.utils import find_all_dim_option_values, find_dim_option_values
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
@@ -54,18 +54,11 @@ class DataArtifactCorrectness(unittest.TestCase):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts = snapshot.cell_counts_cube.df[:]
             cell_counts = cell_counts.select_dtypes(exclude="number")
-            expected_filter_options = {
-                dimension: [dimension + "__" + f for f in list(set(cell_counts[dimension]))]
-                for dimension in cell_counts
+            expected_filter_options = {dimension: list(set(cell_counts[dimension])) for dimension in cell_counts}
+            test_filter_options = {
+                dimension: find_all_dim_option_values(snapshot, dimension) for dimension in cell_counts
             }
-            test_filter_options = {}
-            for dimension in cell_counts:
-                for key in snapshot.filter_relationships:
-                    if dimension in snapshot.filter_relationships[key]:
-                        L = test_filter_options.get(dimension, [])
-                        test_filter_options[dimension] = list(
-                            set(L).union(snapshot.filter_relationships[key][dimension])
-                        )
+
             for dimension in test_filter_options:
                 test_filter_options[dimension].sort()
                 expected_filter_options[dimension].sort()
