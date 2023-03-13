@@ -297,6 +297,7 @@ function addCellInfoCellType(
 export interface LoadStateFromURLPayload {
   compare: State["compare"];
   filters: Partial<State["selectedFilters"]>;
+  organism: State["selectedOrganismId"];
   tissues: State["selectedTissues"];
   genes: State["selectedGenes"];
 }
@@ -315,6 +316,7 @@ function loadStateFromURL(
     selectedFilters: { ...state.selectedFilters, ...filters },
     selectedGenes: genes,
     selectedTissues: tissues,
+    selectedOrganismId: payload.organism,
   };
 }
 

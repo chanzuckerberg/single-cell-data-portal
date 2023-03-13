@@ -18,7 +18,14 @@ import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
 
 export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
-  const { selectedFilters, selectedTissues, selectedGenes, compare } = state;
+
+  const {
+    selectedFilters,
+    selectedTissues,
+    selectedGenes,
+    selectedOrganismId,
+    compare,
+  } = state;
 
   const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions();
   const dispatch = useContext(DispatchContext);
@@ -26,11 +33,19 @@ export default function ShareButton(): JSX.Element {
 
   const copyShareUrl = useCallback(() => {
     if (!dispatch) return;
+
     generateAndCopyShareUrl({
       compare,
       filters: selectedFilters,
-      genes: selectedGenes,
+      organism: selectedOrganismId,
       tissues: selectedTissues,
+      genes: selectedGenes,
+    });
+
+    track(EVENTS.WMG_SHARE_CLICKED, {
+      organism: selectedOrganismId,
+      tissues: selectedTissues,
+      genes: selectedGenes,
     });
 
     track(EVENTS.WMG_SHARE_CLICKED, {
@@ -50,7 +65,14 @@ export default function ShareButton(): JSX.Element {
       message: "Share link copied",
       timeout: 1000,
     });
-  }, [selectedFilters, selectedTissues, selectedGenes, dispatch, compare]);
+  }, [
+    selectedFilters,
+    selectedTissues,
+    selectedGenes,
+    selectedOrganismId,
+    dispatch,
+    compare,
+  ]);
 
   useEffect(() => {
     if (isSSR() || isLoadingFilterDims || !dispatch) return;
@@ -66,13 +88,14 @@ export default function ShareButton(): JSX.Element {
 
       if (loadedState) {
         track(EVENTS.WMG_SHARE_LOADED, {
+          tissues: loadedState.tissues,
+          genes: loadedState.genes,
+          organism: loadedState.organism,
           dataset_filter: loadedState.filters.datasets,
           disease_filter: loadedState.filters.diseases,
-          genes: loadedState.genes,
           group_by_option: getCompareOptionNameById(loadedState.compare),
           self_reported_ethnicity_filter: loadedState.filters.ethnicities,
           sex_filter: loadedState.filters.sexes,
-          tissues: loadedState.tissues,
         });
       }
     }
