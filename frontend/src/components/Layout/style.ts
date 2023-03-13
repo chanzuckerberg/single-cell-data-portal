@@ -9,6 +9,7 @@ export const Wrapper = styled.div`
   min-height: 100vh; /* required for full height flex on child */
   /* TODO(seve): #2755 */
   overflow-x: clip; /* responsive requirement; facilitates hiding of content when viewport is resized and layout min width is applied */
+  overflow-y: auto;
 `;
 
 export const contentWrapper = css`
@@ -37,6 +38,7 @@ export const SidebarMainWrapper = styled(MainWrapper)`
 
 export const StyledDocsLayout = styled(MainWrapper)`
   justify-content: center; /* Allows for center resizing based on viewport width */
+
   main {
     display: grid;
     grid-template-areas: "leftsidebar content rightsidebar";

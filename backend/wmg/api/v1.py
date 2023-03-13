@@ -8,10 +8,17 @@ from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
-from backend.wmg.data.query import MarkerGeneQueryCriteria, WmgQuery, WmgQueryCriteria, retrieve_top_n_markers
+from backend.wmg.data.query import (
+    MarkerGeneQueryCriteria,
+    WmgFiltersQueryCriteria,
+    WmgQuery,
+    WmgQueryCriteria,
+    retrieve_top_n_markers,
+)
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
+from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
@@ -26,7 +33,6 @@ def primary_filter_dimensions():
 def query():
     request = connexion.request.json
     is_rollup = request.get("is_rollup", True)
-    include_filter_dims = request.get("include_filter_dims", False)
 
     criteria = WmgQueryCriteria(**request["filter"])
 
@@ -47,9 +53,6 @@ def query():
         if is_rollup:
             dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
 
-        response_filter_dims_values = (
-            build_filter_dims_values(criteria, snapshot, cell_counts) if include_filter_dims else {}
-        )
         response = jsonify(
             dict(
                 snapshot_id=snapshot.snapshot_identifier,
@@ -60,6 +63,21 @@ def query():
                         cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings
                     ),
                 ),
+            )
+        )
+    return response
+
+
+def filters():
+    request = connexion.request.json
+    criteria = WmgFiltersQueryCriteria(**request["filter"])
+
+    with ServerTiming.time("calculate filters and build response"):
+        snapshot: WmgSnapshot = load_snapshot()
+        response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
+        response = jsonify(
+            dict(
+                snapshot_id=snapshot.snapshot_identifier,
                 filter_dims=response_filter_dims_values,
             )
         )
@@ -98,30 +116,34 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
     ]
 
 
-def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
-    """Find values for the specified dimension that satisfy the given filtering criteria,
-    ignoring any criteria specified for the given dimension."""
-    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
-    # todo can we query cell_counts for a performance gain?
-    q = WmgQuery(snapshot)
-    query_result = q.cell_counts(filter_options_criteria)
-    filter_dims = query_result.groupby(dimension).groups.keys()
-    return filter_dims
+def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
+    criteria = criteria.dict()
+    for key in criteria:
+        if key != "organism_ontology_term_id":
+            if isinstance(criteria[key], list):
+                if len(criteria[key]) > 0:
+                    return False
+            else:
+                if criteria[key] != "":
+                    return False
+    return True
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, cell_counts: DataFrame) -> Dict:
+def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
         "sex_ontology_term_id": "",
         "development_stage_ontology_term_id": "",
         "self_reported_ethnicity_ontology_term_id": "",
+        "tissue_ontology_term_id": "",
     }
     for dim in dims:
-        if len(criteria.dict()[dim + "s"]) == 0:
-            dims[dim] = cell_counts.groupby(dim).groups.keys()
-        else:
-            dims[dim] = find_dim_option_values(criteria, snapshot, dim)
+        dims[dim] = (
+            find_all_dim_option_values(snapshot, dim)
+            if is_criteria_empty(criteria)
+            else find_dim_option_values(criteria, snapshot, dim)
+        )
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
@@ -131,6 +153,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
         self_reported_ethnicity_terms=build_ontology_term_id_label_mapping(
             dims["self_reported_ethnicity_ontology_term_id"]
         ),
+        tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
     )
 
     return response_filter_dims_values
@@ -273,7 +296,3 @@ def build_ordered_cell_types_by_tissue_update_depths(x: DataFrame):
                     break
 
     return x
-
-
-def depluralize(x):
-    return x[:-1] if x[-1] == "s" else x

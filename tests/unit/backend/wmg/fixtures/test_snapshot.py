@@ -24,8 +24,15 @@ from backend.wmg.data.schemas.cube_schema import (
     expression_summary_logical_dims,
     expression_summary_schema,
 )
-from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME, WmgSnapshot
+from backend.wmg.data.snapshot import (
+    CELL_TYPE_ORDERINGS_FILENAME,
+    DATASET_TO_GENE_IDS_FILENAME,
+    FILTER_RELATIONSHIPS_FILENAME,
+    WmgSnapshot,
+)
 from backend.wmg.data.tiledb import create_ctx
+
+# from backend.wmg.pipeline.summary_cubes.cell_count import create_filter_relationships_graph
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
 
@@ -154,9 +161,12 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
     ) as cell_counts_cube, tiledb.open(
         f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes", ctx=create_ctx()
     ) as marker_genes_cube, open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/dataset_to_gene_ids.json", "r"
-    ) as f:
+        f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_TO_GENE_IDS_FILENAME}", "r"
+    ) as f, open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}", "r"
+    ) as fr:
         dataset_to_gene_ids = json.load(f)
+        filter_relationships = json.load(fr)
         yield WmgSnapshot(
             snapshot_identifier=snapshot_name,
             expression_summary_cube=expression_summary_cube,
@@ -167,6 +177,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             cell_type_orderings=None,
             primary_filter_dimensions=None,
             dataset_to_gene_ids=dataset_to_gene_ids,
+            filter_relationships=filter_relationships,
         )
 
 
@@ -194,6 +205,9 @@ def create_temp_wmg_snapshot(
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube, tiledb.open(
             cell_counts_cube_dir, ctx=create_ctx()
         ) as cell_counts_cube:
+            # cc = cell_counts_cube.df[:] # this gives OOM error in GHA
+            # filter_relationships = create_filter_relationships_graph(cc)
+            filter_relationships = None
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
@@ -204,6 +218,7 @@ def create_temp_wmg_snapshot(
                 cell_type_orderings=cell_type_orderings,
                 primary_filter_dimensions=primary_filter_dimensions,
                 dataset_to_gene_ids=None,
+                filter_relationships=filter_relationships,
             )
 
 
