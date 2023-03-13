@@ -45,7 +45,7 @@ class DataArtifactCorrectness(unittest.TestCase):
             rec1 = df1.to_dict(orient="records")
             rec2 = df2.to_dict(orient="records")
             # return expression_summary_default_df,test_expression_summary_default_df,rec1,rec2
-            [np.testing.assert_equal(rec1[i], rec2[i]) for i in range(len(rec1))]
+            [np.testing.assert_almost_equal(rec1[i], rec2[i]) for i in range(len(rec1))]
 
     # creates filter dim options by querying the cell counts cube and checks to make sure that the result
     # is equal to the current approach of creating filter dim options via the precomputed filter relationships

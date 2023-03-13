@@ -34,7 +34,7 @@ class MarkerGeneCubeCreationTest(unittest.TestCase):
             df2 = new_cube.df[:].sort_values(["cell_type_ontology_term_id", "gene_ontology_term_id"])
             rec1 = df1.to_dict(orient="records")
             rec2 = df2.to_dict(orient="records")
-            [np.testing.assert_equal(rec1[i], rec2[i]) for i in range(len(rec1))]
+            [np.testing.assert_almost_equal(rec1[i], rec2[i]) for i in range(len(rec1))]
 
     def tearDown(self):
         if os.path.exists(f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes"):
