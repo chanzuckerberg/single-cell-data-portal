@@ -31,7 +31,7 @@ export const generateAndCopyShareUrl = (
   url.searchParams.set("ver", "2");
 
   // Copy the URL to the clipboard
-  navigator.clipboard.writeText(url.toString());
+  navigator.clipboard.writeText(String(url));
 };
 
 const stripEmptyFilters = (
@@ -59,6 +59,13 @@ export const loadStateFromQueryParams = (
   // Checks if the URL has any query params related to shared filter state
   // If so, it will update the state with the values from the URL
 
+  // Check for version
+  const version = params.get("ver") || "1";
+  if (params.get("ver")) paramsToRemove.push("ver");
+
+  // delimiter changed from - to , in version 2
+  const delimiter = version > "1" ? "," : "-";
+
   // Check for filter properties
 
   const newSelectedFilters: Partial<State["selectedFilters"]> = {};
@@ -66,17 +73,10 @@ export const loadStateFromQueryParams = (
     const value = params.get(key);
     if (value) {
       newSelectedFilters[key as keyof State["selectedFilters"]] =
-        value.split("-");
+        value.split(delimiter);
       paramsToRemove.push(key);
     }
   });
-
-  // Check for version
-  const version = params.get("ver") || "1";
-  if (params.get("ver")) paramsToRemove.push("ver");
-
-  // delimiter changed from - to , in version 2
-  const delimiter = version > "1" ? "," : "-";
 
   //Check for organism
   const newSelectedOrganism = params.get("organism") || HUMAN_ORGANISM_ID;
