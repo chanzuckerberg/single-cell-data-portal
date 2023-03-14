@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import cloneDeep from "lodash/cloneDeep";
 import { memo, useContext, useMemo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
@@ -54,10 +53,12 @@ interface Props {
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
   echartsRendererMode: "svg" | "canvas";
-  setAllChartProps: React.Dispatch<React.SetStateAction<{
-    [tissue: string]: ChartProps;
-  }>>;
-  allChartProps: {[tissue: string]: ChartProps};
+  setAllChartProps: React.Dispatch<
+    React.SetStateAction<{
+      [tissue: string]: ChartProps;
+    }>
+  >;
+  allChartProps: { [tissue: string]: ChartProps };
 }
 
 export default memo(function HeatMap({

@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Button, Icon, Tooltip } from "czifui";
 import React, { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
