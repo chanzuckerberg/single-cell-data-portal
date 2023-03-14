@@ -283,7 +283,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Turn list of CollectionVersions into CollectionVersionsWithDatasets
         collections_with_datasets: List[CollectionVersionWithDatasets] = []
         for collection in active_collections_list:
-            print(f"collection with id {collection.collection_id}")
             dataset_versions = datasets_by_collection_id.get(collection.collection_id.id, [])
             collections_with_datasets.append(
                 CollectionVersionWithDatasets(
