@@ -1422,11 +1422,12 @@ class TestGetDatasets(BaseAPIPortalTest):
 
         with self.subTest("With super curator credentials"):
             headers = self.make_super_curator_header()
-            response = self.app.get("/curation/v1/datasets", headers=headers)
-            self.assertEqual(3, len(response.json))
+            super_curator_response = self.app.get("/curation/v1/datasets", headers=headers)
+            self.assertEqual(3, len(super_curator_response.json))
+
+        response = self.app.get("/curation/v1/datasets")
 
         with self.subTest("With no credentials"):
-            response = self.app.get("/curation/v1/datasets")
             self.assertEqual(3, len(response.json))
 
         with self.subTest("Contains collection_name and collection_doi"):
@@ -1440,7 +1441,6 @@ class TestGetDatasets(BaseAPIPortalTest):
 
             self.assertEqual(2, len(collection_dois))
 
-            response = self.app.get("/curation/v1/datasets")
             received_collection_names = set()
             received_collection_dois = set()
             for dataset in response.json:
@@ -1449,6 +1449,17 @@ class TestGetDatasets(BaseAPIPortalTest):
 
             self.assertEqual(collection_names, received_collection_names)
             self.assertEqual(collection_dois, received_collection_dois)
+
+        with self.subTest("Only public datasets are returned"):
+            dataset_ids = set(
+                [dv.dataset_id.id for dv in published_collection_1.datasets]
+                + [dv.dataset_id.id for dv in published_collection_2.datasets]
+            )
+            received_dataset_ids = set()
+            for dataset in response.json:
+                received_dataset_ids.add(dataset["id"])
+
+            self.assertEqual(dataset_ids, received_dataset_ids)
 
 
 class TestPostDataset(BaseAPIPortalTest):
