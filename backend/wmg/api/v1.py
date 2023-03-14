@@ -179,14 +179,14 @@ def agg_cell_type_counts(cell_counts: DataFrame) -> DataFrame:
     # Aggregate cube data by tissue, cell type
     cell_counts_cell_type_agg = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=True
-    ).sum()
+    ).sum(numeric_only=True)
     cell_counts_cell_type_agg.rename(columns={"n_total_cells": "n_cells_cell_type"}, inplace=True)
     return cell_counts_cell_type_agg
 
 
 def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
     # Aggregate cube data by tissue
-    cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).sum()
+    cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).sum(numeric_only=True)
     cell_counts_tissue_agg.rename(columns={"n_total_cells": "n_cells_tissue"}, inplace=True)
     return cell_counts_tissue_agg
 
@@ -221,7 +221,7 @@ def build_dot_plot_matrix(
     # Aggregate cube data by gene, tissue, cell type
     expr_summary_agg = query_result.groupby(
         ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).sum()
+    ).sum(numeric_only=True)
     return expr_summary_agg.join(
         cell_counts_cell_type_agg, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
     ).join(cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left")

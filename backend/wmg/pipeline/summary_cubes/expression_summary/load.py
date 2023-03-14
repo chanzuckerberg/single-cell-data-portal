@@ -25,7 +25,6 @@ def build_in_mem_cube(
         np.empty((total_vals,), dtype=object),
         np.empty((total_vals,), dtype=object),
         np.empty((total_vals,), dtype=object),
-        np.empty((total_vals,), dtype=object),
     ]
     vals = {
         "sum": np.empty((total_vals,)),
@@ -39,7 +38,6 @@ def build_in_mem_cube(
     for grp in cube_index.to_records():
         (
             tissue_ontology_term_id,
-            tissue_original_ontology_term_id,
             organism_ontology_term_id,
             *attr_values,
             _,
@@ -54,8 +52,7 @@ def build_in_mem_cube(
 
         dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
         dims[1][idx : idx + n_vals] = tissue_ontology_term_id
-        dims[2][idx : idx + n_vals] = tissue_original_ontology_term_id
-        dims[3][idx : idx + n_vals] = organism_ontology_term_id
+        dims[2][idx : idx + n_vals] = organism_ontology_term_id
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
