@@ -14,15 +14,17 @@ def get():
     all_datasets_with_collection_name_and_doi = []
 
     for collection in collections_with_datasets:
+
+        collection_doi = None
+        for link in collection.metadata.links:
+            if link.type == CollectionLinkType.DOI.name:
+                collection_doi = link.uri
+
         collection_info = {
             "collection_id": collection.collection_id.id,
             "collection_name": collection.metadata.name,
             "collection_doi": collection_doi,
         }
-        collection_doi = None
-        for link in collection.metadata.links:
-            if link.type == CollectionLinkType.DOI.name:
-                collection_doi = link.uri
 
         for dataset in collection.datasets:
             dataset_response_obj = reshape_dataset_for_curation_api(dataset, is_published=True, use_canonical_id=True)
