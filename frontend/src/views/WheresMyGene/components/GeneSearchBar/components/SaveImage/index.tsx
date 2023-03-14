@@ -134,7 +134,10 @@ export default function SaveImage({
   const handleDownload = useCallback(async () => {
     setIsOpen(false);
 
-    if (selectedFileTypes.includes("png")) {
+    if (
+      selectedFileTypes.includes("png") ||
+      selectedFileTypes.includes("svg")
+    ) {
       setDownloadStatus({ isLoading: true, blur: true });
     } else {
       setDownloadStatus({ isLoading: true });
