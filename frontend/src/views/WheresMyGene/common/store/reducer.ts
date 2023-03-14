@@ -154,6 +154,7 @@ function selectOrganism(
     selectedGenes: [],
     selectedOrganismId: action.payload,
     selectedTissues: [],
+    cellInfoCellType: null,
   };
 }
 
