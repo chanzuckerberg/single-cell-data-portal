@@ -1,18 +1,10 @@
 /* eslint-disable prettier/prettier */
-import { Classes, Intent } from "@blueprintjs/core";
-import { FormControlLabel } from "@mui/material";
-import { InputCheckbox } from "czifui";
 import { toPng, toSvg } from "html-to-image";
 import { debounce } from "lodash";
 import { Dispatch, useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { stringify as csvStringify }from "csv-stringify/sync";
-import {
-  Section,
-  Title,
-} from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
-import Modal from "src/components/common/Modal";
+import { stringify as csvStringify } from "csv-stringify/sync";
 import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
 import {
   CellType,
@@ -30,7 +22,7 @@ import {
 
 import { Label } from "../../style";
 import { StyledButtonIcon } from "../QuickSelect/style";
-import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
+import { ButtonWrapper, DownloadButton, StyledButtonContainer, StyledDiv, StyledFormControlLabel, StyledInputCheckBox, StyledModal, StyledSection, StyledTitle } from "./style";
 import {
   NAME_SPACE_URI,
   renderLegend,
@@ -181,19 +173,19 @@ export default function SaveImage({
           sdsIcon="download"
         />
       </ButtonWrapper>
-      <Modal
+      <StyledModal
         isOpen={isOpen}
-        title="DOWNLOAD"
+        title="Download"
         onClose={handleButtonClick}
         isCloseButtonShown={false}
       >
-        <div className={Classes.DIALOG_BODY}>
-          <Section>
-            <Title>FIGURE</Title>
+        <div>
+          <StyledSection>
+            <StyledTitle>FIGURE</StyledTitle>
             <StyledDiv>
-              <FormControlLabel
+              <StyledFormControlLabel
                 control={
-                  <InputCheckbox 
+                  <StyledInputCheckBox 
                     checked={selectedFileTypes.includes("png")}
                   />
                 }
@@ -201,9 +193,9 @@ export default function SaveImage({
                 onChange={() => selectFileType("png")}
               />
 
-              <FormControlLabel
+              <StyledFormControlLabel
                 control={
-                  <InputCheckbox 
+                  <StyledInputCheckBox 
                     checked={selectedFileTypes.includes("svg")}
                   />
                 }
@@ -211,13 +203,13 @@ export default function SaveImage({
                 onChange={() => selectFileType("svg")}
               />
             </StyledDiv>
-          </Section>
-          <Section>
-            <Title>DATA</Title>
+          </StyledSection>
+          <StyledSection>
+            <StyledTitle>DATA</StyledTitle>
             <StyledDiv>
-              <FormControlLabel
+              <StyledFormControlLabel
                 control={
-                  <InputCheckbox 
+                  <StyledInputCheckBox 
                     checked={selectedFileTypes.includes("csv")}
                   />
                 }
@@ -225,18 +217,18 @@ export default function SaveImage({
                 onChange={() => selectFileType("csv")}
               />
             </StyledDiv>
-          </Section>
+          </StyledSection>
         </div>
 
-        <div className={Classes.DIALOG_FOOTER}>
-          <DownloadButton onClick={handleButtonClick} minimal>
+        <StyledButtonContainer>
+          <DownloadButton sdsType="secondary" sdsStyle="minimal" onClick={handleButtonClick}>
             Cancel
           </DownloadButton>
-          <DownloadButton intent={Intent.PRIMARY} onClick={handleDownload} disabled={!selectedFileTypes.length}>
+          <DownloadButton sdsStyle="square" sdsType="primary" sdsSize="large" onClick={handleDownload} disabled={!selectedFileTypes.length}>
             Download
           </DownloadButton>
-        </div>
-      </Modal>
+        </StyledButtonContainer>
+      </StyledModal>
     </>
   );
 }
@@ -614,6 +606,13 @@ function download_({
 
       track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
         file_type: selectedFileTypes.join(","),
+
+        dataset_filter: selectedFilters.datasets.join(","),
+        disease_filter: selectedFilters.diseases.join(","),
+        self_reported_ethnicity_filter: selectedFilters.ethnicities.join(","),
+        sex_filter: selectedFilters.sexes.join(","),
+        group_by_option: "", // TODO: AFTER COMPARE 
+
         genes: selectedGenes.toString(),
         tissues: selectedTissues.toString(),
       });
