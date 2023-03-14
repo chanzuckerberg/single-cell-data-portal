@@ -54,15 +54,6 @@ module.exports = {
     "react/prop-types": "off",
     // (thuang): We use nested template literals extensively
     "sonarjs/no-nested-template-literals": "off",
-    "sort-keys": [
-      "error",
-      "asc",
-      {
-        caseSensitive: true,
-        minKeys: 2,
-        natural: false,
-      },
-    ],
   },
   settings: {
     "mdx/code-blocks": true,

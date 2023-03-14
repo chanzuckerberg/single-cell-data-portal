@@ -14,7 +14,6 @@ import {
 /**
  * Homo sapiens, Mus musculus and other organisms development stage ontology tree.
  */
-/* eslint-disable sort-keys -- disabling key order for readability. */
 export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.HsapDv]: [
     {
@@ -245,7 +244,6 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
     },
   ],
 };
-/* eslint-enable sort-keys -- disabling key order for readability. */
 
 /**
  * List of ethnicity ontology labels to exclude from filter functionality.
@@ -270,7 +268,6 @@ export const PUBLICATION_DATE_VALUES: number[] = [1, 3, 6, 12, 24, 36];
 /**
  * Cell types to be included for display in cell type cell class ontology tree.
  */
-/* eslint-disable sort-keys -- disabling key order for readability. */
 /* eslint-disable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
 export const CELL_TYPE_CELL_CLASS_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
@@ -313,12 +310,10 @@ export const CELL_TYPE_CELL_CLASS_ONTOLOGY_TERM_SET: OntologyTermSet = {
   ],
 };
 /* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
-/* eslint-enable sort-keys -- disabling key order for readability. */
 
 /**
  * Cell types to be included for display in cell type level 1 ontology tree.
  */
-/* eslint-disable sort-keys -- disabling key order for readability. */
 /* eslint-disable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
 export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
@@ -441,9 +436,7 @@ export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
   ],
 };
 /* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
-/* eslint-enable sort-keys -- disabling key order for readability. */
 
-/* eslint-disable sort-keys -- disable key order, contents of this file are generated */
 /* eslint-disable sonarjs/no-duplicate-string -- disable no dupes, this value is generated */
 export const CELL_TYPE_DESCENDANTS: OntologyDescendants = {
   "CL:0002494": [
@@ -2115,9 +2108,7 @@ export const CELL_TYPE_DESCENDANTS: OntologyDescendants = {
   "CL:0000100": ["CL:0005025", "CL:0008015"],
 };
 /* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, this value is generated */
-/* eslint-enable sort-keys -- disable key order, contents of this file are generated */
 
-/* eslint-disable sort-keys -- disable key order, contents of this file are generated */
 /* eslint-disable sonarjs/no-duplicate-string -- disable no dupes, this value is generated */
 export const TISSUE_DESCENDANTS: OntologyDescendants = {
   "UBERON:0001017": [
@@ -2606,12 +2597,10 @@ export const TISSUE_DESCENDANTS: OntologyDescendants = {
   ],
 };
 /* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, this value is generated */
-/* eslint-enable sort-keys -- disable key order, contents of this file are generated */
 
 /**
  * Tissues to be included for display in tissue system ontology tree.
  */
-/* eslint-disable sort-keys -- disabling key order for readability. */
 /* eslint-disable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
 export const TISSUE_ORGAN_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
@@ -2730,12 +2719,10 @@ export const TISSUE_ORGAN_ONTOLOGY_TERM_SET: OntologyTermSet = {
   ],
 };
 /* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
-/* eslint-enable sort-keys -- disabling key order for readability. */
 
 /**
  * Tissues to be included for display in tissue system ontology tree.
  */
-/* eslint-disable sort-keys -- disabling key order for readability. */
 export const TISSUE_SYSTEM_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
@@ -2808,7 +2795,6 @@ export const TISSUE_SYSTEM_ONTOLOGY_TERM_SET: OntologyTermSet = {
     },
   ],
 };
-/* eslint-enable sort-keys -- disabling key order for readability. */
 
 /**
  * Generic tooltip displayed when select, ontology or range category is disabled due to no values matching current

@@ -1,22 +1,13 @@
-import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 import { EMPTY_FILTERS } from "src/common/queries/wheresMyGene";
-import {
-  CellTypeMetadata,
-  deserializeCellTypeMetadata,
-} from "../../components/HeatMap/utils";
-import { CellType, SORT_BY, Tissue } from "../types";
+import { CellType, SORT_BY } from "../types";
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
 }
 export interface State {
-  cellTypeIdsToDelete: CellTypeMetadata[];
   genesToDelete: string[];
   selectedGenes: string[];
-  selectedCellTypeIds: {
-    [tissue: Tissue]: string[];
-  };
   selectedOrganismId: string | null;
   selectedTissues: string[];
   selectedFilters: {
@@ -43,9 +34,7 @@ export interface State {
 // to cache the derived states instead of putting them in the state.
 export const INITIAL_STATE: State = {
   cellInfoCellType: null,
-  cellTypeIdsToDelete: [],
   genesToDelete: [],
-  selectedCellTypeIds: {},
   selectedFilters: EMPTY_FILTERS,
   selectedGenes: [],
   selectedOrganismId: null,
@@ -61,19 +50,15 @@ export const INITIAL_STATE: State = {
 export const REDUCERS = {
   addCellInfoCellType,
   addSelectedGenes,
-  deleteSelectedGenesAndSelectedCellTypeIds,
+  deleteSelectedGenes,
   deleteSingleGene,
-  resetGenesToDeleteAndCellTypeIdsToDelete,
-  resetTissueCellTypes,
-  selectCellTypeIds,
+  resetGenesToDelete,
   selectFilters,
   selectGenes,
   selectOrganism,
   selectSortBy,
   selectTissues,
   setSnapshotId,
-  tissueCellTypesFetched,
-  toggleCellTypeIdToDelete,
   toggleGeneToDelete,
   loadStateFromURL,
 };
@@ -122,17 +107,14 @@ function deleteSingleGene(
   };
 }
 
-function deleteSelectedGenesAndSelectedCellTypeIds(
-  state: State,
-  _: PayloadAction<null>
-): State {
-  const { genesToDelete, cellTypeIdsToDelete } = state;
+function deleteSelectedGenes(state: State, _: PayloadAction<null>): State {
+  const { genesToDelete } = state;
 
-  if (!genesToDelete.length && !cellTypeIdsToDelete.length) {
+  if (!genesToDelete.length) {
     return state;
   }
 
-  const { selectedGenes, selectedCellTypeIds } = state;
+  const { selectedGenes } = state;
 
   const newSelectedGenes = genesToDelete.length
     ? deleteByItems<State["selectedGenes"][number]>(
@@ -141,18 +123,9 @@ function deleteSelectedGenesAndSelectedCellTypeIds(
       )
     : selectedGenes;
 
-  const newSelectedCellTypeIds = cellTypeIdsToDelete.length
-    ? deleteSelectedCellTypeIdsByMetadata(
-        selectedCellTypeIds,
-        cellTypeIdsToDelete
-      )
-    : selectedCellTypeIds;
-
   return {
     ...state,
-    cellTypeIdsToDelete: [],
     genesToDelete: [],
-    selectedCellTypeIds: newSelectedCellTypeIds,
     selectedGenes: newSelectedGenes,
   };
 }
@@ -179,19 +152,8 @@ function selectGenes(
 ): State {
   return {
     ...state,
-    cellTypeIdsToDelete: [],
     genesToDelete: [],
     selectedGenes: action.payload,
-  };
-}
-
-function selectCellTypeIds(
-  state: State,
-  action: PayloadAction<State["selectedCellTypeIds"]>
-): State {
-  return {
-    ...state,
-    selectedCellTypeIds: action.payload,
   };
 }
 
@@ -234,114 +196,14 @@ function toggleGeneToDelete(
   };
 }
 
-function toggleCellTypeIdToDelete(
-  state: State,
-  action: PayloadAction<CellTypeMetadata>
-): State {
-  if (state.cellTypeIdsToDelete.includes(action.payload)) {
-    return {
-      ...state,
-      cellTypeIdsToDelete: deleteByItems<CellTypeMetadata>(
-        state.cellTypeIdsToDelete,
-        [action.payload]
-      ),
-    };
-  }
-
-  return {
-    ...state,
-    cellTypeIdsToDelete: [...state.cellTypeIdsToDelete, action.payload],
-  };
-}
-
 function deleteByItems<Item>(collection: Item[], collectionToDelete: Item[]) {
   return collection.filter((item) => !collectionToDelete.includes(item));
 }
 
-function resetGenesToDeleteAndCellTypeIdsToDelete(
-  state: State,
-  _: PayloadAction<null>
-): State {
+function resetGenesToDelete(state: State, _: PayloadAction<null>): State {
   return {
     ...state,
-    cellTypeIdsToDelete: [],
     genesToDelete: [],
-  };
-}
-
-function deleteSelectedCellTypeIdsByMetadata(
-  selectedCellTypeIds: State["selectedCellTypeIds"],
-  cellTypeMetadata: CellTypeMetadata[]
-): State["selectedCellTypeIds"] {
-  const newSelectedCellTypeIds = cloneDeep(selectedCellTypeIds);
-
-  const cellTypeIdsToDeleteByTissue = cellTypeMetadata.reduce(
-    (memo, metadata) => {
-      const { tissue, id } = deserializeCellTypeMetadata(metadata);
-      const cellTypeIds = memo[tissue] || [];
-      memo[tissue] = [...cellTypeIds, id];
-
-      return memo;
-    },
-    {} as State["selectedCellTypeIds"]
-  );
-
-  for (const [tissue, cellTypeIdsToDelete] of Object.entries(
-    cellTypeIdsToDeleteByTissue
-  )) {
-    const tissueCellTypeIds = newSelectedCellTypeIds[tissue] || [];
-
-    newSelectedCellTypeIds[tissue] = tissueCellTypeIds.filter(
-      (id) => !cellTypeIdsToDelete.includes(id)
-    );
-  }
-
-  return newSelectedCellTypeIds;
-}
-
-function tissueCellTypesFetched(
-  state: State,
-  action: PayloadAction<{
-    tissue: Tissue;
-    cellTypes: CellType[];
-  }>
-): State {
-  const { tissue, cellTypes } = action.payload;
-
-  const newCellTypeIds = cellTypes.map((cellType) => cellType.id);
-
-  const { selectedCellTypeIds } = state;
-
-  const oldCellTypeIds = selectedCellTypeIds[tissue];
-
-  return {
-    ...state,
-    selectedCellTypeIds: {
-      ...selectedCellTypeIds,
-      [tissue]: oldCellTypeIds || newCellTypeIds,
-    },
-  };
-}
-
-function resetTissueCellTypes(
-  state: State,
-  action: PayloadAction<{
-    tissue: Tissue;
-    cellTypes: CellType[];
-  }>
-): State {
-  const { tissue, cellTypes } = action.payload;
-
-  const newCellTypeIds = cellTypes.map((cellType) => cellType.id);
-
-  const { selectedCellTypeIds } = state;
-
-  return {
-    ...state,
-    selectedCellTypeIds: {
-      ...selectedCellTypeIds,
-      [tissue]: newCellTypeIds,
-    },
   };
 }
 
@@ -423,6 +285,7 @@ function addCellInfoCellType(
 
 export interface LoadStateFromURLPayload {
   filters: Partial<State["selectedFilters"]>;
+  organism: State["selectedOrganismId"];
   tissues: State["selectedTissues"];
   genes: State["selectedGenes"];
 }
@@ -436,6 +299,7 @@ function loadStateFromURL(
   return {
     ...state,
     selectedFilters: { ...state.selectedFilters, ...payload.filters },
+    selectedOrganismId: payload.organism,
     selectedTissues: payload.tissues,
     selectedGenes: payload.genes,
   };

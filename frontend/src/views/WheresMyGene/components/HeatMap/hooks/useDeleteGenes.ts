@@ -4,21 +4,17 @@ import {
   StateContext,
 } from "src/views/WheresMyGene/common/store";
 import {
-  resetGenesToDeleteAndCellTypeIdsToDelete,
-  toggleCellTypeIdToDelete,
+  resetGenesToDelete,
   toggleGeneToDelete,
 } from "src/views/WheresMyGene/common/store/actions";
-import { CellTypeMetadata } from "../utils";
 
-export function useDeleteGenesAndCellTypes(): {
-  cellTypeIdsToDelete: string[];
+export function useDeleteGenes(): {
   genesToDelete: string[];
-  handleCellTypeClick: (cellTypeMetadata: CellTypeMetadata) => void;
   handleGeneClick: (gene: string) => void;
   reset: () => void;
 } {
   const dispatch = useContext(DispatchContext);
-  const { genesToDelete, cellTypeIdsToDelete } = useContext(StateContext);
+  const { genesToDelete } = useContext(StateContext);
 
   const handleGeneClick = useCallback(
     (gene: string) => {
@@ -29,25 +25,14 @@ export function useDeleteGenesAndCellTypes(): {
     [dispatch]
   );
 
-  const handleCellTypeClick = useCallback(
-    (cellTypeMetadata: CellTypeMetadata) => {
-      if (!dispatch) return;
-
-      dispatch(toggleCellTypeIdToDelete(cellTypeMetadata));
-    },
-    [dispatch]
-  );
-
   const reset = useCallback(() => {
     if (!dispatch) return;
 
-    dispatch(resetGenesToDeleteAndCellTypeIdsToDelete());
+    dispatch(resetGenesToDelete());
   }, [dispatch]);
 
   return {
-    cellTypeIdsToDelete,
     genesToDelete,
-    handleCellTypeClick,
     handleGeneClick,
     reset,
   };

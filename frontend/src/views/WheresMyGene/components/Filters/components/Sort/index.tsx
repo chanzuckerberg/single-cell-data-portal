@@ -85,7 +85,8 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
   function cellTypesOnChange(
     value: { id?: SORT_BY; name: string } | null
   ): void {
-    if (!dispatch || !value) return;
+    if (!dispatch || !value || cellTypeSelectedOption.name === value.name)
+      return;
 
     track(EVENTS.WMG_OPTION_SELECT_CELL_TYPES, {
       sort_cell_types_view_option: value.name,
@@ -95,7 +96,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
   }
 
   function genesOnChange(value: { id?: SORT_BY; name: string } | null): void {
-    if (!dispatch || !value) return;
+    if (!dispatch || !value || geneSelectedOption.name === value.name) return;
 
     track(EVENTS.WMG_OPTION_SELECT_SORT_GENES, {
       sort_genes_view_option: value.name,
