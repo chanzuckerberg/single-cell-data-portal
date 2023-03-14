@@ -562,6 +562,8 @@ paths:
                     - $ref: "#/components/schemas/dataset"
                     - type: object
                       properties:
+                        collection_id:
+                          $ref: "#/components/schemas/collection_id"
                         collection_name:
                           $ref: "#/components/schemas/collection_name"
                         collection_doi:

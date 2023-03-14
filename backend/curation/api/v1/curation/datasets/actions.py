@@ -21,7 +21,13 @@ def get():
             for link in collection.metadata.links:
                 if link.type == CollectionLinkType.DOI.name:
                     collection_doi = link.uri
-            dataset_response_obj.update({"collection_name": collection.metadata.name, "collection_doi": collection_doi})
+            dataset_response_obj.update(
+                {
+                    "collection_id": collection.collection_id.id,
+                    "collection_name": collection.metadata.name,
+                    "collection_doi": collection_doi,
+                }
+            )
             all_datasets_with_collection_name_and_doi.append(dataset_response_obj)
 
     return make_response(jsonify(all_datasets_with_collection_name_and_doi), 200)
