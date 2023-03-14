@@ -228,7 +228,13 @@ export default function WheresMyGene(): JSX.Element {
 
   const [forceOpen, setForceOpen] = useState(false);
 
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState<{
+    isLoading: boolean;
+    blur?: boolean;
+  }>({
+    isLoading: false,
+    blur: false,
+  });
 
   const usePrevious = <T,>(value: T): T | undefined => {
     const ref = useRef<T>();
@@ -310,7 +316,7 @@ export default function WheresMyGene(): JSX.Element {
               selectedTissues={selectedTissues}
               isScaled={isScaled}
               handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
-              setIsDownloading={setIsDownloading}
+              setDownloadStatus={setDownloadStatus}
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
               availableFilters={availableFilters}
@@ -336,7 +342,7 @@ export default function WheresMyGene(): JSX.Element {
             <InfoPanel />
           </StyledSidebarDrawer>
 
-          {isDownloading && <ScreenTint />}
+          <ScreenTint isDownloading={downloadStatus} />
 
           {shouldShowHeatMap ? (
             <HeatMap

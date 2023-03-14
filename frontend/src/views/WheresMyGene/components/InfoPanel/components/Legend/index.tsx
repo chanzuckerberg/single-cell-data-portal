@@ -18,7 +18,12 @@ interface Props {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
-  setIsDownloading: (isDownloading: boolean) => void;
+  setDownloadStatus: React.Dispatch<
+    React.SetStateAction<{
+      isLoading: boolean;
+      blur?: boolean;
+    }>
+  >;
   setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
@@ -31,7 +36,7 @@ export default memo(function Legend({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
-  setIsDownloading,
+  setDownloadStatus,
   setEchartsRendererMode,
   allChartProps,
   availableFilters,
@@ -43,7 +48,7 @@ export default memo(function Legend({
         selectedTissues={selectedTissues}
         selectedGenes={selectedGenes}
         selectedCellTypes={selectedCellTypes}
-        setIsDownloading={setIsDownloading}
+        setDownloadStatus={setDownloadStatus}
         setEchartsRendererMode={setEchartsRendererMode}
         allChartProps={allChartProps}
         availableFilters={availableFilters}

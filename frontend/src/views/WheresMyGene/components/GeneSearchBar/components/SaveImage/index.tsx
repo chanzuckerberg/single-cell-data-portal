@@ -84,7 +84,12 @@ interface Props {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
-  setIsDownloading: (isDownloading: boolean) => void;
+  setDownloadStatus: React.Dispatch<
+    React.SetStateAction<{
+      isLoading: boolean;
+      blur?: boolean;
+    }>
+  >;
   setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
@@ -100,7 +105,7 @@ export default function SaveImage({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
-  setIsDownloading,
+  setDownloadStatus,
   setEchartsRendererMode,
   allChartProps,
   availableFilters,
@@ -128,7 +133,12 @@ export default function SaveImage({
 
   const handleDownload = useCallback(async () => {
     setIsOpen(false);
-    setIsDownloading(true);
+
+    if (selectedFileTypes.includes("png")) {
+      setDownloadStatus({ isLoading: true, blur: true });
+    } else {
+      setDownloadStatus({ isLoading: true });
+    }
 
     const heatmapNode = document.getElementById("view") as HTMLDivElement;
 
@@ -161,16 +171,17 @@ export default function SaveImage({
         selectedOrganismId,
         selectedTissues,
         setEchartsRendererMode,
-        setIsDownloading,
+        setDownloadStatus,
       }),
       MUTATION_OBSERVER_TIMEOUT
     );
 
     observer.observe(heatmapNode, config);
 
-    setEchartsRendererMode("svg");
+    if (selectedFileTypes.includes("svg")) {
+      setEchartsRendererMode("svg");
+    }
   }, [
-    setIsDownloading,
     allChartProps,
     availableFilters,
     availableOrganisms,
@@ -181,6 +192,7 @@ export default function SaveImage({
     selectedOrganismId,
     selectedTissues,
     setEchartsRendererMode,
+    setDownloadStatus,
   ]);
 
   return (
@@ -361,31 +373,6 @@ function generateCsv(
     availableFilters;
 
   const output: (string | number)[][] = [];
-
-  // const filterNames: {[filterName: keyof SelectedFilters]: string} = {
-  //   datasets: "Datasets",
-  //   apple: "asdf",
-  //   diseases: "Diseases",
-  //   ethnicities: "Self-Reported Ethnicity",
-  //   sexes: "Sex",
-  // };
-
-  // for ( const filterName of Object.keys(filterNames)) {
-
-  //   const names = availableFilters[filterName]
-  //     .filter((option:  RawDataset | {id: string, name: string}) => selectedFilters[filterName].includes(option.id))
-  //     .map((selectedOption: RawDataset | {id: string, name: string}) => {
-  //       if (selectedOption typeof RawDataset) {
-
-  //       } else {
-
-  //       }
-  //     });
-
-  //   output.push([
-  //     `# ${filterNames[filterNames]}: ${names.join()}`
-  //   ]);
-  // }
 
   // Metadata as comments
   output.push([`# ${new Date().toString()}`]);
@@ -576,7 +563,7 @@ function download_({
   selectedOrganismId,
   selectedFilters,
   observer,
-  setIsDownloading,
+  setDownloadStatus,
   setEchartsRendererMode,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
@@ -590,23 +577,34 @@ function download_({
   selectedOrganismId: string | null;
   selectedFilters: SelectedFilters;
   observer: MutationObserver;
-  setIsDownloading: (isDownloading: boolean) => void;
+  setDownloadStatus: React.Dispatch<
+    React.SetStateAction<{
+      isLoading: boolean;
+      blur?: boolean;
+    }>
+  >;
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
 }) {
   return async () => {
     try {
+      const isPng = selectedFileTypes.includes("png");
+
       //(ashin): #3569 Get scrollTop to go back to place after downloading image
       const heatmapContainer = document.getElementById(
         HEATMAP_CONTAINER_ID
       ) as HTMLCanvasElement;
       heatmapContainerScrollTop = heatmapContainer?.scrollTop;
 
-      // Adding this class causes the y-axis scrolling to jump but is required for image download
-      heatmapNode.classList.add("CLONED");
       const initialWidth = heatmapNode.style.width;
-      heatmapNode.style.width = `${
-        getHeatmapWidth(selectedGenes) + Y_AXIS_CHART_WIDTH_PX + 100
-      }px`;
+
+      if (isPng) {
+        // Adding this class causes the y-axis scrolling to jump but is required for image download
+        heatmapNode.classList.add("CLONED");
+
+        heatmapNode.style.width = `${
+          getHeatmapWidth(selectedGenes) + Y_AXIS_CHART_WIDTH_PX + 100
+        }px`;
+      }
 
       const exports: ExportData[] = (
         await Promise.all(
@@ -653,11 +651,13 @@ function download_({
         )
       ).flat();
 
-      //(thuang): #3569 Restore scrollTop position
-      heatmapNode.classList.remove("CLONED");
-      heatmapNode.style.width = initialWidth;
-      if (heatmapContainer) {
-        heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
+      if (isPng) {
+        //(thuang): #3569 Restore scrollTop position
+        heatmapNode.classList.remove("CLONED");
+        heatmapNode.style.width = initialWidth;
+        if (heatmapContainer) {
+          heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
+        }
       }
 
       await initiateDownload(selectedFileTypes, exports);
@@ -679,7 +679,7 @@ function download_({
     }
 
     observer.disconnect();
-    setIsDownloading(false);
     setEchartsRendererMode("canvas");
+    setDownloadStatus({ isLoading: false });
   };
 }
