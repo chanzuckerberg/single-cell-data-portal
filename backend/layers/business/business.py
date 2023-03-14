@@ -403,6 +403,12 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_all_datasets()
 
+    def get_all_published_collections_with_datasets(self) -> Iterable[CollectionVersionWithDatasets]:
+        """
+        Retrieves all the datasets from the database that belong to a published collection
+        """
+        return self.database_provider.get_all_published_collections_with_datasets()
+
     def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
         """
         Returns all the artifacts for a dataset

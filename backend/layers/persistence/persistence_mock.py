@@ -256,6 +256,52 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             if version_id in active_datasets:
                 yield self._update_dataset_version_with_canonical(dataset_version)
 
+    def _get_datasets(self, ids: List[DatasetVersionId]) -> List[DatasetVersion]:
+        dataset_versions = []
+        for dv_id in ids:
+            dataset_versions.append(self._update_dataset_version_with_canonical(self.datasets_versions[dv_id.id]))
+        return dataset_versions
+
+    def get_all_published_collections_with_datasets(self) -> List[CollectionVersionWithDatasets]:
+        """
+        Returns all published collections with their published datasets
+        """
+        active_collections = self.get_all_mapped_collection_versions()
+
+        dataset_version_ids = []
+        active_collections_list = list(active_collections)
+        for collection in active_collections_list:
+            dataset_version_ids.extend(collection.datasets)
+        active_datasets = self._get_datasets(dataset_version_ids)
+        datasets_by_collection_id = {}
+        for dataset in active_datasets:
+            if collection_datasets := datasets_by_collection_id.get(dataset.collection_id.id):
+                collection_datasets.append(dataset)
+            else:
+                datasets_by_collection_id[dataset.collection_id.id] = [dataset]
+
+        # Turn list of CollectionVersions into CollectionVersionsWithDatasets
+        collections_with_datasets: List[CollectionVersionWithDatasets] = []
+        for collection in active_collections_list:
+            print(f"collection with id {collection.collection_id}")
+            dataset_versions = datasets_by_collection_id.get(collection.collection_id.id, [])
+            collections_with_datasets.append(
+                CollectionVersionWithDatasets(
+                    datasets=dataset_versions,
+                    collection_id=collection.collection_id,
+                    version_id=collection.version_id,
+                    owner=collection.owner,
+                    curator_name=collection.curator_name,
+                    metadata=collection.metadata,
+                    publisher_metadata=collection.publisher_metadata,
+                    published_at=collection.published_at,
+                    created_at=collection.created_at,
+                    canonical_collection=collection.canonical_collection,
+                )
+            )
+
+        return collections_with_datasets
+
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         versions = []
         for dataset_version in self.datasets_versions.values():

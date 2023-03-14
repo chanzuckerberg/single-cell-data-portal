@@ -134,6 +134,11 @@ class DatabaseProviderInterface:
         # TODO: Add filtering
         """
 
+    def get_all_published_collections_with_datasets(self) -> List[CollectionVersionWithDatasets]:
+        """
+        Returns all published collections with their published datasets
+        """
+
     def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:
         """
         Returns all the artifacts for a specific dataset version
