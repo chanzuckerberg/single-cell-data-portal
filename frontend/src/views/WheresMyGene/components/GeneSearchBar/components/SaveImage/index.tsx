@@ -4,7 +4,11 @@ import { Dispatch, useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { stringify as csvStringify } from "csv-stringify/sync";
-import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
+import {
+  CompareId,
+  getCompareOptionNameById,
+  HEATMAP_CONTAINER_ID,
+} from "src/views/WheresMyGene/common/constants";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { ChartProps } from "../../../HeatMap/hooks/common/types";
 
@@ -36,6 +40,7 @@ import {
   renderYAxis,
 } from "./utils";
 import {
+  COMPARE_OPTION_ID_FOR_AGGREGATED,
   FilterDimensions,
   OntologyTerm,
   SelectedFilters,
@@ -111,7 +116,8 @@ export default function SaveImage({
   availableFilters,
   availableOrganisms,
 }: Props): JSX.Element {
-  const { selectedFilters, selectedOrganismId } = useContext(StateContext);
+  const { selectedFilters, selectedOrganismId, compare } =
+    useContext(StateContext);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFileTypes, setFileTypes] = useState<("png" | "svg" | "csv")[]>(
     ["png"]
@@ -158,6 +164,7 @@ export default function SaveImage({
         allChartProps,
         availableFilters,
         availableOrganisms,
+        compare,
         heatmapNode,
         observer,
         selectedCellTypes,
@@ -178,9 +185,11 @@ export default function SaveImage({
       setEchartsRendererMode("svg");
     }
   }, [
+    setDownloadStatus,
     allChartProps,
     availableFilters,
     availableOrganisms,
+    compare,
     selectedCellTypes,
     selectedFileTypes,
     selectedFilters,
@@ -188,7 +197,6 @@ export default function SaveImage({
     selectedOrganismId,
     selectedTissues,
     setEchartsRendererMode,
-    setDownloadStatus,
   ]);
 
   return (
@@ -358,6 +366,7 @@ function renderDots({
  */
 function generateCsv(
   allChartProps: { [tissue: string]: ChartProps },
+  compare: CompareId | undefined,
   selectedGenes: Props["selectedGenes"],
   tissue: string,
   availableFilters: Partial<FilterDimensions>,
@@ -399,7 +408,7 @@ function generateCsv(
     }`,
   ]);
 
-  // Organism
+  // Ethnicity
   output.push(["# Self-Reported Ethnicity"]);
   output.push([
     `${
@@ -435,40 +444,181 @@ function generateCsv(
   ]);
 
   // Column Names
-  output.push([
-    "Tissue",
-    "Cell Type",
-    "Cell Count",
-    "Tissue Composition",
-    "Gene Symbol",
-    "Expression",
-    "Expression, Scaled",
-    "Number of Cells Expressing Genes",
-  ]);
+  if (compare) {
+    const compareOptionName = getCompareOptionNameById(compare);
+    output.push([
+      "Tissue",
+      "Cell Type",
+      "Cell Count",
+      "Tissue Composition",
+      compareOptionName,
+      "Gene Symbol",
+      "Expression",
+      "Expression, Scaled",
+      "Number of Cells Expressing Genes",
+    ]);
+  } else {
+    output.push([
+      "Tissue",
+      "Cell Type",
+      "Cell Count",
+      "Tissue Composition",
+      "Gene Symbol",
+      "Expression",
+      "Expression, Scaled",
+      "Number of Cells Expressing Genes",
+    ]);
+  }
+
+  const cellTypeIdMapping: {
+    [cellTypeName: string]: {
+      id: string;
+      total_count: number;
+      name: string;
+      aggregated: boolean;
+      viewId: string;
+    }[];
+  } = {};
 
   for (const cellTypeMetaData of allChartProps[
     tissue
   ].cellTypeMetadata.reverse()) {
-    const { id, name, total_count } =
+    const { id, name, total_count, optionId, viewId } =
       deserializeCellTypeMetadata(cellTypeMetaData);
 
-    for (const geneName of selectedGenes) {
-      const geneExpression = allChartProps[tissue].chartData.find(
-        (value) => value.id === `${id}-${geneName}`
-      );
+    if (!cellTypeIdMapping[id]) {
+      cellTypeIdMapping[id] = [];
+    }
 
-      output.push([
-        tissue,
-        name,
+    cellTypeIdMapping[id].push({
+      id: id,
+      total_count: total_count,
+      name: name,
+      aggregated: optionId === COMPARE_OPTION_ID_FOR_AGGREGATED,
+      viewId: viewId,
+    });
+  }
+
+  for (const cellTypeMetadata of Object.values(cellTypeIdMapping)) {
+    let cellTypeName = "";
+
+    for (const geneName of selectedGenes) {
+      for (const {
         total_count,
-        Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) + "%",
-        geneName,
-        geneExpression?.meanExpression ?? "",
-        geneExpression?.scaledMeanExpression ?? "",
-        geneExpression?.expressedCellCount ?? "",
-      ]);
+        name,
+        aggregated,
+        viewId,
+      } of cellTypeMetadata) {
+        const geneExpression = allChartProps[tissue].chartData.find(
+          (value) => value.id === `${viewId}-${geneName}`
+        );
+
+        if (!compare) {
+          output.push([
+            tissue,
+            name,
+            total_count,
+            Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
+              "%",
+            geneName,
+            geneExpression?.meanExpression ?? "",
+            geneExpression?.scaledMeanExpression ?? "",
+            geneExpression?.expressedCellCount ?? "",
+          ]);
+        } else {
+          if (aggregated) {
+            cellTypeName = name;
+            output.push([
+              tissue,
+              name,
+              total_count,
+              Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
+                "%",
+              "",
+              geneName,
+              geneExpression?.meanExpression ?? "",
+              geneExpression?.scaledMeanExpression ?? "",
+              geneExpression?.expressedCellCount ?? "",
+            ]);
+          } else {
+            output.push([
+              tissue,
+              cellTypeName,
+              total_count,
+              Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
+                "%",
+              name.trim(),
+              geneName,
+              geneExpression?.meanExpression ?? "",
+              geneExpression?.scaledMeanExpression ?? "",
+              geneExpression?.expressedCellCount ?? "",
+            ]);
+          }
+        }
+      }
     }
   }
+
+  // for (const cellTypeMetaData of allChartProps[
+  //   tissue
+  // ].cellTypeMetadata.reverse()) {
+  //   const { id, name, total_count, optionId } =
+  //     deserializeCellTypeMetadata(cellTypeMetaData);
+
+  //   // console.log(deserializeCellTypeMetadata(cellTypeMetaData));
+
+  //   // // console.log(id); // "CL:0001064"
+  //   // // console.log(viewId); // "CL:0001064$aggregated"
+  //   // // console.log(optionId); // "aggregated"
+
+  //   for (const geneName of selectedGenes) {
+  //     const geneExpression = allChartProps[tissue].chartData.find(
+  //       (value) => value.id === `${id}-${geneName}`
+  //     );
+
+  //     if (compare) {
+  //       if (optionId !== COMPARE_OPTION_ID_FOR_AGGREGATED) {
+  //         output.push([
+  //           tissue,
+  //           name,
+  //           total_count,
+  //           Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
+  //             "%",
+  //           optionId,
+  //           geneName,
+  //           geneExpression?.meanExpression ?? "",
+  //           geneExpression?.scaledMeanExpression ?? "",
+  //           geneExpression?.expressedCellCount ?? "",
+  //         ]);
+  //       } else {
+  //         output.push([
+  //           tissue,
+  //           name,
+  //           total_count,
+  //           Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
+  //             "%",
+  //           "",
+  //           geneName,
+  //           geneExpression?.meanExpression ?? "",
+  //           geneExpression?.scaledMeanExpression ?? "",
+  //           geneExpression?.expressedCellCount ?? "",
+  //         ]);
+  //       }
+  //     } else {
+  //       output.push([
+  //         tissue,
+  //         name,
+  //         total_count,
+  //         Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
+  //           "%",
+  //         geneName,
+  //         geneExpression?.meanExpression ?? "",
+  //         geneExpression?.scaledMeanExpression ?? "",
+  //         geneExpression?.expressedCellCount ?? "",
+  //       ]);
+  //     }
+  //   }
+  // }
 
   return csvStringify(output);
 }
@@ -549,6 +699,7 @@ async function initiateDownload(
 
 function download_({
   allChartProps,
+  compare,
   heatmapNode,
   selectedTissues,
   selectedGenes,
@@ -563,6 +714,7 @@ function download_({
   setEchartsRendererMode,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
+  compare: CompareId | undefined;
   heatmapNode: HTMLDivElement;
   selectedTissues: Props["selectedTissues"];
   selectedGenes: Props["selectedGenes"];
@@ -616,6 +768,7 @@ function download_({
                 if (fileType === "csv") {
                   input = generateCsv(
                     allChartProps,
+                    compare,
                     selectedGenes,
                     tissueName,
                     availableFilters,
