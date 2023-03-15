@@ -24,6 +24,8 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
 
+DEFAULT_GROUP_BY_TERMS = ["tissue_ontology_term_id", "cell_type_ontology_term_id"]
+
 
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot()
@@ -53,10 +55,7 @@ def query():
 
         cell_counts = q.cell_counts(criteria)
 
-        if compare:
-            group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare]
-        else:
-            group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id"]
+        group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 
         dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(
             expression_summary, cell_counts, group_by_terms
@@ -223,8 +222,10 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
     return structured_result
 
 
-def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: list[str]) -> DataFrame:
+def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: list[str] = None) -> DataFrame:
     # Aggregate cube data by tissue, cell type
+    if group_by_terms is None:
+        group_by_terms = DEFAULT_GROUP_BY_TERMS
     cell_counts_cell_type_agg = cell_counts.groupby(group_by_terms, as_index=True).sum(numeric_only=True)
     cell_counts_cell_type_agg.rename(columns={"n_total_cells": "n_cells_cell_type"}, inplace=True)
     return cell_counts_cell_type_agg
@@ -238,8 +239,12 @@ def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
 
 
 def get_dot_plot_data(
-    query_result: DataFrame, cell_counts: DataFrame, group_by_terms: list[str]
+    query_result: DataFrame,
+    cell_counts: DataFrame,
+    group_by_terms: list[str] = None,
 ) -> Tuple[DataFrame, DataFrame]:
+    if group_by_terms is None:
+        group_by_terms = DEFAULT_GROUP_BY_TERMS
     # Get the dot plot matrix dataframe and aggregated cell counts per cell type
     cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts, group_by_terms)
     cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
@@ -269,8 +274,11 @@ def build_dot_plot_matrix(
     query_result: DataFrame,
     cell_counts_cell_type_agg: DataFrame,
     cell_counts_tissue_agg: DataFrame,
-    group_by_terms: list[str],
+    group_by_terms: list[str] = None,
 ) -> DataFrame:
+    if group_by_terms is None:
+        group_by_terms = DEFAULT_GROUP_BY_TERMS
+
     # Aggregate cube data by gene, tissue, cell type
     expr_summary_agg = query_result.groupby(["gene_ontology_term_id"] + group_by_terms, as_index=False).sum(
         numeric_only=True
@@ -297,8 +305,11 @@ def build_ordered_cell_types_by_tissue(
     cell_counts_cell_type_agg_T: DataFrame,
     cell_type_orderings: DataFrame,
     compare: str,
-    group_by_terms: list[str],
+    group_by_terms: list[str] = None,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    if group_by_terms is None:
+        group_by_terms = DEFAULT_GROUP_BY_TERMS
+
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(group_by_terms, as_index=False).first()[
         group_by_terms + ["n_total_cells"]
     ]

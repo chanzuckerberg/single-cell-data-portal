@@ -48,26 +48,53 @@ def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, tota
     return result
 
 
-def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, n, me, pc, tpc):
+def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, n, me, pc, tpc, compare_terms=None):
     result = {}
     for gene in genes:
         result[gene] = {}
         for tissue in tissues:
             result[gene][tissue] = []
             for cell_type in cell_types:
-                result[gene][tissue].append(
-                    {
-                        "id": cell_type,
-                        "n": n,
-                        "me": me,
-                        "pc": pc,
-                        "tpc": tpc,
-                    }
-                )
+                result[gene][tissue][cell_type] = {}
+                result[gene][tissue][cell_type]["aggregated"] = {
+                    "n": n,
+                    "me": me,
+                    "pc": pc,
+                    "tpc": tpc,
+                }
+                if compare_terms:
+                    for term in compare_terms:
+                        result[gene][tissue][cell_type][term] = {
+                            "n": n // len(compare_terms),
+                            "me": me,
+                            "pc": pc,
+                            "tpc": tpc,
+                        }
+
     return result
 
 
-def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size, me, expected_count):
+def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size, me, expected_count, compare_dim=None):
+    """
+    Generates test inputs and expected outputs for the /wmg/v1/query endpoint.
+
+    Arguments
+    ---------
+    genes: list of gene ontology term IDs
+    tissues: list of tissue ontology term IDs
+    organism: organism ontology term ID
+    dim_size: size of each dimension of the test cube
+    me: mean expression value to use for each gene/tissue/cell_type combination (scalar)
+    expected_count: expected number of cells for each gene/tissue/cell_type combination (scalar)
+    compare_dim: dimension to use for compare feature (optional). None if compare isn't used.
+
+    Returns
+    -------
+    tuple of (request, expected_expression_summary, expected_term_id_labels)
+    request: dictionary containing the request body to send to the /wmg/v1/query endpoint
+    expected_expression_summary: dictionary containing the expected expression summary values
+    expected_term_id_labels: dictionary containing the expected term ID labels
+    """
     cell_types = [f"cell_type_ontology_term_id_{i}" for i in range(dim_size)]
 
     expected_combinations_per_cell_type = dim_size ** len(
@@ -85,6 +112,7 @@ def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size
         me,
         1 / expected_count,
         expected_combinations_per_cell_type / (expected_count * (dim_size ** len(expression_summary_non_indexed_dims))),
+        compare_terms=[f"{compare_dim}_{i}" for i in range(dim_size)] if compare_dim else None,
     )
 
     request = dict(
