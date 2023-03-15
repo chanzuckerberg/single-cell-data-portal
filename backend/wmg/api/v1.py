@@ -192,7 +192,7 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
     # Populate aggregated gene expressions
     query_result_agg = query_result.groupby(
         ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).sum()
+    ).agg({"nnz": "sum", "sum": "sum", "n_cells_cell_type": "sum", "n_cells_tissue": "first"})
 
     for i in range(query_result_agg.shape[0]):
         row = query_result_agg.iloc[i]
