@@ -1,8 +1,6 @@
 import isEqual from "lodash/isEqual";
-import {
-  EMPTY_FILTERS,
-  SelectedFilters,
-} from "src/common/queries/wheresMyGene";
+import { SelectedFilters } from "src/common/queries/wheresMyGene";
+import { CompareId } from "../constants";
 import { CellType, SORT_BY } from "../types";
 
 export interface PayloadAction<Payload> {
@@ -26,7 +24,16 @@ export interface State {
     tissueID: string;
     organismID: string;
   } | null;
+  compare?: CompareId;
 }
+
+const EMPTY_FILTERS: State["selectedFilters"] = {
+  datasets: [],
+  developmentStages: [],
+  diseases: [],
+  ethnicities: [],
+  sexes: [],
+};
 
 // (thuang): If you have derived states based on the state, use `useMemo`
 // to cache the derived states instead of putting them in the state.
@@ -50,6 +57,8 @@ export const REDUCERS = {
   addSelectedGenes,
   deleteSelectedGenes,
   deleteSingleGene,
+  loadStateFromURL,
+  selectCompare,
   resetGenesToDelete,
   selectFilters,
   selectGenes,
@@ -58,7 +67,6 @@ export const REDUCERS = {
   selectTissues,
   setSnapshotId,
   toggleGeneToDelete,
-  loadStateFromURL,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -283,6 +291,7 @@ function addCellInfoCellType(
 }
 
 export interface LoadStateFromURLPayload {
+  compare: State["compare"];
   filters: Partial<State["selectedFilters"]>;
   organism: State["selectedOrganismId"];
   tissues: State["selectedTissues"];
@@ -295,11 +304,24 @@ function loadStateFromURL(
 ): State {
   const { payload } = action;
 
+  const { compare, filters, genes, tissues } = payload;
+
   return {
     ...state,
-    selectedFilters: { ...state.selectedFilters, ...payload.filters },
+    compare,
+    selectedFilters: { ...state.selectedFilters, ...filters },
+    selectedGenes: genes,
+    selectedTissues: tissues,
     selectedOrganismId: payload.organism,
-    selectedTissues: payload.tissues,
-    selectedGenes: payload.genes,
+  };
+}
+
+function selectCompare(
+  state: State,
+  action: PayloadAction<State["compare"]>
+): State {
+  return {
+    ...state,
+    compare: action.payload,
   };
 }

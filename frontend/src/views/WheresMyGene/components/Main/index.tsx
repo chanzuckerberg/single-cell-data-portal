@@ -39,7 +39,6 @@ import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import { ChartProps } from "../HeatMap/hooks/common/types";
 import InfoPanel from "../InfoPanel";
-import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
@@ -120,7 +119,7 @@ export default function WheresMyGene(): JSX.Element {
       cellTypesByTissueName
     )) {
       const tissueSelectedCellTypeIds = tissueSelectedCellTypes.map(
-        (cellType) => cellType.id
+        (cellType) => cellType.viewId
       );
       const tissueGeneExpressionSummaries =
         geneExpressionSummariesByTissueName[tissueName];
@@ -139,7 +138,7 @@ export default function WheresMyGene(): JSX.Element {
           for (const cellTypeGeneExpressionSummary of cellTypeGeneExpressionSummaries) {
             if (
               !tissueSelectedCellTypeIds.includes(
-                cellTypeGeneExpressionSummary.id
+                cellTypeGeneExpressionSummary.viewId
               )
             ) {
               continue;
@@ -276,9 +275,8 @@ export default function WheresMyGene(): JSX.Element {
           availableFilters={availableFilters}
           setAvailableFilters={setAvailableFilters}
           setAvailableOrganisms={setAvailableOrganisms}
+          setIsScaled={setIsScaled}
         />
-
-        <ColorScale setIsScaled={setIsScaled} />
       </SideBar>
       {cellInfoCellType && tissuesByID && (
         <SideBar

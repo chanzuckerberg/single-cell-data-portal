@@ -82,6 +82,15 @@ export function selectSortBy(
   };
 }
 
+export function selectCompare(
+  Compare: State["compare"]
+): GetActionTypeOfReducer<typeof REDUCERS["selectCompare"]> {
+  return {
+    payload: Compare,
+    type: "selectCompare",
+  };
+}
+
 export function resetGenesToDelete(): GetActionTypeOfReducer<
   typeof REDUCERS["resetGenesToDelete"]
 > {

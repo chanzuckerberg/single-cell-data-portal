@@ -46,7 +46,9 @@ export default function GeneSearchBar({
 
     return rawGenes[selectedOrganismId || ""] || [];
   }, [rawGenes, selectedOrganismId]);
+
   const [tissues, setTissues] = useState<Tissue[]>([]);
+
   useEffect(() => {
     if (rawTissues && filteredTissues.length) {
       const temp = rawTissues[selectedOrganismId || ""] || [];
@@ -61,7 +63,13 @@ export default function GeneSearchBar({
       });
       setTissues(newTissues);
     }
-  }, [rawTissues, filteredTissues, selectedOrganismId, setTissues]);
+  }, [
+    rawTissues,
+    filteredTissues,
+    selectedOrganismId,
+    setTissues,
+    selectedTissues,
+  ]);
 
   /**
    * NOTE: key is gene name in lowercase

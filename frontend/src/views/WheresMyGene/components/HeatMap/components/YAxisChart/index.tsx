@@ -25,6 +25,7 @@ import { SELECTED_STYLE } from "../../style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveImage";
+import { COMPARE_OPTION_ID_FOR_AGGREGATED } from "src/common/queries/wheresMyGene";
 
 interface Props {
   cellTypes?: CellType[];
@@ -130,7 +131,8 @@ const CellTypeButton = ({
 
         {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
           cellType &&
-          cellType.total_count > 25 && (
+          cellType.total_count > 25 &&
+          cellType.optionId === COMPARE_OPTION_ID_FOR_AGGREGATED && (
             <InfoButtonWrapper
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               style={{
@@ -147,13 +149,11 @@ const CellTypeButton = ({
               }}
             >
               <StyledImage
-                id={"marker-gene-button"}
+                id="marker-gene-button"
                 src={InfoSVG.src}
                 width="10"
                 height="10"
-                alt={`display marker genes for ${
-                  deserializeCellTypeMetadata(metadata).name
-                }`}
+                alt={`display marker genes for ${cellType.name}`}
               />
             </InfoButtonWrapper>
           )}

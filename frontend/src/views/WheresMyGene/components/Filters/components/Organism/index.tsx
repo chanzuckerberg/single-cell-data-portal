@@ -16,8 +16,7 @@ import {
 } from "src/views/WheresMyGene/common/store";
 import { selectOrganism } from "src/views/WheresMyGene/common/store/actions";
 import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
-import { OrganismLabel } from "../../style";
-import { StyledDropdown, Wrapper } from "./style";
+import { StyledDropdown, Wrapper, Label } from "../common/style";
 
 const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
 
@@ -81,7 +80,7 @@ export default function Organism({
   const organism = organismsById[selectedOrganismId || ""];
   return (
     <Wrapper>
-      <OrganismLabel>Organism</OrganismLabel>
+      <Label>Organism</Label>
       <StyledDropdown
         label={organism?.name || "Select"}
         options={filteredOrganisms || EMPTY_ARRAY}
