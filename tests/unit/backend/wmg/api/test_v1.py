@@ -27,12 +27,13 @@ from tests.unit.backend.wmg.test_query import generate_expected_marker_gene_data
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
-def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, total_count, orders, compare_terms=None):
+def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, total_count, compare_terms=None):
     result = {}
     result["cell_types"] = {}
+    order = 0
     for tissue in tissues:
         result["cell_types"][tissue] = {}
-        for cell_type, order in zip(cell_types, orders):
+        for cell_type in cell_types:
             result["cell_types"][tissue][cell_type] = {}
             result["cell_types"][tissue][cell_type]["aggregated"] = {
                 "cell_type_ontology_term_id": cell_type,
@@ -48,6 +49,7 @@ def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, tota
                         "total_count": total_count // len(compare_terms),
                         "order": order,
                     }
+            order += 1
 
     result["genes"] = []
     for gene in genes:
@@ -114,7 +116,6 @@ def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size
         tissues,
         cell_types,
         expected_combinations_per_cell_type * expected_count,
-        list(range(dim_size)),
         compare_terms=compare_terms,
     )
     expected_expression_summary = generate_expected_expression_summary_dictionary(
