@@ -18,7 +18,7 @@ interface Props {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
-  setDownloadStatus: React.Dispatch<
+  setDownloadStatus: Dispatch<
     React.SetStateAction<{
       isLoading: boolean;
       blur?: boolean;

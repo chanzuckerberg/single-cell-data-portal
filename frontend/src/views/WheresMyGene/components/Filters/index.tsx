@@ -6,7 +6,14 @@ import {
   Tooltip,
 } from "czifui";
 import isEqual from "lodash/isEqual";
-import { memo, useCallback, useContext, useEffect, useMemo } from "react";
+import {
+  Dispatch,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
@@ -82,11 +89,11 @@ const mapTermToFilterOption = (term: {
 export interface Props {
   isLoading: boolean;
   availableFilters: Partial<FilterDimensions>;
-  setAvailableFilters: React.Dispatch<
+  setAvailableFilters: Dispatch<
     React.SetStateAction<Partial<FilterDimensions>>
   >;
-  setAvailableOrganisms: React.Dispatch<React.SetStateAction<OntologyTerm[]>>;
-  setIsScaled: React.Dispatch<React.SetStateAction<boolean>>;
+  setAvailableOrganisms: Dispatch<React.SetStateAction<OntologyTerm[]>>;
+  setIsScaled: Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default memo(function Filters({

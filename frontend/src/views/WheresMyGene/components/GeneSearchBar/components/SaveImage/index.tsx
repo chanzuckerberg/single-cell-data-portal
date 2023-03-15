@@ -43,9 +43,8 @@ import {
   COMPARE_OPTION_ID_FOR_AGGREGATED,
   FilterDimensions,
   OntologyTerm,
-  SelectedFilters,
 } from "src/common/queries/wheresMyGene";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { State, StateContext } from "src/views/WheresMyGene/common/store";
 
 let heatmapContainerScrollTop: number | undefined;
 
@@ -89,7 +88,7 @@ interface Props {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
-  setDownloadStatus: React.Dispatch<
+  setDownloadStatus: Dispatch<
     React.SetStateAction<{
       isLoading: boolean;
       blur?: boolean;
@@ -370,7 +369,7 @@ function generateCsv(
   selectedGenes: Props["selectedGenes"],
   tissue: string,
   availableFilters: Partial<FilterDimensions>,
-  selectedFilters: SelectedFilters,
+  selectedFilters: State["selectedFilters"],
   selectedOrganismId: string | null,
   availableOrganisms: OntologyTerm[]
 ) {
@@ -723,9 +722,9 @@ function download_({
   availableFilters: Partial<FilterDimensions>;
   availableOrganisms: OntologyTerm[];
   selectedOrganismId: string | null;
-  selectedFilters: SelectedFilters;
+  selectedFilters: State["selectedFilters"];
   observer: MutationObserver;
-  setDownloadStatus: React.Dispatch<
+  setDownloadStatus: Dispatch<
     React.SetStateAction<{
       isLoading: boolean;
       blur?: boolean;

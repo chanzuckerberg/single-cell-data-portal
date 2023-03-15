@@ -1,5 +1,4 @@
 import isEqual from "lodash/isEqual";
-import { SelectedFilters } from "src/common/queries/wheresMyGene";
 import { CompareId } from "../constants";
 import { CellType, SORT_BY } from "../types";
 
@@ -12,7 +11,13 @@ export interface State {
   selectedGenes: string[];
   selectedOrganismId: string | null;
   selectedTissues: string[];
-  selectedFilters: SelectedFilters;
+  selectedFilters: {
+    datasets: string[];
+    developmentStages: string[];
+    diseases: string[];
+    ethnicities: string[];
+    sexes: string[];
+  };
   /**
    * (thuang): BE API response always returns a snapshot ID. When the ID changes,
    * FE needs refresh the queries

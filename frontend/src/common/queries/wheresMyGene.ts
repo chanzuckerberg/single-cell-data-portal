@@ -348,14 +348,6 @@ const EMPTY_FILTER_DIMENSIONS = {
   tissue_terms: [],
 };
 
-export interface SelectedFilters {
-  datasets: string[];
-  developmentStages: string[];
-  diseases: string[];
-  ethnicities: string[];
-  sexes: string[];
-}
-
 export interface RawDataset {
   collection_id: string;
   collection_label: string;
