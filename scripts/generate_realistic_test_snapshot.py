@@ -549,9 +549,8 @@ if __name__ == "__main__":
             (test_tissue, test_organism, [])
         ]
         cc = cc_arr.df[(test_tissue, [], test_organism)]
-        print(cc)
         filter_relationships = create_filter_relationships_graph(cc)
-        print(filter_relationships)
+
         print("Creating new snapshot...")
         with open(f"{new_snapshot}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as new_fr_file:
             json.dump(filter_relationships, new_fr_file)

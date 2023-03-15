@@ -118,8 +118,8 @@ def _query_tiledb_context_memoized(
     gb_dims = ["dataset_id"] + depluralized_keys
 
     # group-by and sum
-    agg = query.groupby(gb_dims_es).sum()
-    n_cells = cell_counts_query.groupby(gb_dims).sum()["n_total_cells"]
+    agg = query.groupby(gb_dims_es).sum(numeric_only=True)
+    n_cells = cell_counts_query.groupby(gb_dims).sum(numeric_only=True)["n_total_cells"]
 
     genes = list(agg.index.levels[0])
     n_cells_per_gene, n_cells_index = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
@@ -383,7 +383,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
         target_filters, context_filters, context_agg, n_cells_per_gene_context, n_cells_index_context
     )
 
-    target_agg = target_agg.groupby("gene_ontology_term_id").sum()
+    target_agg = target_agg.groupby("gene_ontology_term_id").sum(numeric_only=True)
 
     genes_target = list(target_agg.index)
 
