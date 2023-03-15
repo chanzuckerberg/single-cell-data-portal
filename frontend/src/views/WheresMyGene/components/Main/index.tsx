@@ -36,7 +36,6 @@ import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/Sa
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
-import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
@@ -107,7 +106,7 @@ export default function WheresMyGene(): JSX.Element {
       cellTypesByTissueName
     )) {
       const tissueSelectedCellTypeIds = tissueSelectedCellTypes.map(
-        (cellType) => cellType.id
+        (cellType) => cellType.viewId
       );
       const tissueGeneExpressionSummaries =
         geneExpressionSummariesByTissueName[tissueName];
@@ -126,7 +125,7 @@ export default function WheresMyGene(): JSX.Element {
           for (const cellTypeGeneExpressionSummary of cellTypeGeneExpressionSummaries) {
             if (
               !tissueSelectedCellTypeIds.includes(
-                cellTypeGeneExpressionSummary.id
+                cellTypeGeneExpressionSummary.viewId
               )
             ) {
               continue;
@@ -252,9 +251,7 @@ export default function WheresMyGene(): JSX.Element {
         forceOpen={true}
         wmgSideBar
       >
-        <Filters isLoading={isLoading} />
-
-        <ColorScale setIsScaled={setIsScaled} />
+        <Filters isLoading={isLoading} setIsScaled={setIsScaled} />
       </SideBar>
       {cellInfoCellType && tissuesByID && (
         <SideBar

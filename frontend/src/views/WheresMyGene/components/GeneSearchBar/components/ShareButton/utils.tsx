@@ -1,6 +1,7 @@
 import { Dispatch } from "react";
 import { isSSR } from "src/common/utils/isSSR";
 import { removeParams } from "src/common/utils/removeParams";
+import { CompareId } from "src/views/WheresMyGene/common/constants";
 import { State } from "src/views/WheresMyGene/common/store";
 import { loadStateFromURL } from "src/views/WheresMyGene/common/store/actions";
 import {
@@ -10,12 +11,19 @@ import {
 
 const HUMAN_ORGANISM_ID = "NCBITaxon:9606";
 
-export const generateAndCopyShareUrl = (
-  filters: State["selectedFilters"],
-  organism: State["selectedOrganismId"],
-  tissues: State["selectedTissues"],
-  genes: State["selectedGenes"]
-) => {
+export const generateAndCopyShareUrl = ({
+  filters,
+  organism,
+  tissues,
+  genes,
+  compare,
+}: {
+  filters: State["selectedFilters"];
+  organism: State["selectedOrganismId"];
+  tissues: State["selectedTissues"];
+  genes: State["selectedGenes"];
+  compare: State["compare"];
+}) => {
   // Create a URL that contains the selected filters, tissues, and genes as params in the URL
   // This URL can be shared with others to reproduce the same view
   const url = new URL(window.location.href);
@@ -29,6 +37,10 @@ export const generateAndCopyShareUrl = (
   url.searchParams.set("tissues", tissues.join(","));
   url.searchParams.set("genes", genes.join(","));
   url.searchParams.set("ver", "2");
+
+  if (compare) {
+    url.searchParams.set("compare", compare);
+  }
 
   // Copy the URL to the clipboard
   navigator.clipboard.writeText(String(url));
@@ -99,18 +111,29 @@ export const loadStateFromQueryParams = (
     Object.values(Object.keys(newSelectedFilters)).length === 0 &&
     newSelectedTissues.length === 0 &&
     newSelectedGenes.length === 0
-  )
+  ) {
     return null;
+  }
+
+  // check for compare
+  const newCompare = (params.get("compare") as CompareId) || undefined;
+
+  if (newCompare) {
+    paramsToRemove.push("compare");
+  }
 
   dispatch(
     loadStateFromURL({
+      compare: newCompare,
       filters: newSelectedFilters,
       organism: newSelectedOrganism,
       tissues: newSelectedTissues,
       genes: newSelectedGenes,
     })
   );
+
   return {
+    compare: newCompare,
     filters: newSelectedFilters,
     organism: newSelectedOrganism,
     tissues: newSelectedTissues,

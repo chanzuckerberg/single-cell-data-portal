@@ -18,7 +18,7 @@ import pathTool from "path";
 import { Fragment, memo, useState } from "react";
 import rehypeSlug from "rehype-slug";
 import { noop } from "src/common/constants/utils";
-import { OFF_WHITE } from "src/common/theme";
+import { OFF_WHITE, PINK } from "src/common/theme";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import Layout from "src/components/Layout";
 import { StyledDocsLayout } from "src/components/Layout/style";
@@ -141,7 +141,7 @@ const StyledUL = styled.ul<{ $isChild: boolean; isExpanded: boolean }>`
 
   & li.active-file {
     background-color: #ffffff;
-    color: #e9429a;
+    color: ${PINK};
   }
 
   & li:hover {

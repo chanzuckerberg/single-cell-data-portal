@@ -12,7 +12,9 @@ import {
 } from "src/views/WheresMyGene/common/store";
 import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGene/common/types";
-import { FlexDiv, Label, LabelWrapper, StyledDropdown, Wrapper } from "./style";
+import { StyledDropdown, Wrapper } from "../common/style";
+import { Label } from "../../../InfoPanel/common/style";
+import { LabelWrapper } from "./style";
 
 interface Props {
   setIsScaled: (prevIsScaled: boolean) => void;
@@ -64,9 +66,7 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
         <Label>Color Scale</Label>
 
         <Tooltip title="Expression is scaled to the range [0,1]. Scaling is done by assigning the minimum value in the current view to 0 and the max is assigned to 1.">
-          <FlexDiv>
-            <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="static" />
-          </FlexDiv>
+          <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="static" />
         </Tooltip>
       </LabelWrapper>
 
