@@ -551,11 +551,11 @@ paths:
                               ex. 'male', 'female', 'unknown'
                             type: object
                             properties:
-                              cell_type:
-                                description: The cell type name
-                                type: string
                               cell_type_ontology_term_id:
                                 description: The cell type ontology term id
+                                type: string
+                              name:
+                                description: The cell type (or term in the compare dimension) name
                                 type: string
                               order:
                                 description: The order for how the cell type should be displayed on the front end
