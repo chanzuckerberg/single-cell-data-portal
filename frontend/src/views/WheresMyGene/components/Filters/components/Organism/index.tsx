@@ -43,18 +43,16 @@ export default function Organism({
       return EMPTY_ARRAY;
     }
 
-    const availableOrganisms = organisms.filter((organism: IOrganism) =>
+    return organisms.filter((organism: IOrganism) =>
       TEMP_ALLOW_NAME_LIST.includes(organism.name)
     );
-
-    setAvailableOrganisms(availableOrganisms);
-
-    return availableOrganisms;
-  }, [organisms, setAvailableOrganisms]);
+  }, [organisms]);
 
   // (thuang): Default to "Homo sapiens" on first load
   useEffect(() => {
     if (!organisms || !dispatch || selectedOrganismId) return;
+
+    setAvailableOrganisms(organisms);
 
     const organism = organisms.find(
       (organism: IOrganism) => organism.name === "Homo sapiens"
@@ -63,7 +61,7 @@ export default function Organism({
     if (!organism) return;
 
     dispatch(selectOrganism(organism.id));
-  }, [organisms, dispatch, selectedOrganismId]);
+  }, [organisms, dispatch, selectedOrganismId, setAvailableOrganisms]);
 
   const organismsById = useMemo(() => {
     const result: { [id: string]: IOrganism } = {};
