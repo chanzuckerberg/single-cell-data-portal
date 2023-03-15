@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from backend.api_server.app import app
+from backend.wmg.api.v1 import find_dimension_id_from_compare
 from backend.wmg.data.query import MarkerGeneQueryCriteria
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_cube_schema import expression_summary_non_indexed_dims
@@ -27,20 +28,34 @@ from tests.unit.backend.wmg.test_query import generate_expected_marker_gene_data
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
-def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, total_count, depths):
+# this should only be used for generating expected outputs when using the test snapshot (see test_snapshot.py)
+def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, total_count, compare_terms=None):
     result = {}
     result["cell_types"] = {}
-    for tissue in tissues:
-        result["cell_types"][tissue] = []
-        for cell_type, depth in zip(cell_types, depths):
-            result["cell_types"][tissue].append(
-                {
-                    "cell_type": f"{cell_type}_label",
-                    "cell_type_ontology_term_id": cell_type,
-                    "total_count": total_count,
-                    "depth": depth,
-                }
-            )
+    # assume tissues are sorted, and cell types are sorted within each tissue
+    # assume the length of cell types is the dimensionality of each column in the
+    # test snapshot (i.e. each tissue contains all fake cell types).
+    # this line determines the starting order for each cell type in each tissue.
+    orders = [int(tissue.split("_")[-1]) * len(cell_types) for tissue in tissues]
+    for tissue, order in zip(tissues, orders):
+        result["cell_types"][tissue] = {}
+        for cell_type in cell_types:
+            result["cell_types"][tissue][cell_type] = {}
+            result["cell_types"][tissue][cell_type]["aggregated"] = {
+                "cell_type_ontology_term_id": cell_type,
+                "name": f"{cell_type}_label",
+                "total_count": total_count,
+                "order": order,
+            }
+            if compare_terms:
+                for term in compare_terms:
+                    result["cell_types"][tissue][cell_type][term] = {
+                        "cell_type_ontology_term_id": cell_type,
+                        "name": f"{term}_label",
+                        "total_count": total_count // len(compare_terms),
+                        "order": order,
+                    }
+            order += 1
 
     result["genes"] = []
     for gene in genes:
@@ -48,34 +63,68 @@ def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, tota
     return result
 
 
-def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, n, me, pc, tpc):
+def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, n, me, pc, tpc, compare_terms=None):
     result = {}
     for gene in genes:
         result[gene] = {}
         for tissue in tissues:
-            result[gene][tissue] = []
+            result[gene][tissue] = {}
             for cell_type in cell_types:
-                result[gene][tissue].append(
-                    {
-                        "id": cell_type,
-                        "n": n,
-                        "me": me,
-                        "pc": pc,
-                        "tpc": tpc,
-                    }
-                )
+                result[gene][tissue][cell_type] = {}
+                result[gene][tissue][cell_type]["aggregated"] = {
+                    "n": n,
+                    "me": me,
+                    "pc": pc,
+                    "tpc": tpc,
+                }
+                if compare_terms:
+                    for term in compare_terms:
+                        result[gene][tissue][cell_type][term] = {
+                            "n": n // len(compare_terms),
+                            "me": me,
+                            "pc": pc,
+                            "tpc": tpc / len(compare_terms),
+                        }
+
     return result
 
 
-def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size, me, expected_count):
+def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size, me, expected_count, compare_dim=None):
+    """
+    Generates test inputs and expected outputs for the /wmg/v1/query endpoint.
+
+    Arguments
+    ---------
+    genes: list of gene ontology term IDs
+    tissues: list of tissue ontology term IDs
+    organism: organism ontology term ID
+    dim_size: size of each dimension of the test cube
+    me: mean expression value to use for each gene/tissue/cell_type combination (scalar)
+    expected_count: expected number of cells for each gene/tissue/cell_type combination (scalar)
+    compare_dim: dimension to use for compare feature (optional). None if compare isn't used.
+
+    Returns
+    -------
+    tuple of (request, expected_expression_summary, expected_term_id_labels)
+    request: dictionary containing the request body to send to the /wmg/v1/query endpoint
+    expected_expression_summary: dictionary containing the expected expression summary values
+    expected_term_id_labels: dictionary containing the expected term ID labels
+    """
     cell_types = [f"cell_type_ontology_term_id_{i}" for i in range(dim_size)]
 
     expected_combinations_per_cell_type = dim_size ** len(
         set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
     )
+    compare_terms = (
+        [f"{find_dimension_id_from_compare(compare_dim)}_{i}" for i in range(dim_size)] if compare_dim else None
+    )
 
     expected_term_id_labels = generate_expected_term_id_labels_dictionary(
-        genes, tissues, cell_types, expected_combinations_per_cell_type * expected_count, list(range(dim_size))
+        genes,
+        tissues,
+        cell_types,
+        expected_combinations_per_cell_type * expected_count,
+        compare_terms=compare_terms,
     )
     expected_expression_summary = generate_expected_expression_summary_dictionary(
         genes,
@@ -85,6 +134,7 @@ def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size
         me,
         1 / expected_count,
         expected_combinations_per_cell_type / (expected_count * (dim_size ** len(expression_summary_non_indexed_dims))),
+        compare_terms=compare_terms,
     )
 
     request = dict(
@@ -92,8 +142,10 @@ def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size
             gene_ontology_term_ids=genes,
             organism_ontology_term_id=organism,
             tissue_ontology_term_ids=tissues,
-        ),
+        )
     )
+    if compare_dim:
+        request["compare"] = compare_dim
 
     return (
         request,
@@ -227,6 +279,47 @@ class WmgApiV1Tests(unittest.TestCase):
 
             (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
                 genes, tissues, organism, dim_size, 1.0, 10
+            )
+
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            self.assertEqual(200, response.status_code)
+
+            expected = {
+                "snapshot_id": "dummy-snapshot",
+                "expression_summary": expected_expression_summary,
+                "term_id_labels": expected_term_id_labels,
+            }
+            self.assertEqual(expected, json.loads(response.data))
+
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_request_multi_primary_dims_only_with_compare__returns_200_and_correct_response(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        dim_size = 3
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
+        ) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            genes = ["gene_ontology_term_id_0", "gene_ontology_term_id_2"]
+            tissues = ["tissue_ontology_term_id_1", "tissue_ontology_term_id_2"]
+            organism = "organism_ontology_term_id_0"
+
+            (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
+                genes, tissues, organism, dim_size, 1.0, 10, compare_dim="self_reported_ethnicity"
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
