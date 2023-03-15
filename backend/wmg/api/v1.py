@@ -1,5 +1,4 @@
 from collections import defaultdict
-from math import isnan
 from typing import Any, Dict, Iterable, List, Tuple
 
 import connexion
@@ -338,13 +337,10 @@ def build_ordered_cell_types_by_tissue(
     for column in cell_type_orderings:
         joined[column] = list(cell_type_orderings[column][indexer])
 
-    # Updates depths based on the rows that need to be removed
-    joined = build_ordered_cell_types_by_tissue_update_depths(joined)
-
     # Remove cell types without counts
     joined = joined[joined["n_total_cells"].notnull()]
 
-    # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
+    # Create nested dicts with tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
     structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
 
     # Populate aggregated gene expressions
@@ -380,26 +376,3 @@ def build_ordered_cell_types_by_tissue(
             }
 
     return structured_result
-
-
-def build_ordered_cell_types_by_tissue_update_depths(x: DataFrame):
-    """
-    Updates the depths of the cell ontology tree based on cell types that have to be removed
-    because they have 0 counts
-    """
-
-    depth_col = x.columns.get_loc("depth")
-    n_cells_col = x.columns.get_loc("n_total_cells")
-
-    x["depth"] = x["depth"].astype("int")
-
-    for i in range(len(x)):
-        if isnan(x.iloc[i, n_cells_col]):
-            original_depth = x.iloc[i, depth_col]
-            for j in range(i + 1, len(x)):
-                if original_depth < x.iloc[j, depth_col]:
-                    x.iloc[j, depth_col] -= 1
-                else:
-                    break
-
-    return x

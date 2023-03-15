@@ -44,11 +44,6 @@ export default function ShareButton(): JSX.Element {
 
     track(EVENTS.WMG_SHARE_CLICKED, {
       organism: selectedOrganismId,
-      tissues: selectedTissues,
-      genes: selectedGenes,
-    });
-
-    track(EVENTS.WMG_SHARE_CLICKED, {
       dataset_filter: selectedFilters.datasets,
       disease_filter: selectedFilters.diseases,
       genes: selectedGenes,

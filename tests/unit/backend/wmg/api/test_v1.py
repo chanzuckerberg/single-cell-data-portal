@@ -27,11 +27,16 @@ from tests.unit.backend.wmg.test_query import generate_expected_marker_gene_data
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
+# this should only be used for generating expected outputs when using the test snapshot (see test_snapshot.py)
 def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, total_count, compare_terms=None):
     result = {}
     result["cell_types"] = {}
-    order = 0
-    for tissue in tissues:
+    # assume tissues are sorted, and cell types are sorted within each tissue
+    # assume the length of cell types is the dimensionality of each column in the
+    # test snapshot (i.e. each tissue contains all fake cell types).
+    # this line determines the starting order for each cell type in each tissue.
+    orders = [int(tissue.split("_")[-1]) * len(cell_types) for tissue in tissues]
+    for tissue, order in zip(tissues, orders):
         result["cell_types"][tissue] = {}
         for cell_type in cell_types:
             result["cell_types"][tissue][cell_type] = {}
