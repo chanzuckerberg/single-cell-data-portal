@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.common.entities import (
     CollectionId,
@@ -128,15 +128,15 @@ class DatabaseProviderInterface:
         Returns all dataset versions for a canonical dataset_id
         """
 
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:  # TODO: add filters if needed
+    def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:  # TODO: add filters if needed
         """
         Returns all dataset versions.
         # TODO: Add filtering
         """
 
-    def get_all_mapped_collection_verions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
+    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
         """
-        Returns all published collections with their published datasets
+        Returns all mapped collection versions with their datasets as a hashmap
         """
 
     def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:

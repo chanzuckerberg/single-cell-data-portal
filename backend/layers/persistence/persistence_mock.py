@@ -1,6 +1,6 @@
 import copy
 from datetime import datetime
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.common.entities import (
@@ -246,15 +246,17 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         if version is not None:
             return self._update_dataset_version_with_canonical(version)
 
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
         For now, this only returns all the active datasets, i.e. the datasets that belong to a published collection
         """
-        active_collections = self.get_all_mapped_collection_versions()
-        active_datasets = [i.id for s in [c.datasets for c in active_collections] for i in s]
+        active_collections = list(self.get_all_mapped_collection_versions())
+        active_datasets_ids = [i.id for s in [c.datasets for c in active_collections] for i in s]
+        active_datasets = []
         for version_id, dataset_version in self.datasets_versions.items():
-            if version_id in active_datasets:
-                yield self._update_dataset_version_with_canonical(dataset_version)
+            if version_id in active_datasets_ids:
+                active_datasets.append(self._update_dataset_version_with_canonical(dataset_version))
+        return active_datasets, active_collections
 
     def _get_datasets(self, ids: List[DatasetVersionId]) -> List[DatasetVersion]:
         dataset_versions = []

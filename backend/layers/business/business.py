@@ -1,7 +1,7 @@
 import copy
 import datetime
 import logging
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
@@ -397,11 +397,12 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.database_provider.set_dataset_metadata(dataset_version_id, metadata)
 
-    def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_mapped_datasets(self) -> List[DatasetVersion]:
         """
         Retrieves all the datasets from the database that belong to a published collection
         """
-        return self.database_provider.get_all_datasets()
+        datasets, _ = self.database_provider.get_all_mapped_datasets_and_collections()
+        return datasets
 
     def get_all_mapped_collection_verions_with_datasets(self) -> Iterable[CollectionVersionWithDatasets]:
         """

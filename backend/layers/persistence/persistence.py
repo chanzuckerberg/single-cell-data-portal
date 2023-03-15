@@ -4,7 +4,7 @@ import logging
 import uuid
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional, Tuple
 
 from sqlalchemy import create_engine
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
@@ -497,29 +497,24 @@ class DatabaseProvider(DatabaseProviderInterface):
                 dataset_versions[i] = self._row_to_dataset_version(version, dataset, version_artifacts)
             return dataset_versions
 
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
-        Returns all dataset versions in published collections.
+        Returns all mapped datasets and mapped collection versions
         """
-        active_collections = self.get_all_mapped_collection_versions()
+        active_collections = list(self.get_all_mapped_collection_versions())
         dataset_version_ids = []
         for collection in active_collections:
             dataset_version_ids.extend(collection.datasets)
-        return self._get_datasets(dataset_version_ids)
+        return list(self._get_datasets(dataset_version_ids)), active_collections
 
     def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
         """
-        Returns all published collections with their published datasets
+        Returns all mapped collection versions with their datasets as a hashmap
         """
-        active_collections = self.get_all_mapped_collection_versions()
+        mapped_datasets, mapped_collections = self.get_all_mapped_collection_versions()
 
-        dataset_version_ids = []
-        active_collections_list = list(active_collections)
-        for collection in active_collections_list:
-            dataset_version_ids.extend(collection.datasets)
-        active_datasets = self._get_datasets(dataset_version_ids)
         datasets_by_collection_id = {}
-        for dataset in active_datasets:
+        for dataset in mapped_datasets:
             if collection_datasets := datasets_by_collection_id.get(dataset.collection_id.id):
                 collection_datasets.append(dataset)
             else:
@@ -527,7 +522,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
         # Turn list of CollectionVersions into CollectionVersionsWithDatasets
         collections_with_datasets: List[CollectionVersionWithDatasets] = []
-        for collection in active_collections_list:
+        for collection in mapped_collections:
             dataset_versions = datasets_by_collection_id.get(collection.collection_id.id, [])
             collections_with_datasets.append(
                 CollectionVersionWithDatasets(

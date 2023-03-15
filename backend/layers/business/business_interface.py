@@ -75,7 +75,7 @@ class BusinessLogicInterface:
     ) -> Tuple[DatasetVersionId, DatasetId]:
         pass
 
-    def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_mapped_datasets(self) -> Iterable[DatasetVersion]:
         pass
 
     def remove_dataset_version(
