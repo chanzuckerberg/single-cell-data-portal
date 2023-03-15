@@ -6,6 +6,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import { isSSR } from "src/common/utils/isSSR";
 import Toast from "src/views/Collection/components/Toast";
+import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
 import {
   DispatchContext,
   StateContext,
@@ -17,34 +18,41 @@ import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
 
 export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
+
   const {
     selectedFilters,
     selectedTissues,
     selectedGenes,
     selectedOrganismId,
+    compare,
   } = state;
+
   const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions();
   const dispatch = useContext(DispatchContext);
   // const [showURLCopyNotification, setShowURLCopyNotification] = useState(0);
 
   const copyShareUrl = useCallback(() => {
     if (!dispatch) return;
-    generateAndCopyShareUrl(
-      selectedFilters,
-      selectedOrganismId,
-      selectedTissues,
-      selectedGenes
-    );
-    track(EVENTS.WMG_SHARE_CLICKED, {
+
+    generateAndCopyShareUrl({
+      compare,
+      filters: selectedFilters,
       organism: selectedOrganismId,
       tissues: selectedTissues,
       genes: selectedGenes,
+    });
+
+    track(EVENTS.WMG_SHARE_CLICKED, {
+      organism: selectedOrganismId,
       dataset_filter: selectedFilters.datasets,
       disease_filter: selectedFilters.diseases,
+      genes: selectedGenes,
+      group_by_option: getCompareOptionNameById(compare),
       self_reported_ethnicity_filter: selectedFilters.ethnicities,
       sex_filter: selectedFilters.sexes,
-      group_by_option: null, //TODO: add group by filter when work is completed
+      tissues: selectedTissues,
     });
+
     // setShowURLCopyNotification((prev) => prev + 1);
     Toast.show({
       icon: IconNames.LINK,
@@ -58,6 +66,7 @@ export default function ShareButton(): JSX.Element {
     selectedGenes,
     selectedOrganismId,
     dispatch,
+    compare,
   ]);
 
   useEffect(() => {
@@ -71,6 +80,7 @@ export default function ShareButton(): JSX.Element {
         selectedFilters,
         dispatch
       );
+
       if (loadedState) {
         track(EVENTS.WMG_SHARE_LOADED, {
           tissues: loadedState.tissues,
@@ -78,9 +88,9 @@ export default function ShareButton(): JSX.Element {
           organism: loadedState.organism,
           dataset_filter: loadedState.filters.datasets,
           disease_filter: loadedState.filters.diseases,
+          group_by_option: getCompareOptionNameById(loadedState.compare),
           self_reported_ethnicity_filter: loadedState.filters.ethnicities,
           sex_filter: loadedState.filters.sexes,
-          group_by_option: null, //TODO: add group by filter when work is completed
         });
       }
     }

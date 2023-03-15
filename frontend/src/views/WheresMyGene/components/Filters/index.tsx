@@ -25,25 +25,19 @@ import {
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
-import Organism from "../GeneSearchBar/components/Organism";
+import Organism from "./components/Organism";
+import Compare from "./components/Compare";
 import Sort from "./components/Sort";
 import {
   StyledComplexFilter,
   StyledComplexFilterInputDropdown,
+  ViewOptionsLabel,
   Wrapper,
 } from "./style";
+import ColorScale from "./components/ColorScale";
+import { ViewOptionsWrapper } from "./components/Sort/style";
 
-const filterOptions = createFilterOptions({
-  stringify: (option: RawDataset) =>
-    `${option.label} ${option.collection_label}`,
-});
-
-const DropdownMenuProps = {
-  filterOptions,
-  getOptionSelected,
-};
-
-const ANALYTIC_MAPPING: {
+const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };
 } = {
   datasets: {
@@ -64,6 +58,16 @@ const ANALYTIC_MAPPING: {
   },
 };
 
+const filterOptions = createFilterOptions({
+  stringify: (option: RawDataset) =>
+    `${option.label} ${option.collection_label}`,
+});
+
+const DropdownMenuProps = {
+  filterOptions,
+  getOptionSelected,
+};
+
 interface FilterOption {
   name: string;
   label: string;
@@ -80,11 +84,16 @@ const mapTermToFilterOption = (term: {
     id: term.id,
   };
 };
+
 export interface Props {
   isLoading: boolean;
+  setIsScaled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default memo(function Filters({ isLoading }: Props): JSX.Element {
+export default memo(function Filters({
+  isLoading,
+  setIsScaled,
+}: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
   const [availableFilters, setAvailableFilters] =
@@ -159,7 +168,16 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     if (isEqual(availableFilters, newAvailableFilters)) return;
 
     setAvailableFilters(newAvailableFilters);
-  }, [rawDatasets, rawDevelopmentStages, rawDiseases, rawEthnicities, rawSexes, rawIsLoading, availableFilters, setAvailableFilters]);
+  }, [
+    rawDatasets,
+    rawDevelopmentStages,
+    rawDiseases,
+    rawEthnicities,
+    rawSexes,
+    rawIsLoading,
+    availableFilters,
+    setAvailableFilters,
+  ]);
 
   const {
     datasets = EMPTY_ARRAY,
@@ -212,7 +230,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         // If there are newly selected filters, send an analytic event for each of them
         if (newlySelected.length) {
           newlySelected.forEach((selected) => {
-            const { eventName, label } = ANALYTIC_MAPPING[key]!;
+            const { eventName, label } = ANALYTICS_MAPPING[key]!;
             track(eventName, {
               [label]: selected.name,
             });
@@ -257,6 +275,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
       <div>
         <StyledComplexFilter
           multiple
+          data-test-id="dataset-filter"
           search
           label="Dataset"
           options={datasets as unknown as DefaultMenuSelectOption[]}
@@ -270,6 +289,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         />
         <StyledComplexFilter
           multiple
+          data-test-id="disease-filter"
           search
           label="Disease"
           options={disease_terms as unknown as DefaultMenuSelectOption[]}
@@ -283,6 +303,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         />
         <StyledComplexFilter
           multiple
+          data-test-id="self-reported-ethnicity-filter"
           search
           label="Self-Reported Ethnicity"
           options={
@@ -298,6 +319,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         />
         <StyledComplexFilter
           multiple
+          data-test-id="sex-filter"
           search
           label="Sex"
           options={sex_terms as unknown as DefaultMenuSelectOption[]}
@@ -312,15 +334,34 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
       </div>
 
       <Organism isLoading={isLoading} />
+
       <Tooltip
         title={"Please select at least one tissue and gene to use this option."}
         disableHoverListener={isHeatmapShown}
         disableFocusListener={isHeatmapShown}
       >
         <div>
-          <Sort areFiltersDisabled={!isHeatmapShown} />
+          <Compare areFiltersDisabled={!isHeatmapShown} />
         </div>
       </Tooltip>
+
+      <div>
+        <ViewOptionsLabel>View Options</ViewOptionsLabel>
+        <ViewOptionsWrapper>
+          <Tooltip
+            title={
+              "Please select at least one tissue and gene to use this option."
+            }
+            disableHoverListener={isHeatmapShown}
+            disableFocusListener={isHeatmapShown}
+          >
+            <div>
+              <Sort areFiltersDisabled={!isHeatmapShown} />
+            </div>
+          </Tooltip>
+          <ColorScale setIsScaled={setIsScaled} />
+        </ViewOptionsWrapper>
+      </div>
     </Wrapper>
   );
 });
