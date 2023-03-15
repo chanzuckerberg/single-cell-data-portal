@@ -57,7 +57,7 @@ interface Props {
   isScaled: boolean;
   echartsRendererMode: "svg" | "canvas";
   setAllChartProps: Dispatch<
-    React.SetStateAction<{
+    SetStateAction<{
       [tissue: string]: ChartProps;
     }>
   >;
@@ -213,7 +213,7 @@ export default memo(function Chart({
         cellTypeSummaries: CellTypeSummary[],
         selectedGeneData: Props["selectedGeneData"] = EMPTY_ARRAY,
         setAllChartProps: Dispatch<
-          React.SetStateAction<{
+          SetStateAction<{
             [tissue: string]: ChartProps;
           }>
         >,

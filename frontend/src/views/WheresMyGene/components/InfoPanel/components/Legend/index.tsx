@@ -1,4 +1,4 @@
-import { Dispatch, memo, MouseEventHandler } from "react";
+import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
 import {
   FilterDimensions,
   OntologyTerm,
@@ -19,12 +19,12 @@ interface Props {
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
   setDownloadStatus: Dispatch<
-    React.SetStateAction<{
+    SetStateAction<{
       isLoading: boolean;
       blur?: boolean;
     }>
   >;
-  setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
+  setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
   availableOrganisms: OntologyTerm[];

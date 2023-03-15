@@ -2,7 +2,13 @@ import {
   DefaultMenuSelectOption,
   InputDropdownProps as RawInputDropdownProps,
 } from "czifui";
-import { Dispatch, useContext, useEffect, useMemo } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
@@ -26,7 +32,7 @@ const InputDropdownProps: Partial<RawInputDropdownProps> = {
 
 interface Props {
   isLoading: boolean;
-  setAvailableOrganisms: Dispatch<React.SetStateAction<OntologyTerm[]>>;
+  setAvailableOrganisms: Dispatch<SetStateAction<OntologyTerm[]>>;
 }
 
 export default function Organism({

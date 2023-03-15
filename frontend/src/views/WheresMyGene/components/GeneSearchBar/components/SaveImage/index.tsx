@@ -1,6 +1,12 @@
 import { toPng, toSvg } from "html-to-image";
 import { debounce } from "lodash";
-import { Dispatch, useCallback, useContext, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { stringify as csvStringify } from "csv-stringify/sync";
@@ -89,12 +95,12 @@ interface Props {
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
   setDownloadStatus: Dispatch<
-    React.SetStateAction<{
+    SetStateAction<{
       isLoading: boolean;
       blur?: boolean;
     }>
   >;
-  setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
+  setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
   availableOrganisms: OntologyTerm[];
@@ -558,67 +564,6 @@ function generateCsv(
     }
   }
 
-  // for (const cellTypeMetaData of allChartProps[
-  //   tissue
-  // ].cellTypeMetadata.reverse()) {
-  //   const { id, name, total_count, optionId } =
-  //     deserializeCellTypeMetadata(cellTypeMetaData);
-
-  //   // console.log(deserializeCellTypeMetadata(cellTypeMetaData));
-
-  //   // // console.log(id); // "CL:0001064"
-  //   // // console.log(viewId); // "CL:0001064$aggregated"
-  //   // // console.log(optionId); // "aggregated"
-
-  //   for (const geneName of selectedGenes) {
-  //     const geneExpression = allChartProps[tissue].chartData.find(
-  //       (value) => value.id === `${id}-${geneName}`
-  //     );
-
-  //     if (compare) {
-  //       if (optionId !== COMPARE_OPTION_ID_FOR_AGGREGATED) {
-  //         output.push([
-  //           tissue,
-  //           name,
-  //           total_count,
-  //           Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
-  //             "%",
-  //           optionId,
-  //           geneName,
-  //           geneExpression?.meanExpression ?? "",
-  //           geneExpression?.scaledMeanExpression ?? "",
-  //           geneExpression?.expressedCellCount ?? "",
-  //         ]);
-  //       } else {
-  //         output.push([
-  //           tissue,
-  //           name,
-  //           total_count,
-  //           Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
-  //             "%",
-  //           "",
-  //           geneName,
-  //           geneExpression?.meanExpression ?? "",
-  //           geneExpression?.scaledMeanExpression ?? "",
-  //           geneExpression?.expressedCellCount ?? "",
-  //         ]);
-  //       }
-  //     } else {
-  //       output.push([
-  //         tissue,
-  //         name,
-  //         total_count,
-  //         Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
-  //           "%",
-  //         geneName,
-  //         geneExpression?.meanExpression ?? "",
-  //         geneExpression?.scaledMeanExpression ?? "",
-  //         geneExpression?.expressedCellCount ?? "",
-  //       ]);
-  //     }
-  //   }
-  // }
-
   return csvStringify(output);
 }
 
@@ -725,7 +670,7 @@ function download_({
   selectedFilters: State["selectedFilters"];
   observer: MutationObserver;
   setDownloadStatus: Dispatch<
-    React.SetStateAction<{
+    SetStateAction<{
       isLoading: boolean;
       blur?: boolean;
     }>

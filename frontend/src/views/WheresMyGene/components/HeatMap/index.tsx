@@ -1,5 +1,13 @@
 import cloneDeep from "lodash/cloneDeep";
-import { Dispatch, memo, useContext, useMemo, useRef, useState } from "react";
+import {
+  Dispatch,
+  memo,
+  SetStateAction,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   CellTypeRow,
@@ -55,7 +63,7 @@ interface Props {
   selectedOrganismId: string;
   echartsRendererMode: "svg" | "canvas";
   setAllChartProps: Dispatch<
-    React.SetStateAction<{
+    SetStateAction<{
       [tissue: string]: ChartProps;
     }>
   >;

@@ -9,6 +9,7 @@ import isEqual from "lodash/isEqual";
 import {
   Dispatch,
   memo,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -89,11 +90,9 @@ const mapTermToFilterOption = (term: {
 export interface Props {
   isLoading: boolean;
   availableFilters: Partial<FilterDimensions>;
-  setAvailableFilters: Dispatch<
-    React.SetStateAction<Partial<FilterDimensions>>
-  >;
-  setAvailableOrganisms: Dispatch<React.SetStateAction<OntologyTerm[]>>;
-  setIsScaled: Dispatch<React.SetStateAction<boolean>>;
+  setAvailableFilters: Dispatch<SetStateAction<Partial<FilterDimensions>>>;
+  setAvailableOrganisms: Dispatch<SetStateAction<OntologyTerm[]>>;
+  setIsScaled: Dispatch<SetStateAction<boolean>>;
 }
 
 export default memo(function Filters({
