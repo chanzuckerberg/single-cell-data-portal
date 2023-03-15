@@ -139,8 +139,10 @@ def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size
             gene_ontology_term_ids=genes,
             organism_ontology_term_id=organism,
             tissue_ontology_term_ids=tissues,
-        ),
+        )
     )
+    if compare_dim:
+        request["compare"] = compare_dim
 
     return (
         request,
@@ -274,6 +276,47 @@ class WmgApiV1Tests(unittest.TestCase):
 
             (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
                 genes, tissues, organism, dim_size, 1.0, 10
+            )
+
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            self.assertEqual(200, response.status_code)
+
+            expected = {
+                "snapshot_id": "dummy-snapshot",
+                "expression_summary": expected_expression_summary,
+                "term_id_labels": expected_term_id_labels,
+            }
+            self.assertEqual(expected, json.loads(response.data))
+
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_request_multi_primary_dims_only_with_compare__returns_200_and_correct_response(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        dim_size = 3
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
+        ) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            genes = ["gene_ontology_term_id_0", "gene_ontology_term_id_2"]
+            tissues = ["tissue_ontology_term_id_1", "tissue_ontology_term_id_2"]
+            organism = "organism_ontology_term_id_0"
+
+            (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
+                genes, tissues, organism, dim_size, 1.0, 10, compare_dim="self_reported_ethnicity_ontology_term_id"
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
