@@ -27,7 +27,6 @@ class RollupExpressionsAcrossCellTypesTest(unittest.TestCase):
 
         for i in range(expected_exprs.shape[1]):
             df_expected[i] = expected_exprs[:, i]
-        return df_expected, df_rollup
         assert np.all(df_expected == df_rollup)
 
     def test__expression_rollup_no_descendants_overlap(self):
