@@ -128,7 +128,9 @@ class DatabaseProviderInterface:
         Returns all dataset versions for a canonical dataset_id
         """
 
-    def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:  # TODO: add filters if needed
+    def get_all_mapped_datasets_and_collections(
+        self,
+    ) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:  # TODO: add filters if needed
         """
         Returns all dataset versions.
         # TODO: Add filtering
