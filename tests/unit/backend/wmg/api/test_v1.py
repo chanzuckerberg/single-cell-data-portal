@@ -27,20 +27,27 @@ from tests.unit.backend.wmg.test_query import generate_expected_marker_gene_data
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
-def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, total_count, depths):
+def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, total_count, orders, compare_terms=None):
     result = {}
     result["cell_types"] = {}
     for tissue in tissues:
-        result["cell_types"][tissue] = []
-        for cell_type, depth in zip(cell_types, depths):
-            result["cell_types"][tissue].append(
-                {
-                    "cell_type": f"{cell_type}_label",
-                    "cell_type_ontology_term_id": cell_type,
-                    "total_count": total_count,
-                    "depth": depth,
-                }
-            )
+        result["cell_types"][tissue] = {}
+        for cell_type, order in zip(cell_types, orders):
+            result["cell_types"][tissue][cell_type] = {}
+            result["cell_types"][tissue][cell_type]["aggregated"] = {
+                "cell_type_ontology_term_id": cell_type,
+                "name": f"{cell_type}_label",
+                "total_count": total_count,
+                "order": order,
+            }
+            if compare_terms:
+                for term in compare_terms:
+                    result["cell_types"][tissue][cell_type][term] = {
+                        "cell_type_ontology_term_id": cell_type,
+                        "name": f"{term}_label",
+                        "total_count": total_count // len(compare_terms),
+                        "order": order,
+                    }
 
     result["genes"] = []
     for gene in genes:
@@ -53,7 +60,7 @@ def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, 
     for gene in genes:
         result[gene] = {}
         for tissue in tissues:
-            result[gene][tissue] = []
+            result[gene][tissue] = {}
             for cell_type in cell_types:
                 result[gene][tissue][cell_type] = {}
                 result[gene][tissue][cell_type]["aggregated"] = {
@@ -100,9 +107,15 @@ def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size
     expected_combinations_per_cell_type = dim_size ** len(
         set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
     )
+    compare_terms = [f"{compare_dim}_{i}" for i in range(dim_size)] if compare_dim else None
 
     expected_term_id_labels = generate_expected_term_id_labels_dictionary(
-        genes, tissues, cell_types, expected_combinations_per_cell_type * expected_count, list(range(dim_size))
+        genes,
+        tissues,
+        cell_types,
+        expected_combinations_per_cell_type * expected_count,
+        list(range(dim_size)),
+        compare_terms=compare_terms,
     )
     expected_expression_summary = generate_expected_expression_summary_dictionary(
         genes,
@@ -112,7 +125,7 @@ def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size
         me,
         1 / expected_count,
         expected_combinations_per_cell_type / (expected_count * (dim_size ** len(expression_summary_non_indexed_dims))),
-        compare_terms=[f"{compare_dim}_{i}" for i in range(dim_size)] if compare_dim else None,
+        compare_terms=compare_terms,
     )
 
     request = dict(
