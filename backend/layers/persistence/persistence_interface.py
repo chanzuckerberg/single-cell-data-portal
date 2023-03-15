@@ -136,7 +136,7 @@ class DatabaseProviderInterface:
 
     def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
         """
-        Returns all mapped collection versions with their datasets as a hashmap
+        Returns all mapped collection versions with their datasets
         """
 
     def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:

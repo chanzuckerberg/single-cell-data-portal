@@ -2,6 +2,7 @@ import contextlib
 import json
 import logging
 import uuid
+from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple
@@ -509,16 +510,13 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
         """
-        Returns all mapped collection versions with their datasets as a hashmap
+        Returns all mapped collection versions with their datasets
         """
-        mapped_datasets, mapped_collections = self.get_all_mapped_collection_versions()
+        mapped_datasets, mapped_collections = self.get_all_mapped_datasets_and_collections()
 
-        datasets_by_collection_id = {}
-        for dataset in mapped_datasets:
-            if collection_datasets := datasets_by_collection_id.get(dataset.collection_id.id):
-                collection_datasets.append(dataset)
-            else:
-                datasets_by_collection_id[dataset.collection_id.id] = [dataset]
+        datasets_by_collection_id = defaultdict(list)
+        # Construct dict of collection_id: [datasets]
+        [datasets_by_collection_id[d.collection_id.id].append(d) for d in mapped_datasets]
 
         # Turn list of CollectionVersions into CollectionVersionsWithDatasets
         collections_with_datasets: List[CollectionVersionWithDatasets] = []
