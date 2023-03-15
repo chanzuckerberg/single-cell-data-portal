@@ -756,16 +756,16 @@ function download_({
       await initiateDownload(selectedFileTypes, exports);
 
       track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
-        file_type: selectedFileTypes.join(","),
+        file_type: selectedFileTypes,
 
-        dataset_filter: selectedFilters.datasets.join(","),
-        disease_filter: selectedFilters.diseases.join(","),
-        self_reported_ethnicity_filter: selectedFilters.ethnicities.join(","),
-        sex_filter: selectedFilters.sexes.join(","),
-        group_by_option: "", // TODO: AFTER COMPARE
+        dataset_filter: selectedFilters.datasets,
+        disease_filter: selectedFilters.diseases,
+        self_reported_ethnicity_filter: selectedFilters.ethnicities,
+        sex_filter: selectedFilters.sexes,
+        group_by_option: compare,
 
-        genes: selectedGenes.toString(),
-        tissues: selectedTissues.toString(),
+        genes: selectedGenes,
+        tissues: selectedTissues,
       });
     } catch (error) {
       console.error(error);
