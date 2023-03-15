@@ -806,7 +806,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         published_version = self.initialize_published_collection()
         self.initialize_unpublished_collection()
 
-        datasets = list(self.business_logic.get_all_mapped_datasets())
+        datasets = self.business_logic.get_all_mapped_datasets()
         self.assertEqual(2, len(datasets))
         self.assertCountEqual([d.version_id for d in datasets], [d.version_id for d in published_version.datasets])
 
@@ -817,7 +817,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         """
         with self.subTest("Dataset is published with a revision open, get published dataset version"):
             published_version = self.initialize_published_collection()
-            published_dataset = list(self.business_logic.get_all_mapped_datasets())[0]
+            published_dataset = self.business_logic.get_all_mapped_datasets()[0]
             self.business_logic.create_collection_version(published_version.collection_id)
 
             dataset_version = self.business_logic.get_dataset_version_from_canonical(published_dataset.dataset_id)
