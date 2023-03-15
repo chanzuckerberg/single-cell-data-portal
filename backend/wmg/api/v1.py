@@ -255,14 +255,18 @@ def get_dot_plot_data(
 
 def rollup(dot_plot_matrix_df, cell_counts_cell_type_agg) -> Tuple[DataFrame, DataFrame]:
     # Roll up numeric columns in the input dataframes
+    ignore_cols = ["n_cells_tissue"]
+
     if dot_plot_matrix_df.shape[0] > 0:
-        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df)
+        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df, ignore_cols=ignore_cols)
 
     if cell_counts_cell_type_agg.shape[0] > 0:
         # make the cell counts dataframe tidy
         for col in cell_counts_cell_type_agg.index.names:
             cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
-        cell_counts_cell_type_agg = rollup_across_cell_type_descendants(cell_counts_cell_type_agg)
+        cell_counts_cell_type_agg = rollup_across_cell_type_descendants(
+            cell_counts_cell_type_agg, ignore_cols=ignore_cols
+        )
 
         # clean up columns that were added to the dataframe to make it tidy
         cell_counts_cell_type_agg.drop(columns=cell_counts_cell_type_agg.index.names, inplace=True)
