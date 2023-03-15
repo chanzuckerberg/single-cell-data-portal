@@ -265,7 +265,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_versions.append(self._update_dataset_version_with_canonical(self.datasets_versions[dv_id.id]))
         return dataset_versions
 
-    def get_all_mapped_collection_verions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
+    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
         """
         Returns all mapped collection versions with their datasets
         """

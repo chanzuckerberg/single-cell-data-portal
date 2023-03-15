@@ -1456,6 +1456,7 @@ class TestGetDatasets(BaseAPIPortalTest):
                 + [dv.dataset_id.id for dv in published_collection_2.datasets]
             )
             received_dataset_ids = set()
+            print(response.json)
             for dataset in response.json:
                 received_dataset_ids.add(dataset["id"])
 
