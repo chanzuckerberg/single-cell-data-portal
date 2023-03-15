@@ -293,7 +293,7 @@ export default memo(function Chart({
     if (!dataPoint || !cellType || !gene) return null;
 
     const optionId = getOptionIdFromCellTypeViewId(
-      dataPoint.id.split("-")[0] as ViewId
+      dataPoint.id?.split("-")[0] as ViewId
     );
 
     const { expressedCellCount } = dataPoint;
