@@ -316,7 +316,10 @@ class TestGetCollections(BaseAPIPortalTest):
         self.test_collection = dict(
             name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
         )
-        self.expected_dataset_columns = EntityColumns.dataset_metadata_preview_cols + ["dataset_id", "dataset_version_id"]
+        self.expected_dataset_columns = EntityColumns.dataset_metadata_preview_cols + [
+            "dataset_id",
+            "dataset_version_id",
+        ]
         self.expected_collection_columns = EntityColumns.collections_cols.copy()
         self.expected_collection_columns.remove("tombstone")
         self.expected_collection_columns.remove("owner")
@@ -550,7 +553,9 @@ class TestGetCollections(BaseAPIPortalTest):
         resp_collection = body[0]
 
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
-        self.assertEqual(unpublished_version.datasets[0].version_id.id, resp_collection["datasets"][0]["dataset_version_id"])
+        self.assertEqual(
+            unpublished_version.datasets[0].version_id.id, resp_collection["datasets"][0]["dataset_version_id"]
+        )
         self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
         self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
@@ -1366,7 +1371,6 @@ class TestGetDatasets(BaseAPIPortalTest):
 
 
 class TestGetDatasetIdVersions(BaseAPIPortalTest):
-
     def test_get_dataset_id_versions_ok(self):
         # subtests: filter out active revisions, only count published dataset versions
         collection = self.generate_published_collection()
@@ -1381,15 +1385,15 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         unpublished_revision = self.generate_revision(collection_id)
         unpublished_dataset_revision_id = self.generate_dataset(
             collection_version=unpublished_revision,
-            replace_dataset_version_id=DatasetVersionId(published_dataset_revision_id)
+            replace_dataset_version_id=DatasetVersionId(published_dataset_revision_id),
         ).dataset_version_id
 
         test_url = f"/curation/v1/datasets/{dataset_id}/versions"
         headers = self.make_owner_header()
         response = self.app.get(test_url, headers=headers)
         self.assertEqual(200, response.status_code)
-        self.assertEqual(collection_id.id, response.json['collection_id'])
-        dataset_version_ids = [dataset['dataset_version_id'] for dataset in response.json['datasets']]
+        self.assertEqual(collection_id.id, response.json["collection_id"])
+        dataset_version_ids = [dataset["dataset_version_id"] for dataset in response.json["datasets"]]
         self.assertEqual(len(dataset_version_ids), 2)
         # Must be returned in reverse chronological order
         self.assertEqual(published_dataset_revision_id, dataset_version_ids[0])

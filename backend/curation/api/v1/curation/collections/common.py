@@ -95,9 +95,7 @@ def reshape_for_curation_api(
         revising_in = None
 
     # get collection dataset attributes
-    response_datasets = reshape_datasets_for_curation_api(
-        collection_version.datasets, use_canonical_url, preview
-    )
+    response_datasets = reshape_datasets_for_curation_api(collection_version.datasets, use_canonical_url, preview)
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
@@ -133,15 +131,11 @@ def reshape_datasets_for_curation_api(
     active_datasets = []
     for dv in datasets:
         dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
-        active_datasets.append(
-            reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
-        )
+        active_datasets.append(reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview))
     return active_datasets
 
 
-def reshape_dataset_for_curation_api(
-    dataset_version: DatasetVersion, use_canonical_url: bool, preview=False
-) -> dict:
+def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canonical_url: bool, preview=False) -> dict:
     ds = dict()
 
     # Determine what columns to include from the dataset
