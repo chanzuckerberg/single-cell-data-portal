@@ -37,7 +37,7 @@ def query():
     compare = request.get("compare", None)
 
     if compare:
-        compare = find_dimension_id(compare)
+        compare = find_dimension_id_from_compare(compare)
 
     criteria = WmgQueryCriteria(**request["filter"])
 
@@ -129,7 +129,7 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
     ]
 
 
-def find_dimension_id(compare: str) -> str:
+def find_dimension_id_from_compare(compare: str) -> str:
     if compare == "sex":
         return "sex_ontology_term_id"
     elif compare == "self_reported_ethnicity":

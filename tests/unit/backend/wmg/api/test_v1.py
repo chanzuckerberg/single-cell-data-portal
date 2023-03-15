@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from backend.api_server.app import app
+from backend.wmg.api.v1 import find_dimension_id_from_compare
 from backend.wmg.data.query import MarkerGeneQueryCriteria
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_cube_schema import expression_summary_non_indexed_dims
@@ -82,7 +83,7 @@ def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, 
                             "n": n // len(compare_terms),
                             "me": me,
                             "pc": pc,
-                            "tpc": tpc,
+                            "tpc": tpc / len(compare_terms),
                         }
 
     return result
@@ -114,7 +115,9 @@ def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size
     expected_combinations_per_cell_type = dim_size ** len(
         set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
     )
-    compare_terms = [f"{compare_dim}_{i}" for i in range(dim_size)] if compare_dim else None
+    compare_terms = (
+        [f"{find_dimension_id_from_compare(compare_dim)}_{i}" for i in range(dim_size)] if compare_dim else None
+    )
 
     expected_term_id_labels = generate_expected_term_id_labels_dictionary(
         genes,
