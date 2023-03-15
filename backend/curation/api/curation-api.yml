@@ -542,6 +542,34 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /v1/datasets/{dataset_id}/versions:
+    get:
+      summary: List all versions for a Dataset
+      tags:
+        - dataset
+      description: |
+        List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
+        Dataset versions are returned in reverse-chronological order.
+      operationId: backend.curation.api.v1.curation.datasets.dataset_id.versions.actions.get
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collection_id:
+                    $ref: "#/components/schemas/collection_id"
+                  datasets:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/dataset"
+        "404":
+          $ref: "#/components/responses/404"
+
 components:
   schemas:
     asset_response:
@@ -798,6 +826,10 @@ components:
                 $ref: "#/components/schemas/asset_filetype"
             type: object
           type: array
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
+        dataset_version_id:
+          $ref: "#/components/schemas/dataset_version_id"
         development_stage:
           description: |
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
@@ -812,8 +844,6 @@ components:
           $ref: "#/components/schemas/donor_id"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
-        id:
-          $ref: "#/components/schemas/dataset_id"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
@@ -826,8 +856,6 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
-        original_id:
-          $ref: "#/components/schemas/original_id"
           nullable: true
         processing_status:
           $ref: "#/components/schemas/processing_status_dataset"
@@ -839,10 +867,6 @@ components:
           nullable: true
         revised_at:
           $ref: "#/components/schemas/dataset_revised_at"
-        revision:
-          description: The number of times the Dataset has been revised.
-          nullable: true
-          type: integer
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
@@ -902,6 +926,11 @@ components:
       type: boolean
     dataset_id:
       description: A unique identifier of a Dataset.
+      example: 01234567-89ab-cdef-0123-456789abcdef
+      type: string
+      format: uuid
+    dataset_version_id:
+      description: A unique identifier of a Dataset Version.
       example: 01234567-89ab-cdef-0123-456789abcdef
       type: string
       format: uuid
@@ -989,13 +1018,6 @@ components:
         ontology_term_id:
           type: string
       type: object
-    original_id:
-      description: |
-        For Datasets in private revisions of published Datasets, a unique identifier of the published Dataset 
-        counterpart if applicable. Null if the published Collection does not contain the revision Dataset.
-      example: 01234567-89ab-cdef-0123-456789abcdef
-      type: string
-      nullable: true
     problem:
       description: Error message container for HTTP APIs.
       properties:
