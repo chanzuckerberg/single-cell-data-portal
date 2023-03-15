@@ -404,7 +404,7 @@ class BusinessLogic(BusinessLogicInterface):
         datasets, _ = self.database_provider.get_all_mapped_datasets_and_collections()
         return datasets
 
-    def get_all_mapped_collection_verions_with_datasets(self) -> Iterable[CollectionVersionWithDatasets]:
+    def get_all_mapped_collection_versions_with_datasets(self) -> Iterable[CollectionVersionWithDatasets]:
         """
         Retrieves all the datasets from the database that belong to a published collection
         """
