@@ -67,7 +67,6 @@ class WmgQuery:
             indexed_dims=[
                 "gene_ontology_term_ids",
                 "tissue_ontology_term_ids",
-                "tissue_original_ontology_term_ids",
                 "organism_ontology_term_id",
             ],
         )
@@ -105,7 +104,7 @@ class WmgQuery:
         cell_counts = self._query(
             cube=self._snapshot.cell_counts_cube,
             criteria=criteria.copy(exclude={"gene_ontology_term_ids"}),
-            indexed_dims=["tissue_ontology_term_ids", "tissue_original_ontology_term_ids", "organism_ontology_term_id"],
+            indexed_dims=["tissue_ontology_term_ids", "organism_ontology_term_id"],
         )
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
