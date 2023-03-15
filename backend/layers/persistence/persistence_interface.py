@@ -134,7 +134,7 @@ class DatabaseProviderInterface:
         # TODO: Add filtering
         """
 
-    def get_all_published_collections_with_datasets(self) -> List[CollectionVersionWithDatasets]:
+    def get_all_mapped_collection_verions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
         """
         Returns all published collections with their published datasets
         """

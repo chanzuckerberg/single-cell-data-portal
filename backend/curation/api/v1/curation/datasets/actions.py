@@ -9,7 +9,7 @@ def get():
     """
     Datasets index endpoint to retrieve full metadata for all public Datasets.
     """
-    collections_with_datasets = get_business_logic().get_all_published_collections_with_datasets()
+    collections_with_datasets = get_business_logic().get_all_mapped_collection_verions_with_datasets()
 
     all_datasets_with_collection_name_and_doi = []
 

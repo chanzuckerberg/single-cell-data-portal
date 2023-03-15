@@ -507,7 +507,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_ids.extend(collection.datasets)
         return self._get_datasets(dataset_version_ids)
 
-    def get_all_published_collections_with_datasets(self) -> List[CollectionVersionWithDatasets]:
+    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
         """
         Returns all published collections with their published datasets
         """
