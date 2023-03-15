@@ -243,15 +243,14 @@ export default function WheresMyGene(): JSX.Element {
     });
     return ref.current;
   };
-  const prevAmount = usePrevious({ cellInfoCellType });
+  const prevState = usePrevious({ cellInfoCellType });
   useEffect(() => {
     if (
-      prevAmount?.cellInfoCellType?.cellType.id !==
-      cellInfoCellType?.cellType.id
+      prevState?.cellInfoCellType?.cellType.id !== cellInfoCellType?.cellType.id
     ) {
       setForceOpen(!forceOpen); //the value of this boolean isn't actually read downstream, it just checks for uniqueness across renders
     }
-  }, [cellInfoCellType, prevAmount?.cellInfoCellType?.cellType.id, forceOpen]);
+  }, [cellInfoCellType, prevState?.cellInfoCellType?.cellType.id, forceOpen]);
 
   const [echartsRendererMode, setEchartsRendererMode] = useState<
     "canvas" | "svg"
@@ -269,7 +268,7 @@ export default function WheresMyGene(): JSX.Element {
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
         disabled={false}
-        forceToggle={true}
+        forceOpen={true}
         wmgSideBar
       >
         <Filters
@@ -290,7 +289,7 @@ export default function WheresMyGene(): JSX.Element {
           position={Position.RIGHT}
           testId="cell-type-details-panel"
           disabled={false}
-          forceToggle={forceOpen}
+          forceOpen={forceOpen}
           wmgSideBar
           width={CELL_INFO_SIDEBAR_WIDTH_PX}
           truncatedLabel={`${tissuesByID[cellInfoCellType.tissueID].name} - ${
