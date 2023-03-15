@@ -316,7 +316,7 @@ class WmgApiV1Tests(unittest.TestCase):
             organism = "organism_ontology_term_id_0"
 
             (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, tissues, organism, dim_size, 1.0, 10, compare_dim="self_reported_ethnicity_ontology_term_id"
+                genes, tissues, organism, dim_size, 1.0, 10, compare_dim="self_reported_ethnicity"
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
