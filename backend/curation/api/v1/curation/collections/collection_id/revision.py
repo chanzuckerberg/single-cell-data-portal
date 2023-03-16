@@ -27,4 +27,4 @@ def post(collection_id: str, token_info: dict):
     except CollectionVersionException:
         raise ForbiddenHTTPException("Another revision is already in progress") from None
 
-    return make_response(jsonify({"id": collection_version.version_id.id}), 201)
+    return make_response(jsonify({"collection_id": collection_version.version_id.id}), 201)
