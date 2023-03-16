@@ -21,4 +21,4 @@ def post(token_info: dict, collection_id: str):
 
     _, dataset_id = business_logic.create_empty_dataset(collection_version.version_id)
 
-    return make_response(jsonify({"id": dataset_id.id}), 201)
+    return make_response(jsonify({"dataset_id": dataset_id.id}), 201)

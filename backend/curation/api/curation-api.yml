@@ -581,11 +581,15 @@ components:
     collection_list:
       description: Collection metadata
       properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
         collection_url:
           description: |
             The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision, 
             in which case it points to the unpublished revision version.
           type: string
+        collection_version_id:
+          $ref: "#/components/schemas/collection_version_id"
         consortia:
           $ref: "#/components/schemas/consortia"
         contact_email:
@@ -605,8 +609,6 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
-        id:
-          $ref: "#/components/schemas/collection_id"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -766,6 +768,11 @@ components:
       type: object
     collection_id:
       description: A unique identifier of a Collection.
+      example: fedcba98-7654-3210-fedc-ba9876543210
+      type: string
+      format: uuid
+    collection_version_id:
+      description: A unique identifier of a Collection Version.
       example: fedcba98-7654-3210-fedc-ba9876543210
       type: string
       format: uuid
