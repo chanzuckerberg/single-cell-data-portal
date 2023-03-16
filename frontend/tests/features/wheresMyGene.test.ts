@@ -5,6 +5,8 @@ import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
 import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
+import fs from "fs";
+import { parse } from "csv-parse/sync";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -15,6 +17,7 @@ const ADD_GENE_ID = "add-gene";
 const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
+const DOWNLOAD_BUTTON_ID = "download-button";
 
 const MUI_CHIP_ROOT = ".MuiChip-root";
 const FILTERS_PANEL_NOT_FOUND = "Filters panel not found";
@@ -568,6 +571,77 @@ describe("Where's My Gene", () => {
       ).toBeFalsy();
     });
   });
+
+  describe.only("Export CSV", () => {
+    test("Download CSV and validate length", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      async function getTissueSelectorButton() {
+        return page.$(getTestID(ADD_TISSUE_ID));
+      }
+
+      async function getGeneSelectorButton() {
+        return page.$(getTestID(ADD_GENE_ID));
+      }
+
+      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await selectFirstOption(page);
+
+      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await selectFirstOption(page);
+
+      await waitForHeatmapToRender(page);
+
+      async function getDownloadButton() {
+        return page.$(getTestID(DOWNLOAD_BUTTON_ID));
+      }
+
+      await clickUntilDownloadModalShowsUp(getDownloadButton, page);
+
+      const pngCheckbox = await page.$(getTestID("png-checkbox"));
+      if (!pngCheckbox) throw Error("No PNG checkbox");
+      await pngCheckbox.click();
+
+      const csvCheckbox = await page.$(getTestID("csv-checkbox"));
+      if (!csvCheckbox) throw Error("No CSV checkbox");
+      await csvCheckbox.click();
+
+      // Start waiting for download before clicking. Note no await.
+      const downloadPromise = page.waitForEvent("download");
+
+      const downloadButton = await page.$(getTestID("dialog-download-button"));
+      if (!downloadButton) throw Error("No download button");
+      await downloadButton.click();
+
+      // Wait for download
+      const download = await downloadPromise;
+
+      const fileName = await download.suggestedFilename();
+
+      expect(fileName).toBe("blood.csv");
+
+      await download.saveAs(fileName);
+
+      const csvBuffer = fs.readFileSync(fileName); // convert Buffer to string
+
+      // Get number of lines from file
+      const numLines = csvBuffer
+        .toString()
+        .trim()
+        .split("\n")
+        .map((row) => [row]).length;
+
+      // Parse file contents
+      const parser = parse(csvBuffer, {
+        columns: false,
+        relax_column_count: true,
+        skip_empty_lines: false,
+      });
+
+      // Make sure number of lines are the same after parsing
+      expect(parser.length).toBe(numLines);
+    });
+  });
 });
 
 async function getNames(selector: string, page: Page): Promise<string[]> {
@@ -605,6 +679,27 @@ async function clickUntilOptionsShowUp(
     { page }
   );
 }
+
+async function clickUntilDownloadModalShowsUp(
+  getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>,
+  page: Page
+) {
+  await tryUntil(
+    async () => {
+      const target = await getTarget();
+
+      if (!target) throw Error("no target");
+
+      await target.click();
+
+      const modal = await page.$("[class=bp4-dialog]");
+
+      if (modal) throw Error("No download modal");
+    },
+    { page }
+  );
+}
+
 async function clickUntilSidebarShowsUp(
   getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>,
   page: Page
@@ -623,6 +718,7 @@ async function clickUntilSidebarShowsUp(
     { page }
   );
 }
+
 // (thuang): This only works when a dropdown is open
 async function selectFirstOption(page: Page) {
   await selectFirstNOptions(1, page);
