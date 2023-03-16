@@ -1370,6 +1370,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(404, response.status_code)
 
+
 class TestPostDataset(BaseAPIPortalTest):
     """
     Unit test for POST /datasets, which is used to add an empty dataset to a collection version
