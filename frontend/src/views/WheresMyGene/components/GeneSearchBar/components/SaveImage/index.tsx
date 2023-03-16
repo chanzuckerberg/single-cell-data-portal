@@ -12,14 +12,12 @@ import { EVENTS } from "src/common/analytics/events";
 import { stringify as csvStringify } from "csv-stringify/sync";
 import {
   CompareId,
-  getCompareOptionNameById,
   HEATMAP_CONTAINER_ID,
 } from "src/views/WheresMyGene/common/constants";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { ChartProps } from "../../../HeatMap/hooks/common/types";
 
 import {
-  deserializeCellTypeMetadata,
   getHeatmapHeight,
   getHeatmapWidth,
   X_AXIS_CHART_HEIGHT_PX,
@@ -46,11 +44,15 @@ import {
   renderYAxis,
 } from "./utils";
 import {
-  COMPARE_OPTION_ID_FOR_AGGREGATED,
   FilterDimensions,
   OntologyTerm,
 } from "src/common/queries/wheresMyGene";
 import { State, StateContext } from "src/views/WheresMyGene/common/store";
+import {
+  buildCellTypeIdToMetadataMapping,
+  csvGeneExpressionRow,
+  csvHeaders,
+} from "./csvUtils";
 
 let heatmapContainerScrollTop: number | undefined;
 
@@ -379,187 +381,36 @@ function generateCsv(
   selectedOrganismId: string | null,
   availableOrganisms: OntologyTerm[]
 ) {
-  const { datasets, disease_terms, self_reported_ethnicity_terms, sex_terms } =
-    availableFilters;
+  const output: (string | number | undefined)[][] = [];
 
-  const output: (string | number)[][] = [];
+  // Create CSV comments and column names
+  output.push(
+    ...csvHeaders(
+      compare,
+      availableFilters,
+      availableOrganisms,
+      selectedFilters,
+      selectedOrganismId
+    )
+  );
 
-  // Metadata as comments
-  output.push([`# ${new Date().toString()}`]);
+  // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
+  const cellTypeIdToMetadataMapping = Object.values(
+    buildCellTypeIdToMetadataMapping(tissue, allChartProps)
+  );
 
-  // Dataset
-  output.push(["# Dataset"]);
-  output.push([
-    `${
-      datasets
-        ?.filter((option) => {
-          return selectedFilters.datasets.includes(option.id);
-        })
-        .map((selected) => selected.label)
-        .join(", ") || ""
-    }`,
-  ]);
-
-  // Disease
-  output.push(["# Disease"]);
-  output.push([
-    `${
-      disease_terms
-        ?.filter((option) => {
-          return selectedFilters.diseases.includes(option.id);
-        })
-        .map((selected) => selected.name)
-        .join(", ") || ""
-    }`,
-  ]);
-
-  // Ethnicity
-  output.push(["# Self-Reported Ethnicity"]);
-  output.push([
-    `${
-      self_reported_ethnicity_terms
-        ?.filter((option) => {
-          return selectedFilters.ethnicities.includes(option.id);
-        })
-        .map((selected) => selected.name)
-        .join(", ") || ""
-    }`,
-  ]);
-
-  // Sex
-  output.push(["# Sex"]);
-  output.push([
-    `${
-      sex_terms
-        ?.filter((option) => {
-          return selectedFilters.sexes.includes(option.id);
-        })
-        .map((selected) => selected.name)
-        .join(", ") || ""
-    }`,
-  ]);
-
-  // Organism
-  output.push(["# Organism"]);
-  output.push([
-    `${
-      availableOrganisms.find((organism) => organism.id === selectedOrganismId)
-        ?.name
-    }`,
-  ]);
-
-  // Column Names
-  if (compare) {
-    const compareOptionName = getCompareOptionNameById(compare);
-    output.push([
-      "Tissue",
-      "Cell Type",
-      "Cell Count",
-      "Tissue Composition",
-      compareOptionName,
-      "Gene Symbol",
-      "Expression",
-      "Expression, Scaled",
-      "Number of Cells Expressing Genes",
-    ]);
-  } else {
-    output.push([
-      "Tissue",
-      "Cell Type",
-      "Cell Count",
-      "Tissue Composition",
-      "Gene Symbol",
-      "Expression",
-      "Expression, Scaled",
-      "Number of Cells Expressing Genes",
-    ]);
-  }
-
-  const cellTypeIdMapping: {
-    [cellTypeName: string]: {
-      id: string;
-      total_count: number;
-      name: string;
-      aggregated: boolean;
-      viewId: string;
-    }[];
-  } = {};
-
-  for (const cellTypeMetaData of allChartProps[
-    tissue
-  ].cellTypeMetadata.reverse()) {
-    const { id, name, total_count, optionId, viewId } =
-      deserializeCellTypeMetadata(cellTypeMetaData);
-
-    if (!cellTypeIdMapping[id]) {
-      cellTypeIdMapping[id] = [];
-    }
-
-    cellTypeIdMapping[id].push({
-      id: id,
-      total_count: total_count,
-      name: name,
-      aggregated: optionId === COMPARE_OPTION_ID_FOR_AGGREGATED,
-      viewId: viewId,
-    });
-  }
-
-  for (const cellTypeMetadata of Object.values(cellTypeIdMapping)) {
-    let cellTypeName = "";
-
+  for (const metadataForCellType of cellTypeIdToMetadataMapping) {
     for (const geneName of selectedGenes) {
-      for (const {
-        total_count,
-        name,
-        aggregated,
-        viewId,
-      } of cellTypeMetadata) {
-        const geneExpression = allChartProps[tissue].chartData.find(
-          (value) => value.id === `${viewId}-${geneName}`
-        );
-
-        if (!compare) {
-          output.push([
+      for (const metadata of metadataForCellType) {
+        output.push(
+          csvGeneExpressionRow(
+            metadata,
             tissue,
-            name,
-            total_count,
-            Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
-              "%",
+            allChartProps,
             geneName,
-            geneExpression?.meanExpression ?? "",
-            geneExpression?.scaledMeanExpression ?? "",
-            geneExpression?.expressedCellCount ?? "",
-          ]);
-        } else {
-          if (aggregated) {
-            cellTypeName = name;
-            output.push([
-              tissue,
-              name,
-              total_count,
-              Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
-                "%",
-              "",
-              geneName,
-              geneExpression?.meanExpression ?? "",
-              geneExpression?.scaledMeanExpression ?? "",
-              geneExpression?.expressedCellCount ?? "",
-            ]);
-          } else {
-            output.push([
-              tissue,
-              cellTypeName,
-              total_count,
-              Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) +
-                "%",
-              name.trim(),
-              geneName,
-              geneExpression?.meanExpression ?? "",
-              geneExpression?.scaledMeanExpression ?? "",
-              geneExpression?.expressedCellCount ?? "",
-            ]);
-          }
-        }
+            compare
+          )
+        );
       }
     }
   }
