@@ -1476,7 +1476,7 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
 
     def test_get_dataset_id_version_404(self):
         with self.subTest("Input is not a UUID"):
-            test_url = f"/curation/v1/datasets/not-uuid-input/versions"
+            test_url = "/curation/v1/datasets/not-uuid-input/versions"
             headers = self.make_owner_header()
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(404, response.status_code)
