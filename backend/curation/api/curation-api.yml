@@ -582,15 +582,15 @@ paths:
                 type: array
                 items:
                   allOf:
-                    - $ref: "#/components/schemas/dataset"
                     - type: object
-                      properties:
-                        collection_id:
-                          $ref: "#/components/schemas/collection_id"
-                        collection_name:
-                          $ref: "#/components/schemas/collection_name"
-                        collection_doi:
-                          $ref: "#/components/schemas/doi"
+                        properties:
+                          collection_id:
+                            $ref: "#/components/schemas/collection_id"
+                          collection_name:
+                            $ref: "#/components/schemas/collection_name"
+                          collection_doi:
+                            $ref: "#/components/schemas/doi"
+                    - $ref: "#/components/schemas/dataset"
 
   /v1/datasets/{dataset_id}:
     get:
