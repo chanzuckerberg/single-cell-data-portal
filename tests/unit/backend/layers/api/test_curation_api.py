@@ -15,7 +15,6 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
-    DatasetVersionId,
     Link,
     OntologyTermId,
 )
