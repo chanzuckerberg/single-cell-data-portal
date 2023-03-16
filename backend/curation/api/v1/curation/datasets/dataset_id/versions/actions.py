@@ -2,7 +2,6 @@ from uuid import UUID
 
 from flask import jsonify, make_response
 
-
 from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_datasets_for_curation_api
 from backend.layers.common.entities import DatasetId
