@@ -1393,14 +1393,20 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         response = self.app.get(test_url, headers=headers)
         self.assertEqual(200, response.status_code)
         self.assertEqual(collection_id.id, response.json["collection_id"])
-        dataset_version_ids = [dataset["id"] for dataset in response.json["datasets"]]
+        dataset_version_ids = [dataset["dataset_version_id"] for dataset in response.json["datasets"]]
         self.assertEqual(len(dataset_version_ids), 2)
+        # Check that only published datasets appear
         # Must be returned in reverse chronological order
         self.assertEqual(published_dataset_revision_id, dataset_version_ids[0])
         self.assertEqual(dataset_version_id.id, dataset_version_ids[1])
         self.assertNotIn(unpublished_dataset_revision_id, dataset_version_ids)
 
     def test_get_dataset_id_version_404(self):
+        with self.subTest("Input is not a UUID"):
+            test_url = f"/curation/v1/datasets/not-uuid-input/versions"
+            headers = self.make_owner_header()
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
         with self.subTest("Dataset with that UUID does not exist"):
             test_url = f"/curation/v1/datasets/{str(uuid.uuid4())}/versions"
             headers = self.make_owner_header()

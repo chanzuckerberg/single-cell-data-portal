@@ -857,6 +857,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
 
         version_history = self.business_logic.get_prior_published_versions_for_dataset(dataset.dataset_id)
         version_ids = [version.version_id for version in version_history]
+        # Check that only published datasets appear
         self.assertEqual(len(version_history), 2)
         self.assertIn(dataset.version_id, version_ids)
         self.assertIn(new_dataset_version_id, version_ids)
