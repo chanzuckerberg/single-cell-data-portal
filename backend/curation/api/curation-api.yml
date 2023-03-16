@@ -542,6 +542,34 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /v1/datasets/{dataset_id}/versions:
+    get:
+      summary: List all versions for a Dataset
+      tags:
+        - dataset
+      description: |
+        List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
+        Dataset versions are returned in reverse-chronological order.
+      operationId: backend.curation.api.v1.curation.datasets.dataset_id.versions.actions.get
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collection_id:
+                    $ref: "#/components/schemas/collection_id"
+                  datasets:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/dataset"
+        "404":
+          $ref: "#/components/responses/404"
+
 components:
   schemas:
     asset_response:
