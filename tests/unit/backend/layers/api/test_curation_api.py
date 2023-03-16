@@ -8,6 +8,8 @@ from backend.common.utils.api_key import generate
 from backend.curation.api.v1.curation.collections.common import EntityColumns
 from backend.layers.common.entities import (
     CollectionId,
+    CollectionLinkType,
+    CollectionMetadata,
     CollectionVersion,
     CollectionVisibility,
     DatasetArtifactType,
@@ -1369,6 +1371,77 @@ class TestGetDatasets(BaseAPIPortalTest):
             headers = self.make_owner_header()
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(404, response.status_code)
+
+    def test_get_datasets_200(self):
+        published_collection_1 = self.generate_published_collection(
+            add_datasets=2,
+            metadata=CollectionMetadata(
+                "test_collection_1",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi_1.org")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+        published_collection_2 = self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_2",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi_2.org")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+        self.generate_unpublished_collection(add_datasets=4)
+        self.generate_revision(published_collection_1.collection_id)
+
+        with self.subTest("With super curator credentials"):
+            headers = self.make_super_curator_header()
+            super_curator_response = self.app.get("/curation/v1/datasets", headers=headers)
+            print(super_curator_response.json)
+            self.assertEqual(3, len(super_curator_response.json))
+
+        response = self.app.get("/curation/v1/datasets")
+
+        with self.subTest("With no credentials"):
+            self.assertEqual(3, len(response.json))
+
+        with self.subTest("Contains collection_name and collection_doi"):
+            collection_names = {published_collection_1.metadata.name, published_collection_2.metadata.name}
+            collection_dois = set()
+
+            for col in [published_collection_1, published_collection_2]:
+                for link in col.metadata.links:
+                    if link.type == CollectionLinkType.DOI.name:
+                        collection_dois.add(link.uri)
+
+            self.assertEqual(2, len(collection_dois))
+
+            received_collection_names = set()
+            received_collection_dois = set()
+            for dataset in response.json:
+                received_collection_names.add(dataset["collection_name"])
+                received_collection_dois.add(dataset["collection_doi"])
+
+            self.assertEqual(collection_names, received_collection_names)
+            self.assertEqual(collection_dois, received_collection_dois)
+
+        with self.subTest("Only public datasets are returned"):
+            dataset_ids = set(
+                [dv.dataset_id.id for dv in published_collection_1.datasets]
+                + [dv.dataset_id.id for dv in published_collection_2.datasets]
+            )
+            received_dataset_ids = set()
+            print(response.json)
+            for dataset in response.json:
+                received_dataset_ids.add(dataset["dataset_id"])
+
+            self.assertEqual(dataset_ids, received_dataset_ids)
 
 
 class TestGetDatasetIdVersions(BaseAPIPortalTest):
