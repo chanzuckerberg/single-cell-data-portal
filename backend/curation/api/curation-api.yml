@@ -411,7 +411,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/dataset"
+                $ref: "#/components/schemas/dataset_version"
         "400":
           $ref: "#/components/responses/400"
         "404":
