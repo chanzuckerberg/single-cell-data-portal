@@ -575,7 +575,7 @@ describe("Where's My Gene", () => {
     });
   });
 
-  describe.only("Export CSV", () => {
+  describe("Export CSV", () => {
     test("Download CSV and validate length", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
@@ -648,7 +648,7 @@ describe("Where's My Gene", () => {
     });
   });
 
-  describe.only("Multiple file download - one tissue", () => {
+  describe("Multiple file download - one tissue", () => {
     test("Download zip of all outputs (png,svg,csv) for one tissue", async ({
       page,
     }) => {
@@ -716,7 +716,7 @@ describe("Where's My Gene", () => {
     });
   });
 
-  describe.only("Multiple file download - two tissues", () => {
+  describe("Multiple file download - two tissues", () => {
     test("Download zip of all outputs (png,svg,csv) for two tissues", async ({
       page,
     }) => {
