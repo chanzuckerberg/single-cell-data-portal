@@ -221,7 +221,7 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
     return structured_result
 
 
-def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: list[str] = None) -> DataFrame:
+def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: List[str] = None) -> DataFrame:
     # Aggregate cube data by tissue, cell type
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS
