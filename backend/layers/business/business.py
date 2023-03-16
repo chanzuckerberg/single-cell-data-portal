@@ -1,7 +1,7 @@
 import copy
 import datetime
 import logging
-from typing import Iterable, Optional, Tuple, List
+from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
