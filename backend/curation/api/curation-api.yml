@@ -145,7 +145,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  collection_id:
                     $ref: "#/components/schemas/collection_id"
         "400":
           $ref: "#/components/responses/400"
@@ -288,7 +288,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  collection_id:
                     $ref: "#/components/schemas/collection_id"
         "401":
           $ref: "#/components/responses/401"
@@ -318,7 +318,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  dataset_id:
                     $ref: "#/components/schemas/dataset_id"
         "401":
           $ref: "#/components/responses/401"
@@ -707,8 +707,12 @@ components:
     collection_get:
       description: Collection metadata
       properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
         collection_url:
           $ref: "#/components/schemas/collection_url"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_id"
         consortia:
           $ref: "#/components/schemas/consortia"
         contact_email:
@@ -728,8 +732,6 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
-        id:
-          $ref: "#/components/schemas/collection_id"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -919,7 +921,7 @@ components:
           $ref: "#/components/schemas/dataset_assay"
         disease:
           $ref: "#/components/schemas/dataset_disease"
-        id:
+        dataset_id:
           $ref: "#/components/schemas/dataset_id"
         organism:
           $ref: "#/components/schemas/dataset_organism"
