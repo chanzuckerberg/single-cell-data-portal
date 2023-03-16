@@ -1,7 +1,7 @@
 import copy
 import datetime
 import logging
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, Optional, Tuple, List
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
@@ -571,7 +571,7 @@ class BusinessLogic(BusinessLogicInterface):
                     unpublished_dataset = dataset
             return unpublished_dataset
 
-    def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> list[DatasetVersion]:
+    def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
         Given a canonical dataset id, return all its DatasetVersions that have been part of published CollectionVersions
         """
