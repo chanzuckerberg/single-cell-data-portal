@@ -177,16 +177,8 @@ export function buildCellTypeIdToMetadataMapping(
   for (const cellTypeMetaData of allChartProps[
     tissue
   ].cellTypeMetadata.reverse()) {
-    const { id, name, total_count, optionId, viewId, tissue } =
+    const { id, name, total_count, optionId, viewId } =
       deserializeCellTypeMetadata(cellTypeMetaData);
-
-    console.log("tissue: " + tissue);
-    console.log("id: " + id);
-    console.log("name: " + name);
-    console.log("total_count: " + total_count);
-    console.log("optionId: " + optionId);
-    console.log("viewId: " + viewId);
-    console.log("---------------------------------------------------");
 
     if (!cellTypeIdMapping[id]) {
       cellTypeIdMapping[id] = [];
@@ -203,8 +195,6 @@ export function buildCellTypeIdToMetadataMapping(
       total_count: total_count,
     });
   }
-
-  console.log(cellTypeIdMapping);
 
   return cellTypeIdMapping;
 }

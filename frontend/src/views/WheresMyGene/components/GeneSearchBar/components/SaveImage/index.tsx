@@ -12,6 +12,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { stringify as csvStringify } from "csv-stringify/sync";
 import {
   CompareId,
+  getCompareOptionNameById,
   HEATMAP_CONTAINER_ID,
 } from "src/views/WheresMyGene/common/constants";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
@@ -480,7 +481,6 @@ async function initiateDownload(
       const encodedContent = encodeURIComponent(exports[0].input as string);
 
       if (fileType === "svg") {
-        // (ashin-czi): Fixes SVG string breaking when encountering a "#" character
         link.href = `data:image/svg+xml,${encodedContent}`;
       } else if (fileType === "csv") {
         link.href = `data:text/csv,${encodedContent}`;
@@ -613,7 +613,7 @@ function download_({
         disease_filter: selectedFilters.diseases,
         self_reported_ethnicity_filter: selectedFilters.ethnicities,
         sex_filter: selectedFilters.sexes,
-        group_by_option: compare,
+        group_by_option: getCompareOptionNameById(compare),
 
         genes: selectedGenes,
         tissues: selectedTissues,
