@@ -221,7 +221,7 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
     return structured_result
 
 
-def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: list[str] = None) -> DataFrame:
+def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: List[str] = None) -> DataFrame:
     # Aggregate cube data by tissue, cell type
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS
@@ -240,7 +240,7 @@ def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
 def get_dot_plot_data(
     query_result: DataFrame,
     cell_counts: DataFrame,
-    group_by_terms: list[str] = None,
+    group_by_terms: List[str] = None,
 ) -> Tuple[DataFrame, DataFrame]:
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS
@@ -277,7 +277,7 @@ def build_dot_plot_matrix(
     query_result: DataFrame,
     cell_counts_cell_type_agg: DataFrame,
     cell_counts_tissue_agg: DataFrame,
-    group_by_terms: list[str] = None,
+    group_by_terms: List[str] = None,
 ) -> DataFrame:
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS
@@ -308,7 +308,7 @@ def build_ordered_cell_types_by_tissue(
     cell_counts_cell_type_agg_T: DataFrame,
     cell_type_orderings: DataFrame,
     compare: str,
-    group_by_terms: list[str] = None,
+    group_by_terms: List[str] = None,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS

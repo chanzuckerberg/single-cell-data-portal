@@ -1402,6 +1402,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         with self.subTest("With super curator credentials"):
             headers = self.make_super_curator_header()
             super_curator_response = self.app.get("/curation/v1/datasets", headers=headers)
+            print(super_curator_response.json)
             self.assertEqual(3, len(super_curator_response.json))
 
         response = self.app.get("/curation/v1/datasets")
@@ -1437,7 +1438,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             received_dataset_ids = set()
             print(response.json)
             for dataset in response.json:
-                received_dataset_ids.add(dataset["id"])
+                received_dataset_ids.add(dataset["dataset_id"])
 
             self.assertEqual(dataset_ids, received_dataset_ids)
 

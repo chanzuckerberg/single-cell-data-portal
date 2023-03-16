@@ -27,7 +27,7 @@ def get():
         }
 
         for dataset in collection.datasets:
-            dataset_response_obj = reshape_dataset_for_curation_api(dataset, is_published=True, use_canonical_id=True)
+            dataset_response_obj = reshape_dataset_for_curation_api(dataset, use_canonical_url=True)
             dataset_response_obj.update(collection_info)
             all_datasets_with_collection_name_and_doi.append(dataset_response_obj)
 
