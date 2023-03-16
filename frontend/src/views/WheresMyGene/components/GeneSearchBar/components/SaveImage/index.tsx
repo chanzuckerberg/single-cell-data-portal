@@ -238,6 +238,7 @@ export default function SaveImage({
                 }
                 label="PNG"
                 onChange={() => selectFileType("png")}
+                data-test-id="png-checkbox"
               />
 
               <StyledFormControlLabel
@@ -248,6 +249,7 @@ export default function SaveImage({
                 }
                 label="SVG"
                 onChange={() => selectFileType("svg")}
+                data-test-id="svg-checkbox"
               />
             </StyledDiv>
           </StyledSection>
@@ -262,6 +264,7 @@ export default function SaveImage({
                 }
                 label="CSV"
                 onChange={() => selectFileType("csv")}
+                data-test-id="csv-checkbox"
               />
             </StyledDiv>
           </StyledSection>
@@ -281,6 +284,7 @@ export default function SaveImage({
             sdsSize="large"
             onClick={handleDownload}
             disabled={!selectedFileTypes.length}
+            data-test-id="dialog-download-button"
           >
             Download
           </DownloadButton>

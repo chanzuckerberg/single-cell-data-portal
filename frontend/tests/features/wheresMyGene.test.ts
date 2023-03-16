@@ -7,6 +7,7 @@ import { getTestID, getText } from "../utils/selectors";
 import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
+import AdmZip from "adm-zip";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -25,6 +26,8 @@ const FILTERS_PANEL_NOT_FOUND = "Filters panel not found";
 const CELL_TYPE_SANITY_CHECK_NUMBER = 100;
 
 const COMPARE_DROPDOWN_ID = "compare-dropdown";
+
+const EXPORT_OUTPUT_DIR = "playwright-report/";
 
 const { describe, skip } = test;
 
@@ -616,13 +619,15 @@ describe("Where's My Gene", () => {
       // Wait for download
       const download = await downloadPromise;
 
-      const fileName = await download.suggestedFilename();
+      const fileName = download.suggestedFilename();
 
       expect(fileName).toBe("blood.csv");
 
-      await download.saveAs(fileName);
+      const filePath = EXPORT_OUTPUT_DIR + fileName;
 
-      const csvBuffer = fs.readFileSync(fileName); // convert Buffer to string
+      await download.saveAs(filePath);
+
+      const csvBuffer = fs.readFileSync(filePath);
 
       // Get number of lines from file
       const numLines = csvBuffer
@@ -640,6 +645,154 @@ describe("Where's My Gene", () => {
 
       // Make sure number of lines are the same after parsing
       expect(parser.length).toBe(numLines);
+    });
+  });
+
+  describe.only("Multiple file download - one tissue", () => {
+    test("Download zip of all outputs (png,svg,csv) for one tissue", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      async function getTissueSelectorButton() {
+        return page.$(getTestID(ADD_TISSUE_ID));
+      }
+
+      async function getGeneSelectorButton() {
+        return page.$(getTestID(ADD_GENE_ID));
+      }
+
+      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await selectFirstOption(page);
+
+      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await selectFirstOption(page);
+
+      await waitForHeatmapToRender(page);
+
+      async function getDownloadButton() {
+        return page.$(getTestID(DOWNLOAD_BUTTON_ID));
+      }
+
+      await clickUntilDownloadModalShowsUp(getDownloadButton, page);
+
+      const svgCheckbox = await page.$(getTestID("svg-checkbox"));
+      if (!svgCheckbox) throw Error("No SVG checkbox");
+      await svgCheckbox.click();
+
+      const csvCheckbox = await page.$(getTestID("csv-checkbox"));
+      if (!csvCheckbox) throw Error("No CSV checkbox");
+      await csvCheckbox.click();
+
+      // Start waiting for download before clicking. Note no await.
+      const downloadPromise = page.waitForEvent("download");
+
+      const downloadButton = await page.$(getTestID("dialog-download-button"));
+      if (!downloadButton) throw Error("No download button");
+      await downloadButton.click();
+
+      // Wait for download
+      const download = await downloadPromise;
+
+      const fileName = download.suggestedFilename();
+
+      expect(fileName).toBe("CELLxGENE_gene_expression.zip");
+
+      const filePath = EXPORT_OUTPUT_DIR + fileName;
+
+      await download.saveAs(filePath);
+
+      const zip = new AdmZip(filePath);
+
+      const zipEntries = zip.getEntries();
+
+      const files = ["blood.csv", "blood.png", "blood.svg"];
+
+      expect(zipEntries.length).toBe(3);
+
+      for (const entry of zipEntries) {
+        expect(files.includes(entry.name)).toBe(true);
+      }
+    });
+  });
+
+  describe.only("Multiple file download - two tissues", () => {
+    test("Download zip of all outputs (png,svg,csv) for two tissues", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      async function getTissueSelectorButton() {
+        return page.$(getTestID(ADD_TISSUE_ID));
+      }
+
+      async function getGeneSelectorButton() {
+        return page.$(getTestID(ADD_GENE_ID));
+      }
+
+      // Select first tissue
+      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await selectFirstOption(page);
+
+      // Select second tissue
+      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await selectNthOption(2, page);
+
+      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await selectFirstOption(page);
+
+      await waitForHeatmapToRender(page);
+
+      async function getDownloadButton() {
+        return page.$(getTestID(DOWNLOAD_BUTTON_ID));
+      }
+
+      await clickUntilDownloadModalShowsUp(getDownloadButton, page);
+
+      const svgCheckbox = await page.$(getTestID("svg-checkbox"));
+      if (!svgCheckbox) throw Error("No SVG checkbox");
+      await svgCheckbox.click();
+
+      const csvCheckbox = await page.$(getTestID("csv-checkbox"));
+      if (!csvCheckbox) throw Error("No CSV checkbox");
+      await csvCheckbox.click();
+
+      // Start waiting for download before clicking. Note no await.
+      const downloadPromise = page.waitForEvent("download");
+
+      const downloadButton = await page.$(getTestID("dialog-download-button"));
+      if (!downloadButton) throw Error("No download button");
+      await downloadButton.click();
+
+      // Wait for download
+      const download = await downloadPromise;
+
+      const fileName = download.suggestedFilename();
+
+      expect(fileName).toBe("CELLxGENE_gene_expression.zip");
+
+      const filePath = "playwright-report/" + fileName;
+
+      await download.saveAs(filePath);
+
+      const zip = new AdmZip(filePath);
+
+      const zipEntries = zip.getEntries();
+
+      const files = [
+        "blood.csv",
+        "blood.png",
+        "blood.svg",
+        "lung.csv",
+        "lung.png",
+        "lung.svg",
+      ];
+
+      expect(zipEntries.length).toBe(6);
+
+      for (const entry of zipEntries) {
+        expect(files.includes(entry.name)).toBe(true);
+      }
     });
   });
 });
