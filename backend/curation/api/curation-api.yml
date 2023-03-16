@@ -581,16 +581,7 @@ paths:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - type: object
-                        properties:
-                          collection_id:
-                            $ref: "#/components/schemas/collection_id"
-                          collection_name:
-                            $ref: "#/components/schemas/collection_name"
-                          collection_doi:
-                            $ref: "#/components/schemas/doi"
-                    - $ref: "#/components/schemas/dataset"
+                  $ref: "#/components/schemas/dataset_index"
 
   /v1/datasets/{dataset_id}:
     get:
@@ -633,14 +624,7 @@ paths:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - type: object
-                      properties:
-                        collection_id:
-                          $ref: "#/components/schemas/collection_id"
-                        collection_version_id:
-                          $ref: "#/components/schemas/collection_version_id"
-                    - $ref: "#/components/schemas/dataset"
+                  $ref: "#/components/schemas/dataset_version"
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -667,15 +651,7 @@ paths:
               schema:
                 type: array
                 items:
-                  allOf:
-                    - type: object
-                      properties:
-                        collection_id:
-                          $ref: "#/components/schemas/collection_id"
-                        collection_version_id:
-                          description:
-                          $ref: "#/components/schemas/collection_version_id"
-                    - $ref: "#/components/schemas/dataset"
+                  $ref: "#/components/schemas/dataset_version"
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -718,6 +694,10 @@ components:
     collection_list:
       description: Collection metadata
       properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_version_id"
         collection_url:
           description: |
             The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision, 
@@ -742,8 +722,6 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
-        collection_id:
-          $ref: "#/components/schemas/collection_id"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -760,8 +738,6 @@ components:
           $ref: "#/components/schemas/collection_revising_in"
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
-        collection_version_id:
-          $ref: "#/components/schemas/collection_version_id"
         visibility:
           $ref: "#/components/schemas/visibility"
       type: object
@@ -844,6 +820,10 @@ components:
     collection_get:
       description: Collection metadata
       properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_version_id"
         collection_url:
           $ref: "#/components/schemas/collection_url"
         consortia:
@@ -865,8 +845,6 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
-        collection_id:
-          $ref: "#/components/schemas/collection_id"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -883,8 +861,6 @@ components:
           $ref: "#/components/schemas/collection_revising_in"
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
-        collection_version_id:
-          $ref: "#/components/schemas/collection_version_id"
         visibility:
           $ref: "#/components/schemas/visibility"
       type: object
@@ -942,14 +918,16 @@ components:
             $ref: "#/components/schemas/ontology_element"
           type: array
           nullable: true
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
+        dataset_version_id:
+          $ref: "#/components/schemas/dataset_version_id"
         disease:
           $ref: "#/components/schemas/dataset_disease"
         donor_id:
           $ref: "#/components/schemas/donor_id"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
-        dataset_id:
-          $ref: "#/components/schemas/dataset_id"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
@@ -995,8 +973,186 @@ components:
           $ref: "#/components/schemas/suspension_type"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
+        x_approximate_distribution:
+          $ref: "#/components/schemas/distribution"
+      type: object
+    dataset_version:
+      properties:
+        assay:
+          $ref: "#/components/schemas/dataset_assay"
+        assets:
+          $ref: "#/components/schemas/asset_response"
+        batch_condition:
+          $ref: "#/components/schemas/batch_condition"
+        cell_count:
+          description: The number of cells in the Dataset.
+          nullable: true
+          type: integer
+        cell_type:
+          description: |
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
+          default: [ ]
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_version_id"
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
           $ref: "#/components/schemas/dataset_version_id"
+        development_stage:
+          description: |
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
+          default: [ ]
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+          nullable: true
+        disease:
+          $ref: "#/components/schemas/dataset_disease"
+        donor_id:
+          $ref: "#/components/schemas/donor_id"
+        explorer_url:
+          $ref: "#/components/schemas/explorer_url"
+        is_primary_data:
+          $ref: "#/components/schemas/is_primary_data"
+        mean_genes_per_cell:
+          nullable: true
+          type: number
+        title:
+          description: |
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
+          nullable: true
+          type: string
+        organism:
+          $ref: "#/components/schemas/dataset_organism"
+        processing_status:
+          $ref: "#/components/schemas/processing_status_dataset"
+        processing_status_detail:
+          type: string
+          description: |
+            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
+            the dataset can be found in `processing_status_detail`.
+          nullable: true
+        revised_at:
+          $ref: "#/components/schemas/dataset_revised_at"
+        schema_version:
+          description: |
+            The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
+          nullable: true
+          type: string
+        self_reported_ethnicity:
+          description: |
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
+          default: [ ]
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        sex:
+          description: |
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
+          default: [ ]
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        suspension_type:
+          $ref: "#/components/schemas/suspension_type"
+        tissue:
+          $ref: "#/components/schemas/dataset_tissue"
+        x_approximate_distribution:
+          $ref: "#/components/schemas/distribution"
+      type: object
+    dataset_index:
+      properties:
+        assay:
+          $ref: "#/components/schemas/dataset_assay"
+        assets:
+          $ref: "#/components/schemas/asset_response"
+        batch_condition:
+          $ref: "#/components/schemas/batch_condition"
+        cell_count:
+          description: The number of cells in the Dataset.
+          nullable: true
+          type: integer
+        cell_type:
+          description: |
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
+          default: [ ]
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        collection_doi:
+          $ref: "#/components/schemas/doi"
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_name:
+          $ref: "#/components/schemas/collection_name"
+        development_stage:
+          description: |
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
+          default: [ ]
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+          nullable: true
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
+        dataset_version_id:
+          $ref: "#/components/schemas/dataset_version_id"
+        disease:
+          $ref: "#/components/schemas/dataset_disease"
+        donor_id:
+          $ref: "#/components/schemas/donor_id"
+        explorer_url:
+          $ref: "#/components/schemas/explorer_url"
+        is_primary_data:
+          $ref: "#/components/schemas/is_primary_data"
+        mean_genes_per_cell:
+          nullable: true
+          type: number
+        title:
+          description: |
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
+          nullable: true
+          type: string
+        organism:
+          $ref: "#/components/schemas/dataset_organism"
+        processing_status:
+          $ref: "#/components/schemas/processing_status_dataset"
+        processing_status_detail:
+          type: string
+          description: |
+            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
+            the dataset can be found in `processing_status_detail`.
+          nullable: true
+        revised_at:
+          $ref: "#/components/schemas/dataset_revised_at"
+        schema_version:
+          description: |
+            The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
+          nullable: true
+          type: string
+        self_reported_ethnicity:
+          description: |
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
+          default: [ ]
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        sex:
+          description: |
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
+          default: [ ]
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        suspension_type:
+          $ref: "#/components/schemas/suspension_type"
+        tissue:
+          $ref: "#/components/schemas/dataset_tissue"
         x_approximate_distribution:
           $ref: "#/components/schemas/distribution"
       type: object
@@ -1045,18 +1201,18 @@ components:
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
-        disease:
-          $ref: "#/components/schemas/dataset_disease"
         dataset_id:
           $ref: "#/components/schemas/dataset_id"
+        dataset_version_id:
+          $ref: "#/components/schemas/dataset_version_id"
+        disease:
+          $ref: "#/components/schemas/dataset_disease"
         organism:
           $ref: "#/components/schemas/dataset_organism"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
-        dataset_version_id:
-          $ref: "#/components/schemas/dataset_version_id"
       type: object
     distribution:
       description:
