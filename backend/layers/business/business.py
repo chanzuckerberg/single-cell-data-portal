@@ -22,7 +22,6 @@ from backend.layers.business.exceptions import (
     DatasetNotFoundException,
     DatasetUpdateException,
     InvalidURIException,
-    MaxFileSizeExceededException,
 )
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
@@ -319,10 +318,10 @@ class BusinessLogic(BusinessLogicInterface):
 
         from backend.common.corpora_config import CorporaConfig
 
-        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
-
-        if file_size is not None and file_size > max_file_size_gb:
-            raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
+        CorporaConfig().upload_max_file_size_gb * 2**30
+        # TODO UNDO
+        # if file_size is not None and file_size > max_file_size_gb:
+        #     raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
 
         # Ensure that the collection exists and is not published
         collection = self._assert_collection_version_unpublished(collection_version_id)

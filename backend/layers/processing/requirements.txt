@@ -1,4 +1,4 @@
-cellxgene-schema==3.0.0
+cellxgene-schema @ git+https://github.com/chanzuckerberg/single-cell-curation@4097e0c370a675917f3617b1c9ce057ddc021609#subdirectory=cellxgene_schema_cli
 dataclasses-json
 matplotlib==3.6.3 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
 numba==0.56.2
