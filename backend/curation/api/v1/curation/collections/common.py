@@ -283,7 +283,7 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
     return return_status
 
 
-def get_infered_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
+def get_inferred_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
     """
     Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion.
     :param collection_id: identifies the collection version
@@ -300,7 +300,7 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Collect
     return version
 
 
-def get_infered_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
+def get_inferred_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
     """
     Infer the dataset version from either a DatasetId or a DatasetVersionId and return the DatasetVersion.
     :param dataset_id: identifies the dataset version

@@ -603,6 +603,11 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
             resp = self.app.get(f"/curation/v1/collections/{unpublished_collection.collection_id.id}/versions")
             self.assertEqual(404, resp.status_code)
 
+    def test__get_collection_versions_order_by_published_at__200(self):
+        published_collection = self.generate_published_collection()
+        revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
+        self.business_logic.publish_collection_version(revision_collection.version_id)
+
 
 class TestGetCollectionID(BaseAPIPortalTest):
     def test__get_collection_verify_body_is_reshaped_correctly__OK(self):

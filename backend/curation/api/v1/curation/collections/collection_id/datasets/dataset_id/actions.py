@@ -11,7 +11,7 @@ from backend.common.utils.http_exceptions import (
     TooLargeHTTPException,
 )
 from backend.curation.api.v1.curation.collections.common import (
-    get_infered_dataset_version,
+    get_inferred_dataset_version,
     reshape_dataset_for_curation_api,
     validate_uuid_else_forbidden,
 )
@@ -45,7 +45,7 @@ def get(collection_id: str, dataset_id: str = None):
     if collection_version is None:
         raise NotFoundHTTPException("Collection not found!")
 
-    version = get_infered_dataset_version(dataset_id)
+    version = get_inferred_dataset_version(dataset_id)
     if version is None:
         raise NotFoundHTTPException("Dataset not found")
 
