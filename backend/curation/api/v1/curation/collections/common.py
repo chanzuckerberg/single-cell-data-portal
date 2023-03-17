@@ -260,6 +260,13 @@ def get_visibility(collection_version: CollectionVersion) -> str:
     return "PUBLIC" if collection_version.published_at else "PRIVATE"
 
 
+def validate_uuid_else_forbidden(_id: str):
+    try:
+        UUID(_id)
+    except ValueError as e:
+        raise ForbiddenHTTPException() from e
+
+
 def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> str:
     if not datasets:  # Return None if no datasets.
         return None
@@ -282,10 +289,7 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Collect
     :param collection_id: identifies the collection version
     :return: The CollectionVersion if it exists.
     """
-    try:
-        UUID(collection_id)
-    except ValueError as e:
-        raise ForbiddenHTTPException() from e
+    validate_uuid_else_forbidden(collection_id)
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
