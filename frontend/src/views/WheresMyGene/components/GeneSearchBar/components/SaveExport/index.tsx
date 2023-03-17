@@ -93,7 +93,7 @@ function base64URLToArrayBuffer(url: string) {
   return bytes.buffer;
 }
 
-interface Props {
+export interface Props {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
@@ -376,45 +376,58 @@ function renderDots({
  * @param selectedGenes
  * @returns {string}
  */
-function generateCsv(
-  allChartProps: { [tissue: string]: ChartProps },
-  compare: CompareId | undefined,
-  selectedGenes: Props["selectedGenes"],
-  tissue: string,
-  availableFilters: Partial<FilterDimensions>,
-  selectedFilters: State["selectedFilters"],
-  selectedOrganismId: string | null,
-  availableOrganisms: OntologyTerm[]
-) {
+function generateCsv({
+  allChartProps,
+  compare,
+  selectedGenes,
+  tissueName,
+  availableFilters,
+  selectedFilters,
+  selectedOrganismId,
+  availableOrganisms,
+  selectedTissues,
+}: {
+  allChartProps: { [tissue: string]: ChartProps };
+  compare: CompareId | undefined;
+  selectedGenes: Props["selectedGenes"];
+  tissueName: string;
+  availableFilters: Partial<FilterDimensions>;
+  selectedFilters: State["selectedFilters"];
+  selectedOrganismId: string | null;
+  availableOrganisms: OntologyTerm[];
+  selectedTissues: Props["selectedTissues"];
+}) {
   const output: (string | number | undefined)[][] = [];
 
   // Create CSV comments and column names
   output.push(
-    ...csvHeaders(
+    ...csvHeaders({
       compare,
       availableFilters,
       availableOrganisms,
       selectedFilters,
-      selectedOrganismId
-    )
+      selectedGenes,
+      selectedOrganismId,
+      selectedTissues,
+    })
   );
 
   // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
   const cellTypeIdToMetadataMapping = Object.values(
-    buildCellTypeIdToMetadataMapping(tissue, allChartProps)
+    buildCellTypeIdToMetadataMapping(tissueName, allChartProps)
   );
 
   for (const metadataForCellType of cellTypeIdToMetadataMapping) {
     for (const geneName of selectedGenes) {
       for (const metadata of metadataForCellType) {
         output.push(
-          csvGeneExpressionRow(
+          csvGeneExpressionRow({
             metadata,
-            tissue,
+            tissueName,
             allChartProps,
             geneName,
-            compare
-          )
+            compare,
+          })
         );
       }
     }
@@ -565,7 +578,7 @@ function download_({
                 let input;
 
                 if (fileType === "csv") {
-                  input = generateCsv(
+                  input = generateCsv({
                     allChartProps,
                     compare,
                     selectedGenes,
@@ -573,8 +586,9 @@ function download_({
                     availableFilters,
                     selectedFilters,
                     selectedOrganismId,
-                    availableOrganisms
-                  );
+                    availableOrganisms,
+                    selectedTissues,
+                  });
                 } else {
                   const height = getHeatmapHeight(
                     selectedCellTypes[tissueName]

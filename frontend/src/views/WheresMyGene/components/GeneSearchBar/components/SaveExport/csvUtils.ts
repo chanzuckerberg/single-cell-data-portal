@@ -8,8 +8,10 @@ import {
   getCompareOptionNameById,
 } from "src/views/WheresMyGene/common/constants";
 import { State } from "src/views/WheresMyGene/common/store";
+import { Props } from ".";
 import { ChartProps } from "../../../HeatMap/hooks/common/types";
 import { deserializeCellTypeMetadata } from "../../../HeatMap/utils";
+import { generateAndCopyShareUrl } from "../ShareButton/utils";
 
 interface CsvMetadata {
   name: string;
@@ -18,13 +20,23 @@ interface CsvMetadata {
   total_count: number;
 }
 
-export function csvHeaders(
-  compare: CompareId | undefined,
-  availableFilters: Partial<FilterDimensions>,
-  availableOrganisms: OntologyTerm[],
-  selectedFilters: State["selectedFilters"],
-  selectedOrganismId: string | null
-) {
+export function csvHeaders({
+  compare,
+  availableFilters,
+  availableOrganisms,
+  selectedFilters,
+  selectedGenes,
+  selectedOrganismId,
+  selectedTissues,
+}: {
+  compare: CompareId | undefined;
+  availableFilters: Partial<FilterDimensions>;
+  availableOrganisms: OntologyTerm[];
+  selectedFilters: State["selectedFilters"];
+  selectedGenes: Props["selectedGenes"];
+  selectedOrganismId: string | null;
+  selectedTissues: Props["selectedTissues"];
+}) {
   const { datasets, disease_terms, self_reported_ethnicity_terms, sex_terms } =
     availableFilters;
 
@@ -32,6 +44,18 @@ export function csvHeaders(
 
   // Metadata as comments
   output.push([`# ${new Date().toString()}`]);
+
+  // Share URL
+  output.push([
+    `# ${generateAndCopyShareUrl({
+      compare,
+      filters: selectedFilters,
+      organism: selectedOrganismId,
+      tissues: selectedTissues,
+      genes: selectedGenes,
+      copyToClipboard: false,
+    })}`,
+  ]);
 
   // Dataset
   output.push(["# Dataset"]);
@@ -124,22 +148,28 @@ export function csvHeaders(
   return output;
 }
 
-export function csvGeneExpressionRow(
-  metadata: CsvMetadata,
-  tissue: string,
-  allChartProps: { [tissue: string]: ChartProps },
-  geneName: string,
-  compare: CompareId | undefined
-) {
+export function csvGeneExpressionRow({
+  metadata,
+  tissueName,
+  allChartProps,
+  geneName,
+  compare,
+}: {
+  metadata: CsvMetadata;
+  tissueName: string;
+  allChartProps: { [tissue: string]: ChartProps };
+  geneName: string;
+  compare: CompareId | undefined;
+}) {
   const { total_count, name, compareValueName, viewId } = metadata;
 
-  const geneExpression = allChartProps[tissue].chartData.find(
+  const geneExpression = allChartProps[tissueName].chartData.find(
     (value) => value.id === `${viewId}-${geneName}`
   );
 
   if (!compare) {
     return [
-      tissue,
+      tissueName,
       name,
       total_count,
       Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) + "%",
@@ -150,7 +180,7 @@ export function csvGeneExpressionRow(
     ];
   } else {
     return [
-      tissue,
+      tissueName,
       name,
       total_count,
       Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) + "%",
