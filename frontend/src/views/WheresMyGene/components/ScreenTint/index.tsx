@@ -1,4 +1,4 @@
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import Loader from "../Loader";
 import { StyledDiv } from "./style";
 

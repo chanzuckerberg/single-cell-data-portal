@@ -104,8 +104,6 @@ export default memo(function Filters({
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
-  // const [availableFilters, setAvailableFilters] =
-  //   useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
   const { selectedFilters, selectedTissues, selectedGenes } = state;
 

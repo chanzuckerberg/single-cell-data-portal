@@ -114,7 +114,7 @@ interface ExportData {
   name: string;
 }
 
-export default function SaveImage({
+export default function SaveExport({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,

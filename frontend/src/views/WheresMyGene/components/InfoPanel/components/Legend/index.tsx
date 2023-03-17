@@ -4,7 +4,7 @@ import {
   OntologyTerm,
 } from "src/common/queries/wheresMyGene";
 import { CellType } from "src/views/WheresMyGene/common/types";
-import SaveImage from "../../../GeneSearchBar/components/SaveImage";
+import SaveExport from "../../../GeneSearchBar/components/SaveExport";
 import ShareButton from "../../../GeneSearchBar/components/ShareButton";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
 import { ChartProps } from "../../../HeatMap/hooks/common/types";
@@ -44,7 +44,7 @@ export default memo(function Legend({
 }: Props): JSX.Element {
   return (
     <LegendWrapper>
-      <SaveImage
+      <SaveExport
         selectedTissues={selectedTissues}
         selectedGenes={selectedGenes}
         selectedCellTypes={selectedCellTypes}

@@ -34,7 +34,7 @@ import CellInfoBar from "../CellInfoSideBar";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import { ChartProps } from "../HeatMap/hooks/common/types";
