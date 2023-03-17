@@ -47,7 +47,7 @@ def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]
 
 def reshape_for_curation_api(
     collection_version: Union[CollectionVersion, CollectionVersionWithDatasets],
-    user_info: UserInfo,
+    user_info: UserInfo = None,
     use_dataset_version_explorer_urls: bool = None,
     preview: bool = False,
 ) -> dict:
@@ -67,7 +67,7 @@ def reshape_for_curation_api(
         collection_id = collection_version.collection_id
         collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
         revision_of = None
-        if not user_info.is_user_owner_or_allowed(collection_version.owner):
+        if not user_info or not user_info.is_user_owner_or_allowed(collection_version.owner):
             _revising_in = None
         else:
             _revising_in = business_logic.get_unpublished_collection_version_from_canonical(
@@ -282,7 +282,7 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
 
 def get_collection_version_else_forbidden(collection_version_id: str) -> CollectionVersionWithDatasets:
     try:
-        UUID(collection_id)
+        UUID(collection_version_id)
     except ValueError as e:
         raise ForbiddenHTTPException() from e
 

@@ -1230,6 +1230,13 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/collection_id"
+    path_collection_version_id:
+      description: The uuid of a Collection Version.
+      in: path
+      name: collection_version_id
+      required: true
+      schema:
+        $ref: "#/components/schemas/collection_version_id"
     path_dataset_id:
       description: The uuid of the Dataset.
       in: path
