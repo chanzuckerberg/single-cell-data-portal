@@ -2,7 +2,10 @@ from uuid import UUID
 
 from flask import jsonify, make_response
 
-from backend.curation.api.v1.curation.collections.common import get_collection_version_else_forbidden, reshape_for_curation_api
+from backend.curation.api.v1.curation.collections.common import (
+    get_collection_version_else_forbidden,
+    reshape_for_curation_api,
+)
 
 
 def get(collection_version_id: str):
