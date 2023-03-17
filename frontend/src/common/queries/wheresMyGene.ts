@@ -807,11 +807,11 @@ function addCellTypeRowToResult({
      * (thuang): We manually indent 4 spaces instead of using CSS, so we don't
      * have to update SVG render function to mimic CSS padding
      */
-    const name = isAggregated 
-      ? rawName 
+    const name = isAggregated
+      ? rawName
       : compareOptionId === COMPARE_OPTION_ID_FOR_UNKNOWN
-        ? `    ${rawName || COMPARE_OPTION_ID_FOR_UNKNOWN}`
-        : `    ${rawName || compareOptionId}`;
+      ? `    ${rawName || COMPARE_OPTION_ID_FOR_UNKNOWN}`
+      : `    ${rawName || compareOptionId}`;
 
     if (isAggregated) {
       cellTypeName = rawName;
