@@ -569,6 +569,37 @@ class TestGetCollections(BaseAPIPortalTest):
             self.assertFalse(response)
 
 
+class TestGetCollectionVersions(BaseAPIPortalTest):
+    def test__get_collection_versions__200(self):
+        collection_version = self.generate_published_collection()
+        with self.subTest("Returns version for published Collection"):
+            resp = self.app.get(f"/curation/v1/collections/{collection_version.collection_id.id}/versions")
+            print(resp.json)
+            self.assertEqual(1, len(resp.json))
+
+        self.generate_revision(collection_version.collection_id)
+        with self.subTest("Returns only published version when an active revision exists"):
+            resp = self.app.get(f"/curation/v1/collections/{collection_version.collection_id.id}/versions")
+            print(resp.json)
+            self.assertEqual(1, len(resp.json))
+
+    def test__get_collection_versions_not_published_canonical(self):
+        published_collection = self.generate_published_collection()
+        revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
+        unpublished_collection = self.generate_unpublished_collection()
+        with self.subTest("Returns 404 when nonexistent id is requested"):
+            resp = self.app.get("/curation/v1/collections/nonexistent_id/versions")
+            self.assertEqual(404, resp.status_code)
+
+        with self.subTest("Returns 404 when revision id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{revision_collection.version_id.id}/versions")
+            self.assertEqual(404, resp.status_code)
+
+        with self.subTest("Returns empty list when unpublished canonical id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{unpublished_collection.collection_id.id}/versions")
+            self.assertEqual([], resp.json)
+
+
 class TestGetCollectionID(BaseAPIPortalTest):
     def test__get_collection_verify_body_is_reshaped_correctly__OK(self):
 
