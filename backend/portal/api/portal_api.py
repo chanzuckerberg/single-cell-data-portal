@@ -677,7 +677,7 @@ def get_datasets_index():
     """
 
     response = []
-    for dataset in get_business_logic().get_all_published_datasets():
+    for dataset in get_business_logic().get_all_mapped_datasets():
         payload = _dataset_to_response(dataset, is_tombstoned=False)
         enrich_dataset_with_ancestors(
             payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
