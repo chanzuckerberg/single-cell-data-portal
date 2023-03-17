@@ -3,7 +3,6 @@ import datetime
 import logging
 from typing import Iterable, List, Optional, Tuple
 
-from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
@@ -169,8 +168,6 @@ class BusinessLogic(BusinessLogicInterface):
         Returns all *published* collection versions for a canonical collection
         """
         all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
-        if not all_versions:
-            raise NotFoundHTTPException("Collection not found!")
         for c_version in all_versions:
             if c_version.published_at:
                 yield c_version

@@ -1,5 +1,6 @@
 from flask import jsonify, make_response
 
+from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
 from backend.layers.common.entities import CollectionId
 from backend.portal.api.providers import get_business_logic
@@ -16,5 +17,8 @@ def get(collection_id: str):
         ),
         key=lambda c: c["published_at"],
     )
+
+    if not collection_versions:
+        raise NotFoundHTTPException("Collection not found!")
 
     return make_response(jsonify(collection_versions))

@@ -583,7 +583,7 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
             print(resp.json)
             self.assertEqual(1, len(resp.json))
 
-    def test__get_collection_versions_not_published_canonical(self):
+    def test__get_collection_versions_not_published_canonical__404(self):
         published_collection = self.generate_published_collection()
         revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
         unpublished_collection = self.generate_unpublished_collection()
@@ -595,9 +595,13 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
             resp = self.app.get(f"/curation/v1/collections/{revision_collection.version_id.id}/versions")
             self.assertEqual(404, resp.status_code)
 
+        with self.subTest("Returns 404 when published version id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.version_id.id}/versions")
+            self.assertEqual(404, resp.status_code)
+
         with self.subTest("Returns empty list when unpublished canonical id is requested"):
             resp = self.app.get(f"/curation/v1/collections/{unpublished_collection.collection_id.id}/versions")
-            self.assertEqual([], resp.json)
+            self.assertEqual(404, resp.status_code)
 
 
 class TestGetCollectionID(BaseAPIPortalTest):
