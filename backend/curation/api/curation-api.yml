@@ -541,6 +541,28 @@ paths:
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
+  
+  /v1/collection_versions/{collection_version_id}:
+    get:
+      summary: Fetch a Collection version with Dataset versions
+      description: >
+        Fetch full metadata for a Collection version and its Dataset versions. The `collection_version_id` must
+        reference a *Collection version*, **NOT** a *Collection*.
+      operationId: backend.curation.api.v1.curation.collection_versions.collection_version_id.actions.get
+      tags:
+        - collection_version
+      parameters:
+        - $ref: "#/components/parameters/path_collection_version_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/collection_get"
+        "403":
+          $ref: "#/components/responses/403"
 
   /v1/datasets:
     get:

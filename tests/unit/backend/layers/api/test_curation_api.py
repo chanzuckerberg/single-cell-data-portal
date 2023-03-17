@@ -868,7 +868,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         collection_version = self.generate_unpublished_collection(add_datasets=0)
         self._test_response(collection_version)
 
-    def test_get_colletion_with_dataset_no_metadata(self):
+    def test_get_collection_with_dataset_no_metadata(self):
         """
         GET collection should work when the collection has datasets with no metadata.
         This happens when the dataset did not complete ingestion yet.
@@ -901,6 +901,23 @@ class TestGetCollectionID(BaseAPIPortalTest):
         res = self.app.get(f"/curation/v1/collections/{dataset.collection_id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertIsNone(res.json["datasets"][0]["x_approximate_distribution"])
+
+
+class TestGetCollectionVersionID(TestGetCollectionID):
+    # run: dynamic field checks,
+    # check for prior published version
+    # check with different auth levels (owner, super curator, read-only)
+    # 403 scenarios: tombstoned, nonexistent
+    # test the use_dataset_version_explorer_urls flag worked
+
+    def _test_response(self, collection_version: CollectionVersion, status_code=200, auth=True) -> dict:
+        version_id = collection_version.version_id
+        headers = self.make_owner_header() if auth else self.make_not_owner_header()
+        res = self.app.get(f"/curation/v1/collection_versions/{version_id}", headers=headers)
+        self.assertEqual(status_code, res.status_code)
+        if status_code == 200:
+            self.assertEqual(collection_version.version_id.id, res.json["version_id"])
+        return res.json
 
 
 class TestPatchCollectionID(BaseAPIPortalTest):

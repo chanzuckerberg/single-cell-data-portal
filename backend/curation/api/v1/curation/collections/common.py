@@ -48,13 +48,15 @@ def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]
 def reshape_for_curation_api(
     collection_version: Union[CollectionVersion, CollectionVersionWithDatasets],
     user_info: UserInfo,
+    use_dataset_version_explorer_urls: bool = None,
     preview: bool = False,
 ) -> dict:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
     :param collection: the Collection being returned in the API response
     :param user_info:
-    :param preview: boool - whether the dataset is in preview form or not.
+    :param use_dataset_version_explorer_urls
+    :param preview: bool - whether the dataset is in preview form or not.
     :return: the response.
     """
     business_logic = get_business_logic()
@@ -94,6 +96,8 @@ def reshape_for_curation_api(
             use_canonical_url = True
         revising_in = None
 
+    if use_dataset_version_explorer_urls is not None and use_dataset_version_explorer_urls:
+        use_canonical_url = False
     # get collection dataset attributes
     response_datasets = reshape_datasets_for_curation_api(collection_version.datasets, use_canonical_url, preview)
 
@@ -274,6 +278,18 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
             elif status == DatasetProcessingStatus.FAILURE:
                 return_status = status
     return return_status
+
+
+def get_collection_version_else_forbidden(collection_version_id: str) -> CollectionVersionWithDatasets:
+    try:
+        UUID(collection_id)
+    except ValueError as e:
+        raise ForbiddenHTTPException() from e
+
+    version = get_business_logic().get_collection_version(CollectionVersionId(collection_version_id))
+    if version is None or version.canonical_collection.tombstoned is True:
+        raise ForbiddenHTTPException()
+    return version
 
 
 def get_infered_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
