@@ -1,6 +1,4 @@
-from uuid import UUID
-
-from flask import jsonify, make_response
+from flask import jsonify
 
 from backend.curation.api.v1.curation.collections.common import (
     get_collection_version_else_forbidden,
