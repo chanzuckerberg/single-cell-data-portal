@@ -1409,7 +1409,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             test_url = f"/curation/v1/collections/{non_existent_id}/datasets/{non_existent_id}"
             headers = self.make_owner_header()
             response = self.app.get(test_url, headers=headers)
-            self.assertEqual(404, response.status_code)
+            self.assertEqual(403, response.status_code)
 
     def test_get_datasets_200(self):
         published_collection_1 = self.generate_published_collection(
