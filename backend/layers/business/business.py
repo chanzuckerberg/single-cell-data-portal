@@ -48,6 +48,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
     Link,
+    PublishedDatasetVersion,
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
@@ -578,7 +579,7 @@ class BusinessLogic(BusinessLogicInterface):
                     unpublished_dataset = dataset
             return unpublished_dataset
 
-    def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+    def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[PublishedDatasetVersion]:
         """
         Given a canonical dataset id, return all its DatasetVersions that have been part of published CollectionVersions
         """
@@ -587,13 +588,18 @@ class BusinessLogic(BusinessLogicInterface):
             return []
         collection_versions = self.database_provider.get_all_versions_for_collection(dataset_version.collection_id)
         published_version_history = []
+        found_version_ids = set()
+        collection_versions = sorted(collection_versions, key=lambda cv: (cv.published_at is None, cv.published_at))
         for collection_version in collection_versions:
             # skip unpublished collection versions
             if collection_version.published_at is None:
                 continue
             for dataset_version in collection_version.datasets:
-                if dataset_version.dataset_id.id == dataset_id.id:
-                    published_version_history.append(dataset_version)
+                if dataset_version.dataset_id.id == dataset_id.id and dataset_version.version_id.id not in found_version_ids:
+                    published_version = PublishedDatasetVersion(**dataset_version)
+                    published_version.collection_version_id = collection_version.version_id
+                    found_version_ids.add(dataset_version.version_id.id)
+                    published_version_history.append(published_version)
         return published_version_history
 
     def _get_collection_and_dataset(
