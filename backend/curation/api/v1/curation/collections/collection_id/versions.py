@@ -9,13 +9,12 @@ def get(collection_id: str):
     """
     Return all published versions for a Collection
     """
-    collection_versions = list(
+    collection_versions = sorted(
         map(
             reshape_for_curation_api,
             get_business_logic().get_all_published_collection_versions_from_canonical(CollectionId(collection_id)),
-        )
+        ),
+        key=lambda c: c["published_at"],
     )
-
-    collection_versions.sort(key=lambda c: c["published_at"])
 
     return make_response(jsonify(collection_versions))

@@ -65,7 +65,7 @@ def reshape_for_curation_api(
         collection_id = collection_version.collection_id
         collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
         revision_of = None
-        if not user_info or user_info.is_user_owner_or_allowed(collection_version.owner):
+        if not user_info or not user_info.is_user_owner_or_allowed(collection_version.owner):
             _revising_in = None
         else:
             _revising_in = business_logic.get_unpublished_collection_version_from_canonical(
