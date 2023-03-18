@@ -588,7 +588,7 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
         revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
         unpublished_collection = self.generate_unpublished_collection()
         with self.subTest("Returns 404 when nonexistent id is requested"):
-            resp = self.app.get("/curation/v1/collections/nonexistent_id/versions")
+            resp = self.app.get("/curation/v1/collections/01234567-89ab-cdef-0123-456789abcdef/versions")
             self.assertEqual(404, resp.status_code)
 
         with self.subTest("Returns 404 when revision id is requested"):
