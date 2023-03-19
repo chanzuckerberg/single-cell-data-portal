@@ -1,5 +1,5 @@
 import { useQuery } from "react-query";
-import { API_URL } from "src/configs/dev";
+import { API_URL } from "src/configs/configs";
 import { API } from "../API";
 import { DEFAULT_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
