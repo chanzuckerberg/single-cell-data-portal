@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 import { LIGHT_GRAY } from "src/components/common/theme";
+import { GENE_INFO_BUTTON_PADDING } from "./components/XAxisChart/style";
 
 export const CHART_LEFT_PADDING = 10;
 
@@ -11,6 +12,8 @@ export const SELECTED_STYLE = {
   fontSize: 12,
   padding: 4,
 };
+
+const Y_AXIS_TOP_PADDING = GENE_INFO_BUTTON_PADDING + 5;
 
 export const Container = styled.div`
   height: 75vh;
@@ -39,7 +42,7 @@ export const YAxisWrapper = styled.div`
   top: ${X_AXIS_CHART_HEIGHT_PX}px;
   left: 0;
   z-index: 1;
-  padding-top: 5px;
+  padding-top: ${Y_AXIS_TOP_PADDING}px;
   /* Somehow Firefox requires this to scroll */
   overflow: hidden;
 `;
@@ -57,12 +60,13 @@ export const XAxisWrapper = styled.div`
   top: 0;
   width: 100%;
   z-index: 2;
+  padding-bottom: ${GENE_INFO_BUTTON_PADDING}px;
 `;
 
 export const ChartWrapper = styled.div`
   position: absolute;
   padding-left: ${CHART_LEFT_PADDING}px;
-  padding-top: 5px;
+  padding-top: ${Y_AXIS_TOP_PADDING}px;
   left: ${Y_AXIS_CHART_WIDTH_PX}px;
   top: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;

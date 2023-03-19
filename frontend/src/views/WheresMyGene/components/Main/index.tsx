@@ -24,11 +24,16 @@ import {
 } from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
-import { deleteSelectedGenes } from "../../common/store/actions";
+import {
+  clearCellInfoCellType,
+  clearGeneInfoGene,
+  deleteSelectedGenes,
+} from "../../common/store/actions";
 import { GeneExpressionSummary } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import CellInfoBar from "../CellInfoSideBar";
+import GeneInfoBar from "../GeneInfoSideBar";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
@@ -40,6 +45,7 @@ import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
 import { BetaWrapper, SideBarLabel, StyledSidebarDrawer } from "./style";
+import RightSideBar from "../RightSideBar";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -47,7 +53,13 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { selectedGenes, selectedTissues, sortBy, cellInfoCellType } = state;
+  const {
+    selectedGenes,
+    selectedTissues,
+    sortBy,
+    geneInfoGene,
+    cellInfoCellType,
+  } = state;
 
   const selectedOrganismId = state.selectedOrganismId || "";
 
@@ -236,6 +248,12 @@ export default function WheresMyGene(): JSX.Element {
     "canvas" | "svg"
   >("canvas");
 
+  const handleCloseRightSideBar = () => {
+    if (!dispatch) return;
+    dispatch(clearCellInfoCellType());
+    dispatch(clearGeneInfoGene());
+  };
+
   return (
     <>
       <Head>
@@ -253,8 +271,8 @@ export default function WheresMyGene(): JSX.Element {
       >
         <Filters isLoading={isLoading} setIsScaled={setIsScaled} />
       </SideBar>
-      {cellInfoCellType && tissuesByID && (
-        <SideBar
+      {cellInfoCellType && tissuesByID ? (
+        <RightSideBar
           label={`${cellInfoCellType.cellType.name}`}
           SideBarWrapperComponent={SideBarWrapper}
           SideBarPositionerComponent={SideBarPositioner}
@@ -262,19 +280,29 @@ export default function WheresMyGene(): JSX.Element {
           position={Position.RIGHT}
           testId="cell-type-details-panel"
           disabled={false}
-          forceOpen={forceOpen}
-          wmgSideBar
           width={CELL_INFO_SIDEBAR_WIDTH_PX}
-          truncatedLabel={`${tissuesByID[cellInfoCellType.tissueID].name} - ${
-            cellInfoCellType.cellType.name
-          }`}
+          handleClose={handleCloseRightSideBar}
         >
           <CellInfoBar
             cellInfoCellType={cellInfoCellType}
             tissueInfo={tissuesByID[cellInfoCellType.tissueID]}
           />
-        </SideBar>
-      )}
+        </RightSideBar>
+      ) : geneInfoGene ? (
+        <RightSideBar
+          label={`${geneInfoGene}`}
+          SideBarWrapperComponent={SideBarWrapper}
+          SideBarPositionerComponent={SideBarPositioner}
+          SideBarOpenButtonWrapperComponent={GeneSideBarOpenButtonWrapper}
+          position={Position.RIGHT}
+          testId="gene-info-details-panel"
+          disabled={false}
+          width={CELL_INFO_SIDEBAR_WIDTH_PX}
+          handleClose={handleCloseRightSideBar}
+        >
+          <GeneInfoBar geneInfoGene={geneInfoGene} />
+        </RightSideBar>
+      ) : null}
 
       <View id="view" overflow="hidden">
         <Wrapper>

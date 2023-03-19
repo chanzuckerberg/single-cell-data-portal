@@ -1,6 +1,6 @@
 import isEqual from "lodash/isEqual";
 import { CompareId } from "../constants";
-import { CellType, SORT_BY } from "../types";
+import { CellType, GeneInfo, SORT_BY } from "../types";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
@@ -29,6 +29,7 @@ export interface State {
     tissueID: string;
     organismID: string;
   } | null;
+  geneInfoGene: string | null;
   compare?: CompareId;
 }
 
@@ -44,6 +45,7 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
 // to cache the derived states instead of putting them in the state.
 export const INITIAL_STATE: State = {
   cellInfoCellType: null,
+  geneInfoGene: null,
   genesToDelete: [],
   selectedFilters: EMPTY_FILTERS,
   selectedGenes: [],
@@ -59,6 +61,9 @@ export const INITIAL_STATE: State = {
 
 export const REDUCERS = {
   addCellInfoCellType,
+  addGeneInfoGene,
+  clearCellInfoCellType,
+  clearGeneInfoGene,
   addSelectedGenes,
   deleteSelectedGenes,
   deleteSingleGene,
@@ -292,6 +297,30 @@ function addCellInfoCellType(
   return {
     ...state,
     cellInfoCellType: newCellInfoCellType,
+    geneInfoGene: null,
+  };
+}
+
+function clearCellInfoCellType(state: State, _: PayloadAction<null>): State {
+  return {
+    ...state,
+    cellInfoCellType: null,
+  };
+}
+
+function clearGeneInfoGene(state: State, _: PayloadAction<null>): State {
+  return {
+    ...state,
+    geneInfoGene: null,
+  };
+}
+
+function addGeneInfoGene(state: State, action: PayloadAction<string>): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    geneInfoGene: payload,
   };
 }
 

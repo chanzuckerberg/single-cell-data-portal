@@ -3,7 +3,10 @@ import React, { useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
-import { deleteSingleGene } from "src/views/WheresMyGene/common/store/actions";
+import {
+  deleteSingleGene,
+  addGeneInfoGene,
+} from "src/views/WheresMyGene/common/store/actions";
 import { useDeleteGenes } from "../../hooks/useDeleteGenes";
 import { CHART_LEFT_PADDING, SELECTED_STYLE } from "../../style";
 import {
@@ -18,8 +21,11 @@ import {
   XAxisLabel,
   GeneButtonStyle,
   XAxisGeneName,
+  InfoButtonWrapper,
 } from "./style";
-
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveImage";
+import { StyledImage } from "../YAxisChart/style";
+import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
 interface Props {
   geneNames: string[];
 }
@@ -33,6 +39,11 @@ function GeneButton({
   handleGeneClick: (gene: string) => void;
 }): JSX.Element {
   const dispatch = useContext(DispatchContext);
+
+  const generateGeneInfo = (gene: string) => {
+    if (!dispatch) return;
+    dispatch(addGeneInfoGene(gene));
+  };
 
   const active = genesToDelete.includes(geneName);
   const currentFont = `
@@ -68,6 +79,18 @@ function GeneButton({
         >
           {formattedLabel}
         </XAxisGeneName>
+        <InfoButtonWrapper
+          className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+          onClick={() => generateGeneInfo(geneName)}
+        >
+          <StyledImage
+            id="marker-gene-button"
+            src={InfoSVG.src}
+            width="10"
+            height="10"
+            alt={`display gene info for ${geneName}`}
+          />
+        </InfoButtonWrapper>
       </XAxisLabel>
     </GeneButtonStyle>
   );
