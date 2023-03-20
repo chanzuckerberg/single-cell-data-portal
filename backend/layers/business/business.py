@@ -590,6 +590,7 @@ class BusinessLogic(BusinessLogicInterface):
         published_version_history = []
         found_version_ids = set()
         # sort to ensure we always find earliest instance of a dataset version first when iterating
+        # needs None check as part of sort key to avoid TypeError on sorting list of datetimes + NoneTypes
         collection_versions = sorted(collection_versions, key=lambda cv: (cv.published_at is None, cv.published_at))
         for collection_version in collection_versions:
             # skip unpublished collection versions
