@@ -600,8 +600,9 @@ class BusinessLogic(BusinessLogicInterface):
                     dataset_version.dataset_id.id == dataset_id.id
                     and dataset_version.version_id.id not in found_version_ids
                 ):
-                    published_version = PublishedDatasetVersion(**dataset_version)
-                    published_version.collection_version_id = collection_version.version_id
+                    published_version = PublishedDatasetVersion(
+                        collection_version_id=collection_version.version_id, **vars(dataset_version)
+                    )
                     found_version_ids.add(dataset_version.version_id.id)
                     published_version_history.append(published_version)
         return published_version_history

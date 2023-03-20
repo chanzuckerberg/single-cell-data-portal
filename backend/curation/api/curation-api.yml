@@ -1024,7 +1024,7 @@ components:
         cell_type:
           description: |
             [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
@@ -1052,7 +1052,7 @@ components:
         development_stage:
           description: |
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
@@ -1094,14 +1094,14 @@ components:
         self_reported_ethnicity:
           description: |
             [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         sex:
           description: |
             [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
