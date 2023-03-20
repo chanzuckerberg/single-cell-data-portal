@@ -560,6 +560,29 @@ paths:
                 items:
                   $ref: "#/components/schemas/dataset_index"
 
+  /v1/dataset_versions/{dataset_version_id}:
+    get:
+      summary: Get full metadata for a Dataset version
+      tags:
+        - dataset_version
+      description: |
+        Fetch Dataset metadata for a Dataset version. The `dataset_version_id` must reference a *Dataset version*,
+        **NOT** a *Dataset*.
+      operationId: backend.curation.api.v1.curation.dataset_versions.dataset_version_id.actions.get
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_version_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/dataset_version"
+        "403":
+          $ref: "#/components/responses/403"
+
 components:
   schemas:
     asset_response:
@@ -947,6 +970,109 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
+        processing_status:
+          $ref: "#/components/schemas/processing_status_dataset"
+        processing_status_detail:
+          type: string
+          description: |
+            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
+            the dataset can be found in `processing_status_detail`.
+          nullable: true
+        revised_at:
+          $ref: "#/components/schemas/dataset_revised_at"
+        schema_version:
+          description: |
+            The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
+          nullable: true
+          type: string
+        self_reported_ethnicity:
+          description: |
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        sex:
+          description: |
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        suspension_type:
+          $ref: "#/components/schemas/suspension_type"
+        tissue:
+          $ref: "#/components/schemas/dataset_tissue"
+        x_approximate_distribution:
+          $ref: "#/components/schemas/distribution"
+      type: object
+    dataset_version:
+      properties:
+        assay:
+          $ref: "#/components/schemas/dataset_assay"
+        batch_condition:
+          $ref: "#/components/schemas/batch_condition"
+        cell_count:
+          description: The number of cells in the Dataset.
+          nullable: true
+          type: integer
+        cell_type:
+          description: |
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_version_id:
+          description: |
+            The first Collection Version this Dataset Version was published under
+          type: string
+          format: uuid
+        dataset_assets:
+          description: |
+            The assets associated with the Dataset. Links to download the files can be generated using
+            *GET /v1/collections/{collection_id}/datasets/assets*
+          items:
+            properties:
+              filename:
+                $ref: "#/components/schemas/asset_filename"
+              filetype:
+                $ref: "#/components/schemas/asset_filetype"
+            type: object
+          type: array
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
+        dataset_version_id:
+          $ref: "#/components/schemas/dataset_version_id"
+        development_stage:
+          description: |
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+          nullable: true
+        disease:
+          $ref: "#/components/schemas/dataset_disease"
+        donor_id:
+          $ref: "#/components/schemas/donor_id"
+        explorer_url:
+          $ref: "#/components/schemas/explorer_url"
+        is_primary_data:
+          $ref: "#/components/schemas/is_primary_data"
+        mean_genes_per_cell:
+          nullable: true
+          type: number
+        title:
+          description: |
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
+          nullable: true
+          type: string
+        organism:
+          $ref: "#/components/schemas/dataset_organism"
+          nullable: true
         processing_status:
           $ref: "#/components/schemas/processing_status_dataset"
         processing_status_detail:
