@@ -370,7 +370,7 @@ def build_ordered_cell_types_by_tissue(
             id_to_label = build_ontology_term_id_label_mapping([row[compare]])[0]
             structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
                 "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-                "name": id_to_label.pop(row[compare]),
+                "name": id_to_label.pop(row[compare], row[compare]),
                 "total_count": int(
                     cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
                         row[compare]
