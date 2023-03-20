@@ -26,6 +26,7 @@ import React, {
   SyntheticEvent,
   useRef,
   useState,
+  useMemo,
 } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
@@ -252,10 +253,9 @@ export default function QuickSelect<
     }
   };
   const selectedAsArray = Array.isArray(selected) ? selected : [selected];
-
-  const itemOptionsWithSelectedOnTop = [
-    ...new Set([...selectedAsArray, ...items]),
-  ];
+  const itemOptionsWithSelectedOnTop = useMemo(() => {
+    return [...new Set([...selectedAsArray, ...items])];
+  }, [open]);
   return (
     <>
       <ButtonWrapper>
