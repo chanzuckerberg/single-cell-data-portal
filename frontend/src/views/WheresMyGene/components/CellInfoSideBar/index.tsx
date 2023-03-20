@@ -96,7 +96,7 @@ function CellInfoSideBar({
             placement="bottom"
             width="default"
             className="fmg-tooltip-icon"
-            arrow={true}
+            arrow
             onOpen={() => setHoverStartTime(Date.now())}
             onClose={handleFmgHoverEnd}
             title={
@@ -130,7 +130,6 @@ function CellInfoSideBar({
               sdsStyle="minimal"
               sdsType="secondary"
               isAllCaps={false}
-              style={{ fontWeight: "500" }}
             >
               <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
@@ -174,7 +173,7 @@ function CellInfoSideBar({
                   placement="bottom"
                   width="default"
                   className="fmg-tooltip-icon"
-                  arrow={true}
+                  arrow
                   onOpen={() => setHoverStartTime(Date.now())}
                   onClose={handleMarkerScoreHoverEnd}
                   title={
@@ -210,7 +209,6 @@ function CellInfoSideBar({
                     sdsStyle="minimal"
                     sdsType="secondary"
                     isAllCaps={false}
-                    style={{ fontWeight: "500" }}
                   >
                     <StyledIconImage src={questionMarkIcon} />
                   </TooltipButton>

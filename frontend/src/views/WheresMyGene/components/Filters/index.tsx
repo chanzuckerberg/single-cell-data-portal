@@ -345,6 +345,9 @@ export default memo(function Filters({
       />
 
       <Tooltip
+        sdsStyle="dark"
+        arrow
+        placement="right"
         title={"Please select at least one tissue and gene to use this option."}
         disableHoverListener={isHeatmapShown}
         disableFocusListener={isHeatmapShown}
@@ -358,6 +361,9 @@ export default memo(function Filters({
         <ViewOptionsLabel>View Options</ViewOptionsLabel>
         <ViewOptionsWrapper>
           <Tooltip
+            sdsStyle="dark"
+            arrow
+            placement="right"
             title={
               "Please select at least one tissue and gene to use this option."
             }

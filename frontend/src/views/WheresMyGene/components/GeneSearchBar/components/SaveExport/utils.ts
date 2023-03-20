@@ -215,10 +215,11 @@ export function renderXAxis({
   const cellTypeCount = document.createElementNS(NAME_SPACE_URI, "text");
 
   const cellTypeCountAttributes = {
-    "text-anchor": "end",
-    transform: `translate(35, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
+    "text-anchor": "left",
+    transform: `translate(35, ${X_AXIS_CHART_HEIGHT_PX}) scale(-1, -1)`,
     width: `100px`,
     x: 0,
+    "writing-mode": "vertical-rl",
   };
 
   applyAttributes(cellTypeCount, cellTypeCountAttributes);
@@ -235,11 +236,12 @@ export function renderXAxis({
     const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
 
     const labelAttributes = {
-      "text-anchor": "end",
+      "text-anchor": "left",
       transform: `translate(${
         65 + 20 * index
-      }, ${X_AXIS_CHART_HEIGHT_PX}) rotate(90)`,
+      }, ${X_AXIS_CHART_HEIGHT_PX}) scale(-1, -1)`,
       x: 0,
+      "writing-mode": "vertical-rl",
     };
 
     applyAttributes(geneLabelText, labelAttributes);
