@@ -18,4 +18,5 @@ export enum API {
   WMG_QUERY = "/wmg/v1/query",
   WMG_FILTERS_QUERY = "/wmg/v1/filters",
   WMG_MARKER_GENES = "/wmg/v1/markers",
+  WMG_GENE_INFO = "/gene_info/v1/gene_info/",
 }

@@ -14,6 +14,7 @@ import {
   CellTypeSummary,
   CompareOptionId,
   GeneExpressionSummary,
+  GeneInfo,
   RawCellTypeGeneExpressionSummaryData,
   ViewId,
 } from "src/views/WheresMyGene/common/types";
@@ -1098,6 +1099,12 @@ export interface FetchMarkerGeneParams {
   test?: "ttest" | "binomtest";
 }
 
+export interface FetchGeneInfoParams {
+  geneID: string;
+  geneSymbol: string;
+  signal?: AbortSignal;
+}
+
 export async function fetchMarkerGenes({
   cellTypeID,
   organismID,
@@ -1121,9 +1128,32 @@ export async function fetchMarkerGenes({
 
   return json;
 }
+
+export async function fetchGeneInfo({
+  geneID,
+  geneSymbol,
+  signal,
+}: FetchGeneInfoParams): Promise<GeneInfo> {
+  const url =
+    API_URL + API.WMG_GENE_INFO + `?geneID=${geneID}&gene=${geneSymbol}`;
+  const response = await fetch(url, { signal });
+
+  const json: GeneInfo = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+  return json;
+}
+
 export const USE_MARKER_GENES = {
   ENTITIES: [ENTITIES.WMG_MARKER_GENES],
   id: "wmg-marker-genes",
+};
+
+export const USE_GENE_INFO = {
+  ENTITIES: [ENTITIES.WMG_GENE_INFO],
+  id: "wmg-gene-info",
 };
 
 export interface MarkerGenesByCellType {
@@ -1195,6 +1225,30 @@ export function useMarkerGenes({
       );
       return { ...output, marker_genes: markerGenesIndexedByGeneName };
     },
+    {
+      staleTime: Infinity,
+    }
+  );
+}
+
+export function useGeneInfo(geneSymbol: string): UseQueryResult<GeneInfo> {
+  const { data } = usePrimaryFilterDimensions();
+  const genesByName = useMemo((): { [name: string]: OntologyTerm } => {
+    let result: { [name: string]: OntologyTerm } = {};
+
+    if (!data) return result;
+
+    const { genes } = data;
+
+    result = generateTermsByKey(genes, "name");
+
+    return result;
+  }, [data]);
+
+  const geneID = genesByName[geneSymbol]?.id;
+  return useQuery(
+    [USE_GENE_INFO, geneSymbol, geneID],
+    ({ signal }) => fetchGeneInfo({ geneSymbol, geneID, signal }),
     {
       staleTime: Infinity,
     }
