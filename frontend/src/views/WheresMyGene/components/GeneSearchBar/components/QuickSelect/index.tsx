@@ -26,7 +26,6 @@ import React, {
   SyntheticEvent,
   useRef,
   useState,
-  useMemo,
 } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
