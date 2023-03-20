@@ -10,7 +10,7 @@ import {
 import { State } from "src/views/WheresMyGene/common/store";
 import { Props } from ".";
 import { ChartProps } from "../../../HeatMap/hooks/common/types";
-import { deserializeCellTypeMetadata } from "../../../HeatMap/utils";
+import { ChartFormat, deserializeCellTypeMetadata } from "../../../HeatMap/utils";
 import { generateAndCopyShareUrl } from "../ShareButton/utils";
 
 interface CsvMetadata {
@@ -172,7 +172,7 @@ export function csvGeneExpressionRow({
       tissueName,
       name,
       total_count,
-      Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) + "%",
+      getTissuePercentage(geneExpression),
       geneName,
       geneExpression?.meanExpression ?? "",
       geneExpression?.scaledMeanExpression ?? "",
@@ -183,7 +183,7 @@ export function csvGeneExpressionRow({
       tissueName,
       name,
       total_count,
-      Number((geneExpression?.tissuePercentage || 0) * 100).toFixed(2) + "%",
+      getTissuePercentage(geneExpression),
       compareValueName,
       geneName,
       geneExpression?.meanExpression ?? "",
@@ -191,6 +191,10 @@ export function csvGeneExpressionRow({
       geneExpression?.expressedCellCount ?? "",
     ];
   }
+}
+
+function getTissuePercentage(geneExpression: ChartFormat | undefined) {
+  return !geneExpression ? "" : Number((geneExpression.tissuePercentage || 0) * 100).toFixed(2) + "%";
 }
 
 export function buildCellTypeIdToMetadataMapping(

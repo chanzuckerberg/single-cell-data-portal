@@ -576,9 +576,11 @@ describe("Where's My Gene", () => {
     });
   });
 
-  describe("Export CSV", () => {
-    test("Download CSV and validate length", async ({ page }) => {
+  describe("Export CSV ", () => {
+    test("Download CSV and validate length - no compare", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      const SELECT_N_GENES = 3;
 
       async function getTissueSelectorButton() {
         return page.$(getTestID(ADD_TISSUE_ID));
@@ -588,13 +590,21 @@ describe("Where's My Gene", () => {
         return page.$(getTestID(ADD_GENE_ID));
       }
 
+      // Select tissue
       await clickUntilOptionsShowUp(getTissueSelectorButton, page);
       await selectFirstOption(page);
 
+      // Select gene
       await clickUntilOptionsShowUp(getGeneSelectorButton, page);
-      await selectFirstOption(page);
+      await selectFirstNOptions(SELECT_N_GENES, page);
 
       await waitForHeatmapToRender(page);
+
+      const numCellTypes = (await page.$$(getTestID("cell-type-label-count"))).length;
+
+      if (!numCellTypes) {
+        throw Error("No cell types");
+      }
 
       async function getDownloadButton() {
         return page.$(getTestID(DOWNLOAD_BUTTON_ID));
@@ -630,22 +640,96 @@ describe("Where's My Gene", () => {
 
       const csvBuffer = fs.readFileSync(filePath);
 
-      // Get number of lines from file
-      const numLines = csvBuffer
-        .toString()
-        .trim()
-        .split("\n")
-        .map((row) => [row]).length;
-
-      // Parse file contents
-      const parser = parse(csvBuffer, {
-        columns: false,
-        relax_column_count: true,
-        skip_empty_lines: false,
+      // Parsing will validate rows have consistent column counts per row
+      const data = parse(csvBuffer, {
+        columns: true,
+        from_line: 13, // Start on row with header names, skipping metadata
+        skip_empty_lines: true,
       });
 
-      // Make sure number of lines are the same after parsing
-      expect(parser.length).toBe(numLines);
+      // Validate number of rows
+      expect(data.length).toBe(numCellTypes * SELECT_N_GENES);
+    });
+
+    test("Download CSV and validate length - compare", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      const SELECT_N_GENES = 3;
+
+      async function getTissueSelectorButton() {
+        return page.$(getTestID(ADD_TISSUE_ID));
+      }
+
+      async function getGeneSelectorButton() {
+        return page.$(getTestID(ADD_GENE_ID));
+      }
+
+      // Select tissue
+      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await selectFirstOption(page);
+
+      // Select gene
+      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await selectFirstNOptions(SELECT_N_GENES, page);
+
+      // Select a compare dimension
+      await clickDropdownOptionByName({
+        name: "Sex",
+        page,
+        selector: getTestID(COMPARE_DROPDOWN_ID),
+      });
+
+      await waitForHeatmapToRender(page);
+
+      const numCellTypes = (await page.$$(getTestID("cell-type-label-count"))).length;
+
+      if (!numCellTypes) {
+        throw Error("No cell types");
+      }
+
+      async function getDownloadButton() {
+        return page.$(getTestID(DOWNLOAD_BUTTON_ID));
+      }
+
+      await clickUntilDownloadModalShowsUp(getDownloadButton, page);
+
+      const pngCheckbox = await page.$(getTestID("png-checkbox"));
+      if (!pngCheckbox) throw Error("No PNG checkbox");
+      await pngCheckbox.click();
+
+      const csvCheckbox = await page.$(getTestID("csv-checkbox"));
+      if (!csvCheckbox) throw Error("No CSV checkbox");
+      await csvCheckbox.click();
+
+      // Start waiting for download before clicking. Note no await.
+      const downloadPromise = page.waitForEvent("download");
+
+      const downloadButton = await page.$(getTestID("dialog-download-button"));
+      if (!downloadButton) throw Error("No download button");
+      await downloadButton.click();
+
+      // Wait for download
+      const download = await downloadPromise;
+
+      const fileName = download.suggestedFilename();
+
+      expect(fileName).toBe("blood.csv");
+
+      const filePath = EXPORT_OUTPUT_DIR + fileName;
+
+      await download.saveAs(filePath);
+
+      const csvBuffer = fs.readFileSync(filePath);
+
+      // Parsing will validate rows have consistent column counts per row
+      const data = parse(csvBuffer, {
+        columns: true,
+        from_line: 13, // Start on row with header names, skipping metadata
+        skip_empty_lines: true,
+      });
+
+      // Validate number of rows
+      expect(data.length).toBe(numCellTypes * SELECT_N_GENES);
     });
   });
 
