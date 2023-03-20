@@ -170,18 +170,7 @@ export function csvGeneExpressionRow({
     (value) => value.id === `${viewId}-${geneName}`
   );
 
-  if (!compare) {
-    return [
-      tissueName,
-      name,
-      total_count,
-      getTissuePercentage(geneExpression),
-      geneName,
-      geneExpression?.meanExpression ?? "",
-      geneExpression?.scaledMeanExpression ?? "",
-      geneExpression?.expressedCellCount ?? "",
-    ];
-  } else {
+  if (compare) {
     return [
       tissueName,
       name,
@@ -193,13 +182,24 @@ export function csvGeneExpressionRow({
       geneExpression?.scaledMeanExpression ?? "",
       geneExpression?.expressedCellCount ?? "",
     ];
+  } else {
+    return [
+      tissueName,
+      name,
+      total_count,
+      getTissuePercentage(geneExpression),
+      geneName,
+      geneExpression?.meanExpression ?? "",
+      geneExpression?.scaledMeanExpression ?? "",
+      geneExpression?.expressedCellCount ?? "",
+    ];
   }
 }
 
 function getTissuePercentage(geneExpression: ChartFormat | undefined) {
-  return !geneExpression
-    ? ""
-    : Number((geneExpression.tissuePercentage || 0) * 100).toFixed(2) + "%";
+  if (!geneExpression) return "";
+
+  return Number((geneExpression.tissuePercentage || 0) * 100).toFixed(2) + "%";
 }
 
 export function buildCellTypeIdToMetadataMapping(
