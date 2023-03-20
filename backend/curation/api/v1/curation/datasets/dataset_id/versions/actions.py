@@ -26,6 +26,5 @@ def get(dataset_id: str):
     dataset_versions.reverse()
     response_body = {
         "datasets": reshape_datasets_for_curation_api(dataset_versions, use_canonical_url=False),
-        "collection_id": dataset_versions[0].collection_id.id,
     }
     return make_response(jsonify(response_body), 200)

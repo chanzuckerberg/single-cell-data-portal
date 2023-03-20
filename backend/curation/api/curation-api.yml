@@ -579,8 +579,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  collection_id:
-                    $ref: "#/components/schemas/collection_id"
                   datasets:
                     type: array
                     items:
@@ -1028,6 +1026,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
         collection_version_id:
           description: |
             The first Collection Version this Dataset Version was published under
