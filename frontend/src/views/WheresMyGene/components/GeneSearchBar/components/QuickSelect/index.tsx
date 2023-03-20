@@ -164,7 +164,7 @@ export default function QuickSelect<
   const classes = useStyles();
 
   const toggleDropdownAndUpdateItemOptions = () => {
-    setOpen(!open);
+    setOpen((open) => !open);
     const itemOptionsWithSelectedOnTop = [
       ...new Set([...selectedAsArray, ...items]),
     ];
