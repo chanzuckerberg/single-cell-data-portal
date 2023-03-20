@@ -85,7 +85,6 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
             sdsStyle="minimal"
             sdsType="secondary"
             isAllCaps={false}
-            style={{ fontWeight: "500" }}
           >
             <StyledIconImage src={questionMarkIcon} />
           </TooltipButton>

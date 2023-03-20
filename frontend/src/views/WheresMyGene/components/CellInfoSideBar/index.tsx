@@ -131,7 +131,6 @@ function CellInfoSideBar({
               sdsStyle="minimal"
               sdsType="secondary"
               isAllCaps={false}
-              style={{ fontWeight: "500" }}
             >
               <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
@@ -211,7 +210,6 @@ function CellInfoSideBar({
                     sdsStyle="minimal"
                     sdsType="secondary"
                     isAllCaps={false}
-                    style={{ fontWeight: "500" }}
                   >
                     <StyledIconImage src={questionMarkIcon} />
                   </TooltipButton>
