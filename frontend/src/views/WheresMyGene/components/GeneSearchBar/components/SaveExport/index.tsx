@@ -626,6 +626,10 @@ function download_({
 
       track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
         file_type: selectedFileTypes,
+        version:
+          selectedFileTypes.length === 1 && selectedFileTypes[0] === "csv"
+            ? "only_csv"
+            : "includes_png_or_svg",
 
         dataset_filter: selectedFilters.datasets,
         disease_filter: selectedFilters.diseases,
