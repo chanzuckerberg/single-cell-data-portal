@@ -647,6 +647,19 @@ class TestCollection(BaseAPIPortalTest):
         response = self.app.get(test_url.url, headers=no_cookie_headers)
         self.assertEqual("READ", json.loads(response.data)["access_type"])
 
+        # test that owners have write access
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual("WRITE", json.loads(response.data)["access_type"])
+
+        # test that super curators have write access
+        super_curator_headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token("super"),
+        }
+        response = self.app.get(test_url.url, headers=super_curator_headers)
+        self.assertEqual("WRITE", json.loads(response.data)["access_type"])
+
     def test__create_collection_strip_string_fields(self):
         test_url = furl(path="/dp/v1/collections")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -747,7 +760,7 @@ class TestCollection(BaseAPIPortalTest):
     # ✅
     def test__get_all_collections_for_index(self):
         """
-        The `collections/index` endpoint should only return public collections
+        The `collections/index` endpoint should only return public collections.
         """
 
         collection = self.generate_published_collection()
@@ -759,6 +772,7 @@ class TestCollection(BaseAPIPortalTest):
         response = self.app.delete(tombstone_url.url, headers=headers)
         self.assertEqual(204, response.status_code)
 
+        # test that non logged in users can only see public collections
         test_url = furl(path="/dp/v1/collections/index")
         headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.get(test_url.url, headers=headers)
@@ -779,6 +793,32 @@ class TestCollection(BaseAPIPortalTest):
         # Both `published_at` and `revised_at` should point to the same timestamp
         self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
         self.assertEqual(actual_collection["revised_at"], collection.published_at.timestamp())
+
+        # test that the owner of a private collection can not see the private collection
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [collection["id"] for collection in body]
+        self.assertIn(collection.collection_id.id, ids)
+        self.assertNotIn(private_collection.collection_id.id, ids)
+        self.assertNotIn(private_collection.version_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.version_id.id, ids)
+
+        # test that super curators can not see the private collection
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [collection["id"] for collection in body]
+        self.assertIn(collection.collection_id.id, ids)
+        self.assertNotIn(private_collection.collection_id.id, ids)
+        self.assertNotIn(private_collection.version_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.version_id.id, ids)
 
     # ✅
     def test__create_collection__InvalidParameters_DOI(self):
