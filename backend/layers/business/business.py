@@ -589,13 +589,17 @@ class BusinessLogic(BusinessLogicInterface):
         collection_versions = self.database_provider.get_all_versions_for_collection(dataset_version.collection_id)
         published_version_history = []
         found_version_ids = set()
+        # sort to ensure we always find earliest instance of a dataset version first when iterating
         collection_versions = sorted(collection_versions, key=lambda cv: (cv.published_at is None, cv.published_at))
         for collection_version in collection_versions:
             # skip unpublished collection versions
             if collection_version.published_at is None:
                 continue
             for dataset_version in collection_version.datasets:
-                if dataset_version.dataset_id.id == dataset_id.id and dataset_version.version_id.id not in found_version_ids:
+                if (
+                    dataset_version.dataset_id.id == dataset_id.id
+                    and dataset_version.version_id.id not in found_version_ids
+                ):
                     published_version = PublishedDatasetVersion(**dataset_version)
                     published_version.collection_version_id = collection_version.version_id
                     found_version_ids.add(dataset_version.version_id.id)

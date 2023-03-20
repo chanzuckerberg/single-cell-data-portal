@@ -22,7 +22,8 @@ def get(dataset_id: str):
     if len(dataset_versions) == 0:
         raise NotFoundHTTPException("Dataset not found!")
 
-    dataset_versions = sorted(dataset_versions, key=lambda dv: dv.created_at, reverse=True)
+    # business function returns in chronological order; must return in reverse chronological
+    dataset_versions = reversed(dataset_versions)
     response_body = {
         "datasets": reshape_datasets_for_curation_api(dataset_versions, use_canonical_url=False),
         "collection_id": dataset_versions[0].collection_id.id,

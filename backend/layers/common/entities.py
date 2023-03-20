@@ -203,7 +203,7 @@ class DatasetVersion:
 
 @dataclass
 class PublishedDatasetVersion(DatasetVersion):
-    collection_version_id: CollectionVersionId # Pointer to collection version it was originally published under
+    collection_version_id: CollectionVersionId  # Pointer to collection version it was originally published under
 
 
 @dataclass
