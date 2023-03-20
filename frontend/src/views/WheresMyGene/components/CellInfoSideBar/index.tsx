@@ -97,7 +97,7 @@ function CellInfoSideBar({
             placement="bottom"
             width="default"
             className="fmg-tooltip-icon"
-            arrow={true}
+            arrow
             onOpen={() => setHoverStartTime(Date.now())}
             onClose={handleFmgHoverEnd}
             title={
@@ -175,7 +175,7 @@ function CellInfoSideBar({
                   placement="bottom"
                   width="default"
                   className="fmg-tooltip-icon"
-                  arrow={true}
+                  arrow
                   onOpen={() => setHoverStartTime(Date.now())}
                   onClose={handleMarkerScoreHoverEnd}
                   title={
