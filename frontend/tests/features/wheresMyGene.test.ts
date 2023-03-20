@@ -600,7 +600,8 @@ describe("Where's My Gene", () => {
 
       await waitForHeatmapToRender(page);
 
-      const numCellTypes = (await page.$$(getTestID("cell-type-label-count"))).length;
+      const numCellTypes = (await page.$$(getTestID("cell-type-label-count")))
+        .length;
 
       if (!numCellTypes) {
         throw Error("No cell types");
@@ -681,7 +682,8 @@ describe("Where's My Gene", () => {
 
       await waitForHeatmapToRender(page);
 
-      const numCellTypes = (await page.$$(getTestID("cell-type-label-count"))).length;
+      const numCellTypes = (await page.$$(getTestID("cell-type-label-count")))
+        .length;
 
       if (!numCellTypes) {
         throw Error("No cell types");
