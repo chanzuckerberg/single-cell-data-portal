@@ -55,7 +55,7 @@ jobs:
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ github.event.deployment.environment }}stack
-          happy_version: "0.28.0"
+          happy_version: "0.65.0"
           operation: update
           tag: ${{ github.event.deployment.payload.tag }}
           env: ${{ github.event.deployment.environment }}
