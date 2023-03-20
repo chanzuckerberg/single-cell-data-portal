@@ -4,7 +4,7 @@ import {
   useQueryClient,
   UseQueryResult,
 } from "react-query";
-import { API_URL } from "src/configs/configs";
+import { API_URL } from "src/configs/config";
 import { API } from "../API";
 import { DatasetAsset, DatasetUploadStatus } from "../entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";

@@ -1,4 +1,4 @@
-import { API_URL } from "src/configs/configs";
+import { API_URL } from "src/configs/config";
 import { EVENTS } from "./events";
 
 const serializeProps = (

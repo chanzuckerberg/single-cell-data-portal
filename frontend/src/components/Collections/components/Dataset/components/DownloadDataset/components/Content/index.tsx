@@ -4,7 +4,7 @@ import { API } from "src/common/API";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
-import { API_URL } from "src/configs/configs";
+import { API_URL } from "src/configs/config";
 import CurlLink from "./components/CurlLink";
 import DataFormat from "./components/DataFormat";
 import Details from "./components/Details";

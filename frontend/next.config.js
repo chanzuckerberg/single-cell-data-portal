@@ -21,17 +21,20 @@ const SCRIPT_SRC = [
   TWITTER_URL,
   WISTIA_URL,
 ];
-
+const connectSrc = [
+  "'self'",
+  "sentry.prod.si.czi.technology",
+  PLAUSIBLE_URL,
+  configs.API_URL,
+];
+if (!isProdBuild) {
+  connectSrc.push("*");
+}
 const defaultSecureHeaders = {
   contentSecurityPolicy: {
     directives: {
       baseUri: "'self'",
-      connectSrc: [
-        "'self'",
-        "sentry.prod.si.czi.technology",
-        PLAUSIBLE_URL,
-        configs.API_URL,
-      ],
+      connectSrc: connectSrc,
       defaultSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       formAction: "'self'",
