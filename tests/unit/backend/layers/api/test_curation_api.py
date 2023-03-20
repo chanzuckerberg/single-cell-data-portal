@@ -571,17 +571,28 @@ class TestGetCollections(BaseAPIPortalTest):
 
 class TestGetCollectionVersions(BaseAPIPortalTest):
     def test__get_collection_versions__200(self):
-        collection_version = self.generate_published_collection()
-        with self.subTest("Returns version for published Collection"):
-            resp = self.app.get(f"/curation/v1/collections/{collection_version.collection_id.id}/versions")
-            print(resp.json)
-            self.assertEqual(1, len(resp.json))
+        # Create published collection with 2 published revisions and 1 unpublished revision
+        published_collection = self.generate_published_collection()
+        expected_version_ids = [published_collection.version_id.id]
 
-        self.generate_revision(collection_version.collection_id)
-        with self.subTest("Returns only published version when an active revision exists"):
-            resp = self.app.get(f"/curation/v1/collections/{collection_version.collection_id.id}/versions")
-            print(resp.json)
-            self.assertEqual(1, len(resp.json))
+        revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
+        expected_version_ids.append(revision_collection.version_id.id)
+        self.business_logic.publish_collection_version(revision_collection.version_id)
+
+        revision_collection_2 = self.generate_revision(collection_id=published_collection.collection_id)
+        expected_version_ids.append(revision_collection_2.version_id.id)
+        self.business_logic.publish_collection_version(revision_collection_2.version_id)
+
+        with self.subTest("Published versions are returned in reverse chronological order with no revision open"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            self.assertEqual(expected_version_ids, received_version_ids)
+
+        self.generate_revision(collection_id=published_collection.collection_id)
+        with self.subTest("Published versions are returned in reverse chronological order with a revision open"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            self.assertEqual(expected_version_ids, received_version_ids)
 
     def test__get_collection_versions_not_published_canonical__404(self):
         published_collection = self.generate_published_collection()
@@ -603,10 +614,11 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
             resp = self.app.get(f"/curation/v1/collections/{unpublished_collection.collection_id.id}/versions")
             self.assertEqual(404, resp.status_code)
 
-    def test__get_collection_versions_order_by_published_at__200(self):
-        published_collection = self.generate_published_collection()
-        revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
-        self.business_logic.publish_collection_version(revision_collection.version_id)
+    def test__get_collection_versions_not_a_uuid__403(self):
+        self.generate_published_collection()
+        with self.subTest("Returns 403 when id is not uuid format"):
+            resp = self.app.get("/curation/v1/collections/this_identifier_is_not_a_uuid/versions")
+            self.assertEqual(403, resp.status_code)
 
 
 class TestGetCollectionID(BaseAPIPortalTest):
