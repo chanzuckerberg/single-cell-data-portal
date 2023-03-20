@@ -1,8 +1,4 @@
-import {
-  Icon,
-  InputDropdownProps as IInputDropdownProps,
-  Tooltip,
-} from "czifui";
+import { InputDropdownProps as IInputDropdownProps, Tooltip } from "czifui";
 import { useContext, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -10,11 +6,17 @@ import {
   DispatchContext,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGene/common/types";
 import { StyledDropdown, Wrapper } from "../common/style";
 import { Label } from "../../../InfoPanel/common/style";
 import { LabelWrapper } from "./style";
+import {
+  StyledIconImage,
+  TooltipButton,
+  StyledTooltip,
+} from "../../../CellInfoSideBar/style";
 
 interface Props {
   setIsScaled: (prevIsScaled: boolean) => void;
@@ -64,9 +66,28 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
     <Wrapper>
       <LabelWrapper>
         <Label>Color Scale</Label>
-
-        <Tooltip title="Expression is scaled to the range [0,1]. Scaling is done by assigning the minimum value in the current view to 0 and the max is assigned to 1.">
-          <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="static" />
+        <Tooltip
+          sdsStyle="dark"
+          placement="right"
+          width="default"
+          arrow
+          title={
+            <StyledTooltip>
+              <div>
+                Expression is scaled to the range [0,1]. Scaling is done by
+                assigning the minimum value in the current view to 0 and the max
+                is assigned to 1.
+              </div>
+            </StyledTooltip>
+          }
+        >
+          <TooltipButton
+            sdsStyle="minimal"
+            sdsType="secondary"
+            isAllCaps={false}
+          >
+            <StyledIconImage src={questionMarkIcon} />
+          </TooltipButton>
         </Tooltip>
       </LabelWrapper>
 
