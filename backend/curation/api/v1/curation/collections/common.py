@@ -19,6 +19,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    PublishedDatasetVersion,
 )
 from backend.portal.api.explorer_url import generate as generate_explorer_url
 from backend.portal.api.providers import get_business_logic
@@ -185,6 +186,9 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canoni
                     ds["processing_status"] = "PIPELINE_FAILURE"
             else:
                 ds["processing_status"] = status.processing_status
+        if isinstance(dataset_version, PublishedDatasetVersion):
+            ds["collection_id"] = dataset_version.collection_id.id
+            ds["collection_version_id"] = dataset_version.collection_version_id.id
     return ds
 
 
