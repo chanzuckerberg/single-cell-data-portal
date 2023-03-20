@@ -1456,7 +1456,7 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         ).dataset_version_id
         self.business_logic.publish_collection_version(published_revision.version_id)
         unpublished_revision = self.generate_revision(collection_id)
-        unpublished_dataset_revision_id = self.generate_dataset(
+        self.generate_dataset(
             collection_version=unpublished_revision,
             replace_dataset_version_id=DatasetVersionId(published_dataset_revision_id),
         ).dataset_version_id
@@ -1472,16 +1472,11 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             dataset_version_ids.append(dataset["dataset_version_id"])
             collection_ids.append(dataset["collection_id"])
             collection_version_ids.append(dataset["collection_version_id"])
-        self.assertEqual(len(dataset_version_ids), 2)
         # Check that only published datasets appear
         # Must be returned in reverse chronological order
-        self.assertEqual(published_dataset_revision_id, dataset_version_ids[0])
-        self.assertEqual(dataset_version_id.id, dataset_version_ids[1])
-        self.assertNotIn(unpublished_dataset_revision_id, dataset_version_ids)
-        self.assertEqual(collection_id.id, collection_ids[0])
-        self.assertEqual(collection_id.id, collection_ids[1])
-        self.assertEqual(published_revision.version_id.id, collection_version_ids[0])
-        self.assertEqual(collection.version_id.id, collection_version_ids[1])
+        self.assertEqual([published_dataset_revision_id, dataset_version_id.id], dataset_version_ids)
+        self.assertEqual([collection_id.id, collection_id.id], collection_ids)
+        self.assertEqual([published_revision.version_id.id, collection.version_id.id], collection_version_ids)
 
     def test_get_dataset_id_version_404(self):
         with self.subTest("Input is not a UUID"):
