@@ -48,7 +48,7 @@ class DataArtifactCorrectness(unittest.TestCase):
             df2 = test_expression_summary_default_df.sort_values(expression_summary_default_logical_dims).reset_index(
                 drop=True
             )
-            [assert_series_equal(df1[col], df2[col], rtol=1e-2) for col in df1]
+            [assert_series_equal(df1[col], df2[col], rtol=1e-3) for col in df1]
 
     # creates filter dim options by querying the cell counts cube and checks to make sure that the result
     # is equal to the current approach of creating filter dim options via the precomputed filter relationships
