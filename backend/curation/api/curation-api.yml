@@ -607,8 +607,8 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/dataset_version"
-        "404":
-          $ref: "#/components/responses/404"
+        "403":
+          $ref: "#/components/responses/403"
 
   /v1/dataset_versions/{dataset_version_id}:
     get:
@@ -627,9 +627,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/dataset_version"
+                $ref: "#/components/schemas/dataset_version"
         "403":
           $ref: "#/components/responses/403"
 
@@ -1391,6 +1389,13 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/dataset_id"
+    path_dataset_version_id:
+      description: The uuid of the Dataset Version.
+      in: path
+      name: dataset_version_id
+      required: true
+      schema:
+        $ref: "#/components/schemas/dataset_version_id"
   responses:
     "200":
       description: OK
