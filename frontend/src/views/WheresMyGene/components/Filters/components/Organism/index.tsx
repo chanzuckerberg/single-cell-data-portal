@@ -15,8 +15,6 @@ import { selectOrganism } from "src/views/WheresMyGene/common/store/actions";
 import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
 import { StyledDropdown, Wrapper, Label } from "../common/style";
 
-export const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
-
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
   sdsStyle: "square",
 };

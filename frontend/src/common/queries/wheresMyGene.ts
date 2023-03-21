@@ -18,7 +18,6 @@ import {
   ViewId,
   Organism as IOrganism,
 } from "src/views/WheresMyGene/common/types";
-import { TEMP_ALLOW_NAME_LIST } from "src/views/WheresMyGene/components/Filters/components/Organism";
 import { API } from "../API";
 import { ROUTES } from "../constants/routes";
 import { EMPTY_OBJECT } from "../constants/utils";
@@ -108,21 +107,6 @@ export const USE_PRIMARY_FILTER_DIMENSIONS = {
   id: "wmg-primaryFilterDimensions",
 };
 
-export function useAvailableOrganisms() {
-  const { data, isLoading } = usePrimaryFilterDimensions();
-
-  if (isLoading) {
-    return { isLoading, data: null };
-  }
-
-  return {
-    isLoading,
-    data: data?.organisms.filter((organism: IOrganism) =>
-      TEMP_ALLOW_NAME_LIST.includes(organism.name)
-    ),
-  };
-}
-
 export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimensionsResponse> {
   const dispatch = useContext(DispatchContext);
 
@@ -146,6 +130,23 @@ export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimens
       staleTime: Infinity,
     }
   );
+}
+
+export const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
+
+export function useAvailableOrganisms() {
+  const { data, isLoading } = usePrimaryFilterDimensions();
+
+  if (isLoading) {
+    return { isLoading, data: null };
+  }
+
+  return {
+    isLoading,
+    data: data?.organisms.filter((organism: IOrganism) =>
+      TEMP_ALLOW_NAME_LIST.includes(organism.name)
+    ),
+  };
 }
 
 interface Filter {
