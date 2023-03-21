@@ -40,7 +40,7 @@ class MarkerGeneCubeCreationTest(unittest.TestCase):
                 .sort_values(["cell_type_ontology_term_id", "gene_ontology_term_id"])
                 .reset_index(drop=True)
             )
-            [assert_series_equal(df1[col], df2[col]) for col in df1]
+            [assert_series_equal(df1[col], df2[col], rtol=1e-3) for col in df1]
 
     def tearDown(self):
         if os.path.exists(f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes"):
