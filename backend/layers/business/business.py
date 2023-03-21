@@ -162,6 +162,17 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_all_versions_for_collection(collection_id)
 
+    def get_all_published_collection_versions_from_canonical(
+        self, collection_id: CollectionId
+    ) -> Iterable[CollectionVersionWithDatasets]:
+        """
+        Returns all *published* collection versions for a canonical collection
+        """
+        all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        for c_version in all_versions:
+            if c_version.published_at:
+                yield c_version
+
     def get_collection_version_from_canonical(
         self, collection_id: CollectionId
     ) -> Optional[CollectionVersionWithDatasets]:
