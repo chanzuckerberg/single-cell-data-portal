@@ -98,9 +98,7 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
           retention-days: 20
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
-        with:
-          happy_version: "0.23.0"
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}

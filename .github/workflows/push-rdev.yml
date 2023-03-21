@@ -36,9 +36,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
-        with:
-          happy_version: "0.23.0"
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
       - name: Build component
         shell: bash
         run: |
