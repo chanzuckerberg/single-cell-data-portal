@@ -1,5 +1,6 @@
 import { Tooltip } from "czifui";
 import { ECharts, init } from "echarts";
+import { capitalize } from "lodash";
 import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
 import throttle from "lodash/throttle";
@@ -7,6 +8,7 @@ import {
   Dispatch,
   memo,
   SetStateAction,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -16,11 +18,19 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY, EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import {
+  CellTypeRow,
+  COMPARE_OPTION_ID_FOR_AGGREGATED,
+  getOptionIdFromCellTypeViewId,
+} from "src/common/queries/wheresMyGene";
+import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
+import { StateContext } from "src/views/WheresMyGene/common/store";
+import {
   CellType,
   CellTypeGeneExpressionSummaryData,
   CellTypeSummary,
   GeneExpressionSummary,
   Tissue,
+  ViewId,
 } from "src/views/WheresMyGene/common/types";
 import { ChartProps } from "../../hooks/common/types";
 import { useUpdateChart } from "../../hooks/useUpdateChart";
@@ -34,7 +44,7 @@ import {
 import { ChartContainer, StyledTooltipTable, tooltipCss } from "./style";
 
 interface Props {
-  cellTypes: CellType[];
+  cellTypes: CellTypeRow[];
   selectedGeneData?: (GeneExpressionSummary | undefined)[];
   setIsLoading: Dispatch<
     SetStateAction<{
@@ -46,6 +56,12 @@ interface Props {
   scaledMeanExpressionMin: number;
   isScaled: boolean;
   echartsRendererMode: "svg" | "canvas";
+  setAllChartProps: Dispatch<
+    SetStateAction<{
+      [tissue: string]: ChartProps;
+    }>
+  >;
+  chartProps: ChartProps;
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -65,6 +81,8 @@ export default memo(function Chart({
   scaledMeanExpressionMin,
   isScaled,
   echartsRendererMode,
+  setAllChartProps,
+  chartProps,
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -81,8 +99,6 @@ export default memo(function Chart({
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
   );
-
-  const [chartProps, setChartProps] = useState<ChartProps | null>(null);
 
   useEffect(() => {
     setIsLoading((isLoading) => ({ ...isLoading, [tissue]: true }));
@@ -159,7 +175,7 @@ export default memo(function Chart({
   const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
     return debounce(
       (
-        cellTypes: CellType[],
+        cellTypes: CellTypeRow[],
         geneData: Props["selectedGeneData"] = EMPTY_ARRAY
       ) => {
         setCellTypeSummaries(
@@ -191,10 +207,19 @@ export default memo(function Chart({
   // Generate chartProps
   const debouncedDataToChartFormat = useMemo(() => {
     return debounce(
-      (
-        cellTypeSummaries: CellTypeSummary[],
-        selectedGeneData: Props["selectedGeneData"] = EMPTY_ARRAY
-      ) => {
+      ({
+        cellTypeSummaries,
+        selectedGeneData = EMPTY_ARRAY,
+        setAllChartProps,
+      }: {
+        cellTypeSummaries: CellTypeSummary[];
+        selectedGeneData: Props["selectedGeneData"];
+        setAllChartProps: Dispatch<
+          SetStateAction<{
+            [tissue: string]: ChartProps;
+          }>
+        >;
+      }) => {
         const result = {
           cellTypeMetadata: getAllSerializedCellTypeMetadata(
             cellTypeSummaries,
@@ -209,7 +234,10 @@ export default memo(function Chart({
           geneNames: getGeneNames(selectedGeneData),
         };
 
-        setChartProps(result);
+        setAllChartProps((allChartProps) => {
+          allChartProps[tissue] = result;
+          return allChartProps;
+        });
 
         setIsLoading((isLoading) => ({ ...isLoading, [tissue]: false }));
       },
@@ -225,8 +253,17 @@ export default memo(function Chart({
   ]);
 
   useEffect(() => {
-    debouncedDataToChartFormat(cellTypeSummaries, selectedGeneData);
-  }, [cellTypeSummaries, selectedGeneData, debouncedDataToChartFormat]);
+    debouncedDataToChartFormat({
+      cellTypeSummaries,
+      selectedGeneData,
+      setAllChartProps,
+    });
+  }, [
+    cellTypeSummaries,
+    selectedGeneData,
+    debouncedDataToChartFormat,
+    setAllChartProps,
+  ]);
 
   // Cancel debounce when unmounting
   useEffect(() => {
@@ -234,6 +271,8 @@ export default memo(function Chart({
   }, [debouncedDataToChartFormat]);
 
   const [hoveredGeneIndex, hoveredCellTypeIndex] = currentIndices;
+
+  const { compare } = useContext(StateContext);
 
   const tooltipContent = useMemo(() => {
     clearTimeout(handleDotHoverAnalytic);
@@ -252,6 +291,10 @@ export default memo(function Chart({
 
     if (!dataPoint || !cellType || !gene) return null;
 
+    const optionId = getOptionIdFromCellTypeViewId(
+      dataPoint.id.split("-")[0] as ViewId
+    );
+
     const { expressedCellCount } = dataPoint;
 
     const percentage = Number(((dataPoint.percentage || 0) * 100).toFixed(2));
@@ -262,36 +305,49 @@ export default memo(function Chart({
 
     const totalCellCount = cellType.total_count;
 
-    const data = [
-      {
-        dataRows: [
-          {
-            label: "Expressed in Cells",
-            value: `${percentage}% (${expressedCellCount} of ${totalCellCount} cells)`,
-          },
-          {
-            label: "Gene Expression",
-            value: (dataPoint.meanExpression || 0).toFixed(2),
-          },
-          {
-            label: "Gene Expression, Scaled",
-            value: (dataPoint.scaledMeanExpression || 0).toFixed(2),
-          },
-        ],
-      },
-      {
-        dataRows: [
-          { label: "Cell Type", value: cellType.name },
-          {
-            label: "Tissue Composition",
-            value: tissuePercentage + "%" || "",
-          },
-        ],
-      },
-      {
-        dataRows: [{ label: "Gene Symbol", value: gene.name || "" }],
-      },
-    ];
+    const firstPanel = {
+      dataRows: [
+        {
+          label: "Expressed in Cells",
+          value: `${percentage}% (${expressedCellCount} of ${totalCellCount} cells)`,
+        },
+        {
+          label: "Gene Expression",
+          value: (dataPoint.meanExpression || 0).toFixed(2),
+        },
+        {
+          label: "Gene Expression, Scaled",
+          value: (dataPoint.scaledMeanExpression || 0).toFixed(2),
+        },
+      ],
+    };
+
+    const secondPanel = {
+      dataRows: [
+        { label: "Cell Type", value: cellType.cellTypeName },
+        {
+          label: "Tissue Composition",
+          value: tissuePercentage + "%" || "",
+        },
+      ],
+    };
+
+    if (compare && optionId !== COMPARE_OPTION_ID_FOR_AGGREGATED) {
+      secondPanel.dataRows = [
+        secondPanel.dataRows[0],
+        {
+          label: getCompareOptionNameById(compare),
+          value: capitalize(cellType.name),
+        },
+        ...secondPanel.dataRows.slice(1),
+      ];
+    }
+
+    const thirdPanel = {
+      dataRows: [{ label: "Gene Symbol", value: gene.name || "" }],
+    };
+
+    const data = [firstPanel, secondPanel, thirdPanel];
 
     return <StyledTooltipTable data={data || undefined} />;
   }, [
@@ -300,6 +356,7 @@ export default memo(function Chart({
     hoveredGeneIndex,
     hoveredCellTypeIndex,
     selectedGeneData,
+    compare,
   ]);
 
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
@@ -376,10 +433,10 @@ function integrateCelTypesAndGenes({
   const cellTypeSummaries: CellTypeSummary[] = cloneDeep(cellTypes);
 
   return cellTypeSummaries.map((cellTypeSummary) => {
-    const { id } = cellTypeSummary;
+    const { viewId } = cellTypeSummary;
 
     for (const [name, geneMap] of geneMaps) {
-      const columnData = geneMap.get(id);
+      const columnData = geneMap.get(viewId);
 
       if (columnData !== undefined) {
         cellTypeSummary.geneExpressions = {
@@ -402,7 +459,7 @@ function rawGeneDataToMap(
 
   return [
     name,
-    new Map(cellTypeGeneExpressionSummaries?.map((row) => [row.id, row])),
+    new Map(cellTypeGeneExpressionSummaries?.map((row) => [row.viewId, row])),
   ];
 }
 

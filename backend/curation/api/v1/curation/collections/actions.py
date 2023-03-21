@@ -73,4 +73,4 @@ def post(body: dict, token_info: dict):
         errors.extend(ex.errors)
     if errors:
         raise InvalidParametersHTTPException(ext=dict(invalid_parameters=errors))
-    return make_response(jsonify({"id": version.collection_id.id}), 201)
+    return make_response(jsonify({"collection_id": version.collection_id.id}), 201)
