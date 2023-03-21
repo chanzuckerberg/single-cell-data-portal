@@ -99,6 +99,8 @@ jobs:
           retention-days: 20
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.59.0"
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
