@@ -640,7 +640,7 @@ paths:
       description: |
         List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
         Dataset versions are returned in reverse-chronological order.
-      operationId: backend.curation.api.v1.curation.datasets.versions.get
+      operationId: backend.curation.api.v1.curation.datasets.dataset_id.versions.actions.get
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
@@ -649,13 +649,12 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/dataset_version"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
+                type: object
+                properties:
+                  datasets:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/dataset_version"
         "404":
           $ref: "#/components/responses/404"
 
@@ -980,8 +979,6 @@ components:
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
-        assets:
-          $ref: "#/components/schemas/asset_response"
         batch_condition:
           $ref: "#/components/schemas/batch_condition"
         cell_count:
@@ -991,14 +988,17 @@ components:
         cell_type:
           description: |
             [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         collection_id:
           $ref: "#/components/schemas/collection_id"
         collection_version_id:
-          $ref: "#/components/schemas/collection_version_id"
+          description: |
+            The first Collection Version this Dataset Version was published under
+          type: string
+          format: uuid
         dataset_id:
           $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
@@ -1006,7 +1006,7 @@ components:
         development_stage:
           description: |
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
@@ -1029,6 +1029,7 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
+          nullable: true
         processing_status:
           $ref: "#/components/schemas/processing_status_dataset"
         processing_status_detail:
@@ -1047,14 +1048,14 @@ components:
         self_reported_ethnicity:
           description: |
             [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         sex:
           description: |
             [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
@@ -1080,7 +1081,7 @@ components:
         cell_type:
           description: |
             [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
@@ -1093,7 +1094,7 @@ components:
         development_stage:
           description: |
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
@@ -1138,14 +1139,14 @@ components:
         self_reported_ethnicity:
           description: |
             [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         sex:
           description: |
             [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
-          default: [ ]
+          default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
