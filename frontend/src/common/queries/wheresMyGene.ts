@@ -132,7 +132,7 @@ export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimens
   );
 }
 
-export const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
+const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
 
 export function useAvailableOrganisms() {
   const { data, isLoading } = usePrimaryFilterDimensions();
