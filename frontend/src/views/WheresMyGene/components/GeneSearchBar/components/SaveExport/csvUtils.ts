@@ -34,7 +34,7 @@ export function csvHeaders({
 }: {
   compare: CompareId | undefined;
   availableFilters: Partial<FilterDimensions>;
-  availableOrganisms: OntologyTerm[];
+  availableOrganisms: OntologyTerm[] | null | undefined;
   selectedFilters: State["selectedFilters"];
   selectedGenes: Props["selectedGenes"];
   selectedOrganismId: string | null;
@@ -116,7 +116,7 @@ export function csvHeaders({
   output.push(["# Organism"]);
   output.push([
     `${
-      availableOrganisms.find((organism) => organism.id === selectedOrganismId)
+      availableOrganisms?.find((organism) => organism.id === selectedOrganismId)
         ?.name
     }`,
   ]);

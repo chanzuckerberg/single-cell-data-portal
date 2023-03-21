@@ -1,8 +1,5 @@
 import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
-import {
-  FilterDimensions,
-  OntologyTerm,
-} from "src/common/queries/wheresMyGene";
+import { FilterDimensions } from "src/common/queries/wheresMyGene";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import SaveExport from "../../../GeneSearchBar/components/SaveExport";
 import ShareButton from "../../../GeneSearchBar/components/ShareButton";
@@ -21,13 +18,11 @@ interface Props {
   setDownloadStatus: Dispatch<
     SetStateAction<{
       isLoading: boolean;
-      blur?: boolean;
     }>
   >;
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
-  availableOrganisms: OntologyTerm[];
 }
 
 export default memo(function Legend({
@@ -40,7 +35,6 @@ export default memo(function Legend({
   setEchartsRendererMode,
   allChartProps,
   availableFilters,
-  availableOrganisms,
 }: Props): JSX.Element {
   return (
     <LegendWrapper>
@@ -52,7 +46,6 @@ export default memo(function Legend({
         setEchartsRendererMode={setEchartsRendererMode}
         allChartProps={allChartProps}
         availableFilters={availableFilters}
-        availableOrganisms={availableOrganisms}
       />
       <ShareButton />
       <SourceDataButton

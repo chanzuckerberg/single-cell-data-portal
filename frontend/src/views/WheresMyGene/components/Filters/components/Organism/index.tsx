@@ -2,20 +2,11 @@ import {
   DefaultMenuSelectOption,
   InputDropdownProps as RawInputDropdownProps,
 } from "czifui";
-import {
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useMemo,
-} from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import {
-  OntologyTerm,
-  usePrimaryFilterDimensions,
-} from "src/common/queries/wheresMyGene";
+import { useAvailableOrganisms } from "src/common/queries/wheresMyGene";
 import {
   DispatchContext,
   StateContext,
@@ -24,7 +15,7 @@ import { selectOrganism } from "src/views/WheresMyGene/common/store/actions";
 import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
 import { StyledDropdown, Wrapper, Label } from "../common/style";
 
-const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
+export const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
 
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
   sdsStyle: "square",
@@ -32,33 +23,16 @@ const InputDropdownProps: Partial<RawInputDropdownProps> = {
 
 interface Props {
   isLoading: boolean;
-  setAvailableOrganisms: Dispatch<SetStateAction<OntologyTerm[]>>;
 }
 
-export default function Organism({
-  isLoading,
-  setAvailableOrganisms,
-}: Props): JSX.Element {
+export default function Organism({ isLoading }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedOrganismId } = useContext(StateContext);
-  const { data } = usePrimaryFilterDimensions();
-  const { organisms } = data || {};
-
-  const filteredOrganisms = useMemo(() => {
-    if (!organisms) {
-      return EMPTY_ARRAY;
-    }
-
-    return organisms.filter((organism: IOrganism) =>
-      TEMP_ALLOW_NAME_LIST.includes(organism.name)
-    );
-  }, [organisms]);
+  const { data: organisms } = useAvailableOrganisms();
 
   // (thuang): Default to "Homo sapiens" on first load
   useEffect(() => {
     if (!organisms || !dispatch || selectedOrganismId) return;
-
-    setAvailableOrganisms(organisms);
 
     const organism = organisms.find(
       (organism: IOrganism) => organism.name === "Homo sapiens"
@@ -67,7 +41,7 @@ export default function Organism({
     if (!organism) return;
 
     dispatch(selectOrganism(organism.id));
-  }, [organisms, dispatch, selectedOrganismId, setAvailableOrganisms]);
+  }, [organisms, dispatch, selectedOrganismId]);
 
   const organismsById = useMemo(() => {
     const result: { [id: string]: IOrganism } = {};
@@ -87,7 +61,7 @@ export default function Organism({
       <Label>Organism</Label>
       <StyledDropdown
         label={organism?.name || "Select"}
-        options={filteredOrganisms || EMPTY_ARRAY}
+        options={organisms || EMPTY_ARRAY}
         onChange={handleOnChange as tempOnChange}
         InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-test-id="add-organism"

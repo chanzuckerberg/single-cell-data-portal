@@ -20,7 +20,6 @@ import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   FilterDimensions,
-  OntologyTerm,
   RawDataset,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
@@ -91,7 +90,6 @@ export interface Props {
   isLoading: boolean;
   availableFilters: Partial<FilterDimensions>;
   setAvailableFilters: Dispatch<SetStateAction<Partial<FilterDimensions>>>;
-  setAvailableOrganisms: Dispatch<SetStateAction<OntologyTerm[]>>;
   setIsScaled: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -99,7 +97,6 @@ export default memo(function Filters({
   isLoading,
   availableFilters,
   setAvailableFilters,
-  setAvailableOrganisms,
   setIsScaled,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
@@ -339,10 +336,7 @@ export default memo(function Filters({
         />
       </div>
 
-      <Organism
-        isLoading={isLoading}
-        setAvailableOrganisms={setAvailableOrganisms}
-      />
+      <Organism isLoading={isLoading} />
 
       <Tooltip
         sdsStyle="dark"

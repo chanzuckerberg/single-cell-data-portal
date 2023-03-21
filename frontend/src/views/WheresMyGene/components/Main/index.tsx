@@ -14,7 +14,6 @@ import {
   FilterDimensions,
   GeneExpressionSummariesByTissueName,
   generateTermsByKey,
-  OntologyTerm,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
   usePrimaryFilterDimensions,
@@ -67,9 +66,6 @@ export default function WheresMyGene(): JSX.Element {
 
   const [availableFilters, setAvailableFilters] =
     useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
-
-  const [availableOrganisms, setAvailableOrganisms] =
-    useState<OntologyTerm[]>(EMPTY_ARRAY);
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -229,10 +225,8 @@ export default function WheresMyGene(): JSX.Element {
 
   const [downloadStatus, setDownloadStatus] = useState<{
     isLoading: boolean;
-    blur?: boolean;
   }>({
     isLoading: false,
-    blur: false,
   });
 
   const usePrevious = <T,>(value: T): T | undefined => {
@@ -274,7 +268,6 @@ export default function WheresMyGene(): JSX.Element {
           isLoading={isLoading}
           availableFilters={availableFilters}
           setAvailableFilters={setAvailableFilters}
-          setAvailableOrganisms={setAvailableOrganisms}
           setIsScaled={setIsScaled}
         />
       </SideBar>
@@ -317,7 +310,6 @@ export default function WheresMyGene(): JSX.Element {
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
               availableFilters={availableFilters}
-              availableOrganisms={availableOrganisms}
             />
           </Top>
 

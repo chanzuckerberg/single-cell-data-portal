@@ -47,6 +47,7 @@ import {
 import {
   FilterDimensions,
   OntologyTerm,
+  useAvailableOrganisms,
 } from "src/common/queries/wheresMyGene";
 import { State, StateContext } from "src/views/WheresMyGene/common/store";
 import {
@@ -106,7 +107,6 @@ export interface Props {
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
-  availableOrganisms: OntologyTerm[];
 }
 
 interface ExportData {
@@ -122,7 +122,6 @@ export default function SaveExport({
   setEchartsRendererMode,
   allChartProps,
   availableFilters,
-  availableOrganisms,
 }: Props): JSX.Element {
   const { selectedFilters, selectedOrganismId, compare } =
     useContext(StateContext);
@@ -130,6 +129,8 @@ export default function SaveExport({
   const [selectedFileTypes, setFileTypes] = useState<("png" | "svg" | "csv")[]>(
     ["png"]
   );
+  const { data: availableOrganisms } = useAvailableOrganisms();
+
   const handleButtonClick = useCallback(() => {
     if (!isOpen) track(EVENTS.WMG_DOWNLOAD_CLICKED);
     setIsOpen(!isOpen);
@@ -394,7 +395,7 @@ function generateCsv({
   availableFilters: Partial<FilterDimensions>;
   selectedFilters: State["selectedFilters"];
   selectedOrganismId: string | null;
-  availableOrganisms: OntologyTerm[];
+  availableOrganisms: OntologyTerm[] | null | undefined;
   selectedTissues: Props["selectedTissues"];
 }) {
   const output: (string | number | undefined)[][] = [];
@@ -533,7 +534,7 @@ function download_({
   selectedCellTypes: Props["selectedCellTypes"];
   selectedFileTypes: ("png" | "svg" | "csv")[];
   availableFilters: Partial<FilterDimensions>;
-  availableOrganisms: OntologyTerm[];
+  availableOrganisms: OntologyTerm[] | null | undefined;
   selectedOrganismId: string | null;
   selectedFilters: State["selectedFilters"];
   observer: MutationObserver;
