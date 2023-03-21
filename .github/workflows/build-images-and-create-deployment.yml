@@ -34,9 +34,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
-        with:
-          happy_version: "0.23.0"
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
       - name: Push images
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
@@ -68,9 +66,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
-        with:
-          happy_version: "0.23.0"
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -104,9 +100,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
-        with:
-          happy_version: "0.42.1"
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
       - name: Docker re-tag
         shell: bash
         run: |
