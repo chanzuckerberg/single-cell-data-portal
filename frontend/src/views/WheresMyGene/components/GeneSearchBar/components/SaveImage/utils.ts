@@ -216,7 +216,7 @@ export function renderXAxis({
 
   const cellTypeCountAttributes = {
     "text-anchor": "left",
-    transform: `translate(35, ${X_AXIS_CHART_HEIGHT_PX}) scale(-1, -1)`,
+    transform: `translate(40, ${X_AXIS_CHART_HEIGHT_PX}) scale(-1, -1)`,
     width: `100px`,
     x: 0,
     "writing-mode": "vertical-rl",
@@ -238,7 +238,7 @@ export function renderXAxis({
     const labelAttributes = {
       "text-anchor": "left",
       transform: `translate(${
-        65 + 20 * index
+        70 + 20 * index
       }, ${X_AXIS_CHART_HEIGHT_PX}) scale(-1, -1)`,
       x: 0,
       "writing-mode": "vertical-rl",
