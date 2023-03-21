@@ -17,12 +17,14 @@ export const generateAndCopyShareUrl = ({
   tissues,
   genes,
   compare,
+  copyToClipboard = true,
 }: {
   filters: State["selectedFilters"];
   organism: State["selectedOrganismId"];
   tissues: State["selectedTissues"];
   genes: State["selectedGenes"];
   compare: State["compare"];
+  copyToClipboard?: boolean;
 }) => {
   // Create a URL that contains the selected filters, tissues, and genes as params in the URL
   // This URL can be shared with others to reproduce the same view
@@ -42,8 +44,14 @@ export const generateAndCopyShareUrl = ({
     url.searchParams.set("compare", compare);
   }
 
-  // Copy the URL to the clipboard
-  navigator.clipboard.writeText(String(url));
+  const urlString = String(url);
+
+  if (copyToClipboard) {
+    // Copy the URL to the clipboard
+    navigator.clipboard.writeText(urlString);
+  }
+
+  return urlString;
 };
 
 const stripEmptyFilters = (
