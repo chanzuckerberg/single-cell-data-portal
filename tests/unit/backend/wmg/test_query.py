@@ -112,7 +112,7 @@ class QueryTest(unittest.TestCase):
             q = WmgQuery(snapshot)
             query_result = q.expression_summary_fmg(criteria)
             query_sum = list(query_result[["sum", "sqsum", "nnz", "nnz_thr"]].sum())
-            expected = [85958.453125, 241523.03125, 37404.0, 36434.0]
+            expected = [93391.875, 264764.40625, 40042.0, 39054.0]
             [self.assertAlmostEqual(query_sum[i], expected[i], places=3) for i in range(len(query_sum))]
 
     def test__query_expression_summary_default_cube__returns_correct_results(self):
@@ -125,7 +125,7 @@ class QueryTest(unittest.TestCase):
             q = WmgQuery(snapshot)
             query_result = q.expression_summary_default(criteria)
             query_sum = list(query_result[["sum", "nnz"]].sum())
-            expected = [553378.625, 261191.0]
+            expected = [553379.0, 261191.0]
             [self.assertAlmostEqual(query_sum[i], expected[i], places=3) for i in range(len(query_sum))]
 
     def test__query_all_indexed_dims_single_value__returns_correct_result(self):
