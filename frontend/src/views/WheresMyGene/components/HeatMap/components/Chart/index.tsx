@@ -61,7 +61,7 @@ interface Props {
       [tissue: string]: ChartProps;
     }>
   >;
-  allChartProps: { [tissue: string]: ChartProps };
+  chartProps: ChartProps;
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -82,7 +82,7 @@ export default memo(function Chart({
   isScaled,
   echartsRendererMode,
   setAllChartProps,
-  allChartProps,
+  chartProps,
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -99,8 +99,6 @@ export default memo(function Chart({
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
   );
-
-  const [chartProps, setChartProps] = useState<ChartProps | null>(null);
 
   useEffect(() => {
     setIsLoading((isLoading) => ({ ...isLoading, [tissue]: true }));
@@ -209,16 +207,19 @@ export default memo(function Chart({
   // Generate chartProps
   const debouncedDataToChartFormat = useMemo(() => {
     return debounce(
-      (
-        cellTypeSummaries: CellTypeSummary[],
-        selectedGeneData: Props["selectedGeneData"] = EMPTY_ARRAY,
+      ({
+        cellTypeSummaries,
+        selectedGeneData = EMPTY_ARRAY,
+        setAllChartProps,
+      }: {
+        cellTypeSummaries: CellTypeSummary[];
+        selectedGeneData: Props["selectedGeneData"];
         setAllChartProps: Dispatch<
           SetStateAction<{
             [tissue: string]: ChartProps;
           }>
-        >,
-        allChartProps: { [tissue: string]: ChartProps }
-      ) => {
+        >;
+      }) => {
         const result = {
           cellTypeMetadata: getAllSerializedCellTypeMetadata(
             cellTypeSummaries,
@@ -233,10 +234,10 @@ export default memo(function Chart({
           geneNames: getGeneNames(selectedGeneData),
         };
 
-        setChartProps(result);
-
-        allChartProps[tissue] = result;
-        setAllChartProps(allChartProps);
+        setAllChartProps((allChartProps) => {
+          allChartProps[tissue] = result;
+          return allChartProps;
+        });
 
         setIsLoading((isLoading) => ({ ...isLoading, [tissue]: false }));
       },
@@ -252,18 +253,16 @@ export default memo(function Chart({
   ]);
 
   useEffect(() => {
-    debouncedDataToChartFormat(
+    debouncedDataToChartFormat({
       cellTypeSummaries,
       selectedGeneData,
       setAllChartProps,
-      allChartProps
-    );
+    });
   }, [
     cellTypeSummaries,
     selectedGeneData,
     debouncedDataToChartFormat,
     setAllChartProps,
-    allChartProps,
   ]);
 
   // Cancel debounce when unmounting
@@ -293,7 +292,7 @@ export default memo(function Chart({
     if (!dataPoint || !cellType || !gene) return null;
 
     const optionId = getOptionIdFromCellTypeViewId(
-      dataPoint.id?.split("-")[0] as ViewId
+      dataPoint.id.split("-")[0] as ViewId
     );
 
     const { expressedCellCount } = dataPoint;

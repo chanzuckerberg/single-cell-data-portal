@@ -231,7 +231,7 @@ export default memo(function HeatMap({
                 scaledMeanExpressionMin={scaledMeanExpressionMin}
                 echartsRendererMode={echartsRendererMode}
                 setAllChartProps={setAllChartProps}
-                allChartProps={allChartProps}
+                chartProps={allChartProps[tissue]}
               />
             );
           })}
