@@ -2,7 +2,9 @@ import os
 import shutil
 import unittest
 
+import pytest
 import tiledb
+from pandas.testing import assert_series_equal
 
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
@@ -23,15 +25,14 @@ class MarkerGeneCubeCreationTest(unittest.TestCase):
         super().setUp()
         os.rename(f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes", f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes_old")
 
+    @pytest.mark.skip(
+        reason="this test is removed until it is fixed. this test works locally but fails in GHA. The cause of failure must be debugged."
+    )
     def test__marker_gene_cube_creation(self):
         create_marker_genes_cube(f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}")
-        with tiledb.open(f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes"), tiledb.open(
+        with tiledb.open(f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes") as new_cube, tiledb.open(
             f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes_old"
-        ):
-            pass
-            """ this test is removed until it is fixed. this test works locally but fails in GHA
-            cause of failure must be debugged.
-            
+        ) as ref_cube:
             self.assertEqual(str(new_cube.schema), str(ref_cube.schema))
             df1 = (
                 ref_cube.df[:]
@@ -44,7 +45,6 @@ class MarkerGeneCubeCreationTest(unittest.TestCase):
                 .reset_index(drop=True)
             )
             [assert_series_equal(df1[col], df2[col], rtol=1e-3) for col in df1]
-            """
 
     def tearDown(self):
         if os.path.exists(f"{FIXTURES_ROOT}/{TEST_SNAPSHOT}/marker_genes"):
