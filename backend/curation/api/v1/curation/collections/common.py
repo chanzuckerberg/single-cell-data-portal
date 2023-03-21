@@ -48,7 +48,7 @@ def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]
 
 def reshape_for_curation_api(
     collection_version: Union[CollectionVersion, CollectionVersionWithDatasets],
-    user_info: UserInfo,
+    user_info: UserInfo = None,
     preview: bool = False,
 ) -> dict:
     """
@@ -66,7 +66,7 @@ def reshape_for_curation_api(
         collection_id = collection_version.collection_id
         collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
         revision_of = None
-        if not user_info.is_user_owner_or_allowed(collection_version.owner):
+        if not user_info or not user_info.is_user_owner_or_allowed(collection_version.owner):
             _revising_in = None
         else:
             _revising_in = business_logic.get_unpublished_collection_version_from_canonical(
@@ -287,16 +287,13 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
     return return_status
 
 
-def get_infered_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
+def get_inferred_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
     """
     Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion.
     :param collection_id: identifies the collection version
     :return: The CollectionVersion if it exists.
     """
-    try:
-        UUID(collection_id)
-    except ValueError as e:
-        raise ForbiddenHTTPException() from e
+    validate_uuid_else_forbidden(collection_id)
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
@@ -307,7 +304,7 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Collect
     return version
 
 
-def get_infered_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
+def get_inferred_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
     """
     Infer the dataset version from either a DatasetId or a DatasetVersionId and return the DatasetVersion.
     :param dataset_id: identifies the dataset version
