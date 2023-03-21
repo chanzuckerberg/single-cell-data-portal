@@ -34,7 +34,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2\
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
           happy_version: "0.59.0"
       - name: Push images
