@@ -248,13 +248,15 @@ function CellInfoSideBar({
               <tr key={gene[0]}>
                 <td>
                   {gene[0]}
-                  <InfoButtonWrapper onClick={() => {
-                    generateGeneInfo(gene[0]);
+                  <InfoButtonWrapper
+                    onClick={() => {
+                      generateGeneInfo(gene[0]);
 
-                    track(EVENTS.WMG_FMG_GENE_INFO, {
-                      gene: gene[0]
-                    });
-                  }}>
+                      track(EVENTS.WMG_FMG_GENE_INFO, {
+                        gene: gene[0],
+                      });
+                    }}
+                  >
                     <StyledImage
                       id="gene-info-button-fmg"
                       src={InfoSVG.src}

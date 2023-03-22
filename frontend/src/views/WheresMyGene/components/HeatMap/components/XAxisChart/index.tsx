@@ -83,7 +83,7 @@ function GeneButton({
             generateGeneInfo(geneName);
 
             track(EVENTS.WMG_GENE_INFO, {
-              gene: geneName
+              gene: geneName,
             });
 
             if (!dispatch) return;
