@@ -977,18 +977,18 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
         explorer_url = res.json["datasets"][0]["explorer_url"]
         self.assertTrue(explorer_url.endswith(f"{revision.datasets[0].version_id.id}.cxg/"))
 
-    def test_get_collection_version_403(self):
+    def test_get_collection_version_4xx(self):
         with self.subTest("Query endpoint with incorrect ID"):
             res = self.app.get(
                 f"/curation/v1/collection_versions/{str(uuid.uuid4())}", headers=self.make_owner_header()
             )
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(404, res.status_code)
         with self.subTest("Query endpoint with Canonical ID"):
             collection = self.generate_published_collection()
             res = self.app.get(
                 f"/curation/v1/collection_versions/{collection.collection_id}", headers=self.make_owner_header()
             )
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(404, res.status_code)
         with self.subTest("Query endpoint with non-UUID"):
             res = self.app.get("/curation/v1/collection_versions/bad-input-id", headers=self.make_owner_header())
             self.assertEqual(403, res.status_code)
@@ -998,7 +998,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             res = self.app.get(
                 f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
             )
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(404, res.status_code)
 
 
 class TestPatchCollectionID(BaseAPIPortalTest):
