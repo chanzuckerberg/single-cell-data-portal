@@ -42,7 +42,7 @@ export const YAxisWrapper = styled.div`
   top: ${X_AXIS_CHART_HEIGHT_PX}px;
   left: 0;
   z-index: 1;
-  padding-top: ${Y_AXIS_TOP_PADDING}px;
+  padding-top: 5px;
   /* Somehow Firefox requires this to scroll */
   overflow: hidden;
 `;
@@ -60,13 +60,12 @@ export const XAxisWrapper = styled.div`
   top: 0;
   width: 100%;
   z-index: 2;
-  padding-bottom: ${GENE_INFO_BUTTON_PADDING}px;
 `;
 
 export const ChartWrapper = styled.div`
   position: absolute;
   padding-left: ${CHART_LEFT_PADDING}px;
-  padding-top: ${Y_AXIS_TOP_PADDING}px;
+  padding-top: 5px;
   left: ${Y_AXIS_CHART_WIDTH_PX}px;
   top: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;

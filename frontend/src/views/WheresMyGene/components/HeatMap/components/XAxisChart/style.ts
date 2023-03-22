@@ -41,13 +41,14 @@ export const XAxisLabel = styled.div`
 
 export const XAxisGeneName = styled.span`
   transform: scale(-1, -1);
+  margin-top: auto;
+  margin-bottom: 4px;
+  overflow: hidden;
   ${selectedStyle}
 `;
 
 export const InfoButtonWrapper = styled.div`
   cursor: pointer;
-  position: absolute;
-  bottom: -${GENE_INFO_BUTTON_PADDING}px;
   display: flex;
 `;
 

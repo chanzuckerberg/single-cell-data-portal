@@ -7,6 +7,7 @@ import {
   SideBarOpenButtonWrapper,
   SideBarPositioner,
 } from "src/components/common/SideBar/style";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 export const EXPANDED_WIDTH_PX = 240;
 
@@ -66,7 +67,7 @@ export default function SideBar({
           <SideBarPositionerComponent
             id="c1"
             isExpanded={true}
-            style={{ maxHeight: "calc(60vh - 48px)" }}
+            style={{ maxHeight: `calc(60vh - ${HEADER_HEIGHT_PX}px)` }}
           >
             <SideBarToggleButtonWrapper>
               <Button
@@ -84,7 +85,7 @@ export default function SideBar({
             id="c2"
             isExpanded={true}
             style={{
-              maxHeight: "calc(40vh - 48px)",
+              maxHeight: `calc(44vh - ${HEADER_HEIGHT_PX}px`,
               borderTop: "solid 1px rgb(16 22 26 / 15%)",
             }}
           >

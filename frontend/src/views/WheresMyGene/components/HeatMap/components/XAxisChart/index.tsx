@@ -77,6 +77,7 @@ function GeneButton({
         >
           {formattedLabel}
         </XAxisGeneName>
+
         <InfoButtonWrapper
           className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
           onClick={() => {
@@ -100,6 +101,7 @@ function GeneButton({
             alt={`display gene info for ${geneName}`}
           />
         </InfoButtonWrapper>
+
       </XAxisLabel>
     </GeneButtonStyle>
   );
