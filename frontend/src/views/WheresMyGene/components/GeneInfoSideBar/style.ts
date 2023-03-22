@@ -1,12 +1,18 @@
 import styled from "@emotion/styled";
-import { fontBodyXs, getFontWeights, fontBodyS, getColors } from "czifui";
+import {
+  fontBodyXs,
+  getFontWeights,
+  fontBodyS,
+  getColors,
+  Callout,
+} from "czifui";
 
 export const GeneInfoWrapper = styled.div``;
 
 export const GeneSummary = styled.div`
   ${fontBodyXs}
 
-  padding: 16px 0;
+  padding: 8px 0;
   font-weight: 500;
   color: black;
 `;
@@ -57,21 +63,15 @@ export const GeneUrl = styled.div`
 `;
 
 export const GeneName = styled.div`
-  ${fontBodyS}
+  ${fontBodyXs}
   font-weight: 500;
-
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: black;
 `;
 
-export const InfoButtonWrapper = styled.div`
-  padding-right: 8px;
-  display: flex;
+export const StyledCallout = styled(Callout)`
+  ${fontBodyXs}
+  align-items: center;
+  width: 100%;
 `;
 
 export const WarningBanner = styled.div`

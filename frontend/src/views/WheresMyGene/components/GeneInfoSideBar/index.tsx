@@ -7,11 +7,9 @@ import {
   GeneSynonymsLabel,
   GeneSynonymsWrapper,
   GeneUrl,
-  WarningBanner,
-  InfoButtonWrapper,
+  StyledCallout,
 } from "./style";
 import { useGeneInfo } from "src/common/queries/wheresMyGene";
-import { Icon } from "czifui";
 
 export interface GeneInfoBarProps {
   geneInfoGene: string;
@@ -31,9 +29,9 @@ function GeneInfoSideBar({
     >
       {!data ? (
         <>
-          <GeneSummary>
+          <StyledCallout autoDismiss={false} intent={"error"}>
             Sorry, this gene could not be found on NCBI.
-          </GeneSummary>
+          </StyledCallout>
 
           <GeneUrl>
             <a
@@ -51,16 +49,9 @@ function GeneInfoSideBar({
 
           {data.show_warning_banner && (
             <>
-              <WarningBanner>
-                <InfoButtonWrapper>
-                  <Icon
-                    sdsIcon="exclamationMarkCircle"
-                    sdsSize="l"
-                    sdsType="static"
-                  />
-                </InfoButtonWrapper>
+              <StyledCallout autoDismiss={false} intent={"warning"}>
                 NCBI didn't return an exact match for this gene.
-              </WarningBanner>
+              </StyledCallout>
             </>
           )}
 
