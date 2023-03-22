@@ -999,6 +999,19 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                 f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
             )
             self.assertEqual(404, res.status_code)
+        with self.subTest("Collection Version is unpublished collection"):
+            collection = self.generate_unpublished_collection()
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(403, res.status_code)
+        with self.subTest("Collection Version is unpublished revision"):
+            first_version = self.generate_published_collection()
+            revision = self.generate_revision(first_version.collection_id)
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(403, res.status_code)
 
 
 class TestPatchCollectionID(BaseAPIPortalTest):
