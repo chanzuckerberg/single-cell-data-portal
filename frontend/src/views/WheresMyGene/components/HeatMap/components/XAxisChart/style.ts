@@ -48,6 +48,7 @@ export const InfoButtonWrapper = styled.div`
   cursor: pointer;
   position: absolute;
   bottom: -${GENE_INFO_BUTTON_PADDING}px;
+  display: flex;
 `;
 
 export const GeneButtonStyle = styled.div`
