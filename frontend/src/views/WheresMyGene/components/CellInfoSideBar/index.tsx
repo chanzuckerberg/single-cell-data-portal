@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Button, Icon, Tooltip } from "czifui";
 import React, { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
@@ -102,7 +101,7 @@ function CellInfoSideBar({
             placement="bottom"
             width="default"
             className="fmg-tooltip-icon"
-            arrow={true}
+            arrow
             onOpen={() => setHoverStartTime(Date.now())}
             onClose={handleFmgHoverEnd}
             title={
@@ -136,7 +135,6 @@ function CellInfoSideBar({
               sdsStyle="minimal"
               sdsType="secondary"
               isAllCaps={false}
-              style={{ fontWeight: "500" }}
             >
               <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
@@ -180,7 +178,7 @@ function CellInfoSideBar({
                   placement="bottom"
                   width="default"
                   className="fmg-tooltip-icon"
-                  arrow={true}
+                  arrow
                   onOpen={() => setHoverStartTime(Date.now())}
                   onClose={handleMarkerScoreHoverEnd}
                   title={
@@ -216,7 +214,6 @@ function CellInfoSideBar({
                     sdsStyle="minimal"
                     sdsType="secondary"
                     isAllCaps={false}
-                    style={{ fontWeight: "500" }}
                   >
                     <StyledIconImage src={questionMarkIcon} />
                   </TooltipButton>

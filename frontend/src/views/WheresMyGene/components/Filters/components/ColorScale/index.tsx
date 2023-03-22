@@ -1,8 +1,4 @@
-import {
-  Icon,
-  InputDropdownProps as IInputDropdownProps,
-  Tooltip,
-} from "czifui";
+import { InputDropdownProps as IInputDropdownProps, Tooltip } from "czifui";
 import { useContext, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -10,20 +6,26 @@ import {
   DispatchContext,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGene/common/types";
 import { StyledDropdown, Wrapper } from "../common/style";
 import { Label } from "../../../InfoPanel/common/style";
 import { LabelWrapper } from "./style";
+import {
+  StyledIconImage,
+  TooltipButton,
+  StyledTooltip,
+} from "../../../CellInfoSideBar/style";
 
 interface Props {
   setIsScaled: (prevIsScaled: boolean) => void;
 }
 
-// (ashin-czi): Used by SaveImage to recreate the color scale plasma image in an SVG
+// (ashin-czi): Used by SaveExport SVG generation to recreate the color scale plasma image in an SVG
 // Not the best solution but importing SVG files creates conflicts with the Loader
 // and can't get the actual content of the SVG file needed for SVG creation
-export const plasmaSvgString = `
+export const PLASMA_SVG_STRING = `
   <rect width="120" height="16" fill="url(#paint0_linear_5151_537460)" />
   <defs>
       <linearGradient id="paint0_linear_5151_537460" x1="120" y1="8" x2="8.0516e-07" y2="8.00001"
@@ -64,9 +66,28 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
     <Wrapper>
       <LabelWrapper>
         <Label>Color Scale</Label>
-
-        <Tooltip title="Expression is scaled to the range [0,1]. Scaling is done by assigning the minimum value in the current view to 0 and the max is assigned to 1.">
-          <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="static" />
+        <Tooltip
+          sdsStyle="dark"
+          placement="right"
+          width="default"
+          arrow
+          title={
+            <StyledTooltip>
+              <div>
+                Expression is scaled to the range [0,1]. Scaling is done by
+                assigning the minimum value in the current view to 0 and the max
+                is assigned to 1.
+              </div>
+            </StyledTooltip>
+          }
+        >
+          <TooltipButton
+            sdsStyle="minimal"
+            sdsType="secondary"
+            isAllCaps={false}
+          >
+            <StyledIconImage src={questionMarkIcon} />
+          </TooltipButton>
         </Tooltip>
       </LabelWrapper>
 

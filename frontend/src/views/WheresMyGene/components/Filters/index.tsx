@@ -7,16 +7,17 @@ import {
 } from "czifui";
 import isEqual from "lodash/isEqual";
 import {
+  Dispatch,
   memo,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   FilterDimensions,
   RawDataset,
@@ -87,17 +88,19 @@ const mapTermToFilterOption = (term: {
 
 export interface Props {
   isLoading: boolean;
-  setIsScaled: React.Dispatch<React.SetStateAction<boolean>>;
+  availableFilters: Partial<FilterDimensions>;
+  setAvailableFilters: Dispatch<SetStateAction<Partial<FilterDimensions>>>;
+  setIsScaled: Dispatch<SetStateAction<boolean>>;
 }
 
 export default memo(function Filters({
   isLoading,
+  availableFilters,
+  setAvailableFilters,
   setIsScaled,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
-  const [availableFilters, setAvailableFilters] =
-    useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
   const { selectedFilters, selectedTissues, selectedGenes } = state;
 
@@ -336,6 +339,9 @@ export default memo(function Filters({
       <Organism isLoading={isLoading} />
 
       <Tooltip
+        sdsStyle="dark"
+        arrow
+        placement="right"
         title={"Please select at least one tissue and gene to use this option."}
         disableHoverListener={isHeatmapShown}
         disableFocusListener={isHeatmapShown}
@@ -349,6 +355,9 @@ export default memo(function Filters({
         <ViewOptionsLabel>View Options</ViewOptionsLabel>
         <ViewOptionsWrapper>
           <Tooltip
+            sdsStyle="dark"
+            arrow
+            placement="right"
             title={
               "Please select at least one tissue and gene to use this option."
             }

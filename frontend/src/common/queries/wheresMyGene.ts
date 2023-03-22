@@ -17,6 +17,7 @@ import {
   GeneInfo,
   RawCellTypeGeneExpressionSummaryData,
   ViewId,
+  Organism as IOrganism,
 } from "src/views/WheresMyGene/common/types";
 import { API } from "../API";
 import { ROUTES } from "../constants/routes";
@@ -130,6 +131,23 @@ export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimens
       staleTime: Infinity,
     }
   );
+}
+
+const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
+
+export function useAvailableOrganisms() {
+  const { data, isLoading } = usePrimaryFilterDimensions();
+
+  if (isLoading) {
+    return { isLoading, data: null };
+  }
+
+  return {
+    isLoading,
+    data: data?.organisms.filter((organism: IOrganism) =>
+      TEMP_ALLOW_NAME_LIST.includes(organism.name)
+    ),
+  };
 }
 
 interface Filter {
