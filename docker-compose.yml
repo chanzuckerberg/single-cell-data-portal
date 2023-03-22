@@ -35,6 +35,7 @@ services:
           - localstack.corporanet.local
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
+    platform: linux/amd64
     build:
       context: frontend
       cache_from:
@@ -67,6 +68,7 @@ services:
           - frontend.corporanet.local
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -101,6 +103,7 @@ services:
           - uploadfailures.corporanet.local
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -135,6 +138,7 @@ services:
           - uploadsuccess.corporanet.local
   dataset_submissions:
     image: "${DOCKER_REPO}dataset-submissions"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -168,6 +172,7 @@ services:
           - dataset_submissions.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -202,6 +207,7 @@ services:
           - processing.corporanet.local
   wmg_processing:
     image: "${DOCKER_REPO}wmg-processing"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -234,6 +240,7 @@ services:
           - processing.corporanet.local
   backend:
     image: "${DOCKER_REPO}corpora-backend"
+    platform: linux/amd64
     build:
       context: .
       cache_from:
