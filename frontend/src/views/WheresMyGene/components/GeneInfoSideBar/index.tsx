@@ -72,7 +72,9 @@ function GeneInfoSideBar({
           </GeneSynonymsWrapper>
 
           <GeneUrl>
-            <a href={data.ncbi_url}>View on NCBI</a>
+            <a href={data.ncbi_url} target="_blank" rel="noreferrer noopener">
+              View on NCBI
+            </a>
           </GeneUrl>
         </>
       )}

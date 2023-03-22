@@ -1,10 +1,5 @@
 import styled from "@emotion/styled";
-import {
-  fontBodyXs,
-  getFontWeights,
-  fontBodyS,
-  getColors,
-} from "czifui";
+import { fontBodyXs, getFontWeights, fontBodyS, getColors } from "czifui";
 
 export const GeneInfoWrapper = styled.div``;
 
