@@ -1,7 +1,6 @@
 import { DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
 import React, {
-  Fragment,
   useCallback,
   useContext,
   useEffect,
@@ -16,7 +15,6 @@ import {
   generateTermsByKey,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
-  useGeneInfo,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";

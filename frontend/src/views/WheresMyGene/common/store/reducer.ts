@@ -1,6 +1,6 @@
 import isEqual from "lodash/isEqual";
 import { CompareId } from "../constants";
-import { CellType, GeneInfo, SORT_BY } from "../types";
+import { CellType, SORT_BY } from "../types";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;

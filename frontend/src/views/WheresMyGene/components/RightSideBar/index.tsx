@@ -1,6 +1,6 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { ReactElement, ReactNode } from "react";
+import { ReactElement } from "react";
 import {
   Position,
   SideBar as SideBarWrapper,

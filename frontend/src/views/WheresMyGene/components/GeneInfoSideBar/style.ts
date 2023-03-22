@@ -4,9 +4,7 @@ import {
   getFontWeights,
   fontBodyS,
   getColors,
-  fontHeaderL,
 } from "czifui";
-import Image from "next/image";
 
 export const GeneInfoWrapper = styled.div``;
 

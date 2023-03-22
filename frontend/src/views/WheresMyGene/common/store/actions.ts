@@ -3,7 +3,6 @@
  * in `./reducer.ts`.
  */
 
-import { GeneInfo } from "../types";
 import {
   AddCellInfoCellTypePayload,
   LoadStateFromURLPayload,

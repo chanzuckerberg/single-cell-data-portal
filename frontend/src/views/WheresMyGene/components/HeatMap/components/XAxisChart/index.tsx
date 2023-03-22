@@ -5,7 +5,6 @@ import { EVENTS } from "src/common/analytics/events";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import {
   deleteSingleGene,
-  addGeneInfoGene,
   clearCellInfoCellType,
 } from "src/views/WheresMyGene/common/store/actions";
 import { useDeleteGenes } from "../../hooks/useDeleteGenes";
