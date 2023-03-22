@@ -1,6 +1,7 @@
 import { DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
 import React, {
+  Fragment,
   useCallback,
   useContext,
   useEffect,
@@ -15,6 +16,7 @@ import {
   generateTermsByKey,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
+  useGeneInfo,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
@@ -25,6 +27,7 @@ import {
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
+  addGeneInfoGene,
   clearCellInfoCellType,
   clearGeneInfoGene,
   deleteSelectedGenes,
@@ -254,6 +257,16 @@ export default function WheresMyGene(): JSX.Element {
     dispatch(clearGeneInfoGene());
   };
 
+  const handleCloseGeneInfoSideBar = () => {
+    if (!dispatch) return;
+    dispatch(clearGeneInfoGene());
+  };
+
+  const generateGeneInfo = (gene: string) => {
+    if (!dispatch) return;
+    dispatch(addGeneInfoGene(gene));
+  };
+
   return (
     <>
       <Head>
@@ -273,7 +286,6 @@ export default function WheresMyGene(): JSX.Element {
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
         <RightSideBar
-          label={`${cellInfoCellType.cellType.name}`}
           SideBarWrapperComponent={SideBarWrapper}
           SideBarPositionerComponent={SideBarPositioner}
           SideBarOpenButtonWrapperComponent={GeneSideBarOpenButtonWrapper}
@@ -281,16 +293,31 @@ export default function WheresMyGene(): JSX.Element {
           testId="cell-type-details-panel"
           disabled={false}
           width={CELL_INFO_SIDEBAR_WIDTH_PX}
-          handleClose={handleCloseRightSideBar}
-        >
-          <CellInfoBar
-            cellInfoCellType={cellInfoCellType}
-            tissueInfo={tissuesByID[cellInfoCellType.tissueID]}
-          />
-        </RightSideBar>
+          content={[
+            {
+              label: `${cellInfoCellType.cellType.name}`,
+              handleClose: handleCloseRightSideBar,
+              element: (
+                <CellInfoBar
+                  generateGeneInfo={generateGeneInfo}
+                  cellInfoCellType={cellInfoCellType}
+                  tissueInfo={tissuesByID[cellInfoCellType.tissueID]}
+                />
+              ),
+            },
+            ...(geneInfoGene
+              ? [
+                  {
+                    label: `${geneInfoGene}`,
+                    handleClose: handleCloseGeneInfoSideBar,
+                    element: <GeneInfoBar geneInfoGene={geneInfoGene} />,
+                  },
+                ]
+              : []),
+          ]}
+        />
       ) : geneInfoGene ? (
         <RightSideBar
-          label={`${geneInfoGene}`}
           SideBarWrapperComponent={SideBarWrapper}
           SideBarPositionerComponent={SideBarPositioner}
           SideBarOpenButtonWrapperComponent={GeneSideBarOpenButtonWrapper}
@@ -298,10 +325,14 @@ export default function WheresMyGene(): JSX.Element {
           testId="gene-info-details-panel"
           disabled={false}
           width={CELL_INFO_SIDEBAR_WIDTH_PX}
-          handleClose={handleCloseRightSideBar}
-        >
-          <GeneInfoBar geneInfoGene={geneInfoGene} />
-        </RightSideBar>
+          content={[
+            {
+              label: geneInfoGene,
+              handleClose: handleCloseGeneInfoSideBar,
+              element: <GeneInfoBar geneInfoGene={geneInfoGene} />,
+            },
+          ]}
+        />
       ) : null}
 
       <View id="view" overflow="hidden">
@@ -357,6 +388,7 @@ export default function WheresMyGene(): JSX.Element {
               scaledMeanExpressionMax={scaledMeanExpressionMax}
               scaledMeanExpressionMin={scaledMeanExpressionMin}
               selectedOrganismId={selectedOrganismId}
+              generateGeneInfo={generateGeneInfo}
             />
           ) : null}
         </Wrapper>

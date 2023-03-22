@@ -1,6 +1,6 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { ReactNode } from "react";
+import { ReactElement, ReactNode } from "react";
 import {
   Position,
   SideBar as SideBarWrapper,
@@ -16,8 +16,7 @@ export const EXPANDED_WIDTH_PX = 240;
 export type SideBarToggleFn = (expanded: boolean) => void;
 
 export interface Props {
-  children: ReactNode;
-  label: ReactNode;
+  content: { label: string; handleClose: () => void; element: ReactElement }[];
   width?: number;
   position?: typeof Position[keyof typeof Position];
   SideBarWrapperComponent?: typeof SideBarWrapper;
@@ -25,12 +24,10 @@ export interface Props {
   SideBarOpenButtonWrapperComponent?: typeof SideBarOpenButtonWrapper;
   testId?: string;
   disabled?: boolean;
-  handleClose: () => void;
 }
 
 export default function SideBar({
-  children: content,
-  label,
+  content,
   width = EXPANDED_WIDTH_PX,
   position = Position.LEFT,
   SideBarWrapperComponent = SideBarWrapper,
@@ -38,11 +35,12 @@ export default function SideBar({
   SideBarOpenButtonWrapperComponent = SideBarOpenButtonWrapper,
   testId,
   disabled,
-  handleClose,
 }: Props): JSX.Element {
   const sideBarWidth = width;
   const SideBarToggleButtonWrapper = SideBarOpenButtonWrapperComponent;
   const rightIcon = IconNames.CROSS;
+
+  if (!content) return <></>;
 
   return (
     <SideBarWrapperComponent
@@ -50,18 +48,59 @@ export default function SideBar({
       position={position}
       data-test-id={testId}
     >
-      <SideBarPositionerComponent isExpanded={true}>
-        <SideBarToggleButtonWrapper>
-          <Button
-            minimal
-            onClick={() => handleClose()}
-            rightIcon={rightIcon}
-            text={label}
-            disabled={disabled}
-          />
-        </SideBarToggleButtonWrapper>
-        {content}
-      </SideBarPositionerComponent>
+      {content.length === 1 ? (
+        <SideBarPositionerComponent isExpanded={true}>
+          <SideBarToggleButtonWrapper>
+            <Button
+              minimal
+              onClick={() => content[0].handleClose()}
+              rightIcon={rightIcon}
+              text={content[0].label}
+              disabled={disabled}
+            />
+          </SideBarToggleButtonWrapper>
+          {content[0].element}
+        </SideBarPositionerComponent>
+      ) : (
+        <>
+          <SideBarPositionerComponent
+            id="c1"
+            isExpanded={true}
+            style={{ maxHeight: "calc(60vh - 48px)" }}
+          >
+            <SideBarToggleButtonWrapper>
+              <Button
+                minimal
+                onClick={() => content[0].handleClose()}
+                rightIcon={rightIcon}
+                text={content[0].label}
+                disabled={disabled}
+              />
+            </SideBarToggleButtonWrapper>
+            {content[0].element}
+          </SideBarPositionerComponent>
+
+          <SideBarPositionerComponent
+            id="c2"
+            isExpanded={true}
+            style={{
+              maxHeight: "calc(40vh - 48px)",
+              borderTop: "solid 1px rgb(16 22 26 / 15%)",
+            }}
+          >
+            <SideBarToggleButtonWrapper>
+              <Button
+                minimal
+                onClick={() => content[1].handleClose()}
+                rightIcon={rightIcon}
+                text={content[1].label}
+                disabled={disabled}
+              />
+            </SideBarToggleButtonWrapper>
+            {content[1].element}
+          </SideBarPositionerComponent>
+        </>
+      )}
     </SideBarWrapperComponent>
   );
 }

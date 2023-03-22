@@ -22,16 +22,21 @@ import {
   StyledTooltip,
   TissueName,
   TooltipButton,
+  InfoButtonWrapper,
 } from "./style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
+import { StyledImage } from "../HeatMap/components/YAxisChart/style";
+import InfoSVG from "../HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
 export interface CellInfoBarProps {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
   tissueInfo: OntologyTerm;
+  generateGeneInfo: (gene: string) => void;
 }
 
 function CellInfoSideBar({
   cellInfoCellType,
   tissueInfo,
+  generateGeneInfo,
 }: CellInfoBarProps): JSX.Element | null {
   const urlParams = new URLSearchParams(window.location.search);
   let testType: "binomtest" | undefined = undefined;
@@ -244,7 +249,18 @@ function CellInfoSideBar({
           <tbody>
             {Object.entries(data.marker_genes).map((gene) => (
               <tr key={gene[0]}>
-                <td>{gene[0]}</td>
+                <td>
+                  {gene[0]}
+                  <InfoButtonWrapper onClick={() => generateGeneInfo(gene[0])}>
+                    <StyledImage
+                      id="gene-info-button-fmg"
+                      src={InfoSVG.src}
+                      width="10"
+                      height="10"
+                      alt={`display gene info for ${gene[0]}`}
+                    />
+                  </InfoButtonWrapper>
+                </td>
                 <td>{gene[1].effect_size.toPrecision(4)}</td>
               </tr>
             ))}

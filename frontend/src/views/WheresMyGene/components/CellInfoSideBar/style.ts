@@ -127,3 +127,8 @@ export const NoMarkerGenesDescription = styled("span")`
     `;
   }}
 `;
+
+export const InfoButtonWrapper = styled("span")`
+  cursor: pointer;
+  padding-left: 4px;
+`;

@@ -6,6 +6,7 @@ import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import {
   deleteSingleGene,
   addGeneInfoGene,
+  clearCellInfoCellType,
 } from "src/views/WheresMyGene/common/store/actions";
 import { useDeleteGenes } from "../../hooks/useDeleteGenes";
 import { CHART_LEFT_PADDING, SELECTED_STYLE } from "../../style";
@@ -28,22 +29,20 @@ import { StyledImage } from "../YAxisChart/style";
 import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
 interface Props {
   geneNames: string[];
+  generateGeneInfo: (gene: string) => void;
 }
 
 function GeneButton({
   geneName,
   genesToDelete,
+  generateGeneInfo,
 }: {
   geneName: string;
   genesToDelete: string[];
   handleGeneClick: (gene: string) => void;
+  generateGeneInfo: (gene: string) => void;
 }): JSX.Element {
   const dispatch = useContext(DispatchContext);
-
-  const generateGeneInfo = (gene: string) => {
-    if (!dispatch) return;
-    dispatch(addGeneInfoGene(gene));
-  };
 
   const active = genesToDelete.includes(geneName);
   const currentFont = `
@@ -81,10 +80,15 @@ function GeneButton({
         </XAxisGeneName>
         <InfoButtonWrapper
           className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-          onClick={() => generateGeneInfo(geneName)}
+          onClick={() => {
+            generateGeneInfo(geneName);
+
+            if (!dispatch) return;
+            dispatch(clearCellInfoCellType());
+          }}
         >
           <StyledImage
-            id="marker-gene-button"
+            id="gene-info-button"
             src={InfoSVG.src}
             width="10"
             height="10"
@@ -96,7 +100,10 @@ function GeneButton({
   );
 }
 
-export default function XAxisChart({ geneNames }: Props): JSX.Element {
+export default function XAxisChart({
+  geneNames,
+  generateGeneInfo,
+}: Props): JSX.Element {
   const { genesToDelete, handleGeneClick } = useDeleteGenes();
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
 
@@ -117,6 +124,7 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
             geneName={geneName}
             genesToDelete={genesToDelete}
             handleGeneClick={handleGeneClick}
+            generateGeneInfo={generateGeneInfo}
           />
         ))}
       </XAxisContainer>
