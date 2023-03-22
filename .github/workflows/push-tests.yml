@@ -142,8 +142,15 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-backend
 
-      # Upload Allure results as an artifact
-      - uses: actions/upload-artifact@v3
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
+          retention-days: 3
+
+      - name: Upload Allure results as an artifact
+        uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -190,8 +197,15 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-wmg-backend
 
-      # Upload Allure results as an artifact
-      - uses: actions/upload-artifact@v3
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
+          retention-days: 3
+
+      - name: Upload Allure results as an artifact
+        uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -243,18 +257,19 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-processing
 
-      # Upload Allure results as an artifact
-      - uses: actions/upload-artifact@v3
-        with:
-          name: allure-results
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
-          retention-days: 20
-
-      - uses: actions/upload-artifact@v3
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
+
+      - name: Upload Allure results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
 
       - uses: 8398a7/action-slack@v3
         with:
@@ -301,8 +316,14 @@ jobs:
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-wmg-processing
-      # Upload Allure results as an artifact
-      - uses: actions/upload-artifact@v3
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: .
+          retention-days: 20
+      - name: Upload Allure results as an artifact
+        uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -352,8 +373,15 @@ jobs:
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-integration-test-backend
-      # Upload Allure results as an artifact
-      - uses: actions/upload-artifact@v3
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
+          retention-days: 3
+
+      - name: Upload Allure results as an artifact
+        uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
