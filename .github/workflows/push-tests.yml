@@ -320,8 +320,8 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage
-          path: .
-          retention-days: 20
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
+          retention-days: 3
       - name: Upload Allure results as an artifact
         uses: actions/upload-artifact@v3
         with:
