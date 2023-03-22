@@ -12,7 +12,7 @@ import {
   StateContext,
 } from "src/views/WheresMyGene/common/store";
 import { StyledButtonIcon } from "../QuickSelect/style";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveImage";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
 import { StyledButtonDiv, StyledLabel } from "./style";
 import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
 
