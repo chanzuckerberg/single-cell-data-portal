@@ -19,6 +19,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    PublishedDatasetVersion,
 )
 from backend.portal.api.explorer_url import generate as generate_explorer_url
 from backend.portal.api.providers import get_business_logic
@@ -189,6 +190,9 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canoni
                     ds["processing_status"] = "PIPELINE_FAILURE"
             else:
                 ds["processing_status"] = status.processing_status
+        if isinstance(dataset_version, PublishedDatasetVersion):
+            ds["collection_id"] = dataset_version.collection_id.id
+            ds["collection_version_id"] = dataset_version.collection_version_id.id
     return ds
 
 
@@ -264,6 +268,13 @@ def get_visibility(collection_version: CollectionVersion) -> str:
     return "PUBLIC" if collection_version.published_at else "PRIVATE"
 
 
+def validate_uuid_else_forbidden(_id: str):
+    try:
+        UUID(_id)
+    except ValueError as e:
+        raise ForbiddenHTTPException() from e
+
+
 def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> str:
     if not datasets:  # Return None if no datasets.
         return None
@@ -292,16 +303,13 @@ def get_collection_version_else_forbidden(collection_version_id: str) -> Collect
     return version
 
 
-def get_infered_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
+def get_inferred_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
     """
     Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion.
     :param collection_id: identifies the collection version
     :return: The CollectionVersion if it exists.
     """
-    try:
-        UUID(collection_id)
-    except ValueError as e:
-        raise ForbiddenHTTPException() from e
+    validate_uuid_else_forbidden(collection_id)
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
@@ -312,7 +320,7 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Collect
     return version
 
 
-def get_infered_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
+def get_inferred_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
     """
     Infer the dataset version from either a DatasetId or a DatasetVersionId and return the DatasetVersion.
     :param dataset_id: identifies the dataset version

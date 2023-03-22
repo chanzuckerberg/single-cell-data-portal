@@ -17,6 +17,7 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
+    DatasetVersionId,
     Link,
     OntologyTermId,
 )
@@ -567,6 +568,58 @@ class TestGetCollections(BaseAPIPortalTest):
                 response.pop(key)
         with self.subTest(f"No Extra fields in {entity}"):
             self.assertFalse(response)
+
+
+class TestGetCollectionVersions(BaseAPIPortalTest):
+    def test__get_collection_versions__200(self):
+        # Create published collection with 2 published revisions and 1 unpublished revision
+        published_collection = self.generate_published_collection()
+        expected_version_ids = [published_collection.version_id.id]
+
+        revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
+        expected_version_ids.append(revision_collection.version_id.id)
+        self.business_logic.publish_collection_version(revision_collection.version_id)
+
+        revision_collection_2 = self.generate_revision(collection_id=published_collection.collection_id)
+        expected_version_ids.append(revision_collection_2.version_id.id)
+        self.business_logic.publish_collection_version(revision_collection_2.version_id)
+
+        with self.subTest("Published versions are returned in reverse chronological order with no revision open"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            self.assertEqual(expected_version_ids, received_version_ids)
+
+        self.generate_revision(collection_id=published_collection.collection_id)
+        with self.subTest("Published versions are returned in reverse chronological order with a revision open"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            self.assertEqual(expected_version_ids, received_version_ids)
+
+    def test__get_collection_versions_not_published_canonical__404(self):
+        published_collection = self.generate_published_collection()
+        revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
+        unpublished_collection = self.generate_unpublished_collection()
+        with self.subTest("Returns 404 when nonexistent id is requested"):
+            resp = self.app.get("/curation/v1/collections/01234567-89ab-cdef-0123-456789abcdef/versions")
+            self.assertEqual(404, resp.status_code)
+
+        with self.subTest("Returns 404 when revision id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{revision_collection.version_id.id}/versions")
+            self.assertEqual(404, resp.status_code)
+
+        with self.subTest("Returns 404 when published version id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.version_id.id}/versions")
+            self.assertEqual(404, resp.status_code)
+
+        with self.subTest("Returns empty list when unpublished canonical id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{unpublished_collection.collection_id.id}/versions")
+            self.assertEqual(404, resp.status_code)
+
+    def test__get_collection_versions_not_a_uuid__403(self):
+        self.generate_published_collection()
+        with self.subTest("Returns 403 when id is not uuid format"):
+            resp = self.app.get("/curation/v1/collections/this_identifier_is_not_a_uuid/versions")
+            self.assertEqual(403, resp.status_code)
 
 
 class TestGetCollectionID(BaseAPIPortalTest):
@@ -1414,7 +1467,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             test_url = f"/curation/v1/collections/{non_existent_id}/datasets/{non_existent_id}"
             headers = self.make_owner_header()
             response = self.app.get(test_url, headers=headers)
-            self.assertEqual(404, response.status_code)
+            self.assertEqual(403, response.status_code)
 
     def test_get_datasets_200(self):
         published_collection_1 = self.generate_published_collection(
@@ -1486,6 +1539,59 @@ class TestGetDatasets(BaseAPIPortalTest):
                 received_dataset_ids.add(dataset["dataset_id"])
 
             self.assertEqual(dataset_ids, received_dataset_ids)
+
+
+class TestGetDatasetIdVersions(BaseAPIPortalTest):
+    def test_get_dataset_id_versions_ok(self):
+        collection = self.generate_published_collection()
+        collection_id = collection.collection_id
+        dataset_id = collection.datasets[0].dataset_id
+        dataset_version_id = collection.datasets[0].version_id
+        published_revision = self.generate_revision(collection_id)
+        published_dataset_revision_id = self.generate_dataset(
+            collection_version=published_revision, replace_dataset_version_id=dataset_version_id
+        ).dataset_version_id
+        self.business_logic.publish_collection_version(published_revision.version_id)
+        unpublished_revision = self.generate_revision(collection_id)
+        self.generate_dataset(
+            collection_version=unpublished_revision,
+            replace_dataset_version_id=DatasetVersionId(published_dataset_revision_id),
+        ).dataset_version_id
+
+        test_url = f"/curation/v1/datasets/{dataset_id}/versions"
+        headers = self.make_owner_header()
+        response = self.app.get(test_url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        dataset_version_ids = []
+        collection_ids = []
+        collection_version_ids = []
+        for dataset in response.json["datasets"]:
+            dataset_version_ids.append(dataset["dataset_version_id"])
+            collection_ids.append(dataset["collection_id"])
+            collection_version_ids.append(dataset["collection_version_id"])
+        # Check that only published datasets appear
+        # Must be returned in reverse chronological order
+        self.assertEqual([published_dataset_revision_id, dataset_version_id.id], dataset_version_ids)
+        self.assertEqual([collection_id.id, collection_id.id], collection_ids)
+        self.assertEqual([published_revision.version_id.id, collection.version_id.id], collection_version_ids)
+
+    def test_get_dataset_id_version_404(self):
+        with self.subTest("Input is not a UUID"):
+            test_url = "/curation/v1/datasets/not-uuid-input/versions"
+            headers = self.make_owner_header()
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
+        with self.subTest("Dataset with that UUID does not exist"):
+            test_url = f"/curation/v1/datasets/{str(uuid.uuid4())}/versions"
+            headers = self.make_owner_header()
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
+        with self.subTest("Dataset Exists, but not published so no public version history"):
+            dataset_id = self.generate_unpublished_collection(add_datasets=1).datasets[0].dataset_id
+            test_url = f"/curation/v1/datasets/{dataset_id}/versions"
+            headers = self.make_owner_header()
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
 
 
 class TestPostDataset(BaseAPIPortalTest):

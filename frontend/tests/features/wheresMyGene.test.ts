@@ -162,20 +162,21 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getDiseaseSelectorButton, page);
     const diseaseOptionsBefore = await page.$$("[role=option]");
     const numberOfDiseasesBefore = diseaseOptionsBefore.length;
+    await page.keyboard.press("Escape");
 
     await clickUntilOptionsShowUp(getDatasetSelectorButton, page);
     const datasetOptions = await page.$$("[role=option]");
     await datasetOptions[0].click();
     await page.keyboard.press("Escape");
 
-    await clickUntilOptionsShowUp(getDiseaseSelectorButton, page);
-    const diseaseOptionsAfter = await page.$$("[role=option]");
-    const numberOfDiseasesAfter = diseaseOptionsAfter.length;
-    await page.keyboard.press("Escape");
-
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
     const tissueOptionsAfter = await page.$$("[role=option]");
     const numberOfTissuesAfter = tissueOptionsAfter.length;
+    await page.keyboard.press("Escape");
+
+    await clickUntilOptionsShowUp(getDiseaseSelectorButton, page);
+    const diseaseOptionsAfter = await page.$$("[role=option]");
+    const numberOfDiseasesAfter = diseaseOptionsAfter.length;
     await page.keyboard.press("Escape");
 
     expect(numberOfDiseasesBefore).toBeGreaterThan(numberOfDiseasesAfter);
