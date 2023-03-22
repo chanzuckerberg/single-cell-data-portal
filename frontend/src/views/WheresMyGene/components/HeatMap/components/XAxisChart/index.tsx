@@ -23,7 +23,7 @@ import {
   XAxisGeneName,
   InfoButtonWrapper,
 } from "./style";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveImage";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { StyledImage } from "../YAxisChart/style";
 import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
 interface Props {
