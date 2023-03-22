@@ -327,7 +327,7 @@ export default function WheresMyGene(): JSX.Element {
           width={CELL_INFO_SIDEBAR_WIDTH_PX}
           content={[
             {
-              label: geneInfoGene,
+              label: `${geneInfoGene}`,
               handleClose: handleCloseGeneInfoSideBar,
               element: <GeneInfoBar geneInfoGene={geneInfoGene} />,
             },

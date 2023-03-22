@@ -6,13 +6,14 @@ import {
   getColors,
   fontHeaderL,
 } from "czifui";
+import Image from "next/image";
 
 export const GeneInfoWrapper = styled.div``;
 
 export const GeneSummary = styled.div`
   ${fontBodyXs}
 
-  padding-bottom: 16px;
+  padding: 16px 0;
   font-weight: 500;
   color: black;
 `;
@@ -62,7 +63,7 @@ export const GeneUrl = styled.div`
   }}
 `;
 
-export const GeneHeader = styled.p`
+export const GeneName = styled.div`
   ${fontBodyS}
   font-weight: 500;
 
@@ -70,38 +71,30 @@ export const GeneHeader = styled.p`
     const colors = getColors(props);
 
     return `
-        color: ${colors?.gray[500]};
-        `;
+      color: ${colors?.gray[500]};
+    `;
   }}
 `;
 
-export const GeneSymbol = styled.h1`
-  color: black;
-  ${fontHeaderL}
-  ${(props) => {
-    const fontWeights = getFontWeights(props);
-
-    return `
-        font-weight: ${fontWeights?.semibold};
-        `;
-  }}
+export const InfoButtonWrapper = styled.div`
+  padding-right: 8px;
+  display: flex;
 `;
 
 export const WarningBanner = styled.div`
   padding: 8px;
   display: flex;
   align-items: center;
-  span {
-    margin-left: 10px;
-  }
+  margin-top: 8px;
+
   ${fontBodyXs}
   ${(props) => {
     const colors = getColors(props);
     return `
-        background-color: ${colors?.warning[100]};
-        svg {
-          fill: ${colors?.warning[400]}
-        }
-        `;
+      background-color: ${colors?.warning[100]};
+      svg {
+        fill: ${colors?.warning[400]}
+      }
+    `;
   }}
 `;
