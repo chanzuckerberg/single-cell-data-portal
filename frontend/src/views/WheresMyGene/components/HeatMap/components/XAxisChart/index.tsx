@@ -82,7 +82,13 @@ function GeneButton({
           onClick={() => {
             generateGeneInfo(geneName);
 
+            track(EVENTS.WMG_GENE_INFO, {
+              gene: geneName
+            });
+
             if (!dispatch) return;
+
+            // Clear cell type info here so that FMG panel closes
             dispatch(clearCellInfoCellType());
           }}
         >
