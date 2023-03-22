@@ -865,7 +865,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         """
         Given a dataset version id, return the DatasetVersion IF its been part of a published CollectionVersion
         """
-        unpublished_dataset_version_id = DatasetVersionId(self.initialize_unpublished_collection().datasets[0])
+        unpublished_dataset_version_id = self.initialize_unpublished_collection().datasets[0].version_id
         initial_published_collection_version = self.initialize_published_collection()
         collection_id = initial_published_collection_version.collection_id
         dataset = initial_published_collection_version.datasets[0]
