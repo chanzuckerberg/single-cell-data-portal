@@ -370,6 +370,7 @@ jobs:
   submit-codecoverage:
     needs:
       - backend-unit-test
+      - backend-integration-test
       - backend-wmg-unit-test
       - wmg-processing-unit-test
       - processing-unit-test
@@ -411,6 +412,7 @@ jobs:
     needs:
       - backend-unit-test
       - backend-wmg-unit-test
+      - backend-integration-test
       - wmg-processing-unit-test
       - processing-unit-test
       - e2e-test
