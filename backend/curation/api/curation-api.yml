@@ -622,9 +622,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/dataset_version"
+                $ref: "#/components/schemas/dataset_version"
         "400":
           $ref: "#/components/responses/400"
         "401":
