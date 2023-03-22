@@ -1,6 +1,6 @@
 from flask import jsonify, make_response
 
-from backend.common.utils.http_exceptions import ForbiddenHTTPException
+from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.curation.api.v1.curation.collections.common import (
     reshape_datasets_for_curation_api,
     validate_uuid_else_forbidden,
@@ -18,7 +18,7 @@ def get(dataset_id: str):
 
     dataset_versions = business_logic.get_prior_published_versions_for_dataset(DatasetId(dataset_id))
     if len(dataset_versions) == 0:
-        raise ForbiddenHTTPException("Dataset not found!")
+        raise NotFoundHTTPException("Dataset not found!")
 
     # business function returns in chronological order; must return in reverse chronological
     dataset_versions.reverse()

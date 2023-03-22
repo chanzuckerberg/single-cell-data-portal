@@ -861,6 +861,47 @@ class TestGetDataset(BaseBusinessLogicTestCase):
             [dataset.version_id, new_dataset_version_id], [version.version_id for version in version_history]
         )
 
+    def test_get_prior_published_dataset_version(self):
+        """
+        Given a dataset version id, return the DatasetVersion IF its been part of a published CollectionVersion
+        """
+        unpublished_dataset_version_id = DatasetVersionId(self.initialize_unpublished_collection().datasets[0])
+        initial_published_collection_version = self.initialize_published_collection()
+        collection_id = initial_published_collection_version.collection_id
+        dataset = initial_published_collection_version.datasets[0]
+        # Revision 1 (to publish)
+        collection_revision_id = self.business_logic.create_collection_version(collection_id).version_id
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_revision_id, "http://fake.url", None, dataset.version_id
+        )
+        self.business_logic.publish_collection_version(collection_revision_id)
+        # Revision 2 (not to publish)
+        unpublished_collection_version_id = self.business_logic.create_collection_version(collection_id).version_id
+        unpublished_dataset_revision_id, _ = self.business_logic.ingest_dataset(
+            unpublished_collection_version_id, "http://fake.url", None, new_dataset_version_id
+        )
+
+        # test get unpublished dataset version
+        unpublished_dataset_version = self.business_logic.get_prior_published_dataset_version(
+            unpublished_dataset_version_id
+        )
+        self.assertIsNone(unpublished_dataset_version)
+        # test get past published dataset version
+        initial_published_dataset_version = self.business_logic.get_prior_published_dataset_version(dataset.version_id)
+        self.assertEqual(initial_published_dataset_version.version_id, dataset.version_id)
+        self.assertEqual(
+            initial_published_dataset_version.collection_version_id, initial_published_collection_version.version_id
+        )
+        # test currently published dataset version
+        published_dataset_revision = self.business_logic.get_prior_published_dataset_version(new_dataset_version_id)
+        self.assertEqual(published_dataset_revision.version_id, new_dataset_version_id)
+        self.assertEqual(published_dataset_revision.collection_version_id, collection_revision_id)
+        # test get unpublished dataset revision
+        unpublished_dataset_revision = self.business_logic.get_prior_published_dataset_version(
+            unpublished_dataset_revision_id
+        )
+        self.assertIsNone(unpublished_dataset_revision)
+
     def test_get_dataset_artifacts_ok(self):
         """
         Artifacts belonging to a dataset can be obtained with `get_dataset_artifacts`

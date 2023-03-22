@@ -1508,11 +1508,6 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
             replace_dataset_version_id=initial_published_dataset_version_id,
             publish=True,
         )
-        unpublished_revision = self.generate_revision(collection_id)
-        unpublished_dataset_revision = self.generate_dataset(
-            collection_version=unpublished_revision,
-            replace_dataset_version_id=DatasetVersionId(published_dataset_revision.dataset_version_id),
-        )
 
         headers = self.make_owner_header()
 
@@ -1536,30 +1531,33 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
             response.json["explorer_url"].endswith(f"/e/{published_dataset_revision.dataset_version_id}.cxg/")
         )
 
-        # get unpublished dataset version
-        test_url = f"/curation/v1/dataset_versions/{unpublished_dataset_revision.dataset_version_id}"
-        response = self.app.get(test_url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(unpublished_dataset_revision.dataset_version_id, response.json["dataset_version_id"])
-        self.assertEqual(unpublished_dataset_revision.dataset_id, response.json["dataset_id"])
-        self.assertEqual(collection_id.id, response.json["collection_id"])
-        self.assertTrue(
-            response.json["explorer_url"].endswith(f"/e/{unpublished_dataset_revision.dataset_version_id}.cxg/")
-        )
-
-    def test_get_dataset_version_403(self):
+    def test_get_dataset_version_4xx(self):
+        headers = self.make_owner_header()
         with self.subTest("Input is not valid UUID"):
-            headers = self.make_owner_header()
             test_url = "/curation/v1/dataset_versions/bad-input-id"
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(403, response.status_code)
-        with self.subTest("Input is valid but not found"):
+        with self.subTest("Input is valid (canonical dataset ID) but not found"):
             dataset = self.generate_published_collection().datasets[0]
-            headers = self.make_owner_header()
             # passing in canonical dataset ID instead of version ID
             test_url = f"/curation/v1/dataset_versions/{dataset.dataset_id}"
             response = self.app.get(test_url, headers=headers)
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(404, response.status_code)
+        with self.subTest("Input is ID for unpublished dataset version"):
+            dataset = self.generate_unpublished_collection(add_datasets=1).datasets[0]
+            test_url = f"/curation/v1/dataset_versions/{dataset.dataset_id}"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
+        with self.subTest("Input is ID for unpublished dataset revision"):
+            collection = self.generate_published_collection(add_datasets=1)
+            unpublished_revision = self.generate_revision(collection.collection_id)
+            unpublished_dataset_revision = self.generate_dataset(
+                collection_version=unpublished_revision,
+                replace_dataset_version_id=DatasetVersionId(collection.datasets[0].version_id),
+            )
+            test_url = f"/curation/v1/dataset_versions/{unpublished_dataset_revision.dataset_version_id}"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
 
 
 class TestGetDatasetIdVersions(BaseAPIPortalTest):
@@ -1595,7 +1593,7 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         self.assertEqual([collection_id.id, collection_id.id], collection_ids)
         self.assertEqual([published_revision.version_id.id, collection.version_id.id], collection_version_ids)
 
-    def test_get_dataset_id_version_403(self):
+    def test_get_dataset_id_version_4xx(self):
         with self.subTest("Input is not a UUID"):
             test_url = "/curation/v1/datasets/not-uuid-input/versions"
             headers = self.make_owner_header()
@@ -1605,13 +1603,13 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             test_url = f"/curation/v1/datasets/{str(uuid.uuid4())}/versions"
             headers = self.make_owner_header()
             response = self.app.get(test_url, headers=headers)
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(404, response.status_code)
         with self.subTest("Dataset Exists, but not published so no public version history"):
             dataset_id = self.generate_unpublished_collection(add_datasets=1).datasets[0].dataset_id
             test_url = f"/curation/v1/datasets/{dataset_id}/versions"
             headers = self.make_owner_header()
             response = self.app.get(test_url, headers=headers)
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(404, response.status_code)
 
 
 class TestPostDataset(BaseAPIPortalTest):
