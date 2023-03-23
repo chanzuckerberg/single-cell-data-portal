@@ -84,12 +84,10 @@ class WmgSnapshot:
         # hardcode to dev backend if deployment is rdev
         API_URL = (
             "https://api.cellxgene.dev.single-cell.czi.technology"
-            if os.environ.get("REMOTE_DEV_PREFIX")
+            if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
             else os.getenv("API_URL")
         )
 
-        # this should always be true for deployed environments.
-        # otherwise, skip so tests pass.
         if API_URL:
             dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
             datasets = requests.get(dataset_metadata_url).json()

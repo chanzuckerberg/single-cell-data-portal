@@ -1,30 +1,17 @@
 import logging
+import os
 import subprocess
 from typing import Dict, Union
 
 import anndata
 import numpy as np
+import requests
 from anndata._core.views import ArrayView
 from scipy import sparse
 
-from backend.layers.business.business import BusinessLogic
-from backend.layers.common.entities import DatasetArtifactType
-from backend.layers.persistence.persistence import DatabaseProvider
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 
 logger = logging.getLogger(__name__)
-
-_business_logic = None
-
-
-def get_business_logic():
-    """
-    Returns an instance of the business logic handler. Use this to interrogate the database
-    """
-    global _business_logic
-    if not _business_logic:
-        _business_logic = BusinessLogic(DatabaseProvider(), None, None, None, None)
-    return _business_logic
 
 
 def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:
@@ -41,22 +28,30 @@ def get_dataset_s3_uris() -> Dict[str, str]:
     """
     Retrieve list of s3 uris for datasets included in the wmg cube
     """
+    # hardcode to dev backend if deployment is rdev
+    API_URL = (
+        "https://api.cellxgene.dev.single-cell.czi.technology"
+        if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
+        else os.getenv("API_URL")
+    )
+
+    dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
+    datasets = requests.get(dataset_metadata_url).json()
+
     s3_uris = dict()
-    for dataset in get_business_logic().get_all_mapped_datasets():
+    for dataset in datasets:
         if (
-            (dataset.metadata is not None)
-            and (dataset.metadata.assay is not None)
-            and (dataset.metadata.is_primary_data == "PRIMARY")
-            and (dataset.metadata.organism is not None)
-            and any(assay.ontology_term_id in INCLUDED_ASSAYS for assay in dataset.metadata.assay)
-            and len(dataset.metadata.organism) < 2
+            dataset["is_primary_data"] == "PRIMARY"
+            and any(assay["ontology_term_id"] in INCLUDED_ASSAYS for assay in dataset["assay"])
+            and len(dataset["organism"]) < 2
         ):
+            dataset_id = dataset["explorer_url"].split("/")[-2].split(".cxg")[0]
             s3_uri = next(
-                a.uri
-                for a in dataset.artifacts
-                if a.type == DatasetArtifactType.H5AD and a.get_file_name() == "local.h5ad"
+                a["s3_uri"]
+                for a in dataset["dataset_assets"]
+                if a["filetype"] == "H5AD" and a["filename"] == "local.h5ad"
             )
-            s3_uris[dataset.dataset_id.id] = s3_uri
+            s3_uris[dataset_id] = s3_uri
     return s3_uris
 
 
