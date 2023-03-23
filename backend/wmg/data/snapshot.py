@@ -81,7 +81,7 @@ class WmgSnapshot:
         return hash(None)  # hash is not used for WmgSnapshot
 
     def build_dataset_metadata_dict(self):
-        # hardcode to dev backend if deployment is rdev
+        # hardcode to dev backend if deployment is rdev or test
         API_URL = (
             "https://api.cellxgene.dev.single-cell.czi.technology"
             if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
