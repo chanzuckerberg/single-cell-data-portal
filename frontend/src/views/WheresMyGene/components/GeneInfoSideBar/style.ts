@@ -7,8 +7,6 @@ import {
   Callout,
 } from "czifui";
 
-export const GeneInfoWrapper = styled.div``;
-
 export const GeneSummary = styled.div`
   ${fontBodyXs}
 

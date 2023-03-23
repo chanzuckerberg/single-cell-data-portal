@@ -2,7 +2,6 @@ import React from "react";
 import {
   GeneName,
   GeneSummary,
-  GeneInfoWrapper,
   GeneSynonyms,
   GeneSynonymsLabel,
   GeneSynonymsWrapper,
@@ -24,10 +23,7 @@ function GeneInfoSideBar({
   if (isLoading) return <GeneSummary>Loading...</GeneSummary>;
 
   return (
-    <GeneInfoWrapper
-      id="gene-info-wrapper"
-      data-test-id={`${geneInfoGene}-gene-info`}
-    >
+    <div id="gene-info-wrapper" data-test-id={`${geneInfoGene}-gene-info`}>
       {!data ? (
         <>
           <StyledCallout autoDismiss={false} intent={"error"}>
@@ -70,7 +66,7 @@ function GeneInfoSideBar({
           </GeneUrl>
         </>
       )}
-    </GeneInfoWrapper>
+    </div>
   );
 }
 
