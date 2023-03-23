@@ -844,11 +844,12 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         collection_id = published_version.collection_id
         dataset = published_version.datasets[0]
         # Revision 1 (to publish)
-        collection_version_id = self.business_logic.create_collection_version(collection_id).version_id
+        revision_id = self.business_logic.create_collection_version(collection_id).version_id
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            collection_version_id, "http://fake.url", None, dataset.version_id
+            revision_id, "http://fake.url", None, dataset.version_id
         )
-        self.business_logic.publish_collection_version(collection_version_id)
+        self.business_logic.publish_collection_version(revision_id)
+        revision = self.business_logic.get_collection_version(revision_id)
         # Revision 2 (not to publish)
         unpublished_collection_version_id = self.business_logic.create_collection_version(collection_id).version_id
         unpublished_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -859,6 +860,10 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         # Check that only published datasets appear
         self.assertEqual(
             [dataset.version_id, new_dataset_version_id], [version.version_id for version in version_history]
+        )
+        self.assertEqual(
+            [published_version.published_at, revision.published_at],
+            [version.published_at for version in version_history],
         )
 
     def test_get_prior_published_dataset_version(self):

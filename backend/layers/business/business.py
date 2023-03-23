@@ -613,7 +613,9 @@ class BusinessLogic(BusinessLogicInterface):
                     and dataset_version.version_id.id not in found_version_ids
                 ):
                     published_version = PublishedDatasetVersion(
-                        collection_version_id=collection_version.version_id, **vars(dataset_version)
+                        collection_version_id=collection_version.version_id,
+                        published_at=collection_version.published_at,
+                        **vars(dataset_version),
                     )
                     found_version_ids.add(dataset_version.version_id.id)
                     published_version_history.append(published_version)
@@ -636,7 +638,9 @@ class BusinessLogic(BusinessLogicInterface):
                 dv.version_id.id for dv in collection_version.datasets
             }:
                 published_version = PublishedDatasetVersion(
-                    collection_version_id=collection_version.version_id, **vars(dataset_version)
+                    collection_version_id=collection_version.version_id,
+                    published_at=collection_version.published_at,
+                    **vars(dataset_version),
                 )
                 break
         return published_version

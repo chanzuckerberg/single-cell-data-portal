@@ -1,6 +1,7 @@
 import copy
 import json
 import uuid
+from collections import defaultdict
 from dataclasses import asdict
 from unittest.mock import Mock, patch
 
@@ -1580,18 +1581,18 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         headers = self.make_owner_header()
         response = self.app.get(test_url, headers=headers)
         self.assertEqual(200, response.status_code)
-        dataset_version_ids = []
-        collection_ids = []
-        collection_version_ids = []
+        expected = defaultdict(list)
         for dataset in response.json["datasets"]:
-            dataset_version_ids.append(dataset["dataset_version_id"])
-            collection_ids.append(dataset["collection_id"])
-            collection_version_ids.append(dataset["collection_version_id"])
+            expected["dataset_version_ids"].append(dataset["dataset_version_id"])
+            expected["collection_ids"].append(dataset["collection_id"])
+            expected["collection_version_ids"].append(dataset["collection_version_id"])
         # Check that only published datasets appear
         # Must be returned in reverse chronological order
-        self.assertEqual([published_dataset_revision_id, dataset_version_id.id], dataset_version_ids)
-        self.assertEqual([collection_id.id, collection_id.id], collection_ids)
-        self.assertEqual([published_revision.version_id.id, collection.version_id.id], collection_version_ids)
+        self.assertEqual([published_dataset_revision_id, dataset_version_id.id], expected["dataset_version_ids"])
+        self.assertEqual([collection_id.id, collection_id.id], expected["collection_ids"])
+        self.assertEqual(
+            [published_revision.version_id.id, collection.version_id.id], expected["collection_version_ids"]
+        )
 
     def test_get_dataset_id_version_4xx(self):
         with self.subTest("Input is not a UUID"):
