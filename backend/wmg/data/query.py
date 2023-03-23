@@ -67,6 +67,7 @@ class WmgQuery:
             indexed_dims=[
                 "gene_ontology_term_ids",
                 "tissue_ontology_term_ids",
+                "tissue_original_ontology_term_ids",
                 "organism_ontology_term_id",
             ],
         )
@@ -104,7 +105,7 @@ class WmgQuery:
         cell_counts = self._query(
             cube=self._snapshot.cell_counts_cube,
             criteria=criteria.copy(exclude={"gene_ontology_term_ids"}),
-            indexed_dims=["tissue_ontology_term_ids", "organism_ontology_term_id"],
+            indexed_dims=["tissue_ontology_term_ids", "tissue_original_ontology_term_ids", "organism_ontology_term_id"],
         )
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
@@ -130,7 +131,10 @@ class WmgQuery:
 
         tiledb_dims_query = []
         for dim_name in indexed_dims:
-            if criteria.dict()[dim_name]:
+            # Don't filter on this dimension but return all "original tissues" back
+            if dim_name == "tissue_original_ontology_term_ids":
+                tiledb_dims_query.append([])
+            elif criteria.dict()[dim_name]:
                 tiledb_dims_query.append(criteria.dict()[dim_name])
             # If an "indexed" dimension is not included in the criteria,
             # then all values will be selected.

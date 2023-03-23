@@ -1,7 +1,7 @@
 import { agnes } from "ml-hclust";
 import { useMemo } from "react";
-import { CellTypeRow } from "src/common/queries/wheresMyGene";
 import {
+  CellType,
   CellTypeGeneExpressionSummaryData,
   SORT_BY,
   Tissue,
@@ -12,7 +12,7 @@ interface Props {
     string,
     Map<string, Map<string, CellTypeGeneExpressionSummaryData>>
   >;
-  selectedCellTypes: { [tissue: Tissue]: CellTypeRow[] };
+  selectedCellTypes: { [tissue: Tissue]: CellType[] };
   genes: string[];
   cellTypeSortBy: SORT_BY;
 }
@@ -22,7 +22,7 @@ export function useSortedCellTypesByTissueName({
   selectedCellTypes,
   genes,
   cellTypeSortBy,
-}: Props): { [tissue: Tissue]: CellTypeRow[] } {
+}: Props): { [tissue: Tissue]: CellType[] } {
   return useMemo(() => {
     const isSortByCellOntology = cellTypeSortBy === SORT_BY.CELL_ONTOLOGY;
 
@@ -30,7 +30,7 @@ export function useSortedCellTypesByTissueName({
       return selectedCellTypes;
     }
 
-    const sortedCellTypesByTissueName: { [tissueName: string]: CellTypeRow[] } =
+    const sortedCellTypesByTissueName: { [tissueName: string]: CellType[] } =
       {};
 
     for (const [tissueName, cellTypes] of Object.entries(selectedCellTypes)) {
@@ -41,33 +41,42 @@ export function useSortedCellTypesByTissueName({
 
       if (!cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData) continue;
 
-      const { aggregatedOnly, optionOnly } = separateCellTypes(cellTypes);
+      const matrix = cellTypes.map((cellType) => {
+        const geneNameToCellTypeGeneExpressionSummaryData =
+          cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData.get(
+            cellType.id
+          );
 
-      const cellTypeOptionsByCellTypeId =
-        buildCellTypeOptionsByCellTypeId(optionOnly);
+        if (!geneNameToCellTypeGeneExpressionSummaryData) {
+          return genes.map(() => 0);
+        }
 
-      const tree = hierarchicalClustering({
-        aggregatedOnly,
-        cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData,
-        genes,
+        return genes.map((geneName) => {
+          const cellTypeGeneExpressionSummaryData =
+            geneNameToCellTypeGeneExpressionSummaryData.get(geneName);
+
+          if (!cellTypeGeneExpressionSummaryData) return 0;
+
+          const { meanExpression, percentage } =
+            cellTypeGeneExpressionSummaryData;
+
+          return meanExpression * percentage;
+        });
       });
 
-      const orderedCellTypes = [];
+      const tree = agnes(matrix);
 
-      for (const index of tree.indices()) {
-        const cellType = aggregatedOnly[index];
+      const orderedCellTypes =
+        tree
+          ?.indices()
+          .reverse()
+          .map((index) => {
+            const { id, name, total_count } = cellTypes[index];
 
-        const cellTypeOptions = cellTypeOptionsByCellTypeId[cellType.id] || [];
+            return { id, name, total_count };
+          }) || [];
 
-        // (thuang): Reverse the order, so `unknown` shows up last
-        orderedCellTypes.push(cellType, ...cellTypeOptions.reverse());
-      }
-
-      /**
-       * (thuang): Reverse the order so the first item shows up at the top of
-       * the heatmap
-       */
-      sortedCellTypesByTissueName[tissueName] = orderedCellTypes.reverse();
+      sortedCellTypesByTissueName[tissueName] = orderedCellTypes;
     }
     return sortedCellTypesByTissueName;
   }, [
@@ -76,75 +85,4 @@ export function useSortedCellTypesByTissueName({
     genes,
     cellTypeSortBy,
   ]);
-}
-
-function hierarchicalClustering({
-  aggregatedOnly,
-  cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData,
-  genes,
-}: {
-  aggregatedOnly: CellTypeRow[];
-  cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData: Map<
-    string,
-    Map<string, CellTypeGeneExpressionSummaryData>
-  >;
-  genes: string[];
-}) {
-  const matrix = aggregatedOnly.map((cellType) => {
-    const geneNameToCellTypeGeneExpressionSummaryData =
-      cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData.get(
-        cellType.viewId
-      );
-
-    if (!geneNameToCellTypeGeneExpressionSummaryData) {
-      return genes.map(() => 0);
-    }
-
-    return genes.map((geneName) => {
-      const cellTypeGeneExpressionSummaryData =
-        geneNameToCellTypeGeneExpressionSummaryData.get(geneName);
-
-      if (!cellTypeGeneExpressionSummaryData) return 0;
-
-      const { meanExpression, percentage } = cellTypeGeneExpressionSummaryData;
-
-      return meanExpression * percentage;
-    });
-  });
-
-  return agnes(matrix);
-}
-
-function separateCellTypes(cellTypes: CellTypeRow[]): {
-  aggregatedOnly: CellTypeRow[];
-  optionOnly: CellTypeRow[];
-} {
-  const aggregatedOnly: CellTypeRow[] = [];
-  const optionOnly: CellTypeRow[] = [];
-
-  cellTypes.forEach((cellType) => {
-    if (cellType.isAggregated) {
-      aggregatedOnly.push(cellType);
-    } else {
-      optionOnly.push(cellType);
-    }
-  });
-
-  return { aggregatedOnly, optionOnly };
-}
-
-function buildCellTypeOptionsByCellTypeId(optionOnly: CellTypeRow[]) {
-  const cellTypeOptionsByCellTypeId: {
-    [cellTypeId: CellTypeRow["id"]]: CellTypeRow[];
-  } = {};
-
-  for (const cellType of optionOnly) {
-    const cellTypeOptions = cellTypeOptionsByCellTypeId[cellType.id] || [];
-
-    cellTypeOptions.push(cellType);
-
-    cellTypeOptionsByCellTypeId[cellType.id] = cellTypeOptions;
-  }
-
-  return cellTypeOptionsByCellTypeId;
 }

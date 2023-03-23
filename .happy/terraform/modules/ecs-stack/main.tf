@@ -6,7 +6,7 @@ data aws_secretsmanager_secret_version config {
 }
 
 locals {
-  secret = jsondecode(nonsensitive(data.aws_secretsmanager_secret_version.config.secret_string))
+  secret = jsondecode(data.aws_secretsmanager_secret_version.config.secret_string)
   alb_key = var.require_okta ? "private_albs" : "public_albs"
 
   custom_stack_name            = var.stack_name

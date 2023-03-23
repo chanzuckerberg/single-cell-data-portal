@@ -81,9 +81,7 @@ def are_cell_types_colinear(cell_type1, cell_type2):
     return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
 
 
-def rollup_across_cell_type_descendants(
-    df, cell_type_col="cell_type_ontology_term_id", ignore_cols=None
-) -> pd.DataFrame:
+def rollup_across_cell_type_descendants(df, cell_type_col="cell_type_ontology_term_id") -> pd.DataFrame:
     """
     Aggregate values for each cell type across its descendants in the input dataframe.
 
@@ -105,9 +103,6 @@ def rollup_across_cell_type_descendants(
 
     cell_type_col : str, optional, default="cell_type_ontology_term_id"
         Name of the column in the input dataframe containing the cell type ontology term IDs.
-
-    ignore_cols : list, optional, default=None
-        List of column names to ignore when rolling up the numeric columns.
 
     Returns
     -------
@@ -150,8 +145,7 @@ def rollup_across_cell_type_descendants(
     summed = summed[tuple(dim_indices)]
     dtypes = numeric_df.dtypes
     for col, array in zip(numeric_df.columns, summed.T):
-        if ignore_cols and col not in ignore_cols or not ignore_cols:
-            df[col] = array.astype(dtypes[col])
+        df[col] = array.astype(dtypes[col])
 
     return df
 

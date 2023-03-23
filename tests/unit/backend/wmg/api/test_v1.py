@@ -3,10 +3,8 @@ import unittest
 from unittest.mock import patch
 
 from backend.api_server.app import app
-from backend.wmg.api.v1 import find_dimension_id_from_compare
-from backend.wmg.data.query import MarkerGeneQueryCriteria
+from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
-from tests.unit.backend.wmg.fixtures.test_cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
     test_gene_terms,
     test_organism_terms,
@@ -19,139 +17,11 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     all_X_cell_counts_values,
     create_temp_wmg_snapshot,
     exclude_all_but_one_gene_per_organism,
-    exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
     load_realistic_test_snapshot,
     reverse_cell_type_ordering,
 )
-from tests.unit.backend.wmg.test_query import generate_expected_marker_gene_data_with_pandas
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
-
-
-# this should only be used for generating expected outputs when using the test snapshot (see test_snapshot.py)
-def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, total_count, compare_terms=None):
-    result = {}
-    result["cell_types"] = {}
-    # assume tissues are sorted, and cell types are sorted within each tissue
-    # assume the length of cell types is the dimensionality of each column in the
-    # test snapshot (i.e. each tissue contains all fake cell types).
-    # this line determines the starting order for each cell type in each tissue.
-    orders = [int(tissue.split("_")[-1]) * len(cell_types) for tissue in tissues]
-    for tissue, order in zip(tissues, orders):
-        result["cell_types"][tissue] = {}
-        for cell_type in cell_types:
-            result["cell_types"][tissue][cell_type] = {}
-            result["cell_types"][tissue][cell_type]["aggregated"] = {
-                "cell_type_ontology_term_id": cell_type,
-                "name": f"{cell_type}_label",
-                "total_count": total_count,
-                "order": order,
-            }
-            if compare_terms:
-                for term in compare_terms:
-                    result["cell_types"][tissue][cell_type][term] = {
-                        "cell_type_ontology_term_id": cell_type,
-                        "name": f"{term}_label",
-                        "total_count": total_count // len(compare_terms),
-                        "order": order,
-                    }
-            order += 1
-
-    result["genes"] = []
-    for gene in genes:
-        result["genes"].append({gene: f"{gene}_label"})
-    return result
-
-
-def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, n, me, pc, tpc, compare_terms=None):
-    result = {}
-    for gene in genes:
-        result[gene] = {}
-        for tissue in tissues:
-            result[gene][tissue] = {}
-            for cell_type in cell_types:
-                result[gene][tissue][cell_type] = {}
-                result[gene][tissue][cell_type]["aggregated"] = {
-                    "n": n,
-                    "me": me,
-                    "pc": pc,
-                    "tpc": tpc,
-                }
-                if compare_terms:
-                    for term in compare_terms:
-                        result[gene][tissue][cell_type][term] = {
-                            "n": n // len(compare_terms),
-                            "me": me,
-                            "pc": pc,
-                            "tpc": tpc / len(compare_terms),
-                        }
-
-    return result
-
-
-def generate_test_inputs_and_expected_outputs(genes, tissues, organism, dim_size, me, expected_count, compare_dim=None):
-    """
-    Generates test inputs and expected outputs for the /wmg/v1/query endpoint.
-
-    Arguments
-    ---------
-    genes: list of gene ontology term IDs
-    tissues: list of tissue ontology term IDs
-    organism: organism ontology term ID
-    dim_size: size of each dimension of the test cube
-    me: mean expression value to use for each gene/tissue/cell_type combination (scalar)
-    expected_count: expected number of cells for each gene/tissue/cell_type combination (scalar)
-    compare_dim: dimension to use for compare feature (optional). None if compare isn't used.
-
-    Returns
-    -------
-    tuple of (request, expected_expression_summary, expected_term_id_labels)
-    request: dictionary containing the request body to send to the /wmg/v1/query endpoint
-    expected_expression_summary: dictionary containing the expected expression summary values
-    expected_term_id_labels: dictionary containing the expected term ID labels
-    """
-    cell_types = [f"cell_type_ontology_term_id_{i}" for i in range(dim_size)]
-
-    expected_combinations_per_cell_type = dim_size ** len(
-        set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
-    )
-    compare_terms = (
-        [f"{find_dimension_id_from_compare(compare_dim)}_{i}" for i in range(dim_size)] if compare_dim else None
-    )
-
-    expected_term_id_labels = generate_expected_term_id_labels_dictionary(
-        genes,
-        tissues,
-        cell_types,
-        expected_combinations_per_cell_type * expected_count,
-        compare_terms=compare_terms,
-    )
-    expected_expression_summary = generate_expected_expression_summary_dictionary(
-        genes,
-        tissues,
-        cell_types,
-        expected_combinations_per_cell_type,
-        me,
-        1 / expected_count,
-        expected_combinations_per_cell_type / (expected_count * (dim_size ** len(expression_summary_non_indexed_dims))),
-        compare_terms=compare_terms,
-    )
-
-    request = dict(
-        filter=dict(
-            gene_ontology_term_ids=genes,
-            organism_ontology_term_id=organism,
-            tissue_ontology_term_ids=tissues,
-        )
-    )
-    if compare_dim:
-        request["compare"] = compare_dim
-
-    return (
-        request,
-        expected_expression_summary,
-        expected_term_id_labels,
-    )
 
 
 class WmgApiV1Tests(unittest.TestCase):
@@ -232,12 +102,14 @@ class WmgApiV1Tests(unittest.TestCase):
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
-            genes = ["gene_ontology_term_id_0"]
-            tissues = ["tissue_ontology_term_id_0"]
-            organism = "organism_ontology_term_id_0"
-
-            (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, tissues, organism, dim_size, 1.0, 10
+            request = dict(
+                filter=dict(
+                    gene_ontology_term_ids=[
+                        "gene_ontology_term_id_0",
+                    ],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                ),
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
@@ -246,8 +118,26 @@ class WmgApiV1Tests(unittest.TestCase):
 
             expected_response = {
                 "snapshot_id": "dummy-snapshot",
-                "expression_summary": expected_expression_summary,
-                "term_id_labels": expected_term_id_labels,
+                "expression_summary": {
+                    "gene_ontology_term_id_0": {
+                        "tissue_ontology_term_id_0": [
+                            {"id": "cell_type_ontology_term_id_0", "me": 1.0, "n": 1, "pc": 0.1, "tpc": 0.1}
+                        ]
+                    },
+                },
+                "term_id_labels": {
+                    "cell_types": {
+                        "tissue_ontology_term_id_0": [
+                            {
+                                "cell_type": "cell_type_ontology_term_id_0_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                                "total_count": 10,
+                                "depth": 0,
+                            }
+                        ]
+                    },
+                    "genes": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
+                },
             }
             self.assertEqual(expected_response, json.loads(response.data))
 
@@ -273,63 +163,186 @@ class WmgApiV1Tests(unittest.TestCase):
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
-            genes = ["gene_ontology_term_id_0", "gene_ontology_term_id_2"]
-            tissues = ["tissue_ontology_term_id_1", "tissue_ontology_term_id_2"]
-            organism = "organism_ontology_term_id_0"
-
-            (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, tissues, organism, dim_size, 1.0, 10
+            request = dict(
+                filter=dict(
+                    gene_ontology_term_ids=[
+                        "gene_ontology_term_id_0",
+                        "gene_ontology_term_id_2",
+                    ],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_1", "tissue_ontology_term_id_2"],
+                ),
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
 
             self.assertEqual(200, response.status_code)
 
-            expected = {
-                "snapshot_id": "dummy-snapshot",
-                "expression_summary": expected_expression_summary,
-                "term_id_labels": expected_term_id_labels,
-            }
-            self.assertEqual(expected, json.loads(response.data))
-
-    @patch("backend.wmg.api.v1.gene_term_label")
-    @patch("backend.wmg.api.v1.ontology_term_label")
-    @patch("backend.wmg.api.v1.load_snapshot")
-    def test__query_request_multi_primary_dims_only_with_compare__returns_200_and_correct_response(
-        self, load_snapshot, ontology_term_label, gene_term_label
-    ):
-        dim_size = 3
-        with create_temp_wmg_snapshot(
-            dim_size=dim_size,
-            expression_summary_vals_fn=all_ones_expression_summary_values,
-            cell_counts_generator_fn=all_tens_cell_counts_values,
-        ) as snapshot:
-            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
-            # expected query response
-            load_snapshot.return_value = snapshot
-
-            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
-            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
-            # module is separately unit tested, and here we just want to verify the response building logic is correct.
-            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
-            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
-
-            genes = ["gene_ontology_term_id_0", "gene_ontology_term_id_2"]
-            tissues = ["tissue_ontology_term_id_1", "tissue_ontology_term_id_2"]
-            organism = "organism_ontology_term_id_0"
-
-            (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, tissues, organism, dim_size, 1.0, 10, compare_dim="self_reported_ethnicity"
+            # sanity check the expected values of the `n` stat for each data viz point; if this fails, the cube test
+            # fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture has
+            # changed
+            expected_cell_count_per_cell_type = dim_size ** len(
+                set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
             )
+            assert expected_cell_count_per_cell_type == 729
 
-            response = self.app.post("/wmg/v1/query", json=request)
+            # there are 729 possible combinations per tissue-cell type given the above filtering criteria,
+            # and 10 cells per type in the cell counts cube, so we expect 7290 total cells per tissue-cell type
 
-            self.assertEqual(200, response.status_code)
+            expected_combinations_per_cell_type = dim_size ** len(
+                set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
+            )
+            expected_n_cells_per_cell_type = expected_combinations_per_cell_type * 10
+            assert expected_n_cells_per_cell_type == 7290
 
             expected = {
                 "snapshot_id": "dummy-snapshot",
-                "expression_summary": expected_expression_summary,
-                "term_id_labels": expected_term_id_labels,
+                "expression_summary": {
+                    "gene_ontology_term_id_0": {
+                        "tissue_ontology_term_id_1": [
+                            {
+                                "id": "cell_type_ontology_term_id_0",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_1",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_2",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                        ],
+                        "tissue_ontology_term_id_2": [
+                            {
+                                "id": "cell_type_ontology_term_id_0",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_1",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_2",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                        ],
+                    },
+                    "gene_ontology_term_id_2": {
+                        "tissue_ontology_term_id_1": [
+                            {
+                                "id": "cell_type_ontology_term_id_0",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_1",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_2",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                        ],
+                        "tissue_ontology_term_id_2": [
+                            {
+                                "id": "cell_type_ontology_term_id_0",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_1",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                            {
+                                "id": "cell_type_ontology_term_id_2",
+                                "n": 2187,
+                                "me": 1.0,
+                                "pc": 0.1,
+                                "tpc": 2187 / (10 * (3**8)),
+                            },
+                        ],
+                    },
+                },
+                "term_id_labels": {
+                    "cell_types": {
+                        "tissue_ontology_term_id_1": [
+                            {
+                                "cell_type": "cell_type_ontology_term_id_0_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                                "total_count": 21870,
+                                "depth": 0,
+                            },
+                            {
+                                "cell_type": "cell_type_ontology_term_id_1_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                                "total_count": 21870,
+                                "depth": 1,
+                            },
+                            {
+                                "cell_type": "cell_type_ontology_term_id_2_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
+                                "total_count": 21870,
+                                "depth": 2,
+                            },
+                        ],
+                        "tissue_ontology_term_id_2": [
+                            {
+                                "cell_type": "cell_type_ontology_term_id_0_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                                "total_count": 21870,
+                                "depth": 0,
+                            },
+                            {
+                                "cell_type": "cell_type_ontology_term_id_1_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                                "total_count": 21870,
+                                "depth": 1,
+                            },
+                            {
+                                "cell_type": "cell_type_ontology_term_id_2_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
+                                "total_count": 21870,
+                                "depth": 2,
+                            },
+                        ],
+                    },
+                    "genes": [
+                        {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
+                        {"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"},
+                    ],
+                },
             }
             self.assertEqual(expected, json.loads(response.data))
 
@@ -356,19 +369,48 @@ class WmgApiV1Tests(unittest.TestCase):
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
-            genes = ["gene_ontology_term_id_0"]
-            tissues = ["tissue_ontology_term_id_0", "tissue_ontology_term_id_1"]
-            organism = "organism_ontology_term_id_0"
-
-            (request, _, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, tissues, organism, dim_size, 1.0, 10
+            request = dict(
+                filter=dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0", "tissue_ontology_term_id_1"],
+                ),
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
 
             self.assertEqual(200, response.status_code)
 
-            expected = expected_term_id_labels["cell_types"]
+            expected = {
+                "tissue_ontology_term_id_0": [
+                    {
+                        "cell_type": "cell_type_ontology_term_id_0_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                        "total_count": 1280,
+                        "depth": 0,
+                    },
+                    {
+                        "cell_type": "cell_type_ontology_term_id_1_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                        "total_count": 1280,
+                        "depth": 1,
+                    },
+                ],
+                "tissue_ontology_term_id_1": [
+                    {
+                        "cell_type": "cell_type_ontology_term_id_0_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                        "total_count": 1280,
+                        "depth": 0,
+                    },
+                    {
+                        "cell_type": "cell_type_ontology_term_id_1_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                        "total_count": 1280,
+                        "depth": 1,
+                    },
+                ],
+            }
             self.assertEqual(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
 
     @patch("backend.wmg.api.v1.gene_term_label")
@@ -393,19 +435,53 @@ class WmgApiV1Tests(unittest.TestCase):
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
-            genes = ["gene_ontology_term_id_0"]
-            tissues = ["tissue_ontology_term_id_0", "tissue_ontology_term_id_1"]
-            organism = "organism_ontology_term_id_0"
-
-            (request, _, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, tissues, organism, dim_size, 1.0, expected_count
+            request = dict(
+                filter=dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0", "tissue_ontology_term_id_1"],
+                ),
             )
 
             response = self.app.post("/wmg/v1/query", json=request)
 
             self.assertEqual(200, response.status_code)
 
-            expected = expected_term_id_labels["cell_types"]
+            # each cell type has `expected_count` cells for each possible combination of secondary filters
+            # given the present constraints (1 organism, both tissues). There are 2**9=512 possible combinations
+            # of filters. After aggregating the counts across two tissues and two cell types per tissue,
+            # there are 128 entries per cell type-tissue combination. Hence, the toal count will be
+            # expected_count * 128
+            expected = {
+                "tissue_ontology_term_id_0": [
+                    {
+                        "cell_type": "cell_type_ontology_term_id_0_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                        "total_count": expected_count * 128,
+                        "depth": 0,
+                    },
+                    {
+                        "cell_type": "cell_type_ontology_term_id_1_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                        "total_count": expected_count * 128,
+                        "depth": 1,
+                    },
+                ],
+                "tissue_ontology_term_id_1": [
+                    {
+                        "cell_type": "cell_type_ontology_term_id_0_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                        "total_count": expected_count * 128,
+                        "depth": 0,
+                    },
+                    {
+                        "cell_type": "cell_type_ontology_term_id_1_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                        "total_count": expected_count * 128,
+                        "depth": 1,
+                    },
+                ],
+            }
             self.assertEqual(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
 
     def test__query_empty_request__returns_400(self):
@@ -450,6 +526,10 @@ class WmgApiV1Tests(unittest.TestCase):
 
         self.assertEqual(400, response.status_code)
 
+    """
+    # these tests COULD work but the virtual test fixture is way too big to precompute filter relationships
+    # because we cannot fit the cell counts dataframe in memory. These tests will be re-enabled once we
+    # refine the test snapshot generation codepath.
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
@@ -471,6 +551,9 @@ class WmgApiV1Tests(unittest.TestCase):
                 gene_ontology_term_ids=["gene_ontology_term_id_0"],
                 organism_ontology_term_id="organism_ontology_term_id_0",
                 tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                dataset_ids=["dataset_id_0"],
+                disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                sex_ontology_term_ids=["sex_ontology_term_id_0"],
                 # these matter for the expected result
                 development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
                 self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
@@ -478,11 +561,11 @@ class WmgApiV1Tests(unittest.TestCase):
 
             filter_0_request = dict(
                 filter=filter_0,
+                # matters for this test
                 is_rollup=True,
             )
 
-            response = self.app.post("/wmg/v1/filters", json=filter_0_request)
-
+            response = self.app.post("/wmg/v1/query", json=filter_0_request)
             expected_filters = {
                 "datasets": [
                     {
@@ -495,11 +578,11 @@ class WmgApiV1Tests(unittest.TestCase):
                 "development_stage_terms": [
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"}
                 ],
-                "disease_terms": [],
+                "disease_terms": [{"disease_ontology_term_id_0": "disease_ontology_term_id_0_label"}],
                 "self_reported_ethnicity_terms": [
                     {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
                 ],
-                "sex_terms": [],
+                "sex_terms": [{"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"}],
                 "tissue_terms": [{"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],
             }
             self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
@@ -534,6 +617,9 @@ class WmgApiV1Tests(unittest.TestCase):
                     gene_ontology_term_ids=["gene_ontology_term_id_0"],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=["dataset_id_0"],
+                    disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                    sex_ontology_term_ids=["sex_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
@@ -550,36 +636,46 @@ class WmgApiV1Tests(unittest.TestCase):
                     gene_ontology_term_ids=["gene_ontology_term_id_0"],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=["dataset_id_0"],
+                    disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                    sex_ontology_term_ids=["sex_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=[],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                 )
-                filter_0_no_dev_stage_request = dict(filter=filter_0_no_dev_stage_filter, is_rollup=True)
+                filter_0_no_dev_stage_request = dict(
+                    filter=filter_0_no_dev_stage_filter, is_rollup=True
+                )
 
                 filter_0_no_ethnicity_filter = dict(
                     # these don't matter for the expected result
                     gene_ontology_term_ids=["gene_ontology_term_id_0"],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=["dataset_id_0"],
+                    disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                    sex_ontology_term_ids=["sex_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
                     self_reported_ethnicity_ontology_term_ids=[],
                 )
-                filter_0_no_ethnicity_request = dict(filter=filter_0_no_ethnicity_filter, is_rollup=True)
+                filter_0_no_ethnicity_request = dict(
+                    filter=filter_0_no_ethnicity_filter, is_rollup=True
+                )
                 # the values for dev_stage terms when a dev stage filter is included should match the values returned
                 # if no filter is passed in for dev stage
-                response = self.app.post("/wmg/v1/filters", json=filter_0_request)
+                response = self.app.post("/wmg/v1/query", json=filter_0_request)
                 dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
                 self_reported_ethnicity_terms = json.loads(response.data)["filter_dims"][
                     "self_reported_ethnicity_terms"
                 ]
 
-                no_dev_stage_filter_response = self.app.post("/wmg/v1/filters", json=filter_0_no_dev_stage_request)
+                no_dev_stage_filter_response = self.app.post("/wmg/v1/query", json=filter_0_no_dev_stage_request)
                 dev_stage_terms_if_no_dev_stage_filters = json.loads(no_dev_stage_filter_response.data)["filter_dims"][
                     "development_stage_terms"
                 ]
 
-                no_ethnicity_filter_response = self.app.post("/wmg/v1/filters", json=filter_0_no_ethnicity_request)
+                no_ethnicity_filter_response = self.app.post("/wmg/v1/query", json=filter_0_no_ethnicity_request)
                 self_reported_ethnicity_terms_if_no_dev_stage_filters = json.loads(no_ethnicity_filter_response.data)[
                     "filter_dims"
                 ]["self_reported_ethnicity_terms"]
@@ -619,14 +715,14 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"self_reported_ethnicity_ontology_term_id_1": "self_reported_ethnicity_ontology_term_id_1_label"},
                     {"self_reported_ethnicity_ontology_term_id_2": "self_reported_ethnicity_ontology_term_id_2_label"},
                 ]
-                self_reported_ethnicity_0_request = dict(filter=self_reported_ethnicity_0_filter, is_rollup=True)
-                response = self.app.post("/wmg/v1/filters", json=self_reported_ethnicity_0_request)
-                dev_stage_terms = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                self_reported_ethnicity_0_request = dict(
+                    filter=self_reported_ethnicity_0_filter, is_rollup=True
                 )
-                self_reported_ethnicity_terms = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
-                )
+                response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_0_request)
+                dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                self_reported_ethnicity_terms = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
                 self.assertEqual(all_development_stage_terms, dev_stage_terms)
                 self.assertEqual(all_self_reported_ethnicity_terms, self_reported_ethnicity_terms)
 
@@ -648,14 +744,14 @@ class WmgApiV1Tests(unittest.TestCase):
                 expected_self_reported_ethnicity_term = [
                     {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
                 ]
-                self_reported_ethnicity_1_request = dict(filter=self_reported_ethnicity_1_filter, is_rollup=True)
-                response = self.app.post("/wmg/v1/filters", json=self_reported_ethnicity_1_request)
-                dev_stage_terms_no_dev_filter = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                self_reported_ethnicity_1_request = dict(
+                    filter=self_reported_ethnicity_1_filter, is_rollup=True
                 )
-                self_reported_ethnicity_terms_no_dev_filter = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
-                )
+                response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_request)
+                dev_stage_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                self_reported_ethnicity_terms_no_dev_filter = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_no_dev_filter)
                 self.assertEqual(all_self_reported_ethnicity_terms, self_reported_ethnicity_terms_no_dev_filter)
 
@@ -672,13 +768,11 @@ class WmgApiV1Tests(unittest.TestCase):
                     filter=self_reported_ethnicity_1_dev_1_filter, is_rollup=True
                 )
 
-                response = self.app.post("/wmg/v1/filters", json=self_reported_ethnicity_1_dev_1_request)
-                dev_stage_terms_dev_filter = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                )
-                self_reported_ethnicity_terms_dev_filter = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
-                )
+                response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_dev_1_request)
+                dev_stage_terms_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                self_reported_ethnicity_terms_dev_filter = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
 
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_dev_filter)
                 self.assertEqual(dev_stage_terms_no_dev_filter, dev_stage_terms_dev_filter)
@@ -706,30 +800,30 @@ class WmgApiV1Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_2"],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_2"],
                 )
-                self_reported_ethnicity_2_request = dict(filter=self_reported_ethnicity_2_filter, is_rollup=True)
-                eth_2_dev_2_request = dict(filter=self_reported_ethnicity_2_dev_2_filter, is_rollup=True)
-                response = self.app.post("/wmg/v1/filters", json=self_reported_ethnicity_2_request)
-                dev_stage_terms_eth_2_no_dev_filter = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                self_reported_ethnicity_2_request = dict(
+                    filter=self_reported_ethnicity_2_filter, is_rollup=True
                 )
-                self_reported_ethnicity_terms_eth_2_no_dev_filter = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
+                eth_2_dev_2_request = dict(
+                    filter=self_reported_ethnicity_2_dev_2_filter, is_rollup=True
                 )
+                response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_2_request)
+                dev_stage_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
+                    "development_stage_terms"
+                ]
+                self_reported_ethnicity_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_eth_2_no_dev_filter)
                 self.assertEqual(all_self_reported_ethnicity_terms, self_reported_ethnicity_terms_eth_2_no_dev_filter)
 
-                response = self.app.post("/wmg/v1/filters", json=eth_2_dev_2_request)
-                dev_stage_terms_eth_2_dev_2 = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                )
-                eth_stage_terms_eth_2_dev_2 = _sort_list_by_dictionary_keys(
-                    json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
-                )
+                response = self.app.post("/wmg/v1/query", json=eth_2_dev_2_request)
+                dev_stage_terms_eth_2_dev_2 = json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                eth_stage_terms_eth_2_dev_2 = json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
 
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_eth_2_dev_2)
                 self.assertEqual(expected_self_reported_ethnicity_term, eth_stage_terms_eth_2_dev_2)
                 self.assertEqual(dev_stage_terms_eth_2_dev_2, dev_stage_terms_eth_2_no_dev_filter)
-                self.assertNotEqual(eth_stage_terms_eth_2_dev_2, self_reported_ethnicity_terms_eth_2_no_dev_filter)
+                self.assertNotEqual(eth_stage_terms_eth_2_dev_2, self_reported_ethnicity_terms_eth_2_no_dev_filter)"""
 
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
@@ -756,13 +850,20 @@ class WmgApiV1Tests(unittest.TestCase):
 
             response = self.app.post("/wmg/v1/markers", json=request)
             received = json.loads(response.data)
-            criteria = MarkerGeneQueryCriteria(
-                tissue_ontology_term_id=request["tissue"],
-                cell_type_ontology_term_id=request["celltype"],
-                organism_ontology_term_id=request["organism"],
-            )
+
             expected = {
-                "marker_genes": generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 10),
+                "marker_genes": [
+                    {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.4539473056793213},
+                    {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 2.080190420150757},
+                    {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 2.0378074645996094},
+                    {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7846676111221313},
+                    {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.574164628982544},
+                    {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.147048830986023},
+                    {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.1273812055587769},
+                    {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 1.0306953191757202},
+                    {"gene_ontology_term_id": "ENSG00000125844", "p_value": 0.0, "effect_size": 0.46169212460517883},
+                    {"gene_ontology_term_id": "ENSG00000100219", "p_value": 0.0, "effect_size": 0.4111901521682739},
+                ],
                 "snapshot_id": "realistic-test-snapshot",
             }
             self.assertDictEqual(received, expected)
@@ -814,7 +915,3 @@ def mock_datasets_metadata(dataset_ids):
         )
         for dataset_id in dataset_ids
     ]
-
-
-def _sort_list_by_dictionary_keys(d):
-    return sorted(d, key=lambda k: list(k.keys())[0])

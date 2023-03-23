@@ -1,7 +1,6 @@
 import copy
-from collections import defaultdict
 from datetime import datetime
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.common.entities import (
@@ -247,54 +246,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         if version is not None:
             return self._update_dataset_version_with_canonical(version)
 
-    def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
+    def get_all_datasets(self) -> Iterable[DatasetVersion]:
         """
         For now, this only returns all the active datasets, i.e. the datasets that belong to a published collection
         """
-        active_collections = list(self.get_all_mapped_collection_versions())
-        active_datasets_ids = [i.id for s in [c.datasets for c in active_collections] for i in s]
-        active_datasets = []
+        active_collections = self.get_all_mapped_collection_versions()
+        active_datasets = [i.id for s in [c.datasets for c in active_collections] for i in s]
         for version_id, dataset_version in self.datasets_versions.items():
-            if version_id in active_datasets_ids:
-                active_datasets.append(self._update_dataset_version_with_canonical(dataset_version))
-        return active_datasets, active_collections
-
-    def _get_datasets(self, ids: List[DatasetVersionId]) -> List[DatasetVersion]:
-        dataset_versions = []
-        for dv_id in ids:
-            dataset_versions.append(self._update_dataset_version_with_canonical(self.datasets_versions[dv_id.id]))
-        return dataset_versions
-
-    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
-        """
-        Returns all mapped collection versions with their datasets
-        """
-        mapped_datasets, mapped_collections = self.get_all_mapped_datasets_and_collections()
-
-        datasets_by_collection_id = defaultdict(list)
-        # Construct dict of collection_id: [datasets]
-        [datasets_by_collection_id[d.collection_id.id].append(d) for d in mapped_datasets]
-
-        # Turn list of CollectionVersions into CollectionVersionsWithDatasets
-        collections_with_datasets: List[CollectionVersionWithDatasets] = []
-        for collection in mapped_collections:
-            dataset_versions = datasets_by_collection_id.get(collection.collection_id.id, [])
-            collections_with_datasets.append(
-                CollectionVersionWithDatasets(
-                    datasets=dataset_versions,
-                    collection_id=collection.collection_id,
-                    version_id=collection.version_id,
-                    owner=collection.owner,
-                    curator_name=collection.curator_name,
-                    metadata=collection.metadata,
-                    publisher_metadata=collection.publisher_metadata,
-                    published_at=collection.published_at,
-                    created_at=collection.created_at,
-                    canonical_collection=collection.canonical_collection,
-                )
-            )
-
-        return collections_with_datasets
+            if version_id in active_datasets:
+                yield self._update_dataset_version_with_canonical(dataset_version)
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         versions = []

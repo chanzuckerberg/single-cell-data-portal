@@ -42,7 +42,7 @@ def get_dataset_s3_uris() -> Dict[str, str]:
     Retrieve list of s3 uris for datasets included in the wmg cube
     """
     s3_uris = dict()
-    for dataset in get_business_logic().get_all_mapped_datasets():
+    for dataset in get_business_logic().get_all_published_datasets():
         if (
             (dataset.metadata is not None)
             and (dataset.metadata.assay is not None)

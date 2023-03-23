@@ -9,7 +9,7 @@ import {
   Tissue,
 } from "src/views/WheresMyGene/common/types";
 
-export const TISSUE_CELL_TYPE_DIVIDER = "~";
+const TISSUE_CELL_TYPE_DIVIDER = "~";
 
 interface Props {
   tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap: Map<
@@ -40,9 +40,7 @@ export function useSortedGeneNames({
 
     for (const [tissueName, cellTypes] of Object.entries(selectedCellTypes)) {
       for (const cellType of cellTypes) {
-        result.add(
-          `${tissueName}${TISSUE_CELL_TYPE_DIVIDER}${cellType.viewId}`
-        );
+        result.add(`${tissueName}${TISSUE_CELL_TYPE_DIVIDER}${cellType.id}`);
       }
     }
 
@@ -139,7 +137,7 @@ function getTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataM
       for (const cellTypeGeneExpressionSummary of cellTypeGeneExpressionSummaries) {
         const geneNameToCellTypeGeneExpressionSummaryData =
           cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData.get(
-            cellTypeGeneExpressionSummary.viewId
+            cellTypeGeneExpressionSummary.id
           ) || new Map<string, CellTypeGeneExpressionSummaryData>();
 
         geneNameToCellTypeGeneExpressionSummaryData.set(
@@ -148,7 +146,7 @@ function getTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataM
         );
 
         cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData.set(
-          cellTypeGeneExpressionSummary.viewId,
+          cellTypeGeneExpressionSummary.id,
           geneNameToCellTypeGeneExpressionSummaryData
         );
       }

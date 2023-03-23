@@ -66,18 +66,18 @@ class TestSummaryCubeSchema(unittest.TestCase):
         with tempfile.TemporaryDirectory() as summary_cube_dir:
             create_empty_cube(uri=f"{summary_cube_dir}/cube", schema=expression_summary_schema)
             summary_cube_schema = tiledb.ArraySchema.load(f"{summary_cube_dir}/cube")
-            self.assertEqual(summary_cube_schema.ndim, 3)
+            self.assertEqual(summary_cube_schema.ndim, 4)
             self.assertTrue(summary_cube_schema.domain.has_dim("gene_ontology_term_id"))
             self.assertTrue(summary_cube_schema.domain.has_dim("tissue_ontology_term_id"))
+            self.assertTrue(summary_cube_schema.domain.has_dim("tissue_original_ontology_term_id"))
             self.assertTrue(summary_cube_schema.domain.has_dim("organism_ontology_term_id"))
 
     def test_summary_cube_schema_contains_correct_attrs(self):
         with tempfile.TemporaryDirectory() as summary_cube_dir:
             create_empty_cube(uri=f"{summary_cube_dir}/cube", schema=expression_summary_schema)
             summary_cube_schema = tiledb.ArraySchema.load(f"{summary_cube_dir}/cube")
-            self.assertEqual(summary_cube_schema.nattr, 10)
+            self.assertEqual(summary_cube_schema.nattr, 9)
             self.assertTrue(summary_cube_schema.has_attr("cell_type_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("tissue_original_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("dataset_id"))
             self.assertTrue(summary_cube_schema.has_attr("assay_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("development_stage_ontology_term_id"))
@@ -122,7 +122,7 @@ class TestCellCountCubeSchema(unittest.TestCase):
         with tempfile.TemporaryDirectory() as cell_count_cube_dir:
             create_empty_cube(uri=f"{cell_count_cube_dir}/cube", schema=cell_counts_schema)
             cell_count_cube_schema = tiledb.ArraySchema.load(f"{cell_count_cube_dir}/cube")
-            self.assertEqual(cell_count_cube_schema.ndim, 2)
+            self.assertEqual(cell_count_cube_schema.ndim, 3)
             self.assertTrue(cell_count_cube_schema.domain.has_dim("tissue_ontology_term_id"))
             self.assertTrue(cell_count_cube_schema.domain.has_dim("organism_ontology_term_id"))
 
@@ -130,9 +130,8 @@ class TestCellCountCubeSchema(unittest.TestCase):
         with tempfile.TemporaryDirectory() as cell_count_cube_dir:
             create_empty_cube(uri=f"{cell_count_cube_dir}/cube", schema=cell_counts_schema)
             cell_count_cube_schema = tiledb.ArraySchema.load(f"{cell_count_cube_dir}/cube")
-            self.assertEqual(cell_count_cube_schema.nattr, 9)
+            self.assertEqual(cell_count_cube_schema.nattr, 8)
             self.assertTrue(cell_count_cube_schema.has_attr("cell_type_ontology_term_id"))
-            self.assertTrue(cell_count_cube_schema.has_attr("tissue_original_ontology_term_id"))
             self.assertTrue(cell_count_cube_schema.has_attr("dataset_id"))
             self.assertTrue(cell_count_cube_schema.has_attr("assay_ontology_term_id"))
             self.assertTrue(cell_count_cube_schema.has_attr("development_stage_ontology_term_id"))

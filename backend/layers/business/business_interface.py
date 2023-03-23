@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, Optional, Tuple
 
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
@@ -75,7 +75,7 @@ class BusinessLogicInterface:
     ) -> Tuple[DatasetVersionId, DatasetId]:
         pass
 
-    def get_all_mapped_datasets(self) -> List[DatasetVersion]:
+    def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
         pass
 
     def remove_dataset_version(

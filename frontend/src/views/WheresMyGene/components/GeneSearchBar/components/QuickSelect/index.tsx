@@ -133,7 +133,6 @@ export default function QuickSelect<
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [hasComma, setHasComma] = useState(false);
-  const [itemOptions, setItemOptions] = useState<T[]>(items);
 
   const useStyles = makeStyles((theme: SDSTheme) => {
     const colors = getColors({ theme });
@@ -163,14 +162,6 @@ export default function QuickSelect<
 
   const classes = useStyles();
 
-  const toggleDropdownAndUpdateItemOptions = () => {
-    setOpen((open) => !open);
-    const itemOptionsWithSelectedOnTop = [
-      ...new Set([...selectedAsArray, ...items]),
-    ];
-    setItemOptions(itemOptionsWithSelectedOnTop);
-  };
-
   // `HandleEnter()` handles the enter key press when we detect comma(",") in the search bar
   // Since this functionality is currently only used in the gene search bar, we'll be assuming that `itemsByName` is a Map<string, Gene>.
   // NOTE that `itemsByName` the key is lowercase!
@@ -191,7 +182,7 @@ export default function QuickSelect<
                 newSelected.push(newItem);
             });
 
-            toggleDropdownAndUpdateItemOptions();
+            setOpen(false);
 
             return setSelected(
               newSelected as AutocompleteValue<
@@ -221,7 +212,7 @@ export default function QuickSelect<
         !(nativeEvent.relatedTarget instanceof Element)) ||
       !(nativeEvent instanceof FocusEvent)
     ) {
-      toggleDropdownAndUpdateItemOptions();
+      setOpen(false);
     }
 
     setInput("");
@@ -236,7 +227,7 @@ export default function QuickSelect<
   };
 
   const handleClick = () => {
-    toggleDropdownAndUpdateItemOptions();
+    setOpen(!open);
   };
 
   const ref = useRef(null);
@@ -262,6 +253,9 @@ export default function QuickSelect<
   };
   const selectedAsArray = Array.isArray(selected) ? selected : [selected];
 
+  const itemOptionsWithSelectedOnTop = [
+    ...new Set([...selectedAsArray, ...items]),
+  ];
   return (
     <>
       <ButtonWrapper>
@@ -307,7 +301,7 @@ export default function QuickSelect<
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={multiple ? handleEnter : undefined}
-          options={itemOptions}
+          options={itemOptionsWithSelectedOnTop}
           ListboxComponent={
             ListboxComponent as React.ComponentType<
               React.HTMLAttributes<HTMLElement>

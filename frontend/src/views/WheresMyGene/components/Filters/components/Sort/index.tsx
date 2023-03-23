@@ -6,10 +6,9 @@ import {
 } from "src/views/WheresMyGene/common/store";
 import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGene/common/types";
-import { Wrapper, FilterLabel, StyledDropdown } from "../common/style";
+import { FilterLabel, FilterWrapper, Label, StyledDropdown } from "./style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { ViewOptionsWrapper } from "./style";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -56,8 +55,9 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
   }, [sortBy]);
 
   return (
-    <ViewOptionsWrapper>
-      <Wrapper>
+    <div>
+      <Label>View Options</Label>
+      <FilterWrapper>
         <FilterLabel>Sort Cell Types</FilterLabel>
         <StyledDropdown
           data-test-id="cell-type-sort-dropdown"
@@ -67,8 +67,8 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
           InputDropdownProps={InputDropdownProps}
           value={cellTypeSelectedOption}
         />
-      </Wrapper>
-      <Wrapper>
+      </FilterWrapper>
+      <FilterWrapper>
         <FilterLabel>Sort Genes</FilterLabel>
         <StyledDropdown
           data-test-id="gene-sort-dropdown"
@@ -78,8 +78,8 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
           InputDropdownProps={InputDropdownProps}
           value={geneSelectedOption}
         />
-      </Wrapper>
-    </ViewOptionsWrapper>
+      </FilterWrapper>
+    </div>
   );
 
   function cellTypesOnChange(

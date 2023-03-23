@@ -202,11 +202,6 @@ class DatasetVersion:
 
 
 @dataclass
-class PublishedDatasetVersion(DatasetVersion):
-    collection_version_id: CollectionVersionId  # Pointer to collection version it was originally published under
-
-
-@dataclass
 class Link:
     name: Optional[str]
     type: str

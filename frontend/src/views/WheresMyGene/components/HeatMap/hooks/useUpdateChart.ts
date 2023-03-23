@@ -37,9 +37,9 @@ export function useUpdateChart({
             cellTypeMetadata,
             chartData,
             geneNames,
-            heatmapHeight,
-            heatmapWidth,
             isScaled,
+            heatmapWidth,
+            heatmapHeight,
           })
         );
       },
@@ -59,9 +59,9 @@ export function useUpdateChart({
     throttledUpdateChart({
       chart,
       chartProps,
-      heatmapHeight,
-      heatmapWidth,
       isScaled,
+      heatmapWidth,
+      heatmapHeight,
     });
   }, [
     chart,

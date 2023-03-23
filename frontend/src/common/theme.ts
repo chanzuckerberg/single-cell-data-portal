@@ -188,5 +188,3 @@ const appTheme = makeThemeOptions(themeOptions);
 export const theme = createTheme(appTheme);
 
 export const OFF_WHITE = "#f8f8f8";
-
-export const PINK = "#E9429A";

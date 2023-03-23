@@ -8,7 +8,11 @@ export const StyledDiv = styled.div`
   right: 0;
 
   height: 100%;
+  min-height: 100vh;
   width: 100%;
+  min-width: 100vw;
+
+  backdrop-filter: blur(10px);
 
   z-index: 999;
 `;

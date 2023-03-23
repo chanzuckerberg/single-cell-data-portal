@@ -1,10 +1,8 @@
-import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
-import { FilterDimensions } from "src/common/queries/wheresMyGene";
+import { Dispatch, memo, MouseEventHandler } from "react";
 import { CellType } from "src/views/WheresMyGene/common/types";
-import SaveExport from "../../../GeneSearchBar/components/SaveExport";
+import SaveImage from "../../../GeneSearchBar/components/SaveImage";
 import ShareButton from "../../../GeneSearchBar/components/ShareButton";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
-import { ChartProps } from "../../../HeatMap/hooks/common/types";
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
@@ -15,14 +13,8 @@ interface Props {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
-  setDownloadStatus: Dispatch<
-    SetStateAction<{
-      isLoading: boolean;
-    }>
-  >;
-  setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
-  allChartProps: { [tissue: string]: ChartProps };
-  availableFilters: Partial<FilterDimensions>;
+  setIsDownloading: (isDownloading: boolean) => void;
+  setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
 }
 
 export default memo(function Legend({
@@ -31,21 +23,17 @@ export default memo(function Legend({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
-  setDownloadStatus,
+  setIsDownloading,
   setEchartsRendererMode,
-  allChartProps,
-  availableFilters,
 }: Props): JSX.Element {
   return (
     <LegendWrapper>
-      <SaveExport
+      <SaveImage
         selectedTissues={selectedTissues}
         selectedGenes={selectedGenes}
         selectedCellTypes={selectedCellTypes}
-        setDownloadStatus={setDownloadStatus}
+        setIsDownloading={setIsDownloading}
         setEchartsRendererMode={setEchartsRendererMode}
-        allChartProps={allChartProps}
-        availableFilters={availableFilters}
       />
       <ShareButton />
       <SourceDataButton

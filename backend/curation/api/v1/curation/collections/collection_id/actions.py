@@ -5,7 +5,7 @@ from flask import Response, jsonify, make_response
 from backend.common.utils.http_exceptions import InvalidParametersHTTPException, MethodNotAllowedException
 from backend.curation.api.v1.curation.collections.common import (
     extract_doi_from_links,
-    get_inferred_collection_version_else_forbidden,
+    get_infered_collection_version_else_forbidden,
     is_owner_or_allowed_else_forbidden,
     reshape_for_curation_api,
 )
@@ -19,7 +19,7 @@ from backend.portal.api.providers import get_business_logic
 
 def delete(collection_id: str, token_info: dict) -> Response:
     user_info = UserInfo(token_info)
-    collection_version = get_inferred_collection_version_else_forbidden(collection_id)
+    collection_version = get_infered_collection_version_else_forbidden(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at:
         raise MethodNotAllowedException(detail="Cannot delete a published collection through API.")
@@ -29,7 +29,7 @@ def delete(collection_id: str, token_info: dict) -> Response:
 
 
 def get(collection_id: str, token_info: dict) -> Response:
-    collection_version = get_inferred_collection_version_else_forbidden(collection_id)
+    collection_version = get_infered_collection_version_else_forbidden(collection_id)
     user_info = UserInfo(token_info)
     response = reshape_for_curation_api(collection_version, user_info)
     return jsonify(response)
@@ -41,7 +41,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     if "links" in body and not body["links"]:
         raise InvalidParametersHTTPException(detail="If provided, the 'links' array may not be empty")
 
-    collection_version = get_inferred_collection_version_else_forbidden(collection_id)
+    collection_version = get_infered_collection_version_else_forbidden(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at is not None:
         raise MethodNotAllowedException(

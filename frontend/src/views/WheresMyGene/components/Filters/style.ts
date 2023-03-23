@@ -1,11 +1,5 @@
 import styled from "@emotion/styled";
-import {
-  CommonThemeProps,
-  ComplexFilter,
-  ComplexFilterInputDropdown,
-  getSpaces,
-} from "czifui";
-import { Label, Wrapper as RawWrapper } from "./components/common/style";
+import { ComplexFilter, ComplexFilterInputDropdown } from "czifui";
 
 export const StyledComplexFilterInputDropdown = styled(
   ComplexFilterInputDropdown
@@ -24,21 +18,13 @@ export const StyledComplexFilterInputDropdown = styled(
   }
 `;
 
-export const Wrapper = styled(RawWrapper)`
-  ${(props: CommonThemeProps) => {
-    const spaces = getSpaces(props);
-
-    return `
-      gap: ${spaces?.xl}px;
-    `;
-  }}
+export const Wrapper = styled("div")`
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 `;
 
 export const StyledComplexFilter = styled(ComplexFilter)`
   width: 100%;
   margin-bottom: 16px;
 ` as typeof ComplexFilter;
-
-export const ViewOptionsLabel = styled(Label)`
-  margin-bottom: 8px;
-`;

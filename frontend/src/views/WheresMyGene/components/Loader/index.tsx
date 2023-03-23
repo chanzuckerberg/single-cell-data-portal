@@ -1,5 +1,5 @@
 import { LoadingIndicator } from "czifui";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
 import { Wrapper } from "./style";
 
 export default function Loader(): JSX.Element {
