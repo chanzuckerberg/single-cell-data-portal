@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import backend.wmg.pipeline.integrated_corpus.extract
 from backend.layers.common.entities import CollectionId, DatasetArtifactType, DatasetVersionId, OntologyTermId
 from backend.wmg.data.constants import INCLUDED_ASSAYS
@@ -25,12 +23,6 @@ class TestExtract(BaseTest):
 
     def setUp(self):
         super().setUp()
-
-        # enable mocking of business logic
-        self.mock_business_logic = patch(
-            "backend.wmg.pipeline.integrated_corpus.extract._business_logic", new=self.business_logic
-        )
-        self.mock_business_logic.start()
 
         assay_ontologies = list(INCLUDED_ASSAYS.keys())
 
