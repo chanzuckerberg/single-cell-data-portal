@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 import { LIGHT_GRAY } from "src/components/common/theme";
-import { GENE_INFO_BUTTON_PADDING } from "./components/XAxisChart/style";
 
 export const CHART_LEFT_PADDING = 10;
 
@@ -12,8 +11,6 @@ export const SELECTED_STYLE = {
   fontSize: 12,
   padding: 4,
 };
-
-const Y_AXIS_TOP_PADDING = GENE_INFO_BUTTON_PADDING + 5;
 
 export const Container = styled.div`
   height: 75vh;
