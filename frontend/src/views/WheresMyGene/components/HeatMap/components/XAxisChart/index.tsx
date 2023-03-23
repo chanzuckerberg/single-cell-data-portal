@@ -75,32 +75,32 @@ function GeneButton({
           active={genesToDelete.includes(geneName)}
           font={currentFont}
         >
+          <InfoButtonWrapper
+            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+            onClick={() => {
+              generateGeneInfo(geneName);
+
+              track(EVENTS.WMG_GENE_INFO, {
+                gene: geneName,
+              });
+
+              if (!dispatch) return;
+
+              // Clear cell type info here so that FMG panel closes
+              dispatch(clearCellInfoCellType());
+            }}
+          >
+            <StyledImage
+              id="gene-info-button"
+              src={InfoSVG.src}
+              width="10"
+              height="10"
+              alt={`display gene info for ${geneName}`}
+            />
+          </InfoButtonWrapper>
+
           {formattedLabel}
         </XAxisGeneName>
-
-        <InfoButtonWrapper
-          className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-          onClick={() => {
-            generateGeneInfo(geneName);
-
-            track(EVENTS.WMG_GENE_INFO, {
-              gene: geneName,
-            });
-
-            if (!dispatch) return;
-
-            // Clear cell type info here so that FMG panel closes
-            dispatch(clearCellInfoCellType());
-          }}
-        >
-          <StyledImage
-            id="gene-info-button"
-            src={InfoSVG.src}
-            width="10"
-            height="10"
-            alt={`display gene info for ${geneName}`}
-          />
-        </InfoButtonWrapper>
       </XAxisLabel>
     </GeneButtonStyle>
   );

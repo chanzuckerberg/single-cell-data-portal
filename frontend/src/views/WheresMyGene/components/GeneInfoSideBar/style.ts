@@ -13,13 +13,13 @@ export const GeneSummary = styled.div`
   ${fontBodyXs}
 
   padding: 8px 0;
-  font-weight: 500;
+  font-weight: 400;
   color: black;
 `;
 
 export const GeneSynonymsWrapper = styled.div`
   display: flex;
-  padding-bottom: 16px;
+  padding-bottom: 8px;
   align-items: center;
 `;
 
@@ -37,7 +37,7 @@ export const GeneSynonymsLabel = styled.div`
 `;
 
 export const GeneSynonyms = styled.div`
-  padding: 4px;
+  padding: 4px 8px;
   color: black;
 
   ${fontBodyXs}
@@ -50,7 +50,7 @@ export const GeneSynonyms = styled.div`
   }}
 `;
 
-export const GeneUrl = styled.div`
+export const GeneUrl = styled.a`
   ${fontBodyS}
   font-weight: 500;
   ${(props) => {
@@ -66,6 +66,7 @@ export const GeneName = styled.div`
   ${fontBodyS}
   font-weight: 500;
   color: black;
+  padding-top: 4px;
 `;
 
 export const StyledCallout = styled(Callout)`

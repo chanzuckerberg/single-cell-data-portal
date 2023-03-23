@@ -34,14 +34,12 @@ function GeneInfoSideBar({
             Sorry, this gene could not be found on NCBI.
           </StyledCallout>
 
-          <GeneUrl>
-            <a
-              href={`https://www.google.com/search?q=${geneInfoGene}%20gene`}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              Search on Google
-            </a>
+          <GeneUrl
+            href={`https://www.google.com/search?q=${geneInfoGene}%20gene`}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Search on Google
           </GeneUrl>
         </>
       ) : (
@@ -51,7 +49,7 @@ function GeneInfoSideBar({
           {data.show_warning_banner && (
             <>
               <StyledCallout autoDismiss={false} intent={"warning"}>
-                NCBI didn't return an exact match for this gene.
+                NCBI didn&apos;t return an exact match for this gene.
               </StyledCallout>
             </>
           )}
@@ -63,10 +61,12 @@ function GeneInfoSideBar({
             <GeneSynonyms>{data.synonyms.join(", ")}</GeneSynonyms>
           </GeneSynonymsWrapper>
 
-          <GeneUrl>
-            <a href={data.ncbi_url} target="_blank" rel="noreferrer noopener">
-              View on NCBI
-            </a>
+          <GeneUrl
+            href={data.ncbi_url}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            View on NCBI
           </GeneUrl>
         </>
       )}

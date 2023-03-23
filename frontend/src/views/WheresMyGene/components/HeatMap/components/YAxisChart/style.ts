@@ -77,7 +77,7 @@ export const FlexRow = styled.div`
 `;
 
 export const InfoButtonWrapper = styled.div`
-  padding-left: 2px;
+  padding-left: 4px;
   cursor: pointer;
 `;
 

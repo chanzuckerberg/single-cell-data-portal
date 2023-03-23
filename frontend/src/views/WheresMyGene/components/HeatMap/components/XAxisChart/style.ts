@@ -39,10 +39,9 @@ export const XAxisLabel = styled.div`
   align-items: center;
 `;
 
-export const XAxisGeneName = styled.span`
+export const XAxisGeneName = styled.div`
+  display: flex;
   transform: scale(-1, -1);
-  margin-top: auto;
-  margin-bottom: 4px;
   overflow: hidden;
   ${selectedStyle}
 `;
@@ -50,6 +49,8 @@ export const XAxisGeneName = styled.span`
 export const InfoButtonWrapper = styled.div`
   cursor: pointer;
   display: flex;
+  margin-bottom: 4px;
+  margin-top: 4px;
 `;
 
 export const GeneButtonStyle = styled.div`
