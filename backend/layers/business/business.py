@@ -613,11 +613,37 @@ class BusinessLogic(BusinessLogicInterface):
                     and dataset_version.version_id.id not in found_version_ids
                 ):
                     published_version = PublishedDatasetVersion(
-                        collection_version_id=collection_version.version_id, **vars(dataset_version)
+                        collection_version_id=collection_version.version_id,
+                        published_at=collection_version.published_at,
+                        **vars(dataset_version),
                     )
                     found_version_ids.add(dataset_version.version_id.id)
                     published_version_history.append(published_version)
         return published_version_history
+
+    def get_prior_published_dataset_version(self, dataset_version_id: DatasetVersionId) -> PublishedDatasetVersion:
+        """
+        Given a dataset version id, return the DatasetVersion, if it's been part of a published CollectionVersion
+        """
+        dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
+        if not dataset_version:
+            return None
+        collection_versions = self.database_provider.get_all_versions_for_collection(dataset_version.collection_id)
+        # sort to ensure we always find earliest instance of a dataset version first when iterating
+        # needs None check as part of sort key to avoid TypeError on sorting list of datetimes + NoneTypes
+        collection_versions = sorted(collection_versions, key=lambda cv: (cv.published_at is None, cv.published_at))
+        published_version = None
+        for collection_version in collection_versions:
+            if collection_version.published_at is not None and dataset_version_id.id in {
+                dv.version_id.id for dv in collection_version.datasets
+            }:
+                published_version = PublishedDatasetVersion(
+                    collection_version_id=collection_version.version_id,
+                    published_at=collection_version.published_at,
+                    **vars(dataset_version),
+                )
+                break
+        return published_version
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str

@@ -204,6 +204,7 @@ class DatasetVersion:
 @dataclass
 class PublishedDatasetVersion(DatasetVersion):
     collection_version_id: CollectionVersionId  # Pointer to collection version it was originally published under
+    published_at: datetime
 
 
 @dataclass
