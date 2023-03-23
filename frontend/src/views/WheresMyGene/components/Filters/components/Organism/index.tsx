@@ -6,7 +6,7 @@ import { useContext, useEffect, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
+import { useAvailableOrganisms } from "src/common/queries/wheresMyGene";
 import {
   DispatchContext,
   StateContext,
@@ -14,8 +14,6 @@ import {
 import { selectOrganism } from "src/views/WheresMyGene/common/store/actions";
 import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
 import { StyledDropdown, Wrapper, Label } from "../common/style";
-
-const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
 
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
   sdsStyle: "square",
@@ -28,18 +26,7 @@ interface Props {
 export default function Organism({ isLoading }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedOrganismId } = useContext(StateContext);
-  const { data } = usePrimaryFilterDimensions();
-  const { organisms } = data || {};
-
-  const filteredOrganisms = useMemo(() => {
-    if (!organisms) {
-      return EMPTY_ARRAY;
-    }
-
-    return organisms.filter((organism: IOrganism) =>
-      TEMP_ALLOW_NAME_LIST.includes(organism.name)
-    );
-  }, [organisms]);
+  const { data: organisms } = useAvailableOrganisms();
 
   // (thuang): Default to "Homo sapiens" on first load
   useEffect(() => {
@@ -72,7 +59,7 @@ export default function Organism({ isLoading }: Props): JSX.Element {
       <Label>Organism</Label>
       <StyledDropdown
         label={organism?.name || "Select"}
-        options={filteredOrganisms || EMPTY_ARRAY}
+        options={organisms || EMPTY_ARRAY}
         onChange={handleOnChange as tempOnChange}
         InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-test-id="add-organism"

@@ -194,6 +194,7 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canoni
         if isinstance(dataset_version, PublishedDatasetVersion):
             ds["collection_id"] = dataset_version.collection_id.id
             ds["collection_version_id"] = dataset_version.collection_version_id.id
+            ds["published_at"] = dataset_version.published_at
     return ds
 
 

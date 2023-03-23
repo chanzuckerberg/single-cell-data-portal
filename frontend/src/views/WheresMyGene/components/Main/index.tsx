@@ -11,6 +11,7 @@ import React, {
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
+  FilterDimensions,
   GeneExpressionSummariesByTissueName,
   generateTermsByKey,
   useCellTypesByTissueName,
@@ -32,9 +33,10 @@ import CellInfoBar from "../CellInfoSideBar";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
+import { ChartProps } from "../HeatMap/hooks/common/types";
 import InfoPanel from "../InfoPanel";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
@@ -57,6 +59,13 @@ export default function WheresMyGene(): JSX.Element {
   if (allTissues) {
     tissuesByID = generateTermsByKey(allTissues, "id");
   }
+
+  const [allChartProps, setAllChartProps] = useState<{
+    [tissue: string]: ChartProps;
+  }>({});
+
+  const [availableFilters, setAvailableFilters] =
+    useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -214,7 +223,11 @@ export default function WheresMyGene(): JSX.Element {
 
   const [forceOpen, setForceOpen] = useState(false);
 
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState<{
+    isLoading: boolean;
+  }>({
+    isLoading: false,
+  });
 
   const usePrevious = <T,>(value: T): T | undefined => {
     const ref = useRef<T>();
@@ -251,7 +264,12 @@ export default function WheresMyGene(): JSX.Element {
         forceOpen={true}
         wmgSideBar
       >
-        <Filters isLoading={isLoading} setIsScaled={setIsScaled} />
+        <Filters
+          isLoading={isLoading}
+          availableFilters={availableFilters}
+          setAvailableFilters={setAvailableFilters}
+          setIsScaled={setIsScaled}
+        />
       </SideBar>
       {cellInfoCellType && tissuesByID && (
         <SideBar
@@ -288,8 +306,10 @@ export default function WheresMyGene(): JSX.Element {
               selectedTissues={selectedTissues}
               isScaled={isScaled}
               handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
-              setIsDownloading={setIsDownloading}
+              setDownloadStatus={setDownloadStatus}
               setEchartsRendererMode={setEchartsRendererMode}
+              allChartProps={allChartProps}
+              availableFilters={availableFilters}
             />
           </Top>
 
@@ -311,7 +331,7 @@ export default function WheresMyGene(): JSX.Element {
             <InfoPanel />
           </StyledSidebarDrawer>
 
-          {isDownloading && <ScreenTint />}
+          <ScreenTint isDownloading={downloadStatus} />
 
           {shouldShowHeatMap ? (
             <HeatMap
@@ -329,6 +349,8 @@ export default function WheresMyGene(): JSX.Element {
               scaledMeanExpressionMax={scaledMeanExpressionMax}
               scaledMeanExpressionMin={scaledMeanExpressionMin}
               selectedOrganismId={selectedOrganismId}
+              allChartProps={allChartProps}
+              setAllChartProps={setAllChartProps}
             />
           ) : null}
         </Wrapper>
