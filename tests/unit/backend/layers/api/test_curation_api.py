@@ -998,7 +998,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             res = self.app.get(
                 f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
             )
-            self.assertEqual(404, res.status_code)
+            self.assertEqual(403, res.status_code)
         with self.subTest("Collection Version is unpublished collection"):
             collection = self.generate_unpublished_collection()
             res = self.app.get(

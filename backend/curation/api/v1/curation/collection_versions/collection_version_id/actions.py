@@ -15,9 +15,9 @@ def get(collection_version_id: str):
     """
     validate_uuid_else_forbidden(collection_version_id)
     version = get_business_logic().get_collection_version(CollectionVersionId(collection_version_id))
-    if version is None or version.canonical_collection.tombstoned is True:
+    if version is None:
         raise NotFoundHTTPException()
-    if version.published_at is None:
+    if version.published_at is None or version.canonical_collection.tombstoned is True:
         raise ForbiddenHTTPException()
     response = reshape_for_curation_api(version, reshape_for_version_endpoint=True)
     return jsonify(response)
