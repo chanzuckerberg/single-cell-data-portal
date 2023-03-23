@@ -318,7 +318,7 @@ describe("Where's My Gene", () => {
     );
   });
 
-  test.only("Hierarchical Clustering", async ({ page }) => {
+  test("Hierarchical Clustering", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     async function getTissueSelectorButton() {
@@ -403,7 +403,7 @@ describe("Where's My Gene", () => {
 
     await waitForHeatmapToRender(page);
 
-    const beforeGeneNames = await getNames(`[data-test-id^=gene-label-]`, page);
+    const beforeGeneNames = await page.$$("[data-test-id^=gene-label-]");
 
     await tryUntil(
       async () => {
@@ -413,10 +413,7 @@ describe("Where's My Gene", () => {
         await page.hover(".gene-label-container");
         await page.click(getTestID(GENE_DELETE_BUTTON));
 
-        const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} span`,
-          page
-        );
+        const afterGeneNames = await page.$$("[data-test-id^=gene-label-]");
 
         expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
