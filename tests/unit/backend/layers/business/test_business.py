@@ -800,13 +800,13 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 class TestGetDataset(BaseBusinessLogicTestCase):
     def test_get_all_datasets_ok(self):
         """
-        All dataset that belong to a published collection can be retrieved with `get_all_published_datasets`
+        All dataset that belong to a published collection can be retrieved with `get_all_mapped_datasets`
         """
         # This will add 4 datasets, but only 2 should be retrieved by `get_all_datasets`
         published_version = self.initialize_published_collection()
         self.initialize_unpublished_collection()
 
-        datasets = list(self.business_logic.get_all_published_datasets())
+        datasets = self.business_logic.get_all_mapped_datasets()
         self.assertEqual(2, len(datasets))
         self.assertCountEqual([d.version_id for d in datasets], [d.version_id for d in published_version.datasets])
 
@@ -817,7 +817,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         """
         with self.subTest("Dataset is published with a revision open, get published dataset version"):
             published_version = self.initialize_published_collection()
-            published_dataset = list(self.business_logic.get_all_published_datasets())[0]
+            published_dataset = self.business_logic.get_all_mapped_datasets()[0]
             self.business_logic.create_collection_version(published_version.collection_id)
 
             dataset_version = self.business_logic.get_dataset_version_from_canonical(published_dataset.dataset_id)
@@ -834,6 +834,32 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         with self.subTest("Dataset does not exist"):
             dataset_version = self.business_logic.get_dataset_version_from_canonical(DatasetId(str(uuid.uuid4())))
             self.assertIsNone(dataset_version)
+
+    def test_get_prior_published_versions_for_dataset(self):
+        """
+        Given a canonical dataset id, return all its DatasetVersions that have been part of published CollectionVersions
+        """
+        self.initialize_published_collection()
+        published_version = self.initialize_published_collection()
+        collection_id = published_version.collection_id
+        dataset = published_version.datasets[0]
+        # Revision 1 (to publish)
+        collection_version_id = self.business_logic.create_collection_version(collection_id).version_id
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id, "http://fake.url", None, dataset.version_id
+        )
+        self.business_logic.publish_collection_version(collection_version_id)
+        # Revision 2 (not to publish)
+        unpublished_collection_version_id = self.business_logic.create_collection_version(collection_id).version_id
+        unpublished_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            unpublished_collection_version_id, "http://fake.url", None, new_dataset_version_id
+        )
+
+        version_history = self.business_logic.get_prior_published_versions_for_dataset(dataset.dataset_id)
+        # Check that only published datasets appear
+        self.assertEqual(
+            [dataset.version_id, new_dataset_version_id], [version.version_id for version in version_history]
+        )
 
     def test_get_dataset_artifacts_ok(self):
         """

@@ -7,11 +7,18 @@ import {
 } from "echarts";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
+  getOntologyTermIdFromCellTypeViewId,
+  getOptionIdFromCellTypeViewId,
+  OptionId,
+} from "src/common/queries/wheresMyGene";
+import {
   CellType,
   CellTypeSummary,
   GeneExpressionSummary,
   Tissue,
+  ViewId,
 } from "../../common/types";
+import { TISSUE_CELL_TYPE_DIVIDER } from "./hooks/useSortedGeneNames";
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
 export const X_AXIS_CHART_HEIGHT_PX = 80;
@@ -146,12 +153,12 @@ export function createChartOptions({
     },
     grid: {
       bottom: Y_AXIS_BOTTOM_PADDING,
-      top: "0px",
+      height: `${heatmapHeight}px`,
       left: "0px",
+      top: "0px",
       // (atarashansky): this is the key change to align x and y axis
       // labels to fixed spacings
       width: `${heatmapWidth}px`,
-      height: `${heatmapHeight}px`,
     },
     series: [
       {
@@ -234,6 +241,7 @@ export interface ChartFormat {
   scaledMeanExpression: number;
   tissuePercentage: number;
   expressedCellCount: number;
+  id: `${ViewId}-${string}`;
 }
 
 export function dataToChartFormat({
@@ -274,10 +282,10 @@ export function dataToChartFormat({
       const geneIndex = genes.findIndex((gene) => gene?.name === geneName);
 
       const cellTypeIndex = cellTypeSummaries.findIndex(
-        (cellTypeSummary) => cellTypeSummary.id === dataPoint.id
+        (cellTypeSummary) => cellTypeSummary.viewId === dataPoint.viewId
       );
 
-      const id: string = `${dataPoint.id}-${geneName}`;
+      const id = `${dataPoint.viewId}-${geneName}` as ChartFormat["id"];
 
       return {
         cellTypeIndex,
@@ -288,7 +296,7 @@ export function dataToChartFormat({
         percentage,
         scaledMeanExpression,
         tissuePercentage,
-      } as ChartFormat;
+      };
     });
   }
 }
@@ -316,10 +324,10 @@ export function getHeatmapHeight(cellTypes: CellType[] = EMPTY_ARRAY): number {
 }
 
 /**
- * Value format: `${id}~${tissue}~${name}~${depth}`
+ * Value format: `${viewId}~${tissue}~${name}~${order}`
  */
 export type CellTypeMetadata =
-  `${CellTypeSummary["id"]}~${Tissue}~${CellTypeSummary["name"]}~${number}~${number}`;
+  `${CellTypeSummary["viewId"]}~${Tissue}~${CellTypeSummary["name"]}~${number}~${number}`;
 
 /**
  * We need to encode cell type metadata here, so we can use it in onClick event
@@ -328,28 +336,40 @@ export function getAllSerializedCellTypeMetadata(
   cellTypes: CellType[],
   tissue: Tissue
 ): CellTypeMetadata[] {
-  return cellTypes.map(({ id, name, depth, total_count }) => {
-    return `${id}~${tissue}~${name}~${depth}~${total_count}` as CellTypeMetadata;
+  return cellTypes.map(({ viewId, name, order, total_count }) => {
+    return `${viewId}~${tissue}~${name}~${order}~${total_count}` as CellTypeMetadata;
   });
 }
 
 export function deserializeCellTypeMetadata(
   cellTypeMetadata: CellTypeMetadata
 ): {
-  id: string;
-  name: string;
+  viewId: CellType["viewId"];
+  name: CellType["name"];
   tissue: Tissue;
-  depth: number;
+  order: number;
   total_count: number;
+  id: string;
+  optionId: OptionId;
 } {
-  const [id, tissue, name, depth, total_count] = cellTypeMetadata.split("~");
+  const [rawViewId, tissue, name, order, total_count] = cellTypeMetadata.split(
+    TISSUE_CELL_TYPE_DIVIDER
+  );
+
+  // (thuang): Typescript limitation that split() returns string[]
+  const viewId = rawViewId as CellType["viewId"];
+
+  const id = getOntologyTermIdFromCellTypeViewId(viewId);
+  const optionId = getOptionIdFromCellTypeViewId(viewId);
 
   return {
-    depth: Number(depth),
     id,
     name,
+    optionId,
+    order: Number(order),
     tissue,
     total_count: Number(total_count),
+    viewId,
   };
 }
 

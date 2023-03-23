@@ -1,7 +1,16 @@
 import cloneDeep from "lodash/cloneDeep";
-import { memo, useContext, useMemo, useRef, useState } from "react";
+import {
+  Dispatch,
+  memo,
+  SetStateAction,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
+  CellTypeRow,
   generateTermsByKey,
   OntologyTerm,
   usePrimaryFilterDimensions,
@@ -20,6 +29,7 @@ import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import { CellCountLabel } from "./components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
+import { ChartProps } from "./hooks/common/types";
 import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {
   useSortedGeneNames,
@@ -39,7 +49,7 @@ import {
 interface Props {
   className?: string;
   selectedTissues: string[];
-  cellTypes: { [tissue: Tissue]: CellType[] };
+  cellTypes: { [tissue: Tissue]: CellTypeRow[] };
   genes: State["selectedGenes"];
   selectedGeneExpressionSummariesByTissueName: {
     [tissueName: string]: GeneExpressionSummary[];
@@ -52,6 +62,12 @@ interface Props {
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
   echartsRendererMode: "svg" | "canvas";
+  setAllChartProps: Dispatch<
+    SetStateAction<{
+      [tissue: string]: ChartProps;
+    }>
+  >;
+  allChartProps: { [tissue: string]: ChartProps };
 }
 
 export default memo(function HeatMap({
@@ -68,6 +84,8 @@ export default memo(function HeatMap({
   geneSortBy,
   selectedOrganismId,
   echartsRendererMode,
+  allChartProps,
+  setAllChartProps,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
 
@@ -78,6 +96,7 @@ export default memo(function HeatMap({
   const dispatch = useContext(DispatchContext);
 
   const { data } = usePrimaryFilterDimensions();
+
   // Get tissueName to ID map for use in find marker genes
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
@@ -211,6 +230,8 @@ export default memo(function HeatMap({
                 scaledMeanExpressionMax={scaledMeanExpressionMax}
                 scaledMeanExpressionMin={scaledMeanExpressionMin}
                 echartsRendererMode={echartsRendererMode}
+                setAllChartProps={setAllChartProps}
+                chartProps={allChartProps[tissue]}
               />
             );
           })}
@@ -226,8 +247,8 @@ function getTissueCellTypes({
   tissue,
   cellTypeSortBy,
 }: {
-  cellTypes: { [tissue: Tissue]: CellType[] };
-  sortedCellTypesByTissueName: { [tissue: string]: CellType[] };
+  cellTypes: { [tissue: Tissue]: CellTypeRow[] };
+  sortedCellTypesByTissueName: { [tissue: string]: CellTypeRow[] };
   tissue: Tissue;
   cellTypeSortBy: SORT_BY;
 }) {

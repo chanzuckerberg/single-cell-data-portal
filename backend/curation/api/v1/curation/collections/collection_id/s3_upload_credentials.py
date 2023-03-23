@@ -7,7 +7,7 @@ from flask import jsonify, make_response, request
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.curation.api.v1.curation.collections.common import (
-    get_infered_collection_version_else_forbidden,
+    get_inferred_collection_version_else_forbidden,
     is_owner_or_allowed_else_forbidden,
 )
 from backend.layers.auth.user_info import UserInfo
@@ -22,7 +22,7 @@ def get(collection_id: str, token_info: dict):
     config = CorporaConfig()
     user_info = UserInfo(token_info)
     # TODO: Since this method only works on private collections, I think we should just accept the version_id here
-    collection_version = get_infered_collection_version_else_forbidden(collection_id)
+    collection_version = get_inferred_collection_version_else_forbidden(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at:
         raise ForbiddenHTTPException()

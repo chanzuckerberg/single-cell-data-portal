@@ -2,7 +2,6 @@ import itertools
 from datetime import datetime
 from typing import List, Optional, Tuple
 from urllib.parse import urlparse
-from uuid import UUID
 
 from flask import Response, jsonify, make_response
 
@@ -17,6 +16,7 @@ from backend.common.utils.http_exceptions import (
     TooLargeHTTPException,
 )
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
+from backend.curation.api.v1.curation.collections.common import validate_uuid_else_forbidden
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
 from backend.layers.business.exceptions import (
@@ -677,7 +677,7 @@ def get_datasets_index():
     """
 
     response = []
-    for dataset in get_business_logic().get_all_published_datasets():
+    for dataset in get_business_logic().get_all_mapped_datasets():
         payload = _dataset_to_response(dataset, is_tombstoned=False)
         enrich_dataset_with_ancestors(
             payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
@@ -713,19 +713,16 @@ def get_dataset_identifiers(url: str):
     """
     try:
         path = urlparse(url).path
-        id = [segment for segment in path.split("/") if segment][-1].removesuffix(".cxg")
+        _id = [segment for segment in path.split("/") if segment][-1].removesuffix(".cxg")
     except Exception:
         raise ServerErrorHTTPException("Cannot parse URL") from None
 
-    try:
-        UUID(id)
-    except ValueError as e:
-        raise NotFoundHTTPException() from e
+    validate_uuid_else_forbidden(_id)
 
-    dataset = get_business_logic().get_dataset_version(DatasetVersionId(id))
+    dataset = get_business_logic().get_dataset_version(DatasetVersionId(_id))
     if dataset is None:
         # Lookup from canonical if the version cannot be found
-        dataset = get_business_logic().get_dataset_version_from_canonical(DatasetId(id))
+        dataset = get_business_logic().get_dataset_version_from_canonical(DatasetId(_id))
     if dataset is None:
         raise NotFoundHTTPException()
 
