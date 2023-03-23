@@ -24,9 +24,12 @@ def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmat
     return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X
 
 
-def get_dataset_s3_uris() -> Dict[str, str]:
+def get_dataset_s3_uris(datasets=None) -> Dict[str, str]:
     """
     Retrieve list of s3 uris for datasets included in the wmg cube
+
+    :param datasets: list of datasets to check, if None, will retrieve from API
+        This parameter is used for tests.
     """
     # hardcode to dev backend if deployment is rdev or test
     API_URL = (
@@ -38,11 +41,14 @@ def get_dataset_s3_uris() -> Dict[str, str]:
     s3_uris = dict()
     if API_URL:
         dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
-        datasets = requests.get(dataset_metadata_url).json()
+        if datasets is None:
+            datasets = requests.get(dataset_metadata_url).json()
 
         for dataset in datasets:
             if (
-                dataset["is_primary_data"] == "PRIMARY"
+                dataset["organism"] is not None
+                and dataset["assay"] is not None
+                and dataset["is_primary_data"] == "PRIMARY"
                 and any(assay["ontology_term_id"] in INCLUDED_ASSAYS for assay in dataset["assay"])
                 and len(dataset["organism"]) < 2
             ):
