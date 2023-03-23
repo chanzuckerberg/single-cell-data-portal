@@ -107,18 +107,3 @@ export const SideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
     width: 100%;
   }
 `;
-
-export const GeneSideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
-  display: flex;
-
-  .${Classes.BUTTON} {
-    height: auto; /* overrides specificity of bp4 button height rule */
-    justify-content: space-between;
-    padding: 0;
-    width: 100%;
-    font-weight: 600;
-    font-size: 20px;
-    line-height: 24px;
-    align-items: flex-start;
-  }
-`;
