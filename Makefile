@@ -160,7 +160,8 @@ local-unit-test-wmg-backend:
 
 .PHONY: local-integration-test-backend
 local-integration-test-backend:
-	docker-compose run --rm -e INTEGRATION_TEST=true -e DB_URI=postgresql://corpora:test_pw@database -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/layers/";
+	docker-compose run --rm -e INTEGRATION_TEST=true -e DB_URI=postgresql://corpora:test_pw@database -T backend \
+	bash -c "cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest tests/unit/backend/layers/";
 
 .PHONY: local-unit-test-processing
 local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
