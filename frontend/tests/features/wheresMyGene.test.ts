@@ -318,7 +318,7 @@ describe("Where's My Gene", () => {
     );
   });
 
-  test("Hierarchical Clustering", async ({ page }) => {
+  test.only("Hierarchical Clustering", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     async function getTissueSelectorButton() {
@@ -338,10 +338,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstNOptions(GENE_COUNT, page);
 
-    const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} span`,
-      page
-    );
+    const beforeGeneNames = await page.$$("[data-test-id^=gene-label-]");
 
     const beforeCellTypeNames = await getNames(
       `${getTestID(CELL_TYPE_LABELS_ID)}`,
@@ -368,10 +365,7 @@ describe("Where's My Gene", () => {
     await geneSortDropdown.click();
     await selectNthOption(2, page);
 
-    const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} span`,
-      page
-    );
+    const afterGeneNames = await page.$$("[data-test-id^=gene-label-]");
 
     const afterCellTypeNames = await getNames(
       `${getTestID(CELL_TYPE_LABELS_ID)}`,
@@ -409,10 +403,7 @@ describe("Where's My Gene", () => {
 
     await waitForHeatmapToRender(page);
 
-    const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} span`,
-      page
-    );
+    const beforeGeneNames = await getNames(`[data-test-id^=gene-label-]`, page);
 
     await tryUntil(
       async () => {
