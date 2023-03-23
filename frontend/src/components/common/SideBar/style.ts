@@ -17,16 +17,12 @@ interface PositionerProps {
   isExpanded: boolean;
 }
 
-const BOX_SHADOW_COLOR = "rgba(16, 22, 26, 0.15)";
+export const SIDEBAR_BOX_SHADOW_COLOR = "rgba(16, 22, 26, 0.15)";
 
 const generateBoxShadow = (props: Props) =>
   `inset ${
     props.position === Position.LEFT ? -1 : 1
-  }px 0px 0px ${BOX_SHADOW_COLOR}`;
-
-// For split sidebar separator line
-const generateBoxShadowTop = () =>
-  `inset 0px 1px 0px ${BOX_SHADOW_COLOR}`;
+  }px 0px 0px ${SIDEBAR_BOX_SHADOW_COLOR}`;
 
 export const SideBar = styled.div<Props>`
   box-sizing: border-box;
@@ -57,19 +53,6 @@ export const SideBarPositioner = styled.div<PositionerProps>`
     border: 6px solid transparent;
     border-radius: 12px;
   }
-`;
-
-export const SideBarPositionerUpper = styled(SideBarPositioner)`
-  max-height: calc(
-    60vh - ${HEADER_HEIGHT_PX / 2}px
-  );
-`;
-
-export const SideBarPositionerLower = styled(SideBarPositioner)`
-  max-height: calc(
-    40vh - ${HEADER_HEIGHT_PX / 2}px
-  );
-  box-shadow: ${generateBoxShadowTop};
 `;
 
 export const SideBarToggleButtonWrapper = styled.span`

@@ -10,8 +10,9 @@ import {
   StyledCallout,
 } from "./style";
 import { useGeneInfo } from "src/common/queries/wheresMyGene";
+import { RightSidebarProperties } from "../RightSideBar";
 
-export interface GeneInfoBarProps {
+export interface GeneInfoBarProps extends RightSidebarProperties {
   geneInfoGene: string;
 }
 

@@ -19,10 +19,6 @@ import {
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
-import {
-  GeneSideBarOpenButtonWrapper,
-  Position,
-} from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -36,7 +32,6 @@ import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import CellInfoBar from "../CellInfoSideBar";
 import GeneInfoBar from "../GeneInfoSideBar";
-import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
@@ -301,55 +296,34 @@ export default function WheresMyGene(): JSX.Element {
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
-        <RightSideBar
-          SideBarWrapperComponent={SideBarWrapper}
-          SideBarPositionerComponent={SideBarPositioner}
-          SideBarOpenButtonWrapperComponent={GeneSideBarOpenButtonWrapper}
-          position={Position.RIGHT}
-          testId="cell-type-details-panel"
-          disabled={false}
-          width={CELL_INFO_SIDEBAR_WIDTH_PX}
-          content={[
-            {
-              label: `${cellInfoCellType.cellType.name}`,
-              handleClose: handleCloseRightSideBar,
-              element: (
-                <CellInfoBar
-                  generateGeneInfo={generateGeneInfo}
-                  cellInfoCellType={cellInfoCellType}
-                  tissueInfo={tissuesByID[cellInfoCellType.tissueID]}
-                />
-              ),
-            },
-            ...(geneInfoGene
-              ? [
-                  {
-                    label: `${geneInfoGene}`,
-                    handleClose: handleCloseGeneInfoSideBar,
-                    element: <GeneInfoBar geneInfoGene={geneInfoGene} />,
-                  },
-                ]
-              : []),
-          ]}
-        />
-      ) : geneInfoGene ? (
-        <RightSideBar
-          SideBarWrapperComponent={SideBarWrapper}
-          SideBarPositionerComponent={SideBarPositioner}
-          SideBarOpenButtonWrapperComponent={GeneSideBarOpenButtonWrapper}
-          position={Position.RIGHT}
-          testId="gene-info-details-panel"
-          disabled={false}
-          width={CELL_INFO_SIDEBAR_WIDTH_PX}
-          content={[
-            {
-              label: `${geneInfoGene}`,
-              handleClose: handleCloseGeneInfoSideBar,
-              element: <GeneInfoBar geneInfoGene={geneInfoGene} />,
-            },
-          ]}
-        />
-      ) : null}
+        <RightSideBar>
+          <CellInfoBar
+            generateGeneInfo={generateGeneInfo}
+            cellInfoCellType={cellInfoCellType}
+            tissueInfo={tissuesByID[cellInfoCellType.tissueID]}
+            handleClose={handleCloseRightSideBar}
+            title={`${cellInfoCellType.cellType.name}`}
+          />
+
+          {geneInfoGene && (
+            <GeneInfoBar
+              geneInfoGene={geneInfoGene}
+              handleClose={handleCloseGeneInfoSideBar}
+              title={`${geneInfoGene}`}
+            />
+          )}
+        </RightSideBar>
+      ) : (
+        geneInfoGene && (
+          <RightSideBar>
+            <GeneInfoBar
+              geneInfoGene={geneInfoGene}
+              handleClose={handleCloseGeneInfoSideBar}
+              title={`${geneInfoGene}`}
+            />
+          </RightSideBar>
+        )
+      )}
 
       <View id="view" overflow="hidden">
         <Wrapper>

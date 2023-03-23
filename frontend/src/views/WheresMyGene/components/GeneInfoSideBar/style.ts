@@ -58,12 +58,12 @@ export const GeneUrl = styled.div`
 
     return `
       color: ${colors?.primary[400]};
-      `;
+    `;
   }}
 `;
 
 export const GeneName = styled.div`
-  ${fontBodyXs}
+  ${fontBodyS}
   font-weight: 500;
   color: black;
 `;
@@ -72,6 +72,8 @@ export const StyledCallout = styled(Callout)`
   ${fontBodyXs}
   align-items: center;
   width: 100%;
+  margin-top: 8px;
+  margin-bottom: 0;
 `;
 
 export const WarningBanner = styled.div`

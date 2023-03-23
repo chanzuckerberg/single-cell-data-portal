@@ -101,7 +101,6 @@ function GeneButton({
             alt={`display gene info for ${geneName}`}
           />
         </InfoButtonWrapper>
-
       </XAxisLabel>
     </GeneButtonStyle>
   );

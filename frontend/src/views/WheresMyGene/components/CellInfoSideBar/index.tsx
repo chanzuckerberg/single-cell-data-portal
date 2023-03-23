@@ -26,7 +26,9 @@ import {
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { StyledImage } from "../HeatMap/components/YAxisChart/style";
 import InfoSVG from "../HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
-export interface CellInfoBarProps {
+import { RightSidebarProperties } from "../RightSideBar";
+
+export interface CellInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
   tissueInfo: OntologyTerm;
   generateGeneInfo: (gene: string) => void;
