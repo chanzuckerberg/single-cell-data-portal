@@ -631,6 +631,31 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/dataset_version"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/dataset_versions/{dataset_version_id}:
+    get:
+      summary: Get full metadata for a Dataset version
+      tags:
+        - dataset_version
+      description: |
+        Fetch Dataset metadata for a Dataset version. The `dataset_version_id` must reference a *Dataset version*,
+        **NOT** a *Dataset*.
+      operationId: backend.curation.api.v1.curation.dataset_versions.dataset_version_id.actions.get
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_version_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dataset_version"
+        "403":
+          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
 
@@ -768,12 +793,22 @@ components:
       description: A timestamp of when the Collection was first published.
       nullable: true
       type: string
+    dataset_version_published_at:
+      description: A timestamp of when this Dataset Version was first published.
+      nullable: true
+      type: string
     collection_revised_at:
       description: A timestamp indicating the last time a Revision for this Collection was published.
       nullable: true
       type: string
     dataset_revised_at:
       description: A timestamp indicating the last time a Revision for this Dataset was published.
+      nullable: true
+      type: string
+    dataset_version_revised_at:
+      description: |
+        If this Dataset Version is a Revision of a Published Dataset, a timestamp indicating when this Dataset Version 
+        was created. Otherwise, None.
       nullable: true
       type: string
     collection_revising_in:
@@ -1030,7 +1065,7 @@ components:
             the dataset can be found in `processing_status_detail`.
           nullable: true
         revised_at:
-          $ref: "#/components/schemas/dataset_revised_at"
+          $ref: "#/components/schemas/dataset_version_revised_at"
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
@@ -1132,8 +1167,10 @@ components:
             When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
             the dataset can be found in `processing_status_detail`.
           nullable: true
+        published_at:
+          $ref: "#/components/schemas/dataset_version_published_at"
         revised_at:
-          $ref: "#/components/schemas/dataset_revised_at"
+          $ref: "#/components/schemas/dataset_version_revised_at"
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
@@ -1399,6 +1436,13 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/dataset_id"
+    path_dataset_version_id:
+      description: The uuid of the Dataset Version.
+      in: path
+      name: dataset_version_id
+      required: true
+      schema:
+        $ref: "#/components/schemas/dataset_version_id"
   responses:
     "200":
       description: OK
