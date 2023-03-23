@@ -21,14 +21,13 @@ export const View = styled.div`
   ${contentWrapper}
   grid-area: content;
   overflow: ${(props: ViewProps) =>
-    props.overflow
-      ? props.overflow
-      : "auto"}; /* facilitates independent content scrolling for sidebar layout */
+    props.overflow ? props.overflow : undefined};
 
   &.CLONED {
     overflow: hidden;
     height: fit-content;
     width: fit-content;
+
     & ${Wrapper}, ${Container} {
       height: fit-content;
       overflow: hidden;

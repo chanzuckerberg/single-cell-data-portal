@@ -29,17 +29,21 @@ export const XAxisWrapper = styled.div`
 `;
 
 export const XAxisLabel = styled.div`
-  ${selectedStyle}
+  height: 100%;
   width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
-  text-orientation: sideways;
   writing-mode: vertical-rl;
-  display: inline-block;
-  user-select: none;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
-export const GeneButtonStyle = styled.button`
-  cursor: pointer;
+export const XAxisGeneName = styled.span`
+  transform: scale(-1, -1);
+  ${selectedStyle}
+`;
+
+export const GeneButtonStyle = styled.div`
   background-color: white;
   border: none;
   z-index: 2;
@@ -48,23 +52,25 @@ export const GeneButtonStyle = styled.button`
   align-items: end;
   white-space: nowrap;
   overflow: hidden;
+
+  .gene-delete-icon {
+    visibility: hidden;
+  }
+  .gene-label-container:hover .gene-delete-icon {
+    visibility: visible;
+    cursor: pointer;
+  }
 `;
 
-// adjust the left position of CellCountLabel by -20 to center it properly
 export const CellCountLabel = styled.div`
   font: ${ECHART_AXIS_LABEL_FONT_SIZE_PX}px sans-serif;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
-  width: ${ECHART_AXIS_LABEL_FONT_SIZE_PX}px;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  background-color: white;
-  text-orientation: sideways;
+  width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
+  height: 100%;
   writing-mode: vertical-rl;
-  padding-top: 16px;
   position: absolute;
-  top: 0px;
-  text-align: right;
-  left: ${Y_AXIS_CHART_WIDTH_PX - 20}px;
-  z-index: 2;
+  left: ${Y_AXIS_CHART_WIDTH_PX - HEAT_MAP_BASE_CELL_WIDTH_PX}px;
+  transform: scale(-1, -1);
 `;
 
 function xAxisWidthAndOffset({ width, left }: { width: number; left: number }) {

@@ -1,5 +1,4 @@
 from typing import Tuple
-from uuid import UUID
 
 from flask import Response, jsonify, make_response
 
@@ -12,8 +11,9 @@ from backend.common.utils.http_exceptions import (
     TooLargeHTTPException,
 )
 from backend.curation.api.v1.curation.collections.common import (
-    get_infered_dataset_version,
+    get_inferred_dataset_version,
     reshape_dataset_for_curation_api,
+    validate_uuid_else_forbidden,
 )
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -38,17 +38,14 @@ def get(collection_id: str, dataset_id: str = None):
     business_logic = get_business_logic()
 
     # Look up assuming that `collection_id` is the canonical id, then look up assuming is the version_id if not found
-    try:
-        UUID(collection_id)
-    except ValueError as e:
-        raise NotFoundHTTPException("Collection not found!") from e
+    validate_uuid_else_forbidden(collection_id)
     collection_version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
     if collection_version is None:
         collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
     if collection_version is None:
         raise NotFoundHTTPException("Collection not found!")
 
-    version = get_infered_dataset_version(dataset_id)
+    version = get_inferred_dataset_version(dataset_id)
     if version is None:
         raise NotFoundHTTPException("Dataset not found")
 
@@ -57,7 +54,7 @@ def get(collection_id: str, dataset_id: str = None):
     # 2. the collection version is published
     use_canonical_url = collection_version.is_initial_unpublished_version() or collection_version.is_published()
 
-    response_body = reshape_dataset_for_curation_api(version, collection_version.is_published(), use_canonical_url)
+    response_body = reshape_dataset_for_curation_api(version, use_canonical_url)
     return make_response(jsonify(response_body), 200)
 
 
@@ -67,11 +64,8 @@ def _get_collection_and_dataset(
     """
     Get collection and dataset by their ids. Will look up by both version and canonical id for both.
     """
-    try:
-        UUID(collection_id)
-        UUID(dataset_id)
-    except ValueError as e:
-        raise ForbiddenHTTPException() from e
+    validate_uuid_else_forbidden(collection_id)
+    validate_uuid_else_forbidden(dataset_id)
     collection_version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
     if collection_version is None:
         collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))

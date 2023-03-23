@@ -29,7 +29,7 @@ export interface Props {
   SideBarOpenButtonWrapperComponent?: typeof SideBarOpenButtonWrapper;
   testId?: string;
   disabled?: boolean;
-  forceToggle?: boolean;
+  forceOpen?: boolean;
   wmgSideBar?: boolean;
   truncatedLabel?: string;
 }
@@ -46,7 +46,7 @@ export default function SideBar({
   SideBarOpenButtonWrapperComponent = SideBarOpenButtonWrapper,
   testId,
   disabled,
-  forceToggle,
+  forceOpen,
   wmgSideBar,
   truncatedLabel = "",
 }: Props): JSX.Element {
@@ -72,7 +72,7 @@ export default function SideBar({
 
   useEffect(() => {
     if (!(disabled && !isExpanded) && wmgSideBar) handleExpandedClick(true);
-  }, [forceToggle]);
+  }, [forceOpen]);
 
   return (
     <SideBarWrapperComponent

@@ -51,9 +51,9 @@ const LandingPage = (): JSX.Element => {
   });
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
-  const [cellsHeroNum] = useState("33M+");
-  const [datasetsHeroNum] = useState("500+");
-  const [cellTypesHeroNum] = useState("550+");
+  const [cellsHeroNum] = useState("38.4M");
+  const [datasetsHeroNum] = useState("732");
+  const [cellTypesHeroNum] = useState("647");
 
   const publications = [
     {
@@ -254,7 +254,7 @@ const LandingPage = (): JSX.Element => {
             </p>
             <div className={styles.heroStatsContainer}>
               <div>
-                <span>Cells</span>
+                <span>unique cells</span>
                 <p>{cellsHeroNum}</p>
               </div>
               <div>

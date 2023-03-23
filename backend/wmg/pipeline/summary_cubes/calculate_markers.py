@@ -8,7 +8,6 @@ import tiledb
 from scipy import stats
 
 from backend.common.utils.exceptions import MarkerGeneCalculationException
-from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
 from backend.wmg.data.rollup import (
     are_cell_types_colinear,
@@ -102,18 +101,11 @@ def _query_tiledb_context_memoized(
         expression_summary_default_cube=None,
         cell_type_orderings=None,
         primary_filter_dimensions=None,
+        filter_relationships=None,
     )
     q = WmgQuery(snapshot)
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
-
-    # set metrics for all non-healthy cells to zero so they are not included in the rollup
-    # if, after rollup, zeros remain, nothing needs to be done as the test metrics will be
-    # all nan.
-    for df in [query, cell_counts_query]:
-        exclude_filter = df["disease_ontology_term_id"].astype("str") != NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
-        numeric_columns = df.select_dtypes("number").columns
-        df.loc[exclude_filter, numeric_columns] = 0
 
     depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
 
@@ -126,8 +118,8 @@ def _query_tiledb_context_memoized(
     gb_dims = ["dataset_id"] + depluralized_keys
 
     # group-by and sum
-    agg = query.groupby(gb_dims_es).sum()
-    n_cells = cell_counts_query.groupby(gb_dims).sum()["n_total_cells"]
+    agg = query.groupby(gb_dims_es).sum(numeric_only=True)
+    n_cells = cell_counts_query.groupby(gb_dims).sum(numeric_only=True)["n_total_cells"]
 
     genes = list(agg.index.levels[0])
     n_cells_per_gene, n_cells_index = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
@@ -391,7 +383,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
         target_filters, context_filters, context_agg, n_cells_per_gene_context, n_cells_index_context
     )
 
-    target_agg = target_agg.groupby("gene_ontology_term_id").sum()
+    target_agg = target_agg.groupby("gene_ontology_term_id").sum(numeric_only=True)
 
     genes_target = list(target_agg.index)
 

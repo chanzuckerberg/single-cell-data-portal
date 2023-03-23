@@ -1,7 +1,7 @@
 import copy
 import datetime
 import logging
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
@@ -48,6 +48,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
     Link,
+    PublishedDatasetVersion,
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
@@ -160,6 +161,17 @@ class BusinessLogic(BusinessLogicInterface):
         Returns all the collection versions connected to a canonical collection
         """
         return self.database_provider.get_all_versions_for_collection(collection_id)
+
+    def get_all_published_collection_versions_from_canonical(
+        self, collection_id: CollectionId
+    ) -> Iterable[CollectionVersionWithDatasets]:
+        """
+        Returns all *published* collection versions for a canonical collection
+        """
+        all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        for c_version in all_versions:
+            if c_version.published_at:
+                yield c_version
 
     def get_collection_version_from_canonical(
         self, collection_id: CollectionId
@@ -397,11 +409,18 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.database_provider.set_dataset_metadata(dataset_version_id, metadata)
 
-    def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_mapped_datasets(self) -> List[DatasetVersion]:
         """
         Retrieves all the datasets from the database that belong to a published collection
         """
-        return self.database_provider.get_all_datasets()
+        datasets, _ = self.database_provider.get_all_mapped_datasets_and_collections()
+        return datasets
+
+    def get_all_mapped_collection_versions_with_datasets(self) -> Iterable[CollectionVersionWithDatasets]:
+        """
+        Retrieves all the datasets from the database that belong to a published collection
+        """
+        return self.database_provider.get_all_mapped_collection_versions_with_datasets()
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
         """
@@ -570,6 +589,35 @@ class BusinessLogic(BusinessLogicInterface):
                     latest = dataset.created_at
                     unpublished_dataset = dataset
             return unpublished_dataset
+
+    def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[PublishedDatasetVersion]:
+        """
+        Given a canonical dataset id, return all its DatasetVersions that have been part of published CollectionVersions
+        """
+        dataset_version = self.database_provider.get_dataset_mapped_version(dataset_id)
+        if not dataset_version:
+            return []
+        collection_versions = self.database_provider.get_all_versions_for_collection(dataset_version.collection_id)
+        published_version_history = []
+        found_version_ids = set()
+        # sort to ensure we always find earliest instance of a dataset version first when iterating
+        # needs None check as part of sort key to avoid TypeError on sorting list of datetimes + NoneTypes
+        collection_versions = sorted(collection_versions, key=lambda cv: (cv.published_at is None, cv.published_at))
+        for collection_version in collection_versions:
+            # skip unpublished collection versions
+            if collection_version.published_at is None:
+                continue
+            for dataset_version in collection_version.datasets:
+                if (
+                    dataset_version.dataset_id.id == dataset_id.id
+                    and dataset_version.version_id.id not in found_version_ids
+                ):
+                    published_version = PublishedDatasetVersion(
+                        collection_version_id=collection_version.version_id, **vars(dataset_version)
+                    )
+                    found_version_ids.add(dataset_version.version_id.id)
+                    published_version_history.append(published_version)
+        return published_version_history
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str

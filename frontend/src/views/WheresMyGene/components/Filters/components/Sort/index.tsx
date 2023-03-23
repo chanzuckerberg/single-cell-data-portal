@@ -6,9 +6,10 @@ import {
 } from "src/views/WheresMyGene/common/store";
 import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGene/common/types";
-import { FilterLabel, FilterWrapper, Label, StyledDropdown } from "./style";
+import { Wrapper, FilterLabel, StyledDropdown } from "../common/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { ViewOptionsWrapper } from "./style";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -55,9 +56,8 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
   }, [sortBy]);
 
   return (
-    <div>
-      <Label>View Options</Label>
-      <FilterWrapper>
+    <ViewOptionsWrapper>
+      <Wrapper>
         <FilterLabel>Sort Cell Types</FilterLabel>
         <StyledDropdown
           data-test-id="cell-type-sort-dropdown"
@@ -67,8 +67,8 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
           InputDropdownProps={InputDropdownProps}
           value={cellTypeSelectedOption}
         />
-      </FilterWrapper>
-      <FilterWrapper>
+      </Wrapper>
+      <Wrapper>
         <FilterLabel>Sort Genes</FilterLabel>
         <StyledDropdown
           data-test-id="gene-sort-dropdown"
@@ -78,14 +78,15 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
           InputDropdownProps={InputDropdownProps}
           value={geneSelectedOption}
         />
-      </FilterWrapper>
-    </div>
+      </Wrapper>
+    </ViewOptionsWrapper>
   );
 
   function cellTypesOnChange(
     value: { id?: SORT_BY; name: string } | null
   ): void {
-    if (!dispatch || !value) return;
+    if (!dispatch || !value || cellTypeSelectedOption.name === value.name)
+      return;
 
     track(EVENTS.WMG_OPTION_SELECT_CELL_TYPES, {
       sort_cell_types_view_option: value.name,
@@ -95,7 +96,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
   }
 
   function genesOnChange(value: { id?: SORT_BY; name: string } | null): void {
-    if (!dispatch || !value) return;
+    if (!dispatch || !value || geneSelectedOption.name === value.name) return;
 
     track(EVENTS.WMG_OPTION_SELECT_SORT_GENES, {
       sort_genes_view_option: value.name,

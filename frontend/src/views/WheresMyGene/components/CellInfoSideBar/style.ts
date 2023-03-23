@@ -97,3 +97,33 @@ export const StyledHTMLTable = styled(HTMLTable)`
     border-bottom: 1px solid #cccccc;
   }
 `;
+
+export const NoMarkerGenesContainer = styled("div")`
+  margin-top: 16px;
+  background: #f8f8f8;
+
+  width: 100%;
+  height: 120px;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  text-align: center;
+`;
+
+export const NoMarkerGenesHeader = styled("span")`
+  ${fontBodyS}
+  color: black;
+  font-weight: 500;
+`;
+
+export const NoMarkerGenesDescription = styled("span")`
+  ${fontBodyXxs}
+  ${(props) => {
+    const colors = getColors(props);
+    return `
+      color: ${colors?.gray[500]};
+    `;
+  }}
+`;

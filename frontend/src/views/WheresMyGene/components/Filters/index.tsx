@@ -7,16 +7,17 @@ import {
 } from "czifui";
 import isEqual from "lodash/isEqual";
 import {
+  Dispatch,
   memo,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   FilterDimensions,
   RawDataset,
@@ -25,25 +26,19 @@ import {
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
-import Organism from "../GeneSearchBar/components/Organism";
+import Organism from "./components/Organism";
+import Compare from "./components/Compare";
 import Sort from "./components/Sort";
 import {
   StyledComplexFilter,
   StyledComplexFilterInputDropdown,
+  ViewOptionsLabel,
   Wrapper,
 } from "./style";
+import ColorScale from "./components/ColorScale";
+import { ViewOptionsWrapper } from "./components/Sort/style";
 
-const filterOptions = createFilterOptions({
-  stringify: (option: RawDataset) =>
-    `${option.label} ${option.collection_label}`,
-});
-
-const DropdownMenuProps = {
-  filterOptions,
-  getOptionSelected,
-};
-
-const ANALYTIC_MAPPING: {
+const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };
 } = {
   datasets: {
@@ -64,15 +59,48 @@ const ANALYTIC_MAPPING: {
   },
 };
 
-export interface Props {
-  isLoading: boolean;
+const filterOptions = createFilterOptions({
+  stringify: (option: RawDataset) =>
+    `${option.label} ${option.collection_label}`,
+});
+
+const DropdownMenuProps = {
+  filterOptions,
+  getOptionSelected,
+};
+
+interface FilterOption {
+  name: string;
+  label: string;
+  id: string;
 }
 
-export default memo(function Filters({ isLoading }: Props): JSX.Element {
+const mapTermToFilterOption = (term: {
+  id: string;
+  name: string;
+}): FilterOption => {
+  return {
+    name: term.name,
+    label: `${term.name} (${term.id})`,
+    id: term.id,
+  };
+};
+
+export interface Props {
+  isLoading: boolean;
+  availableFilters: Partial<FilterDimensions>;
+  setAvailableFilters: Dispatch<SetStateAction<Partial<FilterDimensions>>>;
+  setIsScaled: Dispatch<SetStateAction<boolean>>;
+}
+
+export default memo(function Filters({
+  isLoading,
+  availableFilters,
+  setAvailableFilters,
+  setIsScaled,
+}: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
-  const [availableFilters, setAvailableFilters] =
-    useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
   const { selectedFilters, selectedTissues, selectedGenes } = state;
 
@@ -92,39 +120,67 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions({ includeAllFilterOptions: true });
+  } = useFilterDimensions();
 
-  const areFiltersDisabled = !selectedTissues.length || !selectedGenes.length;
+  const isHeatmapShown = !!selectedTissues.length && !!selectedGenes.length;
 
-  const InputDropdownProps = useMemo(() => {
-    return {
-      disabled: areFiltersDisabled,
-      sdsStyle: "minimal",
-    } as Partial<InputDropdownProps>;
-  }, [areFiltersDisabled]);
+  const InputDropdownProps = {
+    sdsStyle: "minimal",
+  } as Partial<InputDropdownProps>;
 
   // (thuang): We only update available filters when API call is done,
   // otherwise when `useFilterDimensions()` is still loading, its filters
   // will temporarily be empty, and thus resetting the selected filter values
   useEffect(() => {
     if (rawIsLoading) return;
+    const newDatasets = rawDatasets.map((dataset) => ({
+      ...dataset,
+      details: dataset.collection_label,
+      name: dataset.label,
+    }));
+    newDatasets.sort((a, b) => a.name.localeCompare(b.name));
+
+    const newSexes = rawSexes.map(mapTermToFilterOption);
+    newSexes.sort((a, b) => a.name.localeCompare(b.name));
+
+    const newDiseases = rawDiseases.map(mapTermToFilterOption);
+    newDiseases.sort((a, b) =>
+      a.name === "normal"
+        ? -1
+        : b.name === "normal"
+        ? 1
+        : a.name.localeCompare(b.name)
+    );
+
+    const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
+    newEthnicities.sort((a, b) => a.name.localeCompare(b.name));
+
+    const newDevelopmentStages = rawDevelopmentStages.map(
+      mapTermToFilterOption
+    );
+    newDevelopmentStages.sort((a, b) => a.name.localeCompare(b.name));
 
     const newAvailableFilters = {
-      datasets: rawDatasets.map((dataset) => ({
-        ...dataset,
-        details: dataset.collection_label,
-        name: dataset.label,
-      })),
-      development_stage_terms: rawDevelopmentStages,
-      disease_terms: rawDiseases,
-      self_reported_ethnicity_terms: rawEthnicities,
-      sex_terms: rawSexes,
+      datasets: newDatasets,
+      development_stage_terms: newDevelopmentStages,
+      disease_terms: newDiseases,
+      self_reported_ethnicity_terms: newEthnicities,
+      sex_terms: newSexes,
     };
 
     if (isEqual(availableFilters, newAvailableFilters)) return;
 
     setAvailableFilters(newAvailableFilters);
-  }, [rawDatasets, rawDevelopmentStages, rawDiseases, rawEthnicities, rawSexes, rawIsLoading, availableFilters, setAvailableFilters]);
+  }, [
+    rawDatasets,
+    rawDevelopmentStages,
+    rawDiseases,
+    rawEthnicities,
+    rawSexes,
+    rawIsLoading,
+    availableFilters,
+    setAvailableFilters,
+  ]);
 
   const {
     datasets = EMPTY_ARRAY,
@@ -177,7 +233,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
         // If there are newly selected filters, send an analytic event for each of them
         if (newlySelected.length) {
           newlySelected.forEach((selected) => {
-            const { eventName, label } = ANALYTIC_MAPPING[key]!;
+            const { eventName, label } = ANALYTICS_MAPPING[key]!;
             track(eventName, {
               [label]: selected.name,
             });
@@ -218,72 +274,104 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   );
 
   return (
-    <Tooltip
-      title={
-        "Please select an organism, tissue and at least one gene to use these filters."
-      }
-      // (thuang): We need to disable the tooltip when filters are enabled
-      disableHoverListener={!areFiltersDisabled}
-      disableFocusListener={!areFiltersDisabled}
-    >
-      <Wrapper>
+    <Wrapper>
+      <div>
+        <StyledComplexFilter
+          multiple
+          data-test-id="dataset-filter"
+          search
+          label="Dataset"
+          options={datasets as unknown as DefaultMenuSelectOption[]}
+          onChange={handleDatasetsChange}
+          value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          DropdownMenuProps={DropdownMenuProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+        <StyledComplexFilter
+          multiple
+          data-test-id="disease-filter"
+          search
+          label="Disease"
+          options={disease_terms as unknown as DefaultMenuSelectOption[]}
+          onChange={handleDiseasesChange}
+          value={selectedDiseases as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          DropdownMenuProps={DropdownMenuProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+        <StyledComplexFilter
+          multiple
+          data-test-id="self-reported-ethnicity-filter"
+          search
+          label="Self-Reported Ethnicity"
+          options={
+            self_reported_ethnicity_terms as unknown as DefaultMenuSelectOption[]
+          }
+          onChange={handleEthnicitiesChange}
+          value={selectedEthnicities as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          DropdownMenuProps={DropdownMenuProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+        <StyledComplexFilter
+          multiple
+          data-test-id="sex-filter"
+          search
+          label="Sex"
+          options={sex_terms as unknown as DefaultMenuSelectOption[]}
+          onChange={handleSexesChange}
+          value={selectedSexes as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          DropdownMenuProps={DropdownMenuProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+      </div>
+
+      <Organism isLoading={isLoading} />
+
+      <Tooltip
+        sdsStyle="dark"
+        arrow
+        placement="right"
+        title={"Please select at least one tissue and gene to use this option."}
+        disableHoverListener={isHeatmapShown}
+        disableFocusListener={isHeatmapShown}
+      >
         <div>
-          <StyledComplexFilter
-            multiple
-            search
-            label="Dataset"
-            options={datasets as unknown as DefaultMenuSelectOption[]}
-            onChange={handleDatasetsChange}
-            value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            DropdownMenuProps={DropdownMenuProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-          <StyledComplexFilter
-            multiple
-            label="Disease"
-            options={disease_terms}
-            onChange={handleDiseasesChange}
-            value={selectedDiseases}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            DropdownMenuProps={DropdownMenuProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-          <StyledComplexFilter
-            multiple
-            label="Self-Reported Ethnicity"
-            options={self_reported_ethnicity_terms}
-            onChange={handleEthnicitiesChange}
-            value={selectedEthnicities}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            DropdownMenuProps={DropdownMenuProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-          <StyledComplexFilter
-            multiple
-            label="Sex"
-            options={sex_terms}
-            onChange={handleSexesChange}
-            value={selectedSexes}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            DropdownMenuProps={DropdownMenuProps}
-            InputDropdownProps={InputDropdownProps}
-          />
+          <Compare areFiltersDisabled={!isHeatmapShown} />
         </div>
+      </Tooltip>
 
-        <Organism isLoading={isLoading} />
-
-        <Sort areFiltersDisabled={areFiltersDisabled} />
-      </Wrapper>
-    </Tooltip>
+      <div>
+        <ViewOptionsLabel>View Options</ViewOptionsLabel>
+        <ViewOptionsWrapper>
+          <Tooltip
+            sdsStyle="dark"
+            arrow
+            placement="right"
+            title={
+              "Please select at least one tissue and gene to use this option."
+            }
+            disableHoverListener={isHeatmapShown}
+            disableFocusListener={isHeatmapShown}
+          >
+            <div>
+              <Sort areFiltersDisabled={!isHeatmapShown} />
+            </div>
+          </Tooltip>
+          <ColorScale setIsScaled={setIsScaled} />
+        </ViewOptionsWrapper>
+      </div>
+    </Wrapper>
   );
 });
 
