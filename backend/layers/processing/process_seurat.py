@@ -8,6 +8,7 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetVersionId,
 )
+from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
@@ -79,6 +80,7 @@ class ProcessSeurat(ProcessingLogic):
             DatasetStatusKey.RDS,
         )
 
+    @logit
     def make_seurat(self, local_filename):
         """
         Create a Seurat rds file from the AnnData file.

@@ -1,5 +1,5 @@
+import logging
 from datetime import datetime
-from logging import Logger
 from os.path import basename, join
 from typing import Callable, List, Optional
 
@@ -12,6 +12,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ConversionFailed
+from backend.layers.processing.logger import logit
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -25,10 +26,10 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     uri_provider: UriProviderInterface
     s3_provider: S3ProviderInterface
     downloader: Downloader
-    logger: Logger
+    logger: logging
 
     def __init__(self) -> None:
-        self.logger = Logger("processing")
+        self.logger = logging.getLogger("processing")
 
     def update_processing_status(
         self,
@@ -39,6 +40,10 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     ):
         validation_message = "\n".join(validation_errors) if validation_errors is not None else None
         self.business_logic.update_dataset_version_status(dataset_id, status_key, status_value, validation_message)
+        self.logger.info(
+            "Updating processing status",
+            extra=dict(validation_message=validation_message, status_key=status_key, status_value=status_value),
+        )
 
     def download_from_s3(self, bucket_name: str, object_key: str, local_filename: str):
         self.s3_provider.download_file(bucket_name, object_key, local_filename)
@@ -63,6 +68,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         )
         return ProcessingLogic.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
 
+    @logit
     def create_artifact(
         self,
         file_name: str,
