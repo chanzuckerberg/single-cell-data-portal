@@ -47,6 +47,7 @@ export const XAxisGeneName = styled.span`
 `;
 
 export const InfoButtonWrapper = styled.div`
+  transform: scale(-1, -1);
   cursor: pointer;
   display: flex;
   margin-bottom: 4px;
