@@ -2,13 +2,13 @@ import styled from "@emotion/styled";
 import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 import { LIGHT_GRAY } from "src/components/common/theme";
 import {
-  LEGEND_HEIGHT,
-  LEGEND_MARGIN_BOTTOM,
+  LEGEND_HEIGHT_PX,
+  LEGEND_MARGIN_BOTTOM_PX,
 } from "../InfoPanel/components/Legend/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import {
-  CONTENT_WRAPPER_LEFT_RIGHT_PADDING,
-  CONTENT_WRAPPER_TOP_BOTTOM_PADDING,
+  CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
+  CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
 import { FILTERS_PANEL_EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
@@ -26,8 +26,11 @@ export const SELECTED_STYLE = {
 export const Container = styled.div`
   width: ${isFmgOpen};
   height: calc(
-    100vh - ${HEADER_HEIGHT_PX}px - ${LEGEND_HEIGHT}px -
-      ${LEGEND_MARGIN_BOTTOM}px - ${CONTENT_WRAPPER_TOP_BOTTOM_PADDING}px
+    100vh -
+      ${HEADER_HEIGHT_PX +
+      LEGEND_HEIGHT_PX +
+      LEGEND_MARGIN_BOTTOM_PX +
+      CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX}px
   );
   overflow: auto;
   position: relative;
@@ -89,7 +92,7 @@ function isFmgOpen({ isFmgOpen = false }: { isFmgOpen: boolean }) {
   return `calc(
     100vw - ${
       FILTERS_PANEL_EXPANDED_WIDTH_PX +
-      CONTENT_WRAPPER_LEFT_RIGHT_PADDING * 2 +
+      CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2 +
       (isFmgOpen ? CELL_INFO_SIDEBAR_WIDTH_PX : 0) -
       25 // This number gets the scrollbar to the right edge of the viewport
     }px

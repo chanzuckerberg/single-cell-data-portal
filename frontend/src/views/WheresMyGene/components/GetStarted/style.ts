@@ -2,8 +2,8 @@ import styled from "@emotion/styled";
 import { FILTERS_PANEL_EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import {
-  CONTENT_WRAPPER_LEFT_RIGHT_PADDING,
-  CONTENT_WRAPPER_TOP_BOTTOM_PADDING,
+  CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
+  CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 import {
@@ -11,8 +11,8 @@ import {
   Y_AXIS_CHART_WIDTH_PX,
 } from "../HeatMap/utils";
 import {
-  LEGEND_HEIGHT,
-  LEGEND_MARGIN_BOTTOM,
+  LEGEND_HEIGHT_PX,
+  LEGEND_MARGIN_BOTTOM_PX,
 } from "../InfoPanel/components/Legend/style";
 
 export const Header = styled.h1`
@@ -21,13 +21,13 @@ export const Header = styled.h1`
   font-weight: bold;
 `;
 
-const GAP = 10;
+const GAP_PX = 10;
 
-const OFFSET_FROM_TOP =
+const OFFSET_FROM_TOP_PX =
   HEADER_HEIGHT_PX +
-  LEGEND_HEIGHT +
-  LEGEND_MARGIN_BOTTOM +
-  CONTENT_WRAPPER_TOP_BOTTOM_PADDING;
+  LEGEND_HEIGHT_PX +
+  LEGEND_MARGIN_BOTTOM_PX +
+  CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX;
 
 interface WrapperProps {
   isHidden: boolean;
@@ -37,7 +37,7 @@ interface WrapperProps {
 export const Wrapper = styled.div`
   position: absolute;
   margin: 0;
-  top: ${OFFSET_FROM_TOP}px;
+  top: ${OFFSET_FROM_TOP_PX}px;
 
   display: ${({ isHidden }: WrapperProps) => (isHidden ? "none" : "flex")};
 
@@ -46,11 +46,11 @@ export const Wrapper = styled.div`
     100vw -
       ${FILTERS_PANEL_EXPANDED_WIDTH_PX +
       CELL_INFO_SIDEBAR_WIDTH_PX +
-      CONTENT_WRAPPER_LEFT_RIGHT_PADDING * 2}px
+      CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2}px
   );
 
   height: calc(
-    100vh - ${OFFSET_FROM_TOP + CONTENT_WRAPPER_TOP_BOTTOM_PADDING}px
+    100vh - ${OFFSET_FROM_TOP_PX + CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX}px
   );
 `;
 
@@ -89,13 +89,14 @@ export const StyledStepOne = styled.div`
 export const StyledStepTwo = styled.div`
   ${isHidden}
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  margin-left: ${GAP}px;
+  margin-left: ${GAP_PX}px;
 `;
 
 export const StyledStepThree = styled.div`
   ${isHidden}
   flex: 1;
-  margin: ${GAP}px 0 0 ${GAP}px;
+  margin-left: ${GAP_PX}px;
+  margin-top: ${GAP_PX}px;
 `;
 
 interface IsHiddenProps {

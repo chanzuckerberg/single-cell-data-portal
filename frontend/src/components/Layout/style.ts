@@ -2,8 +2,8 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { HEADER_HEIGHT_PX } from "../Header/style";
 
-export const CONTENT_WRAPPER_TOP_BOTTOM_PADDING = 24;
-export const CONTENT_WRAPPER_LEFT_RIGHT_PADDING = 40;
+export const CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX = 24;
+export const CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX = 40;
 
 export const Wrapper = styled.div`
   display: flex;
@@ -16,8 +16,8 @@ export const Wrapper = styled.div`
 `;
 
 export const contentWrapper = css`
-  padding: ${CONTENT_WRAPPER_TOP_BOTTOM_PADDING}px
-    ${CONTENT_WRAPPER_LEFT_RIGHT_PADDING}px;
+  padding: ${CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX}px
+    ${CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX}px;
 `;
 
 export const MainWrapper = styled.div`
