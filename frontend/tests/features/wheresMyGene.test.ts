@@ -1122,7 +1122,6 @@ async function waitForElement(page: Page, selector: string) {
   );
 }
 
-
 async function waitForElementToBeRemoved(page: Page, selector: string) {
   await tryUntil(
     async () => {
@@ -1155,7 +1154,6 @@ async function getNthButtonAndClick(page: Page, selector: string, n: number) {
     { page }
   );
 }
-
 
 async function clickDropdownOptionByName({
   page,
