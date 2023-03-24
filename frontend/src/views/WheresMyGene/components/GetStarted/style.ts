@@ -1,13 +1,33 @@
 import styled from "@emotion/styled";
 import { FILTERS_PANEL_EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+import {
+  CONTENT_WRAPPER_LEFT_RIGHT_PADDING,
+  CONTENT_WRAPPER_TOP_BOTTOM_PADDING,
+} from "src/components/Layout/style";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
+import {
+  X_AXIS_CHART_HEIGHT_PX,
+  Y_AXIS_CHART_WIDTH_PX,
+} from "../HeatMap/utils";
+import {
+  LEGEND_HEIGHT,
+  LEGEND_MARGIN_BOTTOM,
+} from "../InfoPanel/components/Legend/style";
 
 export const Header = styled.h1`
   margin-bottom: 12px;
   font-size: 36px;
   font-weight: bold;
 `;
+
+const GAP = 10;
+
+const OFFSET_FROM_TOP =
+  HEADER_HEIGHT_PX +
+  LEGEND_HEIGHT +
+  LEGEND_MARGIN_BOTTOM +
+  CONTENT_WRAPPER_TOP_BOTTOM_PADDING;
 
 interface WrapperProps {
   isHidden: boolean;
@@ -16,14 +36,22 @@ interface WrapperProps {
 // will need to change upstream styling due to position: absolute
 export const Wrapper = styled.div`
   position: absolute;
-  top: 150px;
-  margin-left: -10px;
+  margin: 0;
+  top: ${OFFSET_FROM_TOP}px;
 
   display: ${({ isHidden }: WrapperProps) => (isHidden ? "none" : "flex")};
 
-  width: calc(96vw - ${FILTERS_PANEL_EXPANDED_WIDTH_PX + CELL_INFO_SIDEBAR_WIDTH_PX}px);
+  /* This is to make sure getting started box doesn't overlap FMG panel */
+  width: calc(
+    100vw -
+      ${FILTERS_PANEL_EXPANDED_WIDTH_PX +
+      CELL_INFO_SIDEBAR_WIDTH_PX +
+      CONTENT_WRAPPER_LEFT_RIGHT_PADDING * 2}px
+  );
 
-  height: calc(85vh - ${HEADER_HEIGHT_PX}px);
+  height: calc(
+    100vh - ${OFFSET_FROM_TOP + CONTENT_WRAPPER_TOP_BOTTOM_PADDING}px
+  );
 `;
 
 export const Content = styled.div`
@@ -34,7 +62,9 @@ export const Content = styled.div`
 export const ColumnOne = styled.div`
   ${isHidden}
 
-  flex: 0 1 350px;
+  flex-shrink: 0;
+
+  width: ${Y_AXIS_CHART_WIDTH_PX}px;
 
   z-index: 10;
 
@@ -43,7 +73,7 @@ export const ColumnOne = styled.div`
 `;
 
 export const ColumnTwo = styled.div`
-  flex: 1 2 calc(10vw);
+  flex: 1 0;
 
   z-index: 10;
 
@@ -54,19 +84,18 @@ export const ColumnTwo = styled.div`
 
 export const StyledStepOne = styled.div`
   flex: 1 0;
-  margin: 10px;
 `;
 
 export const StyledStepTwo = styled.div`
   ${isHidden}
-  height: 100px !important;
-  margin: 10px;
+  height: ${X_AXIS_CHART_HEIGHT_PX}px;
+  margin-left: ${GAP}px;
 `;
 
 export const StyledStepThree = styled.div`
   ${isHidden}
   flex: 1;
-  margin: 10px;
+  margin: ${GAP}px 0 0 ${GAP}px;
 `;
 
 interface IsHiddenProps {

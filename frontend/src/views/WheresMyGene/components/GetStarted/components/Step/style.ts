@@ -24,8 +24,7 @@ export const Header = styled.span`
 
   display: block;
 
-  padding: 24px 0 0 24px;
-  margin-bottom: 8px;
+  padding: 24px 24px 4px 24px;
 
   ${(props) => {
     const colors = getColors(props);

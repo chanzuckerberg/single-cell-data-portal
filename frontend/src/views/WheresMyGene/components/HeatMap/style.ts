@@ -11,6 +11,7 @@ import {
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING,
 } from "src/components/Layout/style";
 import { FILTERS_PANEL_EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 
 export const CHART_PADDING = 10;
 
@@ -23,10 +24,7 @@ export const SELECTED_STYLE = {
 };
 
 export const Container = styled.div`
-  width: calc(
-    100vw - ${FILTERS_PANEL_EXPANDED_WIDTH_PX}px -
-      ${CONTENT_WRAPPER_LEFT_RIGHT_PADDING * 2}px + 25px
-  );
+  width: ${isFmgOpen};
   height: calc(
     100vh - ${HEADER_HEIGHT_PX}px - ${LEGEND_HEIGHT}px -
       ${LEGEND_MARGIN_BOTTOM}px - ${CONTENT_WRAPPER_TOP_BOTTOM_PADDING}px
@@ -83,3 +81,17 @@ export const ChartWrapper = styled.div`
   left: ${Y_AXIS_CHART_WIDTH_PX}px;
   top: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
+
+/**
+ * This is needed so that the heatmap scrollbar isn't covered by the right sidebar
+ */
+function isFmgOpen({ isFmgOpen = false }: { isFmgOpen: boolean }) {
+  return `calc(
+    100vw - ${
+      FILTERS_PANEL_EXPANDED_WIDTH_PX +
+      CONTENT_WRAPPER_LEFT_RIGHT_PADDING * 2 +
+      (isFmgOpen ? CELL_INFO_SIDEBAR_WIDTH_PX : 0) -
+      25 // This number gets the scrollbar to the right edge of the viewport
+    }px
+  )`;
+}
