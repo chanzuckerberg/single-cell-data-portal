@@ -249,6 +249,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
     await selectFirstOption(page);
 
+    await waitForElement(page, getTestID("cell-type-name"));
     const cellTypes = await page.$$(getTestID("cell-type-name"));
     expect(cellTypes.length).toBeGreaterThan(0);
   });
@@ -1004,6 +1005,16 @@ async function waitForHeatmapToRender(page: Page) {
     async () => {
       const canvases = await page.$$("canvas");
       await expect(canvases.length).not.toBe(0);
+    },
+    { page }
+  );
+}
+
+async function waitForElement(page: Page, selector: string) {
+  await tryUntil(
+    async () => {
+      const element = await page.$(selector);
+      await expect(element).not.toBeNull();
     },
     { page }
   );
