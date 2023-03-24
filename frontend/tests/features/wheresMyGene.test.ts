@@ -11,7 +11,7 @@ import AdmZip from "adm-zip";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
-const GENE_LABELS_ID = "gene-labels";
+const GENE_LABELS_ID = "[data-test-id^=gene-label-]";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
@@ -338,7 +338,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstNOptions(GENE_COUNT, page);
 
-    const beforeGeneNames = await page.$$("[data-test-id^=gene-label-]");
+    const beforeGeneNames = await page.$$(GENE_LABELS_ID);
 
     const beforeCellTypeNames = await getNames(
       `${getTestID(CELL_TYPE_LABELS_ID)}`,
@@ -365,7 +365,7 @@ describe("Where's My Gene", () => {
     await geneSortDropdown.click();
     await selectNthOption(2, page);
 
-    const afterGeneNames = await page.$$("[data-test-id^=gene-label-]");
+    const afterGeneNames = await page.$$(GENE_LABELS_ID);
 
     const afterCellTypeNames = await getNames(
       `${getTestID(CELL_TYPE_LABELS_ID)}`,
@@ -403,7 +403,7 @@ describe("Where's My Gene", () => {
 
     await waitForHeatmapToRender(page);
 
-    const beforeGeneNames = await page.$$("[data-test-id^=gene-label-]");
+    const beforeGeneNames = await page.$$(GENE_LABELS_ID);
 
     await tryUntil(
       async () => {
@@ -413,7 +413,7 @@ describe("Where's My Gene", () => {
         await page.hover(".gene-label-container");
         await page.click(getTestID(GENE_DELETE_BUTTON));
 
-        const afterGeneNames = await page.$$("[data-test-id^=gene-label-]");
+        const afterGeneNames = await page.$$(GENE_LABELS_ID);
 
         expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
