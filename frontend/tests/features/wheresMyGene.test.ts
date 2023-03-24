@@ -252,6 +252,21 @@ describe("Where's My Gene", () => {
     }
   });
 
+  test("Selected tissue and no genes displays cell types", async ({ page }) => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID(ADD_TISSUE_ID));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await selectFirstOption(page);
+
+    await waitForElement(page, getTestID("cell-type-name"));
+    const cellTypes = await page.$$(getTestID("cell-type-name"));
+    expect(cellTypes.length).toBeGreaterThan(0);
+  });
+
   test("Source Data", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
@@ -1107,6 +1122,7 @@ async function waitForElement(page: Page, selector: string) {
   );
 }
 
+
 async function waitForElementToBeRemoved(page: Page, selector: string) {
   await tryUntil(
     async () => {
@@ -1139,6 +1155,7 @@ async function getNthButtonAndClick(page: Page, selector: string, n: number) {
     { page }
   );
 }
+
 
 async function clickDropdownOptionByName({
   page,
