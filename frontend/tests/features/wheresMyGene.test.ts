@@ -239,6 +239,20 @@ describe("Where's My Gene", () => {
     }
   });
 
+  test("Selected tissue and no genes displays cell types", async ({ page }) => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID(ADD_TISSUE_ID));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await selectFirstOption(page);
+
+    const cellTypes = await page.$$(getTestID("cell-type-name"));
+    expect(cellTypes.length).toBeGreaterThan(0);
+  });
+
   test("Source Data", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
