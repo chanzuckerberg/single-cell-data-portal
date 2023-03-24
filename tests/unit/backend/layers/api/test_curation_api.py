@@ -1582,7 +1582,7 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         response = self.app.get(test_url, headers=headers)
         self.assertEqual(200, response.status_code)
         expected = defaultdict(list)
-        for dataset in response.json["datasets"]:
+        for dataset in response.json:
             expected["dataset_version_ids"].append(dataset["dataset_version_id"])
             expected["collection_ids"].append(dataset["collection_id"])
             expected["collection_version_ids"].append(dataset["collection_version_id"])
