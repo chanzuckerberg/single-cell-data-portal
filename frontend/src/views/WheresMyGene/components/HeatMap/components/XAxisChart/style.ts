@@ -8,6 +8,7 @@ import {
 
 export const ECHART_AXIS_LABEL_COLOR_HEX = "#6e7079";
 export const ECHART_AXIS_LABEL_FONT_SIZE_PX = 12;
+export const GENE_INFO_BUTTON_PADDING_PX = 12;
 
 export const XAxisContainer = styled.div`
   ${xAxisWidth}
@@ -39,8 +40,18 @@ export const XAxisLabel = styled.div`
 `;
 
 export const XAxisGeneName = styled.span`
+  display: flex;
   transform: scale(-1, -1);
+  overflow: hidden;
   ${selectedStyle}
+`;
+
+export const InfoButtonWrapper = styled.div`
+  transform: scale(-1, -1);
+  cursor: pointer;
+  display: flex;
+  margin-bottom: 4px;
+  margin-top: 4px;
 `;
 
 export const GeneButtonStyle = styled.div`

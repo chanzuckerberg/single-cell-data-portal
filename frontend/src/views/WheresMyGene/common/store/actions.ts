@@ -128,6 +128,51 @@ export function addCellInfoCellType(
   };
 }
 
+export function addGeneInfoGene(
+  payload: string
+): GetActionTypeOfReducer<typeof REDUCERS["addGeneInfoGene"]> {
+  return {
+    payload,
+    type: "addGeneInfoGene",
+  };
+}
+
+export function clearGeneInfoGene(): GetActionTypeOfReducer<
+  typeof REDUCERS["clearGeneInfoGene"]
+> {
+  return {
+    payload: null,
+    type: "clearGeneInfoGene",
+  };
+}
+
+export function clearCellInfoCellType(): GetActionTypeOfReducer<
+  typeof REDUCERS["clearCellInfoCellType"]
+> {
+  return {
+    payload: null,
+    type: "clearCellInfoCellType",
+  };
+}
+
+export function closeRightSidebar(): GetActionTypeOfReducer<
+  typeof REDUCERS["closeRightSidebar"]
+> {
+  return {
+    payload: null,
+    type: "closeRightSidebar",
+  };
+}
+
+export function selectGeneInfoFromXAxis(
+  payload: string
+): GetActionTypeOfReducer<typeof REDUCERS["selectGeneInfoFromXAxis"]> {
+  return {
+    payload,
+    type: "selectGeneInfoFromXAxis",
+  };
+}
+
 export function loadStateFromURL(
   payload: LoadStateFromURLPayload
 ): GetActionTypeOfReducer<typeof REDUCERS["loadStateFromURL"]> {

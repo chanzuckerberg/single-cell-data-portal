@@ -55,3 +55,8 @@ export const scrollbar = (props: CommonThemeProps) => {
     }
   `;
 };
+
+export const InfoButtonWrapper = styled.span`
+  padding-left: 4px;
+  cursor: pointer;
+`;
