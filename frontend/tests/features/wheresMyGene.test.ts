@@ -20,6 +20,19 @@ const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 const DOWNLOAD_BUTTON_ID = "download-button";
 
+const MARKER_GENE_BUTTON_TEST_ID = "marker-gene-button";
+
+// gene info test IDs
+const GENE_INFO_BUTTON_X_AXIS_TEST_ID = "gene-info-button-x-axis";
+const GENE_INFO_HEADER_TEST_ID = "gene-info-header";
+const GENE_INFO_GENE_SYNONYMS_TEST_ID = "gene-info-gene-synonyms";
+const GENE_INFO_NCBI_LINK_TEST_ID = "gene-info-ncbi-link";
+const RIGHT_SIDEBAR_TITLE_TEST_ID = "right-sidebar-title";
+const GENE_INFO_TITLE_SPLIT_TEST_ID = "gene-info-title-split";
+const GENE_INFO_CLOSE_BUTTON_SPLIT_TEST_ID = "gene-info-close-button-split";
+const RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID = "right-sidebar-close-button";
+const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
+
 const MUI_CHIP_ROOT = ".MuiChip-root";
 const FILTERS_PANEL_NOT_FOUND = "Filters panel not found";
 
@@ -564,6 +577,107 @@ describe("Where's My Gene", () => {
     });
   });
 
+  describe("Gene info", () => {
+    test("Display gene info panel in sidebar", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      async function getTissueSelectorButton() {
+        return page.$(getTestID(ADD_TISSUE_ID));
+      }
+
+      async function getGeneSelectorButton() {
+        return page.$(getTestID(ADD_GENE_ID));
+      }
+
+      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await selectFirstNOptions(1, page);
+
+      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await selectFirstNOptions(3, page);
+
+      await waitForHeatmapToRender(page);
+
+      await getButtonAndClick(page, getTestID(GENE_INFO_BUTTON_X_AXIS_TEST_ID));
+
+      await waitForElement(page, getTestID(GENE_INFO_HEADER_TEST_ID));
+      await waitForElement(page, getTestID(GENE_INFO_GENE_SYNONYMS_TEST_ID));
+      await waitForElement(page, getTestID(GENE_INFO_NCBI_LINK_TEST_ID));
+      await waitForElement(page, getTestID(RIGHT_SIDEBAR_TITLE_TEST_ID));
+
+      await getButtonAndClick(
+        page,
+        getTestID(RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID)
+      );
+
+      await waitForElementToBeRemoved(
+        page,
+        getTestID(RIGHT_SIDEBAR_TITLE_TEST_ID)
+      );
+    });
+
+    test("Display gene info bottom drawer in cell info sidebar", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      async function getGeneSelectorButton() {
+        return page.$(getTestID(ADD_GENE_ID));
+      }
+
+      await clickDropdownOptionByName({
+        page,
+        selector: getTestID(ADD_TISSUE_ID),
+        name: "lung",
+      });
+
+      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await selectFirstNOptions(3, page);
+
+      await waitForHeatmapToRender(page);
+
+      await getNthButtonAndClick(
+        page,
+        getTestID(MARKER_GENE_BUTTON_TEST_ID),
+        5
+      );
+
+      await getButtonAndClick(
+        page,
+        getTestID(GENE_INFO_BUTTON_CELL_INFO_TEST_ID)
+      );
+
+      await waitForElement(page, getTestID(GENE_INFO_HEADER_TEST_ID));
+      await waitForElement(page, getTestID(GENE_INFO_GENE_SYNONYMS_TEST_ID));
+      await waitForElement(page, getTestID(GENE_INFO_NCBI_LINK_TEST_ID));
+      await waitForElement(page, getTestID(GENE_INFO_TITLE_SPLIT_TEST_ID));
+
+      await getButtonAndClick(
+        page,
+        getTestID(GENE_INFO_CLOSE_BUTTON_SPLIT_TEST_ID)
+      );
+
+      await waitForElementToBeRemoved(
+        page,
+        getTestID(GENE_INFO_TITLE_SPLIT_TEST_ID)
+      );
+
+      await getButtonAndClick(
+        page,
+        getTestID(RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID)
+      );
+
+      await waitForElementToBeRemoved(
+        page,
+        getTestID(RIGHT_SIDEBAR_TITLE_TEST_ID)
+      );
+
+      await getButtonAndClick(page, getTestID(GENE_INFO_BUTTON_X_AXIS_TEST_ID));
+
+      await waitForElement(page, getTestID(GENE_INFO_HEADER_TEST_ID));
+      await waitForElement(page, getTestID(RIGHT_SIDEBAR_TITLE_TEST_ID));
+    });
+  });
+
   describe("Export CSV ", () => {
     test("Download CSV and validate length - no compare", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
@@ -978,6 +1092,49 @@ async function waitForHeatmapToRender(page: Page) {
     async () => {
       const canvases = await page.$$("canvas");
       await expect(canvases.length).not.toBe(0);
+    },
+    { page }
+  );
+}
+
+async function waitForElement(page: Page, selector: string) {
+  await tryUntil(
+    async () => {
+      const element = await page.$(selector);
+      await expect(element).not.toBeNull();
+    },
+    { page }
+  );
+}
+
+async function waitForElementToBeRemoved(page: Page, selector: string) {
+  await tryUntil(
+    async () => {
+      const element = await page.$(selector);
+      await expect(element).toBeNull();
+    },
+    { page }
+  );
+}
+
+async function getButtonAndClick(page: Page, selector: string) {
+  await tryUntil(
+    async () => {
+      const button = await page.$(selector);
+      await expect(button).not.toBeNull();
+      await button?.click();
+    },
+    { page }
+  );
+}
+
+async function getNthButtonAndClick(page: Page, selector: string, n: number) {
+  await tryUntil(
+    async () => {
+      const buttons = await page.$$(selector);
+      await expect(buttons.length).toBeGreaterThan(n);
+      const button = buttons[n];
+      await button?.click();
     },
     { page }
   );

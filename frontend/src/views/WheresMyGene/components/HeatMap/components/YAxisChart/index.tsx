@@ -149,7 +149,7 @@ const CellTypeButton = ({
               }}
             >
               <StyledImage
-                id="marker-gene-button"
+                data-test-id="marker-gene-button"
                 src={InfoSVG.src}
                 width="10"
                 height="10"
