@@ -21,7 +21,6 @@ export const Gap = styled.div`
 export const Top = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
 `;
 
 export const SideBarWrapper = styled(SideBar)`

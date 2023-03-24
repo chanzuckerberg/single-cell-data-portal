@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
+import { FILTERS_PANEL_EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 
@@ -21,7 +21,7 @@ export const Wrapper = styled.div`
 
   display: ${({ isHidden }: WrapperProps) => (isHidden ? "none" : "flex")};
 
-  width: calc(96vw - ${EXPANDED_WIDTH_PX + CELL_INFO_SIDEBAR_WIDTH_PX}px);
+  width: calc(96vw - ${FILTERS_PANEL_EXPANDED_WIDTH_PX + CELL_INFO_SIDEBAR_WIDTH_PX}px);
 
   height: calc(85vh - ${HEADER_HEIGHT_PX}px);
 `;
