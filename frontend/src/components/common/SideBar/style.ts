@@ -17,10 +17,13 @@ interface PositionerProps {
   isExpanded: boolean;
 }
 
+// This color will be used as a separator line for the split right sidebar, top and bottom views
+export const SIDEBAR_BOX_SHADOW_COLOR = "rgba(16, 22, 26, 0.15)";
+
 const generateBoxShadow = (props: Props) =>
   `inset ${
     props.position === Position.LEFT ? -1 : 1
-  }px 0px 0px rgba(16, 22, 26, 0.15)`;
+  }px 0px 0px ${SIDEBAR_BOX_SHADOW_COLOR}`;
 
 export const SideBar = styled.div<Props>`
   box-sizing: border-box;
@@ -103,20 +106,5 @@ export const SideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
     justify-content: space-between;
     padding: 0;
     width: 100%;
-  }
-`;
-
-export const GeneSideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
-  display: block;
-
-  .${Classes.BUTTON} {
-    height: auto; /* overrides specificity of bp4 button height rule */
-    justify-content: space-between;
-    padding: 0;
-    width: 100%;
-    font-weight: 600;
-    font-size: 20px;
-    line-height: 24px;
-    align-items: flex-start;
   }
 `;

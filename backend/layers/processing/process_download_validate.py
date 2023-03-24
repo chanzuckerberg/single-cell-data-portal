@@ -18,6 +18,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
+from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
@@ -56,6 +57,7 @@ class ProcessDownloadValidate(ProcessingLogic):
         self.downloader = downloader
         self.schema_validator = schema_validator
 
+    @logit
     def validate_h5ad_file_and_add_labels(self, dataset_id: DatasetVersionId, local_filename: str) -> Tuple[str, bool]:
         """
         Validates and labels the specified dataset file and updates the processing status in the database
@@ -73,17 +75,18 @@ class ProcessDownloadValidate(ProcessingLogic):
                 local_filename, output_filename
             )
         except Exception as e:
+            self.logger.exception("validation failed")
             raise ValidationFailed([str(e)]) from None
 
         if not is_valid:
             raise ValidationFailed(errors)
         else:
-            self.logger.info("Validation complete")
             # TODO: optionally, these could be batched into one
             self.update_processing_status(dataset_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
             self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
             return output_filename, can_convert_to_seurat
 
+    @logit
     def extract_metadata(self, filename) -> DatasetMetadata:
         """Pull metadata out of the AnnData file to insert into the dataset table."""
 
@@ -176,11 +179,12 @@ class ProcessDownloadValidate(ProcessingLogic):
         )
         self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
 
+    @logit
     def download_from_source_uri(self, dataset_id: DatasetVersionId, source_uri: str, local_path: str) -> str:
         """Given a source URI, download it to local_path.
         Handles fixing the url so it downloads directly.
         """
-
+        self.logger.info("Start download")
         file_url = self.uri_provider.parse(source_uri)
         if not file_url:
             raise ValueError(f"Malformed source URI: {source_uri}")

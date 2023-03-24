@@ -22,10 +22,10 @@ interface Props {
   setIsScaled: (prevIsScaled: boolean) => void;
 }
 
-// (ashin-czi): Used by SaveImage to recreate the color scale plasma image in an SVG
+// (ashin-czi): Used by SaveExport SVG generation to recreate the color scale plasma image in an SVG
 // Not the best solution but importing SVG files creates conflicts with the Loader
 // and can't get the actual content of the SVG file needed for SVG creation
-export const plasmaSvgString = `
+export const PLASMA_SVG_STRING = `
   <rect width="120" height="16" fill="url(#paint0_linear_5151_537460)" />
   <defs>
       <linearGradient id="paint0_linear_5151_537460" x1="120" y1="8" x2="8.0516e-07" y2="8.00001"

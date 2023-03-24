@@ -1,5 +1,13 @@
 import cloneDeep from "lodash/cloneDeep";
-import { memo, useContext, useMemo, useRef, useState } from "react";
+import {
+  Dispatch,
+  memo,
+  SetStateAction,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   CellTypeRow,
@@ -21,6 +29,7 @@ import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import { CellCountLabel } from "./components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
+import { ChartProps } from "./hooks/common/types";
 import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {
   useSortedGeneNames,
@@ -53,6 +62,12 @@ interface Props {
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
   echartsRendererMode: "svg" | "canvas";
+  setAllChartProps: Dispatch<
+    SetStateAction<{
+      [tissue: string]: ChartProps;
+    }>
+  >;
+  allChartProps: { [tissue: string]: ChartProps };
 }
 
 export default memo(function HeatMap({
@@ -69,6 +84,8 @@ export default memo(function HeatMap({
   geneSortBy,
   selectedOrganismId,
   echartsRendererMode,
+  allChartProps,
+  setAllChartProps,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
 
@@ -213,6 +230,8 @@ export default memo(function HeatMap({
                 scaledMeanExpressionMax={scaledMeanExpressionMax}
                 scaledMeanExpressionMin={scaledMeanExpressionMin}
                 echartsRendererMode={echartsRendererMode}
+                setAllChartProps={setAllChartProps}
+                chartProps={allChartProps[tissue]}
               />
             );
           })}

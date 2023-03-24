@@ -20,6 +20,7 @@
     "@vgrid/sass-inline-svg": "^1.0.1",
     "client-zip": "^2.2.2",
     "clipboard-copy": "^4.0.1",
+    "csv": "^6.2.8",
     "czifui": "^12.0.1",
     "d3-scale-chromatic": "^3.0.0",
     "downloadjs": "^1.4.7",
@@ -53,6 +54,7 @@
     "@blueprintjs/eslint-plugin": "^2.2.0",
     "@next/eslint-plugin-next": "^11.1.2",
     "@playwright/test": "^1.27.0",
+    "@types/adm-zip": "^0.5.0",
     "@types/downloadjs": "^1.4.3",
     "@types/loadable__component": "^5.13.4",
     "@types/lodash": "^4.14.176",
@@ -63,6 +65,7 @@
     "@types/react-window": "^1.8.5",
     "@typescript-eslint/eslint-plugin": "^5.33.1",
     "@typescript-eslint/parser": "^5.33.1",
+    "adm-zip": "^0.5.10",
     "allure-commandline": "^2.20.1",
     "allure-playwright": "^2.0.0-beta.19",
     "babel-eslint": "^10.1.0",
@@ -86,8 +89,7 @@
     "stylelint": "^13.13.1",
     "stylelint-config-recommended": "^3.0.0",
     "stylelint-config-standard": "^20.0.0",
-    "typescript": "^4.8.4",
-    "webpack": "^5.61.0"
+    "typescript": "^4.8.4"
   },
   "engines": {
     "node": "v16.14.2"

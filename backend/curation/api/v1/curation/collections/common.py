@@ -48,51 +48,56 @@ def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]
 
 def reshape_for_curation_api(
     collection_version: Union[CollectionVersion, CollectionVersionWithDatasets],
-    user_info: UserInfo,
+    user_info: UserInfo = None,
+    reshape_for_version_endpoint: bool = False,
     preview: bool = False,
 ) -> dict:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
-    :param collection: the Collection being returned in the API response
+    :param collection_version: the Collection Version being returned in the API response
     :param user_info:
-    :param preview: boool - whether the dataset is in preview form or not.
+    :param reshape_for_version_endpoint CollectionVersion is being returned in a version endpoint
+    :param preview: bool - whether the dataset is in preview form or not.
     :return: the response.
     """
     business_logic = get_business_logic()
     is_published = collection_version.published_at is not None
-    # get collection attributes based on published status
-    if is_published:
-        # Published
-        collection_id = collection_version.collection_id
-        collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
-        revision_of = None
-        if not user_info.is_user_owner_or_allowed(collection_version.owner):
-            _revising_in = None
-        else:
-            _revising_in = business_logic.get_unpublished_collection_version_from_canonical(
-                collection_version.collection_id
-            )
-        revising_in = _revising_in.version_id.id if _revising_in else None
-        use_canonical_url = True
-    else:
-        # Unpublished - need to determine if it's a revision or first time collection
-        # For that, we look at whether the canonical collection is published
-        is_revision = collection_version.canonical_collection.originally_published_at is not None
-        if is_revision:
-            # If it's a revision, both collection_id and collection_url need to point to the version_id,
-            # and datasets should expose the private url (based on version_id)
-            collection_id = collection_version.version_id
-            collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
-            revision_of = collection_version.collection_id.id
-            use_canonical_url = False
-        else:
-            # If it's an unpublished, unrevised collection, then collection_url will point to the permalink
-            # (aka the link to the canonical_id) and the collection_id will point to version_id.
-            # Also, revision_of should be None, and the datasets should expose the canonical url
-            collection_id = collection_version.collection_id
-            collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
+    # get collection attributes based on endpoint type and published status
+    if not reshape_for_version_endpoint:
+        if is_published:
+            # Published
+            collection_url = f"{get_collections_base_url()}/collections/{collection_version.collection_id.id}"
             revision_of = None
+            if not user_info or not user_info.is_user_owner_or_allowed(collection_version.owner):
+                _revising_in = None
+            else:
+                _revising_in = business_logic.get_unpublished_collection_version_from_canonical(
+                    collection_version.collection_id
+                )
+            revising_in = _revising_in.version_id.id if _revising_in else None
             use_canonical_url = True
+        else:
+            # Unpublished - need to determine if it's a revision or first time collection
+            # For that, we look at whether the canonical collection is published
+            is_revision = collection_version.canonical_collection.originally_published_at is not None
+            if is_revision:
+                # If it's a revision, both collection_id and collection_url need to point to the version_id,
+                # and datasets should expose the private url (based on version_id)
+                collection_url = f"{get_collections_base_url()}/collections/{collection_version.version_id.id}"
+                revision_of = collection_version.collection_id.id
+                use_canonical_url = False
+            else:
+                # If it's an unpublished, unrevised collection, then collection_url will point to the permalink
+                # (aka the link to the canonical_id) and the collection_id will point to version_id.
+                # Also, revision_of should be None, and the datasets should expose the canonical url
+                collection_url = f"{get_collections_base_url()}/collections/{collection_version.collection_id.id}"
+                revision_of = None
+                use_canonical_url = True
+            revising_in = None
+    else:
+        collection_url = f"{get_collections_base_url()}/collections/{collection_version.version_id.id}"
+        use_canonical_url = False
+        revision_of = collection_version.collection_id.id
         revising_in = None
 
     # get collection dataset attributes
@@ -189,6 +194,7 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canoni
         if isinstance(dataset_version, PublishedDatasetVersion):
             ds["collection_id"] = dataset_version.collection_id.id
             ds["collection_version_id"] = dataset_version.collection_version_id.id
+            ds["published_at"] = dataset_version.published_at
     return ds
 
 
@@ -264,6 +270,13 @@ def get_visibility(collection_version: CollectionVersion) -> str:
     return "PUBLIC" if collection_version.published_at else "PRIVATE"
 
 
+def validate_uuid_else_forbidden(_id: str):
+    try:
+        UUID(_id)
+    except ValueError as e:
+        raise ForbiddenHTTPException() from e
+
+
 def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> str:
     if not datasets:  # Return None if no datasets.
         return None
@@ -280,16 +293,13 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
     return return_status
 
 
-def get_infered_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
+def get_inferred_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
     """
     Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion.
     :param collection_id: identifies the collection version
     :return: The CollectionVersion if it exists.
     """
-    try:
-        UUID(collection_id)
-    except ValueError as e:
-        raise ForbiddenHTTPException() from e
+    validate_uuid_else_forbidden(collection_id)
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
@@ -300,7 +310,7 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Collect
     return version
 
 
-def get_infered_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
+def get_inferred_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
     """
     Infer the dataset version from either a DatasetId or a DatasetVersionId and return the DatasetVersion.
     :param dataset_id: identifies the dataset version

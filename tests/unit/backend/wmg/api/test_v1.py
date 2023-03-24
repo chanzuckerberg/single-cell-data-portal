@@ -60,31 +60,33 @@ def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, tota
     result["genes"] = []
     for gene in genes:
         result["genes"].append({gene: f"{gene}_label"})
+
     return result
 
 
 def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, n, me, pc, tpc, compare_terms=None):
     result = {}
     for gene in genes:
-        result[gene] = {}
-        for tissue in tissues:
-            result[gene][tissue] = {}
-            for cell_type in cell_types:
-                result[gene][tissue][cell_type] = {}
-                result[gene][tissue][cell_type]["aggregated"] = {
-                    "n": n,
-                    "me": me,
-                    "pc": pc,
-                    "tpc": tpc,
-                }
-                if compare_terms:
-                    for term in compare_terms:
-                        result[gene][tissue][cell_type][term] = {
-                            "n": n // len(compare_terms),
-                            "me": me,
-                            "pc": pc,
-                            "tpc": tpc / len(compare_terms),
-                        }
+        if gene != ".":
+            result[gene] = {}
+            for tissue in tissues:
+                result[gene][tissue] = {}
+                for cell_type in cell_types:
+                    result[gene][tissue][cell_type] = {}
+                    result[gene][tissue][cell_type]["aggregated"] = {
+                        "n": n,
+                        "me": me,
+                        "pc": pc,
+                        "tpc": tpc,
+                    }
+                    if compare_terms:
+                        for term in compare_terms:
+                            result[gene][tissue][cell_type][term] = {
+                                "n": n // len(compare_terms),
+                                "me": me,
+                                "pc": pc,
+                                "tpc": tpc / len(compare_terms),
+                            }
 
     return result
 
@@ -234,6 +236,94 @@ class WmgApiV1Tests(unittest.TestCase):
 
             genes = ["gene_ontology_term_id_0"]
             tissues = ["tissue_ontology_term_id_0"]
+            organism = "organism_ontology_term_id_0"
+
+            (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
+                genes, tissues, organism, dim_size, 1.0, 10
+            )
+
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            self.assertEqual(200, response.status_code)
+
+            expected_response = {
+                "snapshot_id": "dummy-snapshot",
+                "expression_summary": expected_expression_summary,
+                "term_id_labels": expected_term_id_labels,
+            }
+            self.assertEqual(expected_response, json.loads(response.data))
+
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_single_tissue_no_genes__returns_200_and_correct_response(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        dim_size = 3
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
+        ) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            # this is the convention used by the FE to indicate no genes are selected
+            # see https://github.com/chanzuckerberg/single-cell-data-portal/pull/2729
+            genes = ["."]
+
+            tissues = ["tissue_ontology_term_id_0"]
+            organism = "organism_ontology_term_id_0"
+
+            (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
+                genes, tissues, organism, dim_size, 1.0, 10
+            )
+
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            self.assertEqual(200, response.status_code)
+
+            expected_response = {
+                "snapshot_id": "dummy-snapshot",
+                "expression_summary": expected_expression_summary,
+                "term_id_labels": expected_term_id_labels,
+            }
+            self.assertEqual(expected_response, json.loads(response.data))
+
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_multiple_tissues_no_genes__returns_200_and_correct_response(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        dim_size = 3
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
+        ) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            # this is the convention used by the FE to indicate no genes are selected
+            # see https://github.com/chanzuckerberg/single-cell-data-portal/pull/2729
+            genes = ["."]
+
+            tissues = ["tissue_ontology_term_id_0", "tissue_ontology_term_id_1", "tissue_ontology_term_id_2"]
             organism = "organism_ontology_term_id_0"
 
             (request, expected_expression_summary, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(

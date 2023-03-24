@@ -543,12 +543,12 @@ if __name__ == "__main__":
         f"{snapshot}/dataset_to_gene_ids.json", "r"
     ) as dtg_file:
         print("Subsetting existing snapshot...")
-        es = es_arr.df[(test_genes, test_tissue, [], test_organism)]
+        es = es_arr.df[(test_genes, test_tissue, test_organism)]
         esdef = es_def_arr.df[(test_genes, test_tissue, test_organism)]
         esfmg = esfmg_arr.query(attr_cond=tiledb.QueryCondition(f"gene_ontology_term_id in {test_genes}")).df[
             (test_tissue, test_organism, [])
         ]
-        cc = cc_arr.df[(test_tissue, [], test_organism)]
+        cc = cc_arr.df[(test_tissue, test_organism)]
         filter_relationships = create_filter_relationships_graph(cc)
 
         print("Creating new snapshot...")
