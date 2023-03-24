@@ -53,7 +53,7 @@ def query():
         expression_summary = q.expression_summary_default(criteria) if default else q.expression_summary(criteria)
 
         cell_counts = q.cell_counts(criteria)
-        if expression_summary.shape[0] > 0 and cell_counts.shape[0] > 0:
+        if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 
             dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(
