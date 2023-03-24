@@ -23,8 +23,8 @@ import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
   addGeneInfoGene,
-  clearCellInfoCellType,
   clearGeneInfoGene,
+  closeRightSidebar,
   deleteSelectedGenes,
 } from "../../common/store/actions";
 import { GeneExpressionSummary } from "../../common/types";
@@ -259,8 +259,7 @@ export default function WheresMyGene(): JSX.Element {
 
   const handleCloseRightSideBar = () => {
     if (!dispatch) return;
-    dispatch(clearCellInfoCellType());
-    dispatch(clearGeneInfoGene());
+    dispatch(closeRightSidebar());
   };
 
   const handleCloseGeneInfoSideBar = () => {

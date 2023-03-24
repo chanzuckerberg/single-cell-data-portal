@@ -169,3 +169,13 @@ async function getTestUsernameAndPassword() {
     };
   }
 }
+
+export async function waitForElementToBeRemoved(page: Page, selector: string) {
+  await tryUntil(
+    async () => {
+      const element = await page.$(selector);
+      await expect(element).toBeNull();
+    },
+    { page }
+  );
+}

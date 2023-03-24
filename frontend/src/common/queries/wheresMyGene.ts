@@ -1268,6 +1268,7 @@ export function useGeneInfo(geneSymbol: string): UseQueryResult<GeneInfo> {
 
   const geneID = genesByName[geneSymbol]?.id;
   return useQuery(
+    // Sometimes using the UUID doesn't work if it's out-of-date and so the gene symbol is a fallback.
     [USE_GENE_INFO, geneSymbol, geneID],
     ({ signal }) => fetchGeneInfo({ geneSymbol, geneID, signal }),
     {

@@ -64,6 +64,7 @@ export const REDUCERS = {
   addGeneInfoGene,
   clearCellInfoCellType,
   clearGeneInfoGene,
+  closeRightSidebar,
   addSelectedGenes,
   deleteSelectedGenes,
   deleteSingleGene,
@@ -334,6 +335,14 @@ function selectGeneInfoFromXAxis(
   return {
     ...state,
     geneInfoGene: payload,
+    cellInfoCellType: null,
+  };
+}
+
+function closeRightSidebar(state: State, _: PayloadAction<null>): State {
+  return {
+    ...state,
+    geneInfoGene: null,
     cellInfoCellType: null,
   };
 }
