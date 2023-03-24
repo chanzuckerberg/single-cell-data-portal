@@ -60,31 +60,33 @@ def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, tota
     result["genes"] = []
     for gene in genes:
         result["genes"].append({gene: f"{gene}_label"})
+
     return result
 
 
 def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, n, me, pc, tpc, compare_terms=None):
     result = {}
     for gene in genes:
-        result[gene] = {}
-        for tissue in tissues:
-            result[gene][tissue] = {}
-            for cell_type in cell_types:
-                result[gene][tissue][cell_type] = {}
-                result[gene][tissue][cell_type]["aggregated"] = {
-                    "n": n,
-                    "me": me,
-                    "pc": pc,
-                    "tpc": tpc,
-                }
-                if compare_terms:
-                    for term in compare_terms:
-                        result[gene][tissue][cell_type][term] = {
-                            "n": n // len(compare_terms),
-                            "me": me,
-                            "pc": pc,
-                            "tpc": tpc / len(compare_terms),
-                        }
+        if gene != ".":
+            result[gene] = {}
+            for tissue in tissues:
+                result[gene][tissue] = {}
+                for cell_type in cell_types:
+                    result[gene][tissue][cell_type] = {}
+                    result[gene][tissue][cell_type]["aggregated"] = {
+                        "n": n,
+                        "me": me,
+                        "pc": pc,
+                        "tpc": tpc,
+                    }
+                    if compare_terms:
+                        for term in compare_terms:
+                            result[gene][tissue][cell_type][term] = {
+                                "n": n // len(compare_terms),
+                                "me": me,
+                                "pc": pc,
+                                "tpc": tpc / len(compare_terms),
+                            }
 
     return result
 
