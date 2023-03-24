@@ -1155,7 +1155,7 @@ export async function fetchGeneInfo({
   const url =
     API_URL + API.WMG_GENE_INFO + `?geneID=${geneID}&gene=${geneSymbol}`;
   const response = await fetch(url, {
-    ...DEFAULT_FETCH_OPTIONS,
+    ...DEFAULT_FETCH_OPTIONS, // Required for CORS
     signal,
   });
 

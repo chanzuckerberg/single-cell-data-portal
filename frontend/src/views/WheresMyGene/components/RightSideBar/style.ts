@@ -23,7 +23,9 @@ export const StyledTitle = styled.div`
 `;
 
 /**
- * Max height for the right sidebar should be 100vh - (header height)
+ * Max height for the right sidebar should be 100vh - (header height).
+ * Dividing the header height by two for the split right sidebar so both components
+ * equal to HEADER_HEIGHT_PX so that the full length of the right sidebar does not exceed the viewport
  */
 function sectionMaxheight({ maxHeight }: { maxHeight: number }) {
   return `calc(${maxHeight}vh - ${

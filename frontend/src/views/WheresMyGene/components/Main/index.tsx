@@ -305,15 +305,19 @@ export default function WheresMyGene(): JSX.Element {
             title={`${cellInfoCellType.cellType.name}`}
           />
 
-          {geneInfoGene && (
-            <GeneInfoBar
-              geneInfoGene={geneInfoGene}
-              handleClose={handleCloseGeneInfoSideBar}
-              title={`${geneInfoGene}`}
-            />
-          )}
+          {
+            // Split right sidebar view if fmg AND gene info is populated
+            geneInfoGene && (
+              <GeneInfoBar
+                geneInfoGene={geneInfoGene}
+                handleClose={handleCloseGeneInfoSideBar}
+                title={`${geneInfoGene}`}
+              />
+            )
+          }
         </RightSideBar>
       ) : (
+        // Gene info full right sidebar length
         geneInfoGene && (
           <RightSideBar>
             <GeneInfoBar
