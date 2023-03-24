@@ -76,6 +76,7 @@ function GeneButton({
           font={currentFont}
         >
           <InfoButtonWrapper
+            data-test-id="gene-info-button-x-axis"
             className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
             onClick={() => {
               generateGeneInfo(geneName);
@@ -91,7 +92,6 @@ function GeneButton({
             }}
           >
             <StyledImage
-              id="gene-info-button"
               src={InfoSVG.src}
               width="10"
               height="10"

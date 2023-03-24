@@ -23,7 +23,7 @@ function GeneInfoSideBar({
   if (isLoading) return <GeneSummary>Loading...</GeneSummary>;
 
   return (
-    <div id="gene-info-wrapper" data-test-id={`${geneInfoGene}-gene-info`}>
+    <div id="gene-info-wrapper">
       {!data ? (
         <>
           <StyledCallout autoDismiss={false} intent={"error"}>
@@ -50,9 +50,11 @@ function GeneInfoSideBar({
             </>
           )}
 
-          <GeneSummary>{data.summary}</GeneSummary>
+          <GeneSummary data-test-id="gene-info-gene-summary">
+            {data.summary}
+          </GeneSummary>
 
-          <GeneSynonymsWrapper>
+          <GeneSynonymsWrapper data-test-id="gene-info-gene-synonyms">
             <GeneSynonymsLabel>Synonyms</GeneSynonymsLabel>
             <GeneSynonyms>{data.synonyms.join(", ")}</GeneSynonyms>
           </GeneSynonymsWrapper>
@@ -61,6 +63,7 @@ function GeneInfoSideBar({
             href={data.ncbi_url}
             target="_blank"
             rel="noreferrer noopener"
+            data-test-id="gene-info-ncbi-link"
           >
             View on NCBI
           </GeneUrl>
