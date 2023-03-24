@@ -23,6 +23,7 @@ function GeneInfoSideBar({
 
   if (isLoading) return <GeneSummary>Loading...</GeneSummary>;
 
+  // Component for when gene info cannot be found
   const GeneInfoNoData = (
     <>
       <StyledCallout autoDismiss={false} intent={"error"}>
