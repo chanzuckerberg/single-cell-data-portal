@@ -239,6 +239,21 @@ describe("Where's My Gene", () => {
     }
   });
 
+  test("Selected tissue and no genes displays cell types", async ({ page }) => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID(ADD_TISSUE_ID));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await selectFirstOption(page);
+
+    await waitForElement(page, getTestID("cell-type-name"));
+    const cellTypes = await page.$$(getTestID("cell-type-name"));
+    expect(cellTypes.length).toBeGreaterThan(0);
+  });
+
   test("Source Data", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
@@ -990,6 +1005,16 @@ async function waitForHeatmapToRender(page: Page) {
     async () => {
       const canvases = await page.$$("canvas");
       await expect(canvases.length).not.toBe(0);
+    },
+    { page }
+  );
+}
+
+async function waitForElement(page: Page, selector: string) {
+  await tryUntil(
+    async () => {
+      const element = await page.$(selector);
+      await expect(element).not.toBeNull();
     },
     { page }
   );
