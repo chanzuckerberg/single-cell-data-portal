@@ -21,7 +21,7 @@ export const Header = styled.h1`
   font-weight: bold;
 `;
 
-const GAP_PX = 10;
+const GAP_PX = 5;
 
 const OFFSET_FROM_TOP_PX =
   HEADER_HEIGHT_PX +
