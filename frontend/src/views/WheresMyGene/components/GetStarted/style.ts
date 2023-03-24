@@ -21,6 +21,7 @@ export const Header = styled.h1`
   font-weight: bold;
 `;
 
+// Matches padding/gap between heat map chart and x/y axis components
 const GAP_PX = 5;
 
 const OFFSET_FROM_TOP_PX =

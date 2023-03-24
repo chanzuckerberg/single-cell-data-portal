@@ -8,7 +8,7 @@ import {
   selectGeneInfoFromXAxis,
 } from "src/views/WheresMyGene/common/store/actions";
 import { useDeleteGenes } from "../../hooks/useDeleteGenes";
-import { CHART_PADDING, SELECTED_STYLE } from "../../style";
+import { CHART_PADDING_PX, SELECTED_STYLE } from "../../style";
 import {
   getHeatmapWidth,
   formatLabel,
@@ -113,7 +113,7 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
   return (
     <XAxisWrapper
       width={heatmapWidth}
-      left={Y_AXIS_CHART_WIDTH_PX + CHART_PADDING}
+      left={Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}
     >
       <XAxisContainer data-test-id="gene-labels" width={heatmapWidth}>
         {geneNames.map((geneName) => (

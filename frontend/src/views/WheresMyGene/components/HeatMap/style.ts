@@ -13,7 +13,7 @@ import {
 import { FILTERS_PANEL_EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 
-export const CHART_PADDING = 10;
+export const CHART_PADDING_PX = 10;
 
 export const SELECTED_STYLE = {
   backgroundColor: LIGHT_GRAY.D,
@@ -62,7 +62,7 @@ export const YAxisWrapper = styled.div`
 `;
 
 export const XAxisMask = styled.div`
-  width: ${Y_AXIS_CHART_WIDTH_PX + CHART_PADDING}px;
+  width: ${Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}px;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
 
@@ -78,8 +78,8 @@ export const XAxisWrapper = styled.div`
 
 export const ChartWrapper = styled.div`
   position: absolute;
-  padding-left: ${CHART_PADDING}px;
-  padding-right: ${CHART_PADDING}px;
+  padding-left: ${CHART_PADDING_PX}px;
+  padding-right: ${CHART_PADDING_PX}px;
   padding-top: 5px;
   left: ${Y_AXIS_CHART_WIDTH_PX}px;
   top: ${X_AXIS_CHART_HEIGHT_PX}px;
