@@ -76,11 +76,6 @@ export const FlexRow = styled.div`
   flex-direction: row;
 `;
 
-export const InfoButtonWrapper = styled.div`
-  padding-left: 2px;
-  cursor: pointer;
-`;
-
 function yAxisHeight({ height }: { height: number }) {
   return `
     height: ${height}px;
