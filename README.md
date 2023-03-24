@@ -54,6 +54,12 @@ If you need to make a change to the CELLxGENE Discover database, see [CELLxGENE 
 1. Ensure that you have set up your local development environment per the instructions above and run `make local-init` to launch a local dev environment.
 1. Run the tests using the command `$ make unit-test`.
 
+### Troubleshooting Unit Tests
+
+1. If your unit tests crash due to an `Error 137`, that means the docker containers currently running are using up more memory than what the docker application
+   has allocated. First run `$ make local-stop` to kill all docker containers and rerun the tests. If that doesn't work either, you may need to increase the
+   memory allocation by going into _settings_ pane of your desktop docker application. A reasonable allocation of memory is `16GB`.
+
 ### Running Functional Tests
 
 1. Set `AWS_PROFILE`.

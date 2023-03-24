@@ -922,7 +922,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         collection_version = self.generate_unpublished_collection(add_datasets=0)
         self._test_response(collection_version)
 
-    def test_get_colletion_with_dataset_no_metadata(self):
+    def test_get_collection_with_dataset_no_metadata(self):
         """
         GET collection should work when the collection has datasets with no metadata.
         This happens when the dataset did not complete ingestion yet.
@@ -955,6 +955,64 @@ class TestGetCollectionID(BaseAPIPortalTest):
         res = self.app.get(f"/curation/v1/collections/{dataset.collection_id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertIsNone(res.json["datasets"][0]["x_approximate_distribution"])
+
+
+class TestGetCollectionVersionID(BaseAPIPortalTest):
+    def test_get_collection_version_ok(self):
+        first_version = self.generate_published_collection()
+        revision = self.generate_revision(first_version.collection_id)
+        self.business_logic.publish_collection_version(revision.version_id)
+        res = self.app.get(
+            f"/curation/v1/collection_versions/{first_version.version_id}", headers=self.make_owner_header()
+        )
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(res.json["collection_version_id"], first_version.version_id.id)
+        # test correct dataset explorer url is used
+        explorer_url = res.json["datasets"][0]["explorer_url"]
+        self.assertTrue(explorer_url.endswith(f"{first_version.datasets[0].version_id.id}.cxg/"))
+
+        res = self.app.get(f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header())
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(res.json["collection_version_id"], revision.version_id.id)
+        # test correct dataset explorer url is used
+        explorer_url = res.json["datasets"][0]["explorer_url"]
+        self.assertTrue(explorer_url.endswith(f"{revision.datasets[0].version_id.id}.cxg/"))
+
+    def test_get_collection_version_4xx(self):
+        with self.subTest("Query endpoint with incorrect ID"):
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{str(uuid.uuid4())}", headers=self.make_owner_header()
+            )
+            self.assertEqual(404, res.status_code)
+        with self.subTest("Query endpoint with Canonical ID"):
+            collection = self.generate_published_collection()
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.collection_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(404, res.status_code)
+        with self.subTest("Query endpoint with non-UUID"):
+            res = self.app.get("/curation/v1/collection_versions/bad-input-id", headers=self.make_owner_header())
+            self.assertEqual(403, res.status_code)
+        with self.subTest("Collection Version is part of tombstoned Collection"):
+            collection = self.generate_published_collection()
+            self.business_logic.tombstone_collection(collection.collection_id)
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(403, res.status_code)
+        with self.subTest("Collection Version is unpublished collection"):
+            collection = self.generate_unpublished_collection()
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(403, res.status_code)
+        with self.subTest("Collection Version is unpublished revision"):
+            first_version = self.generate_published_collection()
+            revision = self.generate_revision(first_version.collection_id)
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(403, res.status_code)
 
 
 class TestPatchCollectionID(BaseAPIPortalTest):
