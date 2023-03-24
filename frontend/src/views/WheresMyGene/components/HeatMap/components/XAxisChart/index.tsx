@@ -5,7 +5,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import {
   deleteSingleGene,
-  clearCellInfoCellType,
+  selectGeneInfoFromXAxis,
 } from "src/views/WheresMyGene/common/store/actions";
 import { useDeleteGenes } from "../../hooks/useDeleteGenes";
 import { CHART_LEFT_PADDING, SELECTED_STYLE } from "../../style";
@@ -28,18 +28,15 @@ import { StyledImage } from "../YAxisChart/style";
 import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
 interface Props {
   geneNames: string[];
-  generateGeneInfo: (gene: string) => void;
 }
 
 function GeneButton({
   geneName,
   genesToDelete,
-  generateGeneInfo,
 }: {
   geneName: string;
   genesToDelete: string[];
   handleGeneClick: (gene: string) => void;
-  generateGeneInfo: (gene: string) => void;
 }): JSX.Element {
   const dispatch = useContext(DispatchContext);
 
@@ -79,16 +76,14 @@ function GeneButton({
             data-test-id="gene-info-button-x-axis"
             className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
             onClick={() => {
-              generateGeneInfo(geneName);
+              if (!dispatch) return;
 
               track(EVENTS.WMG_GENE_INFO, {
                 gene: geneName,
               });
 
-              if (!dispatch) return;
-
-              // Clear cell type info here so that FMG panel closes
-              dispatch(clearCellInfoCellType());
+              // This will populate gene info and clear cell type info so that FMG panel closes
+              dispatch(selectGeneInfoFromXAxis(geneName));
             }}
           >
             <StyledImage
@@ -106,10 +101,7 @@ function GeneButton({
   );
 }
 
-export default function XAxisChart({
-  geneNames,
-  generateGeneInfo,
-}: Props): JSX.Element {
+export default function XAxisChart({ geneNames }: Props): JSX.Element {
   const { genesToDelete, handleGeneClick } = useDeleteGenes();
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
 
@@ -130,7 +122,6 @@ export default function XAxisChart({
             geneName={geneName}
             genesToDelete={genesToDelete}
             handleGeneClick={handleGeneClick}
-            generateGeneInfo={generateGeneInfo}
           />
         ))}
       </XAxisContainer>

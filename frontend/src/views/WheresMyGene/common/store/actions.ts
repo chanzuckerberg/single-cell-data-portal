@@ -155,6 +155,15 @@ export function clearCellInfoCellType(): GetActionTypeOfReducer<
   };
 }
 
+export function selectGeneInfoFromXAxis(
+  payload: string
+): GetActionTypeOfReducer<typeof REDUCERS["selectGeneInfoFromXAxis"]> {
+  return {
+    payload,
+    type: "selectGeneInfoFromXAxis",
+  };
+}
+
 export function loadStateFromURL(
   payload: LoadStateFromURLPayload
 ): GetActionTypeOfReducer<typeof REDUCERS["loadStateFromURL"]> {

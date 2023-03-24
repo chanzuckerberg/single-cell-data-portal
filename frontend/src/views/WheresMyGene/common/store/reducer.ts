@@ -72,6 +72,7 @@ export const REDUCERS = {
   resetGenesToDelete,
   selectFilters,
   selectGenes,
+  selectGeneInfoFromXAxis,
   selectOrganism,
   selectSortBy,
   selectTissues,
@@ -321,6 +322,19 @@ function addGeneInfoGene(state: State, action: PayloadAction<string>): State {
   return {
     ...state,
     geneInfoGene: payload,
+  };
+}
+
+function selectGeneInfoFromXAxis(
+  state: State,
+  action: PayloadAction<string>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    geneInfoGene: payload,
+    cellInfoCellType: null,
   };
 }
 

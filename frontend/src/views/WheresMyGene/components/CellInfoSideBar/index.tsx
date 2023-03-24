@@ -21,12 +21,15 @@ import {
   StyledTooltip,
   TissueName,
   TooltipButton,
-  InfoButtonWrapper,
 } from "./style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { StyledImage } from "../HeatMap/components/YAxisChart/style";
 import InfoSVG from "../HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
 import { RightSidebarProperties } from "../RightSideBar";
+import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
+
+const MARKER_GENE_LABEL = "marker genes";
+const MARKER_SCORE_LABEL = "marker score";
 
 export interface CellInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
@@ -80,11 +83,11 @@ function CellInfoSideBar({
 
   const handleFmgHoverEnd = useHandleHoverEnd(
     EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
-    { label: "marker genes" }
+    { label: MARKER_GENE_LABEL }
   );
   const handleMarkerScoreHoverEnd = useHandleHoverEnd(
     EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
-    { label: "marker score" }
+    { label: MARKER_SCORE_LABEL }
   );
 
   if (isLoading || !data) return null;
@@ -120,10 +123,10 @@ function CellInfoSideBar({
                     target="_blank"
                     onClick={() => {
                       track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
-                        label: "marker genes",
+                        label: MARKER_GENE_LABEL,
                       });
                       track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
-                        label: "marker genes",
+                        label: MARKER_GENE_LABEL,
                       });
                     }}
                   >
@@ -199,10 +202,10 @@ function CellInfoSideBar({
                           target="_blank"
                           onClick={() => {
                             track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
-                              label: "marker score",
+                              label: MARKER_SCORE_LABEL,
                             });
                             track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
-                              label: "marker score",
+                              label: MARKER_SCORE_LABEL,
                             });
                           }}
                         >
@@ -246,17 +249,17 @@ function CellInfoSideBar({
             </tr>
           </thead>
           <tbody>
-            {Object.entries(data.marker_genes).map((gene) => (
-              <tr key={gene[0]}>
+            {Object.entries(data.marker_genes).map(([symbol, metadata]) => (
+              <tr key={symbol}>
                 <td>
-                  {gene[0]}
+                  {symbol}
                   <InfoButtonWrapper
                     data-test-id="gene-info-button-cell-info"
                     onClick={() => {
-                      generateGeneInfo(gene[0]);
+                      generateGeneInfo(symbol);
 
                       track(EVENTS.WMG_FMG_GENE_INFO, {
-                        gene: gene[0],
+                        gene: symbol,
                       });
                     }}
                   >
@@ -265,11 +268,11 @@ function CellInfoSideBar({
                       src={InfoSVG.src}
                       width="10"
                       height="10"
-                      alt={`display gene info for ${gene[0]}`}
+                      alt={`display gene info for ${symbol}`}
                     />
                   </InfoButtonWrapper>
                 </td>
-                <td>{gene[1].effect_size.toPrecision(4)}</td>
+                <td>{metadata.effect_size.toPrecision(4)}</td>
               </tr>
             ))}
           </tbody>

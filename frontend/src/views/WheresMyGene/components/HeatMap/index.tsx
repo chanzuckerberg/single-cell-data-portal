@@ -62,7 +62,6 @@ interface Props {
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
   echartsRendererMode: "svg" | "canvas";
-  generateGeneInfo: (gene: string) => void;
   setAllChartProps: Dispatch<
     SetStateAction<{
       [tissue: string]: ChartProps;
@@ -85,7 +84,6 @@ export default memo(function HeatMap({
   geneSortBy,
   selectedOrganismId,
   echartsRendererMode,
-  generateGeneInfo,
   allChartProps,
   setAllChartProps,
 }: Props): JSX.Element {
@@ -174,10 +172,7 @@ export default memo(function HeatMap({
         {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
         <XAxisWrapper id="x-axis-wrapper">
           <XAxisMask data-test-id="x-axis-mask" />
-          <XAxisChart
-            geneNames={sortedGeneNames}
-            generateGeneInfo={generateGeneInfo}
-          />
+          <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
         <YAxisWrapper>
           {selectedTissues.map((tissue) => {

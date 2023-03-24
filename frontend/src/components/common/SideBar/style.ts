@@ -17,6 +17,7 @@ interface PositionerProps {
   isExpanded: boolean;
 }
 
+// This color will be used as a separator line for the split right sidebar, top and bottom views
 export const SIDEBAR_BOX_SHADOW_COLOR = "rgba(16, 22, 26, 0.15)";
 
 const generateBoxShadow = (props: Props) =>
