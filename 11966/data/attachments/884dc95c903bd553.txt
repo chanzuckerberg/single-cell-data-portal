@@ -1,2 +1,0 @@
-INFO     backend.layers.processing.downloader:downloader.py:115 Setting up download.
-INFO     backend.layers.processing.downloader:downloader.py:116 file_size: 1
