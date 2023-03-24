@@ -8,7 +8,7 @@ import {
 
 export const ECHART_AXIS_LABEL_COLOR_HEX = "#6e7079";
 export const ECHART_AXIS_LABEL_FONT_SIZE_PX = 12;
-export const GENE_INFO_BUTTON_PADDING = 12;
+export const GENE_INFO_BUTTON_PADDING_PX = 12;
 
 export const XAxisContainer = styled.div`
   ${xAxisWidth}

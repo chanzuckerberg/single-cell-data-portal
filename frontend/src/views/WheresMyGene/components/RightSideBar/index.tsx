@@ -18,9 +18,9 @@ interface Props {
 }
 
 // Values are in CSS vh units
-const FULL_MAX_HEIGHT = 100;
-const UPPER_SECTION_MAX_HEIGHT = 60;
-const DRAWER_MAX_HEIGHT = FULL_MAX_HEIGHT - UPPER_SECTION_MAX_HEIGHT;
+const FULL_MAX_HEIGHT_VH = 100;
+const UPPER_SECTION_MAX_HEIGHT_VH = 60;
+const DRAWER_MAX_HEIGHT_VH = FULL_MAX_HEIGHT_VH - UPPER_SECTION_MAX_HEIGHT_VH;
 
 export default memo(function RightSideBar({
   children,
@@ -43,8 +43,8 @@ export default memo(function RightSideBar({
       data-test-id={testId}
     >
       <RightSideBarPositioner
-        isExpanded={true}
-        maxHeight={isSplit ? UPPER_SECTION_MAX_HEIGHT : FULL_MAX_HEIGHT}
+        isExpanded
+        maxHeight={isSplit ? UPPER_SECTION_MAX_HEIGHT_VH : FULL_MAX_HEIGHT_VH}
       >
         <HeaderContainer>
           <StyledTitle data-test-id="right-sidebar-title">
@@ -62,7 +62,7 @@ export default memo(function RightSideBar({
       </RightSideBarPositioner>
 
       {isSplit && (
-        <RightSideBarPositioner isExpanded={true} maxHeight={DRAWER_MAX_HEIGHT}>
+        <RightSideBarPositioner isExpanded maxHeight={DRAWER_MAX_HEIGHT_VH}>
           <HeaderContainer>
             <StyledTitle data-test-id="gene-info-title-split">
               {content[1].props.title}
