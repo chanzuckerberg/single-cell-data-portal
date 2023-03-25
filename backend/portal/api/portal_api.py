@@ -433,6 +433,65 @@ def get_collection_index():
     return make_response(jsonify(response), 200)
 
 
+def get_my_collection_index(token_info):
+    """
+    Returns a list of collections that are published and active.
+    Also returns a subset of fields and not datasets.
+    """
+
+    user_info = UserInfo(token_info)
+
+    # Get all public collections
+    collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=True))
+
+    # Get all private collections the user has access to
+    all_owned_collections = []
+    if user_info.is_super_curator():
+        all_owned_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=False))
+    else:
+        all_owned_collections = get_business_logic().get_collections(
+            CollectionQueryFilter(is_published=False, owner=user_info.user_id)
+        )
+
+    response = []
+    for collection in itertools.chain(collections, all_owned_collections):
+
+        transformed_collection = {
+            "id": collection.collection_id.id,
+            "name": collection.metadata.name,
+            "access_type": "WRITE" if user_info.is_user_owner_or_allowed(collection.owner) else "READ",
+            "visibility": "PRIVATE" if collection.published_at is None else "PUBLIC",
+            "owner": collection.owner,
+            "created_at": collection.created_at,
+        }
+
+        if collection.publisher_metadata is not None:
+            transformed_collection["publisher_metadata"] = _publisher_metadata_to_response(
+                collection.publisher_metadata
+            )
+
+        if collection.is_unpublished_version():
+            transformed_collection["id"] = collection.version_id.id
+        else:
+            transformed_collection["id"] = collection.collection_id.id
+
+        if not collection.is_published():
+            transformed_collection["revision_of"] = collection.collection_id.id
+        else:
+            transformed_collection["revision_of"] = None
+
+        if collection.is_published():
+            transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
+            transformed_collection["revised_at"] = collection.published_at
+        else:
+            transformed_collection["published_at"] = None
+            transformed_collection["revised_at"] = None
+
+        response.append(transformed_collection)
+
+    return make_response(jsonify(response), 200)
+
+
 def delete_collection(collection_id: str, token_info: dict):
     """
     Deletes a collection version from the persistence store, or tombstones a canonical collection.

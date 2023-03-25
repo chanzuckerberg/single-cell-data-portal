@@ -418,6 +418,52 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
+  /v1/my-collections/index:
+    get:
+      tags:
+        - collections
+      summary: >-
+        Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
+        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      security:
+        - cxguserCookie: []
+      operationId: backend.portal.api.portal_api.get_my_collection_index
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - name
+                  properties:
+                    access_type:
+                      $ref: "#/components/schemas/access_type"
+                    id:
+                      $ref: "#/components/schemas/collection_id"
+                    name:
+                      type: string
+                    publisher_metadata:
+                      $ref: "#/components/schemas/publisher_metadata"
+                    published_at:
+                      type: number
+                      nullable: true
+                    revised_at:
+                      type: number
+                      nullable: true
+                    consortia:
+                      $ref: "#/components/schemas/consortia"
+                    visibility:
+                      $ref: "#/components/schemas/visibility"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+
   /v1/datasets/{dataset_id}:
     delete:
       tags:
@@ -824,6 +870,10 @@ paths:
 
 components:
   schemas:
+    access_type:
+      description: Indcates if the user will be allowd to make updates to the entity.
+      type: string
+      enum: [READ, WRITE]
     user_id:
       description: A unique identifier of a logged in User of Corpora.
       type: string
@@ -920,8 +970,7 @@ components:
         - data_submission_policy_version
       properties:
         access_type:
-          type: string
-          enum: [READ, WRITE]
+          $ref: "#/components/schemas/access_type"
         created_at:
           type: number
         updated_at:

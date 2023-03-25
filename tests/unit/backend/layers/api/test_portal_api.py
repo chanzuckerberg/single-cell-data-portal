@@ -820,6 +820,90 @@ class TestCollection(BaseAPIPortalTest):
         self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
         self.assertNotIn(collection_to_tombstone.version_id.id, ids)
 
+    def test__get_all_my_collections_for_index_requires_auth(self):
+        # test that non logged user returns 401
+        test_url = furl(path="/dp/v1/my-collections/index")
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(response.status_code, 401)
+
+    def test__get_all_my_collections_for_index(self):
+        """
+        The `my-collections/index` endpoint should return all public collections and the private
+        collections the user has WRITE access to. Curators can see all public collectoins and private collections where
+        they are the owner. Super Curators can see all public and private collections.
+        """
+
+        public_collection = self.generate_published_collection(owner="test_user_id")
+        private_collection = self.generate_unpublished_collection("test_user_id")
+
+        public_collection_not_owned = self.generate_published_collection("test_user_id_2")
+        private_collection_not_owned = self.generate_unpublished_collection("test_user_id_2")
+
+        collection_to_tombstone = self.generate_published_collection("test_user_id")
+        tombstone_url = furl(path=f"/dp/v1/collections/{collection_to_tombstone.collection_id}")
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token("owner"),
+        }
+        response = self.app.delete(tombstone_url.url, headers=headers)
+        self.assertEqual(204, response.status_code)
+
+        # test that super curators can see the all public and private collections
+        test_url = furl(path="/dp/v1/my-collections/index")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [collection["id"] for collection in body]
+
+        self.assertIn(public_collection.collection_id.id, ids)
+        self.assertIn(private_collection.collection_id.id, ids)
+        self.assertIn(private_collection_not_owned.collection_id.id, ids)
+
+        self.assertNotIn(private_collection.version_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.version_id.id, ids)
+        self.assertNotIn(private_collection_not_owned.version_id.id, ids)
+
+        # test that super curators can WRITE all collections
+        for collection in body:
+            self.assertEqual(collection["access_type"], "WRITE")
+
+        # test that the owners can see their private collections
+        # but not the private collections of other users, and that they can see public
+        # collections of other users.
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(),
+        }
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [collection["id"] for collection in body]
+
+        self.assertIn(public_collection.collection_id.id, ids)
+        self.assertIn(public_collection_not_owned.collection_id.id, ids)
+        self.assertIn(private_collection.collection_id.id, ids)
+
+        self.assertNotIn(private_collection_not_owned.collection_id.id, ids)
+        self.assertNotIn(private_collection_not_owned.version_id.id, ids)
+        self.assertNotIn(private_collection.version_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.version_id.id, ids)
+
+        # test that the owner of a collection can WRITE their collections
+        # but not other users collections
+        for collection in body:
+            if collection["owner"] == "test_user_id":
+                self.assertEqual(collection["access_type"], "WRITE")
+            else:
+                self.assertEqual(collection["access_type"], "READ")
+
     # ✅
     def test__create_collection__InvalidParameters_DOI(self):
         tests = [
