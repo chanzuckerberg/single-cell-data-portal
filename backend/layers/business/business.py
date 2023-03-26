@@ -606,7 +606,8 @@ class BusinessLogic(BusinessLogicInterface):
         for collection_version in collection_versions:
             # skip unpublished collection versions
             if collection_version.published_at is None:
-                continue
+                # per sorting, the remaining collection versions are unpublished
+                break
             for dataset_version in collection_version.datasets:
                 if (
                     dataset_version.dataset_id.id == dataset_id.id
