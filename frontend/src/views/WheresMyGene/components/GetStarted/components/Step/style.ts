@@ -26,7 +26,7 @@ export const Header = styled.span`
 
   display: block;
 
-  padding: ${PADDING_PX}px ${PADDING_PX}px 4px ${PADDING_PX}px;
+  padding: ${PADDING_PX}px ${PADDING_PX}px 2px ${PADDING_PX}px;
 
   ${(props) => {
     const colors = getColors(props);
@@ -42,8 +42,7 @@ export const Details = styled.span`
 
   letter-spacing: 0;
   display: inline-block;
-  padding-left: ${PADDING_PX}px;
-  padding-bottom: 8px;
+  padding: 2px ${PADDING_PX}px 8px ${PADDING_PX}px;
 
   color: black;
 `;
