@@ -1,6 +1,7 @@
 import { ElementHandle, expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
@@ -21,6 +22,11 @@ const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 const DOWNLOAD_BUTTON_ID = "download-button";
 
 const MARKER_GENE_BUTTON_TEST_ID = "marker-gene-button";
+
+// FMG test IDs
+const ADD_TO_DOTPLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
+const NO_MARKER_GENES_WARNING_TEST_ID = "no-marker-genes-warning";
+const MARKER_SCORES_FMG_TEST_ID = "marker-scores-fmg";
 
 // gene info test IDs
 const GENE_INFO_BUTTON_X_AXIS_TEST_ID = "gene-info-button-x-axis";
@@ -262,8 +268,8 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
     await selectFirstOption(page);
 
-    await waitForElement(page, getTestID("cell-type-name"));
-    const cellTypes = await page.$$(getTestID("cell-type-name"));
+    await waitForElement(page, getTestID(CELL_TYPE_LABELS_ID));
+    const cellTypes = await page.$$(getTestID(CELL_TYPE_LABELS_ID));
     expect(cellTypes.length).toBeGreaterThan(0);
   });
 
@@ -592,6 +598,68 @@ describe("Where's My Gene", () => {
     });
   });
 
+  describe("Find Marker Genes", () => {
+    test("Marker gene panel opens and can add genes to dotplot", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      await clickDropdownOptionByName({
+        page,
+        selector: getTestID(ADD_TISSUE_ID),
+        name: "lung",
+      });
+
+      await getCellTypeFmgButtonAndClick(page, "muscle cell");
+
+      await getButtonAndClick(page, getTestID(ADD_TO_DOTPLOT_BUTTON_TEST_ID));
+
+      await waitForHeatmapToRender(page);
+
+      const geneLabels = await page.$$(GENE_LABELS_ID);
+      const numGenes = geneLabels.length;
+      expect(numGenes).toBeGreaterThan(0);
+    });
+
+    test("Cell types with no marker genes display warning", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      await clickDropdownOptionByName({
+        page,
+        selector: getTestID(ADD_TISSUE_ID),
+        name: "lung",
+      });
+
+      await getCellTypeFmgButtonAndClick(page, "native cell");
+
+      await waitForElement(page, getTestID(NO_MARKER_GENES_WARNING_TEST_ID));
+    });
+
+    test(`Marker scores are always greater than ${FMG_GENE_STRENGTH_THRESHOLD}`, async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      await clickDropdownOptionByName({
+        page,
+        selector: getTestID(ADD_TISSUE_ID),
+        name: "lung",
+      });
+
+      await getCellTypeFmgButtonAndClick(page, "club cell");
+
+      const markerScores = await page.$$(getTestID(MARKER_SCORES_FMG_TEST_ID));
+
+      for (const markerScore of markerScores) {
+        expect(
+          parseFloat(await markerScore.innerText())
+        ).toBeGreaterThanOrEqual(FMG_GENE_STRENGTH_THRESHOLD);
+      }
+    });
+  });
+
   describe("Gene info", () => {
     test("Display gene info panel in sidebar", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
@@ -650,11 +718,7 @@ describe("Where's My Gene", () => {
 
       await waitForHeatmapToRender(page);
 
-      await getNthButtonAndClick(
-        page,
-        getTestID(MARKER_GENE_BUTTON_TEST_ID),
-        5
-      );
+      await getCellTypeFmgButtonAndClick(page, "muscle cell");
 
       await getButtonAndClick(
         page,
@@ -1143,13 +1207,21 @@ async function getButtonAndClick(page: Page, selector: string) {
   );
 }
 
-async function getNthButtonAndClick(page: Page, selector: string, n: number) {
+async function getCellTypeFmgButtonAndClick(page: Page, cellType: string) {
+  const selector = getTestID(MARKER_GENE_BUTTON_TEST_ID);
+  await waitForElement(page, getTestID(CELL_TYPE_LABELS_ID));
   await tryUntil(
     async () => {
       const buttons = await page.$$(selector);
-      await expect(buttons.length).toBeGreaterThan(n);
-      const button = buttons[n];
-      await button?.click();
+      for (let i = 0; i < buttons.length; i++) {
+        const button = buttons[i];
+        const parentCellTypeSpan = await button.$("xpath=../../..");
+        const text = await parentCellTypeSpan?.innerText();
+        if (text === cellType) {
+          await button.click();
+          return;
+        }
+      }
     },
     { page }
   );
@@ -1169,4 +1241,5 @@ async function clickDropdownOptionByName({
 
   const option = await page.locator(`[role=option] >> text=${name}`);
   await option.click();
+  await page.keyboard.press("Escape");
 }

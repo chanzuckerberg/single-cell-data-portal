@@ -147,6 +147,7 @@ function CellInfoSideBar({
           <BetaChip label="Beta" size="small" />
         </div>
         <Button
+          data-test-id="add-to-dotplot-fmg-button"
           startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
           onClick={handleDisplayGenes}
           sdsStyle="minimal"
@@ -164,7 +165,7 @@ function CellInfoSideBar({
           combination: `${cellInfoCellType.cellType.id}, ${tissueInfo.id}`,
         }),
         (
-          <NoMarkerGenesContainer>
+          <NoMarkerGenesContainer data-test-id="no-marker-genes-warning">
             <NoMarkerGenesHeader>No Marker Genes</NoMarkerGenesHeader>
             <NoMarkerGenesDescription>
               No reliable marker genes for this cell type.
@@ -272,7 +273,9 @@ function CellInfoSideBar({
                     />
                   </InfoButtonWrapper>
                 </td>
-                <td>{metadata.effect_size.toPrecision(4)}</td>
+                <td data-test-id="marker-scores-fmg">
+                  {metadata.effect_size.toPrecision(4)}
+                </td>
               </tr>
             ))}
           </tbody>
