@@ -22,6 +22,8 @@ export const Header = styled.h1`
 // Matches padding/gap between heat map chart and x/y axis components
 const GAP_PX = 5;
 
+const Z_INDEX = 10;
+
 const OFFSET_FROM_TOP_PX =
   HEADER_HEIGHT_PX +
   LEGEND_HEIGHT_PX +
@@ -59,13 +61,9 @@ export const Content = styled.div`
 `;
 
 export const ColumnOne = styled.div`
-  ${isHidden}
-
   flex-shrink: 0;
 
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-
-  z-index: 10;
 
   display: flex;
   flex-direction: column;
@@ -80,18 +78,25 @@ export const ColumnTwo = styled.div`
 `;
 
 export const StyledStepOne = styled.div`
-  flex: 1 0;
+  ${isHidden}
+  z-index: ${Z_INDEX};
+  flex: 1;
 `;
 
 export const StyledStepTwo = styled.div`
   ${isHidden}
+  z-index: ${Z_INDEX};
+  flex: 0;
+
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
   margin-left: ${GAP_PX}px;
 `;
 
 export const StyledStepThree = styled.div`
   ${isHidden}
+  z-index: ${Z_INDEX};
   flex: 1;
+
   margin-left: ${GAP_PX}px;
   margin-top: ${GAP_PX}px;
 `;
