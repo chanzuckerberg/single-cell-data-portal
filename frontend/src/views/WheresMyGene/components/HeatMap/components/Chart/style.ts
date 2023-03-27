@@ -38,6 +38,10 @@ export const StyledTooltipTable = styled(TooltipTable)`
     padding-top: 0 !important;
   }
 
+  .MuiTableRow-root {
+    vertical-align: baseline;
+  }
+
   .MuiTable-root {
     margin-bottom: 0;
   }
