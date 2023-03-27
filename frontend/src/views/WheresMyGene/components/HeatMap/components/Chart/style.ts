@@ -44,6 +44,8 @@ export const StyledTooltipTable = styled(TooltipTable)`
 
   .MuiTableCell-alignLeft {
     ${fontBodyXs}
+    width: 30%;
+    white-space: nowrap;
   }
 
   .MuiTableCell-alignRight {
