@@ -191,8 +191,12 @@ class Validation:
             original_tissues_expression = original_tissues_expression[["cell_type_ontology_term_id", "sum"]]
             rollup_tissues_expression = rollup_tissues_expression[["cell_type_ontology_term_id", "sum"]]
 
-            original_tissues_expression = original_tissues_expression.groupby("cell_type_ontology_term_id").sum()
-            rollup_tissues_expression = rollup_tissues_expression.groupby("cell_type_ontology_term_id").sum()
+            original_tissues_expression = original_tissues_expression.groupby("cell_type_ontology_term_id").sum(
+                numeric_only=True
+            )
+            rollup_tissues_expression = rollup_tissues_expression.groupby("cell_type_ontology_term_id").sum(
+                numeric_only=True
+            )
 
             if not original_tissues_expression["sum"].equals(rollup_tissues_expression["sum"]):
                 logger.error(
@@ -414,8 +418,12 @@ class Validation:
             MALAT1_expression = MALAT1_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_id}'")
             CCL5_expression = CCL5_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_id}'")
 
-            malat1_expression_sum_by_cell_type = MALAT1_expression.groupby("cell_type_ontology_term_id").sum()["sum"]
-            ccl5_expression_sum_by_cell_type = CCL5_expression.groupby("cell_type_ontology_term_id").sum()["sum"]
+            malat1_expression_sum_by_cell_type = MALAT1_expression.groupby("cell_type_ontology_term_id").sum(
+                numeric_only=True
+            )["sum"]
+            ccl5_expression_sum_by_cell_type = CCL5_expression.groupby("cell_type_ontology_term_id").sum(
+                numeric_only=True
+            )["sum"]
 
             expected_values = anndata.read_h5ad(
                 f"{pathlib.Path(__file__).parent.resolve()}/3_0_0_lung_map_3de0ad6d-4378-4f62-b37b-ec0b75a50d94.h5ad"
@@ -423,8 +431,10 @@ class Validation:
             malat_expected = expected_values.obs.assign(MALAT1=expected_values.layers["rankit"].toarray()[:, 0])
             ccl5_expected = expected_values.obs.assign(CCL5=expected_values.layers["rankit"].toarray()[:, 1])
 
-            expected_malat1_by_cell_type = malat_expected.groupby("cell_type_ontology_term_id").sum().MALAT1
-            expected_ccl5_by_cell_type = ccl5_expected.groupby("cell_type_ontology_term_id").sum().CCL5
+            expected_malat1_by_cell_type = (
+                malat_expected.groupby("cell_type_ontology_term_id").sum(numeric_only=True).MALAT1
+            )
+            expected_ccl5_by_cell_type = ccl5_expected.groupby("cell_type_ontology_term_id").sum(numeric_only=True).CCL5
             # drop ccl5 cell types with expression value of zero (to match pipeline processing)
             expected_ccl5_by_cell_type = expected_ccl5_by_cell_type[expected_ccl5_by_cell_type != 0]
 
