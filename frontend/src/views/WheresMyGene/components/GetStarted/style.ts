@@ -5,15 +5,13 @@ import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
+import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 import {
   X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../HeatMap/utils";
-import {
-  LEGEND_HEIGHT_PX,
-  LEGEND_MARGIN_BOTTOM_PX,
-} from "../InfoPanel/components/Legend/style";
+import { LEGEND_HEIGHT_PX } from "../InfoPanel/components/Legend/style";
 
 export const Header = styled.h1`
   margin-bottom: 12px;
@@ -75,8 +73,6 @@ export const ColumnOne = styled.div`
 
 export const ColumnTwo = styled.div`
   flex: 1 0;
-
-  z-index: 10;
 
   display: flex;
   flex-direction: column;

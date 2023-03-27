@@ -7,6 +7,8 @@ import { FOOTER_HEIGHT_PX } from "src/components/Footer/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { SidebarMainWrapper } from "src/components/Layout/style";
 
+export const LEGEND_MARGIN_BOTTOM_PX = 20;
+
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -21,6 +23,7 @@ export const Gap = styled.div`
 export const Top = styled.div`
   display: flex;
   justify-content: space-between;
+  margin-bottom: ${LEGEND_MARGIN_BOTTOM_PX}px;
 `;
 
 export const SideBarWrapper = styled(SideBar)`
