@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from uuid import UUID
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.utils.http_exceptions import ForbiddenHTTPException
+from backend.common.utils.http_exceptions import ForbiddenHTTPException, NotFoundHTTPException
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.common.entities import (
     CollectionId,
@@ -288,37 +288,38 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
     return return_status
 
 
-def get_inferred_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
+def get_inferred_collection_version(collection_id: str) -> CollectionVersionWithDatasets:
     """
-    Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion.
+    Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion,
+    if currently mapped published version or open unpublished version.
     :param collection_id: identifies the collection version
     :return: The CollectionVersion if it exists.
     """
     validate_uuid_else_forbidden(collection_id)
-    version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
+    business_logic = get_business_logic()
+
+    # gets currently mapped collection version, or unpublished version if never published
+    version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
     if version is None:
-        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
-    if version is None:
-        version = get_business_logic().get_unpublished_collection_version_from_canonical(CollectionId(collection_id))
-    if version is None or version.canonical_collection.tombstoned is True:
+        version = business_logic.get_collection_version(CollectionVersionId(collection_id))
+        if version is None:
+            raise NotFoundHTTPException()
+        # Only allow fetch by Collection Version ID if unpublished revision of published collection
+        if version.published_at is not None or version.canonical_collection.originally_published_at is None:
+            raise ForbiddenHTTPException()
+    if version.canonical_collection.tombstoned is True:
         raise ForbiddenHTTPException()
     return version
 
 
-def get_inferred_dataset_version(dataset_id: str) -> Optional[DatasetVersion]:
+def get_dataset_version_from_canonical_id(dataset_id: str) -> Optional[DatasetVersion]:
     """
-    Infer the dataset version from either a DatasetId or a DatasetVersionId and return the DatasetVersion.
+    Get the dataset version from a DatasetId and return the DatasetVersion.
     :param dataset_id: identifies the dataset version
     :return: The DatasetVersion if it exists.
     """
-    try:
-        UUID(dataset_id)
-    except ValueError:
-        return None
-    version = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
-    if version is None:
-        version = get_business_logic().get_dataset_version_from_canonical(DatasetId(dataset_id))
-    return version
+    validate_uuid_else_forbidden(dataset_id)
+    return get_business_logic().get_dataset_version_from_canonical(DatasetId(dataset_id))
 
 
 def is_owner_or_allowed_else_forbidden(collection_version, user_info):

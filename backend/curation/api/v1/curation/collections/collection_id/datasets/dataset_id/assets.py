@@ -3,8 +3,8 @@ from flask import jsonify, make_response
 from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.curation.api.v1.curation.collections.common import (
     allowed_dataset_asset_types,
-    get_inferred_collection_version_else_forbidden,
-    get_inferred_dataset_version,
+    get_dataset_version_from_canonical_id,
+    get_inferred_collection_version,
 )
 from backend.portal.api.providers import get_business_logic
 
@@ -12,10 +12,10 @@ from backend.portal.api.providers import get_business_logic
 def get(collection_id: str, dataset_id=None):
     business_logic = get_business_logic()
 
-    dataset = get_inferred_dataset_version(dataset_id)
+    dataset = get_dataset_version_from_canonical_id(dataset_id)
 
     if dataset is None:
-        get_inferred_collection_version_else_forbidden(collection_id)
+        get_inferred_collection_version(collection_id)
         raise NotFoundHTTPException(detail="Dataset not found.")
 
     assets = dataset.artifacts
