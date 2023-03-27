@@ -94,7 +94,7 @@ function isFmgOpen({ isFmgOpen = false }: { isFmgOpen: boolean }) {
       FILTERS_PANEL_EXPANDED_WIDTH_PX +
       CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2 +
       (isFmgOpen ? CELL_INFO_SIDEBAR_WIDTH_PX : 0) -
-      25 // This number gets the scrollbar to the right edge of the viewport
+      40 // This number gets the scrollbar to the right edge of the viewport
     }px
   )`;
 }
