@@ -1,5 +1,4 @@
 import copy
-from collections import defaultdict
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
@@ -265,36 +264,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_versions.append(self._update_dataset_version_with_canonical(self.datasets_versions[dv_id.id]))
         return dataset_versions
 
-    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
+    def get_all_mapped_collection_versions_with_datasets(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
         Returns all mapped collection versions with their datasets
         """
-        mapped_datasets, mapped_collections = self.get_all_mapped_datasets_and_collections()
-
-        datasets_by_collection_id = defaultdict(list)
-        # Construct dict of collection_id: [datasets]
-        [datasets_by_collection_id[d.collection_id.id].append(d) for d in mapped_datasets]
-
-        # Turn list of CollectionVersions into CollectionVersionsWithDatasets
-        collections_with_datasets: List[CollectionVersionWithDatasets] = []
-        for collection in mapped_collections:
-            dataset_versions = datasets_by_collection_id.get(collection.collection_id.id, [])
-            collections_with_datasets.append(
-                CollectionVersionWithDatasets(
-                    datasets=dataset_versions,
-                    collection_id=collection.collection_id,
-                    version_id=collection.version_id,
-                    owner=collection.owner,
-                    curator_name=collection.curator_name,
-                    metadata=collection.metadata,
-                    publisher_metadata=collection.publisher_metadata,
-                    published_at=collection.published_at,
-                    created_at=collection.created_at,
-                    canonical_collection=collection.canonical_collection,
-                )
-            )
-
-        return collections_with_datasets
+        return self.get_all_mapped_datasets_and_collections()
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         versions = []

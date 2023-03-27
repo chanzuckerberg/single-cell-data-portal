@@ -101,7 +101,9 @@ def reshape_for_curation_api(
         revising_in = None
 
     # get collection dataset attributes
-    response_datasets = reshape_datasets_for_curation_api(collection_version.datasets, use_canonical_url, preview)
+    response_datasets = reshape_datasets_for_curation_api(
+        collection_version.datasets, use_canonical_url, preview, as_version=reshape_for_version_endpoint
+    )
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
@@ -134,15 +136,23 @@ def reshape_datasets_for_curation_api(
     datasets: List[Union[DatasetVersionId, DatasetVersion]],
     use_canonical_url: bool,
     preview: bool = False,
+    as_version: bool = False,
 ) -> List[dict]:
     active_datasets = []
     for dv in datasets:
         dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
-        active_datasets.append(reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview))
+        reshaped_dataset = (
+            reshape_dataset_for_curation_api_as_version(dataset_version, use_canonical_url, preview)
+            if as_version
+            else reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
+        )
+        active_datasets.append(reshaped_dataset)
     return active_datasets
 
 
-def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canonical_url: bool, preview=False) -> dict:
+def reshape_dataset_for_curation_api_common(
+    dataset_version: DatasetVersion, use_canonical_url: bool, preview=False
+) -> dict:
     ds = dict()
 
     # Determine what columns to include from the dataset
@@ -196,6 +206,21 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canoni
             ds["collection_version_id"] = dataset_version.collection_version_id.id
             ds["published_at"] = dataset_version.published_at
     return ds
+
+
+def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canonical_url: bool, preview=False) -> dict:
+    dataset = reshape_dataset_for_curation_api_common(dataset_version, use_canonical_url, preview)
+    if not preview:
+        dataset["published_at"] = dataset_version.canonical_dataset.published_at
+        if isinstance(dataset_version, PublishedDatasetVersion):
+            dataset["revised_at"] = dataset_version.published_at
+    return dataset
+
+
+def reshape_dataset_for_curation_api_as_version(
+    dataset_version: DatasetVersion, use_canonical_url: bool, preview=False
+) -> dict:
+    return reshape_dataset_for_curation_api_common(dataset_version, use_canonical_url, preview)
 
 
 is_primary_data_mapping = {

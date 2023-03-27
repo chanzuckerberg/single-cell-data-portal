@@ -2,7 +2,7 @@ from flask import jsonify, make_response
 
 from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.curation.api.v1.curation.collections.common import (
-    reshape_dataset_for_curation_api,
+    reshape_dataset_for_curation_api_as_version,
     validate_uuid_else_forbidden,
 )
 from backend.layers.common.entities import DatasetVersionId
@@ -20,5 +20,5 @@ def get(dataset_version_id: str):
     if dataset_version is None:
         raise NotFoundHTTPException("Dataset not found")
 
-    response_body = reshape_dataset_for_curation_api(dataset_version, use_canonical_url=False)
+    response_body = reshape_dataset_for_curation_api_as_version(dataset_version, use_canonical_url=False)
     return make_response(jsonify(response_body), 200)

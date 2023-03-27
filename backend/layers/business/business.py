@@ -1,7 +1,8 @@
 import copy
-import datetime
 import logging
-from typing import Iterable, List, Optional, Tuple
+from collections import defaultdict
+from datetime import datetime
+from typing import Iterable, List, Optional, Tuple, Union
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
@@ -33,6 +34,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    CollectionVersionWithPublishedDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetArtifactType,
@@ -82,6 +84,29 @@ class BusinessLogic(BusinessLogicInterface):
         self.s3_provider = s3_provider
         self.uri_provider = uri_provider
         super().__init__()
+
+    @staticmethod
+    def _get_published_at_and_collection_version_id(
+        dataset_version: DatasetVersion,
+        collection_versions: Union[List[CollectionVersionWithDatasets], List[CollectionVersion]],
+    ) -> Tuple[Optional[datetime], CollectionVersionId]:
+        """
+        Determines the published_at date for a DatasetVersion and the id of the CollectionVersion under which it was initially published.
+        """
+        for collection_version in sorted(
+            #  Alphabetically sorts 'False' before 'True'; iterates over published versions first
+            collection_versions,
+            key=lambda cv: (cv.published_at is None, cv.published_at),
+        ):
+            if collection_version.published_at is not None:
+                if isinstance(collection_version, CollectionVersionWithDatasets) and dataset_version.version_id.id in {
+                    dv.version_id for dv in collection_version.datasets
+                }:
+                    return collection_version.published_at, collection_version.version_id
+                elif isinstance(collection_version, CollectionVersion) and dataset_version.version_id.id in {
+                    dv.id for dv in collection_version.datasets
+                }:
+                    return collection_version.published_at, collection_version.version_id
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
         """
@@ -140,7 +165,7 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Given a canonical collection_id, retrieves its latest unpublished version
         """
-        latest = datetime.datetime.fromtimestamp(0)
+        latest = datetime.fromtimestamp(0)
         unpublished_collection = None
         for collection in self.get_collection_versions_from_canonical(collection_id):
             if collection.published_at is None and collection.created_at > latest:
@@ -416,11 +441,47 @@ class BusinessLogic(BusinessLogicInterface):
         datasets, _ = self.database_provider.get_all_mapped_datasets_and_collections()
         return datasets
 
-    def get_all_mapped_collection_versions_with_datasets(self) -> Iterable[CollectionVersionWithDatasets]:
+    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithPublishedDatasets]:
         """
         Retrieves all the datasets from the database that belong to a published collection
         """
-        return self.database_provider.get_all_mapped_collection_versions_with_datasets()
+        (
+            mapped_dataset_versions,
+            mapped_collection_versions,
+        ) = self.database_provider.get_all_mapped_collection_versions_with_datasets()
+
+        # Construct dict of collection_id: [Datasets]
+        datasets_by_collection_id = defaultdict(list)
+        [datasets_by_collection_id[d.collection_id.id].append(d) for d in mapped_dataset_versions]
+
+        # Construct dict of collection_id: [all published Collection versions]
+        all_collections_versions = self.database_provider.get_all_collections_versions()
+        collection_versions_by_collection_id = defaultdict(list)
+        [collection_versions_by_collection_id[c.collection_id.id].append(c) for c in all_collections_versions]
+
+        # Determine published_at and collection_version_id for all mapped Dataset versions. Both values come from the
+        # Collection version with which the Dataset version was first published.
+        collections_with_published_datasets: List[CollectionVersionWithPublishedDatasets] = []
+        for collection in mapped_collection_versions:
+            mapped_dataset_versions_for_collection = datasets_by_collection_id[collection.collection_id.id]
+            all_versions_for_collection = collection_versions_by_collection_id[collection.collection_id.id]
+            published_datasets_for_collection: List[PublishedDatasetVersion] = []
+            for mapped_dataset_version in mapped_dataset_versions_for_collection:
+                published_at, collection_version_id = self._get_published_at_and_collection_version_id(
+                    mapped_dataset_version, all_versions_for_collection
+                )
+                published_datasets_for_collection.append(
+                    PublishedDatasetVersion(
+                        collection_version_id=collection_version_id,
+                        revised_at=published_at,  # For published Datasets
+                        published_at=mapped_dataset_version.canonical_dataset.published_at,
+                        **vars(mapped_dataset_version),
+                    )
+                )
+            collection.datasets = published_datasets_for_collection  # hack to allow unpacking via **vars() below
+            collections_with_published_datasets.append(CollectionVersionWithPublishedDatasets(**vars(collection)))
+
+        return collections_with_published_datasets
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
         """
@@ -582,7 +643,7 @@ class BusinessLogic(BusinessLogicInterface):
             if not canonical_dataset:
                 return None
             # dataset has never been published, so fetch its most recently created version
-            latest = datetime.datetime.fromtimestamp(0)
+            latest = datetime.fromtimestamp(0)
             unpublished_dataset = None
             for dataset in self.database_provider.get_all_versions_for_dataset(dataset_id):
                 if dataset.created_at > latest:

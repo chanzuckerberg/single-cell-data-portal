@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    CollectionVersionWithPublishedDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetId,
@@ -76,6 +77,9 @@ class BusinessLogicInterface:
         pass
 
     def get_all_mapped_datasets(self) -> List[DatasetVersion]:
+        pass
+
+    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithPublishedDatasets]:
         pass
 
     def remove_dataset_version(

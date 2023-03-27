@@ -714,11 +714,17 @@ class TestGetCollectionID(BaseAPIPortalTest):
         res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
         self.assertEqual(200, res.status_code)
         res_body = res.json
+        self.assertTrue("created_at" in res_body)
         del res_body["created_at"]  # too finicky; ignore
+        self.assertTrue("revised_at" in res_body)
         del res_body["revised_at"]  # too finicky; ignore
+        self.assertTrue("published_at" in res_body)
         del res_body["published_at"]  # too finicky; ignore
-        del res_body["datasets"][0]["revised_at"]  # too finicky; ignore
-
+        for dataset in res_body["datasets"]:
+            self.assertTrue("revised_at" in dataset)
+            del dataset["revised_at"]  # too finicky; ignore
+            self.assertTrue("published_at" in dataset)
+            del dataset["published_at"]  # too finicky; ignore
         self.maxDiff = None
         self.assertDictEqual(expected_body, res_body)  # Confirm dict has been packaged in list
         self.assertEqual(json.dumps(expected_body, sort_keys=True), json.dumps(res_body))
@@ -1514,7 +1520,6 @@ class TestGetDatasets(BaseAPIPortalTest):
         with self.subTest("With super curator credentials"):
             headers = self.make_super_curator_header()
             super_curator_response = self.app.get("/curation/v1/datasets", headers=headers)
-            print(super_curator_response.json)
             self.assertEqual(3, len(super_curator_response.json))
 
         response = self.app.get("/curation/v1/datasets")
@@ -1548,7 +1553,6 @@ class TestGetDatasets(BaseAPIPortalTest):
                 + [dv.dataset_id.id for dv in published_collection_2.datasets]
             )
             received_dataset_ids = set()
-            print(response.json)
             for dataset in response.json:
                 received_dataset_ids.add(dataset["dataset_id"])
 
