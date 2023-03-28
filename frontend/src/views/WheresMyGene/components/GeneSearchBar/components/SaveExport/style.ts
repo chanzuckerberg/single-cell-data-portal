@@ -3,6 +3,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import {
   Button,
   fontBodyS,
+  fontBodyXs,
   fontCapsXxs,
   getColors,
   InputCheckbox,
@@ -15,24 +16,14 @@ export const DownloadButton = styled(Button)`
   min-width: unset;
   text-transform: unset;
 `;
-export const StyledDiv = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-`;
-
-export const ButtonWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 15px;
-`;
 
 export const StyledModal = styled(Modal)`
-  /* Overwriting some styles for the modal */
+  /* Overriding some styles for the modal to match figma */
   div:first-child {
     padding: 0;
   }
+  width: 600px !important;
+  padding: 10px !important;
   h5 {
     color: black;
     height: 28px !important;
@@ -40,9 +31,6 @@ export const StyledModal = styled(Modal)`
     margin: 0px !important;
   }
   padding: 24px !important;
-  width: 400px !important;
-  height: 272px !important;
-  min-width: unset !important;
 `;
 
 export const StyledTitle = styled.div`
@@ -55,26 +43,56 @@ export const StyledTitle = styled.div`
       color: ${colors?.gray[500]};
     `;
   }}
+`;
 
-  margin-bottom: 8px;
+export const StyledModalContent = styled.div`
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
 `;
 
 export const StyledSection = styled.section`
-  margin-top: 16px;
-  margin-bottom: 0px;
+  padding: 8px 0 8px 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
-export const StyledFormControlLabel = styled(FormControlLabel)`
-  margin: unset;
-  margin-bottom: 8px;
+export const StyledInputCheckboxWrapper = styled.div`
+  padding-bottom: 12px;
+  width: 100%;
+  label {
+    width: 100%;
+    margin-left: -9px;
+  }
 `;
 
-export const StyledInputCheckBox = styled(InputCheckbox)`
-  height: 16px;
-  width: 16px;
-  margin-right: 8px;
+export const StyledMessage = styled.div`
+  ${fontBodyXs}
+
+  margin-top: 8px;
+  padding: 12px;
+
+  border-radius: 4px;
+
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+      background: ${colors?.gray[100]};
+      color: ${colors?.gray[500]};
+    `;
+  }}
+`;
+
+export const ButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 15px;
 `;
 
 export const StyledButtonContainer = styled.div`
+  padding-top: 16px;
   text-align: right;
 `;

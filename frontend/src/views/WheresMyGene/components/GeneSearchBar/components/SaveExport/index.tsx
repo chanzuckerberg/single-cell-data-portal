@@ -30,13 +30,16 @@ import { StyledButtonIcon } from "../QuickSelect/style";
 import {
   ButtonWrapper,
   DownloadButton,
+  StyledModalContent,
   StyledButtonContainer,
-  StyledDiv,
+  StyledInputCheckboxWrapper,
   StyledFormControlLabel,
   StyledInputCheckBox,
   StyledModal,
   StyledSection,
   StyledTitle,
+  StyledMessageContainer,
+  StyledMessage,
 } from "./style";
 import {
   NAME_SPACE_URI,
@@ -55,6 +58,7 @@ import {
   csvGeneExpressionRow,
   csvHeaders,
 } from "./csvUtils";
+import { InputCheckbox } from "czifui";
 
 let heatmapContainerScrollTop: number | undefined;
 
@@ -227,69 +231,67 @@ export default function SaveExport({
         onClose={handleButtonClick}
         isCloseButtonShown={false}
       >
-        <div>
+        <StyledModalContent>
           <StyledSection>
             <StyledTitle>FIGURE</StyledTitle>
-            <StyledDiv>
-              <StyledFormControlLabel
-                control={
-                  <StyledInputCheckBox
-                    checked={selectedFileTypes.includes("png")}
-                  />
-                }
+            <StyledInputCheckboxWrapper>
+              <InputCheckbox
                 label="PNG"
+                caption="PNG CAPTION"
                 onChange={() => selectFileType("png")}
                 data-test-id="png-checkbox"
+                checked={selectedFileTypes.includes("png")}
               />
-
-              <StyledFormControlLabel
-                control={
-                  <StyledInputCheckBox
-                    checked={selectedFileTypes.includes("svg")}
-                  />
-                }
+            </StyledInputCheckboxWrapper>
+            <StyledInputCheckboxWrapper>
+              <InputCheckbox
                 label="SVG"
+                caption="SVG CAPTION"
                 onChange={() => selectFileType("svg")}
                 data-test-id="svg-checkbox"
+                checked={selectedFileTypes.includes("svg")}
               />
-            </StyledDiv>
+            </StyledInputCheckboxWrapper>
           </StyledSection>
+
           <StyledSection>
             <StyledTitle>DATA</StyledTitle>
-            <StyledDiv>
-              <StyledFormControlLabel
-                control={
-                  <StyledInputCheckBox
-                    checked={selectedFileTypes.includes("csv")}
-                  />
-                }
+            <StyledInputCheckboxWrapper>
+              <InputCheckbox
                 label="CSV"
+                caption="CSV CAPTION"
                 onChange={() => selectFileType("csv")}
                 data-test-id="csv-checkbox"
+                checked={selectedFileTypes.includes("csv")}
               />
-            </StyledDiv>
+            </StyledInputCheckboxWrapper>
           </StyledSection>
-        </div>
 
-        <StyledButtonContainer>
-          <DownloadButton
-            sdsType="secondary"
-            sdsStyle="minimal"
-            onClick={handleButtonClick}
-          >
-            Cancel
-          </DownloadButton>
-          <DownloadButton
-            sdsStyle="square"
-            sdsType="primary"
-            sdsSize="large"
-            onClick={handleDownload}
-            disabled={!selectedFileTypes.length}
-            data-test-id="dialog-download-button"
-          >
-            Download
-          </DownloadButton>
-        </StyledButtonContainer>
+          <StyledMessage>
+            We regularly expand our single cell data corpus to improve results.
+            Downloaded data and figures may differ in the future.
+          </StyledMessage>
+
+          <StyledButtonContainer>
+            <DownloadButton
+              sdsType="secondary"
+              sdsStyle="minimal"
+              onClick={handleButtonClick}
+            >
+              Cancel
+            </DownloadButton>
+            <DownloadButton
+              sdsStyle="square"
+              sdsType="primary"
+              sdsSize="large"
+              onClick={handleDownload}
+              disabled={!selectedFileTypes.length}
+              data-test-id="dialog-download-button"
+            >
+              Download
+            </DownloadButton>
+          </StyledButtonContainer>
+        </StyledModalContent>
       </StyledModal>
     </>
   );
