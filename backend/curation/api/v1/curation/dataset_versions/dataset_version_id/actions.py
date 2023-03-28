@@ -18,7 +18,7 @@ def get(dataset_version_id: str):
 
     dataset_version = business_logic.get_prior_published_dataset_version(DatasetVersionId(dataset_version_id))
     if dataset_version is None:
-        raise NotFoundHTTPException("Dataset not found")
+        raise NotFoundHTTPException("Dataset version not found")
 
     response_body = reshape_dataset_for_curation_api_as_version(dataset_version, use_canonical_url=False)
     return make_response(jsonify(response_body), 200)

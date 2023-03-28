@@ -92,6 +92,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         copied_version = copy.deepcopy(version)
         if update_datasets:
             copied_version.datasets = [self.get_dataset_version(dataset_id) for dataset_id in copied_version.datasets]
+            # Hack for business logic that uses isinstance
+            copied_version.__class__ = CollectionVersionWithDatasets
         cc = self.collections.get(version.collection_id.id)
         if cc is None:
             return copied_version

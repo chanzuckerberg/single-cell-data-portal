@@ -22,6 +22,7 @@ from backend.layers.business.exceptions import (
     DatasetInWrongStatusException,
     DatasetNotFoundException,
     DatasetUpdateException,
+    DatasetVersionNotFoundException,
     InvalidURIException,
     MaxFileSizeExceededException,
 )
@@ -86,7 +87,7 @@ class BusinessLogic(BusinessLogicInterface):
         super().__init__()
 
     @staticmethod
-    def _get_published_at_and_collection_version_id(
+    def _get_published_at_and_collection_version_id_else_not_found(
         dataset_version: DatasetVersion,
         collection_versions: Union[List[CollectionVersionWithDatasets], List[CollectionVersion]],
     ) -> Tuple[Optional[datetime], CollectionVersionId]:
@@ -100,13 +101,16 @@ class BusinessLogic(BusinessLogicInterface):
         ):
             if collection_version.published_at is not None:
                 if isinstance(collection_version, CollectionVersionWithDatasets) and dataset_version.version_id.id in {
-                    dv.version_id for dv in collection_version.datasets
+                    dv.version_id.id for dv in collection_version.datasets
                 }:
                     return collection_version.published_at, collection_version.version_id
                 elif isinstance(collection_version, CollectionVersion) and dataset_version.version_id.id in {
                     dv.id for dv in collection_version.datasets
                 }:
                     return collection_version.published_at, collection_version.version_id
+            else:
+                break
+        raise DatasetVersionNotFoundException("No such published Dataset version")
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
         """
@@ -467,7 +471,7 @@ class BusinessLogic(BusinessLogicInterface):
             all_versions_for_collection = collection_versions_by_collection_id[collection.collection_id.id]
             published_datasets_for_collection: List[PublishedDatasetVersion] = []
             for mapped_dataset_version in mapped_dataset_versions_for_collection:
-                published_at, collection_version_id = self._get_published_at_and_collection_version_id(
+                published_at, collection_version_id = self._get_published_at_and_collection_version_id_else_not_found(
                     mapped_dataset_version, all_versions_for_collection
                 )
                 published_datasets_for_collection.append(
@@ -691,21 +695,17 @@ class BusinessLogic(BusinessLogicInterface):
         if not dataset_version:
             return None
         collection_versions = self.database_provider.get_all_versions_for_collection(dataset_version.collection_id)
-        # sort to ensure we always find earliest instance of a dataset version first when iterating
-        # needs None check as part of sort key to avoid TypeError on sorting list of datetimes + NoneTypes
-        collection_versions = sorted(collection_versions, key=lambda cv: (cv.published_at is None, cv.published_at))
-        published_version = None
-        for collection_version in collection_versions:
-            if collection_version.published_at is not None and dataset_version_id.id in {
-                dv.version_id.id for dv in collection_version.datasets
-            }:
-                published_version = PublishedDatasetVersion(
-                    collection_version_id=collection_version.version_id,
-                    published_at=collection_version.published_at,
-                    **vars(dataset_version),
-                )
-                break
-        return published_version
+        try:
+            published_at, collection_version_id = self._get_published_at_and_collection_version_id_else_not_found(
+                dataset_version, collection_versions
+            )
+            return PublishedDatasetVersion(
+                collection_version_id=collection_version_id,
+                published_at=published_at,
+                **vars(dataset_version),
+            )
+        except DatasetVersionNotFoundException:
+            return None
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
