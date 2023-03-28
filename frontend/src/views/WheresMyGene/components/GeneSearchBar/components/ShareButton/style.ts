@@ -31,7 +31,7 @@ export const StyledButtonIcon = styled(ButtonIcon)`
 export const StyledNotificationWrapper = styled.div`
   position: absolute;
   top: ${HEADER_HEIGHT_PX}px;
-  right: 16px;
+  right: 24px;
   z-index: 999;
 `;
 

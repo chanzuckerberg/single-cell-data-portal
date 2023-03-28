@@ -42,7 +42,7 @@ import InfoPanel from "../InfoPanel";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
-import { BetaWrapper, SideBarLabel, StyledSidebarDrawer } from "./style";
+import { SideBarLabel, StyledSidebarDrawer } from "./style";
 import RightSideBar from "../RightSideBar";
 
 export const INFO_PANEL_WIDTH_PX = 320;
@@ -388,9 +388,8 @@ export default function WheresMyGene(): JSX.Element {
             />
           ) : null}
         </Wrapper>
-        <BetaWrapper>
-          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
-        </BetaWrapper>
+
+        <Beta />
       </View>
     </>
   );
