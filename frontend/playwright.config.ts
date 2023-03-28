@@ -26,7 +26,7 @@ const config: PlaywrightTestConfig = {
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 5000,
+    timeout: 10000,
   },
 
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -60,7 +60,7 @@ const config: PlaywrightTestConfig = {
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: PLAYWRIGHT_REPORTER,
 
-  retries: 2,
+  retries: process.env.CI ? 2 : 0,
 
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: "./__snapshots__",

@@ -22,6 +22,7 @@ export default function Beta({
       onClose={noop}
       style={position}
       className={"elevated " + className}
+      data-testid="survey-alert-id"
     >
       We would appreciate your feedback, please fill out a{" "}
       <SubmitIssue
