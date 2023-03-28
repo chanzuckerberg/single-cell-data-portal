@@ -1,9 +1,11 @@
 ---
 name: Tech Issue
-about: Engineering-specific technical work that is not product-specific. Engineering team "owns" these issues.
-title: ""
+about: Engineering-specific technical work that is not product-specific. Engineering
+  team "owns" these issues.
+title: ''
 labels: tech
-assignees: ""
+assignees: ''
+
 ---
 
 ## Motivation
