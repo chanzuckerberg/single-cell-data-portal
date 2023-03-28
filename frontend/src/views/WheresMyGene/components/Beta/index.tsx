@@ -16,6 +16,7 @@ export default function Beta({
 
   return (
     <StyledNotification
+      id="beta-notification"
       intent="info"
       autoDismiss={false}
       dismissDirection="left"

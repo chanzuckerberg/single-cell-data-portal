@@ -6,19 +6,14 @@ export const StyledNotification = styled(Notification)`
     const colors = getColors(props);
 
     return `
-    .elevated {
-      border-color: ${colors?.beta[400]} !important;
-    }
+      #beta-notification {
+        border-color: ${colors?.beta[400]} !important;
+        background-color: ${colors?.beta[100]};
 
-    .MuiAlert-root {
-      background-color: ${colors?.beta[100]};
-
-      .MuiAlert-icon {
         path {
           fill: ${colors?.beta[600]};
         }
       }
-    }
     `;
   }}
 `;

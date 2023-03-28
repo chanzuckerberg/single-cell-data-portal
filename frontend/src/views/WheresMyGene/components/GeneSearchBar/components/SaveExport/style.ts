@@ -1,13 +1,5 @@
 import styled from "@emotion/styled";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import {
-  Button,
-  fontBodyS,
-  fontBodyXs,
-  fontCapsXxs,
-  getColors,
-  InputCheckbox,
-} from "czifui";
+import { Button, fontBodyS, fontBodyXs, fontCapsXxs, getColors } from "czifui";
 import Modal from "src/components/common/Modal";
 
 export const DownloadButton = styled(Button)`

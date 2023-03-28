@@ -33,12 +33,9 @@ import {
   StyledModalContent,
   StyledButtonContainer,
   StyledInputCheckboxWrapper,
-  StyledFormControlLabel,
-  StyledInputCheckBox,
   StyledModal,
   StyledSection,
   StyledTitle,
-  StyledMessageContainer,
   StyledMessage,
 } from "./style";
 import {
