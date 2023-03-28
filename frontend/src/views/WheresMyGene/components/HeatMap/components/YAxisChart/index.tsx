@@ -128,6 +128,8 @@ const CellTypeButton = ({
 
   const cellType = deserializeCellTypeMetadata(metadata);
 
+  const isTruncated = formattedName.includes("...");
+
   return (
     <FlexRowJustified data-test-id="cell-type-label-count">
       <FlexRow>
@@ -135,7 +137,7 @@ const CellTypeButton = ({
           <Tooltip
             title={
               // Set tooltip content only if name is truncated
-              formattedName.includes("...") ? (
+              isTruncated ? (
                 <CellTypeLabelTooltipStyle>{name}</CellTypeLabelTooltipStyle>
               ) : null
             }
@@ -146,9 +148,12 @@ const CellTypeButton = ({
           >
             {/* Must be wrapped in div and not fragment or else tooltip content won't render */}
             <div>
-              <HiddenCellTypeLabelStyle data-test-id="cell-type-full-name">
-                {name}
-              </HiddenCellTypeLabelStyle>
+              {/* Hidden labels are only needed if name is truncated */}
+              {isTruncated && (
+                <HiddenCellTypeLabelStyle data-test-id="cell-type-full-name">
+                  {name}
+                </HiddenCellTypeLabelStyle>
+              )}
               <div data-test-id="cell-type-name">{formattedName}</div>
             </div>
           </Tooltip>
