@@ -763,9 +763,9 @@ class TestGetCollectionID(BaseAPIPortalTest):
                         self.assertEqual(resp.json, last_resp.json, "All of the response bodies should be the same.")
             return last_resp.json
 
-        privilage_access_headers = [self.make_owner_header(), self.make_super_curator_header()]
+        privileged_access_headers = [self.make_owner_header(), self.make_super_curator_header()]
         restricted_access_headers = [self.make_not_owner_header(), self.make_not_auth_header()]
-        all_headers = [*privilage_access_headers, *restricted_access_headers]
+        all_headers = [*privileged_access_headers, *restricted_access_headers]
         unpublished = self.generate_unpublished_collection(add_datasets=1)
         with self.subTest("get unpublished version"):
             resp_collection = _test_responses_are_equal(
@@ -783,6 +783,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIn(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
 
         published = self.generate_published_collection(add_datasets=1)
+        print(f"\n\npublished v_id is {published.version_id.id}")
         with self.subTest("get published version"):
             resp_collection = _test_responses_are_equal(
                 [published.version_id, published.collection_id], published.collection_id, all_headers
@@ -814,9 +815,9 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
 
-        with self.subTest("get published with unpublished version and privilaged access"):
+        with self.subTest("get published with unpublished version and privileged access"):
             resp_collection = _test_responses_are_equal(
-                [published.version_id, published.collection_id], published.collection_id, privilage_access_headers
+                [published.version_id, published.collection_id], published.collection_id, privileged_access_headers
             )
             self.assertEqual("PUBLIC", resp_collection["visibility"])
             self.assertEqual(revision.version_id.id, resp_collection["revising_in"])

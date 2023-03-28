@@ -621,6 +621,7 @@ class BusinessLogic(BusinessLogicInterface):
             canonical_datasets = {dataset_version_id.id for dataset_version_id in canonical_version.datasets}
             version_datasets = {dataset_version_id.id for dataset_version_id in version.datasets}
             if canonical_datasets != version_datasets:
+                print(f"\n\nHAS DATASET REVISIONS {version.version_id.id}\n\n")
                 has_dataset_revisions = True
 
         self.database_provider.finalize_collection_version(

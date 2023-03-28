@@ -106,6 +106,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             return copy.deepcopy(version)
         copied_version = copy.deepcopy(version)
         copied_version.canonical_dataset = cd
+        print("\n\nDATASET\n\n")
+        print(copied_version.canonical_dataset)
         return copied_version
 
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
