@@ -875,7 +875,7 @@ async function clickUntilDownloadModalShowsUp({
       } else {
         throw Error("Either testId or locator must be defined");
       }
-      await page.locator("[class=bp4-dialog]").elementHandle();
+      await page.locator(".bp4-dialog").elementHandle();
     },
     { page }
   );
@@ -899,7 +899,7 @@ async function clickUntilSidebarShowsUp({
       } else {
         throw Error("Either testId or locator must be defined");
       }
-      await page.locator("[class=bp4-drawer-header]").elementHandle();
+      await page.locator(".bp4-drawer-header").elementHandle();
     },
     { page }
   );
