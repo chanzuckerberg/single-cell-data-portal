@@ -310,7 +310,7 @@ describe("Where's My Gene", () => {
 
         // Testing single gene delete
         await page.hover(".gene-label-container");
-        await page.getByTestId(GENE_DELETE_BUTTON).click();
+        await getFirstButtonAndClick(page, GENE_DELETE_BUTTON);
 
         const afterGeneNames = await getGeneNames(page);
 
@@ -519,7 +519,7 @@ describe("Where's My Gene", () => {
 
       await waitForHeatmapToRender(page);
 
-      await getButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
+      await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
 
       await waitForElement(page, GENE_INFO_HEADER_TEST_ID);
       await waitForElement(page, GENE_INFO_GENE_SYNONYMS_TEST_ID);
@@ -549,7 +549,7 @@ describe("Where's My Gene", () => {
 
       await getCellTypeFmgButtonAndClick(page, "muscle cell");
 
-      await getButtonAndClick(page, GENE_INFO_BUTTON_CELL_INFO_TEST_ID);
+      await getFirstButtonAndClick(page, GENE_INFO_BUTTON_CELL_INFO_TEST_ID);
 
       await waitForElement(page, GENE_INFO_HEADER_TEST_ID);
       await waitForElement(page, GENE_INFO_GENE_SYNONYMS_TEST_ID);
@@ -564,7 +564,7 @@ describe("Where's My Gene", () => {
 
       await waitForElementToBeRemoved(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
 
-      await getButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
+      await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
 
       await waitForElement(page, GENE_INFO_HEADER_TEST_ID);
       await waitForElement(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
@@ -962,6 +962,17 @@ async function getButtonAndClick(page: Page, testID: string) {
   await tryUntil(
     async () => {
       await page.getByTestId(testID).click();
+    },
+    { page }
+  );
+}
+
+// for when there are multiple buttons with the same testID
+async function getFirstButtonAndClick(page: Page, testID: string) {
+  await tryUntil(
+    async () => {
+      const buttons = await page.getByTestId(testID).elementHandles();
+      await buttons[0].click();
     },
     { page }
   );
