@@ -53,6 +53,8 @@ const config: PlaywrightTestConfig = {
          * https://github.com/matomo-org/device-detector/blob/master/regexes/bots.yml#L2762
          */
         userAgent: devices["Desktop Chrome"].userAgent + " czi-checker",
+        // sets testIdAttribute to "data-test-id" for all tests
+        testIdAttribute: "data-test-id",
       },
     },
   ],
