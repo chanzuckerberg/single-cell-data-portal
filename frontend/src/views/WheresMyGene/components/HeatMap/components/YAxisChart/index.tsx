@@ -146,7 +146,9 @@ const CellTypeButton = ({
           >
             {/* Must be wrapped in div and not fragment or else tooltip content won't render */}
             <div>
-              <HiddenCellTypeLabelStyle>{name}</HiddenCellTypeLabelStyle>
+              <HiddenCellTypeLabelStyle data-test-id="cell-type-full-name">
+                {name}
+              </HiddenCellTypeLabelStyle>
               <div data-test-id="cell-type-name">{formattedName}</div>
             </div>
           </Tooltip>

@@ -63,6 +63,7 @@ export const HiddenCellTypeLabelStyle = styled.div`
 `;
 
 export const CellTypeLabelTooltipStyle = styled.div`
+  margin: 0 -10px;
   text-align: center;
 `;
 
