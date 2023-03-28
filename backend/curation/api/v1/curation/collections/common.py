@@ -212,10 +212,7 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canoni
     dataset = reshape_dataset_for_curation_api_common(dataset_version, use_canonical_url, preview)
     if not preview:
         dataset["published_at"] = dataset_version.canonical_dataset.published_at
-        print("\n\n\n\n\n")
-        print(dataset["published_at"])
         dataset["revised_at"] = dataset_version.canonical_dataset.revised_at
-        print(dataset["revised_at"])
     return dataset
 
 
@@ -328,16 +325,10 @@ def get_inferred_collection_version_else_forbidden(collection_id: str) -> Collec
     """
     validate_uuid_else_forbidden(collection_id)
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
-    print("0000")
-    # print(f"\n\n{version.datasets[0].canonical_dataset.revised_at}\n")
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
-        print("1111")
-        # print(f"\n\n{version.datasets[0].canonical_dataset.revised_at}\n")
     if version is None:
         version = get_business_logic().get_unpublished_collection_version_from_canonical(CollectionId(collection_id))
-        print("2222")
-        # print(f"\n\n{version.datasets[0].canonical_dataset.revised_at}\n")
     if version is None or version.canonical_collection.tombstoned is True:
         raise ForbiddenHTTPException()
     return version

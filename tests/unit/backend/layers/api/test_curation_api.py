@@ -783,7 +783,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIn(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
 
         published = self.generate_published_collection(add_datasets=1)
-        print(f"\n\npublished v_id is {published.version_id.id}")
         with self.subTest("get published version"):
             resp_collection = _test_responses_are_equal(
                 [published.version_id, published.collection_id], published.collection_id, all_headers
@@ -855,7 +854,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNotNone(resp_collection["published_at"])
             self.assertTrue(resp_collection["collection_url"].endswith(revision.version_id.id))
             self.assertEqual(revision.version_id.id, resp_collection["collection_version_id"])
-            self.assertIsNotNone(resp_collection["datasets"][0]["revised_at"])
+            self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["explorer_url"])
 

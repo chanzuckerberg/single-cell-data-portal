@@ -106,8 +106,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             return copy.deepcopy(version)
         copied_version = copy.deepcopy(version)
         copied_version.canonical_dataset = cd
-        print("\n\nDATASET\n\n")
-        print(copied_version.canonical_dataset)
         return copied_version
 
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
@@ -210,7 +208,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_version = self.get_dataset_version(dataset_version_id)
             if self.datasets[dataset_version.dataset_id.id].published_at is None:
                 self.datasets[dataset_version.dataset_id.id].published_at = published_at
-            if self.datasets[dataset_version.dataset_id.id].revised_at is None:
+            elif self.datasets[dataset_version.dataset_id.id].revised_at is None:
                 self.datasets[dataset_version.dataset_id.id].revised_at = published_at
             dataset_version.canonical_dataset.dataset_version_id = dataset_version.version_id
         cc = self.collections.get(collection_id.id)
