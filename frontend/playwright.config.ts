@@ -103,6 +103,12 @@ const config: PlaywrightTestConfig = {
   },
 
   /* Opt out of parallel tests. */
+  /**
+   * By default Github Action's hosted runner has 2 CPUs, so Playwright will
+   * spin up NUM_CPU / 2 workers, which is 1 worker. But locally it will run
+   * tests with more workers
+   * https://github.com/microsoft/playwright/issues/19408#issuecomment-1347341819
+   */
   // workers: 1,
 
   /* Run your local dev server before starting the tests */
