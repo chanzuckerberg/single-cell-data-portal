@@ -705,7 +705,7 @@ describe("Where's My Gene", () => {
         testId: DOWNLOAD_BUTTON_ID,
       });
 
-      await page.getByTestId("png-checkbox").click();
+      await page.getByTestId("svg-checkbox").click();
       await page.getByTestId("csv-checkbox").click();
 
       // Start waiting for download before clicking. Note no await.
@@ -762,7 +762,7 @@ describe("Where's My Gene", () => {
         testId: DOWNLOAD_BUTTON_ID,
       });
 
-      await page.getByTestId("png-checkbox").click();
+      await page.getByTestId("svg-checkbox").click();
       await page.getByTestId("csv-checkbox").click();
 
       // Start waiting for download before clicking. Note no await.
