@@ -32,7 +32,7 @@ def load_data_and_create_cube(
     path_to_h5ad_datasets: str,
     path=None,
     extract_data=True,
-    validate_cube=False,  # (alec) do not perform validation until #4353 is resolved
+    validate_cube=True,
 ) -> (int, dict):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
