@@ -24,7 +24,7 @@ Checklist
 - [ ] Once feature is deployed to Staging ping @ainfeld to check analytics again  
 - [ ] Verify events are showing up in the Staging space in Plausible correctly 
 - [ ] Once feature is deployed to Prod ping @ainfeld 
-- [ ] Confirm Plausible event names in Prod look the same as staging and are showing up in the Prod space in Plausible correctly 
+- [ ] Confirm Plausible event names in Prod look the same as Staging and are showing up in the Prod space in Plausible correctly 
  
 #### People to cc
 **PM**: `<tag PM for the tool/feature>`
