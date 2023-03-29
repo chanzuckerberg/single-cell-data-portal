@@ -19,7 +19,7 @@ Feature: `<Which feature in that tool are these events for, i.e. filters>`
 - Requested change: `<Description of the update needed>`
 
 Checklist 
-- [ ] Once event updates are included in Staging ping @ainfeld to check analytics 
+- [ ] Once event updates are deployed to Staging ping @ainfeld to check analytics 
 - [ ] Verify events are showing up in the Staging space in Plausible correctly 
 - [ ] Once event updates are included in Prod ping @ainfeld 
 - [ ] Confirm Plausible events are still showing up in the Prod space in Plausible correctly
