@@ -68,7 +68,7 @@ export default memo(function YAxisChart({
         <TissueName>{capitalize(tissue)}</TissueName>
       </TissueWrapper>
       <Container
-        data-test-id={`cell-type-labels-${tissueKey}`}
+        data-testid={`cell-type-labels-${tissueKey}`}
         height={heatmapHeight}
       >
         {cellTypeMetadata
@@ -95,7 +95,7 @@ export default memo(function YAxisChart({
                 tissueID={tissueID}
                 tissue={tissue}
                 generateMarkerGenes={generateMarkerGenes}
-                date-test-id="cell-type-label"
+                data-testid="cell-type-label"
               />
             );
           })}
@@ -131,7 +131,7 @@ const CellTypeButton = ({
   const isTruncated = formattedName.includes("...");
 
   return (
-    <FlexRowJustified data-test-id="cell-type-label-count">
+    <FlexRowJustified data-testid="cell-type-label-count">
       <FlexRow>
         <CellTypeLabelStyle>
           <Tooltip
@@ -150,11 +150,11 @@ const CellTypeButton = ({
             <div>
               {/* Hidden labels are only needed if name is truncated */}
               {isTruncated && (
-                <HiddenCellTypeLabelStyle data-test-id="cell-type-full-name">
+                <HiddenCellTypeLabelStyle data-testid="cell-type-full-name">
                   {name}
                 </HiddenCellTypeLabelStyle>
               )}
-              <div data-test-id="cell-type-name">{formattedName}</div>
+              <div data-testid="cell-type-name">{formattedName}</div>
             </div>
           </Tooltip>
         </CellTypeLabelStyle>
@@ -179,7 +179,7 @@ const CellTypeButton = ({
               }}
             >
               <StyledImage
-                data-test-id="marker-gene-button"
+                data-testid="marker-gene-button"
                 src={InfoSVG.src}
                 width="10"
                 height="10"
@@ -188,7 +188,7 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle data-test-id="cell-count">
+      <CellCountLabelStyle data-testid="cell-count">
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>
