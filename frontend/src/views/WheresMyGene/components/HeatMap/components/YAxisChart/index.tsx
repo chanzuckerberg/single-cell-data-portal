@@ -12,9 +12,11 @@ import InfoSVG from "./icons/info-sign-icon.svg";
 import {
   CellCountLabelStyle,
   CellTypeLabelStyle,
+  CellTypeLabelTooltipStyle,
   Container,
   FlexRow,
   FlexRowJustified,
+  HiddenCellTypeLabelStyle,
   StyledImage,
   TissueName,
   TissueWrapper,
@@ -26,6 +28,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { COMPARE_OPTION_ID_FOR_AGGREGATED } from "src/common/queries/wheresMyGene";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
+import { Tooltip } from "czifui";
 
 interface Props {
   cellTypes?: CellType[];
@@ -86,7 +89,8 @@ export default memo(function YAxisChart({
             return (
               <CellTypeButton
                 key={`${cellType}-cell-type-button`}
-                name={paddedName}
+                formattedName={paddedName}
+                name={name}
                 metadata={cellType}
                 tissueID={tissueID}
                 tissue={tissue}
@@ -101,12 +105,14 @@ export default memo(function YAxisChart({
 });
 
 const CellTypeButton = ({
+  formattedName,
   name,
   metadata,
   generateMarkerGenes,
   tissueID,
   tissue,
 }: {
+  formattedName: string;
   name: string;
   metadata: CellTypeMetadata;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
@@ -122,11 +128,35 @@ const CellTypeButton = ({
 
   const cellType = deserializeCellTypeMetadata(metadata);
 
+  const isTruncated = formattedName.includes("...");
+
   return (
     <FlexRowJustified data-testid="cell-type-label-count">
       <FlexRow>
-        <CellTypeLabelStyle data-testid="cell-type-name">
-          {name}
+        <CellTypeLabelStyle>
+          <Tooltip
+            title={
+              // Set tooltip content only if name is truncated
+              isTruncated ? (
+                <CellTypeLabelTooltipStyle>{name}</CellTypeLabelTooltipStyle>
+              ) : null
+            }
+            sdsStyle="light"
+            arrow
+            placement="left"
+            enterNextDelay={700}
+          >
+            {/* Must be wrapped in div and not fragment or else tooltip content won't render */}
+            <div>
+              {/* Hidden labels are only needed if name is truncated */}
+              {isTruncated && (
+                <HiddenCellTypeLabelStyle data-testid="cell-type-full-name">
+                  {name}
+                </HiddenCellTypeLabelStyle>
+              )}
+              <div data-testid="cell-type-name">{formattedName}</div>
+            </div>
+          </Tooltip>
         </CellTypeLabelStyle>
 
         {!FMG_EXCLUDE_TISSUES.includes(tissue) &&

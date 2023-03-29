@@ -1,8 +1,17 @@
 import styled from "@emotion/styled";
 import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 import { LIGHT_GRAY } from "src/components/common/theme";
+import { LEGEND_HEIGHT_PX } from "../InfoPanel/components/Legend/style";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+import {
+  CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
+  CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
+} from "src/components/Layout/style";
+import { FILTERS_PANEL_EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
+import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
 
-export const CHART_LEFT_PADDING = 10;
+export const CHART_PADDING_PX = 10;
 
 export const SELECTED_STYLE = {
   backgroundColor: LIGHT_GRAY.D,
@@ -13,9 +22,15 @@ export const SELECTED_STYLE = {
 };
 
 export const Container = styled.div`
-  height: 75vh;
-  width: 100%;
-  overflow: scroll;
+  width: ${isFmgOpen};
+  height: calc(
+    100vh -
+      ${HEADER_HEIGHT_PX +
+      LEGEND_HEIGHT_PX +
+      LEGEND_MARGIN_BOTTOM_PX +
+      CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX}px
+  );
+  overflow: auto;
   position: relative;
 `;
 
@@ -45,7 +60,7 @@ export const YAxisWrapper = styled.div`
 `;
 
 export const XAxisMask = styled.div`
-  width: ${Y_AXIS_CHART_WIDTH_PX + CHART_LEFT_PADDING}px;
+  width: ${Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}px;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
 
@@ -61,8 +76,23 @@ export const XAxisWrapper = styled.div`
 
 export const ChartWrapper = styled.div`
   position: absolute;
-  padding-left: ${CHART_LEFT_PADDING}px;
+  padding-left: ${CHART_PADDING_PX}px;
+  padding-right: ${CHART_PADDING_PX}px;
   padding-top: 5px;
   left: ${Y_AXIS_CHART_WIDTH_PX}px;
   top: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
+
+/**
+ * This is needed so that the heatmap scrollbar isn't covered by the right sidebar
+ */
+function isFmgOpen({ isFmgOpen = false }: { isFmgOpen: boolean }) {
+  return `calc(
+    100vw - ${
+      FILTERS_PANEL_EXPANDED_WIDTH_PX +
+      CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2 +
+      (isFmgOpen ? CELL_INFO_SIDEBAR_WIDTH_PX : 0) -
+      40 // This number gets the scrollbar to the right edge of the viewport
+    }px
+  )`;
+}

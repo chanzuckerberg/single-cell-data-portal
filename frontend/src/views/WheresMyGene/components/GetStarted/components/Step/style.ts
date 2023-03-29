@@ -1,6 +1,8 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, fontCapsXxs, fontHeaderL, getColors } from "czifui";
 
+const PADDING_PX = 24;
+
 export const Wrapper = styled.div`
   /* Number is 40px wide, gap: 16px, Content: 200px */
   gap: 16px;
@@ -24,8 +26,7 @@ export const Header = styled.span`
 
   display: block;
 
-  padding: 24px 0 0 24px;
-  margin-bottom: 8px;
+  padding: ${PADDING_PX}px ${PADDING_PX}px 2px ${PADDING_PX}px;
 
   ${(props) => {
     const colors = getColors(props);
@@ -41,7 +42,7 @@ export const Details = styled.span`
 
   letter-spacing: 0;
   display: inline-block;
-  padding-left: 24px;
+  padding: 2px ${PADDING_PX}px 8px ${PADDING_PX}px;
 
   color: black;
 `;
