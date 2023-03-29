@@ -427,7 +427,7 @@ class BusinessLogic(BusinessLogicInterface):
         (
             mapped_dataset_versions,
             mapped_collection_versions,
-        ) = self.database_provider.get_all_mapped_collection_versions_with_datasets()
+        ) = self.database_provider.get_all_mapped_datasets_and_collections()
 
         # Construct dict of collection_id: [Datasets]
         datasets_by_collection_id = defaultdict(list)

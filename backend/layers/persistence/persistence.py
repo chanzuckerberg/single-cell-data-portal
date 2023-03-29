@@ -544,12 +544,6 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_ids.extend(collection.datasets)
         return list(self._get_datasets(dataset_version_ids)), active_collections
 
-    def get_all_mapped_collection_versions_with_datasets(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
-        """
-        Returns all mapped collection versions with their datasets
-        """
-        return self.get_all_mapped_datasets_and_collections()
-
     def get_dataset_artifacts(self, dataset_artifact_id_list: List[DatasetArtifactId]) -> List[DatasetArtifact]:
         """
         Returns all the artifacts given a list of DatasetArtifactIds

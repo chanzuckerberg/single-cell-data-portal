@@ -136,11 +136,6 @@ class DatabaseProviderInterface:
         # TODO: Add filtering
         """
 
-    def get_all_mapped_collection_versions_with_datasets(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
-        """
-        Returns all mapped collection versions with their datasets
-        """
-
     def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:
         """
         Returns all the artifacts for a specific dataset version
