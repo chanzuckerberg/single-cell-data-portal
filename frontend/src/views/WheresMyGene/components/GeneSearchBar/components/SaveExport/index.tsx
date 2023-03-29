@@ -61,6 +61,8 @@ let heatmapContainerScrollTop: number | undefined;
 
 const MUTATION_OBSERVER_TIMEOUT = 3 * 1000;
 
+const CLONED_CLASS = "CLONED";
+
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
   (tissue: string) =>
@@ -108,6 +110,7 @@ export interface Props {
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
+  setIsPngDownloading: Dispatch<SetStateAction<boolean>>;
 }
 
 interface ExportData {
@@ -123,6 +126,7 @@ export default function SaveExport({
   setEchartsRendererMode,
   allChartProps,
   availableFilters,
+  setIsPngDownloading,
 }: Props): JSX.Element {
   const { selectedFilters, selectedOrganismId, compare } =
     useContext(StateContext);
@@ -152,13 +156,17 @@ export default function SaveExport({
 
     setDownloadStatus({ isLoading: true, blur: true });
 
-    const heatmapNode = document.getElementById("view") as HTMLDivElement;
+    const heatmapNode = document.getElementById(
+      "heatmap-container-id"
+    ) as HTMLDivElement;
+    const viewNode = document.getElementById("view") as HTMLDivElement;
 
     // Options for the observer (which mutations to observe)
-    const config = { childList: true, subtree: true };
+    const config: MutationObserverInit = { childList: true, subtree: true };
 
     // Callback function to execute when mutations are observed
     const callback = debounce(() => {
+      console.log("DOWNLOADING");
       download();
     }, MUTATION_OBSERVER_TIMEOUT);
 
@@ -175,7 +183,7 @@ export default function SaveExport({
         availableFilters,
         availableOrganisms,
         compare,
-        heatmapNode,
+        heatmapNode: viewNode,
         observer,
         selectedCellTypes,
         selectedFileTypes,
@@ -185,6 +193,7 @@ export default function SaveExport({
         selectedTissues,
         setEchartsRendererMode,
         setDownloadStatus,
+        setIsPngDownloading,
       }),
       MUTATION_OBSERVER_TIMEOUT
     );
@@ -207,6 +216,7 @@ export default function SaveExport({
     selectedOrganismId,
     selectedTissues,
     setEchartsRendererMode,
+    setIsPngDownloading,
   ]);
 
   return (
@@ -524,6 +534,7 @@ function download_({
   observer,
   setDownloadStatus,
   setEchartsRendererMode,
+  setIsPngDownloading,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
@@ -544,6 +555,7 @@ function download_({
     }>
   >;
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
+  setIsPngDownloading: Dispatch<SetStateAction<boolean>>;
 }) {
   return async () => {
     try {
@@ -559,7 +571,9 @@ function download_({
 
       if (isPng) {
         // Adding this class causes the y-axis scrolling to jump but is required for image download
-        heatmapNode.classList.add("CLONED");
+        heatmapNode.classList.add(CLONED_CLASS);
+
+        setIsPngDownloading(true);
 
         heatmapNode.style.width = `${
           getHeatmapWidth(selectedGenes) + Y_AXIS_CHART_WIDTH_PX + 100
@@ -615,7 +629,8 @@ function download_({
 
       if (isPng) {
         //(thuang): #3569 Restore scrollTop position
-        heatmapNode.classList.remove("CLONED");
+        heatmapNode.classList.remove(CLONED_CLASS);
+        setIsPngDownloading(false);
         heatmapNode.style.width = initialWidth;
         if (heatmapContainer) {
           heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
