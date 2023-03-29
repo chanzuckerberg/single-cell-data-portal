@@ -171,7 +171,7 @@ export default memo(function HeatMap({
       <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
         {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
         <XAxisWrapper id="x-axis-wrapper">
-          <XAxisMask data-test-id="x-axis-mask" />
+          <XAxisMask data-testid="x-axis-mask" />
           <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
         <YAxisWrapper>

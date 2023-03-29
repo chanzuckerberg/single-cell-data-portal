@@ -37,7 +37,7 @@ export default memo(function Legend({
   availableFilters,
 }: Props): JSX.Element {
   return (
-    <LegendWrapper data-test-id="legend-wrapper">
+    <LegendWrapper data-testid="legend-wrapper">
       <SaveExport
         selectedTissues={selectedTissues}
         selectedGenes={selectedGenes}

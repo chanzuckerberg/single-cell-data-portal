@@ -65,7 +65,7 @@ export default memo(function YAxisChart({
         <TissueName>{capitalize(tissue)}</TissueName>
       </TissueWrapper>
       <Container
-        data-test-id={`cell-type-labels-${tissueKey}`}
+        data-testid={`cell-type-labels-${tissueKey}`}
         height={heatmapHeight}
       >
         {cellTypeMetadata
@@ -91,7 +91,7 @@ export default memo(function YAxisChart({
                 tissueID={tissueID}
                 tissue={tissue}
                 generateMarkerGenes={generateMarkerGenes}
-                date-test-id="cell-type-label"
+                data-testid="cell-type-label"
               />
             );
           })}
@@ -123,9 +123,9 @@ const CellTypeButton = ({
   const cellType = deserializeCellTypeMetadata(metadata);
 
   return (
-    <FlexRowJustified data-test-id="cell-type-label-count">
+    <FlexRowJustified data-testid="cell-type-label-count">
       <FlexRow>
-        <CellTypeLabelStyle data-test-id="cell-type-name">
+        <CellTypeLabelStyle data-testid="cell-type-name">
           {name}
         </CellTypeLabelStyle>
 
@@ -149,7 +149,7 @@ const CellTypeButton = ({
               }}
             >
               <StyledImage
-                data-test-id="marker-gene-button"
+                data-testid="marker-gene-button"
                 src={InfoSVG.src}
                 width="10"
                 height="10"
@@ -158,7 +158,7 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle data-test-id="cell-count">
+      <CellCountLabelStyle data-testid="cell-count">
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>

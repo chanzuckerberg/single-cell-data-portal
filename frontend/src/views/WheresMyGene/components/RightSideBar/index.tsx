@@ -40,14 +40,14 @@ export default memo(function RightSideBar({
     <SideBarWrapper
       sideBarWidth={width}
       position={Position.RIGHT}
-      data-test-id={testId}
+      data-testid={testId}
     >
       <RightSideBarPositioner
         isExpanded
         maxHeight={isSplit ? UPPER_SECTION_MAX_HEIGHT_VH : FULL_MAX_HEIGHT_VH}
       >
         <HeaderContainer>
-          <StyledTitle data-test-id="right-sidebar-title">
+          <StyledTitle data-testid="right-sidebar-title">
             {content[0].props.title}
           </StyledTitle>
           <ButtonIcon
@@ -55,7 +55,7 @@ export default memo(function RightSideBar({
             sdsSize="medium"
             onClick={() => content[0].props.handleClose()}
             sdsType="tertiary"
-            data-test-id="right-sidebar-close-button"
+            data-testid="right-sidebar-close-button"
           />
         </HeaderContainer>
         {content[0]}
@@ -64,7 +64,7 @@ export default memo(function RightSideBar({
       {isSplit && (
         <RightSideBarPositioner isExpanded maxHeight={DRAWER_MAX_HEIGHT_VH}>
           <HeaderContainer>
-            <StyledTitle data-test-id="gene-info-title-split">
+            <StyledTitle data-testid="gene-info-title-split">
               {content[1].props.title}
             </StyledTitle>
             <ButtonIcon
@@ -72,7 +72,7 @@ export default memo(function RightSideBar({
               sdsSize="medium"
               onClick={() => content[1].props.handleClose()}
               sdsType="tertiary"
-              data-test-id="gene-info-close-button-split"
+              data-testid="gene-info-close-button-split"
             />
           </HeaderContainer>
           {content[1]}

@@ -46,7 +46,7 @@ const DownloadDataset: FC<Props> = ({
         datasetName={name}
         disabled={isDisabled}
         onClick={toggleOpen}
-        data-test-id="dataset-download-button"
+        data-testid="dataset-download-button"
       />
       <Modal
         title="Download Dataset"

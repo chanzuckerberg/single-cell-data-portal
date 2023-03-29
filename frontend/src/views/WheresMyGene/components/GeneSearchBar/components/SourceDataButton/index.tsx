@@ -13,7 +13,7 @@ export default function SourceDataButton({
       <StyledLabel>Source Data</StyledLabel>
 
       <StyledButtonIcon
-        data-test-id={"source-data-button"}
+        data-testid={"source-data-button"}
         onClick={handleRightSidebarButtonClick}
         sdsSize="medium"
         sdsType="primary"

@@ -110,7 +110,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
     return (
       <DownloadButton
         disabled={!downloadLink || isLoading}
-        data-test-id="download-asset-download-button"
+        data-testid="download-asset-download-button"
         href={downloadLink}
         intent={Intent.PRIMARY}
         onClick={() => handleAnalytics(EVENTS.DOWNLOAD_DATA_COMPLETE)}
