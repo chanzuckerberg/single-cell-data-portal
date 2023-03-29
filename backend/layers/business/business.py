@@ -2,7 +2,7 @@ import copy
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
@@ -53,6 +53,7 @@ from backend.layers.common.entities import (
     Link,
     PublishedDatasetVersion,
 )
+from backend.layers.common.helpers import get_published_at_and_collection_version_id_else_not_found
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
@@ -85,32 +86,6 @@ class BusinessLogic(BusinessLogicInterface):
         self.s3_provider = s3_provider
         self.uri_provider = uri_provider
         super().__init__()
-
-    @staticmethod
-    def _get_published_at_and_collection_version_id_else_not_found(
-        dataset_version: DatasetVersion,
-        collection_versions: Union[List[CollectionVersionWithDatasets], List[CollectionVersion]],
-    ) -> Tuple[Optional[datetime], CollectionVersionId]:
-        """
-        Determines the published_at date for a DatasetVersion and the id of the CollectionVersion under which it was initially published.
-        """
-        for collection_version in sorted(
-            #  Alphabetically sorts 'False' before 'True'; iterates over published versions first
-            collection_versions,
-            key=lambda cv: (cv.published_at is None, cv.published_at),
-        ):
-            if collection_version.published_at is not None:
-                if isinstance(collection_version, CollectionVersionWithDatasets) and dataset_version.version_id.id in {
-                    dv.version_id.id for dv in collection_version.datasets
-                }:
-                    return collection_version.published_at, collection_version.version_id
-                elif isinstance(collection_version, CollectionVersion) and dataset_version.version_id.id in {
-                    dv.id for dv in collection_version.datasets
-                }:
-                    return collection_version.published_at, collection_version.version_id
-            else:
-                break
-        raise DatasetVersionNotFoundException("No such published Dataset version")
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
         """
@@ -471,7 +446,7 @@ class BusinessLogic(BusinessLogicInterface):
             all_versions_for_collection = collection_versions_by_collection_id[collection.collection_id.id]
             published_datasets_for_collection: List[PublishedDatasetVersion] = []
             for mapped_dataset_version in mapped_dataset_versions_for_collection:
-                published_at, collection_version_id = self._get_published_at_and_collection_version_id_else_not_found(
+                published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
                     mapped_dataset_version, all_versions_for_collection
                 )
                 published_datasets_for_collection.append(
@@ -696,7 +671,7 @@ class BusinessLogic(BusinessLogicInterface):
             return None
         collection_versions = self.database_provider.get_all_versions_for_collection(dataset_version.collection_id)
         try:
-            published_at, collection_version_id = self._get_published_at_and_collection_version_id_else_not_found(
+            published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
                 dataset_version, collection_versions
             )
             return PublishedDatasetVersion(
