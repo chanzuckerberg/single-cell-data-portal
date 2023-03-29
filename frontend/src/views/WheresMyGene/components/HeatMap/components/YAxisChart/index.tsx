@@ -95,7 +95,7 @@ export default memo(function YAxisChart({
                 tissueID={tissueID}
                 tissue={tissue}
                 generateMarkerGenes={generateMarkerGenes}
-                date-test-id="cell-type-label"
+                data-testid="cell-type-label"
               />
             );
           })}
