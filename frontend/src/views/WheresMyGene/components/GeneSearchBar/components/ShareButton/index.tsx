@@ -103,7 +103,7 @@ export default function ShareButton(): JSX.Element {
           <Notification
             id="copy-link-message"
             key={showURLCopyNotification}
-            autoDismiss={false}
+            autoDismiss={5000}
             onClose={noop}
             dismissDirection={"left"}
             intent={"info"}
