@@ -714,16 +714,11 @@ class TestGetCollectionID(BaseAPIPortalTest):
         res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
         self.assertEqual(200, res.status_code)
         res_body = res.json
-        self.assertTrue("created_at" in res_body)
         del res_body["created_at"]  # too finicky; ignore
-        self.assertTrue("revised_at" in res_body)
         del res_body["revised_at"]  # too finicky; ignore
-        self.assertTrue("published_at" in res_body)
         del res_body["published_at"]  # too finicky; ignore
         for dataset in res_body["datasets"]:
-            self.assertTrue("revised_at" in dataset)
             del dataset["revised_at"]  # too finicky; ignore
-            self.assertTrue("published_at" in dataset)
             del dataset["published_at"]  # too finicky; ignore
         self.maxDiff = None
         self.assertDictEqual(expected_body, res_body)  # Confirm dict has been packaged in list
