@@ -23,7 +23,7 @@ Checklist
 - [ ] If rdev environment is created for this new feature, once it has been deployed, ping @ainfeld to check analytics 
 - [ ] Once feature is deployed to Staging ping @ainfeld to check analytics again  
 - [ ] Verify events are showing up in the Staging space in Plausible correctly 
-- [ ] Once feature launches to Prod ping @ainfeld 
+- [ ] Once feature is deployed to Prod ping @ainfeld 
 - [ ] Confirm Plausible event names in Prod look the same as staging and are showing up in the Prod space in Plausible correctly 
  
 #### People to cc
