@@ -142,17 +142,15 @@ def reshape_datasets_for_curation_api(
     for dv in datasets:
         dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
         reshaped_dataset = (
-            reshape_dataset_for_curation_api_as_version(dataset_version, use_canonical_url, preview)
+            reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
             if as_version
-            else reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
+            else reshape_dataset_for_curation_api_as_canonical(dataset_version, use_canonical_url, preview)
         )
         active_datasets.append(reshaped_dataset)
     return active_datasets
 
 
-def reshape_dataset_for_curation_api_common(
-    dataset_version: DatasetVersion, use_canonical_url: bool, preview=False
-) -> dict:
+def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canonical_url: bool, preview=False) -> dict:
     ds = dict()
 
     # Determine what columns to include from the dataset
@@ -208,18 +206,14 @@ def reshape_dataset_for_curation_api_common(
     return ds
 
 
-def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canonical_url: bool, preview=False) -> dict:
-    dataset = reshape_dataset_for_curation_api_common(dataset_version, use_canonical_url, preview)
+def reshape_dataset_for_curation_api_as_canonical(
+    dataset_version: DatasetVersion, use_canonical_url: bool, preview=False
+) -> dict:
+    dataset = reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
     if not preview:
         dataset["published_at"] = dataset_version.canonical_dataset.published_at
         dataset["revised_at"] = dataset_version.canonical_dataset.revised_at
     return dataset
-
-
-def reshape_dataset_for_curation_api_as_version(
-    dataset_version: DatasetVersion, use_canonical_url: bool, preview=False
-) -> dict:
-    return reshape_dataset_for_curation_api_common(dataset_version, use_canonical_url, preview)
 
 
 is_primary_data_mapping = {

@@ -12,7 +12,7 @@ from backend.common.utils.http_exceptions import (
 )
 from backend.curation.api.v1.curation.collections.common import (
     get_inferred_dataset_version,
-    reshape_dataset_for_curation_api,
+    reshape_dataset_for_curation_api_as_canonical,
     validate_uuid_else_forbidden,
 )
 from backend.layers.auth.user_info import UserInfo
@@ -54,7 +54,7 @@ def get(collection_id: str, dataset_id: str = None):
     # 2. the collection version is published
     use_canonical_url = collection_version.is_initial_unpublished_version() or collection_version.is_published()
 
-    response_body = reshape_dataset_for_curation_api(version, use_canonical_url)
+    response_body = reshape_dataset_for_curation_api_as_canonical(version, use_canonical_url)
     return make_response(jsonify(response_body), 200)
 
 
