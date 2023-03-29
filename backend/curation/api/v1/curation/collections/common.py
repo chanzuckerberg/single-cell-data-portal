@@ -179,10 +179,6 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canoni
         ds["dataset_assets"] = assets
         ds["processing_status_detail"] = dataset_version.status.validation_message
         _published_at = dataset_version.canonical_dataset.published_at
-        if _published_at and _published_at < dataset_version.created_at:
-            ds["revised_at"] = dataset_version.created_at
-        else:
-            ds["revised_at"] = None
         ds["title"] = ds.pop("name", None)
         ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
