@@ -1,10 +1,9 @@
 ---
 name: Debugging analytics issues
 about: Used to request debugging support on an analytics issue in Zenhub
-title: 'Analytics (debugging): <fill in description>'
+title: "Analytics (debugging): <fill in description>"
 labels: analytics, frontend
-assignees: ''
-
+assignees: ""
 ---
 
 ### Overview
