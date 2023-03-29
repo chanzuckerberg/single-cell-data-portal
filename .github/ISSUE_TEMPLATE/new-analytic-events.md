@@ -20,7 +20,7 @@ assignees: ''
 
 Checklist 
 - [ ] Add events to the custom goals section of both the staging and prod Plausible spaces 
-- [ ] If rdev environment is created for this new feature, once it is available ping @ainfeld to check analytics 
+- [ ] If rdev environment is created for this new feature, once it has been deployed, ping @ainfeld to check analytics 
 - [ ] Once feature launches in Staging ping @ainfeld to check analytics again  
 - [ ] Verify events are showing up in the Staging space in Plausible correctly 
 - [ ] Once feature launches to Prod ping @ainfeld 
