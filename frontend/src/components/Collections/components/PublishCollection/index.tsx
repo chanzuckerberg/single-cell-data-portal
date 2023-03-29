@@ -80,7 +80,7 @@ const PublishCollection: FC<Props> = ({
         intent={Intent.PRIMARY}
         text="Publish"
         disabled={!isPublishable}
-        data-test-id="publish-collection-button"
+        data-testid="publish-collection-button"
       />
       {isOpen && (
         <AsyncAlert

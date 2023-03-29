@@ -254,7 +254,7 @@ function CellInfoSideBar({
                 <td>
                   {symbol}
                   <InfoButtonWrapper
-                    data-test-id="gene-info-button-cell-info"
+                    data-testid="gene-info-button-cell-info"
                     onClick={() => {
                       generateGeneInfo(symbol);
 

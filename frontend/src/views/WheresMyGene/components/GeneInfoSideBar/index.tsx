@@ -41,7 +41,7 @@ function GeneInfoSideBar({
   );
 
   return (
-    <div id="gene-info-wrapper" data-test-id={`${geneInfoGene}-gene-info`}>
+    <div id="gene-info-wrapper" data-testid={`${geneInfoGene}-gene-info`}>
       {data ? <GeneInfoResult data={data} /> : GeneInfoNoData}
     </div>
   );
@@ -51,7 +51,7 @@ function GeneInfoResult({ data }: { data: GeneInfo }) {
   return (
     <div id="gene-info-wrapper">
       <>
-        <GeneName data-test-id="gene-info-header">{data.name}</GeneName>
+        <GeneName data-testid="gene-info-header">{data.name}</GeneName>
 
         {data.show_warning_banner && (
           <>
@@ -61,11 +61,11 @@ function GeneInfoResult({ data }: { data: GeneInfo }) {
           </>
         )}
 
-        <GeneSummary data-test-id="gene-info-gene-summary">
+        <GeneSummary data-testid="gene-info-gene-summary">
           {data.summary}
         </GeneSummary>
 
-        <GeneSynonymsWrapper data-test-id="gene-info-gene-synonyms">
+        <GeneSynonymsWrapper data-testid="gene-info-gene-synonyms">
           <GeneSynonymsLabel>Synonyms</GeneSynonymsLabel>
           <GeneSynonyms>{data.synonyms.join(", ")}</GeneSynonyms>
         </GeneSynonymsWrapper>
@@ -74,7 +74,7 @@ function GeneInfoResult({ data }: { data: GeneInfo }) {
           href={data.ncbi_url}
           target="_blank"
           rel="noreferrer noopener"
-          data-test-id="gene-info-ncbi-link"
+          data-testid="gene-info-ncbi-link"
         >
           View on NCBI
         </GeneUrl>

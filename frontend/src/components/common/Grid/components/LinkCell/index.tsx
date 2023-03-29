@@ -10,7 +10,7 @@ interface Props {
 export default function LinkCell({
   url,
   value,
-  ...props /* Spread props to allow for data-test-id. */
+  ...props /* Spread props to allow for data-testid. */
 }: Props): JSX.Element {
   return (
     <Link href={url} passHref>

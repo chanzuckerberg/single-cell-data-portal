@@ -92,7 +92,7 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
       </LabelWrapper>
 
       <StyledDropdown
-        data-test-id="color-scale-dropdown"
+        data-testid="color-scale-dropdown"
         onChange={colorScaleOnChange}
         label={colorScaledOption.name}
         options={COLOR_SCALE_OPTIONS}

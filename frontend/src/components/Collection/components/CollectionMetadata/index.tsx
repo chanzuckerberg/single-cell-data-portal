@@ -27,7 +27,7 @@ export default function CollectionMetadata({
           <MetadataLabel>{label}</MetadataLabel>
           <Link href={url} passHref>
             <MetadataValue
-              data-test-id={testId}
+              data-testid={testId}
               href="passHref"
               rel="noopener"
               target="_blank"

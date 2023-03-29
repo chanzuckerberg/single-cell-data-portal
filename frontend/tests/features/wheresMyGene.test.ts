@@ -11,13 +11,13 @@ import AdmZip from "adm-zip";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
-const GENE_LABELS_ID = "[data-test-id^=gene-label-]";
+const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
 const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
-const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
+const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
 const DOWNLOAD_BUTTON_ID = "download-button";
 
 const MARKER_GENE_BUTTON_TEST_ID = "marker-gene-button";

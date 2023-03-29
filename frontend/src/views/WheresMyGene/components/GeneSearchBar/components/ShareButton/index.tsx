@@ -113,7 +113,7 @@ export default function ShareButton(): JSX.Element {
         <StyledLabel>Share</StyledLabel>
 
         <StyledButtonIcon
-          data-test-id={"share-button"}
+          data-testid={"share-button"}
           onClick={copyShareUrl}
           sdsSize="medium"
           sdsType="primary"

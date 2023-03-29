@@ -17,7 +17,7 @@ const MoreDropdown = ({
         {...buttonProps}
         minimal
         icon={IconNames.MORE}
-        data-test-id="collection-more-button"
+        data-testid="collection-more-button"
       />
     </Popover>
   );
