@@ -44,7 +44,7 @@ import {
   renderLegend,
   renderXAxis,
   renderYAxis,
-} from "./utils";
+} from "./svgUtils";
 import {
   FilterDimensions,
   OntologyTerm,
