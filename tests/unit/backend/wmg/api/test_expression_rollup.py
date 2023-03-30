@@ -136,12 +136,12 @@ class RollupExpressionsAcrossCellTypesTest(unittest.TestCase):
         cell_counts_cell_type_agg = cell_counts_cell_type_agg.groupby(
             ["cell_type_ontology_term_id", "tissue_ontology_term_id"]
         ).first()
-        test_dot_plot_matrix_df = add_missing_combinations_to_dot_plot_matrix(
+        actual_dot_plot_matrix_df = add_missing_combinations_to_dot_plot_matrix(
             dot_plot_matrix_df, cell_counts_cell_type_agg
         )
 
         # sort both dataframes to ensure comparable ordering
-        test_dot_plot_matrix_df = test_dot_plot_matrix_df.sort_values(
+        actual_dot_plot_matrix_df = actual_dot_plot_matrix_df.sort_values(
             ["cell_type_ontology_term_id", "tissue_ontology_term_id", "gene_ontology_term_id"]
         ).reset_index(drop=True)
         expected_dot_plot_matrix_df = expected_dot_plot_matrix_df.sort_values(
@@ -149,7 +149,7 @@ class RollupExpressionsAcrossCellTypesTest(unittest.TestCase):
         ).reset_index(drop=True)
 
         # assert equality
-        assert_frame_equal(test_dot_plot_matrix_df, expected_dot_plot_matrix_df)
+        assert_frame_equal(actual_dot_plot_matrix_df, expected_dot_plot_matrix_df)
 
         # now test the entire rollup function end-to-end, which includes `add_missing_combinations_to_dot_plot_matrix`
         dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
