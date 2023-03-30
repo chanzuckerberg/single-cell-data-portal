@@ -10,7 +10,7 @@ There are a number of scripts for running E2E tests and one can choose depending
 1. `npm run e2e:ie` - run all tests in all resolutions, in edge and headless
 1. `npm run e2e:chrome:headed` - run all tests in all resolutions, in edge and headed mode
 
-NOTE. It is advised to run the default `npm run e2e` once PR is ready to ensure all tests pass in their entirety as that is what the CI will.6155
+NOTE. It is advised to run the default `npm run e2e` once PR is ready to ensure all tests pass in their entirety as that is what the CI will.
 
 ### What
 
