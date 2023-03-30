@@ -57,6 +57,9 @@ const EXPORT_OUTPUT_DIR = "playwright-report/";
 
 const FILTERS_PANEL = "filters-panel";
 
+// Error messages
+const ERROR_NO_TESTID_OR_LOCATOR = "Either testId or locator must be defined";
+
 const { describe, skip } = test;
 
 describe("Where's My Gene", () => {
@@ -825,7 +828,7 @@ async function getNames({
   } else if (locator) {
     labelsLocator = locator;
   } else {
-    throw Error("Either testId or locator must be defined");
+    throw Error(ERROR_NO_TESTID_OR_LOCATOR);
   }
   await tryUntil(
     async () => {
@@ -856,7 +859,7 @@ async function clickUntilOptionsShowUp({
       } else if (locator) {
         await locator.click();
       } else {
-        throw Error("Either testId or locator must be defined");
+        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
       await page.getByRole("tooltip").getByRole("option").elementHandles();
     },
@@ -880,7 +883,7 @@ async function clickUntilDownloadModalShowsUp({
       } else if (locator) {
         await locator.click();
       } else {
-        throw Error("Either testId or locator must be defined");
+        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
       await page.locator(".bp4-dialog").elementHandle();
     },
@@ -904,7 +907,7 @@ async function clickUntilSidebarShowsUp({
       } else if (locator) {
         await locator.click();
       } else {
-        throw Error("Either testId or locator must be defined");
+        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
       await page.locator(".bp4-drawer-header").elementHandle();
     },

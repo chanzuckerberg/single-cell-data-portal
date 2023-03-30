@@ -171,7 +171,11 @@ export default function SaveExport({
     const viewNode = document.getElementById("view") as HTMLDivElement;
 
     // Options for the observer (which mutations to observe)
-    const config: MutationObserverInit = { childList: true, subtree: true };
+    const config: MutationObserverInit = {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    };
 
     // Callback function to execute when mutations are observed
     const callback = debounce(() => {
@@ -207,14 +211,12 @@ export default function SaveExport({
 
     observer.observe(heatmapNode, config);
 
-    if (
-      selectedFileTypes.includes("png") ||
-      selectedFileTypes.includes("svg")
-    ) {
-      // This will make a change to the heatmap dom which triggers the observer to start the download
-      // We need this for svg to parse the svg heatmap
-      // We need this for png to trigger a change to the dom
+    // This will make a change to the heatmap dom which triggers the observer to start the download
+    if (selectedFileTypes.includes("svg")) {
       setEchartsRendererMode("svg");
+    } else {
+      // Kind of a hack to modify the DOM to trigger the observer
+      heatmapNode.classList.add("is-downloading");
     }
   }, [
     setDownloadStatus,
