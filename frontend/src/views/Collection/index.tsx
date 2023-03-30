@@ -189,7 +189,7 @@ const Collection: FC = () => {
         )}
         {/* Collection title and actions */}
         <CollectionHero>
-          <H3 data-test-id="collection-name">{collection.name}</H3>
+          <H3 data-testid="collection-name">{collection.name}</H3>
           {shouldShowPrivateWriteAction && (
             <ActionButtons
               id={id}

@@ -236,7 +236,7 @@ export default function SaveExport({
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledButtonIcon
-          data-test-id="download-button"
+          data-testid="download-button"
           onClick={handleButtonClick}
           disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
           sdsSize="medium"
@@ -258,8 +258,8 @@ export default function SaveExport({
                 label="PNG"
                 caption="PNG CAPTION"
                 onChange={() => selectFileType("png")}
-                data-test-id="png-checkbox"
                 checked={selectedFileTypes.includes("png")}
+                data-testid="png-checkbox"
               />
             </StyledInputCheckboxWrapper>
             <StyledInputCheckboxWrapper>
@@ -267,8 +267,8 @@ export default function SaveExport({
                 label="SVG"
                 caption="SVG CAPTION"
                 onChange={() => selectFileType("svg")}
-                data-test-id="svg-checkbox"
                 checked={selectedFileTypes.includes("svg")}
+                data-testid="svg-checkbox"
               />
             </StyledInputCheckboxWrapper>
           </StyledSection>
@@ -280,8 +280,8 @@ export default function SaveExport({
                 label="CSV"
                 caption="CSV CAPTION"
                 onChange={() => selectFileType("csv")}
-                data-test-id="csv-checkbox"
                 checked={selectedFileTypes.includes("csv")}
+                data-testid="csv-checkbox"
               />
             </StyledInputCheckboxWrapper>
           </StyledSection>
@@ -302,7 +302,7 @@ export default function SaveExport({
               sdsSize="large"
               onClick={handleDownload}
               disabled={!selectedFileTypes.length}
-              data-test-id="dialog-download-button"
+              data-testid="dialog-download-button"
             >
               Download
             </DownloadButton>

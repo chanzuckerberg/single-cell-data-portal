@@ -8,7 +8,7 @@ interface Props {
 const Name: FC<Props> = ({ name }) => (
   <Section>
     <Title>NAME</Title>
-    <Text data-test-id="download-asset-name">{name}</Text>
+    <Text data-testid="download-asset-name">{name}</Text>
   </Section>
 );
 

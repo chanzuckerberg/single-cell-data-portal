@@ -253,7 +253,7 @@ export function renderXAxis({
   const geneLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
 
   Array.from(
-    xAxis?.querySelectorAll(`[data-test-id*='gene-label-'] span`) || []
+    xAxis?.querySelectorAll(`[data-testid*='gene-label-'] span`) || []
   ).forEach((label, index) => {
     const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
 
@@ -342,14 +342,14 @@ export function renderYAxis({
   });
 
   Array.from(
-    yAxis?.querySelectorAll("[data-test-id='cell-type-label-count']") || []
+    yAxis?.querySelectorAll("[data-testid='cell-type-label-count']") || []
   ).forEach((labelCount, index) => {
     const label = labelCount.querySelector(
-      "[data-test-id='cell-type-name']"
+      "[data-testid='cell-type-name']"
     )?.textContent;
 
     const count = labelCount.querySelector(
-      "[data-test-id='cell-count']"
+      "[data-testid='cell-count']"
     )?.textContent;
 
     // group

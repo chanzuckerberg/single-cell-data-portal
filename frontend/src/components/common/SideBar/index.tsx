@@ -78,7 +78,7 @@ export default function SideBar({
     <SideBarWrapperComponent
       sideBarWidth={sideBarWidth}
       position={position}
-      data-test-id={testId}
+      data-testid={testId}
     >
       <SideBarPositionerComponent isExpanded={isExpanded}>
         <SideBarToggleButtonWrapper>

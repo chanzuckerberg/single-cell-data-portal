@@ -56,6 +56,20 @@ export const CellTypeLabelStyle = styled.div`
   text-align: left;
 `;
 
+export const HiddenCellTypeLabelStyle = styled.div`
+  /* Overlay invisible, un-intractable element with full name of cell type for ctrl+f page search */
+  position: absolute;
+  z-index: 1;
+  color: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  user-select: none;
+`;
+
+export const CellTypeLabelTooltipStyle = styled.div`
+  margin: 0 -10px;
+  text-align: center;
+`;
+
 export const CellCountLabelStyle = styled.div`
   height: ${HEAT_MAP_BASE_CELL_PX}px;
   background-color: white;
