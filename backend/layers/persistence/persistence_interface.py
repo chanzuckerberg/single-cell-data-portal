@@ -101,6 +101,7 @@ class DatabaseProviderInterface:
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
+        update_revised_at: bool = False,
     ) -> None:
         """
         Finalizes a collection version. This is equivalent to calling:

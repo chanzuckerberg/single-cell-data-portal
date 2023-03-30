@@ -32,5 +32,12 @@ def get():
             all_datasets_with_collection_name_and_doi.append(dataset_response_obj)
 
     return make_response(
-        jsonify(sorted(all_datasets_with_collection_name_and_doi, key=lambda d: d["published_at"], reverse=True)), 200
+        jsonify(
+            sorted(
+                all_datasets_with_collection_name_and_doi,
+                key=lambda d: (d["published_at"], d["dataset_id"]),
+                reverse=True,
+            )
+        ),
+        200,
     )

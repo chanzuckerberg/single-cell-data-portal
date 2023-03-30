@@ -1484,7 +1484,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(403, response.status_code)
 
-    def test_get_datasets_200(self):
+    def test_get_all_datasets_200(self):
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1510,7 +1510,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             ),
         )
         self.generate_unpublished_collection(add_datasets=4)
-        self.generate_revision(published_collection_1.collection_id)
+        revision = self.generate_revision(published_collection_1.collection_id)
 
         with self.subTest("With super curator credentials"):
             headers = self.make_super_curator_header()
@@ -1542,16 +1542,31 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(collection_names, received_collection_names)
             self.assertEqual(collection_dois, received_collection_dois)
 
-        with self.subTest("Only public datasets are returned"):
-            dataset_ids = set(
-                [dv.dataset_id.id for dv in published_collection_1.datasets]
-                + [dv.dataset_id.id for dv in published_collection_2.datasets]
-            )
-            received_dataset_ids = set()
-            for dataset in response.json:
-                received_dataset_ids.add(dataset["dataset_id"])
+        self.generate_dataset(
+            collection_version=revision,
+            replace_dataset_version_id=revision.datasets[0].version_id,
+            publish=True,
+        )
 
-            self.assertEqual(dataset_ids, received_dataset_ids)
+        with self.subTest("Only public datasets are returned, in reverse-chronological order"):
+            sorted_dataset_ids = [published_collection_2.datasets[0].dataset_id.id] + sorted(
+                [d.dataset_id.id for d in published_collection_1.datasets], reverse=True
+            )
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+
+            self.assertEqual(sorted_dataset_ids, received_dataset_ids)
+
+        with self.subTest("The 'revised_at' field is populated for revised Datasets only"):
+            response = self.app.get(
+                "/curation/v1/datasets"
+            )  # Refresh response because 'revised_at' is calculated field
+            for dataset in response.json:
+                if dataset["dataset_id"] == published_collection_1.datasets[0].dataset_id.id:
+                    self.assertIsNotNone(dataset["revised_at"])
+                else:
+                    self.assertIsNone(dataset["revised_at"])
 
 
 class TestGetDatasetVersion(BaseAPIPortalTest):

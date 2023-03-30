@@ -449,10 +449,14 @@ class BusinessLogic(BusinessLogicInterface):
                 published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
                     mapped_dataset_version, all_versions_for_collection
                 )
+                revised_at = (
+                    None if mapped_dataset_version.canonical_dataset.published_at == published_at else published_at
+                )
+                mapped_dataset_version.canonical_dataset.revised_at = revised_at
                 published_datasets_for_collection.append(
                     PublishedDatasetVersion(
                         collection_version_id=collection_version_id,
-                        revised_at=published_at,  # For published Datasets
+                        revised_at=revised_at,  # Duped logic to avoid pitfall; no effect in present implementation
                         published_at=mapped_dataset_version.canonical_dataset.published_at,
                         **vars(mapped_dataset_version),
                     )
