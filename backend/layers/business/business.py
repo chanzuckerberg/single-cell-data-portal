@@ -180,14 +180,10 @@ class BusinessLogic(BusinessLogicInterface):
         Returns the published collection version mapped to a canonical collection, if available.
         Otherwise will return the active unpublished version.
         """
-        published_version = self.get_published_collection_version(collection_id)
-        if published_version is not None:
-            return published_version
-        else:
-            all_versions = self.get_collection_versions_from_canonical(collection_id)
-            if not all_versions:
-                return None
-            return next(v for v in all_versions if v.published_at is None)
+        version = self.get_published_collection_version(collection_id)
+        if version is None:
+            version = self.get_unpublished_collection_version_from_canonical(collection_id)
+        return version
 
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         """
