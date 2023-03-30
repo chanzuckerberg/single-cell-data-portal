@@ -41,7 +41,7 @@ export default function DatasetsActionsCell({
         position={Position.TOP}
       >
         <StyledPrimaryAnchorButton
-          data-test-id="view-dataset-link"
+          data-testid="view-dataset-link"
           disabled={explorerDisabled || isOverMaxCellCount} // TODO(cc) isOverMaxCellCount needed to be a boolean...
           href={explorerUrl}
           intent={Intent.PRIMARY}

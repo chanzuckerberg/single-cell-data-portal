@@ -257,7 +257,7 @@ Where tests are skipped vs. run in different environments.
 
     1. Use utility function `tryUntil()`: There will be times when your test assertions will happen before the application is in the expected state due to the flaky factors above. So we have a utility function `tryUntil()` that allows you to retry defined actions/assertions until your expected condition is met. For examples, you can retry clicking on a button until the modal element exists, or retry asserting a certain element exists before throwing an error. There are examples available in the tests that you can look for them by global searching for `tryUntil`
 
-    1. Use `data-test-id` HTML attribute for target elements: Since our application's HTML structure changes over time, it's unreliable to select an element based on properties and structures that could easily change over time, such as css classes and element structures (e.g., first div child of a parent). The more reliable way is to add a `data-test-id` attribute to your test target, so when the element and/or its context changes, we can still reliably target the element
+    1. Use `data-testid` HTML attribute for target elements: Since our application's HTML structure changes over time, it's unreliable to select an element based on properties and structures that could easily change over time, such as css classes and element structures (e.g., first div child of a parent). The more reliable way is to add a `data-testid` attribute to your test target, so when the element and/or its context changes, we can still reliably target the element
 
 ## Maintain application in a predictable state
 

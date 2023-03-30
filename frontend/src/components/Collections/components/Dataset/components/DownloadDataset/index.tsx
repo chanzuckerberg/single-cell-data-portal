@@ -35,7 +35,7 @@ const DownloadDataset: FC<Props> = ({
         datasetName={name}
         disabled={isDisabled || !dataAssets.length}
         onClick={toggleOpen}
-        data-test-id="dataset-download-button"
+        data-testid="dataset-download-button"
       />
       <Modal title="Download Dataset" isOpen={isOpen} onClose={toggleOpen}>
         <Content name={name} dataAssets={dataAssets} onClose={toggleOpen} />

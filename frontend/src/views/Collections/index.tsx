@@ -77,7 +77,7 @@ export default function Collections(): JSX.Element {
           return (
             <Title>
               <LinkCell
-                data-test-id="collection-link"
+                data-testid="collection-link"
                 url={ROUTES.COLLECTION.replace(":id", row.values.id)}
                 value={row.values.name}
               />

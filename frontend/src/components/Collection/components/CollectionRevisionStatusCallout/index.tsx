@@ -11,7 +11,7 @@ export default function CollectionRevisionStatusCallout({
 }: Props): JSX.Element {
   return (
     <CollectionRevisionCallout intent={Intent.PRIMARY} icon={null}>
-      <span data-test-id="revision-status">
+      <span data-testid="revision-status">
         {isRevisionDifferent
           ? "This collection has changed since you last published it."
           : "This is a private revision of a public collection."}
