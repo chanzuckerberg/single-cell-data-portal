@@ -80,6 +80,7 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
    1. In `frontend/` directory, run `TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-dev`
 
    - NOTE: Replace `PUT_PASSWORD_HERE` with `corpora/backend/dev/auth0-secret.test_account_password` in AWS Secret Manager
+   - NOTE: To run in one specific browser, run `npm run e2e-dev -- --project chromium` (chromium|firefox|edge)
 
 1. local -> staging
 
