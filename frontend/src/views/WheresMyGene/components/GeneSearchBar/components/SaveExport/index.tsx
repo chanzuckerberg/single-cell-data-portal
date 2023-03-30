@@ -213,7 +213,7 @@ export default function SaveExport({
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledButtonIcon
-          data-test-id="download-button"
+          data-testid="download-button"
           onClick={handleButtonClick}
           disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
           sdsSize="medium"
@@ -239,7 +239,7 @@ export default function SaveExport({
                 }
                 label="PNG"
                 onChange={() => selectFileType("png")}
-                data-test-id="png-checkbox"
+                data-testid="png-checkbox"
               />
 
               <StyledFormControlLabel
@@ -250,7 +250,7 @@ export default function SaveExport({
                 }
                 label="SVG"
                 onChange={() => selectFileType("svg")}
-                data-test-id="svg-checkbox"
+                data-testid="svg-checkbox"
               />
             </StyledDiv>
           </StyledSection>
@@ -265,7 +265,7 @@ export default function SaveExport({
                 }
                 label="CSV"
                 onChange={() => selectFileType("csv")}
-                data-test-id="csv-checkbox"
+                data-testid="csv-checkbox"
               />
             </StyledDiv>
           </StyledSection>
@@ -285,7 +285,7 @@ export default function SaveExport({
             sdsSize="large"
             onClick={handleDownload}
             disabled={!selectedFileTypes.length}
-            data-test-id="dialog-download-button"
+            data-testid="dialog-download-button"
           >
             Download
           </DownloadButton>

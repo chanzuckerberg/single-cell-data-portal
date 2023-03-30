@@ -1004,6 +1004,64 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertIsNone(res.json["datasets"][0]["x_approximate_distribution"])
 
 
+class TestGetCollectionVersionID(BaseAPIPortalTest):
+    def test_get_collection_version_ok(self):
+        first_version = self.generate_published_collection()
+        revision = self.generate_revision(first_version.collection_id)
+        self.business_logic.publish_collection_version(revision.version_id)
+        res = self.app.get(
+            f"/curation/v1/collection_versions/{first_version.version_id}", headers=self.make_owner_header()
+        )
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(res.json["collection_version_id"], first_version.version_id.id)
+        # test correct dataset explorer url is used
+        explorer_url = res.json["datasets"][0]["explorer_url"]
+        self.assertTrue(explorer_url.endswith(f"{first_version.datasets[0].version_id.id}.cxg/"))
+
+        res = self.app.get(f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header())
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(res.json["collection_version_id"], revision.version_id.id)
+        # test correct dataset explorer url is used
+        explorer_url = res.json["datasets"][0]["explorer_url"]
+        self.assertTrue(explorer_url.endswith(f"{revision.datasets[0].version_id.id}.cxg/"))
+
+    def test_get_collection_version_4xx(self):
+        with self.subTest("Query endpoint with incorrect ID"):
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{str(uuid.uuid4())}", headers=self.make_owner_header()
+            )
+            self.assertEqual(404, res.status_code)
+        with self.subTest("Query endpoint with Canonical ID"):
+            collection = self.generate_published_collection()
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.collection_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(404, res.status_code)
+        with self.subTest("Query endpoint with non-UUID"):
+            res = self.app.get("/curation/v1/collection_versions/bad-input-id", headers=self.make_owner_header())
+            self.assertEqual(403, res.status_code)
+        with self.subTest("Collection Version is part of tombstoned Collection"):
+            collection = self.generate_published_collection()
+            self.business_logic.tombstone_collection(collection.collection_id)
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(403, res.status_code)
+        with self.subTest("Collection Version is unpublished collection"):
+            collection = self.generate_unpublished_collection()
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(403, res.status_code)
+        with self.subTest("Collection Version is unpublished revision"):
+            first_version = self.generate_published_collection()
+            revision = self.generate_revision(first_version.collection_id)
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(403, res.status_code)
+
+
 class TestPatchCollectionID(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
@@ -1665,7 +1723,7 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         response = self.app.get(test_url, headers=headers)
         self.assertEqual(200, response.status_code)
         expected = defaultdict(list)
-        for dataset in response.json["datasets"]:
+        for dataset in response.json:
             expected["dataset_version_ids"].append(dataset["dataset_version_id"])
             expected["collection_ids"].append(dataset["collection_id"])
             expected["collection_version_ids"].append(dataset["collection_version_id"])

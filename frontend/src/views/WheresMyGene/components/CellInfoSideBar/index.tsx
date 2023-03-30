@@ -23,14 +23,24 @@ import {
   TooltipButton,
 } from "./style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-export interface CellInfoBarProps {
+import { StyledImage } from "../HeatMap/components/YAxisChart/style";
+import InfoSVG from "../HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
+import { RightSidebarProperties } from "../RightSideBar";
+import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
+
+const MARKER_GENE_LABEL = "marker genes";
+const MARKER_SCORE_LABEL = "marker score";
+
+export interface CellInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
   tissueInfo: OntologyTerm;
+  generateGeneInfo: (gene: string) => void;
 }
 
 function CellInfoSideBar({
   cellInfoCellType,
   tissueInfo,
+  generateGeneInfo,
 }: CellInfoBarProps): JSX.Element | null {
   const urlParams = new URLSearchParams(window.location.search);
   let testType: "binomtest" | undefined = undefined;
@@ -73,11 +83,11 @@ function CellInfoSideBar({
 
   const handleFmgHoverEnd = useHandleHoverEnd(
     EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
-    { label: "marker genes" }
+    { label: MARKER_GENE_LABEL }
   );
   const handleMarkerScoreHoverEnd = useHandleHoverEnd(
     EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
-    { label: "marker score" }
+    { label: MARKER_SCORE_LABEL }
   );
 
   if (isLoading || !data) return null;
@@ -113,10 +123,10 @@ function CellInfoSideBar({
                     target="_blank"
                     onClick={() => {
                       track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
-                        label: "marker genes",
+                        label: MARKER_GENE_LABEL,
                       });
                       track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
-                        label: "marker genes",
+                        label: MARKER_GENE_LABEL,
                       });
                     }}
                   >
@@ -137,6 +147,7 @@ function CellInfoSideBar({
           <BetaChip label="Beta" size="small" />
         </div>
         <Button
+          data-testid="add-to-dotplot-fmg-button"
           startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
           onClick={handleDisplayGenes}
           sdsStyle="minimal"
@@ -154,7 +165,7 @@ function CellInfoSideBar({
           combination: `${cellInfoCellType.cellType.id}, ${tissueInfo.id}`,
         }),
         (
-          <NoMarkerGenesContainer>
+          <NoMarkerGenesContainer data-testid="no-marker-genes-warning">
             <NoMarkerGenesHeader>No Marker Genes</NoMarkerGenesHeader>
             <NoMarkerGenesDescription>
               No reliable marker genes for this cell type.
@@ -192,10 +203,10 @@ function CellInfoSideBar({
                           target="_blank"
                           onClick={() => {
                             track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
-                              label: "marker score",
+                              label: MARKER_SCORE_LABEL,
                             });
                             track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
-                              label: "marker score",
+                              label: MARKER_SCORE_LABEL,
                             });
                           }}
                         >
@@ -239,10 +250,32 @@ function CellInfoSideBar({
             </tr>
           </thead>
           <tbody>
-            {Object.entries(data.marker_genes).map((gene) => (
-              <tr key={gene[0]}>
-                <td>{gene[0]}</td>
-                <td>{gene[1].effect_size.toPrecision(4)}</td>
+            {Object.entries(data.marker_genes).map(([symbol, metadata]) => (
+              <tr key={symbol}>
+                <td>
+                  {symbol}
+                  <InfoButtonWrapper
+                    data-testid="gene-info-button-cell-info"
+                    onClick={() => {
+                      generateGeneInfo(symbol);
+
+                      track(EVENTS.WMG_FMG_GENE_INFO, {
+                        gene: symbol,
+                      });
+                    }}
+                  >
+                    <StyledImage
+                      id="gene-info-button-fmg"
+                      src={InfoSVG.src}
+                      width="10"
+                      height="10"
+                      alt={`display gene info for ${symbol}`}
+                    />
+                  </InfoButtonWrapper>
+                </td>
+                <td data-testid="marker-scores-fmg">
+                  {metadata.effect_size.toPrecision(4)}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -1,9 +1,10 @@
-import { ElementHandle, expect, Page, test } from "@playwright/test";
+import { expect, Page, test, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
-import { getTestID, getText } from "../utils/selectors";
+import { getText } from "../utils/selectors";
 import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
@@ -11,17 +12,35 @@ import AdmZip from "adm-zip";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
-const GENE_LABELS_ID = "gene-labels";
+const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
+const CELL_TYPE_LABEL_ROW_TEST_ID = "cell-type-label-count";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
 const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
-const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
+const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
 const DOWNLOAD_BUTTON_ID = "download-button";
 
+const MARKER_GENE_BUTTON_TEST_ID = "marker-gene-button";
+
+// FMG test IDs
+const ADD_TO_DOTPLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
+const NO_MARKER_GENES_WARNING_TEST_ID = "no-marker-genes-warning";
+const MARKER_SCORES_FMG_TEST_ID = "marker-scores-fmg";
+
+// gene info test IDs
+const GENE_INFO_BUTTON_X_AXIS_TEST_ID = "gene-info-button-x-axis";
+const GENE_INFO_HEADER_TEST_ID = "gene-info-header";
+const GENE_INFO_GENE_SYNONYMS_TEST_ID = "gene-info-gene-synonyms";
+const GENE_INFO_NCBI_LINK_TEST_ID = "gene-info-ncbi-link";
+const RIGHT_SIDEBAR_TITLE_TEST_ID = "right-sidebar-title";
+const GENE_INFO_TITLE_SPLIT_TEST_ID = "gene-info-title-split";
+const GENE_INFO_CLOSE_BUTTON_SPLIT_TEST_ID = "gene-info-close-button-split";
+const RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID = "right-sidebar-close-button";
+const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
+
 const MUI_CHIP_ROOT = ".MuiChip-root";
-const FILTERS_PANEL_NOT_FOUND = "Filters panel not found";
 
 const CELL_TYPE_SANITY_CHECK_NUMBER = 100;
 
@@ -47,25 +66,13 @@ describe("Where's My Gene", () => {
     await expect(page).toHaveSelector(getText("STEP 3"));
     await expect(page).toHaveSelector(getText("Explore Gene Expression"));
 
-    // Filters Panel
-    // (thuang): `*` is for intermediate match
-    // https://playwright.dev/docs/selectors#intermediate-matches
-
-    async function getTissueSelectorButton() {
-      return page.$(getTestID(ADD_TISSUE_ID));
-    }
-
-    async function getGeneSelectorButton() {
-      return page.$(getTestID(ADD_GENE_ID));
-    }
-
-    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
     await selectFirstOption(page);
 
-    await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstOption(page);
 
-    const filtersPanel = await page.$("*css=div >> text=Filters");
+    const filtersPanel = page.getByTestId("filters-panel");
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
@@ -75,192 +82,132 @@ describe("Where's My Gene", () => {
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
 
     // Legend
-    const Legend = await page.$("*css=div >> text=Gene Expression");
-
+    const Legend = page.getByTestId("legend-wrapper");
     await expect(Legend).toHaveSelector(getText("Gene Expression"));
     await expect(Legend).toHaveSelector(getText("Expressed in Cells (%)"));
 
     // Info Panel
-    const InfoPanel = await page.$("*css=div >> text=Filters");
-
-    await expect(InfoPanel).toHaveSelector(getText("Methodology"));
-    await expect(InfoPanel).toHaveSelector(
+    await expect(filtersPanel).toHaveSelector(getText("Methodology"));
+    await expect(filtersPanel).toHaveSelector(
       getText("After filtering cells with low coverage ")
     );
-    await expect(InfoPanel).toHaveSelector(getText("Source Data"));
+    await expect(filtersPanel).toHaveSelector(getText("Source Data"));
   });
 
   test("Filters and Heatmap", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-    async function getTissueSelectorButton() {
-      return page.$(getTestID(ADD_TISSUE_ID));
-    }
-
-    async function getGeneSelectorButton() {
-      return page.$(getTestID(ADD_GENE_ID));
-    }
-
-    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
     await selectFirstOption(page);
 
-    await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstOption(page);
 
     await waitForHeatmapToRender(page);
 
-    const sexSelector = await getSexSelector();
+    const sexSelector = getSexSelector();
+    const selectedSexesBefore = await sexSelector
+      .locator(MUI_CHIP_ROOT)
+      .elementHandles();
 
-    if (!sexSelector) throw Error("No sexSelector found");
+    expect(selectedSexesBefore.length).toBe(0);
 
-    const selectedSexesBefore = await sexSelector.$$(MUI_CHIP_ROOT);
-
-    await expect(selectedSexesBefore.length).toBe(0);
-
-    await clickUntilOptionsShowUp(getSexSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, locator: getSexSelectorButton() });
 
     await selectFirstOption(page);
 
-    const selectedSexesAfter = await sexSelector.$$(MUI_CHIP_ROOT);
+    const selectedSexesAfter = await sexSelector
+      .locator(MUI_CHIP_ROOT)
+      .elementHandles();
 
-    await expect(selectedSexesAfter.length).toBe(1);
+    expect(selectedSexesAfter.length).toBe(1);
 
-    async function getFiltersPanel() {
-      return page.$(getTestID("filters-panel"));
+    function getSexSelector() {
+      return page.getByTestId("filters-panel").getByTestId("sex-filter");
     }
 
-    async function getSexSelector() {
-      const filtersPanel = await getFiltersPanel();
-
-      if (!filtersPanel) {
-        throw Error(FILTERS_PANEL_NOT_FOUND);
-      }
-
-      return filtersPanel.$(getTestID("sex-filter"));
-    }
-
-    async function getSexSelectorButton() {
-      const filtersPanel = await getFiltersPanel();
-
-      if (!filtersPanel) {
-        throw Error(FILTERS_PANEL_NOT_FOUND);
-      }
-
-      await filtersPanel.$(getTestID("sex-filter"));
-      return filtersPanel.$("*css=button >> text=Sex");
+    function getSexSelectorButton() {
+      return getSexSelector().getByRole("button");
     }
   });
 
   test("Primary and secondary filter crossfiltering", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-    const diseaseSelector = await getDiseaseSelector();
-    const datasetSelector = await getDatasetSelector();
-
-    if (!diseaseSelector) throw Error("No diseaseSelector found");
-    if (!datasetSelector) throw Error("No datasetSelector found");
-
-    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const tissueOptionsBefore = await page.$$("[role=option]");
-    const numberOfTissuesBefore = tissueOptionsBefore.length;
+    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
+    const numberOfTissuesBefore = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
-    await clickUntilOptionsShowUp(getDiseaseSelectorButton, page);
-    const diseaseOptionsBefore = await page.$$("[role=option]");
-    const numberOfDiseasesBefore = diseaseOptionsBefore.length;
+    await clickUntilOptionsShowUp({
+      page,
+      locator: getDiseaseSelectorButton(),
+    });
+    const numberOfDiseasesBefore = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
-    await clickUntilOptionsShowUp(getDatasetSelectorButton, page);
-    const datasetOptions = await page.$$("[role=option]");
+    await clickUntilOptionsShowUp({
+      page,
+      locator: getDatasetSelectorButton(),
+    });
+    const datasetOptions = await page.getByRole("option").elementHandles();
     await datasetOptions[0].click();
     await page.keyboard.press("Escape");
 
-    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const tissueOptionsAfter = await page.$$("[role=option]");
-    const numberOfTissuesAfter = tissueOptionsAfter.length;
+    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
+    const numberOfTissuesAfter = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
-    await clickUntilOptionsShowUp(getDiseaseSelectorButton, page);
-    const diseaseOptionsAfter = await page.$$("[role=option]");
-    const numberOfDiseasesAfter = diseaseOptionsAfter.length;
+    await clickUntilOptionsShowUp({
+      page,
+      locator: getDiseaseSelectorButton(),
+    });
+    const numberOfDiseasesAfter = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
     expect(numberOfDiseasesBefore).toBeGreaterThan(numberOfDiseasesAfter);
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
 
-    async function getTissueSelectorButton() {
-      return page.$(getTestID(ADD_TISSUE_ID));
+    function getDiseaseSelector() {
+      return page.getByTestId("filters-panel").getByTestId("disease-filter");
     }
 
-    async function getFiltersPanel() {
-      return page.$(getTestID("filters-panel"));
+    function getDiseaseSelectorButton() {
+      return getDiseaseSelector().getByRole("button");
     }
 
-    async function getDiseaseSelector() {
-      const filtersPanel = await getFiltersPanel();
-
-      if (!filtersPanel) {
-        throw Error(FILTERS_PANEL_NOT_FOUND);
-      }
-
-      return filtersPanel.$("*css=div >> text=Disease");
+    function getDatasetSelector() {
+      return page.getByTestId("filters-panel").getByTestId("dataset-filter");
     }
 
-    async function getDiseaseSelectorButton() {
-      const filtersPanel = await getFiltersPanel();
-
-      if (!filtersPanel) {
-        throw Error(FILTERS_PANEL_NOT_FOUND);
-      }
-
-      await filtersPanel.$("*css=div >> text=Disease");
-      return filtersPanel.$("*css=button >> text=Disease");
+    function getDatasetSelectorButton() {
+      return getDatasetSelector().getByRole("button");
     }
+  });
 
-    async function getDatasetSelector() {
-      const filtersPanel = await getFiltersPanel();
+  test("Selected tissue and no genes displays cell types", async ({ page }) => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-      if (!filtersPanel) {
-        throw Error(FILTERS_PANEL_NOT_FOUND);
-      }
+    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
+    await selectFirstOption(page);
 
-      return filtersPanel.$("*css=div >> text=Dataset");
-    }
-
-    async function getDatasetSelectorButton() {
-      const filtersPanel = await getFiltersPanel();
-
-      if (!filtersPanel) {
-        throw Error(FILTERS_PANEL_NOT_FOUND);
-      }
-
-      await filtersPanel.$("*css=div >> text=Dataset");
-      return filtersPanel.$("*css=button >> text=Dataset");
-    }
+    await waitForElement(page, CELL_TYPE_LABELS_ID);
+    const numCellTypes = await countLocator(
+      page.getByTestId(CELL_TYPE_LABELS_ID)
+    );
+    expect(numCellTypes).toBeGreaterThan(0);
   });
 
   test("Source Data", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-    async function getSourceDataButton() {
-      return page.$(getTestID(SOURCE_DATA_BUTTON_ID));
-    }
-    async function getTissueSelectorButton() {
-      return page.$(getTestID(ADD_TISSUE_ID));
-    }
-
-    async function getGeneSelectorButton() {
-      return page.$(getTestID(ADD_GENE_ID));
-    }
-
-    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
     await selectFirstOption(page);
 
-    await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstOption(page);
 
     await waitForHeatmapToRender(page);
-    await clickUntilSidebarShowsUp(getSourceDataButton, page);
+    await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
     await expect(page).toHaveSelector(
       getText(
         "After filtering cells with low coverage (less than 500 genes expressed)"
@@ -269,50 +216,31 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const sourceDataList = await page.$(SOURCE_DATA_LIST_SELECTOR);
-
-        if (!sourceDataList) throw Error("no source data displayed");
-
-        const sourceDataListItems = await sourceDataList?.$$(
-          ".MuiListItem-root"
+        const numSourceDataListItems = await countLocator(
+          page.locator(SOURCE_DATA_LIST_SELECTOR).locator(".MuiListItem-root")
         );
-
-        expect(sourceDataListItems?.length).toBeGreaterThan(0);
+        expect(numSourceDataListItems).toBeGreaterThan(0);
 
         await page.mouse.click(0, 0);
 
-        async function getFiltersPanel() {
-          return page.$(getTestID("filters-panel"));
+        function getDatasetSelector() {
+          return page
+            .getByTestId("filters-panel")
+            .getByTestId("dataset-filter");
         }
-        async function getDatasetSelector() {
-          const filtersPanel = await getFiltersPanel();
 
-          if (!filtersPanel) {
-            throw Error(FILTERS_PANEL_NOT_FOUND);
-          }
-
-          return filtersPanel.$("*css=button >> text=Dataset");
-        }
-        const datasetSelector = await getDatasetSelector();
-        if (!datasetSelector) throw Error("No datasetSelector found");
-        const selectedDatasetsBefore = await datasetSelector.$$(MUI_CHIP_ROOT);
-        await expect(selectedDatasetsBefore.length).toBe(0);
-        await clickUntilOptionsShowUp(getDatasetSelector, page);
-        await selectFirstOption(page);
-        await clickUntilSidebarShowsUp(getSourceDataButton, page);
-
-        const sourceDataListAfter = await page.$(SOURCE_DATA_LIST_SELECTOR);
-
-        if (!sourceDataListAfter)
-          throw Error(
-            "no source data displayed after selecting dataset filter"
-          );
-
-        const sourceDataListAfterItems = await sourceDataListAfter?.$$(
-          ".MuiListItem-root"
+        const numSelectedDatasetsBefore = await countLocator(
+          getDatasetSelector().locator(MUI_CHIP_ROOT)
         );
+        expect(numSelectedDatasetsBefore).toBe(0);
+        await clickUntilOptionsShowUp({ page, locator: getDatasetSelector() });
+        await selectFirstOption(page);
+        await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
 
-        expect(sourceDataListAfterItems?.length).toBeGreaterThan(0);
+        const numSourceDataListAfterItems = await countLocator(
+          page.locator(SOURCE_DATA_LIST_SELECTOR).locator(".MuiListItem-root")
+        );
+        expect(numSourceDataListAfterItems).toBeGreaterThan(0);
       },
       { page }
     );
@@ -321,32 +249,17 @@ describe("Where's My Gene", () => {
   test("Hierarchical Clustering", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-    async function getTissueSelectorButton() {
-      return page.$(getTestID(ADD_TISSUE_ID));
-    }
-
-    async function getGeneSelectorButton() {
-      return page.$(getTestID(ADD_GENE_ID));
-    }
-
     const TISSUE_COUNT = 1;
     const GENE_COUNT = 3;
 
-    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
     await selectFirstNOptions(TISSUE_COUNT, page);
 
-    await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstNOptions(GENE_COUNT, page);
 
-    const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} span`,
-      page
-    );
-
-    const beforeCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)}`,
-      page
-    );
+    const beforeGeneNames = await getGeneNames(page);
+    const beforeCellTypeNames = await getCellTypeNames(page);
 
     expect(beforeGeneNames.length).toBe(GENE_COUNT);
 
@@ -356,27 +269,15 @@ describe("Where's My Gene", () => {
       CELL_TYPE_SANITY_CHECK_NUMBER
     );
 
-    const cellTypeSortDropdown = await page.locator(
-      getTestID("cell-type-sort-dropdown")
-    );
-    await cellTypeSortDropdown.click();
+    await page.getByTestId("cell-type-sort-dropdown").click();
     await selectNthOption(2, page);
 
-    const geneSortDropdown = await page.locator(
-      getTestID("gene-sort-dropdown")
-    );
-    await geneSortDropdown.click();
+    await page.getByTestId("gene-sort-dropdown").click();
     await selectNthOption(2, page);
 
-    const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} span`,
-      page
-    );
+    const afterGeneNames = await getGeneNames(page);
 
-    const afterCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)}`,
-      page
-    );
+    const afterCellTypeNames = await getCellTypeNames(page);
 
     await tryUntil(
       async () => {
@@ -393,26 +294,15 @@ describe("Where's My Gene", () => {
   test("delete genes", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-    async function getTissueSelectorButton() {
-      return page.$(getTestID(ADD_TISSUE_ID));
-    }
-
-    async function getGeneSelectorButton() {
-      return page.$(getTestID(ADD_GENE_ID));
-    }
-
-    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
     await selectFirstNOptions(1, page);
 
-    await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstNOptions(3, page);
 
     await waitForHeatmapToRender(page);
 
-    const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} span`,
-      page
-    );
+    const beforeGeneNames = await getGeneNames(page);
 
     await tryUntil(
       async () => {
@@ -420,12 +310,9 @@ describe("Where's My Gene", () => {
 
         // Testing single gene delete
         await page.hover(".gene-label-container");
-        await page.click(getTestID(GENE_DELETE_BUTTON));
+        await getFirstButtonAndClick(page, GENE_DELETE_BUTTON);
 
-        const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} span`,
-          page
-        );
+        const afterGeneNames = await getGeneNames(page);
 
         expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
@@ -465,26 +352,15 @@ describe("Where's My Gene", () => {
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-      async function getTissueSelectorButton() {
-        return page.$(getTestID(ADD_TISSUE_ID));
-      }
-
-      async function getGeneSelectorButton() {
-        return page.$(getTestID(ADD_GENE_ID));
-      }
-
-      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
       await selectFirstNOptions(1, page);
 
-      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstNOptions(3, page);
 
       await waitForHeatmapToRender(page);
 
-      const beforeCellTypeNames = await getNames(
-        `${getTestID(CELL_TYPE_LABELS_ID)}`,
-        page
-      );
+      const beforeCellTypeNames = await getCellTypeNames(page);
 
       // (thuang): Sometimes when API response is slow, we'll not capture all the
       // cell type names, so a sanity check that we expect at least 100 names
@@ -506,15 +382,12 @@ describe("Where's My Gene", () => {
       await clickDropdownOptionByName({
         name: "Disease",
         page,
-        selector: getTestID(COMPARE_DROPDOWN_ID),
+        testId: COMPARE_DROPDOWN_ID,
       });
 
       await tryUntil(
         async () => {
-          const afterCellTypeNames = await getNames(
-            `${getTestID(CELL_TYPE_LABELS_ID)}`,
-            page
-          );
+          const afterCellTypeNames = await getCellTypeNames(page);
 
           expect(
             afterCellTypeNames.find((name) => name.includes("  normal"))
@@ -526,15 +399,12 @@ describe("Where's My Gene", () => {
       await clickDropdownOptionByName({
         name: "Sex",
         page,
-        selector: getTestID(COMPARE_DROPDOWN_ID),
+        testId: COMPARE_DROPDOWN_ID,
       });
 
       await tryUntil(
         async () => {
-          const afterCellTypeNames = await getNames(
-            `${getTestID(CELL_TYPE_LABELS_ID)}`,
-            page
-          );
+          const afterCellTypeNames = await getCellTypeNames(page);
 
           expect(
             afterCellTypeNames.find((name) => name.includes("  female"))
@@ -546,15 +416,12 @@ describe("Where's My Gene", () => {
       await clickDropdownOptionByName({
         name: "Ethnicity",
         page,
-        selector: getTestID(COMPARE_DROPDOWN_ID),
+        testId: COMPARE_DROPDOWN_ID,
       });
 
       await tryUntil(
         async () => {
-          const afterCellTypeNames = await getNames(
-            `${getTestID(CELL_TYPE_LABELS_ID)}`,
-            page
-          );
+          const afterCellTypeNames = await getCellTypeNames(page);
 
           expect(
             afterCellTypeNames.find((name) => name.includes("  multiethnic"))
@@ -567,12 +434,140 @@ describe("Where's My Gene", () => {
       await clickDropdownOptionByName({
         name: "None",
         page,
-        selector: getTestID(COMPARE_DROPDOWN_ID),
+        testId: COMPARE_DROPDOWN_ID,
       });
 
       expect(
         beforeCellTypeNames.find((name) => name.includes("  "))
       ).toBeFalsy();
+    });
+  });
+
+  describe("Find Marker Genes", () => {
+    test("Marker gene panel opens and can add genes to dotplot", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      await clickDropdownOptionByName({
+        page,
+        testId: ADD_TISSUE_ID,
+        name: "lung",
+      });
+
+      await getCellTypeFmgButtonAndClick(page, "muscle cell");
+
+      await getButtonAndClick(page, ADD_TO_DOTPLOT_BUTTON_TEST_ID);
+
+      await waitForHeatmapToRender(page);
+
+      const geneLabels = await getGeneNames(page);
+      const numGenes = geneLabels.length;
+      expect(numGenes).toBeGreaterThan(0);
+    });
+
+    test("Cell types with no marker genes display warning", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      await clickDropdownOptionByName({
+        page,
+        testId: ADD_TISSUE_ID,
+        name: "lung",
+      });
+
+      await getCellTypeFmgButtonAndClick(page, "native cell");
+
+      await waitForElement(page, NO_MARKER_GENES_WARNING_TEST_ID);
+    });
+
+    test(`Marker scores are always greater than or equal to ${FMG_GENE_STRENGTH_THRESHOLD}`, async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      await clickDropdownOptionByName({
+        page,
+        testId: ADD_TISSUE_ID,
+        name: "lung",
+      });
+
+      await getCellTypeFmgButtonAndClick(page, "club cell");
+
+      const markerScores = await page
+        .getByTestId(MARKER_SCORES_FMG_TEST_ID)
+        .allTextContents();
+
+      for (const markerScore of markerScores) {
+        expect(parseFloat(markerScore)).toBeGreaterThanOrEqual(
+          FMG_GENE_STRENGTH_THRESHOLD
+        );
+      }
+    });
+  });
+
+  describe("Gene info", () => {
+    test("Display gene info panel in sidebar", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
+      await selectFirstNOptions(1, page);
+
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
+      await selectFirstNOptions(3, page);
+
+      await waitForHeatmapToRender(page);
+
+      await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
+
+      await waitForElement(page, GENE_INFO_HEADER_TEST_ID);
+      await waitForElement(page, GENE_INFO_GENE_SYNONYMS_TEST_ID);
+      await waitForElement(page, GENE_INFO_NCBI_LINK_TEST_ID);
+      await waitForElement(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
+
+      await getButtonAndClick(page, RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID);
+
+      await waitForElementToBeRemoved(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
+    });
+
+    test("Display gene info bottom drawer in cell info sidebar", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      await clickDropdownOptionByName({
+        page,
+        testId: ADD_TISSUE_ID,
+        name: "lung",
+      });
+
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
+      await selectFirstNOptions(3, page);
+
+      await waitForHeatmapToRender(page);
+
+      await getCellTypeFmgButtonAndClick(page, "muscle cell");
+
+      await getFirstButtonAndClick(page, GENE_INFO_BUTTON_CELL_INFO_TEST_ID);
+
+      await waitForElement(page, GENE_INFO_HEADER_TEST_ID);
+      await waitForElement(page, GENE_INFO_GENE_SYNONYMS_TEST_ID);
+      await waitForElement(page, GENE_INFO_NCBI_LINK_TEST_ID);
+      await waitForElement(page, GENE_INFO_TITLE_SPLIT_TEST_ID);
+
+      await getButtonAndClick(page, GENE_INFO_CLOSE_BUTTON_SPLIT_TEST_ID);
+
+      await waitForElementToBeRemoved(page, GENE_INFO_TITLE_SPLIT_TEST_ID);
+
+      await getButtonAndClick(page, RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID);
+
+      await waitForElementToBeRemoved(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
+
+      await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
+
+      await waitForElement(page, GENE_INFO_HEADER_TEST_ID);
+      await waitForElement(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
     });
   });
 
@@ -582,51 +577,28 @@ describe("Where's My Gene", () => {
 
       const SELECT_N_GENES = 3;
 
-      async function getTissueSelectorButton() {
-        return page.$(getTestID(ADD_TISSUE_ID));
-      }
-
-      async function getGeneSelectorButton() {
-        return page.$(getTestID(ADD_GENE_ID));
-      }
-
       // Select tissue
-      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
       await selectFirstOption(page);
 
       // Select gene
-      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstNOptions(SELECT_N_GENES, page);
 
       await waitForHeatmapToRender(page);
 
-      const numCellTypes = (await page.$$(getTestID("cell-type-label-count")))
-        .length;
+      await clickUntilDownloadModalShowsUp({
+        page,
+        testId: DOWNLOAD_BUTTON_ID,
+      });
 
-      if (!numCellTypes) {
-        throw Error("No cell types");
-      }
-
-      async function getDownloadButton() {
-        return page.$(getTestID(DOWNLOAD_BUTTON_ID));
-      }
-
-      await clickUntilDownloadModalShowsUp(getDownloadButton, page);
-
-      const pngCheckbox = await page.$(getTestID("png-checkbox"));
-      if (!pngCheckbox) throw Error("No PNG checkbox");
-      await pngCheckbox.click();
-
-      const csvCheckbox = await page.$(getTestID("csv-checkbox"));
-      if (!csvCheckbox) throw Error("No CSV checkbox");
-      await csvCheckbox.click();
+      await page.getByTestId("png-checkbox").click();
+      await page.getByTestId("csv-checkbox").click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      const downloadButton = await page.$(getTestID("dialog-download-button"));
-      if (!downloadButton) throw Error("No download button");
-      await downloadButton.click();
+      await page.getByTestId("dialog-download-button").click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -649,7 +621,8 @@ describe("Where's My Gene", () => {
       });
 
       // Validate number of rows
-      expect(data.length).toBe(numCellTypes * SELECT_N_GENES);
+      const cellTypes = await getCellTypeNames(page);
+      expect(data.length).toBe(cellTypes.length * SELECT_N_GENES);
     });
 
     test("Download CSV and validate length - compare", async ({ page }) => {
@@ -657,58 +630,35 @@ describe("Where's My Gene", () => {
 
       const SELECT_N_GENES = 3;
 
-      async function getTissueSelectorButton() {
-        return page.$(getTestID(ADD_TISSUE_ID));
-      }
-
-      async function getGeneSelectorButton() {
-        return page.$(getTestID(ADD_GENE_ID));
-      }
-
       // Select tissue
-      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
       await selectFirstOption(page);
 
       // Select gene
-      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstNOptions(SELECT_N_GENES, page);
 
       // Select a compare dimension
       await clickDropdownOptionByName({
         name: "Sex",
         page,
-        selector: getTestID(COMPARE_DROPDOWN_ID),
+        testId: COMPARE_DROPDOWN_ID,
       });
 
       await waitForHeatmapToRender(page);
 
-      const numCellTypes = (await page.$$(getTestID("cell-type-label-count")))
-        .length;
+      await clickUntilDownloadModalShowsUp({
+        page,
+        testId: DOWNLOAD_BUTTON_ID,
+      });
 
-      if (!numCellTypes) {
-        throw Error("No cell types");
-      }
-
-      async function getDownloadButton() {
-        return page.$(getTestID(DOWNLOAD_BUTTON_ID));
-      }
-
-      await clickUntilDownloadModalShowsUp(getDownloadButton, page);
-
-      const pngCheckbox = await page.$(getTestID("png-checkbox"));
-      if (!pngCheckbox) throw Error("No PNG checkbox");
-      await pngCheckbox.click();
-
-      const csvCheckbox = await page.$(getTestID("csv-checkbox"));
-      if (!csvCheckbox) throw Error("No CSV checkbox");
-      await csvCheckbox.click();
+      await page.getByTestId("png-checkbox").click();
+      await page.getByTestId("csv-checkbox").click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      const downloadButton = await page.$(getTestID("dialog-download-button"));
-      if (!downloadButton) throw Error("No download button");
-      await downloadButton.click();
+      await page.getByTestId("dialog-download-button").click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -731,7 +681,8 @@ describe("Where's My Gene", () => {
       });
 
       // Validate number of rows
-      expect(data.length).toBe(numCellTypes * SELECT_N_GENES);
+      const cellTypes = await getCellTypeNames(page);
+      expect(data.length).toBe(cellTypes.length * SELECT_N_GENES);
     });
   });
 
@@ -741,42 +692,26 @@ describe("Where's My Gene", () => {
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-      async function getTissueSelectorButton() {
-        return page.$(getTestID(ADD_TISSUE_ID));
-      }
-
-      async function getGeneSelectorButton() {
-        return page.$(getTestID(ADD_GENE_ID));
-      }
-
-      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
       await selectFirstOption(page);
 
-      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstOption(page);
 
       await waitForHeatmapToRender(page);
 
-      async function getDownloadButton() {
-        return page.$(getTestID(DOWNLOAD_BUTTON_ID));
-      }
+      await clickUntilDownloadModalShowsUp({
+        page,
+        testId: DOWNLOAD_BUTTON_ID,
+      });
 
-      await clickUntilDownloadModalShowsUp(getDownloadButton, page);
-
-      const svgCheckbox = await page.$(getTestID("svg-checkbox"));
-      if (!svgCheckbox) throw Error("No SVG checkbox");
-      await svgCheckbox.click();
-
-      const csvCheckbox = await page.$(getTestID("csv-checkbox"));
-      if (!csvCheckbox) throw Error("No CSV checkbox");
-      await csvCheckbox.click();
+      await page.getByTestId("svg-checkbox").click();
+      await page.getByTestId("csv-checkbox").click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      const downloadButton = await page.$(getTestID("dialog-download-button"));
-      if (!downloadButton) throw Error("No download button");
-      await downloadButton.click();
+      await page.getByTestId("dialog-download-button").click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -809,47 +744,31 @@ describe("Where's My Gene", () => {
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-      async function getTissueSelectorButton() {
-        return page.$(getTestID(ADD_TISSUE_ID));
-      }
-
-      async function getGeneSelectorButton() {
-        return page.$(getTestID(ADD_GENE_ID));
-      }
-
       // Select first tissue
-      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
       await selectFirstOption(page);
 
       // Select second tissue
-      await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
       await selectNthOption(2, page);
 
-      await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstOption(page);
 
       await waitForHeatmapToRender(page);
 
-      async function getDownloadButton() {
-        return page.$(getTestID(DOWNLOAD_BUTTON_ID));
-      }
+      await clickUntilDownloadModalShowsUp({
+        page,
+        testId: DOWNLOAD_BUTTON_ID,
+      });
 
-      await clickUntilDownloadModalShowsUp(getDownloadButton, page);
-
-      const svgCheckbox = await page.$(getTestID("svg-checkbox"));
-      if (!svgCheckbox) throw Error("No SVG checkbox");
-      await svgCheckbox.click();
-
-      const csvCheckbox = await page.$(getTestID("csv-checkbox"));
-      if (!csvCheckbox) throw Error("No CSV checkbox");
-      await csvCheckbox.click();
+      await page.getByTestId("svg-checkbox").click();
+      await page.getByTestId("csv-checkbox").click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      const downloadButton = await page.$(getTestID("dialog-download-button"));
-      if (!downloadButton) throw Error("No download button");
-      await downloadButton.click();
+      await page.getByTestId("dialog-download-button").click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -884,76 +803,103 @@ describe("Where's My Gene", () => {
   });
 });
 
-async function getNames(selector: string, page: Page): Promise<string[]> {
-  const geneLabelsLocator = await page.locator(selector);
+async function getNames({
+  page,
+  testId,
+  locator,
+}: {
+  page: Page;
+  testId?: string;
+  locator?: Locator;
+}): Promise<string[]> {
+  let labelsLocator: Locator;
+  if (testId) {
+    labelsLocator = page.getByTestId(testId);
+  } else if (locator) {
+    labelsLocator = locator;
+  } else {
+    throw Error("Either testId or locator must be defined");
+  }
   await tryUntil(
     async () => {
-      const names = await geneLabelsLocator.allTextContents();
+      const names = await labelsLocator.allTextContents();
       expect(typeof names[0]).toBe("string");
     },
     { page }
   );
 
-  return geneLabelsLocator.allTextContents();
+  return labelsLocator.allTextContents();
 }
 
-async function clickUntilOptionsShowUp(
-  getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>,
-  page: Page
-) {
+async function clickUntilOptionsShowUp({
+  page,
+  testId,
+  locator,
+}: {
+  page: Page;
+  testId?: string;
+  locator?: Locator;
+}) {
+  // either testId or locator must be defined, not both
+  // locator is used when the element cannot be found using just the test Id from the page
   await tryUntil(
     async () => {
-      const target = await getTarget();
-
-      if (!target) throw Error("no target");
-
-      await target.click();
-      const tooltip = await page.$("[role=tooltip]");
-
-      if (!tooltip) throw Error("no tooltip");
-
-      const options = await tooltip.$$("[role=option]");
-
-      if (!options?.length) throw Error("no options");
+      if (testId) {
+        await page.getByTestId(testId).click();
+      } else if (locator) {
+        await locator.click();
+      } else {
+        throw Error("Either testId or locator must be defined");
+      }
+      await page.getByRole("tooltip").getByRole("option").elementHandles();
     },
     { page }
   );
 }
 
-async function clickUntilDownloadModalShowsUp(
-  getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>,
-  page: Page
-) {
+async function clickUntilDownloadModalShowsUp({
+  page,
+  testId,
+  locator,
+}: {
+  page: Page;
+  testId?: string;
+  locator?: Locator;
+}) {
   await tryUntil(
     async () => {
-      const target = await getTarget();
-
-      if (!target) throw Error("no target");
-
-      await target.click();
-
-      const modal = await page.$("[class=bp4-dialog]");
-
-      if (modal) throw Error("No download modal");
+      if (testId) {
+        await page.getByTestId(testId).click();
+      } else if (locator) {
+        await locator.click();
+      } else {
+        throw Error("Either testId or locator must be defined");
+      }
+      await page.locator(".bp4-dialog").elementHandle();
     },
     { page }
   );
 }
 
-async function clickUntilSidebarShowsUp(
-  getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>,
-  page: Page
-) {
+async function clickUntilSidebarShowsUp({
+  page,
+  testId,
+  locator,
+}: {
+  page: Page;
+  testId?: string;
+  locator?: Locator;
+}) {
   await tryUntil(
     async () => {
-      const target = await getTarget();
-
-      if (!target) throw Error("no target");
-
-      await target.click();
-      const drawer = await page.$("[class=bp4-drawer-header]");
-
-      if (!drawer) throw Error("no drawer");
+      if (testId) {
+        await page.getByTestId(testId).click();
+      } else if (locator) {
+        await locator.click();
+      } else {
+        throw Error("Either testId or locator must be defined");
+      }
+      await page.locator(".bp4-drawer-header").elementHandle();
     },
     { page }
   );
@@ -988,8 +934,59 @@ async function selectNthOption(number: number, page: Page) {
 async function waitForHeatmapToRender(page: Page) {
   await tryUntil(
     async () => {
-      const canvases = await page.$$("canvas");
-      await expect(canvases.length).not.toBe(0);
+      await expect(page.locator("canvas")).not.toHaveCount(0);
+    },
+    { page }
+  );
+}
+
+async function waitForElement(page: Page, testId: string) {
+  await tryUntil(
+    async () => {
+      await expect(page.getByTestId(testId)).not.toHaveCount(0);
+    },
+    { page }
+  );
+}
+
+async function waitForElementToBeRemoved(page: Page, testId: string) {
+  await tryUntil(
+    async () => {
+      await expect(page.getByTestId(testId)).toHaveCount(0);
+    },
+    { page }
+  );
+}
+
+async function getButtonAndClick(page: Page, testID: string) {
+  await tryUntil(
+    async () => {
+      await page.getByTestId(testID).click();
+    },
+    { page }
+  );
+}
+
+// for when there are multiple buttons with the same testID
+async function getFirstButtonAndClick(page: Page, testID: string) {
+  await tryUntil(
+    async () => {
+      const buttons = await page.getByTestId(testID).elementHandles();
+      await buttons[0].click();
+    },
+    { page }
+  );
+}
+
+async function getCellTypeFmgButtonAndClick(page: Page, cellType: string) {
+  await waitForElement(page, CELL_TYPE_LABELS_ID);
+  await tryUntil(
+    async () => {
+      await page
+        .getByTestId(CELL_TYPE_LABEL_ROW_TEST_ID)
+        .filter({ hasText: new RegExp(`^${cellType}$`) })
+        .getByTestId(MARKER_GENE_BUTTON_TEST_ID)
+        .click();
     },
     { page }
   );
@@ -997,16 +994,28 @@ async function waitForHeatmapToRender(page: Page) {
 
 async function clickDropdownOptionByName({
   page,
-  selector,
+  testId,
   name,
 }: {
   page: Page;
-  selector: string;
+  testId: string;
   name: string;
 }) {
-  const dropdown = await page.locator(selector);
-  await dropdown.click();
+  await page.getByTestId(testId).click();
+  await page.getByRole("option").filter({ hasText: name }).click();
+  await page.keyboard.press("Escape");
+}
 
-  const option = await page.locator(`[role=option] >> text=${name}`);
-  await option.click();
+async function getGeneNames(page: Page) {
+  return getNames({ page, locator: page.locator(GENE_LABELS_ID) });
+}
+
+async function getCellTypeNames(page: Page) {
+  return getNames({ page, testId: CELL_TYPE_LABELS_ID });
+}
+
+// (alec) use this instead of locator.count() to make sure that the element is actually present
+// when counting
+async function countLocator(locator: Locator) {
+  return (await locator.elementHandles()).length;
 }

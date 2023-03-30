@@ -3,7 +3,6 @@ import { fontBodyXxs, getColors } from "czifui";
 
 export const Container = styled.div`
   width: 80vw;
-  margin-bottom: 20px;
 `;
 
 export const ActionWrapper = styled.div`

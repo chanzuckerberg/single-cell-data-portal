@@ -16,7 +16,7 @@ import {
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { HEATMAP_CONTAINER_ID } from "../../common/constants";
-import { DispatchContext, State } from "../../common/store";
+import { DispatchContext, State, StateContext } from "../../common/store";
 import { addCellInfoCellType } from "../../common/store/actions";
 import {
   CellType,
@@ -92,8 +92,10 @@ export default memo(function HeatMap({
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const chartWrapperRef = useRef<HTMLDivElement>(null);
-
+  const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
+
+  const { cellInfoCellType, geneInfoGene } = state;
 
   const { data } = usePrimaryFilterDimensions();
 
@@ -168,10 +170,14 @@ export default memo(function HeatMap({
       <TopLeftCornerMask>
         <CellCountLabel>Cell Count</CellCountLabel>
       </TopLeftCornerMask>
-      <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
+      <Container
+        {...{ className }}
+        id={HEATMAP_CONTAINER_ID}
+        isFmgOpen={!!cellInfoCellType || !!geneInfoGene}
+      >
         {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
         <XAxisWrapper id="x-axis-wrapper">
-          <XAxisMask data-test-id="x-axis-mask" />
+          <XAxisMask data-testid="x-axis-mask" />
           <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
         <YAxisWrapper>

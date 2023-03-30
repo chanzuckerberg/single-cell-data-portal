@@ -3,9 +3,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
-import { deleteSingleGene } from "src/views/WheresMyGene/common/store/actions";
+import {
+  deleteSingleGene,
+  selectGeneInfoFromXAxis,
+} from "src/views/WheresMyGene/common/store/actions";
 import { useDeleteGenes } from "../../hooks/useDeleteGenes";
-import { CHART_LEFT_PADDING, SELECTED_STYLE } from "../../style";
+import { CHART_PADDING_PX, SELECTED_STYLE } from "../../style";
 import {
   getHeatmapWidth,
   formatLabel,
@@ -18,8 +21,11 @@ import {
   XAxisLabel,
   GeneButtonStyle,
   XAxisGeneName,
+  InfoButtonWrapper,
 } from "./style";
-
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
+import { StyledImage } from "../YAxisChart/style";
+import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
 interface Props {
   geneNames: string[];
 }
@@ -47,10 +53,10 @@ function GeneButton({
   );
 
   return (
-    <GeneButtonStyle data-test-id={`gene-label-${geneName}`}>
+    <GeneButtonStyle data-testid={`gene-label-${geneName}`}>
       <XAxisLabel className={"gene-label-container"}>
         <div
-          data-test-id={"gene-delete-button"}
+          data-testid={"gene-delete-button"}
           className="gene-delete-icon"
           onClick={() => {
             track(EVENTS.WMG_DELETE_GENE, { gene: geneName });
@@ -66,6 +72,28 @@ function GeneButton({
           active={genesToDelete.includes(geneName)}
           font={currentFont}
         >
+          <InfoButtonWrapper
+            data-testid="gene-info-button-x-axis"
+            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+            onClick={() => {
+              if (!dispatch) return;
+
+              track(EVENTS.WMG_GENE_INFO, {
+                gene: geneName,
+              });
+
+              // This will populate gene info and clear cell type info so that FMG panel closes
+              dispatch(selectGeneInfoFromXAxis(geneName));
+            }}
+          >
+            <StyledImage
+              src={InfoSVG.src}
+              width="10"
+              height="10"
+              alt={`display gene info for ${geneName}`}
+            />
+          </InfoButtonWrapper>
+
           {formattedLabel}
         </XAxisGeneName>
       </XAxisLabel>
@@ -85,9 +113,9 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
   return (
     <XAxisWrapper
       width={heatmapWidth}
-      left={Y_AXIS_CHART_WIDTH_PX + CHART_LEFT_PADDING}
+      left={Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}
     >
-      <XAxisContainer data-test-id="gene-labels" width={heatmapWidth}>
+      <XAxisContainer data-testid="gene-labels" width={heatmapWidth}>
         {geneNames.map((geneName) => (
           <GeneButton
             key={geneName}

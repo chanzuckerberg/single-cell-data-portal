@@ -66,10 +66,13 @@ export function formatLabel(
   maxWidth: number,
   font: string
 ): string {
-  CTX!.font = font;
-  const ellipsisWidth = CTX!.measureText("...").width;
+  // failsafe, should never be falsy
+  if (!CTX) return name;
 
-  if (CTX!.measureText(name).width <= maxWidth) {
+  CTX.font = font;
+  const ellipsisWidth = CTX.measureText("...").width;
+
+  if (CTX.measureText(name).width <= maxWidth) {
     return name;
   }
 
@@ -96,12 +99,15 @@ export function getFixedWidth(
   font: string,
   reverse = false
 ): string {
-  CTX!.font = font;
+  // failsafe, should never be falsy
+  if (!CTX) return text;
+
+  CTX.font = font;
 
   if (reverse) {
     for (let i = text.length; i >= 0; i--) {
       const substring = text.substring(i - 1);
-      const textWidth = CTX!.measureText(substring).width;
+      const textWidth = CTX.measureText(substring).width;
       if (textWidth > maxWidth) {
         return text.substring(i);
       }
@@ -109,7 +115,7 @@ export function getFixedWidth(
   } else {
     for (let i = 0; i < text.length; i++) {
       const substring = text.substring(0, i + 1);
-      const textWidth = CTX!.measureText(substring).width;
+      const textWidth = CTX.measureText(substring).width;
       if (textWidth > maxWidth) {
         return text.substring(0, i);
       }
