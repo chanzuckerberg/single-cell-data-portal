@@ -63,7 +63,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
 
   function handleChange(value: DefaultDropdownMenuOption | null): void {
     if (!dispatch || !value) return;
-    if (!groupByEventTriggeredAtLeastOnce) {
+    if (groupByEventTriggeredAtLeastOnce) {
       track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
         group_by_option: value.name,
       });
