@@ -40,6 +40,13 @@ const GENE_INFO_CLOSE_BUTTON_SPLIT_TEST_ID = "gene-info-close-button-split";
 const RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID = "right-sidebar-close-button";
 const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 
+// Export constants
+const CSV_NUM_METADATA_ROWS = 14;
+const PNG_CHECKBOX_ID = "png-checkbox";
+const CSV_CHECKBOX_ID = "csv-checkbox";
+const SVG_CHECKBOX_ID = "svg-checkbox";
+const DIALOG_DOWNLOAD_BUTTON_ID = "dialog-download-button";
+
 const MUI_CHIP_ROOT = ".MuiChip-root";
 
 const CELL_TYPE_SANITY_CHECK_NUMBER = 100;
@@ -47,6 +54,8 @@ const CELL_TYPE_SANITY_CHECK_NUMBER = 100;
 const COMPARE_DROPDOWN_ID = "compare-dropdown";
 
 const EXPORT_OUTPUT_DIR = "playwright-report/";
+
+const FILTERS_PANEL = "filters-panel";
 
 const { describe, skip } = test;
 
@@ -72,7 +81,7 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstOption(page);
 
-    const filtersPanel = page.getByTestId("filters-panel");
+    const filtersPanel = page.getByTestId(FILTERS_PANEL);
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
@@ -123,7 +132,7 @@ describe("Where's My Gene", () => {
     expect(selectedSexesAfter.length).toBe(1);
 
     function getSexSelector() {
-      return page.getByTestId("filters-panel").getByTestId("sex-filter");
+      return page.getByTestId(FILTERS_PANEL).getByTestId("sex-filter");
     }
 
     function getSexSelectorButton() {
@@ -168,7 +177,7 @@ describe("Where's My Gene", () => {
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
 
     function getDiseaseSelector() {
-      return page.getByTestId("filters-panel").getByTestId("disease-filter");
+      return page.getByTestId(FILTERS_PANEL).getByTestId("disease-filter");
     }
 
     function getDiseaseSelectorButton() {
@@ -176,7 +185,7 @@ describe("Where's My Gene", () => {
     }
 
     function getDatasetSelector() {
-      return page.getByTestId("filters-panel").getByTestId("dataset-filter");
+      return page.getByTestId(FILTERS_PANEL).getByTestId("dataset-filter");
     }
 
     function getDatasetSelectorButton() {
@@ -224,9 +233,7 @@ describe("Where's My Gene", () => {
         await page.mouse.click(0, 0);
 
         function getDatasetSelector() {
-          return page
-            .getByTestId("filters-panel")
-            .getByTestId("dataset-filter");
+          return page.getByTestId(FILTERS_PANEL).getByTestId("dataset-filter");
         }
 
         const numSelectedDatasetsBefore = await countLocator(
@@ -592,13 +599,13 @@ describe("Where's My Gene", () => {
         testId: DOWNLOAD_BUTTON_ID,
       });
 
-      await page.getByTestId("png-checkbox").click();
-      await page.getByTestId("csv-checkbox").click();
+      await page.getByTestId(PNG_CHECKBOX_ID).click();
+      await page.getByTestId(CSV_CHECKBOX_ID).click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      await page.getByTestId("dialog-download-button").click();
+      await page.getByTestId(DIALOG_DOWNLOAD_BUTTON_ID).click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -616,7 +623,7 @@ describe("Where's My Gene", () => {
       // Parsing will validate rows have consistent column counts per row
       const data = parse(csvBuffer, {
         columns: true,
-        from_line: 13, // Start on row with header names, skipping metadata
+        from_line: CSV_NUM_METADATA_ROWS, // Start on row with header names, skipping metadata
         skip_empty_lines: true,
       });
 
@@ -652,13 +659,13 @@ describe("Where's My Gene", () => {
         testId: DOWNLOAD_BUTTON_ID,
       });
 
-      await page.getByTestId("png-checkbox").click();
-      await page.getByTestId("csv-checkbox").click();
+      await page.getByTestId(PNG_CHECKBOX_ID).click();
+      await page.getByTestId(CSV_CHECKBOX_ID).click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      await page.getByTestId("dialog-download-button").click();
+      await page.getByTestId(DIALOG_DOWNLOAD_BUTTON_ID).click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -676,7 +683,7 @@ describe("Where's My Gene", () => {
       // Parsing will validate rows have consistent column counts per row
       const data = parse(csvBuffer, {
         columns: true,
-        from_line: 13, // Start on row with header names, skipping metadata
+        from_line: CSV_NUM_METADATA_ROWS, // Start on row with header names, skipping metadata
         skip_empty_lines: true,
       });
 
@@ -705,13 +712,13 @@ describe("Where's My Gene", () => {
         testId: DOWNLOAD_BUTTON_ID,
       });
 
-      await page.getByTestId("svg-checkbox").click();
-      await page.getByTestId("csv-checkbox").click();
+      await page.getByTestId(SVG_CHECKBOX_ID).click();
+      await page.getByTestId(CSV_CHECKBOX_ID).click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      await page.getByTestId("dialog-download-button").click();
+      await page.getByTestId(DIALOG_DOWNLOAD_BUTTON_ID).click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -762,13 +769,13 @@ describe("Where's My Gene", () => {
         testId: DOWNLOAD_BUTTON_ID,
       });
 
-      await page.getByTestId("svg-checkbox").click();
-      await page.getByTestId("csv-checkbox").click();
+      await page.getByTestId(SVG_CHECKBOX_ID).click();
+      await page.getByTestId(CSV_CHECKBOX_ID).click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      await page.getByTestId("dialog-download-button").click();
+      await page.getByTestId(DIALOG_DOWNLOAD_BUTTON_ID).click();
 
       // Wait for download
       const download = await downloadPromise;
