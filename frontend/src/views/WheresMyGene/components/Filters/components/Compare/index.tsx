@@ -69,6 +69,9 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
       });
     } else if (value.name !== "None") {
       groupByEventTriggeredAtLeastOnce = true;
+      track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
+        group_by_option: value.name,
+      });
     }
 
     dispatch(
