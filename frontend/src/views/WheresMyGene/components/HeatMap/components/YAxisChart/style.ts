@@ -34,6 +34,9 @@ export const TissueName = styled.div`
   transform: rotate(180deg);
   font-size: 12px;
   font-weight: bold;
+
+  /* Fixes bug where some tissue names were wrapping on the last character for png download */
+  white-space: nowrap;
 `;
 
 export const Container = styled.div`

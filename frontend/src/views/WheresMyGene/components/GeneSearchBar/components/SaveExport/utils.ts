@@ -15,8 +15,10 @@ const FONT_FAMILY = "sans-serif";
 
 export function renderLegend({
   heatmapContainer,
+  yOffset,
 }: {
   heatmapContainer?: HTMLElement | null;
+  yOffset: number;
 }) {
   if (!heatmapContainer) return;
 
@@ -46,7 +48,7 @@ export function renderLegend({
     "font-family": FONT_FAMILY,
     "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
     x: `0`,
-    y: `0`,
+    y: `${yOffset}`,
   };
 
   applyAttributes(svg, svgAttributes);
@@ -190,8 +192,10 @@ export function renderColorScale({
 
 export function renderXAxis({
   heatmapContainer,
+  yOffset,
 }: {
   heatmapContainer?: HTMLElement | null;
+  yOffset: number;
 }) {
   if (!heatmapContainer) return;
 
@@ -206,7 +210,7 @@ export function renderXAxis({
     "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
     height: `${200}px`,
     x: `${Y_AXIS_CHART_WIDTH_PX}`,
-    y: `10`,
+    y: `${yOffset + 10}`,
   };
 
   applyAttributes(svg, svgAttributes);
@@ -259,10 +263,12 @@ export function renderYAxis({
   heatmapContainer,
   tissueName,
   height,
+  yOffset,
 }: {
   heatmapContainer?: HTMLElement | null;
   tissueName: Tissue;
   height: number;
+  yOffset: number;
 }) {
   if (!heatmapContainer) return;
 
@@ -273,7 +279,7 @@ export function renderYAxis({
   const svgAttributes = {
     height: `${height}px`,
     width: `${Y_AXIS_CHART_WIDTH_PX + 60}px`, // Adds padding for current tissue label
-    y: `${X_AXIS_CHART_HEIGHT_PX + 25}`,
+    y: `${X_AXIS_CHART_HEIGHT_PX + yOffset + 25}`,
   };
 
   applyAttributes(svg, svgAttributes);
@@ -370,6 +376,37 @@ export function renderYAxis({
   svg.append(cellTypeNamesContainer);
 
   return svg;
+}
+
+export function renderDots({
+  heatmapContainer,
+  tissueName,
+  xPosition,
+  yOffset,
+}: {
+  heatmapContainer?: HTMLElement | null;
+  tissueName: Tissue;
+  xPosition: number;
+  yOffset: number;
+}) {
+  if (!heatmapContainer) return;
+
+  const chart = heatmapContainer
+    .querySelector(`#${tissueName}-chart`)
+    ?.querySelector("svg");
+
+  chart?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + yOffset + 20}`);
+  chart?.setAttribute("x", `${xPosition}`);
+
+  // Cleanup as style attributes aren't used in SVG files
+  chart?.removeAttribute("style");
+  Array.from(chart?.querySelectorAll("rect, path, g") || []).forEach(
+    (element) => {
+      element.removeAttribute("style");
+    }
+  );
+
+  return chart;
 }
 
 function applyAttributes(

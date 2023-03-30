@@ -42,8 +42,13 @@ import InfoPanel from "../InfoPanel";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
-import { SideBarLabel, StyledSidebarDrawer } from "./style";
+import {
+  SideBarLabel,
+  StyledBannerContainer,
+  StyledSidebarDrawer,
+} from "./style";
 import RightSideBar from "../RightSideBar";
+import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -257,31 +262,6 @@ export default function WheresMyGene(): JSX.Element {
     "canvas" | "svg"
   >("canvas");
 
-  // Used to render message for underlying data change
-  const [isPngDownloading, setIsPngDownloading] = useState(false);
-
-  const UnderlyingDataChangeMessage = React.memo(
-    function UnderlyingDataChangeMessage({
-      isPngDownloading,
-    }: {
-      isPngDownloading: boolean;
-    }): JSX.Element {
-      return (
-        <div
-          style={{
-            background: "grey",
-            borderRadius: "4px",
-            padding: "8px",
-            margin: "auto",
-            display: isPngDownloading ? "visible" : "none",
-          }}
-        >
-          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        </div>
-      );
-    }
-  );
-
   const handleCloseRightSideBar = () => {
     if (!dispatch) return;
     dispatch(closeRightSidebar());
@@ -369,11 +349,14 @@ export default function WheresMyGene(): JSX.Element {
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
               availableFilters={availableFilters}
-              setIsPngDownloading={setIsPngDownloading}
             />
           </Top>
 
-          <UnderlyingDataChangeMessage isPngDownloading={isPngDownloading} />
+          {downloadStatus.isLoading && (
+            <StyledBannerContainer>
+              <UnderlyingDataChangeBanner />
+            </StyledBannerContainer>
+          )}
 
           <GetStarted
             tissueSelected={hasSelectedTissues}

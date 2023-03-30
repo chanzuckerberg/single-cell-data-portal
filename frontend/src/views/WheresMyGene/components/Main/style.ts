@@ -17,3 +17,8 @@ export const StyledSidebarDrawer = styled(Drawer)`
     box-shadow: none;
   }
 `;
+
+export const StyledBannerContainer = styled.div`
+  display: flex;
+  justify-content: center;
+`;

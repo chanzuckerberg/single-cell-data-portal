@@ -36,10 +36,10 @@ import {
   StyledModal,
   StyledSection,
   StyledTitle,
-  StyledMessage,
 } from "./style";
 import {
   NAME_SPACE_URI,
+  renderDots,
   renderLegend,
   renderXAxis,
   renderYAxis,
@@ -56,6 +56,7 @@ import {
   csvHeaders,
 } from "./csvUtils";
 import { InputCheckbox } from "czifui";
+import { UnderlyingDataChangeBanner } from "./ExportBanner";
 
 let heatmapContainerScrollTop: number | undefined;
 
@@ -110,7 +111,6 @@ export interface Props {
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
-  setIsPngDownloading: Dispatch<SetStateAction<boolean>>;
 }
 
 interface ExportData {
@@ -126,7 +126,6 @@ export default function SaveExport({
   setEchartsRendererMode,
   allChartProps,
   availableFilters,
-  setIsPngDownloading,
 }: Props): JSX.Element {
   const { selectedFilters, selectedOrganismId, compare } =
     useContext(StateContext);
@@ -193,14 +192,19 @@ export default function SaveExport({
         selectedTissues,
         setEchartsRendererMode,
         setDownloadStatus,
-        setIsPngDownloading,
       }),
       MUTATION_OBSERVER_TIMEOUT
     );
 
     observer.observe(heatmapNode, config);
 
-    if (selectedFileTypes.includes("svg")) {
+    if (
+      selectedFileTypes.includes("png") ||
+      selectedFileTypes.includes("svg")
+    ) {
+      // This will make a change to the heatmap dom which triggers the observer to start the download
+      // We need this for svg to parse the svg heatmap
+      // We need this for png to trigger a change to the dom
       setEchartsRendererMode("svg");
     }
   }, [
@@ -216,7 +220,6 @@ export default function SaveExport({
     selectedOrganismId,
     selectedTissues,
     setEchartsRendererMode,
-    setIsPngDownloading,
   ]);
 
   return (
@@ -274,10 +277,7 @@ export default function SaveExport({
             </StyledInputCheckboxWrapper>
           </StyledSection>
 
-          <StyledMessage>
-            We regularly expand our single cell data corpus to improve results.
-            Downloaded data and figures may differ in the future.
-          </StyledMessage>
+          <UnderlyingDataChangeBanner />
 
           <StyledButtonContainer>
             <DownloadButton
@@ -304,7 +304,7 @@ export default function SaveExport({
   );
 }
 
-function processSvg({
+function generateSvg({
   svg,
   tissueName,
   height,
@@ -318,15 +318,32 @@ function processSvg({
     .querySelector("foreignObject")
     ?.querySelector("div");
 
+  // This is an svg element created in dom when downloadStatus.isLoading is true
+  const banner = document.getElementById("data-message-banner");
+  const bannerWidth = banner?.clientWidth || 0; // Used as the minimum width for the final svg
+  const bannerHeight = banner?.clientHeight || 0; // Used to create room for the banner
+
   // Render elements to SVG
-  const xAxisSvg = renderXAxis({ heatmapContainer });
-  const yAxisSvg = renderYAxis({ heatmapContainer, height, tissueName });
+  const xAxisSvg = renderXAxis({
+    heatmapContainer,
+    yOffset: bannerHeight,
+  });
+  const yAxisSvg = renderYAxis({
+    heatmapContainer,
+    height,
+    tissueName,
+    yOffset: bannerHeight,
+  });
   const dotsSvg = renderDots({
     heatmapContainer,
     tissueName,
     xPosition: yAxisSvg!.width.baseVal.value,
+    yOffset: bannerHeight,
   });
-  const legendSvg = renderLegend({ heatmapContainer });
+  const legendSvg = renderLegend({
+    heatmapContainer,
+    yOffset: bannerHeight,
+  });
 
   const svgWidth =
     yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value + 20;
@@ -339,45 +356,21 @@ function processSvg({
     "xmlns",
     NAME_SPACE_URI
   );
+
+  finalSvg.setAttribute(
+    "width",
+    `${svgWidth < bannerWidth ? bannerWidth : svgWidth}` // Use the banner width as the minimum final svg width
+  );
   finalSvg.setAttribute("height", `${svgHeight}`);
-  finalSvg.setAttribute("width", `${svgWidth}`);
 
   // Append elements to final SVG
+  finalSvg.append(banner || "");
   finalSvg.append(legendSvg || "");
   finalSvg.append(xAxisSvg || "");
   finalSvg.append(yAxisSvg || "");
   finalSvg.append(dotsSvg || "");
 
   return finalSvg.outerHTML;
-}
-
-function renderDots({
-  heatmapContainer,
-  tissueName,
-  xPosition,
-}: {
-  heatmapContainer?: HTMLElement | null;
-  tissueName: Tissue;
-  xPosition: number;
-}) {
-  if (!heatmapContainer) return;
-
-  const chart = heatmapContainer
-    .querySelector(`#${tissueName}-chart`)
-    ?.querySelector("svg");
-
-  chart?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + 20}`);
-  chart?.setAttribute("x", `${xPosition}`);
-
-  // Cleanup as style attributes aren't used in SVG files
-  chart?.removeAttribute("style");
-  Array.from(chart?.querySelectorAll("rect, path, g") || []).forEach(
-    (element) => {
-      element.removeAttribute("style");
-    }
-  );
-
-  return chart;
 }
 
 /**
@@ -466,7 +459,7 @@ async function generateImage(
   let input: string | ArrayBuffer = imageURL;
 
   if (fileType === "svg") {
-    input = processSvg({
+    input = generateSvg({
       height,
       svg: decodeURIComponent(imageURL.split(",")[1]),
       tissueName,
@@ -534,7 +527,6 @@ function download_({
   observer,
   setDownloadStatus,
   setEchartsRendererMode,
-  setIsPngDownloading,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
@@ -555,7 +547,6 @@ function download_({
     }>
   >;
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
-  setIsPngDownloading: Dispatch<SetStateAction<boolean>>;
 }) {
   return async () => {
     try {
@@ -572,8 +563,6 @@ function download_({
       if (isPng) {
         // Adding this class causes the y-axis scrolling to jump but is required for image download
         heatmapNode.classList.add(CLONED_CLASS);
-
-        setIsPngDownloading(true);
 
         heatmapNode.style.width = `${
           getHeatmapWidth(selectedGenes) + Y_AXIS_CHART_WIDTH_PX + 100
@@ -628,9 +617,8 @@ function download_({
       ).flat();
 
       if (isPng) {
-        //(thuang): #3569 Restore scrollTop position
         heatmapNode.classList.remove(CLONED_CLASS);
-        setIsPngDownloading(false);
+        //(thuang): #3569 Restore scrollTop position
         heatmapNode.style.width = initialWidth;
         if (heatmapContainer) {
           heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;

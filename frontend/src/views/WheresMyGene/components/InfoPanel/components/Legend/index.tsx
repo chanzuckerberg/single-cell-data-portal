@@ -23,7 +23,6 @@ interface Props {
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
-  setIsPngDownloading: Dispatch<SetStateAction<boolean>>;
 }
 
 export default memo(function Legend({
@@ -36,7 +35,6 @@ export default memo(function Legend({
   setEchartsRendererMode,
   allChartProps,
   availableFilters,
-  setIsPngDownloading,
 }: Props): JSX.Element {
   return (
     <LegendWrapper>
@@ -48,7 +46,6 @@ export default memo(function Legend({
         setEchartsRendererMode={setEchartsRendererMode}
         allChartProps={allChartProps}
         availableFilters={availableFilters}
-        setIsPngDownloading={setIsPngDownloading}
       />
       <ShareButton />
       <SourceDataButton
