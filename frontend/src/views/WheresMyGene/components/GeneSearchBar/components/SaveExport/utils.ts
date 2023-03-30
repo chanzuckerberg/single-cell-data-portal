@@ -9,9 +9,14 @@ import {
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../../HeatMap/utils";
 import { PLASMA_SVG_STRING } from "../../../Filters/components/ColorScale";
+import { CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX } from "src/components/Layout/style";
+import { CHART_PADDING_PX } from "../../../HeatMap/style";
+import { Y_AXIS_TISSUE_WIDTH_PX } from "../../../HeatMap/components/YAxisChart/style";
+import { capitalize } from "../../../HeatMap/components/YAxisChart";
 
 export const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
 const FONT_FAMILY = "sans-serif";
+const LABEL_ROTATION = "rotate(-90)";
 
 export function renderLegend({
   heatmapContainer,
@@ -71,17 +76,21 @@ export function renderExpressedInCells({
   const expressedCellsGroup = document.createElementNS(NAME_SPACE_URI, "g");
   expressedCellsGroup.id = "expressed-in-cells";
 
-  const xPosition = width + 60;
+  const xOffset = width + 60;
 
   // Expressed in cells label
   const expressedCellsLabel = document.createElementNS(NAME_SPACE_URI, "text");
   expressedCellsLabel.textContent =
     element.querySelector(`#expressed-in-cells-label`)?.innerHTML || null;
-  expressedCellsLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
+  applyAttributes(expressedCellsLabel, {
+    transform: `translate(${xOffset}, 45)`,
+  });
 
   // Expressed in cells dots
   const expressedCellsDots = document.createElementNS(NAME_SPACE_URI, "g");
-  expressedCellsDots.setAttribute("fill", "#CCCCCC");
+  applyAttributes(expressedCellsDots, {
+    fill: "#CCCCCC",
+  });
 
   const dots = element?.querySelectorAll(`#expressed-in-cells-dots span`);
   Array.from(dots || []).forEach((dot, index) => {
@@ -89,7 +98,7 @@ export function renderExpressedInCells({
 
     const circleAttributes = {
       r: `${Number(dot.getAttribute("size")) / 2}`,
-      transform: `translate(${xPosition + 2 + 28 * index}, 60)`,
+      transform: `translate(${xOffset + 2 + 28 * index}, 60)`,
     };
 
     applyAttributes(circle, circleAttributes);
@@ -102,17 +111,19 @@ export function renderExpressedInCells({
     NAME_SPACE_URI,
     "g"
   );
-  expressedCellsValuesGroup.setAttribute(
-    "transform",
-    `translate(${xPosition}, 80)`
-  );
+  applyAttributes(expressedCellsValuesGroup, {
+    transform: `translate(${xOffset}, 80)`,
+  });
+
   const expressedCellsValues = element.querySelectorAll(`.low-high span`);
 
   const expressedCellsValueLow = document.createElementNS(
     NAME_SPACE_URI,
     "text"
   );
-  expressedCellsValueLow.setAttribute("x", "0");
+  applyAttributes(expressedCellsValueLow, {
+    x: 0,
+  });
   expressedCellsValueLow.textContent =
     expressedCellsValues[0].innerHTML || null;
 
@@ -120,8 +131,10 @@ export function renderExpressedInCells({
     NAME_SPACE_URI,
     "text"
   );
-  expressedCellsValueHigh.setAttribute("x", `${width}`);
-  expressedCellsValueHigh.setAttribute("text-anchor", "end");
+  applyAttributes(expressedCellsValueHigh, {
+    x: width,
+    "text-anchor": "end",
+  });
   expressedCellsValueHigh.textContent =
     expressedCellsValues[1].innerHTML || null;
 
@@ -145,7 +158,7 @@ export function renderColorScale({
 }) {
   if (!element) return;
 
-  const xPosition = "40";
+  const xOffset = "40";
 
   const colorScaleGroup = document.createElementNS(NAME_SPACE_URI, "g");
   colorScaleGroup.id = "color-scale";
@@ -154,29 +167,36 @@ export function renderColorScale({
   const colorScaleLabel = document.createElementNS(NAME_SPACE_URI, "text");
   colorScaleLabel.textContent =
     element.querySelector(`#relative-gene-expression-label`)?.innerHTML || null;
-  colorScaleLabel.setAttribute("transform", `translate(${xPosition}, 45)`);
+  applyAttributes(colorScaleLabel, {
+    transform: `translate(${xOffset}, 45)`,
+  });
 
   // Color scale image
   const colorScaleImage = document.createElementNS(NAME_SPACE_URI, "g");
   colorScaleImage.innerHTML = PLASMA_SVG_STRING;
-  colorScaleImage.setAttribute("transform", `translate(${xPosition}, 50)`);
-  colorScaleImage.setAttribute("width", `${width}px`);
+  applyAttributes(colorScaleImage, {
+    transform: `translate(${xOffset}, 50)`,
+    width: width,
+  });
 
   // Color scale values
   const colorScaleValuesGroup = document.createElementNS(NAME_SPACE_URI, "g");
-  colorScaleValuesGroup.setAttribute(
-    "transform",
-    `translate(${xPosition}, 80)`
-  );
+  applyAttributes(colorScaleValuesGroup, {
+    transform: `translate(${xOffset}, 80)`,
+  });
   const colorScaleValues = element.querySelectorAll(`.low-high span`);
 
   const colorScaleValueLow = document.createElementNS(NAME_SPACE_URI, "text");
-  colorScaleValueLow.setAttribute("x", "0");
+  applyAttributes(colorScaleValueLow, {
+    x: 0,
+  });
   colorScaleValueLow.textContent = colorScaleValues[0].innerHTML || null;
 
   const colorScaleValueHigh = document.createElementNS(NAME_SPACE_URI, "text");
-  colorScaleValueHigh.setAttribute("x", `120`);
-  colorScaleValueHigh.setAttribute("text-anchor", "end");
+  applyAttributes(colorScaleValueHigh, {
+    x: 120,
+    "text-anchor": "end",
+  });
   colorScaleValueHigh.textContent = colorScaleValues[1].innerHTML || null;
 
   colorScaleValuesGroup.append(colorScaleValueLow);
@@ -201,16 +221,14 @@ export function renderXAxis({
 
   const xAxis = heatmapContainer.querySelector(`#x-axis-wrapper`);
 
-  // Create root SVG elemnt
+  // Create root SVG element
   const svg = document.createElementNS(NAME_SPACE_URI, "svg");
 
   const svgAttributes = {
+    id: "x-axis-container",
     fill: ECHART_AXIS_LABEL_COLOR_HEX,
     "font-family": FONT_FAMILY,
     "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
-    height: `${200}px`,
-    x: `${Y_AXIS_CHART_WIDTH_PX}`,
-    y: `${yOffset + 10}`,
   };
 
   applyAttributes(svg, svgAttributes);
@@ -218,12 +236,12 @@ export function renderXAxis({
   // Create cell type count label
   const cellTypeCount = document.createElementNS(NAME_SPACE_URI, "text");
 
+  const xOffset = Y_AXIS_CHART_WIDTH_PX + CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX;
+
   const cellTypeCountAttributes = {
-    "text-anchor": "left",
-    transform: `translate(40, ${X_AXIS_CHART_HEIGHT_PX}) scale(-1, -1)`,
-    width: `100px`,
-    x: 0,
-    "writing-mode": "vertical-rl",
+    transform: LABEL_ROTATION,
+    x: -(X_AXIS_CHART_HEIGHT_PX + yOffset + 10),
+    y: xOffset,
   };
 
   applyAttributes(cellTypeCount, cellTypeCountAttributes);
@@ -240,12 +258,14 @@ export function renderXAxis({
     const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
 
     const labelAttributes = {
-      "text-anchor": "left",
-      transform: `translate(${
-        70 + 20 * index
-      }, ${X_AXIS_CHART_HEIGHT_PX}) scale(-1, -1)`,
-      x: 0,
-      "writing-mode": "vertical-rl",
+      transform: LABEL_ROTATION,
+      "font-size": "12px",
+      x: -(X_AXIS_CHART_HEIGHT_PX + yOffset + 10),
+      y:
+        xOffset +
+        HEAT_MAP_BASE_CELL_PX +
+        CHART_PADDING_PX / 2 +
+        index * HEAT_MAP_BASE_CELL_PX,
     };
 
     applyAttributes(geneLabelText, labelAttributes);
@@ -262,12 +282,12 @@ export function renderXAxis({
 export function renderYAxis({
   heatmapContainer,
   tissueName,
-  height,
+  heatmapHeight,
   yOffset,
 }: {
   heatmapContainer?: HTMLElement | null;
   tissueName: Tissue;
-  height: number;
+  heatmapHeight: number;
   yOffset: number;
 }) {
   if (!heatmapContainer) return;
@@ -277,33 +297,49 @@ export function renderYAxis({
   const svg = document.createElementNS(NAME_SPACE_URI, "svg");
 
   const svgAttributes = {
-    height: `${height}px`,
-    width: `${Y_AXIS_CHART_WIDTH_PX + 60}px`, // Adds padding for current tissue label
+    height: `${heatmapHeight}px`,
+    width: `${Y_AXIS_CHART_WIDTH_PX}px`, // Adds padding for current tissue label
+    x: `${CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX}`,
     y: `${X_AXIS_CHART_HEIGHT_PX + yOffset + 25}`,
   };
 
   applyAttributes(svg, svgAttributes);
 
   // Container for tissue label
-  const tissueLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
+  const tissueLabelContainer = document.createElementNS(NAME_SPACE_URI, "svg");
+
+  const RECT_WIDTH = 5;
 
   const tissueLabelText = document.createElementNS(NAME_SPACE_URI, "text");
-  tissueLabelText.textContent = tissueName;
-  tissueLabelText.setAttribute("transform", "translate(35, 100) rotate(270)");
-  tissueLabelText.setAttribute("font-family", "Inter, sans-serif");
-  tissueLabelText.setAttribute("font-size", "14px");
-  tissueLabelText.setAttribute("font-weight", "bold");
+  tissueLabelText.textContent = capitalize(tissueName);
+  applyAttributes(tissueLabelText, {
+    y: `${Y_AXIS_TISSUE_WIDTH_PX - RECT_WIDTH - 12}`,
+    "text-anchor": "end",
+    transform: LABEL_ROTATION,
+    "font-family": "Inter, sans-serif",
+    "font-size": `14px`,
+    "font-weight": "bold",
+  });
 
   const tissueLabelRect = document.createElementNS(NAME_SPACE_URI, "rect");
-  tissueLabelRect.setAttribute("x", "40");
-  tissueLabelRect.setAttribute("width", "5");
-  tissueLabelRect.setAttribute("height", height + "");
+  applyAttributes(tissueLabelRect, {
+    width: `${RECT_WIDTH}`,
+    height: `${heatmapHeight}`,
+    x: `${Y_AXIS_TISSUE_WIDTH_PX - RECT_WIDTH}`,
+    fill: "black",
+  });
 
   tissueLabelContainer.append(tissueLabelText);
   tissueLabelContainer.append(tissueLabelRect);
 
   // cell type names container group
-  const cellTypeNamesContainer = document.createElementNS(NAME_SPACE_URI, "g");
+  const cellTypeNamesContainer = document.createElementNS(
+    NAME_SPACE_URI,
+    "svg"
+  );
+  applyAttributes(cellTypeNamesContainer, {
+    x: `${Y_AXIS_TISSUE_WIDTH_PX + 10}`,
+  });
 
   Array.from(
     yAxis?.querySelectorAll("[data-test-id='cell-type-label-count']") || []
@@ -317,19 +353,19 @@ export function renderYAxis({
     )?.textContent;
 
     // group
-    const group = document.createElementNS(NAME_SPACE_URI, "g");
+    const group = document.createElementNS(NAME_SPACE_URI, "svg");
 
     const groupAttributes = {
+      id: "cell-name-label-group",
       fill: ECHART_AXIS_LABEL_COLOR_HEX,
       "font-family": FONT_FAMILY,
       "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
+      x: 0,
       /**
        * (thuang): Add `HEAT_MAP_BASE_CELL_PX / 2` top margin, so we render the
        * first label in the middle of the first cell
        */
-      transform: `translate(50, ${
-        HEAT_MAP_BASE_CELL_PX / 2 + index * HEAT_MAP_BASE_CELL_PX
-      })`,
+      y: index * HEAT_MAP_BASE_CELL_PX,
     };
 
     applyAttributes(group, groupAttributes);
@@ -346,7 +382,7 @@ export function renderYAxis({
 
     const labelAttributes = {
       x: 0,
-      y: 0,
+      y: HEAT_MAP_BASE_CELL_PX / 2,
     };
 
     applyAttributes(cellTypeLabel, labelAttributes);
@@ -357,8 +393,8 @@ export function renderYAxis({
 
     const countAttributes = {
       "text-anchor": "end",
-      x: Y_AXIS_CHART_WIDTH_PX,
-      y: 0,
+      x: Y_AXIS_CHART_WIDTH_PX - CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
+      y: HEAT_MAP_BASE_CELL_PX / 2,
     };
 
     applyAttributes(cellCount, countAttributes);
@@ -381,12 +417,10 @@ export function renderYAxis({
 export function renderDots({
   heatmapContainer,
   tissueName,
-  xPosition,
   yOffset,
 }: {
   heatmapContainer?: HTMLElement | null;
   tissueName: Tissue;
-  xPosition: number;
   yOffset: number;
 }) {
   if (!heatmapContainer) return;
@@ -395,11 +429,18 @@ export function renderDots({
     .querySelector(`#${tissueName}-chart`)
     ?.querySelector("svg");
 
-  chart?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + yOffset + 20}`);
-  chart?.setAttribute("x", `${xPosition}`);
+  if (!chart) return;
+
+  applyAttributes(chart, {
+    x:
+      Y_AXIS_CHART_WIDTH_PX +
+      CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX +
+      CHART_PADDING_PX,
+    y: X_AXIS_CHART_HEIGHT_PX + yOffset + 20,
+  });
 
   // Cleanup as style attributes aren't used in SVG files
-  chart?.removeAttribute("style");
+  chart.removeAttribute("style");
   Array.from(chart?.querySelectorAll("rect, path, g") || []).forEach(
     (element) => {
       element.removeAttribute("style");
@@ -409,8 +450,8 @@ export function renderDots({
   return chart;
 }
 
-function applyAttributes(
-  node: SVGElement,
+export function applyAttributes(
+  node: SVGElement | HTMLElement,
   attributes: Record<string, string | number>
 ) {
   for (const [key, value] of Object.entries(attributes)) {

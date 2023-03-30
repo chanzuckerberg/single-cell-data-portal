@@ -38,6 +38,7 @@ import {
   StyledTitle,
 } from "./style";
 import {
+  applyAttributes,
   NAME_SPACE_URI,
   renderDots,
   renderLegend,
@@ -56,12 +57,21 @@ import {
   csvHeaders,
 } from "./csvUtils";
 import { InputCheckbox } from "czifui";
-import { UnderlyingDataChangeBanner } from "./ExportBanner";
+import {
+  DATA_MESSAGE_BANNER_HEIGHT_PX,
+  DATA_MESSAGE_BANNER_WIDTH_PX,
+  UnderlyingDataChangeBanner,
+} from "./ExportBanner";
+import {
+  CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
+  CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
+} from "src/components/Layout/style";
+import { LEGEND_HEIGHT_PX } from "../../../InfoPanel/components/Legend/style";
+import { LEGEND_MARGIN_BOTTOM_PX } from "src/views/WheresMyGene/style";
 
 let heatmapContainerScrollTop: number | undefined;
 
 const MUTATION_OBSERVER_TIMEOUT = 3 * 1000;
-const MIN_SVG_WIDTH = 600;
 const CLONED_CLASS = "CLONED";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
@@ -165,7 +175,6 @@ export default function SaveExport({
 
     // Callback function to execute when mutations are observed
     const callback = debounce(() => {
-      console.log("DOWNLOADING");
       download();
     }, MUTATION_OBSERVER_TIMEOUT);
 
@@ -277,7 +286,7 @@ export default function SaveExport({
             </StyledInputCheckboxWrapper>
           </StyledSection>
 
-          <UnderlyingDataChangeBanner />
+          <UnderlyingDataChangeBanner width="100%" />
 
           <StyledButtonContainer>
             <DownloadButton
@@ -307,11 +316,13 @@ export default function SaveExport({
 function generateSvg({
   svg,
   tissueName,
-  height,
+  heatmapHeight,
+  heatmapWidth,
 }: {
   svg: string;
   tissueName: Tissue;
-  height: number;
+  heatmapHeight: number;
+  heatmapWidth: number;
 }) {
   const heatmapNode = new DOMParser().parseFromString(svg, "image/svg+xml");
   const heatmapContainer = heatmapNode
@@ -320,7 +331,11 @@ function generateSvg({
 
   // This is an svg element created in dom when downloadStatus.isLoading is true
   const banner = document.getElementById("data-message-banner");
-  const bannerHeight = banner?.clientHeight || 0; // Used to create room for the banner
+
+  if (!banner) return "";
+
+  const bannerHeight = banner.clientHeight || 0; // Used to create room for the banner
+  const bannerWidth = banner.clientWidth || 0;
 
   // Render elements to SVG
   const xAxisSvg = renderXAxis({
@@ -329,14 +344,13 @@ function generateSvg({
   });
   const yAxisSvg = renderYAxis({
     heatmapContainer,
-    height,
+    heatmapHeight,
     tissueName,
     yOffset: bannerHeight,
   });
   const dotsSvg = renderDots({
     heatmapContainer,
     tissueName,
-    xPosition: yAxisSvg!.width.baseVal.value,
     yOffset: bannerHeight,
   });
   const legendSvg = renderLegend({
@@ -345,22 +359,31 @@ function generateSvg({
   });
 
   const svgWidth =
-    yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value + 20;
-  const svgHeight =
-    dotsSvg!.height.baseVal.value + xAxisSvg!.height.baseVal.value;
-  const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
+    heatmapWidth +
+    Y_AXIS_CHART_WIDTH_PX +
+    CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
 
+  const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
+  applyAttributes(finalSvg, {
+    width: svgWidth < bannerWidth ? bannerWidth : svgWidth, // Use the banner width as the minimum final svg width
+    height:
+      heatmapHeight +
+      bannerHeight +
+      X_AXIS_CHART_HEIGHT_PX +
+      CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
+  });
+
+  // Required for valid SVG
   finalSvg.setAttributeNS(
     "http://www.w3.org/2000/xmlns/",
     "xmlns",
     NAME_SPACE_URI
   );
 
-  finalSvg.setAttribute(
-    "width",
-    `${svgWidth < MIN_SVG_WIDTH ? MIN_SVG_WIDTH : svgWidth}` // Use the banner width as the minimum final svg width
-  );
-  finalSvg.setAttribute("height", `${svgHeight}`);
+  // Center banner
+  applyAttributes(banner, {
+    x: svgWidth / 2 - DATA_MESSAGE_BANNER_WIDTH_PX / 2,
+  });
 
   // Append elements to final SVG
   finalSvg.append(banner || "");
@@ -438,19 +461,33 @@ function generateCsv({
   return csvStringify(output);
 }
 
-async function generateImage(
-  fileType: string,
-  heatmapNode: HTMLDivElement,
-  height: number,
-  tissueName: string,
-  isMultipleTissues = false
-): Promise<string | ArrayBuffer> {
+async function generateImage({
+  fileType,
+  heatmapNode,
+  heatmapHeight,
+  heatmapWidth,
+  tissueName,
+  isMultipleTissues = false,
+}: {
+  fileType: string;
+  heatmapNode: HTMLDivElement;
+  heatmapHeight: number;
+  heatmapWidth: number;
+  tissueName: string;
+  isMultipleTissues: boolean;
+}): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
   const imageURL = await convertHTMLtoImage(heatmapNode, {
     backgroundColor: "white",
     filter: screenshotFilter(tissueName),
-    height: height + X_AXIS_CHART_HEIGHT_PX + 120,
+    height:
+      heatmapHeight +
+      X_AXIS_CHART_HEIGHT_PX +
+      DATA_MESSAGE_BANNER_HEIGHT_PX +
+      LEGEND_HEIGHT_PX +
+      LEGEND_MARGIN_BOTTOM_PX +
+      CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
     pixelRatio: 4,
     width: heatmapNode.offsetWidth,
   });
@@ -459,7 +496,8 @@ async function generateImage(
 
   if (fileType === "svg") {
     input = generateSvg({
-      height,
+      heatmapHeight,
+      heatmapWidth,
       svg: decodeURIComponent(imageURL.split(",")[1]),
       tissueName,
     });
@@ -559,12 +597,14 @@ function download_({
 
       const initialWidth = heatmapNode.style.width;
 
+      const heatmapWidth = getHeatmapWidth(selectedGenes);
+
       if (isPng) {
         // Adding this class causes the y-axis scrolling to jump but is required for image download
         heatmapNode.classList.add(CLONED_CLASS);
 
         heatmapNode.style.width = `${
-          getHeatmapWidth(selectedGenes) + Y_AXIS_CHART_WIDTH_PX + 100
+          heatmapWidth + Y_AXIS_CHART_WIDTH_PX + 100
         }px`;
       }
 
@@ -592,17 +632,20 @@ function download_({
                     selectedTissues,
                   });
                 } else {
-                  const height = getHeatmapHeight(
+                  const heatmapHeight = getHeatmapHeight(
                     selectedCellTypes[tissueName]
                   );
 
-                  input = await generateImage(
+                  input = await generateImage({
                     fileType,
                     heatmapNode,
-                    height,
-                    formattedTissueName,
-                    selectedTissues.length > 1 || selectedFileTypes.length > 1
-                  );
+                    heatmapHeight,
+                    heatmapWidth,
+                    tissueName: formattedTissueName,
+                    isMultipleTissues:
+                      selectedTissues.length > 1 ||
+                      selectedFileTypes.length > 1,
+                  });
                 }
 
                 return {
