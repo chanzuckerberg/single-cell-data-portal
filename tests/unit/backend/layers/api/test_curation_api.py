@@ -1549,6 +1549,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         )
 
         with self.subTest("Only public datasets are returned, in reverse-chronological order"):
+            # Endpoint uses secondary sort by dataset_id for consistency with Datasets in same Collection
             sorted_dataset_ids = [published_collection_2.datasets[0].dataset_id.id] + sorted(
                 [d.dataset_id.id for d in published_collection_1.datasets], reverse=True
             )

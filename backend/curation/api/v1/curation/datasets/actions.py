@@ -35,7 +35,10 @@ def get():
         jsonify(
             sorted(
                 all_datasets_with_collection_name_and_doi,
-                key=lambda d: (d["published_at"], d["dataset_id"]),
+                key=lambda d: (
+                    d["published_at"],
+                    d["dataset_id"],
+                ),  # Secondary sort by dataset_id for consistency since some Datasets from the same Collection will have identical published_at dates
                 reverse=True,
             )
         ),
