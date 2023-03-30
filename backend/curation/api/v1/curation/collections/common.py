@@ -63,6 +63,7 @@ def reshape_for_curation_api(
     business_logic = get_business_logic()
     is_published = collection_version.published_at is not None
     # get collection attributes based on endpoint type and published status
+    collection_id = collection_version.collection_id.id
     if not reshape_for_version_endpoint:
         if is_published:
             # Published
@@ -83,6 +84,7 @@ def reshape_for_curation_api(
             if is_revision:
                 # If it's a revision, both collection_id and collection_url need to point to the version_id,
                 # and datasets should expose the private url (based on version_id)
+                collection_id = collection_version.version_id.id
                 collection_url = f"{get_collections_base_url()}/collections/{collection_version.version_id.id}"
                 revision_of = collection_version.collection_id.id
                 use_canonical_url = False
@@ -106,7 +108,7 @@ def reshape_for_curation_api(
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
     response = dict(
-        collection_id=collection_version.collection_id.id,
+        collection_id=collection_id,
         collection_url=collection_url,
         collection_version_id=collection_version.version_id.id,
         consortia=collection_version.metadata.consortia,

@@ -185,27 +185,27 @@ class TestS3Credentials(BaseAPIPortalTest):
             with self.subTest(f"{token}, unpublished collection"):
                 unpublished_collection = self.generate_unpublished_collection()
 
-                id = unpublished_collection.collection_id
-                response = self.app.get(f"/curation/v1/collections/{id}/s3-upload-credentials", headers=headers)
+                _id = unpublished_collection.collection_id
+                response = self.app.get(f"/curation/v1/collections/{_id}/s3-upload-credentials", headers=headers)
                 self.assertEqual(200, response.status_code)
                 token_sub = self._mock_assert_authorized_token(token)["sub"]
                 self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
                 if is_super_curator:
-                    self.assertEqual(response.json["UploadKeyPrefix"], f"super/{id}/")
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"super/{_id}/")
                 else:
-                    self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{id}/")
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{_id}/")
 
             with self.subTest(f"{token}, unpublished revision"):
                 collection_id = self.generate_published_collection().collection_id
-                id = self.generate_revision(collection_id).version_id
-                response = self.app.get(f"/curation/v1/collections/{id}/s3-upload-credentials", headers=headers)
+                _id = self.generate_revision(collection_id).version_id
+                response = self.app.get(f"/curation/v1/collections/{_id}/s3-upload-credentials", headers=headers)
                 self.assertEqual(200, response.status_code)
                 token_sub = self._mock_assert_authorized_token(token)["sub"]
                 self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
                 if is_super_curator:
-                    self.assertEqual(response.json["UploadKeyPrefix"], f"super/{id}/")
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"super/{_id}/")
                 else:
-                    self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{id}/")
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{_id}/")
 
         _test("owner")
         _test("super", is_super_curator=True)
@@ -984,7 +984,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         if is_open_revision:
             self.assertEqual(status_code, res_1.status_code)
             if status_code == 200:
-                self.assertEqual(collection_version.collection_id.id, res_1.json["collection_id"])
+                self.assertEqual(collection_version.version_id.id, res_1.json["collection_id"])
         else:
             self.assertEqual(403, res_1.status_code)
 
