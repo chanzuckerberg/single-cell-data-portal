@@ -11,7 +11,7 @@ from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from backend.common.corpora_config import CorporaDbConfig
-from backend.layers.business.exceptions import CollectionIsPublishedException, DatasetVersionNotFoundException
+from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -33,7 +33,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.common.helpers import get_published_at_and_collection_version_id_else_not_found
+from backend.layers.common.helpers import set_revised_at_field
 from backend.layers.persistence.constants import SCHEMA_NAME
 from backend.layers.persistence.orm import (
     CollectionTable,
@@ -258,25 +258,6 @@ class DatabaseProvider(DatabaseProviderInterface):
                 datasets.append(self._row_to_dataset_version(version, canonical_dataset, version_artifacts))
         return datasets
 
-    @staticmethod
-    def _set_revised_at_field(
-        dataset_versions: List[DatasetVersion], collection_versions: List[CollectionVersion]
-    ) -> None:
-        """
-        Sets the `revised_at` field on the CanonicalDataset object for each DatasetVersion object
-        """
-        for dataset_version in dataset_versions:
-            try:
-                version_published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
-                    dataset_version, collection_versions
-                )
-                if version_published_at > dataset_version.canonical_dataset.published_at:
-                    # Dataset has been revised
-                    dataset_version.canonical_dataset.revised_at = version_published_at
-            except DatasetVersionNotFoundException:
-                # Dataset has never been published
-                pass
-
     def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         """
         Retrieves a specific collection version by id, with datasets
@@ -295,7 +276,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 for c_v_row in all_collection_versions_rows
             ]
             dataset_versions = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
-            self._set_revised_at_field(dataset_versions, all_collection_versions)
+            set_revised_at_field(dataset_versions, all_collection_versions)
             return self._row_to_collection_version_with_datasets(
                 collection_version, canonical_collection, dataset_versions
             )
@@ -318,7 +299,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             all_collection_versions = [
                 self._row_to_collection_version(c_v_row, canonical_collection) for c_v_row in collection_versions
             ]
-            self._set_revised_at_field(dataset_versions, all_collection_versions)
+            set_revised_at_field(dataset_versions, all_collection_versions)
             return self._row_to_collection_version_with_datasets(
                 collection_version, canonical_collection, dataset_versions
             )

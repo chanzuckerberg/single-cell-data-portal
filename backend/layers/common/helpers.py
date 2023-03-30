@@ -34,3 +34,20 @@ def get_published_at_and_collection_version_id_else_not_found(
         else:
             break
     raise DatasetVersionNotFoundException("No such published Dataset version")
+
+
+def set_revised_at_field(dataset_versions: List[DatasetVersion], collection_versions: List[CollectionVersion]) -> None:
+    """
+    Sets the `revised_at` field on the CanonicalDataset object for each DatasetVersion object
+    """
+    for dataset_version in dataset_versions:
+        try:
+            version_published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
+                dataset_version, collection_versions
+            )
+            if version_published_at > dataset_version.canonical_dataset.published_at:
+                # Dataset has been revised
+                dataset_version.canonical_dataset.revised_at = version_published_at
+        except DatasetVersionNotFoundException:
+            # Dataset has never been published
+            pass

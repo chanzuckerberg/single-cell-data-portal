@@ -142,15 +142,17 @@ def reshape_datasets_for_curation_api(
     for dv in datasets:
         dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
         reshaped_dataset = (
-            reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
+            reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview, as_canonical=False)
             if as_version
-            else reshape_dataset_for_curation_api_as_canonical(dataset_version, use_canonical_url, preview)
+            else reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
         )
         active_datasets.append(reshaped_dataset)
     return active_datasets
 
 
-def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canonical_url: bool, preview=False) -> dict:
+def reshape_dataset_for_curation_api(
+    dataset_version: DatasetVersion, use_canonical_url: bool, preview=False, as_canonical=True
+) -> dict:
     ds = dict()
 
     # Determine what columns to include from the dataset
@@ -199,17 +201,10 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, use_canoni
             ds["collection_id"] = dataset_version.collection_id.id
             ds["collection_version_id"] = dataset_version.collection_version_id.id
             ds["published_at"] = dataset_version.published_at
+        if as_canonical:
+            ds["published_at"] = dataset_version.canonical_dataset.published_at
+            ds["revised_at"] = dataset_version.canonical_dataset.revised_at
     return ds
-
-
-def reshape_dataset_for_curation_api_as_canonical(
-    dataset_version: DatasetVersion, use_canonical_url: bool, preview=False
-) -> dict:
-    dataset = reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
-    if not preview:
-        dataset["published_at"] = dataset_version.canonical_dataset.published_at
-        dataset["revised_at"] = dataset_version.canonical_dataset.revised_at
-    return dataset
 
 
 is_primary_data_mapping = {

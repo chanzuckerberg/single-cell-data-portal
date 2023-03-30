@@ -1,6 +1,6 @@
 from flask import jsonify, make_response
 
-from backend.curation.api.v1.curation.collections.common import reshape_dataset_for_curation_api_as_canonical
+from backend.curation.api.v1.curation.collections.common import reshape_dataset_for_curation_api
 from backend.layers.common.entities import CollectionLinkType
 from backend.portal.api.providers import get_business_logic
 
@@ -27,7 +27,7 @@ def get():
         }
 
         for dataset in collection.datasets:
-            dataset_response_obj = reshape_dataset_for_curation_api_as_canonical(dataset, use_canonical_url=True)
+            dataset_response_obj = reshape_dataset_for_curation_api(dataset, use_canonical_url=True)
             dataset_response_obj.update(collection_info)
             all_datasets_with_collection_name_and_doi.append(dataset_response_obj)
 
