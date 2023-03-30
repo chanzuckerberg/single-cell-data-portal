@@ -61,7 +61,7 @@ import { UnderlyingDataChangeBanner } from "./ExportBanner";
 let heatmapContainerScrollTop: number | undefined;
 
 const MUTATION_OBSERVER_TIMEOUT = 3 * 1000;
-
+const MIN_SVG_WIDTH = 600;
 const CLONED_CLASS = "CLONED";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
@@ -320,7 +320,6 @@ function generateSvg({
 
   // This is an svg element created in dom when downloadStatus.isLoading is true
   const banner = document.getElementById("data-message-banner");
-  const bannerWidth = banner?.clientWidth || 0; // Used as the minimum width for the final svg
   const bannerHeight = banner?.clientHeight || 0; // Used to create room for the banner
 
   // Render elements to SVG
@@ -359,7 +358,7 @@ function generateSvg({
 
   finalSvg.setAttribute(
     "width",
-    `${svgWidth < bannerWidth ? bannerWidth : svgWidth}` // Use the banner width as the minimum final svg width
+    `${svgWidth < MIN_SVG_WIDTH ? MIN_SVG_WIDTH : svgWidth}` // Use the banner width as the minimum final svg width
   );
   finalSvg.setAttribute("height", `${svgHeight}`);
 
