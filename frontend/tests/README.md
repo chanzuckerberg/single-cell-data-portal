@@ -138,6 +138,7 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
    1. In `single-cell-data-portal/frontend/`, run `TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-dev --/YOUR_DIRECTORY_PATH/single-cell-data-portal/frontend/tests/features/collection/collection.test.ts -- -- --debug`.
 
       NOTE: `PUT_PASSWORD_HERE` needs to be replaced with the actual test account Auth0 password, and `YOUR_DIRECTORY_PATH` needs to be where your `single-cell-data-portal` directory lives
+      NOTE: To run in one specific browser, run `npm run e2e-dev -- --project chromium` (chromium|firefox|edge)
 
    1. Playwright will now spin up a browser window and a debugging console for you to inspect the test live!
 
