@@ -24,7 +24,7 @@ interface Props {
 }
 
 // (alec) This is a hack to prevent the group by event from firing when the page loads
-let groupByEventTriggeredOnce = false;
+let groupByEventTriggeredAtLeastOnce = false;
 
 export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
@@ -63,12 +63,12 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
 
   function handleChange(value: DefaultDropdownMenuOption | null): void {
     if (!dispatch || !value) return;
-    if (!groupByEventTriggeredOnce) {
+    if (!groupByEventTriggeredAtLeastOnce) {
       track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
         group_by_option: value.name,
       });
-    } else {
-      groupByEventTriggeredOnce = true;
+    } else if (value.name !== "None") {
+      groupByEventTriggeredAtLeastOnce = true;
     }
 
     dispatch(
