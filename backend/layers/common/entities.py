@@ -205,6 +205,7 @@ class DatasetVersion:
 class PublishedDatasetVersion(DatasetVersion):
     collection_version_id: CollectionVersionId  # Pointer to collection version it was originally published under
     published_at: datetime
+    revised_at: datetime = None
 
 
 @dataclass
@@ -283,3 +284,8 @@ class CollectionVersion(CollectionVersionBase):
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
     datasets: List[DatasetVersion]
+
+
+@dataclass
+class CollectionVersionWithPublishedDatasets(CollectionVersionBase):
+    datasets: List[PublishedDatasetVersion]

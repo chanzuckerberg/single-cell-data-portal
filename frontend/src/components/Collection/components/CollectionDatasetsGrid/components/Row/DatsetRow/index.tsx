@@ -238,7 +238,7 @@ const DatasetRow: FC<Props> = ({
               intent={Intent.DANGER}
             >
               <StyledPrimaryAnchorButton
-                data-test-id="view-dataset-link"
+                data-testid="view-dataset-link"
                 disabled={dataset.tombstone || isOverMaxCellCount}
                 href={dataset?.dataset_deployments[0]?.url}
                 intent={Intent.PRIMARY}

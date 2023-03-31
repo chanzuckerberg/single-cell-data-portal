@@ -14,7 +14,7 @@ def get(collection_id: str):
 
     collection_versions = sorted(
         [
-            reshape_for_curation_api(c_v)
+            reshape_for_curation_api(c_v, reshape_for_version_endpoint=True)
             for c_v in get_business_logic().get_all_published_collection_versions_from_canonical(
                 CollectionId(collection_id)
             )

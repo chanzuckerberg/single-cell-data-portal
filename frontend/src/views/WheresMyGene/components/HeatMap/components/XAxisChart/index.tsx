@@ -53,10 +53,10 @@ function GeneButton({
   );
 
   return (
-    <GeneButtonStyle data-test-id={`gene-label-${geneName}`}>
+    <GeneButtonStyle data-testid={`gene-label-${geneName}`}>
       <XAxisLabel className={"gene-label-container"}>
         <div
-          data-test-id={"gene-delete-button"}
+          data-testid={"gene-delete-button"}
           className="gene-delete-icon"
           onClick={() => {
             track(EVENTS.WMG_DELETE_GENE, { gene: geneName });
@@ -73,7 +73,7 @@ function GeneButton({
           font={currentFont}
         >
           <InfoButtonWrapper
-            data-test-id="gene-info-button-x-axis"
+            data-testid="gene-info-button-x-axis"
             className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
             onClick={() => {
               if (!dispatch) return;
@@ -115,7 +115,7 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
       width={heatmapWidth}
       left={Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}
     >
-      <XAxisContainer data-test-id="gene-labels" width={heatmapWidth}>
+      <XAxisContainer data-testid="gene-labels" width={heatmapWidth}>
         {geneNames.map((geneName) => (
           <GeneButton
             key={geneName}

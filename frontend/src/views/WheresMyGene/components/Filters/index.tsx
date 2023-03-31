@@ -278,7 +278,7 @@ export default memo(function Filters({
       <div>
         <StyledComplexFilter
           multiple
-          data-test-id="dataset-filter"
+          data-testid="dataset-filter"
           search
           label="Dataset"
           options={datasets as unknown as DefaultMenuSelectOption[]}
@@ -292,7 +292,7 @@ export default memo(function Filters({
         />
         <StyledComplexFilter
           multiple
-          data-test-id="disease-filter"
+          data-testid="disease-filter"
           search
           label="Disease"
           options={disease_terms as unknown as DefaultMenuSelectOption[]}
@@ -306,7 +306,7 @@ export default memo(function Filters({
         />
         <StyledComplexFilter
           multiple
-          data-test-id="self-reported-ethnicity-filter"
+          data-testid="self-reported-ethnicity-filter"
           search
           label="Self-Reported Ethnicity"
           options={
@@ -322,7 +322,7 @@ export default memo(function Filters({
         />
         <StyledComplexFilter
           multiple
-          data-test-id="sex-filter"
+          data-testid="sex-filter"
           search
           label="Sex"
           options={sex_terms as unknown as DefaultMenuSelectOption[]}

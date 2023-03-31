@@ -52,7 +52,7 @@ export default function CollectionDescription({
   }, [descriptionScrollHeight]);
 
   return (
-    <Description data-test-id="collection-description">
+    <Description data-testid="collection-description">
       <DescriptionText isEllipsis={isEllipsis} ref={descriptionRef}>
         {description}
       </DescriptionText>

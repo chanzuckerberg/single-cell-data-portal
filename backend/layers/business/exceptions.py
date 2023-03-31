@@ -55,6 +55,12 @@ class DatasetIngestException(BusinessException):
     pass
 
 
+class DatasetVersionNotFoundException(BusinessException):
+    """
+    Raised when a Dataset version is not found
+    """
+
+
 class InvalidURIException(DatasetIngestException):
     """
     Raised when trying to ingest a dataset with an invalid URI

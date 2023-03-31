@@ -101,6 +101,7 @@ class DatabaseProviderInterface:
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
+        update_revised_at: bool = False,
     ) -> None:
         """
         Finalizes a collection version. This is equivalent to calling:
@@ -134,11 +135,6 @@ class DatabaseProviderInterface:
         """
         Returns all dataset versions.
         # TODO: Add filtering
-        """
-
-    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
-        """
-        Returns all mapped collection versions with their datasets
         """
 
     def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:
