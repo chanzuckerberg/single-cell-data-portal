@@ -21,7 +21,7 @@ html {
   min-height: 100vh;
   font: "Inter", sans-serif;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-y: scroll;
 }
 
 body {
