@@ -1060,6 +1060,8 @@ components:
             When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
             the dataset can be found in `processing_status_detail`.
           nullable: true
+        published_at:
+          $ref: "#/components/schemas/dataset_published_at"
         revised_at:
           $ref: "#/components/schemas/dataset_revised_at"
         schema_version:
