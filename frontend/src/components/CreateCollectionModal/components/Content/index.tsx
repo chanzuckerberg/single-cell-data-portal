@@ -172,7 +172,7 @@ const Content: FC<Props> = (props) => {
   const { onClose } = props;
   return (
     <>
-      <div data-test-id="collection-form-content">
+      <div data-testid="collection-form-content">
         {/* (thuang): turn off autocomplete seems to be the safest bet for now
          * https://github.com/facebook/react/issues/1159
          */}
@@ -293,7 +293,7 @@ const Content: FC<Props> = (props) => {
             text="Cancel"
           />
           <StyledPrimaryButton
-            data-test-id="create-button"
+            data-testid="create-button"
             disabled={!isValid}
             intent={Intent.PRIMARY}
             loading={isLoading}

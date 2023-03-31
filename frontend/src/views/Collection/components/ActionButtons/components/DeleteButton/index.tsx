@@ -35,7 +35,7 @@ const DeleteCollectionButton = ({
         onClick={handleClick}
         text="Delete Collection"
         intent={Intent.DANGER}
-        data-test-id="delete-collection-button"
+        data-testid="delete-collection-button"
         minimal
         outlined
         onMouseEnter={handleHover}
