@@ -211,7 +211,10 @@ export default function SaveExport({
     observer.observe(heatmapNode, config);
 
     // This will make a change to the heatmap dom which triggers the observer to start the download
-    if (selectedFileTypes.includes("svg")) {
+    if (
+      selectedFileTypes.includes("svg") ||
+      selectedFileTypes.includes("png")
+    ) {
       setEchartsRendererMode("svg");
     } else {
       // Kind of a hack to modify the DOM to trigger the observer
