@@ -443,6 +443,8 @@ paths:
                   properties:
                     access_type:
                       $ref: "#/components/schemas/access_type"
+                    curator_name:
+                      type: string
                     id:
                       $ref: "#/components/schemas/collection_id"
                     name:

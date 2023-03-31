@@ -859,14 +859,28 @@ class TestCollection(BaseAPIPortalTest):
 
         ids = [collection["id"] for collection in body]
 
-        self.assertIn(public_collection.collection_id.id, ids)
-        self.assertIn(private_collection.collection_id.id, ids)
-        self.assertIn(private_collection_not_owned.collection_id.id, ids)
+        collections_by_id = {collection["id"]: collection for collection in body}
 
-        self.assertNotIn(private_collection.version_id.id, ids)
-        self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
-        self.assertNotIn(collection_to_tombstone.version_id.id, ids)
-        self.assertNotIn(private_collection_not_owned.version_id.id, ids)
+        self.assertIn(public_collection.collection_id.id, collections_by_id)
+        self.assertEqual(
+            collections_by_id[public_collection.collection_id.id]["curator_name"], public_collection.curator_name
+        )
+
+        self.assertIn(private_collection.collection_id.id, ids)
+        self.assertEqual(
+            collections_by_id[private_collection.collection_id.id]["curator_name"], private_collection.curator_name
+        )
+
+        self.assertIn(private_collection_not_owned.collection_id.id, collections_by_id)
+        self.assertEqual(
+            collections_by_id[private_collection_not_owned.collection_id.id]["curator_name"],
+            private_collection_not_owned.curator_name,
+        )
+
+        self.assertNotIn(private_collection.version_id.id, collections_by_id)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, collections_by_id)
+        self.assertNotIn(collection_to_tombstone.version_id.id, collections_by_id)
+        self.assertNotIn(private_collection_not_owned.version_id.id, collections_by_id)
 
         # test that super curators can WRITE all collections
         for collection in body:

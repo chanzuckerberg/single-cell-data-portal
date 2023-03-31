@@ -457,12 +457,13 @@ def get_my_collection_index(token_info):
     for collection in itertools.chain(collections, all_owned_collections):
 
         transformed_collection = {
+            "access_type": "WRITE" if user_info.is_user_owner_or_allowed(collection.owner) else "READ",
+            "created_at": collection.created_at,
+            "curator_name": collection.curator_name,
             "id": collection.collection_id.id,
             "name": collection.metadata.name,
-            "access_type": "WRITE" if user_info.is_user_owner_or_allowed(collection.owner) else "READ",
-            "visibility": "PRIVATE" if collection.published_at is None else "PUBLIC",
             "owner": collection.owner,
-            "created_at": collection.created_at,
+            "visibility": "PRIVATE" if collection.published_at is None else "PUBLIC",
         }
 
         if collection.publisher_metadata is not None:
