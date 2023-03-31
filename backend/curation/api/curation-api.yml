@@ -805,12 +805,6 @@ components:
       description: A timestamp indicating the last time a Revision for this Dataset was published.
       nullable: true
       type: string
-    dataset_version_revised_at:
-      description: |
-        If this Dataset Version is a Revision of a Published Dataset, a timestamp indicating when this Dataset Version 
-        was created. Otherwise, None.
-      nullable: true
-      type: string
     collection_revising_in:
       type: string
       description: >
@@ -1067,7 +1061,7 @@ components:
             the dataset can be found in `processing_status_detail`.
           nullable: true
         revised_at:
-          $ref: "#/components/schemas/dataset_version_revised_at"
+          $ref: "#/components/schemas/dataset_revised_at"
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
