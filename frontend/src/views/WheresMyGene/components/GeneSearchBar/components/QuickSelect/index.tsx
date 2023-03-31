@@ -269,7 +269,7 @@ export default function QuickSelect<
         <StyledSelectButton
           disabled={isLoading}
           id={`${dataTestId}-id`}
-          data-test-id={dataTestId}
+          data-testid={dataTestId}
           ref={ref}
           onClick={handleClick}
           sdsType="primary"

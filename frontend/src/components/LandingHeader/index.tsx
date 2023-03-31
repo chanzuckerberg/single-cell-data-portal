@@ -70,7 +70,7 @@ const LandingHeader: FC = () => {
                 <LinkWrapper>
                   <Link href={ROUTES.COLLECTIONS} passHref>
                     <AnchorButton
-                      data-test-id="collection-link"
+                      data-testid="collection-link"
                       onClick={() => {
                         track(EVENTS.COLLECTIONS_CLICK_NAV);
                       }}

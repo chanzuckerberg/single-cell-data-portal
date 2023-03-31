@@ -39,13 +39,13 @@ const UploadCSV: FC = () => {
   return (
     <>
       <input
-        data-test-id="upload-csv"
+        data-testid="upload-csv"
         type="file"
         accept=".csv"
         onChange={handleCSV}
       />
       {csvResult && (
-        <div data-test-id="csv-result">{JSON.stringify(csvResult)}</div>
+        <div data-testid="csv-result">{JSON.stringify(csvResult)}</div>
       )}
     </>
   );
