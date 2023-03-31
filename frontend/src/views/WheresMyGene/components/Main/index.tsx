@@ -337,7 +337,14 @@ export default function WheresMyGene(): JSX.Element {
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
 
-          <Top>
+          {/* Used for PNG and SVG exports to render message banner to render in output */}
+          {downloadStatus.isLoading && (
+            <StyledBannerContainer>
+              <UnderlyingDataChangeBanner />
+            </StyledBannerContainer>
+          )}
+
+          <Top id="top-legend">
             <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
@@ -351,13 +358,6 @@ export default function WheresMyGene(): JSX.Element {
               availableFilters={availableFilters}
             />
           </Top>
-
-          {/* Used for PNG and SVG exports to render message banner to render in output */}
-          {downloadStatus.isLoading && (
-            <StyledBannerContainer>
-              <UnderlyingDataChangeBanner />
-            </StyledBannerContainer>
-          )}
 
           <GetStarted
             tissueSelected={hasSelectedTissues}

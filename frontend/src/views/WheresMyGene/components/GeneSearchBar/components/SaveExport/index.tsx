@@ -59,7 +59,6 @@ import {
 import { InputCheckbox } from "czifui";
 import {
   DATA_MESSAGE_BANNER_HEIGHT_PX,
-  DATA_MESSAGE_BANNER_WIDTH_PX,
   UnderlyingDataChangeBanner,
 } from "./ExportBanner";
 import {
@@ -368,6 +367,10 @@ function generateSvg({
   const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
   applyAttributes(finalSvg, {
     width: svgWidth < bannerWidth ? bannerWidth : svgWidth, // Use the banner width as the minimum final svg width
+    x:
+      svgWidth > bannerWidth
+        ? svgWidth / 2 - bannerWidth / 2 // Center banner
+        : 0,
     height:
       heatmapHeight +
       bannerHeight +
@@ -381,11 +384,6 @@ function generateSvg({
     "xmlns",
     NAME_SPACE_URI
   );
-
-  // Center banner
-  applyAttributes(banner, {
-    x: svgWidth / 2 - DATA_MESSAGE_BANNER_WIDTH_PX / 2,
-  });
 
   // Append elements to final SVG
   finalSvg.append(banner || "");
@@ -602,12 +600,10 @@ function download_({
       const heatmapWidth = getHeatmapWidth(selectedGenes);
 
       if (isPng) {
-        // Adding this class causes the y-axis scrolling to jump but is required for image download
+        // Add classes that are required for styling PNG
+        // Adding this class to the heatmap causes the y-axis scrolling to jump but is required for image download
         heatmapNode.classList.add(CLONED_CLASS);
-
-        heatmapNode.style.width = `${
-          heatmapWidth + Y_AXIS_CHART_WIDTH_PX + 100
-        }px`;
+        document.getElementById("top-legend")?.classList.add(CLONED_CLASS);
       }
 
       const exports: ExportData[] = (
@@ -661,7 +657,10 @@ function download_({
       ).flat();
 
       if (isPng) {
+        // Remove classes that were required for styling PNG
         heatmapNode.classList.remove(CLONED_CLASS);
+        document.getElementById("top-legend")?.classList.remove(CLONED_CLASS);
+
         //(thuang): #3569 Restore scrollTop position
         heatmapNode.style.width = initialWidth;
         if (heatmapContainer) {
