@@ -39,18 +39,22 @@ export default function GetStarted({
     return (
       isClient && (
         <Wrapper isHidden={tissueHasLoadedOnce && geneHasLoadedOnce}>
-          <ColumnOne>
-            <StyledStepOne isHidden={tissueHasLoadedOnce}>
+          <ColumnOne data-testid="column-one">
+            <StyledStepOne
+              isHidden={tissueHasLoadedOnce}
+              data-testid="add-tissue"
+            >
               <Step step={1} details="Add Tissues" />
             </StyledStepOne>
           </ColumnOne>
 
-          <ColumnTwo>
-            <StyledStepTwo isHidden={geneHasLoadedOnce}>
+          <ColumnTwo data-testid="column-two">
+            <StyledStepTwo isHidden={geneHasLoadedOnce} data-testid="add-genes">
               <Step step={2} details="Add Genes" />
             </StyledStepTwo>
             <StyledStepThree
               isHidden={geneHasLoadedOnce && tissueHasLoadedOnce}
+              data-testid="explore-gene-expression"
             >
               <Step step={3} details="Explore Gene Expression" />
             </StyledStepThree>
