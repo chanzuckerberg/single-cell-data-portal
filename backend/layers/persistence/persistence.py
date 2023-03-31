@@ -2,7 +2,6 @@ import contextlib
 import json
 import logging
 import uuid
-from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple
@@ -34,6 +33,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
+from backend.layers.common.helpers import set_revised_at_field
 from backend.layers.persistence.constants import SCHEMA_NAME
 from backend.layers.persistence.orm import (
     CollectionTable,
@@ -268,8 +268,18 @@ class DatabaseProvider(DatabaseProviderInterface):
                 return None
             collection_id = CollectionId(str(collection_version.collection_id))
             canonical_collection = self.get_canonical_collection(collection_id)
-            datasets = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
-            return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, datasets)
+            all_collection_versions_rows = (
+                session.query(CollectionVersionTable).filter_by(collection_id=canonical_collection.id.id).all()
+            )
+            all_collection_versions = [
+                self._row_to_collection_version(c_v_row, canonical_collection)
+                for c_v_row in all_collection_versions_rows
+            ]
+            dataset_versions = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
+            set_revised_at_field(dataset_versions, all_collection_versions)
+            return self._row_to_collection_version_with_datasets(
+                collection_version, canonical_collection, dataset_versions
+            )
 
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         """
@@ -281,10 +291,18 @@ class DatabaseProvider(DatabaseProviderInterface):
             if version_id is None or version_id[0] is None:
                 return None
             version_id = version_id[0]
-            collection_version = session.query(CollectionVersionTable).filter_by(id=version_id).one()
+            collection_versions = session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id).all()
+
+            collection_version = next(c_v_row for c_v_row in collection_versions if c_v_row.id == version_id)
             canonical_collection = self.get_canonical_collection(collection_id)
-            datasets = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
-            return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, datasets)
+            dataset_versions = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
+            all_collection_versions = [
+                self._row_to_collection_version(c_v_row, canonical_collection) for c_v_row in collection_versions
+            ]
+            set_revised_at_field(dataset_versions, all_collection_versions)
+            return self._row_to_collection_version_with_datasets(
+                collection_version, canonical_collection, dataset_versions
+            )
 
     def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersionWithDatasets]:
         """
@@ -446,7 +464,6 @@ class DatabaseProvider(DatabaseProviderInterface):
             # update canonical collection -> collection version mapping
             collection = session.query(CollectionTable).filter_by(id=collection_id.id).one()
             collection.version_id = version_id.id
-
             # update canonical collection timestamps depending on whether this is its first publish
             if collection.originally_published_at is None:
                 collection.originally_published_at = published_at
@@ -507,37 +524,6 @@ class DatabaseProvider(DatabaseProviderInterface):
         for collection in active_collections:
             dataset_version_ids.extend(collection.datasets)
         return list(self._get_datasets(dataset_version_ids)), active_collections
-
-    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
-        """
-        Returns all mapped collection versions with their datasets
-        """
-        mapped_datasets, mapped_collections = self.get_all_mapped_datasets_and_collections()
-
-        datasets_by_collection_id = defaultdict(list)
-        # Construct dict of collection_id: [datasets]
-        [datasets_by_collection_id[d.collection_id.id].append(d) for d in mapped_datasets]
-
-        # Turn list of CollectionVersions into CollectionVersionsWithDatasets
-        collections_with_datasets: List[CollectionVersionWithDatasets] = []
-        for collection in mapped_collections:
-            dataset_versions = datasets_by_collection_id.get(collection.collection_id.id, [])
-            collections_with_datasets.append(
-                CollectionVersionWithDatasets(
-                    datasets=dataset_versions,
-                    collection_id=collection.collection_id,
-                    version_id=collection.version_id,
-                    owner=collection.owner,
-                    curator_name=collection.curator_name,
-                    metadata=collection.metadata,
-                    publisher_metadata=collection.publisher_metadata,
-                    published_at=collection.published_at,
-                    created_at=collection.created_at,
-                    canonical_collection=collection.canonical_collection,
-                )
-            )
-
-        return collections_with_datasets
 
     def get_dataset_artifacts(self, dataset_artifact_id_list: List[DatasetArtifactId]) -> List[DatasetArtifact]:
         """

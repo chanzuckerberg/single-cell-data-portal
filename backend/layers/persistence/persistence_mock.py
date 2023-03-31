@@ -1,5 +1,4 @@
 import copy
-from collections import defaultdict
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
@@ -93,6 +92,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         copied_version = copy.deepcopy(version)
         if update_datasets:
             copied_version.datasets = [self.get_dataset_version(dataset_id) for dataset_id in copied_version.datasets]
+            # Hack for business logic that uses isinstance
+            copied_version.__class__ = CollectionVersionWithDatasets
         cc = self.collections.get(version.collection_id.id)
         if cc is None:
             return copied_version
@@ -207,7 +208,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_version = self.get_dataset_version(dataset_version_id)
             if self.datasets[dataset_version.dataset_id.id].published_at is None:
                 self.datasets[dataset_version.dataset_id.id].published_at = published_at
-            if self.datasets[dataset_version.dataset_id.id].revised_at is None:
+            elif self.datasets[dataset_version.dataset_id.id].revised_at is None:
                 self.datasets[dataset_version.dataset_id.id].revised_at = published_at
             dataset_version.canonical_dataset.dataset_version_id = dataset_version.version_id
         cc = self.collections.get(collection_id.id)
@@ -264,37 +265,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         for dv_id in ids:
             dataset_versions.append(self._update_dataset_version_with_canonical(self.datasets_versions[dv_id.id]))
         return dataset_versions
-
-    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithDatasets]:
-        """
-        Returns all mapped collection versions with their datasets
-        """
-        mapped_datasets, mapped_collections = self.get_all_mapped_datasets_and_collections()
-
-        datasets_by_collection_id = defaultdict(list)
-        # Construct dict of collection_id: [datasets]
-        [datasets_by_collection_id[d.collection_id.id].append(d) for d in mapped_datasets]
-
-        # Turn list of CollectionVersions into CollectionVersionsWithDatasets
-        collections_with_datasets: List[CollectionVersionWithDatasets] = []
-        for collection in mapped_collections:
-            dataset_versions = datasets_by_collection_id.get(collection.collection_id.id, [])
-            collections_with_datasets.append(
-                CollectionVersionWithDatasets(
-                    datasets=dataset_versions,
-                    collection_id=collection.collection_id,
-                    version_id=collection.version_id,
-                    owner=collection.owner,
-                    curator_name=collection.curator_name,
-                    metadata=collection.metadata,
-                    publisher_metadata=collection.publisher_metadata,
-                    published_at=collection.published_at,
-                    created_at=collection.created_at,
-                    canonical_collection=collection.canonical_collection,
-                )
-            )
-
-        return collections_with_datasets
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         versions = []

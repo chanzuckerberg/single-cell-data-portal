@@ -753,8 +753,9 @@ class TestGetCollectionID(BaseAPIPortalTest):
         del res_body["created_at"]  # too finicky; ignore
         del res_body["revised_at"]  # too finicky; ignore
         del res_body["published_at"]  # too finicky; ignore
-        del res_body["datasets"][0]["revised_at"]  # too finicky; ignore
-
+        for dataset in res_body["datasets"]:
+            del dataset["revised_at"]  # too finicky; ignore
+            del dataset["published_at"]  # too finicky; ignore
         self.maxDiff = None
         self.assertDictEqual(expected_body, res_body)  # Confirm dict has been packaged in list
         self.assertEqual(json.dumps(expected_body, sort_keys=True), json.dumps(res_body))
@@ -798,9 +799,9 @@ class TestGetCollectionID(BaseAPIPortalTest):
                     response = resp
             return response.json
 
-        privilege_access_headers = [self.make_owner_header(), self.make_super_curator_header()]
+        privileged_access_headers = [self.make_owner_header(), self.make_super_curator_header()]
         restricted_access_headers = [self.make_not_owner_header(), self.make_not_auth_header()]
-        all_headers = [*privilege_access_headers, *restricted_access_headers]
+        all_headers = [*privileged_access_headers, *restricted_access_headers]
         unpublished = self.generate_unpublished_collection(add_datasets=1)
         with self.subTest("get unpublished version"):
             resp_collection = _test_responses(unpublished.collection_id, unpublished.collection_id, all_headers)
@@ -847,7 +848,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
 
         with self.subTest("get published with unpublished version and privileged access"):
             resp_collection = _test_responses(
-                published.collection_id, published.collection_id, privilege_access_headers
+                published.collection_id, published.collection_id, privileged_access_headers
             )
             self.assertEqual("PUBLIC", resp_collection["visibility"])
             self.assertEqual(revision.version_id.id, resp_collection["revising_in"])
@@ -885,7 +886,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNotNone(resp_collection["published_at"])
             self.assertTrue(resp_collection["collection_url"].endswith(revision.version_id.id))
             self.assertEqual(revision.version_id.id, resp_collection["collection_version_id"])
-            self.assertIsNotNone(resp_collection["datasets"][0]["revised_at"])
+            self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["explorer_url"])
 
@@ -1566,7 +1567,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(403, response.status_code)
 
-    def test_get_datasets_200(self):
+    def test_get_all_datasets_200(self):
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1592,12 +1593,11 @@ class TestGetDatasets(BaseAPIPortalTest):
             ),
         )
         self.generate_unpublished_collection(add_datasets=4)
-        self.generate_revision(published_collection_1.collection_id)
+        revision = self.generate_revision(published_collection_1.collection_id)
 
         with self.subTest("With super curator credentials"):
             headers = self.make_super_curator_header()
             super_curator_response = self.app.get("/curation/v1/datasets", headers=headers)
-            print(super_curator_response.json)
             self.assertEqual(3, len(super_curator_response.json))
 
         response = self.app.get("/curation/v1/datasets")
@@ -1625,17 +1625,32 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(collection_names, received_collection_names)
             self.assertEqual(collection_dois, received_collection_dois)
 
-        with self.subTest("Only public datasets are returned"):
-            dataset_ids = set(
-                [dv.dataset_id.id for dv in published_collection_1.datasets]
-                + [dv.dataset_id.id for dv in published_collection_2.datasets]
-            )
-            received_dataset_ids = set()
-            print(response.json)
-            for dataset in response.json:
-                received_dataset_ids.add(dataset["dataset_id"])
+        self.generate_dataset(
+            collection_version=revision,
+            replace_dataset_version_id=revision.datasets[0].version_id,
+            publish=True,
+        )
 
-            self.assertEqual(dataset_ids, received_dataset_ids)
+        with self.subTest("Only public datasets are returned, in reverse-chronological order"):
+            # Endpoint uses secondary sort by dataset_id for consistency with Datasets in same Collection
+            sorted_dataset_ids = [published_collection_2.datasets[0].dataset_id.id] + sorted(
+                [d.dataset_id.id for d in published_collection_1.datasets], reverse=True
+            )
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+
+            self.assertEqual(sorted_dataset_ids, received_dataset_ids)
+
+        with self.subTest("The 'revised_at' field is populated for revised Datasets only"):
+            response = self.app.get(
+                "/curation/v1/datasets"
+            )  # Refresh response because 'revised_at' is calculated field
+            for dataset in response.json:
+                if dataset["dataset_id"] == published_collection_1.datasets[0].dataset_id.id:
+                    self.assertIsNotNone(dataset["revised_at"])
+                else:
+                    self.assertIsNone(dataset["revised_at"])
 
 
 class TestGetDatasetVersion(BaseAPIPortalTest):

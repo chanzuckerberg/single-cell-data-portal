@@ -790,9 +790,12 @@ components:
       description: A timestamp of when the Collection was first published.
       nullable: true
       type: string
-    dataset_version_published_at:
-      description: A timestamp of when this Dataset Version was first published.
+    dataset_published_at:
+      description: A timestamp of when the Dataset was first published.
       nullable: true
+      type: string
+    dataset_version_published_at:
+      description: A timestamp of when this Dataset Version was published.
       type: string
     collection_revised_at:
       description: A timestamp indicating the last time a Revision for this Collection was published.
@@ -970,6 +973,8 @@ components:
             When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
             the dataset can be found in `processing_status_detail`.
           nullable: true
+        published_at:
+          $ref: "#/components/schemas/dataset_published_at"
         revised_at:
           $ref: "#/components/schemas/dataset_revised_at"
         schema_version:
@@ -1166,8 +1171,6 @@ components:
           nullable: true
         published_at:
           $ref: "#/components/schemas/dataset_version_published_at"
-        revised_at:
-          $ref: "#/components/schemas/dataset_version_revised_at"
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
