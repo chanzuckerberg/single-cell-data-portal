@@ -604,6 +604,10 @@ function download_({
         // Adding this class to the heatmap causes the y-axis scrolling to jump but is required for image download
         heatmapNode.classList.add(CLONED_CLASS);
         document.getElementById("top-legend")?.classList.add(CLONED_CLASS);
+
+        heatmapNode.style.width = `${
+          heatmapWidth + Y_AXIS_CHART_WIDTH_PX + 100
+        }px`;
       }
 
       const exports: ExportData[] = (
