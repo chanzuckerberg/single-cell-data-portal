@@ -1652,6 +1652,12 @@ class TestGetDatasets(BaseAPIPortalTest):
                 else:
                     self.assertIsNone(dataset["revised_at"])
 
+        with self.subTest("Response Dataset objects contain index-specific attributes"):
+            index_specific_attributes = ("collection_doi", "collection_id", "collection_name")
+            dataset = response.json[0]
+            for attribute in index_specific_attributes:
+                self.assertIn(attribute, dataset)
+
 
 class TestGetDatasetVersion(BaseAPIPortalTest):
     def test_get_dataset_version_ok(self):
