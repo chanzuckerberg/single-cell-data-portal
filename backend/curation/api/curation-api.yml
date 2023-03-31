@@ -267,30 +267,6 @@ paths:
         "405":
           $ref: "#/components/responses/405"
 
-  /v1/collections/{collection_id}/versions:
-    get:
-      summary: Fetch all versions of a Collection with corresponding Dataset versions
-      description: >
-        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The
-        `collection_id` must reference a *Collection*, **NOT** a *Collection version*. Collection versions are returned
-        in reverse-chronological order.
-      operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
-      tags:
-        - collection
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/collection_get"
-        "403":
-          $ref: "#/components/responses/403"
-
   /v1/collections/{collection_id}/revision:
     post:
       summary: Start a Revision of a published Collection
@@ -543,13 +519,37 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
+  /v1/collections/{collection_id}/versions:
+    get:
+      summary: Fetch all versions of a Collection with corresponding Dataset versions
+      description: >
+        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The
+        `collection_id` must reference a *Collection*, **NOT** a *Collection version*. Collection versions are returned
+        in reverse-chronological order.
+      operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
+      tags:
+        - collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/collection_get"
+        "403":
+          $ref: "#/components/responses/403"
+
   /v1/collection_versions/{collection_version_id}:
     get:
       summary: Fetch a Collection version with Dataset versions
       description: >
-        Fetch full metadata for a Collection version and its Dataset versions. The `collection_version_id` must
-        reference a *Collection version*, **NOT** a *Collection*.
-      operationId: backend.curation.api.v1.curation.collection_versions.collection_id.actions.get
+        Fetch full metadata for a published Collection version and its Dataset versions. The `collection_version_id`
+        must reference a *Collection version*, **NOT** a *Collection*.
+      operationId: backend.curation.api.v1.curation.collection_versions.collection_version_id.actions.get
       tags:
         - collection_version
       parameters:
@@ -564,6 +564,8 @@ paths:
                   - $ref: "#/components/schemas/collection_get"
         "403":
           $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/datasets:
     get:
@@ -613,7 +615,7 @@ paths:
       description: |
         Fetch Dataset metadata for a Dataset version. The `dataset_version_id` must reference a *Dataset version*,
         **NOT** a *Dataset*.
-      operationId: backend.curation.api.v1.curation.dataset_versions.dataset_id.actions.get
+      operationId: backend.curation.api.v1.curation.dataset_versions.dataset_version_id.actions.get
       parameters:
         - $ref: "#/components/parameters/path_dataset_version_id"
       responses:
@@ -623,10 +625,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/dataset_version"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
 
@@ -647,12 +647,11 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  datasets:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/dataset_version"
+                type: array
+                items:
+                  $ref: "#/components/schemas/dataset_version"
+        "403":
+          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
 
