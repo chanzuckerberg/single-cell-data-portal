@@ -367,15 +367,16 @@ function generateSvg({
   const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
   applyAttributes(finalSvg, {
     width: svgWidth < bannerWidth ? bannerWidth : svgWidth, // Use the banner width as the minimum final svg width
-    x:
-      svgWidth > bannerWidth
-        ? svgWidth / 2 - bannerWidth / 2 // Center banner
-        : 0,
     height:
       heatmapHeight +
       bannerHeight +
       X_AXIS_CHART_HEIGHT_PX +
       CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
+  });
+
+  // Center banner using full svg width
+  applyAttributes(banner, {
+    x: svgWidth > bannerWidth ? svgWidth / 2 - bannerWidth / 2 : 0,
   });
 
   // Required for valid SVG
