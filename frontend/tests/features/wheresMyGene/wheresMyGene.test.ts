@@ -3,9 +3,8 @@ import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
-import { TEST_URL } from "../common/constants";
-import { getText } from "../utils/selectors";
-import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
+import { TEST_URL } from "../../common/constants";
+import { TISSUE_DENY_LIST } from "./tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
@@ -57,14 +56,16 @@ describe("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     // Getting Started section
-    await expect(page).toHaveSelector(getText("STEP 1"));
-    await expect(page).toHaveSelector(getText("Add Tissues"));
+    await expect(page).toHaveSelector(page.getByText("STEP 1"));
+    await expect(page).toHaveSelector(page.getByText("Add Tissues"));
 
-    await expect(page).toHaveSelector(getText("STEP 2"));
-    await expect(page).toHaveSelector(getText("Add Genes"));
+    await expect(page).toHaveSelector(page.getByText("STEP 2"));
+    await expect(page).toHaveSelector(page.getByText("Add Genes"));
 
-    await expect(page).toHaveSelector(getText("STEP 3"));
-    await expect(page).toHaveSelector(getText("Explore Gene Expression"));
+    await expect(page).toHaveSelector(page.getByText("STEP 3"));
+    await expect(page).toHaveSelector(
+      page.getByText("Explore Gene Expression")
+    );
 
     await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
     await selectFirstOption(page);
@@ -74,24 +75,26 @@ describe("Where's My Gene", () => {
 
     const filtersPanel = page.getByTestId("filters-panel");
 
-    await expect(filtersPanel).toHaveSelector(getText("Dataset"));
-    await expect(filtersPanel).toHaveSelector(getText("Disease"));
+    await expect(filtersPanel).toHaveSelector(page.getByText("Dataset"));
+    await expect(filtersPanel).toHaveSelector(page.getByText("Disease"));
     await expect(filtersPanel).toHaveSelector(
-      getText("Self-Reported Ethnicity")
+      page.getByText("Self-Reported Ethnicity")
     );
-    await expect(filtersPanel).toHaveSelector(getText("Sex"));
+    await expect(filtersPanel).toHaveSelector(page.getByText("Sex"));
 
     // Legend
     const Legend = page.getByTestId("legend-wrapper");
-    await expect(Legend).toHaveSelector(getText("Gene Expression"));
-    await expect(Legend).toHaveSelector(getText("Expressed in Cells (%)"));
+    await expect(Legend).toHaveSelector(page.getByText("Gene Expression"));
+    await expect(Legend).toHaveSelector(
+      page.getByText("Expressed in Cells (%)")
+    );
 
     // Info Panel
-    await expect(filtersPanel).toHaveSelector(getText("Methodology"));
+    await expect(filtersPanel).toHaveSelector(page.getByText("Methodology"));
     await expect(filtersPanel).toHaveSelector(
-      getText("After filtering cells with low coverage ")
+      page.getByText("After filtering cells with low coverage ")
     );
-    await expect(filtersPanel).toHaveSelector(getText("Source Data"));
+    await expect(filtersPanel).toHaveSelector(page.getByText("Source Data"));
   });
 
   test("Filters and Heatmap", async ({ page }) => {
@@ -209,7 +212,7 @@ describe("Where's My Gene", () => {
     await waitForHeatmapToRender(page);
     await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
     await expect(page).toHaveSelector(
-      getText(
+      page.getByText(
         "After filtering cells with low coverage (less than 500 genes expressed)"
       )
     );

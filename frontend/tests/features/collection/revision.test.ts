@@ -7,7 +7,6 @@ import {
   isDevStaging,
   tryUntil,
 } from "tests/utils/helpers";
-import { getTestID, getText } from "tests/utils/selectors";
 
 const { describe, skip } = test;
 
@@ -22,13 +21,15 @@ describe("Collection Revision", () => {
   test("starts a revision", async ({ page }) => {
     const collectionName = await startRevision(page);
 
-    const publishButton = await page.$(getTestID("publish-collection-button"));
+    const publishButton = await page.$(
+      page.getByTestId("publish-collection-button")
+    );
 
     await expect(publishButton).toBeDisabled();
 
-    await page.click(getText("My Collections"));
+    await page.click(page.getByText("My Collections"));
 
-    const COLLECTION_ROW_SELECTOR = `*${getTestID(
+    const COLLECTION_ROW_SELECTOR = `*${page.getByTestId(
       COLLECTION_ROW_ID
     )} >> text="${collectionName}"`;
 
@@ -44,10 +45,10 @@ describe("Collection Revision", () => {
 
         for (const collection of collections) {
           const hasPublished = Boolean(
-            await collection.$(getText("Published"))
+            await collection.$(page.getByText("Published"))
           );
           const hasRevisionPending = Boolean(
-            await collection.$(getText("Revision Pending"))
+            await collection.$(page.getByText("Revision Pending"))
           );
 
           if (hasPublished && hasRevisionPending) {
@@ -67,7 +68,7 @@ describe("Collection Revision", () => {
 
     const actionButtonContinue = await (
       collectionRowContinue as unknown as ElementHandle<HTMLElement>
-    ).$(getTestID("revision-action-button"));
+    ).$(page.getByTestId("revision-action-button"));
 
     await expect(actionButtonContinue).toMatchText("Continue");
 
@@ -80,34 +81,34 @@ describe("Collection Revision", () => {
     await startRevision(page);
 
     const collectionName = await getInnerText(
-      getTestID("collection-name"),
+      page.getByTestId("collection-name"),
       page
     );
 
     const collectionDescription = await getInnerText(
-      getTestID("collection-description"),
+      page.getByTestId("collection-description"),
       page
     );
 
     const COLLECTION_CONTACT_ID = "collection-contact";
 
     const collectionContactName = await getInnerText(
-      getTestID(COLLECTION_CONTACT_ID),
+      page.getByTestId(COLLECTION_CONTACT_ID),
       page
     );
 
     const collectionContactEmail = (
-      await page.getAttribute(getTestID(COLLECTION_CONTACT_ID), "href")
+      await page.getAttribute(page.getByTestId(COLLECTION_CONTACT_ID), "href")
     )?.replace(/^mailto:/, "");
 
-    await page.click(getTestID("collection-more-button"));
+    await page.click(page.getByTestId("collection-more-button"));
 
-    await page.click(getTestID("dropdown-edit-details"));
+    await page.click(page.getByTestId("dropdown-edit-details"));
 
     const COLLECTION_CONTENT_ID = "collection-form-content";
 
     // Assert that the edit form is visible with the right input values
-    await page.waitForSelector(getTestID(COLLECTION_CONTENT_ID));
+    await page.waitForSelector(page.getByTestId(COLLECTION_CONTENT_ID));
 
     expect(await page.inputValue("input#name")).toBe(collectionName);
     expect(await page.inputValue("textarea#description")).toBe(
@@ -124,11 +125,13 @@ describe("Collection Revision", () => {
 
     await page.fill("input#name", newCollectionName);
 
-    await page.click(getTestID("create-button"));
+    await page.click(page.getByTestId("create-button"));
 
     await tryUntil(
       async () => {
-        await expect(page).not.toHaveSelector(getTestID(COLLECTION_CONTENT_ID));
+        await expect(page).not.toHaveSelector(
+          page.getByTestId(COLLECTION_CONTENT_ID)
+        );
       },
       { page }
     );
@@ -144,11 +147,13 @@ describe("Collection Revision", () => {
 
     expect(
       (
-        await page.getAttribute(getTestID(COLLECTION_CONTACT_ID), "href")
+        await page.getAttribute(page.getByTestId(COLLECTION_CONTACT_ID), "href")
       )?.replace(/^mailto:/, "")
     ).toBe(collectionContactEmail);
 
-    const publishButton = await page.$(getTestID("publish-collection-button"));
+    const publishButton = await page.$(
+      page.getByTestId("publish-collection-button")
+    );
 
     await expect(publishButton).toBeEnabled();
 
@@ -167,12 +172,12 @@ async function startRevision(page: Page): Promise<string> {
   await tryUntil(
     async () => {
       try {
-        await expect(page).toHaveSelector(getText("Start Revision"));
+        await expect(page).toHaveSelector(page.getByText("Start Revision"));
 
         await tryUntil(
           async () => {
             const collectionRows = await page.locator(
-              getText("Start Revision")
+              page.getByText("Start Revision")
             );
             expect(await collectionRows.count()).toBeGreaterThan(
               MIN_USABLE_COLLECTION_COUNT - 1
@@ -181,7 +186,7 @@ async function startRevision(page: Page): Promise<string> {
           { page }
         );
       } catch {
-        await page.click(getText("Continue"));
+        await page.click(page.getByText("Continue"));
         await deleteRevision(page);
         throw new Error("No available collection");
       }
@@ -194,7 +199,7 @@ async function startRevision(page: Page): Promise<string> {
    * `COLLECTION_ROW_ID` selector element
    * @see https://playwright.dev/docs/selectors#intermediate-matches
    */
-  const COLLECTION_ROW_SELECTOR_START = `*${getTestID(
+  const COLLECTION_ROW_SELECTOR_START = `*${page.getByTestId(
     COLLECTION_ROW_ID
   )} >> text="Start Revision"`;
 
@@ -209,19 +214,21 @@ async function startRevision(page: Page): Promise<string> {
 
   const VISIBILITY_TAG_ID = "visibility-tag";
 
-  const visibilityTag = await collectionRow?.$(getTestID(VISIBILITY_TAG_ID));
+  const visibilityTag = await collectionRow?.$(
+    page.getByTestId(VISIBILITY_TAG_ID)
+  );
 
   expect(visibilityTag).not.toBe(null);
 
   await expect(visibilityTag).toMatchText("Published");
 
   const collectionName = await collectionRow?.$eval(
-    getTestID("collection-link"),
+    page.getByTestId("collection-link"),
     (element: HTMLElement) => element.textContent
   );
 
   const actionButton = await collectionRow?.$(
-    getTestID("revision-action-button")
+    page.getByTestId("revision-action-button")
   );
 
   await actionButton?.click();
@@ -230,11 +237,14 @@ async function startRevision(page: Page): Promise<string> {
     "This is a private revision of a public collection.";
 
   await tryUntil(
-    async () => await expect(page).toHaveSelector(getTestID("revision-status")),
+    async () =>
+      await expect(page).toHaveSelector(page.getByTestId("revision-status")),
     { page }
   );
 
-  const revisionStatusElement = await page.$(getTestID("revision-status"));
+  const revisionStatusElement = await page.$(
+    page.getByTestId("revision-status")
+  );
 
   await expect(revisionStatusElement).toMatchText(PRIVATE_REVISION_TEXT);
 
@@ -244,11 +254,11 @@ async function startRevision(page: Page): Promise<string> {
 async function deleteRevision(page: Page) {
   const DROPDOWN_CANCEL_ID = "dropdown-cancel-revision";
 
-  if (!(await page.$(getTestID(DROPDOWN_CANCEL_ID)))) {
-    await page.click(getTestID("collection-more-button"));
+  if (!(await page.$(page.getByTestId(DROPDOWN_CANCEL_ID)))) {
+    await page.click(page.getByTestId("collection-more-button"));
   }
 
-  await page.click(getTestID(DROPDOWN_CANCEL_ID));
+  await page.click(page.getByTestId(DROPDOWN_CANCEL_ID));
 
   await page.click(".bp4-alert-footer >> text=Cancel Revision");
 
