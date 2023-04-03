@@ -1,5 +1,7 @@
 import { List, ListItem } from "czifui";
 import { useContext, useMemo } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import {
   aggregateCollectionsFromDatasets,
   useFilterDimensions,
@@ -26,8 +28,24 @@ export default function SourceData(): JSX.Element {
       selectedFilters.datasets.includes(dataset.id)
     );
   const collections: Collections = useMemo(() => {
-    return aggregateCollectionsFromDatasets(datasets);
-  }, [datasets]);
+    const aggregatedCollections = aggregateCollectionsFromDatasets(datasets);
+
+    // if (selectedFilters.datasets.length > 0) {
+    //   track(EVENTS.WMG_SOURCE_DATA_CLICKED, {
+    //     VIEW_COLLECTION_PAGE_CLICKED: Object.values(aggregatedCollections).map(
+    //       ({ name }) => name
+    //     ),
+    //   });
+    // }
+
+    track(EVENTS.WMG_SOURCE_DATA_CLICKED, {
+      VIEW_COLLECTION_PAGE_CLICKED: Object.values(aggregatedCollections).map(
+        ({ name }) => name
+      ),
+    });
+
+    return aggregatedCollections;
+  }, [datasets, selectedFilters.datasets.length]);
 
   return (
     <Wrapper>
