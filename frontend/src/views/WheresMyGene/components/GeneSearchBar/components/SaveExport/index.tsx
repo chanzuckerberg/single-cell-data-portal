@@ -60,6 +60,7 @@ import {
 import { InputCheckbox } from "czifui";
 import {
   DATA_MESSAGE_BANNER_HEIGHT_PX,
+  DATA_MESSAGE_MODAL_BANNER_WIDTH_PX,
   UnderlyingDataChangeBanner,
 } from "./ExportBanner";
 import {
@@ -261,7 +262,7 @@ export default function SaveExport({
             <StyledInputCheckboxWrapper>
               <InputCheckbox
                 label="PNG"
-                caption="PNG (Portable Network Graphics) files are image files that can be used on websites, have transparent backgrounds, and are suitable for graphics and digital images."
+                caption="Image files that can be used on websites, have transparent backgrounds, and are suitable for graphics and digital images."
                 onChange={() => selectFileType("png")}
                 checked={selectedFileTypes.includes("png")}
                 data-testid="png-checkbox"
@@ -270,7 +271,7 @@ export default function SaveExport({
             <StyledInputCheckboxWrapper>
               <InputCheckbox
                 label="SVG"
-                caption="SVG files are vector image files that can be scaled up or down without losing quality. They provide high-quality, resolution-independent graphics suitable for scientific publications, presentations, and data visualization."
+                caption="Vector image files that can be scaled without losing quality and are most suitable for scientific publications, presentations, and data visualization."
                 onChange={() => selectFileType("svg")}
                 checked={selectedFileTypes.includes("svg")}
                 data-testid="svg-checkbox"
@@ -283,7 +284,7 @@ export default function SaveExport({
             <StyledInputCheckboxWrapper>
               <InputCheckbox
                 label="CSV"
-                caption="CSV (Comma-Separated Values) files are plain text files that store tabular data by separating values with commas, making them easy to read and manipulate with spreadsheet software."
+                caption="Plain text files that store tabular data by separating values with commas, making them easy to read and manipulate with spreadsheet software."
                 onChange={() => selectFileType("csv")}
                 checked={selectedFileTypes.includes("csv")}
                 data-testid="csv-checkbox"
@@ -292,7 +293,10 @@ export default function SaveExport({
           </StyledSection>
 
           <StyledMessage>
-            <UnderlyingDataChangeBanner />
+            <UnderlyingDataChangeBanner
+              centered={false}
+              width={DATA_MESSAGE_MODAL_BANNER_WIDTH_PX}
+            />
           </StyledMessage>
 
           <StyledButtonContainer>
