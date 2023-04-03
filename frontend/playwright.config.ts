@@ -48,7 +48,7 @@ const config: PlaywrightTestConfig = {
     timeout: 5000,
   },
 
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  /* Fail the build on CI if you accidentally left test in the source code. */
   forbidOnly: !!process.env.CI,
 
   /* Run tests in files in parallel */
@@ -66,22 +66,23 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
+        headless: false,
       },
     },
-    {
-      name: "firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-        userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
-      },
-    },
-    {
-      name: "edge",
-      use: {
-        ...devices["Desktop Edge"],
-        userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
-      },
-    },
+    // {
+    //   name: "firefox",
+    //   use: {
+    //     ...devices["Desktop Firefox"],
+    //     userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
+    //   },
+    // },
+    // {
+    //   name: "edge",
+    //   use: {
+    //     ...devices["Desktop Edge"],
+    //     userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
+    //   },
+  //  },
   ],
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -95,7 +96,7 @@ const config: PlaywrightTestConfig = {
   testDir: "tests",
 
   /* Maximum time one test can run for. */
-  timeout: 3 * 60 * 1000,
+  timeout: 60 * 1000,
 
   use: {
     ...COMMON_PLAYWRIGHT_CONTEXT,

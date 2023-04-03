@@ -54,6 +54,7 @@ describe("Where's My Gene", () => {
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test("renders the getting started UI", async ({ page }) => {
+  //await page.pause();
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     // Getting Started section
