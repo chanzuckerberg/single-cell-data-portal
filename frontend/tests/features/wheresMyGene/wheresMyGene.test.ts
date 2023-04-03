@@ -126,7 +126,7 @@ describe("Where's My Gene", () => {
     expect(selectedSexesAfter.length).toBe(1);
 
     function getSexSelector() {
-      return page.getByTestId("FILTERS_PANEL").getByTestId("sex-filter");
+      return page.getByTestId(FILTERS_PANEL).getByTestId("sex-filter");
     }
 
     function getSexSelectorButton() {
