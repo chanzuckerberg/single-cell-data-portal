@@ -96,6 +96,11 @@ module.exports = {
         permanent: true,
         source: "/landing-page",
       },
+      {
+        destination: "/gene-expression",
+        permanent: true,
+        source: "/scExpression",
+      },
     ];
   },
   sassOptions: {
