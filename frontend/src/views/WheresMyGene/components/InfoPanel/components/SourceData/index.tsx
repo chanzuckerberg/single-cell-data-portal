@@ -28,24 +28,8 @@ export default function SourceData(): JSX.Element {
       selectedFilters.datasets.includes(dataset.id)
     );
   const collections: Collections = useMemo(() => {
-    const aggregatedCollections = aggregateCollectionsFromDatasets(datasets);
-
-    // if (selectedFilters.datasets.length > 0) {
-    //   track(EVENTS.WMG_SOURCE_DATA_CLICKED, {
-    //     VIEW_COLLECTION_PAGE_CLICKED: Object.values(aggregatedCollections).map(
-    //       ({ name }) => name
-    //     ),
-    //   });
-    // }
-
-    track(EVENTS.WMG_SOURCE_DATA_CLICKED, {
-      VIEW_COLLECTION_PAGE_CLICKED: Object.values(aggregatedCollections).map(
-        ({ name }) => name
-      ),
-    });
-
-    return aggregatedCollections;
-  }, [datasets, selectedFilters.datasets.length]);
+    return aggregateCollectionsFromDatasets(datasets);
+  }, [datasets]);
 
   return (
     <Wrapper>
@@ -57,7 +41,16 @@ export default function SourceData(): JSX.Element {
                 <List
                   key={name}
                   subheader={
-                    <a href={url} target="_blank" rel="noopener">
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener"
+                      onClick={() => {
+                        track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, {
+                          VIEW_COLLECTION_PAGE_CLICKED: name,
+                        });
+                      }}
+                    >
                       <ListSubheader>{name}</ListSubheader>
                     </a>
                   }
