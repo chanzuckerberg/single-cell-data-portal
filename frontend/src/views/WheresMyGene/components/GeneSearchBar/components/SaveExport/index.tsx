@@ -342,30 +342,30 @@ function generateSvg({
   if (!banner) return "";
 
   // Used to create room for the banner
-  const bannerHeight =
+  const pannedBannerHeight =
     banner.clientHeight + CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX;
-  const bannerWidth =
+  const paddedBannerWidth =
     banner.clientWidth + CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
 
   // Render elements to SVG
   const xAxisSvg = renderXAxis({
     heatmapContainer,
-    yOffset: bannerHeight,
+    yOffset: pannedBannerHeight,
   });
   const yAxisSvg = renderYAxis({
     heatmapContainer,
     heatmapHeight,
     tissueName,
-    yOffset: bannerHeight,
+    yOffset: pannedBannerHeight,
   });
   const dotsSvg = renderDots({
     heatmapContainer,
     tissueName,
-    yOffset: bannerHeight,
+    yOffset: pannedBannerHeight,
   });
   const legendSvg = renderLegend({
     heatmapContainer,
-    yOffset: bannerHeight,
+    yOffset: pannedBannerHeight,
   });
 
   const svgWidth =
@@ -375,10 +375,10 @@ function generateSvg({
 
   const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
   applyAttributes(finalSvg, {
-    width: svgWidth < bannerWidth ? bannerWidth : svgWidth, // Use the banner width as the minimum final svg width
+    width: svgWidth < paddedBannerWidth ? paddedBannerWidth : svgWidth, // Use the banner width as the minimum final svg width
     height:
       heatmapHeight +
-      bannerHeight +
+      pannedBannerHeight +
       X_AXIS_CHART_HEIGHT_PX +
       CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
   });
@@ -386,8 +386,8 @@ function generateSvg({
   // Center banner using full svg width
   applyAttributes(banner, {
     x:
-      svgWidth > bannerWidth
-        ? svgWidth / 2 - bannerWidth / 2
+      svgWidth > paddedBannerWidth
+        ? svgWidth / 2 - banner.clientWidth / 2
         : CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
     y: CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
   });
