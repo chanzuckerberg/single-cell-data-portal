@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { ButtonIcon, fontBodyXs, fontBodyXxs, getColors, Icon } from "czifui";
+import { NotificationWrapper } from "src/components/common/Filter/common/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 export const StyledButtonDiv = styled.div`
@@ -28,11 +29,9 @@ export const StyledButtonIcon = styled(ButtonIcon)`
   height: 30px;
 `;
 
-export const StyledNotificationWrapper = styled.div`
-  position: absolute;
+export const StyledNotificationWrapper = styled(NotificationWrapper)`
   top: ${HEADER_HEIGHT_PX}px;
   right: 24px;
-  z-index: 999;
 `;
 
 export const StyledIcon = styled(Icon)`

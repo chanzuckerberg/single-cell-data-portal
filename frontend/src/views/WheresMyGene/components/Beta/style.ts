@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, getColors, Notification } from "czifui";
+import { NotificationWrapper } from "src/components/common/Filter/common/style";
 
 export const StyledNotification = styled(Notification)`
   ${(props: CommonThemeProps) => {
@@ -19,12 +20,10 @@ export const StyledNotification = styled(Notification)`
   }}
 `;
 
-export const StyledNotificationWrapper = styled.div`
+export const StyledNotificationWrapper = styled(NotificationWrapper)`
   bottom: 10px;
-  position: absolute;
   right: 30px;
   width: 360px;
-  z-index: 99;
 `;
 
 export const SubmitIssue = styled.a`
