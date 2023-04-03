@@ -7,6 +7,7 @@ import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
 import datasets from "../../fixtures/datasets";
+import { getTestID } from "tests/utils/selectors";
 
 const { describe, skip } = test;
 
@@ -77,7 +78,7 @@ describe("Collection", () => {
           await tryUntil(
             async () => {
               const publishButton = await page.$(
-                page.getByTestId("publish-collection-button")
+                getTestID("publish-collection-button")
               );
 
               expect(await publishButton?.getAttribute("disabled")).toBe("");

@@ -47,6 +47,10 @@ const COMPARE_DROPDOWN_ID = "compare-dropdown";
 
 const EXPORT_OUTPUT_DIR = "playwright-report/";
 
+const CSV_CHECKBOX = "csv-checkbox";
+const FILTERS_PANEL = "filters-panel";
+const DOWNLOAD_BUTTON = "dialog-download-button";
+const LOCATOR_ERROR = "Either testId or locator must be defined";
 const { describe, skip } = test;
 
 describe("Where's My Gene", () => {
@@ -56,16 +60,14 @@ describe("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     // Getting Started section
-    await expect(page).toHaveSelector(page.getByText("STEP 1"));
-    await expect(page).toHaveSelector(page.getByText("Add Tissues"));
+    await expect(page.getByText("STEP 1")).toBeTruthy();
+    await expect(page.getByText("Add Tissues")).toBeTruthy();
 
-    await expect(page).toHaveSelector(page.getByText("STEP 2"));
-    await expect(page).toHaveSelector(page.getByText("Add Genes"));
+    await expect(page.getByText("STEP 2")).toBeTruthy();
+    await expect(page.getByText("Add Genes")).toBeTruthy();
 
-    await expect(page).toHaveSelector(page.getByText("STEP 3"));
-    await expect(page).toHaveSelector(
-      page.getByText("Explore Gene Expression")
-    );
+    await expect(page.getByText("STEP 3")).toBeTruthy();
+    await expect(page.getByText("Explore Gene Expression")).toBeTruthy();
 
     await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
     await selectFirstOption(page);
@@ -73,28 +75,26 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstOption(page);
 
-    const filtersPanel = page.getByTestId("filters-panel");
+    const filtersPanel = page.getByTestId(FILTERS_PANEL);
 
-    await expect(filtersPanel).toHaveSelector(page.getByText("Dataset"));
-    await expect(filtersPanel).toHaveSelector(page.getByText("Disease"));
-    await expect(filtersPanel).toHaveSelector(
-      page.getByText("Self-Reported Ethnicity")
-    );
-    await expect(filtersPanel).toHaveSelector(page.getByText("Sex"));
+    await expect(filtersPanel.getByText("Dataset")).toBeTruthy();
+    await expect(filtersPanel.getByText("Disease")).toBeTruthy();
+    await expect(
+      filtersPanel.getByText("Self-Reported Ethnicity")
+    ).toBeTruthy();
+    await expect(filtersPanel.getByText("Sex")).toBeTruthy();
 
     // Legend
     const Legend = page.getByTestId("legend-wrapper");
-    await expect(Legend).toHaveSelector(page.getByText("Gene Expression"));
-    await expect(Legend).toHaveSelector(
-      page.getByText("Expressed in Cells (%)")
-    );
+    await expect(Legend.getByText("Gene Expression")).toBeTruthy();
+    await expect(Legend.getByText("Expressed in Cells (%)")).toBeTruthy();
 
     // Info Panel
-    await expect(filtersPanel).toHaveSelector(page.getByText("Methodology"));
-    await expect(filtersPanel).toHaveSelector(
-      page.getByText("After filtering cells with low coverage ")
-    );
-    await expect(filtersPanel).toHaveSelector(page.getByText("Source Data"));
+    await expect(filtersPanel.getByText("Methodology")).toBeTruthy();
+    await expect(
+      filtersPanel.getByText("After filtering cells with low coverage ")
+    ).toBeTruthy();
+    await expect(filtersPanel.getByText("Source Data")).toBeTruthy();
   });
 
   test("Filters and Heatmap", async ({ page }) => {
@@ -126,7 +126,7 @@ describe("Where's My Gene", () => {
     expect(selectedSexesAfter.length).toBe(1);
 
     function getSexSelector() {
-      return page.getByTestId("filters-panel").getByTestId("sex-filter");
+      return page.getByTestId("FILTERS_PANEL").getByTestId("sex-filter");
     }
 
     function getSexSelectorButton() {
@@ -171,7 +171,7 @@ describe("Where's My Gene", () => {
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
 
     function getDiseaseSelector() {
-      return page.getByTestId("filters-panel").getByTestId("disease-filter");
+      return page.getByTestId("FILTERS_PANEL").getByTestId("disease-filter");
     }
 
     function getDiseaseSelectorButton() {
@@ -179,7 +179,7 @@ describe("Where's My Gene", () => {
     }
 
     function getDatasetSelector() {
-      return page.getByTestId("filters-panel").getByTestId("dataset-filter");
+      return page.getByTestId("FILTERS_PANEL").getByTestId("dataset-filter");
     }
 
     function getDatasetSelectorButton() {
@@ -211,11 +211,11 @@ describe("Where's My Gene", () => {
 
     await waitForHeatmapToRender(page);
     await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
-    await expect(page).toHaveSelector(
+    await expect(
       page.getByText(
         "After filtering cells with low coverage (less than 500 genes expressed)"
       )
-    );
+    ).toBeTruthy();
 
     await tryUntil(
       async () => {
@@ -228,7 +228,7 @@ describe("Where's My Gene", () => {
 
         function getDatasetSelector() {
           return page
-            .getByTestId("filters-panel")
+            .getByTestId("FILTERS_PANEL")
             .getByTestId("dataset-filter");
         }
 
@@ -596,12 +596,12 @@ describe("Where's My Gene", () => {
       });
 
       await page.getByTestId("png-checkbox").click();
-      await page.getByTestId("csv-checkbox").click();
+      await page.getByTestId(CSV_CHECKBOX).click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      await page.getByTestId("dialog-download-button").click();
+      await page.getByTestId(DOWNLOAD_BUTTON).click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -656,12 +656,12 @@ describe("Where's My Gene", () => {
       });
 
       await page.getByTestId("png-checkbox").click();
-      await page.getByTestId("csv-checkbox").click();
+      await page.getByTestId("CSV_CHECKOBOX").click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      await page.getByTestId("dialog-download-button").click();
+      await page.getByTestId(DOWNLOAD_BUTTON).click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -709,12 +709,12 @@ describe("Where's My Gene", () => {
       });
 
       await page.getByTestId("svg-checkbox").click();
-      await page.getByTestId("csv-checkbox").click();
+      await page.getByTestId("CSV_CHECKOBOX").click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      await page.getByTestId("dialog-download-button").click();
+      await page.getByTestId(DOWNLOAD_BUTTON).click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -766,12 +766,12 @@ describe("Where's My Gene", () => {
       });
 
       await page.getByTestId("svg-checkbox").click();
-      await page.getByTestId("csv-checkbox").click();
+      await page.getByTestId("CSV_CHECKOBOX").click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
 
-      await page.getByTestId("dialog-download-button").click();
+      await page.getByTestId(DOWNLOAD_BUTTON).click();
 
       // Wait for download
       const download = await downloadPromise;
@@ -821,7 +821,7 @@ async function getNames({
   } else if (locator) {
     labelsLocator = locator;
   } else {
-    throw Error("Either testId or locator must be defined");
+    throw Error(LOCATOR_ERROR);
   }
   await tryUntil(
     async () => {
@@ -852,7 +852,7 @@ async function clickUntilOptionsShowUp({
       } else if (locator) {
         await locator.click();
       } else {
-        throw Error("Either testId or locator must be defined");
+        throw Error(LOCATOR_ERROR);
       }
       await page.getByRole("tooltip").getByRole("option").elementHandles();
     },
@@ -876,7 +876,7 @@ async function clickUntilDownloadModalShowsUp({
       } else if (locator) {
         await locator.click();
       } else {
-        throw Error("Either testId or locator must be defined");
+        throw Error(LOCATOR_ERROR);
       }
       await page.locator(".bp4-dialog").elementHandle();
     },
@@ -900,7 +900,7 @@ async function clickUntilSidebarShowsUp({
       } else if (locator) {
         await locator.click();
       } else {
-        throw Error("Either testId or locator must be defined");
+        throw Error(LOCATOR_ERROR);
       }
       await page.locator(".bp4-drawer-header").elementHandle();
     },
