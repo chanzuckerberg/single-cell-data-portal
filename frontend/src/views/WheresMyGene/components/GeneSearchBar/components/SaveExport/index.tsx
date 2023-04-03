@@ -70,6 +70,7 @@ import {
 } from "src/components/Layout/style";
 import { LEGEND_HEIGHT_PX } from "../../../InfoPanel/components/Legend/style";
 import { LEGEND_MARGIN_BOTTOM_PX } from "src/views/WheresMyGene/style";
+import { CHART_PADDING_PX } from "../../../HeatMap/style";
 
 let heatmapContainerScrollTop: number | undefined;
 
@@ -625,7 +626,10 @@ function download_({
         document.getElementById("top-legend")?.classList.add(CLONED_CLASS);
 
         heatmapNode.style.width = `${
-          heatmapWidth + Y_AXIS_CHART_WIDTH_PX + 100
+          heatmapWidth +
+          Y_AXIS_CHART_WIDTH_PX +
+          CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2 +
+          CHART_PADDING_PX * 2
         }px`;
       }
 
