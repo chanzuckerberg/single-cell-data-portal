@@ -27,7 +27,7 @@ describe("Collection Revision", () => {
 
     await expect(publishButton).toBeDisabled();
 
-    await page.click(page.getByText("My Collections"));
+    await page.getByText("My Collections").click();
 
     const COLLECTION_ROW_SELECTOR = `*${page.getByTestId(
       COLLECTION_ROW_ID
@@ -101,9 +101,9 @@ describe("Collection Revision", () => {
       await page.getAttribute(page.getByTestId(COLLECTION_CONTACT_ID), "href")
     )?.replace(/^mailto:/, "");
 
-    await page.click(page.getByTestId("collection-more-button"));
+    await page.getByTestId("collection-more-button").click();
 
-    await page.click(page.getByTestId("dropdown-edit-details"));
+    await page.getByTestId("dropdown-edit-details").click();
 
     const COLLECTION_CONTENT_ID = "collection-form-content";
 
@@ -125,13 +125,11 @@ describe("Collection Revision", () => {
 
     await page.fill("input#name", newCollectionName);
 
-    await page.click(page.getByTestId("create-button"));
+    await page.getByTestId("create-button").click();
 
     await tryUntil(
       async () => {
-        await expect(page).not.toHaveSelector(
-          page.getByTestId(COLLECTION_CONTENT_ID)
-        );
+        expect(page.getByTestId(COLLECTION_CONTENT_ID)).toBeFalsy();
       },
       { page }
     );
@@ -172,7 +170,7 @@ async function startRevision(page: Page): Promise<string> {
   await tryUntil(
     async () => {
       try {
-        await expect(page).toHaveSelector(page.getByText("Start Revision"));
+        await expect(page.getByText("Start Revision")).toBeTruthy();
 
         await tryUntil(
           async () => {
@@ -186,7 +184,7 @@ async function startRevision(page: Page): Promise<string> {
           { page }
         );
       } catch {
-        await page.click(page.getByText("Continue"));
+        await page.getByText("Continue").click();
         await deleteRevision(page);
         throw new Error("No available collection");
       }
@@ -255,12 +253,12 @@ async function deleteRevision(page: Page) {
   const DROPDOWN_CANCEL_ID = "dropdown-cancel-revision";
 
   if (!(await page.$(page.getByTestId(DROPDOWN_CANCEL_ID)))) {
-    await page.click(page.getByTestId("collection-more-button"));
+    await page.getByTestId("collection-more-button").click();
   }
 
-  await page.click(page.getByTestId(DROPDOWN_CANCEL_ID));
+  await page.getByTestId(DROPDOWN_CANCEL_ID).click();
 
-  await page.click(".bp4-alert-footer >> text=Cancel Revision");
+  await page.locator(".bp4-alert-footer >> text=Cancel Revision").click();
 
   await page.waitForURL(TEST_URL + ROUTES.MY_COLLECTIONS);
 }

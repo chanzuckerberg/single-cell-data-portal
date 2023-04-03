@@ -66,7 +66,7 @@ export async function login(page: Page): Promise<void> {
 
   expect(username).toBeDefined();
 
-  await page.click(page.getByText("Log In"));
+  await page.getByText("Log In").click();
 
   await page.fill('[name="Username"], [name="email"]', username);
   await page.fill('[name="Password"], [name="password"]', password);

@@ -45,8 +45,8 @@ describe("Collection", () => {
       await createCollection({ collection: { name: collectionName }, page });
 
       // Try delete
-      await page.click(page.getByTestId("collection-more-button"));
-      await page.click(page.getByText("Delete Collection"));
+      await page.getByTestId("collection-more-button").click();
+      await page.getByText("Delete Collection").click();
 
       await Promise.all([
         page.waitForNavigation({ waitUntil: "load" }),
@@ -55,7 +55,7 @@ describe("Collection", () => {
 
       await tryUntil(
         async () => {
-          await expect(page).not.toHaveSelector(page.getByText(collectionName));
+          expect(page.getByText(collectionName)).toBeFalsy;
         },
         { page }
       );
@@ -113,9 +113,7 @@ describe("Collection", () => {
         // Attempt submit, confirm error message is displayed.
         const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
-        await expect(page).toHaveSelector(
-          page.getByText(INVALID_DOI_ERROR_MESSAGE)
-        );
+        expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeTruthy();
       });
 
       test("doesn't create a collection with an invalid DOI", async ({
@@ -139,9 +137,7 @@ describe("Collection", () => {
         // Attempt submit, confirm error message is displayed.
         const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
-        await expect(page).toHaveSelector(
-          page.getByText(INVALID_DOI_ERROR_MESSAGE)
-        );
+        expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeTruthy();
       });
     });
   });
@@ -166,7 +162,7 @@ async function createCollection({
     collection_id: string;
   };
 
-  await expect(page).toHaveSelector(page.getByText(testCollection.name));
+  expect(page.getByText(testCollection.name)).toBeTruthy();
 
   return collection_id;
 }
@@ -176,7 +172,7 @@ async function createCollection({
  */
 async function showCreateForm(page: Page) {
   await goToPage(`${TEST_URL}${ROUTES.MY_COLLECTIONS}`, page);
-  await page.click(page.getByText("Create Collection"));
+  await page.getByText("Create Collection").click();
 }
 
 const collectionEndpointPath = `/dp/v1/collections`;
@@ -192,7 +188,7 @@ async function submitCreateFormInvalid(page: Page) {
         response.url().includes(collectionEndpointPath) &&
         response.status() === HTTP_STATUS_CODE.BAD_REQUEST
     ),
-    page.click(page.getByTestId("create-button")),
+    page.getByTestId("create-button").click(),
   ]);
 }
 
@@ -207,7 +203,7 @@ async function submitCreateForm(page: Page) {
         response.url().includes(collectionEndpointPath) &&
         response.status() === HTTP_STATUS_CODE.OK
     ),
-    page.click(page.getByTestId("create-button")),
+    page.getByTestId("create-button").click(),
   ]);
 }
 
@@ -216,13 +212,13 @@ async function submitCreateForm(page: Page) {
  * @param value - Value to enter in the DOI input field.
  */
 async function populatePublicationDOI(value: string, page: Page) {
-  await page.click(page.getByText("Add Link"));
-  await page.click(page.getByText("Publication DOI"));
-  await expect(page).toHaveSelector(
+  await page.getByText("Add Link").click();
+  await page.getByText("Publication DOI").click();
+  expect(
     page.getByText(
       "A summary citation linked to this DOI will be automatically added to this collection."
     )
-  );
+  ).toBeTruthy();
   await page.type(ELEMENT_ID_INPUT_DOI, value, BLUEPRINT_SAFE_TYPE_OPTIONS);
 }
 
