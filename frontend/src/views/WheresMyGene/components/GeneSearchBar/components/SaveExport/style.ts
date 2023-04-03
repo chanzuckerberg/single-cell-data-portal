@@ -59,6 +59,13 @@ export const StyledInputCheckboxWrapper = styled.div`
   label {
     width: 100%;
     margin-left: -9px;
+    &::after {
+      font-size: 13px !important;
+    }
+  }
+  span {
+    font-size: unset !important;
+    font-size: 14px !important;
   }
 `;
 
