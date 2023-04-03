@@ -2,6 +2,9 @@ import styled from "@emotion/styled";
 import { Button, fontBodyS, fontBodyXs, fontCapsXxs, getColors } from "czifui";
 import Modal from "src/components/common/Modal";
 
+export const DOWNLOAD_MODAL_WIDTH_PX = 600;
+export const DOWNLOAD_MODAL_PADDING = 24;
+
 export const DownloadButton = styled(Button)`
   ${fontBodyS}
   margin-left: 16px;
@@ -14,15 +17,15 @@ export const StyledModal = styled(Modal)`
   div:first-child {
     padding: 0;
   }
-  width: 600px !important;
-  padding: 10px !important;
+  min-width: ${DOWNLOAD_MODAL_WIDTH_PX}px !important;
+  max-width: ${DOWNLOAD_MODAL_WIDTH_PX}px !important;
+  padding: ${DOWNLOAD_MODAL_PADDING}px !important;
   h5 {
     color: black;
     height: 28px !important;
     font-size: 24px !important;
     margin: 0px !important;
   }
-  padding: 24px !important;
 `;
 
 export const StyledTitle = styled.div`

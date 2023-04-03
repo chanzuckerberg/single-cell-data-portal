@@ -4,9 +4,6 @@ import React from "react";
 export const DATA_MESSAGE_BANNER_WIDTH_PX = 433;
 export const DATA_MESSAGE_BANNER_HEIGHT_PX = 64;
 
-// Used in the download modal
-export const DATA_MESSAGE_MODAL_BANNER_WIDTH_PX = 552;
-
 interface Props {
   height?: number;
   width?: number;

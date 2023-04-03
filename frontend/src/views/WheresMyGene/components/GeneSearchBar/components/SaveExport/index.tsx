@@ -37,6 +37,8 @@ import {
   StyledSection,
   StyledTitle,
   StyledMessage,
+  DOWNLOAD_MODAL_WIDTH_PX,
+  DOWNLOAD_MODAL_PADDING,
 } from "./style";
 import {
   applyAttributes,
@@ -60,7 +62,6 @@ import {
 import { InputCheckbox } from "czifui";
 import {
   DATA_MESSAGE_BANNER_HEIGHT_PX,
-  DATA_MESSAGE_MODAL_BANNER_WIDTH_PX,
   UnderlyingDataChangeBanner,
 } from "./ExportBanner";
 import {
@@ -295,7 +296,7 @@ export default function SaveExport({
           <StyledMessage>
             <UnderlyingDataChangeBanner
               centered={false}
-              width={DATA_MESSAGE_MODAL_BANNER_WIDTH_PX}
+              width={DOWNLOAD_MODAL_WIDTH_PX - DOWNLOAD_MODAL_PADDING * 2}
             />
           </StyledMessage>
 
