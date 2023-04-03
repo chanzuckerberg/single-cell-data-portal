@@ -44,14 +44,14 @@ export const StyledModalContent = styled.div`
 `;
 
 export const StyledSection = styled.section`
-  padding: 8px 0 8px 0;
+  padding: 8px 0 24px 0;
   width: 100%;
   display: flex;
   flex-direction: column;
 `;
 
 export const StyledInputCheckboxWrapper = styled.div`
-  padding-bottom: 12px;
+  padding-bottom: 24px;
   width: 100%;
   label {
     width: 100%;
@@ -62,8 +62,10 @@ export const StyledInputCheckboxWrapper = styled.div`
 export const StyledMessage = styled.div`
   ${fontBodyXs}
 
+  display: flex;
+  justify-content: center;
+
   margin-top: 8px;
-  padding: 12px;
 
   border-radius: 4px;
 

@@ -36,6 +36,7 @@ import {
   StyledModal,
   StyledSection,
   StyledTitle,
+  StyledMessage,
 } from "./style";
 import {
   applyAttributes,
@@ -260,7 +261,7 @@ export default function SaveExport({
             <StyledInputCheckboxWrapper>
               <InputCheckbox
                 label="PNG"
-                caption="PNG CAPTION"
+                caption="PNG (Portable Network Graphics) files are image files that can be used on websites, have transparent backgrounds, and are suitable for graphics and digital images."
                 onChange={() => selectFileType("png")}
                 checked={selectedFileTypes.includes("png")}
                 data-testid="png-checkbox"
@@ -269,7 +270,7 @@ export default function SaveExport({
             <StyledInputCheckboxWrapper>
               <InputCheckbox
                 label="SVG"
-                caption="SVG CAPTION"
+                caption="SVG files are vector image files that can be scaled up or down without losing quality. They provide high-quality, resolution-independent graphics suitable for scientific publications, presentations, and data visualization."
                 onChange={() => selectFileType("svg")}
                 checked={selectedFileTypes.includes("svg")}
                 data-testid="svg-checkbox"
@@ -282,7 +283,7 @@ export default function SaveExport({
             <StyledInputCheckboxWrapper>
               <InputCheckbox
                 label="CSV"
-                caption="CSV CAPTION"
+                caption="CSV (Comma-Separated Values) files are plain text files that store tabular data by separating values with commas, making them easy to read and manipulate with spreadsheet software."
                 onChange={() => selectFileType("csv")}
                 checked={selectedFileTypes.includes("csv")}
                 data-testid="csv-checkbox"
@@ -290,7 +291,9 @@ export default function SaveExport({
             </StyledInputCheckboxWrapper>
           </StyledSection>
 
-          <UnderlyingDataChangeBanner width="100%" />
+          <StyledMessage>
+            <UnderlyingDataChangeBanner />
+          </StyledMessage>
 
           <StyledButtonContainer>
             <DownloadButton
@@ -338,8 +341,11 @@ function generateSvg({
 
   if (!banner) return "";
 
-  const bannerHeight = banner.clientHeight || 0; // Used to create room for the banner
-  const bannerWidth = banner.clientWidth || 0;
+  // Used to create room for the banner
+  const bannerHeight =
+    banner.clientHeight + CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX;
+  const bannerWidth =
+    banner.clientWidth + CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
 
   // Render elements to SVG
   const xAxisSvg = renderXAxis({
@@ -379,7 +385,11 @@ function generateSvg({
 
   // Center banner using full svg width
   applyAttributes(banner, {
-    x: svgWidth > bannerWidth ? svgWidth / 2 - bannerWidth / 2 : 0,
+    x:
+      svgWidth > bannerWidth
+        ? svgWidth / 2 - bannerWidth / 2
+        : CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
+    y: CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
   });
 
   // Required for valid SVG
