@@ -171,7 +171,7 @@ describe("Where's My Gene", () => {
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
 
     function getDiseaseSelector() {
-      return page.getByTestId("FILTERS_PANEL").getByTestId("disease-filter");
+      return page.getByTestId(FILTERS_PANEL).getByTestId("disease-filter");
     }
 
     function getDiseaseSelectorButton() {
