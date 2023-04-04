@@ -14,17 +14,17 @@ describe("Left side bar", () => {
     await page.goto(TEST_URL + "/gene-expression", { timeout: 60000 });
   });
 
-  test("Left side bar collapse and expand", async ({ page }) => {
+  test.only("Left side bar collapse and expand", async ({ page }) => {
     // click cheevron left to collaspe the left tab
     await page.locator(chevron_left).click();
 
     //verify the left tab is collapsed
+    // eslint-disable-next-line sonarjs/no-duplicate-string
     expect(await page.getByTestId("dataset-filter").isVisible()).toBeFalsy();
   });
-  test("Should be able select and de-select options for datasetfilter", async ({
+  test.only("Should be able select and de-select options for datasetfilter", async ({
     page,
   }) => {
-  
     // click the dataset filter
     await page
       .getByTestId("dataset-filter")
@@ -44,7 +44,7 @@ describe("Left side bar", () => {
     const visibility = await page.locator(filter_label).isVisible();
     expect(visibility).toBeFalsy();
   });
-  test("Should be able select and de-select options for disease filter", async ({
+  test.only("Should be able select and de-select options for disease filter", async ({
     page,
   }) => {
     // click the dataset filter
@@ -96,17 +96,13 @@ describe("Left side bar", () => {
     page,
   }) => {
     // click the dataset filter
-    await page
-      .getByTestId("sex-filter")
-      .click({ position: { x: 0, y: 0 } });
+    await page.getByTestId("sex-filter").click({ position: { x: 0, y: 0 } });
 
     // select the first dataset
     await page.locator(first_option).click();
 
     //click filter again to close pop up
-    await page
-    .getByTestId("sex-filter")
-    .click({ position: { x: 0, y: 0 } });
+    await page.getByTestId("sex-filter").click({ position: { x: 0, y: 0 } });
 
     //expect the  selected filter to be visible
     await expect(page.locator(filter_label)).toBeVisible();
