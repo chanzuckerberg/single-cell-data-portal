@@ -25,6 +25,9 @@ interface CsvMetadata {
   total_count: number;
 }
 
+const UNDERLYING_DATA_CHANGE_MESSAGE =
+  "We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future.";
+
 export function csvHeaders({
   compare,
   availableFilters,
@@ -49,6 +52,9 @@ export function csvHeaders({
 
   // Metadata as comments
   output.push([`# Created At: ${new Date().toString()}`]);
+
+  // Data change message
+  output.push([`# ${UNDERLYING_DATA_CHANGE_MESSAGE}`]);
 
   // Share URL
   output.push([
@@ -88,7 +94,7 @@ export function csvHeaders({
 
   // Ethnicity
   output.push([
-    `# # Self-Reported Ethnicity Filter Values: ${
+    `# Self-Reported Ethnicity Filter Values: ${
       self_reported_ethnicity_terms
         ?.filter((option) => {
           return selectedFilters.ethnicities.includes(option.id);
