@@ -54,7 +54,7 @@ export function csvHeaders({
   output.push([`# ${new Date().toString()}`]);
 
   // Data change message
-  output.push([UNDERLYING_DATA_CHANGE_MESSAGE]);
+  output.push([`# ${UNDERLYING_DATA_CHANGE_MESSAGE}`]);
 
   // Share URL
   output.push([
