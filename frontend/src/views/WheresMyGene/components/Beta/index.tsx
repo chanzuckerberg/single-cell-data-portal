@@ -1,6 +1,7 @@
 import { noop } from "src/common/constants/utils";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import {
+  BETA_NOTIFICATION_ID,
   StyledNotification,
   StyledNotificationWrapper,
   SubmitIssue,
@@ -10,7 +11,7 @@ export default function Beta(): JSX.Element {
   return (
     <StyledNotificationWrapper>
       <StyledNotification
-        id="beta-notification"
+        id={BETA_NOTIFICATION_ID}
         intent="info"
         autoDismiss={false}
         dismissDirection="left"

@@ -4,6 +4,8 @@ import React from "react";
 export const DATA_MESSAGE_BANNER_WIDTH_PX = 433;
 export const DATA_MESSAGE_BANNER_HEIGHT_PX = 64;
 
+export const DATA_MESSAGE_BANNER_ID = "data-message-banner";
+
 interface Props {
   height?: number;
   width?: number;
@@ -18,7 +20,7 @@ export const UnderlyingDataChangeBanner = React.memo(
   }: Props): JSX.Element {
     return (
       <svg
-        id="data-message-banner"
+        id={DATA_MESSAGE_BANNER_ID}
         fill="none"
         width={width}
         height={height}

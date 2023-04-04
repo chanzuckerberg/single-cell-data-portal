@@ -62,6 +62,7 @@ import {
 import { InputCheckbox } from "czifui";
 import {
   DATA_MESSAGE_BANNER_HEIGHT_PX,
+  DATA_MESSAGE_BANNER_ID,
   UnderlyingDataChangeBanner,
 } from "./ExportBanner";
 import {
@@ -343,7 +344,7 @@ function generateSvg({
     ?.querySelector("div");
 
   // This is an svg element created in dom when downloadStatus.isLoading is true
-  const banner = document.getElementById("data-message-banner");
+  const banner = document.getElementById(DATA_MESSAGE_BANNER_ID);
 
   if (!banner) return "";
 

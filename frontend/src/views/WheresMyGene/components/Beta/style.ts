@@ -2,6 +2,8 @@ import styled from "@emotion/styled";
 import { CommonThemeProps, getColors, Notification } from "czifui";
 import { NotificationWrapper } from "src/components/common/Filter/common/style";
 
+export const BETA_NOTIFICATION_ID = "beta-notification";
+
 export const StyledNotification = styled(Notification)`
   ${(props: CommonThemeProps) => {
     const colors = getColors(props);
