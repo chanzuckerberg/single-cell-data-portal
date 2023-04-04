@@ -656,7 +656,7 @@ describe("Where's My Gene", () => {
       });
 
       await page.getByTestId("png-checkbox").click();
-      await page.getByTestId("CSV_CHECKOBOX").click();
+      await page.getByTestId(CSV_CHECKOBOX).click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
