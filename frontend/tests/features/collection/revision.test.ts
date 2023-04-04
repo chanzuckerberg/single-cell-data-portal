@@ -194,7 +194,7 @@ async function startRevision(page: Page): Promise<string> {
    * `COLLECTION_ROW_ID` selector element
    * @see https://playwright.dev/docs/selectors#intermediate-matches
    */
-  const COLLECTION_ROW_SELECTOR_START = `*${page.getByTestId(
+  const COLLECTION_ROW_SELECTOR_START = `*${getTestID(
     COLLECTION_ROW_ID
   )} >> text="Start Revision"`;
 

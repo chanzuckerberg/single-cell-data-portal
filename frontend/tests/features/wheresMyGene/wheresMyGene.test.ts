@@ -709,7 +709,7 @@ describe("Where's My Gene", () => {
       });
 
       await page.getByTestId("svg-checkbox").click();
-      await page.getByTestId("CSV_CHECKOBOX").click();
+      await page.getByTestId("CSV_CHECKBOX").click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");
@@ -766,7 +766,7 @@ describe("Where's My Gene", () => {
       });
 
       await page.getByTestId("svg-checkbox").click();
-      await page.getByTestId(CSV_CHECKOBOX).click();
+      await page.getByTestId(CSV_CHECKBOX).click();
 
       // Start waiting for download before clicking. Note no await.
       const downloadPromise = page.waitForEvent("download");

@@ -42,14 +42,17 @@ export default function GetStarted({
           <ColumnOne data-testid="column-one">
             <StyledStepOne
               isHidden={tissueHasLoadedOnce}
-              data-testid="add-tissue"
+              data-testid="get-started-step-1"
             >
               <Step step={1} details="Add Tissues" />
             </StyledStepOne>
           </ColumnOne>
 
           <ColumnTwo data-testid="column-two">
-            <StyledStepTwo isHidden={geneHasLoadedOnce} data-testid="add-genes">
+            <StyledStepTwo
+              isHidden={geneHasLoadedOnce}
+              data-testid="get-started-step-2"
+            >
               <Step step={2} details="Add Genes" />
             </StyledStepTwo>
             <StyledStepThree

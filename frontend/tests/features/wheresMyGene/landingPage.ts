@@ -1,48 +1,45 @@
 import { expect, Page, test } from "@playwright/test";
 import { TEST_URL } from "../../common/constants";
 import { ROUTES } from "src/common/constants/routes";
+import {
+  ADD_GENE_BTN,
+  ADD_GENE_LBL,
+  ADD_TISSUE_LBL,
+} from "tests/utils/constants";
 
 const { describe } = test;
 const ALERT =
   "We would appreciate your feedback, please fill out a quick survey";
 
 const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
-const ADD_TISSUE = "add-tissue";
-const ADD_GENES = "add-genes";
 const EXPLORE_GENE_EXPRESSION = "explore-gene-expression";
 const LEGEND_WRAPPER = "legend-wrapper";
-const DOT_SIZES: Record<number, number> = {
-  0: 4,
-  1: 9,
-  2: 12,
-  3: 14,
-  4: 16,
-};
-async function checkDotSize(index: number, page: Page) {
+const DOT_SIZES: Array<number> = [4, 9, 12, 14, 16];
+async function checkDotSize(size: number, index: number, page: Page) {
   expect(
     page
       .locator('[id="expressed-in-cells-dots"]')
       .locator("span")
-      .nth(0)
+      .nth(index)
       .getAttribute("size")
-  ).toBe(DOT_SIZES[index]);
+  ).toBe(DOT_SIZES[size]);
+}
+function goToWMG(page: Page) {
+  return Promise.all([
+    page.waitForResponse(
+      (resp: { url: () => string | string[]; status: () => number }) =>
+        resp.url().includes("/wmg/v1/filters") && resp.status() === 200
+    ),
+    page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
+  ]);
 }
 describe("Tests for Gene Expression page", () => {
-  test.beforeEach(async ({ page }) => {
-    await Promise.all([
-      page.waitForResponse(
-        (resp: { url: () => string | string[]; status: () => number }) =>
-          resp.url().includes("/wmg/v1/filters") && resp.status() === 200
-      ),
-      page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
-    ]);
-  });
-
   test("Should verify main panel components", async ({ page }) => {
+    await goToWMG(page);
     // +Tissue button
-    await expect(page.getByTestId(ADD_TISSUE).first()).toBeVisible();
+    await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // +Gene button
-    await expect(page.getByTestId(ADD_GENES).first()).toBeVisible();
+    await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // survey alert
     await expect(page.getByTestId("survey-alert-id")).toContainText(ALERT);
     await expect(page.getByText("quick survey")).toHaveAttribute(
@@ -56,15 +53,13 @@ describe("Tests for Gene Expression page", () => {
 
     // STEP 1 column
     await expect(page.getByTestId("column-one")).toBeVisible();
-    await expect(page.getByTestId(ADD_TISSUE).nth(1)).toContainText("STEP 1");
-    await expect(page.getByTestId(ADD_TISSUE).nth(1)).toContainText(
-      "Add Tissues"
-    );
+    await expect(page.getByTestId(ADD_TISSUE_LBL)).toContainText("STEP 1");
+    await expect(page.getByTestId(ADD_TISSUE_LBL)).toContainText("Add Tissues");
 
     // STEP 2 column
     await expect(page.getByTestId("column-two")).toBeVisible();
-    await expect(page.getByTestId(ADD_GENES).nth(1)).toContainText("STEP 2");
-    await expect(page.getByTestId(ADD_GENES).nth(1)).toContainText("Add Genes");
+    await expect(page.getByTestId(ADD_GENE_LBL)).toContainText("STEP 2");
+    await expect(page.getByTestId(ADD_GENE_LBL)).toContainText("Add Genes");
 
     // STEP 3 column
     await expect(page.getByTestId(EXPLORE_GENE_EXPRESSION)).toContainText(
@@ -102,8 +97,8 @@ describe("Tests for Gene Expression page", () => {
     );
     await expect(page.locator('[id="expressed-in-cells-dots"]')).toBeVisible();
 
-    Object.keys(DOT_SIZES).forEach(async (index) => {
-      await checkDotSize(Number(index), page);
+    Object.keys(DOT_SIZES).forEach(async (size, index) => {
+      await checkDotSize(Number(size), index, page);
     });
   });
 });

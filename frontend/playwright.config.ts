@@ -20,6 +20,11 @@ expect.extend(matchers);
  */
 const CZI_CHECKER = " czi-checker";
 
+/**
+ * Set this environment variable to try to enable retry
+ */
+const SHOULD_RETRY = process.env.RETRY !== "false";
+
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
 const PLAYWRIGHT_REPORTER = process.env.CI
   ? ([["github"], ["line"], ["allure-playwright"]] as ReporterDescription[])
@@ -87,7 +92,7 @@ const config: PlaywrightTestConfig = {
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: PLAYWRIGHT_REPORTER,
 
-  retries: process.env.CI ? 2 : 0,
+  retries: SHOULD_RETRY ? 2 : 0,
 
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: "./__snapshots__",
