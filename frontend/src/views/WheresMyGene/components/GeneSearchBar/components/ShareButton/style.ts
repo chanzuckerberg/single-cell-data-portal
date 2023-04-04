@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
-import { ButtonIcon, fontBodyXxs, getColors, Notification } from "czifui";
+import { ButtonIcon, fontBodyXs, fontBodyXxs, getColors, Icon } from "czifui";
+import { NotificationWrapper } from "src/components/common/Filter/common/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { LegendWrapper } from "../../../InfoPanel/components/Legend/style";
 
 export const StyledButtonDiv = styled.div`
   display: flex;
@@ -29,11 +29,34 @@ export const StyledButtonIcon = styled(ButtonIcon)`
   height: 30px;
 `;
 
-export const StyledNotification = styled(Notification)`
-  ${LegendWrapper} .MuiAlert-root {
-    position: absolute;
-    top: ${HEADER_HEIGHT_PX}px;
-    right: 0px;
-    z-index: 1;
-  }
+export const StyledNotificationWrapper = styled(NotificationWrapper)`
+  top: ${HEADER_HEIGHT_PX}px;
+  right: 24px;
+`;
+
+export const StyledIcon = styled(Icon)`
+  height: 20px;
+  width: 20px;
+`;
+
+export const StyledNotificationLabel = styled.div`
+  ${fontBodyXs}
+
+  margin: 0 !important;
+
+  color: black;
+`;
+
+export const StyledNotificationDetails = styled.div`
+  ${fontBodyXs}
+
+  margin: 0 !important;
+
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+      color: ${colors?.gray[500]}
+    `;
+  }}
 `;

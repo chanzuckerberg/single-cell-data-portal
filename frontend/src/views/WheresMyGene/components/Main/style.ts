@@ -18,6 +18,8 @@ export const StyledSidebarDrawer = styled(Drawer)`
   }
 `;
 
-export const BetaWrapper = styled("div")`
-  width: 100vw;
+export const StyledBannerContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  padding-bottom: 20px;
 `;
