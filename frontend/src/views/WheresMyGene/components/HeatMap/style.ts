@@ -20,7 +20,9 @@ export const SELECTED_STYLE = {
 };
 
 export const Container = styled.div`
+  /* Fixes a bug where PNG was getting cut off */
   width: calc(100% + ${CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX}px);
+
   height: calc(
     100vh -
       ${HEADER_HEIGHT_PX +

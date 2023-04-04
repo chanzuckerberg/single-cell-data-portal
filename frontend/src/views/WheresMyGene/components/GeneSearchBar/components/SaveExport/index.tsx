@@ -169,16 +169,20 @@ export default function SaveExport({
 
     setDownloadStatus({ isLoading: true, blur: true });
 
+    // We only need the observer to listen to changes to the heatmap
+    // If the observer listens on the whole view then it will detect the banner injection and trigger download twice
     const heatmapNode = document.getElementById(
-      "heatmap-container-id"
+      HEATMAP_CONTAINER_ID
     ) as HTMLDivElement;
+
+    // This is the node that will be used to generate the exports
     const viewNode = document.getElementById("view") as HTMLDivElement;
 
     // Options for the observer (which mutations to observe)
     const config: MutationObserverInit = {
       childList: true,
       subtree: true,
-      attributes: true,
+      attributes: true, // triggers the the observer if adding a class, useful for forcing the observer to trigger
     };
 
     // Callback function to execute when mutations are observed
@@ -297,8 +301,8 @@ export default function SaveExport({
 
           <StyledMessage>
             <UnderlyingDataChangeBanner
-              centered={false}
-              width={DOWNLOAD_MODAL_WIDTH_PX - DOWNLOAD_MODAL_PADDING * 2}
+              centered={false} // Decided by UX team that text should only be centered for exports
+              width={DOWNLOAD_MODAL_WIDTH_PX - DOWNLOAD_MODAL_PADDING * 2} // setting the width of the banner svg to the modal's content width
             />
           </StyledMessage>
 

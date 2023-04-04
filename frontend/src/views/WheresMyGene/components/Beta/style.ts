@@ -9,6 +9,7 @@ export const StyledNotification = styled(Notification)`
     const colors = getColors(props);
 
     // beta intent does not exist for SDS Notification, but the colors do
+    // targeting specific id because using the generic .elevated class selector was messing with the copy link notification
     return `
       #beta-notification {
         border-color: ${colors?.beta[400]} !important;
