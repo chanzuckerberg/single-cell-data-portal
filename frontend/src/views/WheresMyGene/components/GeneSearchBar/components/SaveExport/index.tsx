@@ -349,7 +349,7 @@ function generateSvg({
   if (!banner) return "";
 
   // Used to create room for the banner
-  const pannedBannerHeight =
+  const paddedBannerHeight =
     banner.clientHeight + CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX;
   const paddedBannerWidth =
     banner.clientWidth + CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
@@ -357,22 +357,22 @@ function generateSvg({
   // Render elements to SVG
   const xAxisSvg = renderXAxis({
     heatmapContainer,
-    yOffset: pannedBannerHeight,
+    yOffset: paddedBannerHeight,
   });
   const yAxisSvg = renderYAxis({
     heatmapContainer,
     heatmapHeight,
     tissueName,
-    yOffset: pannedBannerHeight,
+    yOffset: paddedBannerHeight,
   });
   const dotsSvg = renderDots({
     heatmapContainer,
     tissueName,
-    yOffset: pannedBannerHeight,
+    yOffset: paddedBannerHeight,
   });
   const legendSvg = renderLegend({
     heatmapContainer,
-    yOffset: pannedBannerHeight,
+    yOffset: paddedBannerHeight,
   });
 
   const svgWidth =
@@ -385,7 +385,7 @@ function generateSvg({
     width: svgWidth < paddedBannerWidth ? paddedBannerWidth : svgWidth, // Use the banner width as the minimum final svg width
     height:
       heatmapHeight +
-      pannedBannerHeight +
+      paddedBannerHeight +
       X_AXIS_CHART_HEIGHT_PX +
       CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
   });
@@ -407,7 +407,7 @@ function generateSvg({
   );
 
   // Append elements to final SVG
-  finalSvg.append(banner || "");
+  finalSvg.append(banner.cloneNode(true) || ""); // We need to clone this or else the element itself will be moved and not be accessible for subsequent tissues
   finalSvg.append(legendSvg || "");
   finalSvg.append(xAxisSvg || "");
   finalSvg.append(yAxisSvg || "");
