@@ -60,3 +60,9 @@ export const InfoButtonWrapper = styled.span`
   padding-left: 4px;
   cursor: pointer;
 `;
+
+export const NotificationWrapper = styled.div`
+  position: absolute;
+  z-index: 999;
+  overflow: hidden;
+`;
