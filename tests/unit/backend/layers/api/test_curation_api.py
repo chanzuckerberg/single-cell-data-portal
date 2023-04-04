@@ -1575,7 +1575,7 @@ class TestGetDatasets(BaseAPIPortalTest):
                 "described",
                 "john doe",
                 "john.doe@email.com",
-                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi_1.org")],
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
                 ["Consortia 1", "Consortia 2"],
             ),
         )
@@ -1588,7 +1588,7 @@ class TestGetDatasets(BaseAPIPortalTest):
                 "described",
                 "john doe",
                 "john.doe@email.com",
-                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi_2.org")],
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
                 ["Consortia 1", "Consortia 2"],
             ),
         )
@@ -1607,14 +1607,7 @@ class TestGetDatasets(BaseAPIPortalTest):
 
         with self.subTest("Contains collection_name and collection_doi"):
             collection_names = {published_collection_1.metadata.name, published_collection_2.metadata.name}
-            collection_dois = set()
-
-            for col in [published_collection_1, published_collection_2]:
-                for link in col.metadata.links:
-                    if link.type == CollectionLinkType.DOI.name:
-                        collection_dois.add(link.uri)
-
-            self.assertEqual(2, len(collection_dois))
+            expected_collection_dois = {"12.3456/j.celrep", "78.91011/j.celrep"}
 
             received_collection_names = set()
             received_collection_dois = set()
@@ -1623,7 +1616,7 @@ class TestGetDatasets(BaseAPIPortalTest):
                 received_collection_dois.add(dataset["collection_doi"])
 
             self.assertEqual(collection_names, received_collection_names)
-            self.assertEqual(collection_dois, received_collection_dois)
+            self.assertEqual(expected_collection_dois, received_collection_dois)
 
         self.generate_dataset(
             collection_version=revision,
