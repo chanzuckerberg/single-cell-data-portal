@@ -228,7 +228,7 @@ describe("Where's My Gene", () => {
 
         function getDatasetSelector() {
           return page
-            .getByTestId("FILTERS_PANEL")
+            .getByTestId(FILTERS_PANEL)
             .getByTestId("dataset-filter");
         }
 
