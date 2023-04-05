@@ -66,7 +66,6 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
-        headless: false,
       },
     },
     // {

@@ -11,7 +11,7 @@ module.exports = async () => {
       console.log("SKIP_LOGIN was set to true. Skipping log in.");
     } else {
       // One time auth
-      const browser = await chromium.launch({headless:false});
+      const browser = await chromium.launch();
       const browserContext = await browser.newContext({
         ...COMMON_PLAYWRIGHT_CONTEXT,
         storageState: featureFlags,
