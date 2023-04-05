@@ -94,11 +94,10 @@ jobs:
 
       # Run E2E tests
       - name: Run E2E tests
-        #run: DEBUG=pw:api npm run e2e
         env:
           CI: true
-          BROWSER: ${{ matrix.project }}
-          run: rmp run e2e --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
+          PROJECT: ${{ matrix.project }}
+        run: DEBUG=pw:api npm run e2e --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
