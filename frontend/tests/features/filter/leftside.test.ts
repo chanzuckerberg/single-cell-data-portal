@@ -5,8 +5,9 @@ import { expect, test } from "@playwright/test";
 import { TEST_URL } from "tests/common/constants";
 
 const { describe } = test;
-const chevron_left = '[data-icon="chevron-left"]';
-const first_option = '[data-option-index="0"]';
+const CHEVRON_LEFT = '[data-icon="chevron-left"]';
+const FIRST_OPTION = '[data-option-index="0"]';
+const DATASET_FILTER = "dataset-filter";
 
 describe("Left side bar", () => {
   test.beforeEach(async ({ page }) => {
@@ -16,25 +17,24 @@ describe("Left side bar", () => {
 
   test("Left side bar collapse and expand", async ({ page }) => {
     // click cheevron left to collaspe the left tab
-    await page.locator(chevron_left).click();
+    await page.locator(CHEVRON_LEFT).click();
 
     //verify the left tab is collapsed
-    // eslint-disable-next-line sonarjs/no-duplicate-string
-    expect(await page.getByTestId("dataset-filter").isVisible()).toBeFalsy();
+
+    expect(await page.getByTestId(DATASET_FILTER).isVisible()).toBeFalsy();
   });
   test("Should be able select and de-select options for datasetfilter", async ({
     page,
   }) => {
     // click the dataset filter
     await page
-      .getByTestId("dataset-filter")
+      .getByTestId(DATASET_FILTER)
+
       .click({ position: { x: 0, y: 0 } });
 
     // select the first dataset
-    await page.locator(first_option).click();
-    await page
-      .getByTestId("dataset-filter")
-      .click({ position: { x: 0, y: 0 } });
+    await page.locator(FIRST_OPTION).click();
+    await page.getByTestId(DATASET_FILTER).click({ position: { x: 0, y: 0 } });
 
     const filter_label = '[data-testid="dataset-filter"] [role="button"]';
     //expect the  selected filter to be visible
@@ -54,7 +54,7 @@ describe("Left side bar", () => {
       .click({ position: { x: 0, y: 0 } });
 
     // select the first dataset
-    await page.locator(first_option).click();
+    await page.locator(FIRST_OPTION).click();
 
     //click filter again to close pop up
     await page
@@ -78,7 +78,7 @@ describe("Left side bar", () => {
       .click({ position: { x: 0, y: 0 } });
 
     // select the first dataset
-    await page.locator(first_option).click();
+    await page.locator(FIRST_OPTION).click();
 
     //click filter again to close pop up
     await page
@@ -101,7 +101,7 @@ describe("Left side bar", () => {
     await page.getByTestId("sex-filter").click({ position: { x: 0, y: 0 } });
 
     // select the first dataset
-    await page.locator(first_option).click();
+    await page.locator(FIRST_OPTION).click();
 
     //click filter again to close pop up
     await page.getByTestId("sex-filter").click({ position: { x: 0, y: 0 } });

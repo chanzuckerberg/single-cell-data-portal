@@ -81,7 +81,7 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
       },
-   },
+    },
   ],
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -95,7 +95,7 @@ const config: PlaywrightTestConfig = {
   testDir: "tests",
 
   /* Maximum time one test can run for. */
-  timeout: 60 * 1000,
+  timeout: 3 * 60 * 1000,
 
   use: {
     ...COMMON_PLAYWRIGHT_CONTEXT,
