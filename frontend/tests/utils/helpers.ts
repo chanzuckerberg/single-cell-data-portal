@@ -64,8 +64,7 @@ export async function login(page: Page): Promise<void> {
   await goToPage(undefined, page);
 
   const { username, password } = await getTestUsernameAndPassword();
-  console.log("Thisssssssss");
-  console.log(username, password);
+
 
   expect(username).toBeDefined();
 
@@ -145,8 +144,7 @@ async function getTestUsernameAndPassword() {
     );
 
     const { test_account_username, test_account_password } = secret;
-    console.log("Tjatttttt")
-console.log(secret)
+
     const deployedTestUsername =
       test_account_username || DEPLOYED_TEST_USERNAME;
 
