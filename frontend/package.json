@@ -108,6 +108,7 @@
     "serve": "next start",
     "test": "playwright test",
     "e2e": "playwright test",
+    "e2e:ci": "playwright test --config playwright-ci.config.ts",
     "e2e:chrome": "playwright test --project chromium",
     "e2e:chrome:headed": "playwright test --headed --project chromium",
     "e2e:ff": "playwright test --project firefox",
