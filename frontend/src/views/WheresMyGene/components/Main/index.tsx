@@ -42,8 +42,13 @@ import InfoPanel from "../InfoPanel";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
-import { BetaWrapper, SideBarLabel, StyledSidebarDrawer } from "./style";
+import {
+  SideBarLabel,
+  StyledBannerContainer,
+  StyledSidebarDrawer,
+} from "./style";
 import RightSideBar from "../RightSideBar";
+import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -332,7 +337,14 @@ export default function WheresMyGene(): JSX.Element {
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
 
-          <Top>
+          {/* Used for PNG and SVG exports to render message banner to render in output */}
+          {downloadStatus.isLoading && (
+            <StyledBannerContainer>
+              <UnderlyingDataChangeBanner />
+            </StyledBannerContainer>
+          )}
+
+          <Top id="top-legend">
             <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
@@ -388,9 +400,8 @@ export default function WheresMyGene(): JSX.Element {
             />
           ) : null}
         </Wrapper>
-        <BetaWrapper>
-          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
-        </BetaWrapper>
+
+        <Beta />
       </View>
     </>
   );
