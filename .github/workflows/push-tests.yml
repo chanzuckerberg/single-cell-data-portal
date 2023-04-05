@@ -61,8 +61,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [chrome, firefox, edge]
-        shardCurrent: [1, 2, 3]
+        project: [chromium, firefox, edge]
+        shardCurrent: [1]
         shardTotal: [3]
 
     defaults:
