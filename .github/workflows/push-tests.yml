@@ -61,9 +61,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [chrome, firefox, safari]
-        shardCurrent: [1]
-        shardTotal: [1]
+        project: [chrome, firefox, edge]
+        shardCurrent: [1, 2, 3]
+        shardTotal: [3]
 
     defaults:
       run:
@@ -97,7 +97,7 @@ jobs:
         env:
           CI: true
           PROJECT: ${{ matrix.project }}
-        run: DEBUG=pw:api npm run e2e:ci --project ${{ matrix.project }} --shard ${{ matrix.project }}/${{ matrix.shardTotal }}
+        run: DEBUG=pw:api npm run e2e:ci --project ${{ matrix.project }} --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
