@@ -1,4 +1,4 @@
-headless:falseimport React from "react";
+import React from "react";
 
 // Default dimensions
 export const DATA_MESSAGE_BANNER_WIDTH_PX = 433;

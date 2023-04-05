@@ -68,20 +68,20 @@ const config: PlaywrightTestConfig = {
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
       },
     },
-    // {
-    //   name: "firefox",
-    //   use: {
-    //     ...devices["Desktop Firefox"],
-    //     userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
-    //   },
-    // },
-    // {
-    //   name: "edge",
-    //   use: {
-    //     ...devices["Desktop Edge"],
-    //     userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
-    //   },
-  //  },
+    {
+      name: "firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+        userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
+      },
+    },
+    {
+      name: "edge",
+      use: {
+        ...devices["Desktop Edge"],
+        userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
+      },
+   },
   ],
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
