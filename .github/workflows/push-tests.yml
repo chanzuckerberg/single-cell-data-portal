@@ -97,7 +97,7 @@ jobs:
         env:
           CI: true
           PROJECT: ${{ matrix.project }}
-        run: DEBUG=pw:api npm run playwright test --config playwright-ci.config.ts --project ${{ matrix.project }} --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
+        run: DEBUG=pw:api npx playwright test --config playwright-ci.config.ts --project ${{ matrix.project }} --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
