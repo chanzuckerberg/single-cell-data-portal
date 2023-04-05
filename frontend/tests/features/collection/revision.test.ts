@@ -28,7 +28,7 @@ describe("Collection Revision", () => {
 
     await page.getByText("My Collections").click();
 
-    const COLLECTION_ROW_SELECTOR = `*${page.getByTestId(
+    const COLLECTION_ROW_SELECTOR = `*${getTestID(
       COLLECTION_ROW_ID
     )} >> text="${collectionName}"`;
 
