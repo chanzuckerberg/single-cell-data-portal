@@ -39,6 +39,15 @@ export const COLLECTION_LINK_TYPE_OPTIONS = {
   },
 };
 
+/**
+ * Collection status, used to determine whether a collection is private or public, or in revision.
+ */
+export enum COLLECTION_STATUS {
+  PRIVATE = "Private",
+  PUBLISHED = "Published",
+  REVISION = "Revision",
+}
+
 export interface Link {
   link_name: string;
   link_url: string;

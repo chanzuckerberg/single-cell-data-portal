@@ -1,4 +1,4 @@
-import { H3, Intent } from "@blueprintjs/core";
+import { Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -21,20 +21,26 @@ import CollectionMetadata from "src/components/Collection/components/CollectionM
 import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
-import ActionButtons from "./components/ActionButtons";
 import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
 import Toast from "./components/Toast";
 import {
   CollectionConsortia,
   CollectionDetail,
   CollectionHero,
-  ViewCollection,
+  CollectionView,
 } from "./style";
 import {
   buildCollectionMetadataLinks,
   getIsPublishable,
+  isCollectionHasPrivateRevision,
+  isCollectionPrivateRevision,
   revisionIsPublishable,
 } from "./utils";
+import { CollectionActions } from "src/views/Collection/components/ActionButtons/style";
+import AddButton from "src/views/Collection/components/ActionButtons/components/AddButton";
+import MoreDropdown from "src/views/Collection/components/ActionButtons/components/MoreDropdown";
+import PublishCollection from "src/components/Collections/components/PublishCollection";
+import StartRevisionButton from "src/views/Collection/components/ActionButtons/components/StartRevisionButton";
 
 const Collection: FC = () => {
   const router = useRouter();
@@ -106,9 +112,8 @@ const Collection: FC = () => {
     return null;
   }
 
-  const isPrivate = collection.visibility === VISIBILITY_TYPE.PRIVATE;
-
-  const isRevision = isCurator && !!collection?.revision_of;
+  const hasRevision = isCollectionHasPrivateRevision(collection);
+  const isRevision = isCollectionPrivateRevision(collection);
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
@@ -147,11 +152,6 @@ const Collection: FC = () => {
     !isFetching &&
     revisionIsPublishable(collection, isCurator);
 
-  const hasWriteAccess = collection.access_type === ACCESS_TYPE.WRITE;
-  const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
-  const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
-  const shouldShowCollectionRevisionCallout =
-    collection.revision_of && isPrivate;
   const collectionConsortia = collection.consortia;
   const collectionMetadataLinks = buildCollectionMetadataLinks(
     collection.links,
@@ -175,31 +175,46 @@ const Collection: FC = () => {
       <Head>
         <title>CELL&times;GENE | {collection.name}</title>
       </Head>
-      <ViewCollection>
+      <CollectionView>
         {/* Collection revision status callout */}
-        {shouldShowCollectionRevisionCallout && (
-          <CollectionRevisionStatusCallout
-            isRevisionDifferent={collection.revision_diff}
-          />
-        )}
+        <CollectionRevisionStatusCallout collection={collection} />
         {/* Collection title and actions */}
         <CollectionHero>
-          <H3 data-testid="collection-name">{collection.name}</H3>
-          {shouldShowPrivateWriteAction && (
-            <ActionButtons
-              id={id}
-              addNewFile={addNewFile}
-              isPublishable={isPublishable}
-              revisionOf={collection.revision_of}
-              visibility={collection.visibility}
-            />
-          )}
-          {shouldShowPublicWriteAction && (
-            <DeleteCollectionButton
-              collectionName={collection.name}
-              handleConfirm={handleDeleteCollection}
-              loading={isLoading}
-            />
+          <h3 data-testid="collection-name">{collection.name}</h3>
+          {/* Actions when access type is WRITE */}
+          {collection.access_type === ACCESS_TYPE.WRITE && (
+            <CollectionActions>
+              {/* Collection is either private, or a private revision */}
+              {collection.visibility === VISIBILITY_TYPE.PRIVATE && (
+                <>
+                  <MoreDropdown
+                    id={id}
+                    isRevision={isRevision}
+                    visibility={collection.visibility}
+                  />
+                  <AddButton addNewFile={addNewFile} />
+                  <PublishCollection
+                    id={id}
+                    isPublishable={isPublishable}
+                    revisionOf={collection.revision_of}
+                  />
+                </>
+              )}
+              {/* Collection is public */}
+              {collection.visibility === VISIBILITY_TYPE.PUBLIC && (
+                <>
+                  <DeleteCollectionButton
+                    disabled={hasRevision}
+                    collectionName={collection.name}
+                    handleConfirm={handleDeleteCollection}
+                    loading={isLoading}
+                  />
+                  {!hasRevision && (
+                    <StartRevisionButton collection={collection} />
+                  )}
+                </>
+              )}
+            </CollectionActions>
           )}
         </CollectionHero>
         {/* Collection consortia, description and metadata */}
@@ -224,7 +239,7 @@ const Collection: FC = () => {
           isRevision={isRevision}
           visibility={collection.visibility}
         />
-      </ViewCollection>
+      </CollectionView>
     </>
   );
 };

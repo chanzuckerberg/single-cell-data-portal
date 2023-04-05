@@ -1,21 +1,38 @@
-import { Intent } from "@blueprintjs/core";
 import React from "react";
 import { CollectionRevisionCallout } from "src/components/Collection/components/CollectionRevisionStatusCallout/style";
+import Link from "next/link";
+import { TextLink } from "./style";
+import { ACCESS_TYPE, Collection } from "src/common/entities";
 
 interface Props {
-  isRevisionDifferent: boolean;
+  collection: Collection;
 }
 
 export default function CollectionRevisionStatusCallout({
-  isRevisionDifferent,
-}: Props): JSX.Element {
-  return (
-    <CollectionRevisionCallout intent={Intent.PRIMARY} icon={null}>
+  collection,
+}: Props): JSX.Element | null {
+  const { access_type, revision_of, revisioning_in } = collection;
+  return access_type === ACCESS_TYPE.WRITE &&
+    (revision_of || revisioning_in) ? (
+    <CollectionRevisionCallout dismissible={false} sdsType="primary">
       <span data-testid="revision-status">
-        {isRevisionDifferent
-          ? "This collection has changed since you last published it."
-          : "This is a private revision of a public collection."}
+        {revisioning_in && (
+          <span>
+            This public collection has a pending revision.{" "}
+            <Link href={`/collections/${revisioning_in}`} passHref>
+              <TextLink href="passHref">Continue Revision</TextLink>
+            </Link>
+          </span>
+        )}
+        {revision_of && (
+          <span>
+            This is a private revision of a published collection.{" "}
+            <Link href={`/collections/${revision_of}`} passHref>
+              <TextLink href="passHref">Open Published Collection</TextLink>
+            </Link>
+          </span>
+        )}
       </span>
     </CollectionRevisionCallout>
-  );
+  ) : null;
 }

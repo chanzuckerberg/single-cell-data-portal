@@ -1,27 +1,37 @@
-import React from "react";
-import { TableCountSummary } from "src/components/common/Filter/common/entities";
+import React, { ReactNode } from "react";
 import {
-  CountAndTotal,
-  HeaderCell as Cell,
+  HeaderCell as Header,
+  LeftAlignCell,
+  RightAlignCell,
 } from "src/components/common/Grid/components/HeaderCell/style";
+import { TableSortByToggleProps } from "react-table";
+import { ALIGNMENT } from "src/components/common/Grid/common/entities";
 
 interface Props {
-  label: string;
-  tableCountSummary?: TableCountSummary;
+  alignment?: ALIGNMENT;
+  children: ReactNode;
+  isSortable: boolean;
+  onSort: TableSortByToggleProps["onClick"];
+  sortIcon?: ReactNode;
+  tag?: ReactNode;
 }
 
 export default function HeaderCell({
-  label,
-  tableCountSummary,
+  alignment = ALIGNMENT.LEFT,
+  children,
+  isSortable,
+  onSort,
+  sortIcon,
+  tag,
 }: Props): JSX.Element {
-  const rowCount = tableCountSummary?.row;
-  const totalCount = tableCountSummary?.total;
-  const countAndTotal =
-    rowCount && totalCount ? `${rowCount} of ${totalCount}` : "";
+  const Cell = alignment === ALIGNMENT.LEFT ? LeftAlignCell : RightAlignCell;
   return (
     <Cell>
-      <span>{label}</span>
-      {countAndTotal && <CountAndTotal>{countAndTotal}</CountAndTotal>}
+      <Header isSortable={isSortable} onClick={onSort}>
+        <span>{children}</span>
+        {tag}
+        {sortIcon}
+      </Header>
     </Cell>
   );
 }

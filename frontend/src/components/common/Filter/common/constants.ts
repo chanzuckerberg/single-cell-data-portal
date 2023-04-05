@@ -1,14 +1,14 @@
 import { EVENTS } from "src/common/analytics/events";
 import {
   ANALYTICS_PAYLOAD_KEY,
-  CategoryFilterConfig,
   CATEGORY_FILTER_ID,
   CATEGORY_FILTER_PANEL_ID,
   CATEGORY_VALUE_KEY,
+  CategoryFilterConfig,
   KeyedCategoryFilterConfigs,
+  ONTOLOGY_VIEW_KEY,
   OntologyDescendants,
   OntologyTermSet,
-  ONTOLOGY_VIEW_KEY,
 } from "src/components/common/Filter/common/entities";
 
 /**
@@ -2872,6 +2872,17 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     viewKind: "MULTI_PANEL",
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_CURATOR,
+    categoryFilterId: CATEGORY_FILTER_ID.CURATOR_NAME,
+    filterOnKey: "curator_name",
+    label: "Curator",
+    labelKind: "VALUE",
+    matchKind: "INCLUDES_SOME",
+    multiselect: true,
+    valueSourceKind: "NONE",
+    viewKind: "SELECT",
+  },
+  {
     analyticsEvent: EVENTS.FILTER_SELECT_DEVELOPMENT_STAGE,
     categoryFilterId: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
     filterOnKey: "development_stage_ancestors",
@@ -2949,6 +2960,17 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     categoryFilterId: CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
     filterOnKey: "publicationDateValues",
     label: "Publication Date",
+    labelKind: "VALUE",
+    matchKind: "INCLUDES_SOME",
+    multiselect: true,
+    valueSourceKind: "NONE",
+    viewKind: "SELECT",
+  },
+  {
+    analyticsEvent: EVENTS.FILTER_SELECT_STATUS,
+    categoryFilterId: CATEGORY_FILTER_ID.STATUS,
+    filterOnKey: "status",
+    label: "Status",
     labelKind: "VALUE",
     matchKind: "INCLUDES_SOME",
     multiselect: true,

@@ -2,11 +2,15 @@ import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
 import {
+  ACCESS_TYPE,
   Author,
+  Collection,
+  COLLECTION_STATUS,
   Consortium,
   IS_PRIMARY_DATA,
   Ontology,
   PublisherMetadata,
+  VISIBILITY_TYPE,
 } from "src/common/entities";
 import {
   buildExplicitOntologyTermId,
@@ -16,8 +20,8 @@ import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
 import {
   COLLATOR_CASE_INSENSITIVE,
-  SELF_REPORTED_ETHNICITY_DENY_LIST,
   PUBLICATION_DATE_VALUES,
+  SELF_REPORTED_ETHNICITY_DENY_LIST,
   SUSPENSION_TYPE_DENY_LIST,
 } from "src/components/common/Filter/common/constants";
 import {
@@ -27,6 +31,8 @@ import {
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
+import { COLLECTIONS_MODE } from "src/views/Collections/common/constants";
+import { QueryStatus } from "react-query/types/core/types";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
@@ -64,24 +70,48 @@ export interface FetchCollectionDatasetRows {
 }
 
 /**
+ * Model of collection IDs in revision keyed by corresponding published collection ID.
+ */
+type CollectionRevisionIdByCollectionId = Map<
+  MyCollectionResponse["revision_of"],
+  MyCollectionResponse["id"]
+>;
+
+/**
  * Model of /collections/index JSON response.
  */
 export interface CollectionResponse {
   id: string;
   name: string;
-  publisher_metadata: PublisherMetadata;
   published_at: number;
+  publisher_metadata: PublisherMetadata;
   revised_at: number;
 }
 
 /**
- * Model of /collections/index JSON response that has been modified to include calculated fields that facilitate filter
+ * Model of /my-collections/index JSON response.
+ */
+export interface MyCollectionResponse extends CollectionResponse {
+  access_type: ACCESS_TYPE;
+  curator_name: string;
+  owner: Collection["owner"];
+  revision_of: Collection["revision_of"] | null;
+  visibility: VISIBILITY_TYPE;
+}
+
+/**
+ * Model of /collections/index or /my-collections/index JSON response that has been modified to include calculated fields that facilitate filter
  * functionality.
  */
-interface ProcessedCollectionResponse extends CollectionResponse {
+type ProcessedCollectionResponse = (
+  | CollectionResponse
+  | MyCollectionResponse
+) & {
   publicationAuthors: string[];
   publicationDateValues: number[];
-}
+  revisedBy?: string;
+  status?: COLLECTION_STATUS[];
+};
 
 /**
  * Model of /datasets/index JSON response.
@@ -153,9 +183,14 @@ export function useFetchCollectionDatasetRows(
 
 /**
  * Fetch collection and dataset information and build collection-specific filter view model.
+ * @param mode - Collections mode.
+ * @param status - Query status.
  * @returns All public collections and the aggregated metadata of their datasets.
  */
-export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
+export function useFetchCollectionRows(
+  mode: COLLECTIONS_MODE,
+  status: QueryStatus
+): FetchCategoriesRows<CollectionRow> {
   // Fetch datasets.
   const {
     data: datasets,
@@ -168,7 +203,7 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
     data: collectionsById,
     isError: collectionsError,
     isLoading: collectionsLoading,
-  } = useFetchCollections();
+  } = useFetchCollections(mode, status);
 
   // View model built from join of collections response and aggregated metadata of dataset rows.
   // Build dataset rows once datasets and collections responses have resolved.
@@ -189,16 +224,22 @@ export function useFetchCollectionRows(): FetchCategoriesRows<CollectionRow> {
 
 /**
  * Cache-enabled hook for fetching public collections and returning only core collection fields.
+ * @param mode - Collections mode.
+ * @param status - Query status.
  * @returns Array of collections - possible cached from previous request - containing only ID, name and recency values.
  */
-export function useFetchCollections(): UseQueryResult<
-  Map<string, ProcessedCollectionResponse>
-> {
+export function useFetchCollections(
+  mode: COLLECTIONS_MODE = COLLECTIONS_MODE.COLLECTIONS,
+  status: QueryStatus = "success"
+): UseQueryResult<Map<string, ProcessedCollectionResponse>> {
   return useQuery<Map<string, ProcessedCollectionResponse>>(
     [USE_COLLECTIONS_INDEX],
-    fetchCollections,
+    mode === COLLECTIONS_MODE.COLLECTIONS
+      ? fetchCollections
+      : fetchMyCollections,
     {
       ...DEFAULT_QUERY_OPTIONS,
+      enabled: status === "success" || status === "error",
     }
   );
 }
@@ -265,6 +306,7 @@ function aggregateCollectionDatasetRows(
     (accum: Categories, collectionDatasetRow: DatasetRow) => {
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
+        cell_count: accum.cell_count + collectionDatasetRow.cell_count,
         cellTypeCalculated: [
           ...accum.cellTypeCalculated,
           ...collectionDatasetRow.cellTypeCalculated,
@@ -302,6 +344,7 @@ function aggregateCollectionDatasetRows(
     },
     {
       assay: [],
+      cell_count: 0,
       cellTypeCalculated: [],
       cell_type: [],
       cell_type_ancestors: [],
@@ -320,6 +363,7 @@ function aggregateCollectionDatasetRows(
   // De-dupe aggregated category values.
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
+    cell_count: aggregatedCategoryValues.cell_count,
     cellTypeCalculated: [
       ...new Set(aggregatedCategoryValues.cellTypeCalculated),
     ],
@@ -441,6 +485,7 @@ function buildDatasetRow(
   // Join!
   const datasetRow = {
     ...dataset,
+    cell_count: dataset.cell_count ?? 0,
     collection_name: collection?.name ?? "-",
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     publicationAuthors: collection?.publicationAuthors,
@@ -580,6 +625,25 @@ function expandPublicationDateValues(
 }
 
 /**
+ * Fetch and process collection response from given collection endpoint.
+ * @param url - URL of collection endpoint.
+ * @returns Promise that resolves to a processed collection response - possible cached from previous request.
+ */
+function fetchAndProcessCollectionResponse(
+  url: string
+): Promise<ProcessedCollectionResponse[]> {
+  return fetch(url, DEFAULT_FETCH_OPTIONS)
+    .then((response) => response.json())
+    .then((collections: CollectionResponse[] | MyCollectionResponse[]) => {
+      // Calculate the number of months since publication for each collection.
+      const [todayMonth, todayYear] = getMonthYear(new Date());
+      return collections.map((collection: CollectionResponse) =>
+        processCollectionResponse(collection, todayMonth, todayYear)
+      );
+    });
+}
+
+/**
  * Fetch public collections from /datasets/index endpoint. Collections are partial in that they do not contain all
  * fields; only fields required for filtering and sorting are returned.
  * @returns Promise that resolves to a map of collections keyed by collection ID - possible cached from previous
@@ -588,19 +652,44 @@ function expandPublicationDateValues(
 async function fetchCollections(): Promise<
   Map<string, ProcessedCollectionResponse>
 > {
-  const collections = await (
-    await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
-  ).json();
-
-  // Calculate the number of months since publication for each collection.
-  const [todayMonth, todayYear] = getMonthYear(new Date());
-  const processedCollections = collections.map(
-    (collection: CollectionResponse) =>
-      processCollectionResponse(collection, todayMonth, todayYear)
+  const processedCollections = await fetchAndProcessCollectionResponse(
+    API_URL + API.COLLECTIONS_INDEX
   );
 
   // Create "collections lookup" to facilitate join between collections and datasets.
   return keyCollectionsById(processedCollections);
+}
+
+/**
+ * Fetch collections from /my-collections/index endpoint. My collections are partial in that they do not contain all
+ * fields; only fields required for filtering and sorting are returned.
+ * @returns Promise that resolves to a map of my collections keyed by collection ID - possible cached from previous
+ * request.
+ */
+async function fetchMyCollections(): Promise<
+  Map<string, ProcessedCollectionResponse>
+> {
+  const processedCollections = await fetchAndProcessCollectionResponse(
+    API_URL + API.MY_COLLECTIONS_INDEX
+  );
+
+  // Map collection IDs in revision keyed by corresponding published collection ID.
+  const collectionRevisionIdById: CollectionRevisionIdByCollectionId =
+    new Map();
+
+  // Published collection in revision are filtered out from the processed response, and the revision ID is mapped to
+  // the corresponding published ID.
+  // Process my collections response to add additional fields required for filtering and sorting .e.g "status".
+  const processedMyCollections = processedCollections
+    .filter((processedCollection) =>
+      filterCollectionInRevision(processedCollection, collectionRevisionIdById)
+    )
+    .map((processedCollection) =>
+      processMyCollectionResponse(processedCollection, collectionRevisionIdById)
+    );
+
+  // Create "collections lookup" to facilitate join between my collections and datasets.
+  return keyCollectionsById(processedMyCollections);
 }
 
 /**
@@ -623,6 +712,53 @@ async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
   return sanitizedDatasets.map((dataset: DatasetResponse) =>
     processDatasetResponse(dataset)
   );
+}
+
+/**
+ * Filters collection in revision from the processed response.
+ * Maps a collection in revision, by ID, to the corresponding published collection ID.
+ * @param processedCollection - Processed collection.
+ * @param collectionRevisionIdById - Map of collection IDs in revision keyed by corresponding published collection ID.
+ * @returns True if collection is not in revision.
+ */
+function filterCollectionInRevision(
+  processedCollection: ProcessedCollectionResponse,
+  collectionRevisionIdById: CollectionRevisionIdByCollectionId
+) {
+  if ("revision_of" in processedCollection) {
+    const { id, revision_of } = processedCollection;
+    if (revision_of && revision_of !== id) {
+      collectionRevisionIdById.set(revision_of, id);
+      return false; // Collection is in revision, filter out.
+    }
+  }
+  return true;
+}
+
+/**
+ * Returns the status of the given collection.
+ * @param processedCollection - Processed collection.
+ * @param revisedBy - ID of the corresponding collection in revision.
+ * @returns Collection statuses.
+ */
+function getCollectionStatus(
+  processedCollection: ProcessedCollectionResponse,
+  revisedBy?: string
+): COLLECTION_STATUS[] | undefined {
+  if ("access_type" in processedCollection) {
+    const status: COLLECTION_STATUS[] = [];
+    if (processedCollection.access_type === ACCESS_TYPE.READ) {
+      status.push(COLLECTION_STATUS.PUBLISHED);
+    } else {
+      if (processedCollection.visibility === VISIBILITY_TYPE.PRIVATE) {
+        status.push(COLLECTION_STATUS.PRIVATE);
+      } else {
+        status.push(COLLECTION_STATUS.PUBLISHED);
+        revisedBy && status.push(COLLECTION_STATUS.REVISION);
+      }
+    }
+    return status;
+  }
 }
 
 /**
@@ -707,12 +843,12 @@ function keyCollectionsById(
 
 /**
  * Add calculated fields to collection response.
- * @param collection - Collection response returned from collections endpoint.
+ * @param collection - Collection response returned from collections or my-collections endpoint.
  * @param todayMonth - Number indicating the month of today's date (1-indexed).
  * @param todayYear - Number indicating the year of today's date.
  */
 function processCollectionResponse(
-  collection: CollectionResponse,
+  collection: CollectionResponse | MyCollectionResponse,
   todayMonth: number,
   todayYear: number
 ): ProcessedCollectionResponse {
@@ -763,6 +899,24 @@ function processDatasetResponse(
     cellTypeCalculated,
     tissueCalculated,
   };
+}
+
+/**
+ * Add calculated fields to my collections response.
+ * @param processedCollection - Processed collection response.
+ * @param collectionRevisionIdById - Map of collection IDs in revision keyed by corresponding published collection ID.
+ */
+function processMyCollectionResponse(
+  processedCollection: ProcessedCollectionResponse,
+  collectionRevisionIdById: CollectionRevisionIdByCollectionId
+): ProcessedCollectionResponse {
+  // Determine the collection's corresponding revision ID.
+  const revisedBy = collectionRevisionIdById.get(processedCollection.id);
+
+  // Determine the collection's status.
+  const status = getCollectionStatus(processedCollection, revisedBy);
+
+  return { ...processedCollection, revisedBy, status };
 }
 
 /**

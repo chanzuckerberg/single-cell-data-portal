@@ -1,7 +1,7 @@
-import { Classes } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
+import { LIGHT_GRAY } from "src/components/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+import { CommonThemeProps, fontBodyS, getColors, getFontWeights } from "czifui";
 
 export enum Position {
   LEFT = "left",
@@ -19,6 +19,9 @@ interface PositionerProps {
 
 // This color will be used as a separator line for the split right sidebar, top and bottom views
 export const SIDEBAR_BOX_SHADOW_COLOR = "rgba(16, 22, 26, 0.15)";
+const grey500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
+const fontWeight600 = (props: CommonThemeProps) =>
+  getFontWeights(props)?.semibold;
 
 const generateBoxShadow = (props: Props) =>
   `inset ${
@@ -57,40 +60,47 @@ export const SideBarPositioner = styled.div<PositionerProps>`
 `;
 
 export const SideBarToggleButtonWrapper = styled.span`
-  .${Classes.BUTTON} {
-    color: ${PT_TEXT_COLOR};
-    display: flex;
-    font-weight: 500;
-    letter-spacing: -0.1px;
-    line-height: 18px;
-    min-height: 20px; /* overrides specificity of bp4 button min height rule */
+  display: block;
+
+  .MuiButton-root {
+    width: 100%;
 
     &:hover {
       background: none;
     }
 
-    &:focus {
-      outline: none;
-    }
-
-    .${Classes.ICON} > svg {
+    .MuiButton-endIcon {
+      align-items: center;
+      display: flex;
       height: 20px;
+      justify-content: center;
+      margin: 0;
       width: 20px;
+
+      .MuiSvgIcon-root {
+        color: ${grey500};
+        height: 14px;
+        width: 14px;
+      }
     }
   }
 `;
 
-export const SideBarClosedButtonWrapper = styled(SideBarToggleButtonWrapper)`
-  .${Classes.BUTTON} {
-    flex-direction: column-reverse;
-    gap: 12px;
-    height: 100%;
-    justify-content: flex-end;
-    padding: 24px 8px;
-    width: 100%; /* button click target consumes full width of closed sidebar */
+export const ToggleButtonText = styled.span`
+  ${fontBodyS};
+  color: #000000;
+  font-weight: ${fontWeight600};
+  letter-spacing: -0.006em;
+`;
 
-    .${Classes.BUTTON_TEXT} {
-      margin: 0;
+export const SideBarClosedButtonWrapper = styled(SideBarToggleButtonWrapper)`
+  .MuiButton-root {
+    flex-direction: column-reverse;
+    gap: 8px;
+    min-width: 0;
+    padding: 24px 8px;
+
+    ${ToggleButtonText} {
       transform: scale(-1);
       writing-mode: vertical-rl;
     }
@@ -98,13 +108,22 @@ export const SideBarClosedButtonWrapper = styled(SideBarToggleButtonWrapper)`
 `;
 
 export const SideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
-  display: block;
-  margin-bottom: 12px;
-
-  .${Classes.BUTTON} {
-    height: 20px; /* overrides specificity of bp4 button height rule */
+  .MuiButton-root {
     justify-content: space-between;
+    margin-bottom: 8px;
     padding: 0;
-    width: 100%;
+  }
+`;
+
+// TODO(cc) review style usage.
+export const GeneSideBarOpenButtonWrapper = styled(SideBarOpenButtonWrapper)`
+  .MuiButton-root {
+    align-items: flex-start; /* TODO(cc) confirm this is needed */
+    margin-bottom: 0; /* TODO (cc) confirm this change is ok */
+
+    ${ToggleButtonText} {
+      font-size: 20px;
+      line-height: 24px;
+    }
   }
 `;

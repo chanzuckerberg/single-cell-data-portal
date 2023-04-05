@@ -1,13 +1,8 @@
 import { Button, fontBodyS } from "czifui";
 import styled from "@emotion/styled";
 
-export const CollectionActions = styled.div`
-  align-items: center;
-  column-gap: 8px;
-  display: flex;
-`;
-
-export const ActionButton = styled(Button)`
+// TODO(cc) make generic button styles for action buttons.
+export const StartRevisionButton = styled(Button)`
   ${fontBodyS};
   font-weight: 500;
   height: 32px;

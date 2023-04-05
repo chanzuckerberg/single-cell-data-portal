@@ -11,6 +11,7 @@ const AsyncAlert = loadable(
   () =>
     /*webpackChunkName: 'src/components/Alert' */ import("src/components/Alert")
 );
+
 interface Props {
   id: Collection["id"];
   Button?: React.ElementType;

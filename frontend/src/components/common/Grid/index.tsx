@@ -4,6 +4,9 @@ import {
   TableCountSummary,
 } from "src/components/common/Filter/common/entities";
 import { Grid as StyledGrid } from "./style";
+import React from "react";
+import { Icon } from "czifui";
+import { SortIcon } from "src/components/common/Grid/components/HeaderCell/style";
 
 interface Props<T extends Categories> {
   className?: string;
@@ -29,9 +32,25 @@ export default function Grid<T extends Categories>({
               {headerGroup.headers.map((column) => {
                 const { key, ...restColumnHeaderProps } =
                   column.getHeaderProps();
+                const { onClick } = column.getSortByToggleProps();
                 return (
                   <th key={key} {...restColumnHeaderProps}>
-                    {column.render("Header", { tableCountSummary })}
+                    {column.render("Header", {
+                      isSortable: column.canSort,
+                      onSort: onClick,
+                      tableCountSummary,
+                      sortIcon: column.isSorted ? (
+                        <SortIcon>
+                          <Icon
+                            sdsIcon={
+                              column.isSortedDesc ? "chevronDown" : "chevronUp"
+                            }
+                            sdsSize="s"
+                            sdsType="interactive"
+                          />
+                        </SortIcon>
+                      ) : null,
+                    })}
                   </th>
                 );
               })}

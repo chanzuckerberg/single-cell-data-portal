@@ -4,7 +4,6 @@ import {
   CellProps,
   Column,
   Filters,
-  HeaderProps,
   Renderer,
   useFilters,
   useSortBy,
@@ -38,6 +37,8 @@ import DatasetsActionsCell from "src/components/Datasets/components/Grid/compone
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
 import { View } from "../globalStyle";
+import CountAndTotal from "src/components/common/Grid/components/HeaderCell/components/CountAndTotal";
+import { CATEGORY_FILTER_DENY_LIST } from "src/views/Datasets/common/constants";
 
 /**
  * Collection ID object key.
@@ -101,14 +102,12 @@ export default function Datasets(): JSX.Element {
             />
           );
         },
-        Header: (({ tableCountSummary }: HeaderPropsValue) => {
-          return (
-            <HeaderCell
-              label={"Datasets"}
-              tableCountSummary={tableCountSummary}
-            />
-          );
-        }) as Renderer<HeaderProps<DatasetRow>>,
+        Header: ({ tableCountSummary, ...props }: HeaderPropsValue) =>
+          HeaderCell({
+            children: "Datasets",
+            tag: <CountAndTotal tableCountSummary={tableCountSummary} />,
+            ...props,
+          }),
         accessor: DATASET_NAME,
       },
       {
@@ -150,9 +149,9 @@ export default function Datasets(): JSX.Element {
         id: CATEGORY_FILTER_ID.ORGANISM,
       },
       {
-        Cell: ({ value }: CellPropsValue<number | null>) => (
+        Cell: ({ value }: CellPropsValue<number>) => (
           <RightAlignCell>
-            <CountCell cellCount={value || 0} />
+            <CountCell cellCount={value} />
           </RightAlignCell>
         ),
         Header: <RightAlignCell>Cells</RightAlignCell>,
@@ -273,6 +272,7 @@ export default function Datasets(): JSX.Element {
     {
       columns: columnConfig,
       data: datasetRows,
+      disableSortBy: true,
       initialState: {
         filters: initialFilters,
         hiddenColumns: [
@@ -314,13 +314,15 @@ export default function Datasets(): JSX.Element {
 
   // Determine the set of categories to display for the datasets view.
   const categories = useMemo<Set<CATEGORY_FILTER_ID>>(() => {
-    return Object.values(CATEGORY_FILTER_ID).reduce(
-      (accum, categoryFilterId: CATEGORY_FILTER_ID) => {
+    return Object.values(CATEGORY_FILTER_ID)
+      .filter(
+        (categoryFilterId: CATEGORY_FILTER_ID) =>
+          !CATEGORY_FILTER_DENY_LIST.includes(categoryFilterId)
+      )
+      .reduce((accum, categoryFilterId: CATEGORY_FILTER_ID) => {
         accum.add(categoryFilterId);
         return accum;
-      },
-      new Set<CATEGORY_FILTER_ID>()
-    );
+      }, new Set<CATEGORY_FILTER_ID>());
   }, []);
 
   // Set up filter instance.

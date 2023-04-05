@@ -42,11 +42,7 @@ import InfoPanel from "../InfoPanel";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
-import {
-  SideBarLabel,
-  StyledBannerContainer,
-  StyledSidebarDrawer,
-} from "./style";
+import { StyledBannerContainer, StyledSidebarDrawer } from "./style";
 import RightSideBar from "../RightSideBar";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 
@@ -284,7 +280,7 @@ export default function WheresMyGene(): JSX.Element {
       </Head>
 
       <SideBar
-        label={<SideBarLabel>Filters</SideBarLabel>}
+        label="Filters"
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"

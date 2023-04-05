@@ -4,21 +4,32 @@ import styled from "@emotion/styled";
 import { CommonThemeProps, getColors } from "czifui";
 import { PRIMARY_BLUE, PT_TEXT_COLOR } from "src/components/common/theme";
 
+const gray300 = (props: CommonThemeProps) => getColors(props)?.gray[300];
+
 export const Filter = styled.div`
   display: grid;
-  gap: 8px;
-  margin-bottom: 12px;
+  font-feature-settings: normal; /* required; overrides layout.css specification */
+  gap: 4px;
+  margin-bottom: 8px;
 
   &:last-child {
     margin-bottom: 0;
   }
 
   /* Filter open with "active" button. */
+
   & .${Classes.POPOVER_OPEN} {
     .${Classes.BUTTON} {
       color: ${PT_TEXT_COLOR};
     }
   }
+`;
+
+export const FilterDivider = styled.hr`
+  background: none;
+  box-shadow: inset 0px -0.5px 0px ${gray300};
+  height: 0.5px;
+  margin: 16px 0;
 `;
 
 export const SelectionIcon = styled(Icon)`

@@ -1,5 +1,3 @@
-import { Button } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
 import { ReactNode, useEffect, useState } from "react";
 import {
   Position,
@@ -7,7 +5,9 @@ import {
   SideBarClosedButtonWrapper,
   SideBarOpenButtonWrapper,
   SideBarPositioner,
+  ToggleButtonText,
 } from "src/components/common/SideBar/style";
+import { Button, Icon } from "czifui";
 
 const COLLAPSED_WIDTH_PX = 36;
 export const FILTERS_PANEL_EXPANDED_WIDTH_PX = 240;
@@ -55,9 +55,6 @@ export default function SideBar({
   const SideBarToggleButtonWrapper = isExpanded
     ? SideBarOpenButtonWrapperComponent
     : SideBarClosedButtonWrapper;
-  const rightIcon = (position === Position.LEFT ? isExpanded : !isExpanded)
-    ? IconNames.CHEVRON_LEFT
-    : IconNames.CHEVRON_RIGHT;
 
   /**
    * Handle click on open/close icon; update state.
@@ -83,12 +80,27 @@ export default function SideBar({
       <SideBarPositionerComponent isExpanded={isExpanded}>
         <SideBarToggleButtonWrapper>
           <Button
-            minimal
-            onClick={() => handleExpandedClick(!isExpanded)}
-            rightIcon={rightIcon}
-            text={!isExpanded && truncatedLabel ? truncatedLabel : label}
             disabled={disabled}
-          />
+            endIcon={
+              <Icon
+                sdsIcon={
+                  (position === Position.LEFT ? isExpanded : !isExpanded)
+                    ? "chevronLeft"
+                    : "chevronRight"
+                }
+                sdsSize="s"
+                sdsType="button"
+              />
+            }
+            onClick={() => handleExpandedClick(!isExpanded)}
+            sdsStyle="minimal"
+            sdsType="minimal"
+            size="large"
+          >
+            <ToggleButtonText>
+              {!isExpanded && truncatedLabel ? truncatedLabel : label}
+            </ToggleButtonText>
+          </Button>
         </SideBarToggleButtonWrapper>
         {isExpanded ? content : null}
       </SideBarPositionerComponent>

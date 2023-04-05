@@ -1,8 +1,11 @@
 import styled from "@emotion/styled";
-import { PRIMARY_BLUE, PRIMARY_BLUE_500 } from "src/components/common/theme";
+import { CommonThemeProps, getColors } from "czifui";
+
+const primary400 = (props: CommonThemeProps) => getColors(props)?.primary[400];
 
 export const StyledAnchor = styled.a`
-  color: ${PRIMARY_BLUE};
+  color: ${primary400};
+  font-weight: 500;
 
   &:focus {
     outline: none;
@@ -10,7 +13,7 @@ export const StyledAnchor = styled.a`
 
   &:hover {
     background: transparent;
-    color: ${PRIMARY_BLUE_500};
+    color: ${primary400};
     text-decoration: none;
   }
 `;

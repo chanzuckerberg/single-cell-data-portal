@@ -9,14 +9,17 @@ interface Props {
 }
 
 export const CollectionDescription = styled.div`
+  display: grid;
+  gap: 8px;
   grid-area: description;
+  justify-items: flex-start;
 `;
 
 export const DescriptionText = styled.p<Props>`
   color: ${PT_TEXT_COLOR};
   letter-spacing: -0.1px;
   line-height: ${DESCRIPTION_LINE_HEIGHT_PX}px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   ${(props) => {
     return (
       props.isEllipsis &&

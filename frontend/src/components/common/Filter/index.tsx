@@ -1,10 +1,10 @@
 import {
-  CategoryView,
   CATEGORY_FILTER_ID,
+  CategoryView,
   MultiPanelOntologyCategoryView,
+  ON_FILTER_SOURCE,
   OnFilterFn,
   OntologyCategoryView,
-  ON_FILTER_SOURCE,
   RangeCategoryView,
   SelectCategoryView,
 } from "src/components/common/Filter/common/entities";
