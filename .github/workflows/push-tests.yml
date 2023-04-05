@@ -52,7 +52,19 @@ jobs:
 
   e2e-test:
     timeout-minutes: 60
+    name: E2E tests ${{ matrix.project }} ${{ matrix.shardCurrent }} / ${{ matrix.shardTotal }}
     runs-on: ubuntu-20.04
+    concurrency:
+      group: ${{ github.ref }}-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
+      cancel-in-progress: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chrome, firefox, safari]
+        shardCurrent: [1, 2, 3]
+        shardTotal: [3]
+
     defaults:
       run:
         working-directory: frontend
@@ -82,7 +94,11 @@ jobs:
 
       # Run E2E tests
       - name: Run E2E tests
-        run: DEBUG=pw:api npm run e2e
+        #run: DEBUG=pw:api npm run e2e
+        env:
+          CI: true
+          BROWSER: ${{ matrix.project }}
+          run: rmp run e2e --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
