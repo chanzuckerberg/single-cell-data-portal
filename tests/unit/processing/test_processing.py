@@ -125,7 +125,7 @@ class ProcessingTest(BaseProcessingTest):
         )
         for step_name in ["download-validate", "cxg", "seurat"]:
             pm.process(
-                dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "datasets_bucket", "fake_cxg_bucket"
+                dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_datasets_bucket", "fake_cxg_bucket"
             )
 
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
