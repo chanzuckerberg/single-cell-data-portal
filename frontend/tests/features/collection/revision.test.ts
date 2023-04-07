@@ -14,10 +14,10 @@ const { describe, skip } = test;
 const COLLECTION_ROW_ID = "collection-row";
 
 describe("Collection Revision", () => {
-  skip(
-    !isDevStaging,
-    "We only seed published collections for revision test in dev and staging"
-  );
+  // skip(
+  //   !isDevStaging,
+  //   "We only seed published collections for revision test in dev and staging"
+  // );
 
   test("starts a revision", async ({ page }) => {
     const collectionName = await startRevision(page);
