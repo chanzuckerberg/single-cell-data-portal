@@ -77,7 +77,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         dataset_id: DatasetVersionId,
         artifact_bucket: str,
         processing_status_key: DatasetStatusKey,
-        datasets_bucket: Optional[str],  # If provided, dataset will be uploaded to this bucket for public access
+        datasets_bucket: Optional[str] = None,  # If provided, dataset will be uploaded to this bucket for public access
     ):
         self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADING)
         try:
