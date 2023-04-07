@@ -175,7 +175,7 @@ class ProcessingTest(BaseProcessingTest):
 
         for step_name in ["download-validate"]:
             pm.process(
-                dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "datasets_bucket", "fake_cxg_bucket"
+                dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_datasets_bucket", "fake_cxg_bucket"
             )
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
