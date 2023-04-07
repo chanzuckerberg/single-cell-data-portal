@@ -124,7 +124,9 @@ class ProcessingTest(BaseProcessingTest):
             self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
         )
         for step_name in ["download-validate", "cxg", "seurat"]:
-            pm.process(dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_cxg_bucket")
+            pm.process(
+                dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "datasets_bucket", "fake_cxg_bucket"
+            )
 
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
@@ -172,7 +174,9 @@ class ProcessingTest(BaseProcessingTest):
         )
 
         for step_name in ["download-validate"]:
-            pm.process(dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_cxg_bucket")
+            pm.process(
+                dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "datasets_bucket", "fake_cxg_bucket"
+            )
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.validation_status, DatasetValidationStatus.INVALID)
