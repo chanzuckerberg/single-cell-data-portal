@@ -1,0 +1,25 @@
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:19 Start download_from_source_uri
+INFO     processing:process_download_validate.py:187 Start download
+INFO     backend.layers.processing.downloader:downloader.py:115 Setting up download.
+INFO     backend.layers.processing.downloader:downloader.py:116 file_size: 1
+INFO     processing:process_download_validate.py:196 None
+INFO     processing:process_download_validate.py:209 Download complete
+INFO     root:logger.py:21 Complete download_from_source_uri
+INFO     root:logger.py:19 Start validate_h5ad_file_and_add_labels
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete validate_h5ad_file_and_add_labels
+INFO     root:logger.py:19 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:82 Uploading [026d5077-7b92-471f-98e2-a71bb51158ca/raw.h5ad] to S3 bucket: [fake_bucket_name].
+INFO     processing:process_logic.py:85 Updating database with  raw_h5ad.
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete create_artifact
+INFO     root:logger.py:19 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:82 Uploading [026d5077-7b92-471f-98e2-a71bb51158ca/local.h5ad] to S3 bucket: [fake_bucket_name].
+INFO     processing:process_logic.py:85 Updating database with  h5ad.
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete create_artifact
