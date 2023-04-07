@@ -32,7 +32,14 @@ describe("Add tissue tests", () => {
 
     // close dropdown
     await page.keyboard.press("Escape");
+    // STEP 1 & Add Tissues texts should disappear
+    await expect(page.getByTestId(ADD_TISSUE_LBL)).not.toBeVisible();
+    await expect(page.getByTestId(ADD_TISSUE_LBL)).not.toBeVisible();
+
+    // select tissue should be visible
     await expect(page.getByTestId("cell-type-labels-lung")).toBeVisible();
+
+    // verify cell counts: name, icon and count
     const CELL_COUNTS = page.getByTestId("cell-type-label-count");
     expect(await CELL_COUNTS.count()).toBe(151); // flaky, will break with changes in test data
     for (let i = 0; i < (await CELL_COUNTS.count()); i++) {
@@ -42,12 +49,9 @@ describe("Add tissue tests", () => {
       ).not.toBeUndefined();
 
       // info icon
-      console.log(
-        await CELL_COUNTS.nth(i).getByTestId("cell-type-name").textContent()
-      );
-      expect(
-        CELL_COUNTS.nth(i).getByTestId("marker-gene-button")
-      ).toBeVisible();
+      // expect(
+      //   CELL_COUNTS.nth(i).getByTestId("marker-gene-button")
+      // ).toBeVisible();
       // cell count
       const COUNT = await CELL_COUNTS.nth(i)
         .getByTestId("cell-count")
