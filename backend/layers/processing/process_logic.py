@@ -58,7 +58,6 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         key_prefix: str,
         artifact_bucket: str,
     ) -> str:
-        # TODO: make sure that the files are correct
         file_base = basename(file_name)
         self.s3_provider.upload_file(
             file_name,
