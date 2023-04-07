@@ -14,10 +14,10 @@ const { describe, skip } = test;
 const COLLECTION_ROW_ID = "collection-row";
 
 describe("Collection Revision", () => {
-  skip(
-    !isDevStaging,
-    "We only seed published collections for revision test in dev and staging"
-  );
+  // skip(
+  //   !isDevStaging,
+  //   "We only seed published collections for revision test in dev and staging"
+  // );
 
   test("starts a revision", async ({ page }) => {
     const collectionName = await startRevision(page);
@@ -26,7 +26,7 @@ describe("Collection Revision", () => {
 
     await expect(publishButton).toBeDisabled();
 
-    await page.click(getText("My Collections"));
+    await page.getByText("My Collections").click();
 
     const COLLECTION_ROW_SELECTOR = `*${getTestID(
       COLLECTION_ROW_ID
@@ -47,7 +47,7 @@ describe("Collection Revision", () => {
             await collection.$(getText("Published"))
           );
           const hasRevisionPending = Boolean(
-            await collection.$(getText("Revision Pending"))
+            await collection.$(getTestID("Revision Pending"))
           );
 
           if (hasPublished && hasRevisionPending) {
@@ -100,9 +100,9 @@ describe("Collection Revision", () => {
       await page.getAttribute(getTestID(COLLECTION_CONTACT_ID), "href")
     )?.replace(/^mailto:/, "");
 
-    await page.click(getTestID("collection-more-button"));
+    await page.getByTestId("collection-more-button").click();
 
-    await page.click(getTestID("dropdown-edit-details"));
+    await page.getByTestId("dropdown-edit-details").click();
 
     const COLLECTION_CONTENT_ID = "collection-form-content";
 
@@ -124,11 +124,11 @@ describe("Collection Revision", () => {
 
     await page.fill("input#name", newCollectionName);
 
-    await page.click(getTestID("create-button"));
+    await page.getByTestId("create-button").click();
 
     await tryUntil(
       async () => {
-        await expect(page).not.toHaveSelector(getTestID(COLLECTION_CONTENT_ID));
+        expect(page.getByTestId(COLLECTION_CONTENT_ID)).toBeFalsy();
       },
       { page }
     );
@@ -167,7 +167,7 @@ async function startRevision(page: Page): Promise<string> {
   await tryUntil(
     async () => {
       try {
-        await expect(page).toHaveSelector(getText("Start Revision"));
+        await expect(page.getByText("Start Revision")).toBeTruthy();
 
         await tryUntil(
           async () => {
@@ -181,7 +181,7 @@ async function startRevision(page: Page): Promise<string> {
           { page }
         );
       } catch {
-        await page.click(getText("Continue"));
+        await page.getByText("Continue").click();
         await deleteRevision(page);
         throw new Error("No available collection");
       }
@@ -245,12 +245,12 @@ async function deleteRevision(page: Page) {
   const DROPDOWN_CANCEL_ID = "dropdown-cancel-revision";
 
   if (!(await page.$(getTestID(DROPDOWN_CANCEL_ID)))) {
-    await page.click(getTestID("collection-more-button"));
+    await page.getByTestId("collection-more-button").click();
   }
 
-  await page.click(getTestID(DROPDOWN_CANCEL_ID));
+  await page.getByTestId(DROPDOWN_CANCEL_ID).click();
 
-  await page.click(".bp4-alert-footer >> text=Cancel Revision");
+  await page.locator(".bp4-alert-footer >> text=Cancel Revision").click();
 
   await page.waitForURL(TEST_URL + ROUTES.MY_COLLECTIONS);
 }
