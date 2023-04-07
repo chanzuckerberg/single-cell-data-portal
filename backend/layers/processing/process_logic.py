@@ -87,7 +87,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             self.logger.info(f"Updated database with {artifact_type}.")
             if datasets_bucket:
                 datasets_s3_uri = self.s3_provider.upload_file(
-                    file_name, datasets_bucket, ".".join(key_prefix, artifact_type)
+                    file_name, datasets_bucket, ".".join((key_prefix, artifact_type))
                 )
                 self.logger.info(f"Uploaded {dataset_id}.{artifact_type} to {datasets_s3_uri}")
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADED)

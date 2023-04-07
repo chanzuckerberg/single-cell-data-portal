@@ -103,7 +103,7 @@ class ProcessMain(ProcessingLogic):
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)
             elif step_name == "seurat":
-                self.process_seurat.process(dataset_id, artifact_bucket)
+                self.process_seurat.process(dataset_id, artifact_bucket, datasets_bucket)
             elif step_name == "cxg_remaster":
                 raise NotImplementedError("cxg remasters are not supported anymore")
             else:

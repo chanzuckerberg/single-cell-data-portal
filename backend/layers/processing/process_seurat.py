@@ -37,13 +37,14 @@ class ProcessSeurat(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
 
-    def process(self, dataset_id: DatasetVersionId, artifact_bucket: str):
+    def process(self, dataset_id: DatasetVersionId, artifact_bucket: str, datasets_bucket: str):
         """
         1. Download the labeled dataset from the artifact bucket
         2. Convert it to Seurat format
         3. Upload the Seurat file to the artifact bucket
-        :param artifact_bucket:
         :param dataset_id:
+        :param artifact_bucket:
+        :param datasets_bucket:
         :return:
         """
 
@@ -78,6 +79,7 @@ class ProcessSeurat(ProcessingLogic):
             dataset_id,
             artifact_bucket,
             DatasetStatusKey.RDS,
+            datasets_bucket=datasets_bucket,
         )
 
     @logit
