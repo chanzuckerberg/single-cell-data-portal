@@ -59,8 +59,8 @@ class ProcessSeurat(ProcessingLogic):
 
         labeled_h5ad_filename = "local.h5ad"
 
-        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
-        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        key_prefix = self.get_key_prefix(dataset_id.id)
+        object_key = f"{key_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
         seurat_filename = self.convert_file(
@@ -74,7 +74,7 @@ class ProcessSeurat(ProcessingLogic):
         self.create_artifact(
             seurat_filename,
             DatasetArtifactType.RDS,
-            bucket_prefix,
+            key_prefix,
             dataset_id,
             artifact_bucket,
             DatasetStatusKey.RDS,
