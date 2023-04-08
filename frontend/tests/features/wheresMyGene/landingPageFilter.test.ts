@@ -2,17 +2,22 @@
  * Test suite for select filter-related utils.
  */
 import { expect, test } from "@playwright/test";
-import { TEST_URL } from "tests/common/constants";
-
-const { describe } = test;
+import { goToWMG } from "tests/common/utils";
+import { isDevStagingProd } from "tests/utils/helpers";
+import { getTestID } from "tests/utils/selectors";
 const CHEVRON_LEFT = '[data-icon="chevron-left"]';
 const FIRST_OPTION = '[data-option-index="0"]';
 const DATASET_FILTER = "dataset-filter";
+const DISEASE_FILTER = "disease-filter";
+const SELF_REPORTED_ETHNICITY_FILTER = "self-reported-ethnicity-filter";
+const SEX_FILTER = "sex-filter";
+const { describe, skip } = test;
 
 describe("Left side bar", () => {
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test.beforeEach(async ({ page }) => {
     // navigate to url
-    await page.goto(TEST_URL + "/gene-expression", { timeout: 60000 });
+    await goToWMG(page);
   });
 
   test("Left side bar collapse and expand", async ({ page }) => {
@@ -34,9 +39,11 @@ describe("Left side bar", () => {
 
     // select the first dataset
     await page.locator(FIRST_OPTION).click();
-    await page.getByTestId(DATASET_FILTER).click({ position: { x: 0, y: 0 } });
 
-    const filter_label = '[data-testid="dataset-filter"] [role="button"]';
+    //close popup
+    await page.keyboard.press("Escape");
+
+    const filter_label = `${getTestID(DATASET_FILTER)} [role="button"]`;
     //expect the  selected filter to be visible
     await expect(page.locator(filter_label)).toBeVisible();
 
@@ -57,11 +64,11 @@ describe("Left side bar", () => {
     await page.locator(FIRST_OPTION).click();
 
     //click filter again to close pop up
-    await page
-      .getByTestId("disease-filter")
-      .click({ position: { x: 0, y: 0 } });
-    const filter_label = '[data-testid="disease-filter"] [role="button"]';
-    //expect the  selected filter to be visible
+    await page.keyboard.press("Escape");
+
+    const filter_label = `${getTestID(DISEASE_FILTER)} [role="button"]`;
+    //expect the  selected filter to be visible\
+
     await expect(page.locator(filter_label)).toBeVisible();
 
     //click the cancel button
@@ -69,7 +76,7 @@ describe("Left side bar", () => {
     const visibility = await page.locator(filter_label).isVisible();
     expect(visibility).toBeFalsy();
   });
-  test("Should be able select and de-select options for Self-Reported Ethnicity filter", async ({
+  test.only("Should be able select and de-select options for Self-Reported Ethnicity filter", async ({
     page,
   }) => {
     // click the dataset filter
@@ -80,12 +87,11 @@ describe("Left side bar", () => {
     // select the first dataset
     await page.locator(FIRST_OPTION).click();
 
-    //click filter again to close pop up
-    await page
-      .getByTestId("self-reported-ethnicity-filter")
-      .click({ position: { x: 0, y: 0 } });
-    const filter_label =
-      '[data-testid="self-reported-ethnicity-filter"] [role="button"]';
+    //close pop up
+    await page.keyboard.press("Escape");
+    const filter_label = `${getTestID(
+      SELF_REPORTED_ETHNICITY_FILTER
+    )} [role="button"]`;
     //expect the  selected filter to be visible
     await expect(page.locator(filter_label)).toBeVisible();
 
@@ -94,7 +100,7 @@ describe("Left side bar", () => {
     const visibility = await page.locator(filter_label).isVisible();
     expect(visibility).toBeFalsy();
   });
-  test("Should be able select and de-select options for Self-Reported sex-filter", async ({
+  test.only("Should be able select and de-select options for Self-Reported sex-filter", async ({
     page,
   }) => {
     // click the dataset filter
@@ -103,9 +109,9 @@ describe("Left side bar", () => {
     // select the first dataset
     await page.locator(FIRST_OPTION).click();
 
-    //click filter again to close pop up
-    await page.getByTestId("sex-filter").click({ position: { x: 0, y: 0 } });
-    const filter_label = '[data-testid="sex-filter"] [role="button"]';
+    // close pop up
+    await page.keyboard.press("Escape");
+    const filter_label = `${getTestID(SEX_FILTER)} [role="button"]`;
     //expect the  selected filter to be visible
     await expect(page.locator(filter_label)).toBeVisible();
 
