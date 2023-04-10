@@ -32,25 +32,19 @@ def get_collections_base_url():
 
 
 def extract_dataset_assets(dataset_version: DatasetVersion):
-    is_published = dataset_version.canonical_dataset.published_at is not None
     base_url = CorporaConfig().dataset_assets_base_url
     asset_list = list()
     for asset in dataset_version.artifacts:
         if asset.type not in allowed_dataset_asset_types:
             continue
-        download_data = get_business_logic().get_dataset_artifact_download_data(dataset_version.version_id, asset.id)
-        if download_data.file_size is None:
-            download_data.file_size = -1
-        if is_published:
-            key = urlparse(asset.uri).path.split("/")[-2]
-            url = f"{base_url}/{key}.{asset.type}"
-        else:
-            if not download_data.presigned_url:
-                download_data.presigned_url = "Not Found."
-            url = download_data.presigned_url
+        filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
+        if filesize is None:
+            filesize = -1
+        key = urlparse(asset.uri).path.split("/")[-2]
+        url = f"{base_url}/{key}.{asset.type}"
         result = {
-            "filesize": download_data.file_size,
-            "filetype": download_data.file_type.upper(),
+            "filesize": filesize,
+            "filetype": asset.type.upper(),
             "url": url,
         }
         asset_list.append(result)
@@ -202,7 +196,6 @@ def reshape_dataset_for_curation_api(
     if not preview:
         ds["assets"] = extract_dataset_assets(dataset_version)
         ds["processing_status_detail"] = dataset_version.status.validation_message
-        _published_at = dataset_version.canonical_dataset.published_at
         ds["title"] = ds.pop("name", None)
         ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
