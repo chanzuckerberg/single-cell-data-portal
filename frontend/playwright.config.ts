@@ -25,6 +25,8 @@ const CZI_CHECKER = " czi-checker";
  */
 const SHOULD_RETRY = process.env.RETRY !== "false";
 
+const CLIPBOARD_READ = "clipboard-read";
+const CLIPBOARD_WRITE = "clipboard-write";
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
 const PLAYWRIGHT_REPORTER = process.env.CI
   ? ([["github"], ["line"], ["allure-playwright"]] as ReporterDescription[])
@@ -71,6 +73,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
+        permissions: [CLIPBOARD_READ, CLIPBOARD_WRITE],
       },
     },
     {
@@ -78,6 +81,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Firefox"],
         userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
+        permissions: [CLIPBOARD_READ, CLIPBOARD_WRITE],
       },
     },
     {
@@ -85,6 +89,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
+        permissions: [CLIPBOARD_READ, CLIPBOARD_WRITE],
       },
     },
   ],
