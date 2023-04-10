@@ -7,7 +7,6 @@ import {
   ADD_TISSUE_LBL,
 } from "tests/utils/constants";
 
-const { describe } = test;
 const ALERT =
   "We would appreciate your feedback, please fill out a quick survey";
 
@@ -15,15 +14,7 @@ const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
 const EXPLORE_GENE_EXPRESSION = "explore-gene-expression";
 const LEGEND_WRAPPER = "legend-wrapper";
 const DOT_SIZES: Array<number> = [4, 9, 12, 14, 16];
-// async function checkDotSize(size: number, index: number, page: Page) {
-//   expect(
-//     page
-//       .locator('[id="expressed-in-cells-dots"]')
-//       .locator("span")
-//       .nth(index)
-//       .getAttribute("size")
-//   ).toBe(DOT_SIZES[size]);
-// }
+
 function goToWMG(page: Page) {
   return Promise.all([
     page.waitForResponse(
@@ -33,7 +24,7 @@ function goToWMG(page: Page) {
     page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
   ]);
 }
-describe("Tests for Gene Expression page", () => {
+test.describe("Tests for Gene Expression page", () => {
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
     // +Tissue button
@@ -102,9 +93,5 @@ describe("Tests for Gene Expression page", () => {
       .getAttribute("size");
 
     expect(actualSizes).toEqual(DOT_SIZES);
-
-    // Object.keys(DOT_SIZES).forEach(async (size, index) => {
-    //   await checkDotSize(Number(size), index, page);
-    // });
   });
 });
