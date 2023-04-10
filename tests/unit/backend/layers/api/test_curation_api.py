@@ -13,7 +13,6 @@ from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
     CollectionVisibility,
-    DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetUploadStatus,
@@ -26,80 +25,6 @@ from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundExcep
 from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
-
-
-class TestAsset(BaseAPIPortalTest):
-    def setUp(self):
-        # Needed for proper setUp resolution in multiple inheritance
-        super().setUp()
-
-    def test__get_dataset_asset__OK(self):
-        self.business_logic.s3_provider.get_file_size = Mock(return_value=1000)
-        self.business_logic.s3_provider.generate_presigned_url = Mock(return_value="http://mock.uri/presigned_url")
-
-        dataset = self.generate_dataset(
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.CXG, "http://mock.uri/asset.cxg"),
-                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "http://mock.uri/raw.h5ad"),
-            ],
-            publish=True,
-        )
-
-        expected_body = [dict(filename="asset.h5ad", filesize=1000, filetype="H5AD")]
-
-        response = self.app.get(
-            f"/curation/v1/collections/test_collection_id/datasets/{dataset.dataset_id}/assets",
-        )
-        self.assertEqual(200, response.status_code)
-        actual_body = response.json
-        presign_url = actual_body[0].pop("presigned_url")
-        self.assertIsNotNone(presign_url)
-        self.assertEqual(expected_body, actual_body)
-
-    def test__get_dataset_asset__file_error(self):
-        self.business_logic.s3_provider.get_file_size = Mock(return_value=None)
-        self.business_logic.s3_provider.generate_presigned_url = Mock(return_value=None)
-
-        dataset = self.generate_dataset(
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.CXG, "http://mock.uri/asset.cxg"),
-                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "http://mock.uri/raw.h5ad"),
-            ],
-            publish=True,
-        )
-
-        expected_body = [dict(filename="asset.h5ad", filesize=-1, filetype="H5AD")]
-
-        response = self.app.get(
-            f"/curation/v1/collections/test_collection_id/datasets/{dataset.dataset_id}/assets",
-        )
-        self.assertEqual(202, response.status_code)
-        actual_body = response.json
-        presign_url = actual_body[0].pop("presigned_url", None)
-        self.assertEqual(presign_url, "Not Found.")
-        self.assertEqual(expected_body, actual_body)
-
-    def test__get_dataset_asset__dataset_NOT_FOUND(self):
-        collection = self.generate_published_collection()
-        bad_id = uuid.uuid4()
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{bad_id}/assets"
-        response = self.app.get(test_url)
-        self.assertEqual(404, response.status_code)
-        actual_body = response.json
-        self.assertEqual("Dataset not found.", actual_body["detail"])
-
-    def test__get_dataset_asset__asset_NOT_FOUND(self):
-        dataset = self.generate_dataset(
-            artifacts=[],
-        )
-        response = self.app.get(
-            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}/assets"
-        )
-        self.assertEqual(404, response.status_code)
-        actual_body = response.json
-        self.assertEqual("No assets found. The dataset may still be processing.", actual_body["detail"])
 
 
 class TestDeleteCollection(BaseAPIPortalTest):
@@ -660,8 +585,19 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
 
 
 class TestGetCollectionID(BaseAPIPortalTest):
-    def test__get_collection_verify_body_is_reshaped_correctly__OK(self):
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
+    def test__get_collection_verify_body_is_reshaped_correctly__OK(self, mock_config: Mock):
+        def mock_config_fn(name):
+            if name == "curator_role_arn":
+                return "test_role_arn"
+            if name == "submission_bucket":
+                return "cellxgene-dataset-submissions-test"
+            if name == "upload_max_file_size_gb":
+                return 1
+            if name == "dataset_assets_base_url":
+                return "http://domain"
 
+        mock_config.side_effect = mock_config_fn
         # Setup
         # test fixtures
         dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -706,7 +642,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.generate_dataset(
             collection_version=collection_version,
             metadata=dataset_metadata,
-            artifacts=[DatasetArtifactUpdate(type="h5ad", uri="http://test_filename")],
+            artifacts=[DatasetArtifactUpdate(type="h5ad", uri="http://test_filename/1234-5678-9/local.h5ad")],
         )
         self.business_logic.publish_collection_version(collection_version.version_id)
         collection_version = self.business_logic.get_collection_version(collection_version.version_id)
@@ -722,7 +658,13 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "processing_status": "INITIALIZED",
                 "tombstone": False,
                 "processing_status_detail": None,
-                "dataset_assets": [{"filename": "test_filename", "filetype": "H5AD"}],
+                "assets": [
+                    {
+                        "filesize": -1,
+                        "filetype": "H5AD",
+                        "url": "http://domain/1234-5678-9.h5ad",
+                    }
+                ],
                 "is_primary_data": [True, False],
                 "x_approximate_distribution": "NORMAL",
             }

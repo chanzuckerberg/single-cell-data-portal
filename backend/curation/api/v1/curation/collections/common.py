@@ -31,6 +31,32 @@ def get_collections_base_url():
     return CorporaConfig().collections_base_url
 
 
+def extract_dataset_assets(dataset_version: DatasetVersion):
+    is_published = dataset_version.canonical_dataset.published_at is not None
+    base_url = CorporaConfig().dataset_assets_base_url
+    asset_list = list()
+    for asset in dataset_version.artifacts:
+        if asset.type not in allowed_dataset_asset_types:
+            continue
+        download_data = get_business_logic().get_dataset_artifact_download_data(dataset_version.version_id, asset.id)
+        if download_data.file_size is None:
+            download_data.file_size = -1
+        if is_published:
+            key = urlparse(asset.uri).path.split("/")[-2]
+            url = f"{base_url}/{key}.{asset.type}"
+        else:
+            if not download_data.presigned_url:
+                download_data.presigned_url = "Not Found."
+            url = download_data.presigned_url
+        result = {
+            "filesize": download_data.file_size,
+            "filetype": download_data.file_type.upper(),
+            "url": url,
+        }
+        asset_list.append(result)
+    return asset_list
+
+
 def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]]:
     """
     Pull out the DOI from the 'links' list and return it along with the altered links array
@@ -174,13 +200,7 @@ def reshape_dataset_for_curation_api(
     ds["dataset_version_id"] = dataset_version.version_id.id
     # Get none preview specific dataset fields
     if not preview:
-        # get dataset asset attributes
-        assets = []
-        for artifact in dataset_version.artifacts:
-            if artifact.type in allowed_dataset_asset_types:
-                assets.append(dict(filetype=artifact.type.upper(), filename=artifact.uri.split("/")[-1]))
-
-        ds["dataset_assets"] = assets
+        ds["assets"] = extract_dataset_assets(dataset_version)
         ds["processing_status_detail"] = dataset_version.status.validation_message
         _published_at = dataset_version.canonical_dataset.published_at
         ds["title"] = ds.pop("name", None)
