@@ -16,9 +16,16 @@ fi
 
 aws s3 ls s3://corpora-data-${ENV}/ | awk '{print $2}' | sed 's:/*$::' > filenames.txt
 for file in `cat filenames.txt`; do
-  echo "dry run copying s3://corpora-data-${ENV}/$file/local.h5ad TO s3://dataset-assets-public-${ENV}/$file.h5ad"
-  # aws s3 cp s3://corpora-data-${ENV}/$file/local.h5ad s3://dataset-assets-public-${ENV}/$file.h5ad
-  # aws s3 cp s3://corpora-data-${ENV}/$file/local.rds s3://dataset-assets-public-${ENV}/$file.rds
+  if [ "$(aws s3 ls s3://dataset-assets-public-${ENV}/$file.h5ad | wc -l)" -eq 1 ] || [ "$(aws s3 ls s3://dataset-assets-public-${ENV}/$file.rds | wc -l)" -eq 1 ]; then
+    echo "already copied over"
+    continue
+  fi
+  if [ "$(aws s3 ls s3://corpora-data-${ENV}/$file/local.h5ad | wc -l)" -eq 1 ]; then
+    aws s3 cp s3://corpora-data-${ENV}/$file/local.h5ad s3://dataset-assets-public-${ENV}/$file.h5ad
+  fi
+  if [ "$(aws s3 ls s3://corpora-data-${ENV}/$file/local.rds | wc -l)" -eq 1 ]; then
+    aws s3 cp s3://corpora-data-${ENV}/$file/local.rds s3://dataset-assets-public-${ENV}/$file.rds
+  fi
 done
 
 
