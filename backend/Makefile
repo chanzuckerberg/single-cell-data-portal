@@ -110,7 +110,6 @@ db/test_migration:
 SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS?=60
 SSH_SERVER_ALIVE_COUNT_MAX?=60
 SSH_SOCKET=/tmp/data-portal-ssh-db-tunnel-socket-${DEPLOYMENT_STAGE}
-SSH_BASTION_HOST=""
 ifeq ($(DEPLOYMENT_STAGE), rdev)
 	SSH_BASTION_HOST=bastion.dev.single-cell.czi.technology
 else
