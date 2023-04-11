@@ -44,7 +44,7 @@ class ProcessingTest(BaseProcessingTest):
             pdv = ProcessDownloadValidate(
                 self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
             )
-            pdv.process(dataset_version_id, dropbox_uri, "fake_bucket_name")
+            pdv.process(dataset_version_id, dropbox_uri, "fake_bucket_name", "fake_datasets_bucket")
 
             status = self.business_logic.get_dataset_status(dataset_version_id)
             self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
@@ -54,6 +54,8 @@ class ProcessingTest(BaseProcessingTest):
             # Verify that both the original (raw.h5ad) and the labeled (local.h5ad) files are there
             self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
             self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
+            # Verify that the labeled file is uploaded to the datasets bucket
+            self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.h5ad"))
 
             artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
             self.assertEqual(2, len(artifacts))
@@ -70,12 +72,13 @@ class ProcessingTest(BaseProcessingTest):
         with patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat") as mock:
             mock.return_value = "local.rds"
             ps = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
-            ps.process(dataset_version_id, "fake_bucket_name")
+            ps.process(dataset_version_id, "fake_bucket_name", "fake_datasets_bucket")
 
             status = self.business_logic.get_dataset_status(dataset_version_id)
             self.assertEqual(status.rds_status, DatasetConversionStatus.UPLOADED)
 
             self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"))
+            self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.rds"))
 
             artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
             self.assertEqual(1, len(artifacts))
@@ -121,11 +124,20 @@ class ProcessingTest(BaseProcessingTest):
             self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
         )
         for step_name in ["download-validate", "cxg", "seurat"]:
-            pm.process(dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_cxg_bucket")
+            pm.process(
+                dataset_version_id,
+                step_name,
+                dropbox_uri,
+                "fake_bucket_name",
+                "fake_datasets_bucket",
+                "fake_cxg_bucket",
+            )
 
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
+        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.h5ad"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"))
+        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.rds"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"))
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
@@ -167,7 +179,14 @@ class ProcessingTest(BaseProcessingTest):
         )
 
         for step_name in ["download-validate"]:
-            pm.process(dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_cxg_bucket")
+            pm.process(
+                dataset_version_id,
+                step_name,
+                dropbox_uri,
+                "fake_bucket_name",
+                "fake_datasets_bucket",
+                "fake_cxg_bucket",
+            )
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.validation_status, DatasetValidationStatus.INVALID)
