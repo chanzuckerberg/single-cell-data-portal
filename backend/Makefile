@@ -107,12 +107,10 @@ db/test_migration:
 	diff /tmp/{before_migration,after_rollback} # No news is good news.
 
 
-SSH_BASTION_HOST=[[ "$DEPLOYMENT_STAGE" == "rdev" ]] && "x" || "y"
-
 SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS?=60
 SSH_SERVER_ALIVE_COUNT_MAX?=60
 SSH_SOCKET=/tmp/data-portal-ssh-db-tunnel-socket-${DEPLOYMENT_STAGE}
-SSH_BASTION_HOST=bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+SSH_BASTION_HOST=""
 ifeq ($(DEPLOYMENT_STAGE), rdev)
 	SSH_BASTION_HOST=bastion.dev.single-cell.czi.technology
 else
