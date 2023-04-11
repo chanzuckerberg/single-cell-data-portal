@@ -2,7 +2,13 @@
  * Test suite for select filter-related utils.
  */
 import { expect, test } from "@playwright/test";
-import { goToWMG, selectAndDeselectOption } from "tests/utils/xgeneUtils";
+import {
+  checkSourceData,
+  deSelectFIlterOption,
+  goToWMG,
+  selectFIlterOption,
+  selectTissueandGeneOption,
+} from "../../utils/xgeneUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
 const CHEVRON_LEFT = '[data-icon="chevron-left"]';
 
@@ -13,6 +19,7 @@ describe("Left side bar", () => {
   test.beforeEach(async ({ page }) => {
     // navigate to url
     await goToWMG(page);
+    await selectTissueandGeneOption(page);
   });
 
   test("Left side bar collapse and expand", async ({ page }) => {
@@ -20,30 +27,51 @@ describe("Left side bar", () => {
     await page.locator(CHEVRON_LEFT).click();
 
     // verify the left tab is collapsed
-    expect(await page.getByTestId("dataset-filter").isVisible()).toBeFalsy();
+    expect(await page.getByTestId("add-organism").isVisible()).toBeFalsy();
   });
 
-  test("Should be able select and de-select options for datasetfilter", async ({
+  test.only("Should be able select and de-select options for datasetfilter", async ({
     page,
   }) => {
-    await selectAndDeselectOption(page, "dataset-filter");
+    const countBeforeFIlter = await checkSourceData(page);
+    await selectFIlterOption(page, "dataset-filter");
+    const countAfterFIlter = await checkSourceData(page);
+    expect(countBeforeFIlter).toBeGreaterThan(0);
+    expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
+
+    await deSelectFIlterOption(page, "dataset-filter");
   });
 
-  test("Should be able select and de-select options for disease filter", async ({
+  test.only("Should be able select and de-select options for disease filter", async ({
     page,
   }) => {
-    await selectAndDeselectOption(page, "disease-filter");
+    const countBeforeFIlter = await checkSourceData(page);
+    await selectFIlterOption(page, "disease-filter");
+    const countAfterFIlter = await checkSourceData(page);
+    expect(countBeforeFIlter).toBeGreaterThan(0);
+    expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
+    await deSelectFIlterOption(page, "disease-filter");
   });
 
-  test("Should be able select and de-select options for Self-Reported Ethnicity filter", async ({
+  test.only("Should be able select and de-select options for Self-Reported Ethnicity filter", async ({
     page,
   }) => {
-    await selectAndDeselectOption(page, "self-reported-ethnicity-filter");
+    const countBeforeFIlter = await checkSourceData(page);
+    await selectFIlterOption(page, "self-reported-ethnicity-filter");
+    const countAfterFIlter = await checkSourceData(page);
+    expect(countBeforeFIlter).toBeGreaterThan(0);
+    expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
+    await deSelectFIlterOption(page, "self-reported-ethnicity-filter");
   });
 
-  test("Should be able select and de-select options for Self-Reported sex-filter", async ({
+  test.only("Should be able select and de-select options for Self-Reported sex-filter", async ({
     page,
   }) => {
-    await selectAndDeselectOption(page, "sex-filter");
+    const countBeforeFIlter = await checkSourceData(page);
+    await selectFIlterOption(page, "sex-filter");
+    const countAfterFIlter = await checkSourceData(page);
+    expect(countBeforeFIlter).toBeGreaterThan(0);
+    expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
+    await deSelectFIlterOption(page, "sex-filter");
   });
 });
