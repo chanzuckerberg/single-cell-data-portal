@@ -114,7 +114,6 @@
     "e2e:browser:chrome": "playwright test --workers 1 --project chromium",
     "e2e:browser:ff": "playwright test --workers 1 --project firefox",
     "e2e:browser:ie": "playwright test --workers 1 --project edge",
-    "e2e-all": "concurrently \"npm:e2e:browser:*\"",
     "e2e-dev": "TEST_ENV=dev playwright test",
     "e2e-staging": "TEST_ENV=staging playwright test",
     "e2e-prod": "TEST_ENV=prod playwright test",
