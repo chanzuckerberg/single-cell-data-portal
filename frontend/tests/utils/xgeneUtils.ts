@@ -1,5 +1,5 @@
 import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL } from "./constants";
+import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID } from "tests/utils/selectors";
 

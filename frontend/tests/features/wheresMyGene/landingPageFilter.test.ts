@@ -2,7 +2,7 @@
  * Test suite for select filter-related utils.
  */
 import { expect, test } from "@playwright/test";
-import { goToWMG, selectAndDeselectOption } from "tests/common/utils";
+import { goToWMG, selectAndDeselectOption } from "tests/utils/xgeneUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
 const CHEVRON_LEFT = '[data-icon="chevron-left"]';
 
