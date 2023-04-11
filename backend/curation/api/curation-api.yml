@@ -511,37 +511,6 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-  /v1/collections/{collection_id}/datasets/{dataset_id}/assets:
-    get:
-      summary: Retrieve links for downloading a Dataset
-      tags:
-        - collection
-      description: |
-        Generate Presigned S3 URLs to download the files associated with the `dataset_id`. 
-        Pre-signed S3 URLs have a life span of up to 1 hour. You should
-        generate a pre-signed URL immediately before each download to ensure it is current.
-      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.assets.get
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/path_dataset_id"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/asset_response"
-        "202":
-          description: Unable to retrieve one or more asset response fields.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/asset_response"
-        "400":
-          $ref: "#/components/responses/400"
-        "404":
-          $ref: "#/components/responses/404"
-
   /v1/collections/{collection_id}/versions:
     get:
       summary: Fetch all versions of a Collection with corresponding Dataset versions
@@ -661,14 +630,12 @@ components:
     asset_response:
       items:
         properties:
-          filename:
-            $ref: "#/components/schemas/asset_filename"
           filesize:
             description: the size of the file in bytes.
             type: number
           filetype:
             $ref: "#/components/schemas/asset_filetype"
-          presigned_url:
+          url:
             description: A URL to download this asset.
             type: string
         type: object
@@ -679,9 +646,6 @@ components:
         - RDS
       type: string
       description: the file type of the asset.
-    asset_filename:
-      type: string
-      description: the file name of the asset.
     batch_condition:
       description: |
         These keys define the batches that a normalization or integration algorithm should be aware of.
@@ -903,6 +867,8 @@ components:
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
+        assets:
+          $ref: "#/components/schemas/asset_response"
         batch_condition:
           $ref: "#/components/schemas/batch_condition"
         cell_count:
@@ -915,18 +881,6 @@ components:
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
-          type: array
-        dataset_assets:
-          description: |
-            The assets associated with the Dataset. Links to download the files can be generated using
-            *GET /v1/collections/{collection_id}/datasets/assets*
-          items:
-            properties:
-              filename:
-                $ref: "#/components/schemas/asset_filename"
-              filetype:
-                $ref: "#/components/schemas/asset_filetype"
-            type: object
           type: array
         dataset_id:
           $ref: "#/components/schemas/dataset_id"
@@ -1001,6 +955,8 @@ components:
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
+        assets:
+          $ref: "#/components/schemas/asset_response"
         batch_condition:
           $ref: "#/components/schemas/batch_condition"
         cell_count:
@@ -1020,18 +976,6 @@ components:
           $ref: "#/components/schemas/collection_id"
         collection_name:
           $ref: "#/components/schemas/collection_name"
-        dataset_assets:
-          description: |
-            The assets associated with the Dataset. Links to download the files can be generated using
-            *GET /v1/collections/{collection_id}/datasets/assets*
-          items:
-            properties:
-              filename:
-                $ref: "#/components/schemas/asset_filename"
-              filetype:
-                $ref: "#/components/schemas/asset_filetype"
-            type: object
-          type: array
         dataset_id:
           $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
@@ -1104,6 +1048,8 @@ components:
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
+        assets:
+          $ref: "#/components/schemas/asset_response"
         batch_condition:
           $ref: "#/components/schemas/batch_condition"
         cell_count:
@@ -1124,18 +1070,6 @@ components:
             The first Collection Version this Dataset Version was published under
           type: string
           format: uuid
-        dataset_assets:
-          description: |
-            The assets associated with the Dataset. Links to download the files can be generated using
-            *GET /v1/collections/{collection_id}/datasets/assets*
-          items:
-            properties:
-              filename:
-                $ref: "#/components/schemas/asset_filename"
-              filetype:
-                $ref: "#/components/schemas/asset_filetype"
-            type: object
-          type: array
         dataset_id:
           $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
