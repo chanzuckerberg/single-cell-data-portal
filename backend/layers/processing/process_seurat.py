@@ -37,13 +37,14 @@ class ProcessSeurat(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
 
-    def process(self, dataset_id: DatasetVersionId, artifact_bucket: str):
+    def process(self, dataset_id: DatasetVersionId, artifact_bucket: str, datasets_bucket: str):
         """
         1. Download the labeled dataset from the artifact bucket
         2. Convert it to Seurat format
         3. Upload the Seurat file to the artifact bucket
-        :param artifact_bucket:
         :param dataset_id:
+        :param artifact_bucket:
+        :param datasets_bucket:
         :return:
         """
 
@@ -59,8 +60,8 @@ class ProcessSeurat(ProcessingLogic):
 
         labeled_h5ad_filename = "local.h5ad"
 
-        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
-        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        key_prefix = self.get_key_prefix(dataset_id.id)
+        object_key = f"{key_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
         seurat_filename = self.convert_file(
@@ -74,10 +75,11 @@ class ProcessSeurat(ProcessingLogic):
         self.create_artifact(
             seurat_filename,
             DatasetArtifactType.RDS,
-            bucket_prefix,
+            key_prefix,
             dataset_id,
             artifact_bucket,
             DatasetStatusKey.RDS,
+            datasets_bucket=datasets_bucket,
         )
 
     @logit
