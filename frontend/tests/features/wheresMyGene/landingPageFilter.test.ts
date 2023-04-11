@@ -38,7 +38,6 @@ describe("Left side bar", () => {
     const countAfterFIlter = await checkSourceData(page);
     expect(countBeforeFIlter).toBeGreaterThan(0);
     expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
-
     await deSelectFIlterOption(page, "dataset-filter");
   });
 

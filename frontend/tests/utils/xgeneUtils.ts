@@ -83,6 +83,5 @@ export const checkSourceData = async (page: Page) => {
   const n = await page.locator('[data-testid="source-data-list"] a').count();
   // close the pop-up
   await page.keyboard.press("Escape");
-
   return n;
 };
