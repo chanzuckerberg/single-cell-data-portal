@@ -63,6 +63,7 @@ import { InputCheckbox } from "czifui";
 import {
   DATA_MESSAGE_BANNER_HEIGHT_PX,
   DATA_MESSAGE_BANNER_ID,
+  DATA_MESSAGE_BANNER_WIDTH_PX,
   UnderlyingDataChangeBanner,
 } from "./ExportBanner";
 import {
@@ -354,9 +355,9 @@ function generateSvg({
 
   // Used to create room for the banner
   const paddedBannerHeight =
-    banner.clientHeight + CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX;
+    DATA_MESSAGE_BANNER_HEIGHT_PX + CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX;
   const paddedBannerWidth =
-    banner.clientWidth + CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
+    DATA_MESSAGE_BANNER_WIDTH_PX + CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
 
   // Render elements to SVG
   const xAxisSvg = renderXAxis({
@@ -398,7 +399,7 @@ function generateSvg({
   applyAttributes(banner, {
     x:
       svgWidth > paddedBannerWidth
-        ? svgWidth / 2 - banner.clientWidth / 2
+        ? svgWidth / 2 - DATA_MESSAGE_BANNER_WIDTH_PX / 2
         : CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
     y: CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
   });

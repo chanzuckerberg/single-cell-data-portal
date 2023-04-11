@@ -23,6 +23,10 @@ resource aws_batch_job_definition batch_job_def {
       "value": "${var.cellxgene_bucket}"
     },
     {
+      "name": "DATASETS_BUCKET",
+      "value": "${var.datasets_bucket}"
+    },
+    {
       "name": "DEPLOYMENT_STAGE",
       "value": "${var.deployment_stage}"
     },
