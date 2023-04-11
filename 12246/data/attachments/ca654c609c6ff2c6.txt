@@ -1,0 +1,26 @@
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:19 Start download_from_source_uri
+INFO     processing:process_download_validate.py:187 Start download
+INFO     backend.layers.processing.downloader:downloader.py:115 Setting up download.
+INFO     backend.layers.processing.downloader:downloader.py:116 file_size: 1
+INFO     processing:process_download_validate.py:196 None
+INFO     processing:process_download_validate.py:209 Download complete
+INFO     root:logger.py:21 Complete download_from_source_uri
+INFO     root:logger.py:19 Start validate_h5ad_file_and_add_labels
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete validate_h5ad_file_and_add_labels
+INFO     root:logger.py:19 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [50cc1d18-04dd-46ce-9699-5c6b60ee6ade/raw.h5ad] to s3://fake_bucket_name/50cc1d18-04dd-46ce-9699-5c6b60ee6ade/raw.h5ad
+INFO     processing:process_logic.py:86 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete create_artifact
+INFO     root:logger.py:19 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [50cc1d18-04dd-46ce-9699-5c6b60ee6ade/local.h5ad] to s3://fake_bucket_name/50cc1d18-04dd-46ce-9699-5c6b60ee6ade/local.h5ad
+INFO     processing:process_logic.py:86 Updated database with h5ad.
+INFO     processing:process_logic.py:93 Uploaded 50cc1d18-04dd-46ce-9699-5c6b60ee6ade.h5ad to s3://fake_datasets_bucket/50cc1d18-04dd-46ce-9699-5c6b60ee6ade/50cc1d18-04dd-46ce-9699-5c6b60ee6ade.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete create_artifact
