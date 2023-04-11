@@ -147,19 +147,20 @@ class TestDeleteCollection(BaseAPIPortalTest):
                 private_collection_version_id = self.generate_unpublished_collection().version_id
                 self._test(private_collection_version_id, auth, expected_response)
 
-    @patch("backend.layers.thirdparty.s3_provider.S3Provider.delete_files")
+    @patch("backend.layers.thirdparty.s3_provider.S3Provider.delete_files")  # required for tombstoning
     def test__delete_tombstone_collection(self, mock_delete: Mock):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 collection = self.generate_published_collection()
-                dataset_version_ids = [d_v.version_id.id for d_v in collection.datasets]
                 self.business_logic.tombstone_collection(collection.collection_id)
-                delete_args = set(mock_delete.call_args.args[1])
-                expected_delete_args = set()
-                for file_type in ("h5ad", "rds"):
-                    expected_delete_args.update([f"{d_v_id}.{file_type}" for d_v_id in dataset_version_ids])
-                self.assertEqual(expected_delete_args, delete_args)
+                if self.run_as_integration:
+                    dataset_version_ids = [d_v.version_id.id for d_v in collection.datasets]
+                    delete_args = set(mock_delete.call_args.args[1])
+                    expected_delete_args = set()
+                    for file_type in ("h5ad", "rds"):
+                        expected_delete_args.update([f"{d_v_id}.{file_type}" for d_v_id in dataset_version_ids])
+                    self.assertEqual(expected_delete_args, delete_args)
                 self._test(collection.collection_id, auth, expected_response)
 
 
@@ -962,7 +963,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
             self.assertEqual(403, res.status_code)
 
-    def test__get_tombstoned_collection__403(self):
+    @patch("backend.layers.thirdparty.s3_provider.S3Provider.delete_files")
+    def test__get_tombstoned_collection__403(self, mock_delete: Mock):
         collection_version = self.generate_published_collection()
         self.business_logic.tombstone_collection(collection_version.collection_id)
         self._test_response(collection_version, 403)
@@ -1033,7 +1035,8 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
         explorer_url = res.json["datasets"][0]["explorer_url"]
         self.assertTrue(explorer_url.endswith(f"{revision.datasets[0].version_id.id}.cxg/"))
 
-    def test_get_collection_version_4xx(self):
+    @patch("backend.layers.thirdparty.s3_provider.S3Provider.delete_files")  # required for tombstoning
+    def test_get_collection_version_4xx(self, mock_delete: Mock):
         with self.subTest("Query endpoint with incorrect ID"):
             res = self.app.get(
                 f"/curation/v1/collection_versions/{str(uuid.uuid4())}", headers=self.make_owner_header()
