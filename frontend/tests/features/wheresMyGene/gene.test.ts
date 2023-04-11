@@ -4,8 +4,8 @@ import { goToWMG, verifyAddedGene } from "tests/utils/geneUtils";
 import uaParser from "ua-parser-js";
 const { describe } = test;
 
-describe("Add gene tests", () => {
-  test("Should select tissue using keyboard arrow key to select", async ({
+describe("Manage gene tests", () => {
+  test("Should select gene using keyboard arrow key to select", async ({
     page,
   }) => {
     const GENE = "TNMD";
