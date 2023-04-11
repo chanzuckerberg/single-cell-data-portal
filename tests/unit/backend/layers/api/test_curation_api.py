@@ -147,13 +147,20 @@ class TestDeleteCollection(BaseAPIPortalTest):
                 private_collection_version_id = self.generate_unpublished_collection().version_id
                 self._test(private_collection_version_id, auth, expected_response)
 
-    def test__delete_tombstone_collection(self):
+    @patch("backend.layers.thirdparty.s3_provider.S3Provider.delete_files")
+    def test__delete_tombstone_collection(self, mock_delete: Mock):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
-                collection_id = self.generate_published_collection().collection_id
-                self.business_logic.tombstone_collection(collection_id)
-                self._test(collection_id, auth, expected_response)
+                collection = self.generate_published_collection()
+                dataset_version_ids = [d_v.version_id.id for d_v in collection.datasets]
+                self.business_logic.tombstone_collection(collection.collection_id)
+                delete_args = set(mock_delete.call_args.args[1])
+                expected_delete_args = set()
+                for file_type in ("h5ad", "rds"):
+                    expected_delete_args.update([f"{d_v_id}.{file_type}" for d_v_id in dataset_version_ids])
+                self.assertEqual(expected_delete_args, delete_args)
+                self._test(collection.collection_id, auth, expected_response)
 
 
 class TestS3Credentials(BaseAPIPortalTest):
