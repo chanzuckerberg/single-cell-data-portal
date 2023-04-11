@@ -642,7 +642,12 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.generate_dataset(
             collection_version=collection_version,
             metadata=dataset_metadata,
-            artifacts=[DatasetArtifactUpdate(type="h5ad", uri="http://test_filename/1234-5678-9/local.h5ad")],
+            artifacts=[
+                DatasetArtifactUpdate(type="h5ad", uri="http://test_filename/1234-5678-9/local.h5ad"),
+                DatasetArtifactUpdate(type="rds", uri="http://test_filename/1234-5678-9/local.rds"),
+                DatasetArtifactUpdate(type="cxg", uri="http://test_filename/1234-5678-9/local.cxg"),
+                DatasetArtifactUpdate(type="raw_h5ad", uri="http://test_filename/1234-5678-9/raw.h5ad"),
+            ],
         )
         self.business_logic.publish_collection_version(collection_version.version_id)
         collection_version = self.business_logic.get_collection_version(collection_version.version_id)
@@ -658,12 +663,17 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "processing_status": "INITIALIZED",
                 "tombstone": False,
                 "processing_status_detail": None,
-                "assets": [
+                "assets": [  # Filter out disallowed file types + properly construct url
                     {
                         "filesize": -1,
                         "filetype": "H5AD",
                         "url": "http://domain/1234-5678-9.h5ad",
-                    }
+                    },
+                    {
+                        "filesize": -1,
+                        "filetype": "RDS",
+                        "url": "http://domain/1234-5678-9.rds",
+                    },
                 ],
                 "is_primary_data": [True, False],
                 "x_approximate_distribution": "NORMAL",
@@ -1422,13 +1432,39 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(200, response.status_code)
             self.assertEqual(dataset_id, response.json["dataset_id"])
 
-    def test_get_dataset_shape(self):
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
+    def test_get_dataset_shape(self, mock_config: Mock):
+        def mock_config_fn(name):
+            if name == "curator_role_arn":
+                return "test_role_arn"
+            if name == "submission_bucket":
+                return "cellxgene-dataset-submissions-test"
+            if name == "upload_max_file_size_gb":
+                return 1
+            if name == "dataset_assets_base_url":
+                return "http://domain"
+
+        mock_config.side_effect = mock_config_fn
+
         # retrieve a private dataset
         private_dataset = self.generate_dataset(name="test")
         test_url = f"/curation/v1/collections/{private_dataset.collection_id}/datasets/{private_dataset.dataset_id}"
         response = self.app.get(test_url)
         body = response.json
         self.assertEqual("test", body["title"])
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{private_dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{private_dataset.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
 
         # retrieve a public dataset
         public_dataset = self.generate_dataset(name="test", publish=True)
@@ -1436,6 +1472,19 @@ class TestGetDatasets(BaseAPIPortalTest):
         response = self.app.get(test_url)
         body = response.json
         self.assertEqual("test", body["title"])
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{public_dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{public_dataset.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
 
         # retrieve a revised dataset using version_id
         collection_id = self.generate_published_collection(add_datasets=2).canonical_collection.id
@@ -1446,6 +1495,19 @@ class TestGetDatasets(BaseAPIPortalTest):
         test_url = f"/curation/v1/collections/{version.version_id}/datasets/{dataset_version.dataset_id}"
         response = self.app.get(test_url)
         body = response.json
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{dataset_version.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{dataset_version.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
         self.assertEqual("test_dataset_name", body["title"])
 
         # retrieve an unrevised dataset in a revision Collection
@@ -1454,6 +1516,19 @@ class TestGetDatasets(BaseAPIPortalTest):
         response = self.app.get(test_url)
         body = response.json
         self.assertEqual("test_dataset_name", body["title"])
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{unreplaced_dataset.version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{unreplaced_dataset.version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
 
         # retrieve a newly added dataset in a revision Collection
         new_dataset = self.generate_dataset(collection_version=version)
@@ -1461,6 +1536,19 @@ class TestGetDatasets(BaseAPIPortalTest):
         response = self.app.get(test_url)
         body = response.json
         self.assertEqual("test_dataset_name", body["title"])
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{new_dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{new_dataset.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
 
     def test_get_dataset_is_primary_data_shape(self):
         tests = [
@@ -1509,7 +1597,39 @@ class TestGetDatasets(BaseAPIPortalTest):
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(403, response.status_code)
 
-    def test_get_all_datasets_200(self):
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
+    def test_get_dataset_no_assets(self, mock_config: Mock):
+        def mock_config_fn(name):
+            if name == "curator_role_arn":
+                return "test_role_arn"
+            if name == "submission_bucket":
+                return "cellxgene-dataset-submissions-test"
+            if name == "upload_max_file_size_gb":
+                return 1
+            if name == "dataset_assets_base_url":
+                return "http://domain"
+
+        mock_config.side_effect = mock_config_fn
+
+        private_dataset = self.generate_dataset(artifacts=[])
+        test_url = f"/curation/v1/collections/{private_dataset.collection_id}/datasets/{private_dataset.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+        self.assertEqual([], body["assets"])
+
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
+    def test_get_all_datasets_200(self, mock_config: Mock):
+        def mock_config_fn(name):
+            if name == "curator_role_arn":
+                return "test_role_arn"
+            if name == "submission_bucket":
+                return "cellxgene-dataset-submissions-test"
+            if name == "upload_max_file_size_gb":
+                return 1
+            if name == "dataset_assets_base_url":
+                return "http://domain"
+
+        mock_config.side_effect = mock_config_fn
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1593,9 +1713,37 @@ class TestGetDatasets(BaseAPIPortalTest):
             for attribute in index_specific_attributes:
                 self.assertIn(attribute, dataset)
 
+        with self.subTest("Response Dataset objects contain only expected assets"):
+            dataset = response.json[0]
+            expected_assets = [  # Filter out disallowed file types + properly construct url
+                {
+                    "filesize": -1,
+                    "filetype": "H5AD",
+                    "url": f"http://domain/{dataset['dataset_version_id']}.h5ad",
+                },
+                {
+                    "filesize": -1,
+                    "filetype": "RDS",
+                    "url": f"http://domain/{dataset['dataset_version_id']}.rds",
+                },
+            ]
+            self.assertEqual(expected_assets, dataset["assets"])
+
 
 class TestGetDatasetVersion(BaseAPIPortalTest):
-    def test_get_dataset_version_ok(self):
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
+    def test_get_dataset_version_ok(self, mock_config: Mock):
+        def mock_config_fn(name):
+            if name == "curator_role_arn":
+                return "test_role_arn"
+            if name == "submission_bucket":
+                return "cellxgene-dataset-submissions-test"
+            if name == "upload_max_file_size_gb":
+                return 1
+            if name == "dataset_assets_base_url":
+                return "http://domain"
+
+        mock_config.side_effect = mock_config_fn
         collection = self.generate_published_collection()
         collection_id = collection.collection_id
         initial_published_dataset = collection.datasets[0]
@@ -1617,6 +1765,19 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         self.assertEqual(initial_published_dataset.dataset_id.id, response.json["dataset_id"])
         self.assertEqual(collection_id.id, response.json["collection_id"])
         self.assertTrue(response.json["explorer_url"].endswith(f"/e/{initial_published_dataset_version_id}.cxg/"))
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{initial_published_dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{initial_published_dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(response.json["assets"], expected_assets)
 
         # get currently published dataset version
         test_url = f"/curation/v1/dataset_versions/{published_dataset_revision.dataset_version_id}"
@@ -1628,6 +1789,19 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         self.assertTrue(
             response.json["explorer_url"].endswith(f"/e/{published_dataset_revision.dataset_version_id}.cxg/")
         )
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{published_dataset_revision.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{published_dataset_revision.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(response.json["assets"], expected_assets)
 
     def test_get_dataset_version_4xx(self):
         headers = self.make_owner_header()
