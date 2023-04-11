@@ -81,7 +81,6 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Firefox"],
         userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
-        permissions: [CLIPBOARD_READ, CLIPBOARD_WRITE],
       },
     },
     {
