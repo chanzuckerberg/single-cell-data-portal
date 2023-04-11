@@ -53,9 +53,16 @@ db/check:
 # interactive mode usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect
 # ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
 db/connect:
+ifeq ($(DEPLOYMENT_STAGE), rdev)
+	$(MAKE) db/connect_internal DB_NAME=/${STACK} USER_NAME=dataportal
+else
+	$(MAKE) db/connect_internal DB_NAME=corpora_${DEPLOYMENT_STAGE} USER_NAME=corpora_${DEPLOYMENT_STAGE}
+endif
+
+db/connect_internal:
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
 	$(MAKE) db/tunnel/up
-	PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 $(ARGS)
+	PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname ${DB_NAME} --username ${USER_NAME} --host 0.0.0.0 $(ARGS)
 	$(MAKE) db/tunnel/down
 
 db/console: db/connect # alias
@@ -99,14 +106,27 @@ db/test_migration:
 	$(MAKE) db/dump_schema > /tmp/after_rollback
 	diff /tmp/{before_migration,after_rollback} # No news is good news.
 
+
+SSH_BASTION_HOST=[[ "$DEPLOYMENT_STAGE" == "rdev" ]] && "x" || "y"
+
 SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS?=60
 SSH_SERVER_ALIVE_COUNT_MAX?=60
 SSH_SOCKET=/tmp/data-portal-ssh-db-tunnel-socket-${DEPLOYMENT_STAGE}
 SSH_BASTION_HOST=bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+ifeq ($(DEPLOYMENT_STAGE), rdev)
+	SSH_BASTION_HOST=bastion.dev.single-cell.czi.technology
+else
+	SSH_BASTION_HOST=bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+endif
+ifeq ($(DEPLOYMENT_STAGE), rdev)
+	CLUSTER_NAME=dataportal-rdev-happy
+else
+	CLUSTER_NAME=corpora-${DEPLOYMENT_STAGE}-corpora-api
+endif
 # TODO:
 # - add db/tunnel as a dependency for all targets so that a tunnel is automatically opened if not already
 db/tunnel/up:
-	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier corpora-${DEPLOYMENT_STAGE}-corpora-api | jq -r '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
+	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier ${CLUSTER_NAME} | jq -r '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
 	ssh -f -T -N -M -S $(SSH_SOCKET)\
 		-o ServerAliveInterval=${SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS} -o ServerAliveCountMax=${SSH_SERVER_ALIVE_COUNT_MAX} \
 		-o ExitOnForwardFailure=yes \
