@@ -79,7 +79,7 @@ test.describe("Tests for Gene Expression page", () => {
       "Gene Expression"
     );
     await expect(
-      page.locator('[data-nimg="intrinsic"]').locator("svg")
+      page.locator('[id="visualization-color-scale"]')
     ).toBeVisible();
 
     // Gene expression in cells
@@ -87,11 +87,18 @@ test.describe("Tests for Gene Expression page", () => {
       "Expressed in Cells (%)"
     );
     await expect(page.locator('[id="expressed-in-cells-dots"]')).toBeVisible();
-    const actualSizes = page
-      .locator('[id="expressed-in-cells-dots"]')
-      .locator("span")
-      .getAttribute("size");
-
+    let actualSizes = [];
+    for (let i = 0; i < 5; i++) {
+      actualSizes.push(
+        Number(
+          await page
+            .locator('[id="expressed-in-cells-dots"]')
+            .locator("span")
+            .nth(i)
+            .getAttribute("size")
+        )
+      );
+    }
     expect(actualSizes).toEqual(DOT_SIZES);
   });
 });
