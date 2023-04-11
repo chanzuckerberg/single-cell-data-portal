@@ -45,6 +45,12 @@ class S3Provider(S3ProviderInterface):
             ExtraArgs=extra_args,
         )
 
+    def delete_file(self, bucket_name: str, object_key: str):
+        """
+        Deletes the object `object_key` from bucket `bucket_name`
+        """
+        self.client.delete_object(bucket_name, object_key)
+
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """
         Downloads an S3 file located at s3://bucket_name/object_key to `local_filename`

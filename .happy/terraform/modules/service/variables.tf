@@ -19,6 +19,12 @@ variable "dataset_submissions_bucket" {
   default     = ""
 }
 
+variable datasets_bucket {
+  type        = string
+  description = "Datasets bucket name"
+  default     = ""
+}
+
 variable "app_name" {
   type        = string
   description = "Please provide the ECS service name"

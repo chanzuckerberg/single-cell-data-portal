@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import boto3
 from flask import jsonify, make_response, request
@@ -29,6 +30,9 @@ def get(collection_id: str, token_info: dict):
         upload_key_prefix = f"super/{collection_id}/"
     else:
         upload_key_prefix = f"{user_info.user_id}/{collection_id}/"
+    rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
+    if rdev_prefix:
+        upload_key_prefix = f"{rdev_prefix}/{upload_key_prefix}"
     parameters = dict(
         RoleArn=config.curator_role_arn,
         RoleSessionName=user_info.user_id.replace("|", "-"),
