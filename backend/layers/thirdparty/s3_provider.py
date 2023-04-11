@@ -1,6 +1,6 @@
 import os
 import subprocess
-from typing import Tuple
+from typing import List, Tuple
 from urllib.parse import urlparse
 
 import boto3
@@ -45,11 +45,11 @@ class S3Provider(S3ProviderInterface):
             ExtraArgs=extra_args,
         )
 
-    def delete_file(self, bucket_name: str, object_key: str):
+    def delete_files(self, bucket_name: str, object_keys: List[str]):
         """
-        Deletes the object `object_key` from bucket `bucket_name`
+        Deletes the objects `object_keys` from bucket `bucket_name`
         """
-        self.client.delete_object(bucket_name, object_key)
+        self.client.delete_objects(Bucket=bucket_name, Delete={"Objects": [{"Key": key} for key in object_keys]})
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """

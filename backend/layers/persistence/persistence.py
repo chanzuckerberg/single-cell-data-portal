@@ -402,14 +402,16 @@ class DatabaseProvider(DatabaseProviderInterface):
                 s3_provider = S3Provider()
                 datasets_bucket = os.getenv("DATASETS_BUCKET")
                 rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
+                object_keys = []
                 for collection_version in collection_versions:
                     for d_v in collection_version.datasets:
                         for file_type in ("h5ad", "rds"):
                             dataset_version_s3_object_key = f"{d_v.id}.{file_type}"
                             if rdev_prefix:
                                 dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
-                            s3_provider.delete_file(datasets_bucket, dataset_version_s3_object_key)
-                # Delete collection
+                            object_keys.append(dataset_version_s3_object_key)
+                s3_provider.delete_files(datasets_bucket, object_keys)
+                # Tombstone Collection
                 canonical_collection.tombstone = True
 
     def save_collection_metadata(
