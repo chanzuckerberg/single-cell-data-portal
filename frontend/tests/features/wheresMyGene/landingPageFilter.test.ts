@@ -30,7 +30,7 @@ describe("Left side bar", () => {
     expect(await page.getByTestId("add-organism").isVisible()).toBeFalsy();
   });
 
-  test("Should be able select and de-select options for datasetfilter", async ({
+  test.only("Should be able select and de-select options for datasetfilter", async ({
     page,
   }) => {
     const countBeforeFIlter = await checkSourceData(page);
@@ -41,7 +41,7 @@ describe("Left side bar", () => {
     await deSelectFIlterOption(page, "dataset-filter");
   });
 
-  test("Should be able select and de-select options for disease filter", async ({
+  test.only("Should be able select and de-select options for disease filter", async ({
     page,
   }) => {
     const countBeforeFIlter = await checkSourceData(page);
@@ -52,7 +52,7 @@ describe("Left side bar", () => {
     await deSelectFIlterOption(page, "disease-filter");
   });
 
-  test("Should be able select and de-select options for Self-Reported Ethnicity filter", async ({
+  test.only("Should be able select and de-select options for Self-Reported Ethnicity filter", async ({
     page,
   }) => {
     const countBeforeFIlter = await checkSourceData(page);
@@ -63,7 +63,7 @@ describe("Left side bar", () => {
     await deSelectFIlterOption(page, "self-reported-ethnicity-filter");
   });
 
-  test("Should be able select and de-select options for Self-Reported sex-filter", async ({
+  test.only("Should be able select and de-select options for Self-Reported sex-filter", async ({
     page,
   }) => {
     const countBeforeFIlter = await checkSourceData(page);

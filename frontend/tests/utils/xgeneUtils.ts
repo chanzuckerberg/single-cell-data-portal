@@ -23,8 +23,7 @@ export const selectFIlterOption = async (page: Page, filterName: string) => {
   await page.locator(FIRST_OPTION).click();
 
   // close the pop-up
-  await page.keyboard.press("Escape");
-  await page.keyboard.press("Escape");
+  await page.getByTestId(filterName).click({ position: { x: 0, y: 0 } });
 
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   // expect the selected filter to be visible
@@ -65,6 +64,9 @@ export const selectTissueandGeneOption = async (page: Page) => {
   // close the pop-up
   await page.keyboard.press("Escape");
 
+  //wait for heatmap to be visible the click action
+  await page.locator('[id="heatmap-container-id"]').waitFor();
+
   // click Gene button
   await selectFilterOption(page, "add-gene");
 
@@ -73,6 +75,9 @@ export const selectTissueandGeneOption = async (page: Page) => {
 
   // close the pop-up
   await page.keyboard.press("Escape");
+
+  //wait for gene label to appear
+  await page.locator("[data-testid='gene-label-TSPAN6']").waitFor();
 };
 
 export const checkSourceData = async (page: Page) => {
