@@ -21,7 +21,10 @@ class S3Provider(S3ProviderInterface):
         Returns the file size of an S3 object located at `path`
         """
         bucket, key = self._parse_s3_uri(path)
-        response = self.client.head_object(Bucket=bucket, Key=key)
+        try:
+            response = self.client.head_object(Bucket=bucket, Key=key)
+        except Exception:
+            return None
         return response["ContentLength"]
 
     def generate_presigned_url(self, path: str, expiration: int = 604800) -> str:
