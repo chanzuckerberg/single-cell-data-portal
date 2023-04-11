@@ -36,7 +36,8 @@ const defaultSecureHeaders = {
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       formAction: "'self'",
       frameAncestors: ["'none'"],
-      frameSrc: [TWITTER_URL, WISTIA_URL],
+      // 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed
+      // frameSrc: [TWITTER_URL, WISTIA_URL],
       imgSrc: ["'self'", "data:"],
       manifestSrc: ["'self'"],
       mediaSrc: ["'self'"],
