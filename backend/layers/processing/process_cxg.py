@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     DatasetArtifactType,
@@ -7,6 +6,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
+from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
@@ -48,13 +48,14 @@ class ProcessCxg(ProcessingLogic):
         labeled_h5ad_filename = "local.h5ad"
 
         # Download the labeled dataset from the artifact bucket
-        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
-        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        key_prefix = self.get_key_prefix(dataset_id.id)
+        object_key = f"{key_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
         self.process_cxg(labeled_h5ad_filename, dataset_id, cellxgene_bucket)
 
+    @logit
     def make_cxg(self, local_filename):
         """
         Convert the uploaded H5AD file to the CXG format servicing the cellxgene Explorer.
@@ -82,8 +83,8 @@ class ProcessCxg(ProcessingLogic):
         cxg_dir = self.convert_file(
             self.make_cxg, local_filename, "Issue creating cxg.", dataset_id, DatasetStatusKey.CXG
         )
-        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
-        s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
+        key_prefix = self.get_key_prefix(dataset_id.id)
+        s3_uri = f"s3://{cellxgene_bucket}/{key_prefix}.cxg/"
         self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADING)
         self.copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         # TODO: this is where we set explorer_url, but we might not need it anymore

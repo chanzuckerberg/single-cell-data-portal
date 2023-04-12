@@ -6,6 +6,10 @@ import {
 import { FOOTER_HEIGHT_PX } from "src/components/Footer/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { SidebarMainWrapper } from "src/components/Layout/style";
+import { Container } from "./components/GeneSearchBar/style";
+import { LegendWrapper } from "./components/InfoPanel/components/Legend/style";
+
+export const LEGEND_MARGIN_BOTTOM_PX = 20;
 
 export const Wrapper = styled.div`
   display: flex;
@@ -21,7 +25,21 @@ export const Gap = styled.div`
 export const Top = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: ${LEGEND_MARGIN_BOTTOM_PX}px;
+
+  /* The CSS below is to center the legend in the PNG output */
+  &.CLONED {
+    justify-content: center;
+    margin: 0;
+
+    & ${Container}, .screenshot-exclude {
+      display: none;
+    }
+
+    & ${LegendWrapper} {
+      justify-content: center;
+    }
+  }
 `;
 
 export const SideBarWrapper = styled(SideBar)`

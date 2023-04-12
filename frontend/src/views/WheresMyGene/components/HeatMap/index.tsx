@@ -92,7 +92,6 @@ export default memo(function HeatMap({
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const chartWrapperRef = useRef<HTMLDivElement>(null);
-
   const dispatch = useContext(DispatchContext);
 
   const { data } = usePrimaryFilterDimensions();
@@ -171,7 +170,7 @@ export default memo(function HeatMap({
       <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
         {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
         <XAxisWrapper id="x-axis-wrapper">
-          <XAxisMask data-test-id="x-axis-mask" />
+          <XAxisMask data-testid="x-axis-mask" />
           <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
         <YAxisWrapper>

@@ -18,7 +18,6 @@ import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import CollectionDescription from "src/components/Collection/components/CollectionDescription";
 import CollectionMetadata from "src/components/Collection/components/CollectionMetadata";
-import CollectionMigrationCallout from "src/components/Collection/components/CollectionMigrationCallout";
 import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
@@ -183,13 +182,9 @@ const Collection: FC = () => {
             isRevisionDifferent={collection.revision_diff}
           />
         )}
-        {/* Incomplete collection callout */}
-        {!isRevision && (
-          <CollectionMigrationCallout collectionId={collection.id} />
-        )}
         {/* Collection title and actions */}
         <CollectionHero>
-          <H3 data-test-id="collection-name">{collection.name}</H3>
+          <H3 data-testid="collection-name">{collection.name}</H3>
           {shouldShowPrivateWriteAction && (
             <ActionButtons
               id={id}

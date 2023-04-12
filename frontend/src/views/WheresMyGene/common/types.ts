@@ -21,6 +21,14 @@ export interface CellTypeSummary {
   order: CellType["order"];
 }
 
+export interface GeneInfo {
+  ncbi_url: string;
+  name: string;
+  synonyms: string[];
+  summary: string;
+  show_warning_banner: boolean;
+}
+
 export interface CellType {
   viewId: ViewId;
   // ontology term id

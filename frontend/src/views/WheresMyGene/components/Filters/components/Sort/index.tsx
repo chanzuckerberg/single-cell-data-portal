@@ -60,7 +60,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
       <Wrapper>
         <FilterLabel>Sort Cell Types</FilterLabel>
         <StyledDropdown
-          data-test-id="cell-type-sort-dropdown"
+          data-testid="cell-type-sort-dropdown"
           onChange={cellTypesOnChange}
           label={cellTypeSelectedOption.name}
           options={CELL_TYPE_OPTIONS}
@@ -71,7 +71,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
       <Wrapper>
         <FilterLabel>Sort Genes</FilterLabel>
         <StyledDropdown
-          data-test-id="gene-sort-dropdown"
+          data-testid="gene-sort-dropdown"
           onChange={genesOnChange}
           label={geneSelectedOption.name}
           options={GENE_OPTIONS}

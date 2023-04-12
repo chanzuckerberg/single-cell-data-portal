@@ -34,6 +34,9 @@ export const TissueName = styled.div`
   transform: rotate(180deg);
   font-size: 12px;
   font-weight: bold;
+
+  /* Fixes bug where some tissue names were wrapping on the last character for png download */
+  white-space: nowrap;
 `;
 
 export const Container = styled.div`
@@ -51,6 +54,20 @@ export const CellTypeLabelStyle = styled.div`
   width: 100%;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   text-align: left;
+`;
+
+export const HiddenCellTypeLabelStyle = styled.div`
+  /* Overlay invisible, un-intractable element with full name of cell type for ctrl+f page search */
+  position: absolute;
+  z-index: 1;
+  color: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  user-select: none;
+`;
+
+export const CellTypeLabelTooltipStyle = styled.div`
+  margin: 0 -10px;
+  text-align: center;
 `;
 
 export const CellCountLabelStyle = styled.div`
@@ -74,11 +91,6 @@ export const FlexRowJustified = styled.div`
 export const FlexRow = styled.div`
   display: flex;
   flex-direction: row;
-`;
-
-export const InfoButtonWrapper = styled.div`
-  padding-left: 2px;
-  cursor: pointer;
 `;
 
 function yAxisHeight({ height }: { height: number }) {

@@ -30,20 +30,24 @@ import { StyledButtonIcon } from "../QuickSelect/style";
 import {
   ButtonWrapper,
   DownloadButton,
+  StyledModalContent,
   StyledButtonContainer,
-  StyledDiv,
-  StyledFormControlLabel,
-  StyledInputCheckBox,
+  StyledInputCheckboxWrapper,
   StyledModal,
   StyledSection,
   StyledTitle,
+  StyledMessage,
+  DOWNLOAD_MODAL_WIDTH_PX,
+  DOWNLOAD_MODAL_PADDING,
 } from "./style";
 import {
+  applyAttributes,
   NAME_SPACE_URI,
+  renderDots,
   renderLegend,
   renderXAxis,
   renderYAxis,
-} from "./utils";
+} from "./svgUtils";
 import {
   FilterDimensions,
   OntologyTerm,
@@ -55,10 +59,25 @@ import {
   csvGeneExpressionRow,
   csvHeaders,
 } from "./csvUtils";
+import { InputCheckbox } from "czifui";
+import {
+  DATA_MESSAGE_BANNER_HEIGHT_PX,
+  DATA_MESSAGE_BANNER_ID,
+  DATA_MESSAGE_BANNER_WIDTH_PX,
+  UnderlyingDataChangeBanner,
+} from "./ExportBanner";
+import {
+  CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
+  CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
+} from "src/components/Layout/style";
+import { LEGEND_HEIGHT_PX } from "../../../InfoPanel/components/Legend/style";
+import { LEGEND_MARGIN_BOTTOM_PX } from "src/views/WheresMyGene/style";
+import { CHART_PADDING_PX } from "../../../HeatMap/style";
 
 let heatmapContainerScrollTop: number | undefined;
 
 const MUTATION_OBSERVER_TIMEOUT = 3 * 1000;
+const CLONED_CLASS = "CLONED";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
@@ -151,10 +170,21 @@ export default function SaveExport({
 
     setDownloadStatus({ isLoading: true, blur: true });
 
-    const heatmapNode = document.getElementById("view") as HTMLDivElement;
+    // We only need the observer to listen to changes to the heatmap
+    // If the observer listens on the whole view then it will detect the banner injection and trigger download twice
+    const heatmapNode = document.getElementById(
+      HEATMAP_CONTAINER_ID
+    ) as HTMLDivElement;
+
+    // This is the node that will be used to generate the exports
+    const viewNode = document.getElementById("view") as HTMLDivElement;
 
     // Options for the observer (which mutations to observe)
-    const config = { childList: true, subtree: true };
+    const config: MutationObserverInit = {
+      childList: true,
+      subtree: true,
+      attributes: true, // triggers the the observer if adding a class, useful for forcing the observer to trigger
+    };
 
     // Callback function to execute when mutations are observed
     const callback = debounce(() => {
@@ -174,7 +204,7 @@ export default function SaveExport({
         availableFilters,
         availableOrganisms,
         compare,
-        heatmapNode,
+        heatmapNode: viewNode,
         observer,
         selectedCellTypes,
         selectedFileTypes,
@@ -190,8 +220,15 @@ export default function SaveExport({
 
     observer.observe(heatmapNode, config);
 
-    if (selectedFileTypes.includes("svg")) {
+    // This will make a change to the heatmap dom which triggers the observer to start the download
+    if (
+      selectedFileTypes.includes("svg") ||
+      selectedFileTypes.includes("png")
+    ) {
       setEchartsRendererMode("svg");
+    } else {
+      // Kind of a hack to modify the DOM to trigger the observer
+      heatmapNode.classList.add("is-downloading");
     }
   }, [
     setDownloadStatus,
@@ -213,7 +250,7 @@ export default function SaveExport({
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledButtonIcon
-          data-test-id="download-button"
+          data-testid="download-button"
           onClick={handleButtonClick}
           disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
           sdsSize="medium"
@@ -227,148 +264,161 @@ export default function SaveExport({
         onClose={handleButtonClick}
         isCloseButtonShown={false}
       >
-        <div>
+        <StyledModalContent>
           <StyledSection>
             <StyledTitle>FIGURE</StyledTitle>
-            <StyledDiv>
-              <StyledFormControlLabel
-                control={
-                  <StyledInputCheckBox
-                    checked={selectedFileTypes.includes("png")}
-                  />
-                }
+            <StyledInputCheckboxWrapper>
+              <InputCheckbox
                 label="PNG"
+                caption="Image files that can be used on websites, have transparent backgrounds, and are suitable for graphics and digital images."
                 onChange={() => selectFileType("png")}
-                data-test-id="png-checkbox"
+                checked={selectedFileTypes.includes("png")}
+                data-testid="png-checkbox"
               />
-
-              <StyledFormControlLabel
-                control={
-                  <StyledInputCheckBox
-                    checked={selectedFileTypes.includes("svg")}
-                  />
-                }
+            </StyledInputCheckboxWrapper>
+            <StyledInputCheckboxWrapper>
+              <InputCheckbox
                 label="SVG"
+                caption="Vector image files that can be scaled without losing quality and are most suitable for scientific publications, presentations, and data visualization."
                 onChange={() => selectFileType("svg")}
-                data-test-id="svg-checkbox"
+                checked={selectedFileTypes.includes("svg")}
+                data-testid="svg-checkbox"
               />
-            </StyledDiv>
+            </StyledInputCheckboxWrapper>
           </StyledSection>
+
           <StyledSection>
             <StyledTitle>DATA</StyledTitle>
-            <StyledDiv>
-              <StyledFormControlLabel
-                control={
-                  <StyledInputCheckBox
-                    checked={selectedFileTypes.includes("csv")}
-                  />
-                }
+            <StyledInputCheckboxWrapper>
+              <InputCheckbox
                 label="CSV"
+                caption="Plain text files that store tabular data by separating values with commas, making them easy to read and manipulate with spreadsheet software."
                 onChange={() => selectFileType("csv")}
-                data-test-id="csv-checkbox"
+                checked={selectedFileTypes.includes("csv")}
+                data-testid="csv-checkbox"
               />
-            </StyledDiv>
+            </StyledInputCheckboxWrapper>
           </StyledSection>
-        </div>
 
-        <StyledButtonContainer>
-          <DownloadButton
-            sdsType="secondary"
-            sdsStyle="minimal"
-            onClick={handleButtonClick}
-          >
-            Cancel
-          </DownloadButton>
-          <DownloadButton
-            sdsStyle="square"
-            sdsType="primary"
-            sdsSize="large"
-            onClick={handleDownload}
-            disabled={!selectedFileTypes.length}
-            data-test-id="dialog-download-button"
-          >
-            Download
-          </DownloadButton>
-        </StyledButtonContainer>
+          <StyledMessage>
+            <UnderlyingDataChangeBanner
+              centered={false} // Decided by UX team that text should only be centered for exports
+              width={DOWNLOAD_MODAL_WIDTH_PX - DOWNLOAD_MODAL_PADDING * 2} // setting the width of the banner svg to the modal's content width
+            />
+          </StyledMessage>
+
+          <StyledButtonContainer>
+            <DownloadButton
+              sdsType="secondary"
+              sdsStyle="minimal"
+              onClick={handleButtonClick}
+            >
+              Cancel
+            </DownloadButton>
+            <DownloadButton
+              sdsStyle="square"
+              sdsType="primary"
+              sdsSize="large"
+              onClick={handleDownload}
+              disabled={!selectedFileTypes.length}
+              data-testid="dialog-download-button"
+            >
+              Download
+            </DownloadButton>
+          </StyledButtonContainer>
+        </StyledModalContent>
       </StyledModal>
     </>
   );
 }
 
-function processSvg({
+function generateSvg({
   svg,
   tissueName,
-  height,
+  heatmapHeight,
+  heatmapWidth,
 }: {
   svg: string;
   tissueName: Tissue;
-  height: number;
+  heatmapHeight: number;
+  heatmapWidth: number;
 }) {
   const heatmapNode = new DOMParser().parseFromString(svg, "image/svg+xml");
   const heatmapContainer = heatmapNode
     .querySelector("foreignObject")
     ?.querySelector("div");
 
+  // This is an svg element created in dom when downloadStatus.isLoading is true
+  const banner = document.getElementById(DATA_MESSAGE_BANNER_ID);
+
+  if (!banner) return "";
+
+  // Used to create room for the banner
+  const paddedBannerHeight =
+    DATA_MESSAGE_BANNER_HEIGHT_PX + CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX;
+  const paddedBannerWidth =
+    DATA_MESSAGE_BANNER_WIDTH_PX + CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
+
   // Render elements to SVG
-  const xAxisSvg = renderXAxis({ heatmapContainer });
-  const yAxisSvg = renderYAxis({ heatmapContainer, height, tissueName });
+  const xAxisSvg = renderXAxis({
+    heatmapContainer,
+    yOffset: paddedBannerHeight,
+  });
+  const yAxisSvg = renderYAxis({
+    heatmapContainer,
+    heatmapHeight,
+    tissueName,
+    yOffset: paddedBannerHeight,
+  });
   const dotsSvg = renderDots({
     heatmapContainer,
     tissueName,
-    xPosition: yAxisSvg!.width.baseVal.value,
+    yOffset: paddedBannerHeight,
   });
-  const legendSvg = renderLegend({ heatmapContainer });
+  const legendSvg = renderLegend({
+    heatmapContainer,
+    yOffset: paddedBannerHeight,
+  });
 
   const svgWidth =
-    yAxisSvg!.width.baseVal.value + dotsSvg!.width.baseVal.value + 20;
-  const svgHeight =
-    dotsSvg!.height.baseVal.value + xAxisSvg!.height.baseVal.value;
-  const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
+    heatmapWidth +
+    Y_AXIS_CHART_WIDTH_PX +
+    CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
 
+  const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
+  applyAttributes(finalSvg, {
+    width: svgWidth < paddedBannerWidth ? paddedBannerWidth : svgWidth, // Use the banner width as the minimum final svg width
+    height:
+      heatmapHeight +
+      paddedBannerHeight +
+      X_AXIS_CHART_HEIGHT_PX +
+      CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
+  });
+
+  // Center banner using full svg width
+  applyAttributes(banner, {
+    x:
+      svgWidth > paddedBannerWidth
+        ? svgWidth / 2 - DATA_MESSAGE_BANNER_WIDTH_PX / 2
+        : CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
+    y: CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
+  });
+
+  // Required for valid SVG
   finalSvg.setAttributeNS(
     "http://www.w3.org/2000/xmlns/",
     "xmlns",
     NAME_SPACE_URI
   );
-  finalSvg.setAttribute("height", `${svgHeight}`);
-  finalSvg.setAttribute("width", `${svgWidth}`);
 
   // Append elements to final SVG
+  finalSvg.append(banner.cloneNode(true) || ""); // We need to clone this or else the element itself will be moved and not be accessible for subsequent tissues
   finalSvg.append(legendSvg || "");
   finalSvg.append(xAxisSvg || "");
   finalSvg.append(yAxisSvg || "");
   finalSvg.append(dotsSvg || "");
 
   return finalSvg.outerHTML;
-}
-
-function renderDots({
-  heatmapContainer,
-  tissueName,
-  xPosition,
-}: {
-  heatmapContainer?: HTMLElement | null;
-  tissueName: Tissue;
-  xPosition: number;
-}) {
-  if (!heatmapContainer) return;
-
-  const chart = heatmapContainer
-    .querySelector(`#${tissueName}-chart`)
-    ?.querySelector("svg");
-
-  chart?.setAttribute("y", `${X_AXIS_CHART_HEIGHT_PX + 20}`);
-  chart?.setAttribute("x", `${xPosition}`);
-
-  // Cleanup as style attributes aren't used in SVG files
-  chart?.removeAttribute("style");
-  Array.from(chart?.querySelectorAll("rect, path, g") || []).forEach(
-    (element) => {
-      element.removeAttribute("style");
-    }
-  );
-
-  return chart;
 }
 
 /**
@@ -437,19 +487,33 @@ function generateCsv({
   return csvStringify(output);
 }
 
-async function generateImage(
-  fileType: string,
-  heatmapNode: HTMLDivElement,
-  height: number,
-  tissueName: string,
-  isMultipleTissues = false
-): Promise<string | ArrayBuffer> {
+async function generateImage({
+  fileType,
+  heatmapNode,
+  heatmapHeight,
+  heatmapWidth,
+  tissueName,
+  isMultipleTissues = false,
+}: {
+  fileType: string;
+  heatmapNode: HTMLDivElement;
+  heatmapHeight: number;
+  heatmapWidth: number;
+  tissueName: string;
+  isMultipleTissues: boolean;
+}): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
   const imageURL = await convertHTMLtoImage(heatmapNode, {
     backgroundColor: "white",
     filter: screenshotFilter(tissueName),
-    height: height + X_AXIS_CHART_HEIGHT_PX + 120,
+    height:
+      heatmapHeight +
+      X_AXIS_CHART_HEIGHT_PX +
+      DATA_MESSAGE_BANNER_HEIGHT_PX +
+      LEGEND_HEIGHT_PX +
+      LEGEND_MARGIN_BOTTOM_PX +
+      CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
     pixelRatio: 4,
     width: heatmapNode.offsetWidth,
   });
@@ -457,8 +521,9 @@ async function generateImage(
   let input: string | ArrayBuffer = imageURL;
 
   if (fileType === "svg") {
-    input = processSvg({
-      height,
+    input = generateSvg({
+      heatmapHeight,
+      heatmapWidth,
       svg: decodeURIComponent(imageURL.split(",")[1]),
       tissueName,
     });
@@ -558,12 +623,19 @@ function download_({
 
       const initialWidth = heatmapNode.style.width;
 
+      const heatmapWidth = getHeatmapWidth(selectedGenes);
+
       if (isPng) {
-        // Adding this class causes the y-axis scrolling to jump but is required for image download
-        heatmapNode.classList.add("CLONED");
+        // Add classes that are required for styling PNG
+        // Adding this class to the heatmap causes the y-axis scrolling to jump but is required for image download
+        heatmapNode.classList.add(CLONED_CLASS);
+        document.getElementById("top-legend")?.classList.add(CLONED_CLASS);
 
         heatmapNode.style.width = `${
-          getHeatmapWidth(selectedGenes) + Y_AXIS_CHART_WIDTH_PX + 100
+          heatmapWidth +
+          Y_AXIS_CHART_WIDTH_PX +
+          CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2 +
+          CHART_PADDING_PX * 2
         }px`;
       }
 
@@ -591,17 +663,20 @@ function download_({
                     selectedTissues,
                   });
                 } else {
-                  const height = getHeatmapHeight(
+                  const heatmapHeight = getHeatmapHeight(
                     selectedCellTypes[tissueName]
                   );
 
-                  input = await generateImage(
+                  input = await generateImage({
                     fileType,
                     heatmapNode,
-                    height,
-                    formattedTissueName,
-                    selectedTissues.length > 1 || selectedFileTypes.length > 1
-                  );
+                    heatmapHeight,
+                    heatmapWidth,
+                    tissueName: formattedTissueName,
+                    isMultipleTissues:
+                      selectedTissues.length > 1 ||
+                      selectedFileTypes.length > 1,
+                  });
                 }
 
                 return {
@@ -615,8 +690,11 @@ function download_({
       ).flat();
 
       if (isPng) {
+        // Remove classes that were required for styling PNG
+        heatmapNode.classList.remove(CLONED_CLASS);
+        document.getElementById("top-legend")?.classList.remove(CLONED_CLASS);
+
         //(thuang): #3569 Restore scrollTop position
-        heatmapNode.classList.remove("CLONED");
         heatmapNode.style.width = initialWidth;
         if (heatmapContainer) {
           heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;

@@ -2,6 +2,8 @@ from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Tuple
 
 import connexion
+import numpy as np
+import pandas as pd
 from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
@@ -53,7 +55,7 @@ def query():
         expression_summary = q.expression_summary_default(criteria) if default else q.expression_summary(criteria)
 
         cell_counts = q.cell_counts(criteria)
-        if expression_summary.shape[0] > 0 and cell_counts.shape[0] > 0:
+        if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 
             dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(
@@ -255,19 +257,72 @@ def get_dot_plot_data(
     return dot_plot_matrix_df, cell_counts_cell_type_agg
 
 
+def add_missing_combinations_to_dot_plot_matrix(dot_plot_matrix_df, cell_counts_cell_type_agg) -> DataFrame:
+    ### Add missing cell types to the expression dataframe so they can be rolled up ###
+
+    # extract group-by terms and queried genes from the input dataframes
+    # if a queried gene is not present in the input dot plot dataframe, we can safely
+    # ignore it as it need not be rolled up anyway.
+    group_by_terms = list(cell_counts_cell_type_agg.index.names)
+    genes = list(set(dot_plot_matrix_df["gene_ontology_term_id"]))
+
+    # get the names of the numeric columns
+    numeric_columns = list(
+        dot_plot_matrix_df.columns[[np.issubdtype(dtype, np.number) for dtype in dot_plot_matrix_df.dtypes]]
+    )
+
+    # exclude n_cells_tissue as we do not wish to roll it up
+    if "n_cells_tissue" in numeric_columns:
+        numeric_columns.remove("n_cells_tissue")
+
+    # get the total number of cells per tissue to populate the n_cells_tissue in the added entries
+    n_cells_tissue_dict = dot_plot_matrix_df.groupby("tissue_ontology_term_id").first()["n_cells_tissue"].to_dict()
+
+    # get the set of available combinations of group-by terms from the aggregated cell counts
+    available_combinations = set(zip(*cell_counts_cell_type_agg.reset_index()[group_by_terms].values.T))
+
+    # for each gene, get the set of available combinations of group-by terms from the input expression dataframe
+    entries_to_add = []
+    for gene in genes:
+        dot_plot_matrix_df_per_gene = dot_plot_matrix_df[dot_plot_matrix_df["gene_ontology_term_id"] == gene]
+        available_combinations_per_gene = set(zip(*dot_plot_matrix_df_per_gene[group_by_terms].values.T))
+
+        # get the combinations that are missing in the input expression dataframe
+        # these combinations have no data but can be rescued by the roll-up operation
+        missing_combinations = available_combinations.symmetric_difference(available_combinations_per_gene)
+        for combo in missing_combinations:
+            entry = {dim: combo[i] for i, dim in enumerate(group_by_terms)}
+            entry.update({col: 0 for col in numeric_columns})
+            entry["n_cells_tissue"] = n_cells_tissue_dict[entry["tissue_ontology_term_id"]]
+            entry["gene_ontology_term_id"] = gene
+            entries_to_add.append(entry)
+
+    # add the missing entries to the input expression dataframe
+    dot_plot_matrix_df = pd.concat((dot_plot_matrix_df, pd.DataFrame(entries_to_add)), axis=0)
+    return dot_plot_matrix_df
+
+
 def rollup(dot_plot_matrix_df, cell_counts_cell_type_agg) -> Tuple[DataFrame, DataFrame]:
     # Roll up numeric columns in the input dataframes
-    ignore_cols = ["n_cells_tissue"]
 
     if dot_plot_matrix_df.shape[0] > 0:
-        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df, ignore_cols=ignore_cols)
+
+        # For each gene in the query, add missing combinations (tissue, cell type, compare dimension)
+        # to the expression dataframe
+        dot_plot_matrix_df = add_missing_combinations_to_dot_plot_matrix(dot_plot_matrix_df, cell_counts_cell_type_agg)
+
+        # Roll up expression dataframe
+        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df, ignore_cols=["n_cells_tissue"])
+
+        # Filter out the entries that were added to the dataframe that remain zero after roll-up
+        dot_plot_matrix_df = dot_plot_matrix_df[dot_plot_matrix_df["sum"] > 0]
 
     if cell_counts_cell_type_agg.shape[0] > 0:
         # make the cell counts dataframe tidy
         for col in cell_counts_cell_type_agg.index.names:
             cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
         cell_counts_cell_type_agg = rollup_across_cell_type_descendants(
-            cell_counts_cell_type_agg, ignore_cols=ignore_cols
+            cell_counts_cell_type_agg, ignore_cols=["n_cells_tissue"]
         )
 
         # clean up columns that were added to the dataframe to make it tidy
