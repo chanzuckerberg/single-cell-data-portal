@@ -4,7 +4,7 @@ import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wher
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
-import { TISSUE_DENY_LIST } from "./tissueRollup";
+import { TISSUE_DENY_LIST } from "../../utils/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
