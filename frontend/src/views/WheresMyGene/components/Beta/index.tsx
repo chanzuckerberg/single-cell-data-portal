@@ -17,6 +17,7 @@ export default function Beta(): JSX.Element {
         dismissDirection="left"
         onClose={noop}
         className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+        data-testid="survey-alert-id"
       >
         We would appreciate your feedback, please fill out a{" "}
         <SubmitIssue
