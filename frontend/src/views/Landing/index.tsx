@@ -235,7 +235,10 @@ const LandingPage = (): JSX.Element => {
           }}
         >
           <div className={styles.heroImgContainer}>
-            <div className={styles.laptopImg}>
+            <div
+              className={styles.laptopImg}
+              data-testid="laptop-with-cell-data-on-screen"
+            >
               <Image
                 src={LaptopImg}
                 alt="laptop with cell data on screen"

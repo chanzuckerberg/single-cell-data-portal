@@ -6,6 +6,7 @@ import {
   ADD_GENE_LBL,
   ADD_TISSUE_LBL,
 } from "tests/utils/constants";
+import { getById } from "tests/utils/selectors";
 
 const ALERT =
   "We would appreciate your feedback, please fill out a quick survey";
@@ -87,7 +88,7 @@ test.describe("Tests for Gene Expression page", () => {
       "Expressed in Cells (%)"
     );
     await expect(page.locator('[id="expressed-in-cells-dots"]')).toBeVisible();
-    let actualSizes = [];
+    const actualSizes = [];
     for (let i = 0; i < 5; i++) {
       actualSizes.push(
         Number(
@@ -100,5 +101,36 @@ test.describe("Tests for Gene Expression page", () => {
       );
     }
     expect(actualSizes).toEqual(DOT_SIZES);
+  });
+  test("Should verify top nav", async ({ page }) => {
+    const DOCUMENTATION = "Documentation";
+    await goToWMG(page);
+    // verify logo
+    expect(page.getByTestId("logo")).toBeVisible();
+
+    // Help & Doc
+    expect(await page.getByTestId("InputDropdown").textContent())
+      .toBe("Help & Documentation");
+    
+    await page.getByTestId("InputDropdown").click();
+    
+    const popupPromise = page.waitForEvent("popup");
+    await page.getByText(DOCUMENTATION, {exact: true}).click();
+    const popup = await popupPromise;
+    // Wait for new tab to load.
+    await popup.waitForLoadState();
+    expect(popup.url()).toContain(DOCUMENTATION);
+    expect(
+      popup.locator(
+        getById("gene-expression--query-gene-expression-across-tissues")
+      )
+    ).toBeVisible();
+  })
+  test("Should logo takes user to portal page", async ({ page }) => {
+    await goToWMG(page);
+
+    await page.getByTestId("logo").click();
+    await page.waitForLoadState();
+    expect(page.getByTestId("laptop-with-cell-data-on-screen")).toBeVisible();
   });
 });
