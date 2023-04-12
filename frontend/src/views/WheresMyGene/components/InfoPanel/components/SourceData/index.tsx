@@ -47,7 +47,7 @@ export default function SourceData(): JSX.Element {
                       rel="noopener"
                       onClick={() => {
                         track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, {
-                          VIEW_COLLECTION_PAGE_CLICKED: name,
+                          collection_name: name,
                         });
                       }}
                     >
