@@ -7,6 +7,7 @@ import {
   ADD_TISSUE_LBL,
 } from "tests/utils/constants";
 import { getById } from "tests/utils/selectors";
+import { tryUntil } from "tests/utils/helpers";
 
 const ALERT =
   "We would appreciate your feedback, please fill out a quick survey";
@@ -18,13 +19,14 @@ const DOT_SIZES: Array<number> = [4, 9, 12, 14, 16];
 
 function goToWMG(page: Page) {
   return Promise.all([
+    page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
     page.waitForResponse(
       (resp: { url: () => string | string[]; status: () => number }) =>
         resp.url().includes("/wmg/v1/filters") && resp.status() === 200
     ),
-    page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
   ]);
 }
+
 test.describe("Tests for Gene Expression page", () => {
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
@@ -132,6 +134,14 @@ test.describe("Tests for Gene Expression page", () => {
 
     await page.getByTestId("logo").click();
     await page.waitForLoadState();
-    expect(page.getByTestId("laptop-with-cell-data-on-screen")).toBeVisible();
+
+    await tryUntil(
+      async () => {
+        expect(
+          page.getByTestId("laptop-with-cell-data-on-screen")
+        ).toBeVisible();
+      },
+      { page }
+    );
   });
 });
