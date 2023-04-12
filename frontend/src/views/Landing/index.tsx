@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import TweetEmbed from "react-tweet-embed";
+// 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed
+// import TweetEmbed from "react-tweet-embed";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
@@ -51,9 +52,9 @@ const LandingPage = (): JSX.Element => {
   });
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
-  const [cellsHeroNum] = useState("38.4M");
-  const [datasetsHeroNum] = useState("732");
-  const [cellTypesHeroNum] = useState("647");
+  const [cellsHeroNum] = useState("39.4M");
+  const [datasetsHeroNum] = useState("758");
+  const [cellTypesHeroNum] = useState("652");
 
   const publications = [
     {
@@ -662,7 +663,8 @@ const LandingPage = (): JSX.Element => {
               </div>
             </div>
           </div>
-          <div className={styles.freethinkVideoSection}>
+          {/* 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed */}
+          {/* <div className={styles.freethinkVideoSection}>
             <div className={styles.freethinkVideoSectionWrapper}>
               <div className={styles.freethinkVideoSectionTextContainer}>
                 <h2>Behind-the-scenes of Chan Zuckerberg CELLxGENE</h2>
@@ -682,7 +684,7 @@ const LandingPage = (): JSX.Element => {
                 src="https://fast.wistia.net/embed/iframe/fgzei2rjkl"
               ></iframe>
             </div>
-          </div>
+          </div> */}
           <div className={styles.publications}>
             <div className={styles.sciencePublications}>
               <span className={styles.pubSectionTitle}>Publications</span>
@@ -744,12 +746,13 @@ const LandingPage = (): JSX.Element => {
               <span className={`${styles.pubSectionTitle} ${styles.newsTitle}`}>
                 CELL X GENE IN THE NEWS
               </span>
-              <div className={styles.pubSectionImage}>
+              {/* 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed */}
+              {/* <div className={styles.pubSectionImage}>
                 <TweetEmbed tweetId="1404822000464433158" />
               </div>
               <div className={styles.pubSectionImage}>
                 <TweetEmbed tweetId="1396854799908282376" />
-              </div>
+              </div> */}
               {newsLinks && (
                 <div className={styles.newsLinkContainer}>
                   {newsLinks.map((link, index) => (

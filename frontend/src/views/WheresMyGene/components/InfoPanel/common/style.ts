@@ -4,6 +4,9 @@ import { fontBodyXxs, fontHeaderXxs, getColors } from "czifui";
 export const LowHigh = styled.div`
   display: flex;
   justify-content: space-between;
+
+  /* Fixes bug where numbers were wrapping in PNG export */
+  white-space: nowrap;
 `;
 
 export const Header = styled.h5`

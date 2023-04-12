@@ -89,6 +89,7 @@ class ProcessMain(ProcessingLogic):
         step_name: str,
         dropbox_uri: Optional[str],
         artifact_bucket: Optional[str],
+        datasets_bucket: Optional[str],
         cxg_bucket: Optional[str],
     ):
         """
@@ -98,11 +99,11 @@ class ProcessMain(ProcessingLogic):
         self.logger.info(f"Processing dataset {dataset_id}")
         try:
             if step_name == "download-validate":
-                self.process_download_validate.process(dataset_id, dropbox_uri, artifact_bucket)
+                self.process_download_validate.process(dataset_id, dropbox_uri, artifact_bucket, datasets_bucket)
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)
             elif step_name == "seurat":
-                self.process_seurat.process(dataset_id, artifact_bucket)
+                self.process_seurat.process(dataset_id, artifact_bucket, datasets_bucket)
             elif step_name == "cxg_remaster":
                 raise NotImplementedError("cxg remasters are not supported anymore")
             else:
@@ -142,12 +143,14 @@ class ProcessMain(ProcessingLogic):
         step_name = os.environ["STEP_NAME"]
         dropbox_uri = os.environ.get("DROPBOX_URL")
         artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
+        datasets_bucket = os.environ.get("DATASETS_BUCKET")
         cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
         rv = self.process(
             dataset_id=DatasetVersionId(dataset_id),
             step_name=step_name,
             dropbox_uri=dropbox_uri,
             artifact_bucket=artifact_bucket,
+            datasets_bucket=datasets_bucket,
             cxg_bucket=cxg_bucket,
         )
         return 0 if rv else 1
