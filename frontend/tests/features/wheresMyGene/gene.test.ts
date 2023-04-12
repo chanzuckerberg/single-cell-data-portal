@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { ADD_GENE_BTN } from "tests/utils/constants";
-import { goToWMG, verifyAddedGene } from "tests/utils/geneUtils";
+import {
+  goToWMG,
+  searchAndAddGene,
+  verifyAddedGene,
+} from "tests/utils/geneUtils";
 import uaParser from "ua-parser-js";
 const { describe } = test;
 
@@ -27,14 +31,8 @@ describe("Manage gene tests", () => {
 
   test("Should select gene by searching", async ({ page }) => {
     const GENE = "FGR";
-    await goToWMG(page);
-    // click +Tissue button
-    await page.getByTestId(ADD_GENE_BTN).click();
-    await page.getByPlaceholder("Search").type(GENE);
-    await page.getByText(GENE).click();
+    await searchAndAddGene(page, GENE);
 
-    // close dropdown
-    await page.keyboard.press("Escape");
     // verify selected tissue details
     await verifyAddedGene(page, GENE);
   });
@@ -71,14 +69,7 @@ describe("Manage gene tests", () => {
   });
   test("Should remove gene", async ({ page }) => {
     const GENE = "SCYL3";
-    await goToWMG(page);
-    // click +Tissue button
-    await page.getByTestId(ADD_GENE_BTN).click();
-    await page.getByPlaceholder("Search").type(GENE);
-    await page.getByText(GENE).click();
-
-    // close dropdown
-    await page.keyboard.press("Escape");
+    await searchAndAddGene(page, GENE);
 
     // delete gene
     await page.getByTestId(`gene-name-${GENE}`).hover();
