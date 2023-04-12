@@ -1,7 +1,7 @@
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
-import { getTestID } from "tests/utils/selectors";
+import { getTestID, getText } from "tests/utils/selectors";
 
 export function goToWMG(page: Page) {
   return Promise.all([
@@ -28,6 +28,9 @@ export const selectFIlterOption = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   // expect the selected filter to be visible
   await expect(page.locator(filter_label)).toBeVisible();
+
+  //wait till loading is complete
+  await page.locator(getText("Loading")).waitFor({ state: "hidden" });
 };
 export const pickOptions = async (page: Page, n: number) => {
   for (let i = 0; i < n; i++) {
@@ -78,6 +81,9 @@ export const selectTissueandGeneOption = async (page: Page) => {
 
   //wait for gene label to appear
   await page.locator("[data-testid='gene-label-TSPAN6']").waitFor();
+
+  //wait till loading is complete
+  await page.locator(getText("Loading")).waitFor({ state: "hidden" });
 };
 
 export const checkSourceData = async (page: Page) => {
@@ -89,4 +95,19 @@ export const checkSourceData = async (page: Page) => {
   // close the pop-up
   await page.keyboard.press("Escape");
   return n;
+};
+export const checkPlotSize = async (page: Page) => {
+  //get the number of rows on the data plot
+  const n = await page.locator('[data-zr-dom-id*="zr"]').count();
+  let sumOfHeights = 0;
+  for (let i = 0; i < n; i++) {
+    const row = await page.locator('[data-zr-dom-id*="zr"]').nth(i);
+
+    const height = await row.getAttribute("height");
+
+    if (height !== null) {
+      sumOfHeights += parseInt(height);
+    }
+  }
+  return sumOfHeights;
 };

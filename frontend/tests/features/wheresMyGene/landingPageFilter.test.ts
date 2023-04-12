@@ -3,6 +3,7 @@
  */
 import { expect, test } from "@playwright/test";
 import {
+  checkPlotSize,
   checkSourceData,
   deSelectFIlterOption,
   goToWMG,
@@ -34,10 +35,14 @@ describe("Left side bar", () => {
     page,
   }) => {
     const countBeforeFIlter = await checkSourceData(page);
+    const plotSizeBeforeFIlter = await checkPlotSize(page);
     await selectFIlterOption(page, "dataset-filter");
     const countAfterFIlter = await checkSourceData(page);
+    const plotSizeAfterFIlter = await checkPlotSize(page);
     expect(countBeforeFIlter).toBeGreaterThan(0);
     expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
+    expect(plotSizeBeforeFIlter).toBeGreaterThan(0);
+    expect(plotSizeBeforeFIlter === plotSizeAfterFIlter).toBeFalsy();
     await deSelectFIlterOption(page, "dataset-filter");
   });
 
@@ -45,10 +50,14 @@ describe("Left side bar", () => {
     page,
   }) => {
     const countBeforeFIlter = await checkSourceData(page);
+    const plotSizeBeforeFIlter = await checkPlotSize(page);
     await selectFIlterOption(page, "disease-filter");
     const countAfterFIlter = await checkSourceData(page);
+    const plotSizeAfterFIlter = await checkPlotSize(page);
     expect(countBeforeFIlter).toBeGreaterThan(0);
     expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
+    expect(plotSizeBeforeFIlter).toBeGreaterThan(0);
+    expect(plotSizeBeforeFIlter === plotSizeAfterFIlter).toBeFalsy();
     await deSelectFIlterOption(page, "disease-filter");
   });
 
@@ -56,10 +65,14 @@ describe("Left side bar", () => {
     page,
   }) => {
     const countBeforeFIlter = await checkSourceData(page);
+    const plotSizeBeforeFIlter = await checkPlotSize(page);
     await selectFIlterOption(page, "self-reported-ethnicity-filter");
     const countAfterFIlter = await checkSourceData(page);
+    const plotSizeAfterFIlter = await checkPlotSize(page);
     expect(countBeforeFIlter).toBeGreaterThan(0);
     expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
+    expect(plotSizeBeforeFIlter).toBeGreaterThan(0);
+    expect(plotSizeBeforeFIlter === plotSizeAfterFIlter).toBeFalsy();
     await deSelectFIlterOption(page, "self-reported-ethnicity-filter");
   });
 
@@ -67,10 +80,14 @@ describe("Left side bar", () => {
     page,
   }) => {
     const countBeforeFIlter = await checkSourceData(page);
+    const plotSizeBeforeFIlter = await checkPlotSize(page);
     await selectFIlterOption(page, "sex-filter");
     const countAfterFIlter = await checkSourceData(page);
+    const plotSizeAfterFIlter = await checkPlotSize(page);
     expect(countBeforeFIlter).toBeGreaterThan(0);
     expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
+    expect(plotSizeBeforeFIlter).toBeGreaterThan(0);
+    expect(plotSizeBeforeFIlter === plotSizeAfterFIlter).toBeFalsy();
     await deSelectFIlterOption(page, "sex-filter");
   });
 });
