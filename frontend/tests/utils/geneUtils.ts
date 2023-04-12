@@ -1,6 +1,7 @@
 import { Page, expect } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
+import { ADD_GENE_BTN } from "./constants";
 
 const FMG_EXCLUDE_TISSUES = ["blood"];
 const CELL_COUNT_ID = "cell-count";
@@ -16,6 +17,16 @@ export async function goToWMG(page: Page) {
     ),
     page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
   ]);
+}
+export async function searchAndAddGene(page: Page, geneName: string) {
+  await goToWMG(page);
+  // click +Tissue button
+  await page.getByTestId(ADD_GENE_BTN).click();
+  await page.getByPlaceholder("Search").type(geneName);
+  await page.getByText(geneName).click();
+
+  // close dropdown
+  await page.keyboard.press("Escape");
 }
 export async function verifyAddedTissue(page: Page, tissue: string) {
   // STEP 1 & Add Tissues texts should disappear
