@@ -216,14 +216,16 @@ class ProcessDownloadValidate(ProcessingLogic):
         else:
             return string[:]
 
-    def process(self, dataset_id: DatasetVersionId, dropbox_url: str, artifact_bucket: str):
+    def process(self, dataset_id: DatasetVersionId, dropbox_url: str, artifact_bucket: str, datasets_bucket: str):
         """
         1. Download the original dataset from Dropbox
         2. Validate and label it
         3. Upload the labeled dataset to the artifact bucket
+        4. Upload the labeled dataset to the datasets bucket
         :param dataset_id:
         :param dropbox_url:
         :param artifact_bucket:
+        :param datasets_bucket:
         :return:
         """
 
@@ -246,12 +248,12 @@ class ProcessDownloadValidate(ProcessingLogic):
             self.update_processing_status(dataset_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
             self.logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
 
-        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
+        key_prefix = self.get_key_prefix(dataset_id.id)
         # Upload the original dataset to the artifact bucket
         self.create_artifact(
             local_filename,
             DatasetArtifactType.RAW_H5AD,
-            bucket_prefix,
+            key_prefix,
             dataset_id,
             artifact_bucket,
             DatasetStatusKey.H5AD,
@@ -260,8 +262,9 @@ class ProcessDownloadValidate(ProcessingLogic):
         self.create_artifact(
             file_with_labels,
             DatasetArtifactType.H5AD,
-            bucket_prefix,
+            key_prefix,
             dataset_id,
             artifact_bucket,
             DatasetStatusKey.H5AD,
+            datasets_bucket=datasets_bucket,
         )

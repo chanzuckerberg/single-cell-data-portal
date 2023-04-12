@@ -16,12 +16,17 @@ import {
 } from "../../../HeatMap/utils";
 import { generateAndCopyShareUrl } from "../ShareButton/utils";
 
+const NO_SELECTION_STRING = "No selection";
+
 interface CsvMetadata {
   name: string;
   compareValueName: string;
   viewId: string;
   total_count: number;
 }
+
+const UNDERLYING_DATA_CHANGE_MESSAGE =
+  "We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future.";
 
 export function csvHeaders({
   compare,
@@ -46,11 +51,14 @@ export function csvHeaders({
   const output: string[][] = [];
 
   // Metadata as comments
-  output.push([`# ${new Date().toString()}`]);
+  output.push([`# Created At: ${new Date().toString()}`]);
+
+  // Data change message
+  output.push([`# ${UNDERLYING_DATA_CHANGE_MESSAGE}`]);
 
   // Share URL
   output.push([
-    `# ${generateAndCopyShareUrl({
+    `# Link Generated: ${generateAndCopyShareUrl({
       compare,
       filters: selectedFilters,
       organism: selectedOrganismId,
@@ -61,61 +69,56 @@ export function csvHeaders({
   ]);
 
   // Dataset
-  output.push(["# Dataset"]);
   output.push([
-    `${
+    `# Dataset Filter Values: ${
       datasets
         ?.filter((option) => {
           return selectedFilters.datasets.includes(option.id);
         })
         .map((selected) => selected.label)
-        .join(", ") || ""
+        .join(", ") || NO_SELECTION_STRING
     }`,
   ]);
 
   // Disease
-  output.push(["# Disease"]);
   output.push([
-    `${
+    `# Disease Filter Values: ${
       disease_terms
         ?.filter((option) => {
           return selectedFilters.diseases.includes(option.id);
         })
         .map((selected) => selected.name)
-        .join(", ") || ""
+        .join(", ") || NO_SELECTION_STRING
     }`,
   ]);
 
   // Ethnicity
-  output.push(["# Self-Reported Ethnicity"]);
   output.push([
-    `${
+    `# Self-Reported Ethnicity Filter Values: ${
       self_reported_ethnicity_terms
         ?.filter((option) => {
           return selectedFilters.ethnicities.includes(option.id);
         })
         .map((selected) => selected.name)
-        .join(", ") || ""
+        .join(", ") || NO_SELECTION_STRING
     }`,
   ]);
 
   // Sex
-  output.push(["# Sex"]);
   output.push([
-    `${
+    `# Sex Filter Values: ${
       sex_terms
         ?.filter((option) => {
           return selectedFilters.sexes.includes(option.id);
         })
         .map((selected) => selected.name)
-        .join(", ") || ""
+        .join(", ") || NO_SELECTION_STRING
     }`,
   ]);
 
   // Organism
-  output.push(["# Organism"]);
   output.push([
-    `${
+    `# Organism Filter Value: ${
       availableOrganisms?.find((organism) => organism.id === selectedOrganismId)
         ?.name
     }`,

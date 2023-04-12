@@ -1,11 +1,10 @@
-import { Intent } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
-import { useCallback, useContext, useEffect } from "react";
+import { Notification } from "czifui";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { noop } from "src/common/constants/utils";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import { isSSR } from "src/common/utils/isSSR";
-import Toast from "src/views/Collection/components/Toast";
 import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
 import {
   DispatchContext,
@@ -13,7 +12,14 @@ import {
 } from "src/views/WheresMyGene/common/store";
 import { StyledButtonIcon } from "../QuickSelect/style";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
-import { StyledButtonDiv, StyledLabel } from "./style";
+import {
+  StyledButtonDiv,
+  StyledIcon,
+  StyledLabel,
+  StyledNotificationDetails,
+  StyledNotificationLabel,
+  StyledNotificationWrapper,
+} from "./style";
 import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
 
 export default function ShareButton(): JSX.Element {
@@ -29,7 +35,7 @@ export default function ShareButton(): JSX.Element {
 
   const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions();
   const dispatch = useContext(DispatchContext);
-  // const [showURLCopyNotification, setShowURLCopyNotification] = useState(0);
+  const [showURLCopyNotification, setShowURLCopyNotification] = useState(0);
 
   const copyShareUrl = useCallback(() => {
     if (!dispatch) return;
@@ -53,13 +59,7 @@ export default function ShareButton(): JSX.Element {
       tissues: selectedTissues,
     });
 
-    // setShowURLCopyNotification((prev) => prev + 1);
-    Toast.show({
-      icon: IconNames.LINK,
-      intent: Intent.PRIMARY,
-      message: "Share link copied",
-      timeout: 1000,
-    });
+    setShowURLCopyNotification((prev) => prev + 1);
   }, [
     selectedFilters,
     selectedTissues,
@@ -98,16 +98,26 @@ export default function ShareButton(): JSX.Element {
 
   return (
     <>
-      {/* {showURLCopyNotification > 0 && (
-        <StyledNotification
-          key={showURLCopyNotification}
-          autoDismiss={false}
-          dismissDirection={"left"}
-          intent={"info"}
-        >
-          Share link copied
-        </StyledNotification>
-      )} */}
+      {showURLCopyNotification > 0 && (
+        <StyledNotificationWrapper>
+          <Notification
+            key={showURLCopyNotification}
+            autoDismiss={5000}
+            onClose={noop}
+            slideDirection={"left"}
+            intent={"info"}
+            icon={
+              <StyledIcon sdsIcon={"link"} sdsSize={"s"} sdsType={"static"} />
+            }
+          >
+            <StyledNotificationLabel>Share link copied</StyledNotificationLabel>
+            <StyledNotificationDetails>
+              We regularly expand our single cell data corpus to improve
+              results. Downloaded data and figures may differ in the future.
+            </StyledNotificationDetails>
+          </Notification>
+        </StyledNotificationWrapper>
+      )}
 
       <StyledButtonDiv className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <StyledLabel>Share</StyledLabel>

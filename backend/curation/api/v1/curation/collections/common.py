@@ -31,6 +31,27 @@ def get_collections_base_url():
     return CorporaConfig().collections_base_url
 
 
+def extract_dataset_assets(dataset_version: DatasetVersion):
+    base_url = CorporaConfig().dataset_assets_base_url
+    asset_list = list()
+    for asset in dataset_version.artifacts:
+        if asset.type not in allowed_dataset_asset_types:
+            continue
+        filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
+        if filesize is None:
+            filesize = -1
+        # Note: this key parsing assumes asset.uri from DB has `<bucket>/<uuid>/local.<file_type>` directory structure
+        key_uuid = urlparse(asset.uri).path.split("/")[-2]
+        url = f"{base_url}/{key_uuid}.{asset.type}"
+        result = {
+            "filesize": filesize,
+            "filetype": asset.type.upper(),
+            "url": url,
+        }
+        asset_list.append(result)
+    return asset_list
+
+
 def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]]:
     """
     Pull out the DOI from the 'links' list and return it along with the altered links array
@@ -174,15 +195,8 @@ def reshape_dataset_for_curation_api(
     ds["dataset_version_id"] = dataset_version.version_id.id
     # Get none preview specific dataset fields
     if not preview:
-        # get dataset asset attributes
-        assets = []
-        for artifact in dataset_version.artifacts:
-            if artifact.type in allowed_dataset_asset_types:
-                assets.append(dict(filetype=artifact.type.upper(), filename=artifact.uri.split("/")[-1]))
-
-        ds["dataset_assets"] = assets
+        ds["assets"] = extract_dataset_assets(dataset_version)
         ds["processing_status_detail"] = dataset_version.status.validation_message
-        _published_at = dataset_version.canonical_dataset.published_at
         ds["title"] = ds.pop("name", None)
         ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
