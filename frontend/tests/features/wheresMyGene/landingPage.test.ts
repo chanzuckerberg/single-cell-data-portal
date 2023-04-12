@@ -109,13 +109,14 @@ test.describe("Tests for Gene Expression page", () => {
     expect(page.getByTestId("logo")).toBeVisible();
 
     // Help & Doc
-    expect(await page.getByTestId("InputDropdown").textContent())
-      .toBe("Help & Documentation");
-    
+    expect(await page.getByTestId("InputDropdown").textContent()).toBe(
+      "Help & Documentation"
+    );
+
     await page.getByTestId("InputDropdown").click();
-    
+
     const popupPromise = page.waitForEvent("popup");
-    await page.getByText(DOCUMENTATION, {exact: true}).click();
+    await page.getByText(DOCUMENTATION, { exact: true }).click();
     const popup = await popupPromise;
     // Wait for new tab to load.
     await popup.waitForLoadState();
@@ -125,7 +126,7 @@ test.describe("Tests for Gene Expression page", () => {
         getById("gene-expression--query-gene-expression-across-tissues")
       )
     ).toBeVisible();
-  })
+  });
   test("Should logo takes user to portal page", async ({ page }) => {
     await goToWMG(page);
 
