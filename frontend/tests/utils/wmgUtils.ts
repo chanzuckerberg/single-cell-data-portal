@@ -56,7 +56,7 @@ export const selectFilterOption = async (page: Page, filterName: string) => {
   await page.getByTestId(filterName).click();
 };
 
-export const selectTissueandGeneOption = async (page: Page) => {
+export const selectTissueAndGeneOption = async (page: Page) => {
   // click Tissue button
   await selectFilterOption(page, "add-tissue");
 
