@@ -1,5 +1,6 @@
 import copy
 import logging
+import os
 from collections import defaultdict
 from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
@@ -570,10 +571,30 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.database_provider.delete_collection_version(version_id)
 
+    def delete_datasets_from_public_access_bucket(self, collection_id: CollectionId) -> List[str]:
+        """
+        Delete all associated publicly-accessible Datasets in s3
+        """
+        collection_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        datasets_bucket = os.getenv("DATASETS_BUCKET")
+        rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
+        object_keys = []
+        for collection_version in collection_versions:
+            for d_v in collection_version.datasets:
+                for file_type in ("h5ad", "rds"):
+                    dataset_version_s3_object_key = f"{d_v.version_id.id}.{file_type}"
+                    if rdev_prefix:
+                        dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
+                    object_keys.append(dataset_version_s3_object_key)
+        self.s3_provider.delete_files(datasets_bucket, object_keys)
+        return object_keys
+
     def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
         Tombstones a canonical collection
         """
+        self.delete_datasets_from_public_access_bucket(collection_id)
+        # Tombstone canonical Collection
         self.database_provider.delete_canonical_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:

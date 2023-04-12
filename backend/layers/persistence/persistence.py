@@ -1,7 +1,6 @@
 import contextlib
 import json
 import logging
-import os
 import uuid
 from contextlib import contextmanager
 from datetime import datetime
@@ -44,7 +43,6 @@ from backend.layers.persistence.orm import (
     DatasetVersionTable,
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
-from backend.layers.thirdparty.s3_provider import S3Provider
 
 logger = logging.getLogger(__name__)
 
@@ -394,24 +392,6 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             canonical_collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()
             if canonical_collection:
-                # Delete all associated publicly-accessible Datasets in s3
-                collection_versions = [
-                    self._row_to_collection_version(c_row, canonical_collection)
-                    for c_row in session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id).all()
-                ]
-                s3_provider = S3Provider()
-                datasets_bucket = os.getenv("DATASETS_BUCKET")
-                rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
-                object_keys = []
-                for collection_version in collection_versions:
-                    for d_v in collection_version.datasets:
-                        for file_type in ("h5ad", "rds"):
-                            dataset_version_s3_object_key = f"{d_v.id}.{file_type}"
-                            if rdev_prefix:
-                                dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
-                            object_keys.append(dataset_version_s3_object_key)
-                s3_provider.delete_files(datasets_bucket, object_keys)
-                # Tombstone Collection
                 canonical_collection.tombstone = True
 
     def save_collection_metadata(
