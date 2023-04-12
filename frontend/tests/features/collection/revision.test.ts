@@ -28,7 +28,7 @@ describe("Collection Revision", () => {
 
     await page.getByText("My Collections").click();
 
-    const COLLECTION_ROW_SELECTOR = `*${page.getByTestId(
+    const COLLECTION_ROW_SELECTOR = `*${getTestID(
       COLLECTION_ROW_ID
     )} >> text="${collectionName}"`;
 
@@ -194,7 +194,7 @@ async function startRevision(page: Page): Promise<string> {
    * `COLLECTION_ROW_ID` selector element
    * @see https://playwright.dev/docs/selectors#intermediate-matches
    */
-  const COLLECTION_ROW_SELECTOR_START = `*${page.getByTestId(
+  const COLLECTION_ROW_SELECTOR_START = `*${getTestID(
     COLLECTION_ROW_ID
   )} >> text="Start Revision"`;
 

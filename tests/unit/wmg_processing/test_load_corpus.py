@@ -264,7 +264,9 @@ class TestCorpusLoad(unittest.TestCase):
         # Create dataset with mixture of included and not included assays
         CELL_COUNT = 5
         test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=CELL_COUNT)
-        test_anndata_object.obs["assay_ontology_term_id"].cat.add_categories(["NOT_INCLUDED"], inplace=True)
+        test_anndata_object.obs["assay_ontology_term_id"] = test_anndata_object.obs[
+            "assay_ontology_term_id"
+        ].cat.add_categories(["NOT_INCLUDED"])
         test_anndata_object.obs["assay_ontology_term_id"][0] = "NOT_INCLUDED"
 
         # pre_concatenation filters remove irrelevant data

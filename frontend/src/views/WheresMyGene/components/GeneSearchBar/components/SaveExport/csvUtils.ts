@@ -23,6 +23,9 @@ interface CsvMetadata {
   total_count: number;
 }
 
+const UNDERLYING_DATA_CHANGE_MESSAGE =
+  "We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future.";
+
 export function csvHeaders({
   compare,
   availableFilters,
@@ -46,7 +49,12 @@ export function csvHeaders({
   const output: string[][] = [];
 
   // Metadata as comments
+
+  // Timestamp
   output.push([`# ${new Date().toString()}`]);
+
+  // Data change message
+  output.push([`# ${UNDERLYING_DATA_CHANGE_MESSAGE}`]);
 
   // Share URL
   output.push([
