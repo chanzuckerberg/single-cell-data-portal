@@ -4,7 +4,7 @@ import {
   goToWMG,
   searchAndAddGene,
   verifyAddedGene,
-} from "tests/utils/geneUtils";
+} from "tests/utils/geneAndTissueUtils";
 import uaParser from "ua-parser-js";
 const { describe } = test;
 
@@ -31,6 +31,7 @@ describe("Manage gene tests", () => {
 
   test("Should select gene by searching", async ({ page }) => {
     const GENE = "FGR";
+    await goToWMG(page);
     await searchAndAddGene(page, GENE);
 
     // verify selected tissue details
@@ -69,6 +70,7 @@ describe("Manage gene tests", () => {
   });
   test("Should remove gene", async ({ page }) => {
     const GENE = "SCYL3";
+    await goToWMG(page);
     await searchAndAddGene(page, GENE);
 
     // delete gene
