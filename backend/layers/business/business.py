@@ -594,7 +594,6 @@ class BusinessLogic(BusinessLogicInterface):
         Tombstones a canonical collection
         """
         self.delete_datasets_from_public_access_bucket(collection_id)
-        # Tombstone canonical Collection
         self.database_provider.delete_canonical_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
