@@ -56,6 +56,7 @@ locals {
 
   artifact_bucket            = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket           = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
+  datasets_bucket            = try(local.secret["s3_buckets"]["datasets"]["name"], "")
   dataset_submissions_bucket = try(local.secret["s3_buckets"]["dataset_submissions"]["name"], "")
   wmg_bucket                 = try(local.secret["s3_buckets"]["wmg"]["name"], "")
 
@@ -179,6 +180,7 @@ module upload_batch {
   deployment_stage  = local.deployment_stage
   artifact_bucket   = local.artifact_bucket
   cellxgene_bucket  = local.cellxgene_bucket
+  datasets_bucket   = local.datasets_bucket
   frontend_url      = local.frontend_url
   batch_container_memory_limit = local.batch_container_memory_limit
 }
