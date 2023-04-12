@@ -2,6 +2,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
+import { selectFirstOption } from "tests/features/wheresMyGene/wheresMyGene.test";
 
 export function goToWMG(page: Page) {
   return Promise.all([
@@ -14,13 +15,11 @@ export function goToWMG(page: Page) {
 }
 
 export const selectFIlterOption = async (page: Page, filterName: string) => {
-  const FIRST_OPTION = '[data-option-index="0"]';
   // click the filter at the corner this is done due to the fact that the default click is being intercepted by another element
-
   await page.getByTestId(filterName).click({ position: { x: 0, y: 0 } });
 
   // select the first option
-  await page.locator(FIRST_OPTION).click();
+  await selectFirstOption(page);
 
   // close the pop-up
   await page.getByTestId(filterName).click({ position: { x: 0, y: 0 } });

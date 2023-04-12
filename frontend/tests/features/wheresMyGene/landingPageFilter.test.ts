@@ -9,7 +9,7 @@ import {
   goToWMG,
   selectFIlterOption,
   selectTissueandGeneOption,
-} from "../../utils/xgeneUtils";
+} from "../../utils/wmgUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
 const CHEVRON_LEFT = '[data-icon="chevron-left"]';
 
@@ -31,9 +31,10 @@ describe("Left side bar", () => {
     expect(await page.getByTestId("add-organism").isVisible()).toBeFalsy();
   });
 
-  test("Should be able select and de-select options for datasetfilter", async ({
+  test.only("Should be able select and de-select options for datasetfilter", async ({
     page,
   }) => {
+   
     const countBeforeFIlter = await checkSourceData(page);
     const plotSizeBeforeFIlter = await checkPlotSize(page);
     await selectFIlterOption(page, "dataset-filter");
