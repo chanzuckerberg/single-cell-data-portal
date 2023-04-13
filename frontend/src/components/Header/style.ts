@@ -109,7 +109,7 @@ export const BetaChip = styled(Chip)`
 `;
 
 export const StyledInputDropdown = styled(InputDropdown)`
-  // Overriding colors after SDS v14.5.0 upgrade
+  /* Overriding colors after SDS v14.5.0 upgrade */
   ${(props) => {
     const colors = getColors(props);
 
