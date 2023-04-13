@@ -10,7 +10,7 @@ import { selectFirstOption } from "./wheresMyGene.test";
 const { describe, skip } = test;
 
 describe("Right side bar", () => {
-  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test.beforeEach(async ({ page }) => {
     // navigate to url
     await goToWMG(page);
