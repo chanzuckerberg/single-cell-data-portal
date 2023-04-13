@@ -21,7 +21,7 @@ expect.extend(matchers);
 const CZI_CHECKER = " czi-checker";
 
 /**
- * Set this environment variable to try to enable retry
+ * Set this environment variable to enable retry
  */
 const SHOULD_RETRY = process.env.RETRY !== "false";
 
