@@ -41,9 +41,9 @@ test.describe("Tests for Gene Expression page", () => {
       SURVEY_LINK
     );
     // default organism filter
-    await expect(
-      page.getByTestId("add-organism").locator("span")
-    ).toContainText("Homo sapiens");
+    await expect(page.getByTestId("add-organism")).toContainText(
+      "Homo sapiens"
+    );
 
     // STEP 1 column
     await expect(page.getByTestId("column-one")).toBeVisible();
