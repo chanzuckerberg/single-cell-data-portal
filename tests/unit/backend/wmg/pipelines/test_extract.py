@@ -106,7 +106,7 @@ class TestExtract(BaseTest):
             asset_dict = {
                 "filetype": asset["type"].upper(),
                 "id": asset["id"]["id"],
-                "s3_uri": asset["uri"],
+                "asset_url": asset["uri"],
                 "filename": asset["uri"].split("/")[-1],
             }
             dataset_assets_list_of_dicts.append(asset_dict)
@@ -127,9 +127,9 @@ class TestExtract(BaseTest):
     def tearDown(self):
         super().tearDown()
 
-    def test_get_s3_uris_pulls_expected_datasets(self):
+    def test_get_asset_urls_pulls_expected_datasets(self):
         """
-        Should only pull s3_uris for H5AD files
+        Should only pull asset_urls for H5AD files
         Datasets should be
             - published
             - part of a public collection
@@ -138,8 +138,8 @@ class TestExtract(BaseTest):
             - correct assay type
             - only contain one organism
         """
-        expected_s3_uris = []
-        not_expected_s3_uris = []
+        expected_asset_urls = []
+        not_expected_asset_urls = []
         expected_datasets = [self.dataset_0, self.dataset_1]
         not_expected_datasets = [
             self.dataset__tombstoned,
@@ -153,17 +153,17 @@ class TestExtract(BaseTest):
         for dataset in not_expected_datasets:
             dataset_assets = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset["dataset_version_id"]))
             for asset in dataset_assets:
-                not_expected_s3_uris.append(asset.uri)
+                not_expected_asset_urls.append(asset.uri)
 
         for dataset in expected_datasets:
             assets = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset["dataset_version_id"]))
             for asset in assets:
                 if asset.type == DatasetArtifactType.H5AD:
-                    expected_s3_uris.append(asset.uri)
-        s3_uris = backend.wmg.pipeline.integrated_corpus.extract.get_dataset_s3_uris(
+                    expected_asset_urls.append(asset.uri)
+        asset_urls = backend.wmg.pipeline.integrated_corpus.extract.get_dataset_asset_urls(
             datasets=expected_datasets + not_expected_datasets
         ).values()
 
-        self.assertCountEqual(s3_uris, expected_s3_uris)
+        self.assertCountEqual(asset_urls, expected_asset_urls)
         for uri in not_expected_datasets:
-            self.assertNotIn(uri, s3_uris)
+            self.assertNotIn(uri, asset_urls)
