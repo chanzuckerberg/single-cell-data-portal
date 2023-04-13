@@ -45,6 +45,8 @@ class TestExtract(unittest.TestCase):
         ]
         if include_h5ad:
             dataset_assets.append({"filesize": 10, "filetype": "H5AD", "url": "https://fake-url.h5ad"})
+
+        metadata["assets"] = dataset_assets
         return metadata
 
     def setUp(self):
