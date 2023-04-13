@@ -1,7 +1,7 @@
 import { AnchorButton } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import { Popper } from "@mui/material";
-import { DefaultMenuSelectOption, InputDropdown, MenuSelect } from "czifui";
+import { DefaultMenuSelectOption, MenuSelect } from "czifui";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC, useRef, useState } from "react";
@@ -48,6 +48,7 @@ const Header: FC = () => {
   const StyledPopper = styled(Popper)`
     height: 300px;
     z-index: 99;
+    margin-top: -26px !important;
   `;
 
   return (
