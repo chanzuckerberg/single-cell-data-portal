@@ -34,7 +34,7 @@ export const Tag = styled(SDSTag)`
     padding: 2px 8px;
 
     .MuiChip-label {
-      ${fontBodyXs};
+      ${fontBodyXs}
       color: #000000;
       letter-spacing: -0.003em;
     }
