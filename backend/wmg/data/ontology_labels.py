@@ -28,7 +28,7 @@ def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     global ontology_term_id_labels
 
     # this catches the organoid tissue edge case (e.g. UBERON:0000995 (organoid)) or the cell culture edge case
-    # (e.g. CL:0000000 (cell culture))
+    # (e.g. CL:0000082 (cell culture))
     suffix_to_strip = None
     for suffix in SUFFIXES_TO_STRIP:
         if suffix in ontology_term_id:
