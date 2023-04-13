@@ -60,8 +60,6 @@ class H5ADDataFile:
         logging.info("Beginning writing to CXG.")
         ctx = tiledb.Ctx(
             {
-                "sm.num_reader_threads": 32,
-                "sm.num_writer_threads": 32,
                 "sm.consolidation.buffer_size": 1 * 1024 * 1024 * 1024,
             }
         )
