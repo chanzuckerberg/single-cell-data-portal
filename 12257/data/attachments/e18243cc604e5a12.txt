@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0mwaiting for selector "internal:attr=[data-testid="cell-type-label-count"] >> nth=144 >> internal:attr=[data-testid="cell-type-name"]" [38;5;45m+19ms[0m
