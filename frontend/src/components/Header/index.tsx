@@ -15,7 +15,15 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
-import { Left, LinkWrapper, MainWrapper, Nav, Right, Wrapper } from "./style";
+import {
+  Left,
+  LinkWrapper,
+  MainWrapper,
+  Nav,
+  Right,
+  StyledInputDropdown,
+  Wrapper,
+} from "./style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -101,7 +109,7 @@ const Header: FC = () => {
             </LinkWrapper>
           )}
 
-          <InputDropdown
+          <StyledInputDropdown
             disabled={false}
             label="Help & Documentation"
             sdsStage="default"
