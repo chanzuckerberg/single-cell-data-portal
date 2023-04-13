@@ -5,4 +5,5 @@ export const Actions = styled.div`
   display: grid;
   gap: 0 8px;
   grid-auto-flow: column;
+  justify-content: flex-start;
 `;

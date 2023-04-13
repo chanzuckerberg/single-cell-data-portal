@@ -1,28 +1,25 @@
 import styled from "@emotion/styled";
-import { fontBodyXxs, getColors } from "czifui";
+import { ALIGNMENT } from "src/components/common/Grid/common/entities";
+import { CommonThemeProps } from "czifui";
 
-export const HeaderCell = styled.span`
+interface Props extends CommonThemeProps {
+  alignment: ALIGNMENT;
+}
+
+export const Header = styled("span")`
+  align-items: center;
+  align-self: center;
   display: flex;
-  gap: 4px;
+  gap: 4px; /* gap between header and sort icon */
 
   span {
     min-width: 0; /* facilitates breaking of word on columns; flex default for min width is "auto" */
   }
 `;
 
-export const CountAndTotal = styled.span`
-  ${fontBodyXxs}
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      background-color: ${colors?.gray[200]};
-    `;
-  }}
-  border-radius: 20px;
-  color: #000000;
+export const HeaderCell = styled("th")<Props>`
   display: flex;
-  flex: none;
-  font-weight: 500;
-  height: 20px;
-  padding: 2px 8px;
+  gap: 4px; /* gap between header and count */
+  justify-content: ${(props) =>
+    props.alignment === ALIGNMENT.LEFT ? "flex-start" : "flex-end"};
 `;
