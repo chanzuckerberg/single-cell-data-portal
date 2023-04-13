@@ -916,7 +916,7 @@ async function clickUntilSidebarShowsUp({
 }
 
 // (thuang): This only works when a dropdown is open
-async function selectFirstOption(page: Page) {
+export async function selectFirstOption(page: Page) {
   await selectFirstNOptions(1, page);
 }
 
