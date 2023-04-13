@@ -10,7 +10,7 @@ import { selectFirstOption } from "./wheresMyGene.test";
 const { describe, skip } = test;
 
 describe("Right side bar", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test.beforeEach(async ({ page }) => {
     // navigate to url
     await goToWMG(page);
@@ -52,14 +52,14 @@ describe("Right side bar", () => {
       "Discover the mechanisms of human health"
     );
   });
-  test.only("Right side bar loads with legend, methodology, and source data", async ({
+  test("Right side bar loads with legend, methodology, and source data", async ({
     page,
   }) => {
     //verify gene-expression color scale is visible
     await expect(
       page.locator(getID("visualization-color-scale"))
     ).toBeVisible();
-    await page.locator(getText("Loading")).waitFor({ state: "visible" });
+    await page.locator(getTestID("add-tissue")).click();
 
     //click the source data icon
     await page.getByTestId("source-data-button").click();
@@ -67,23 +67,26 @@ describe("Right side bar", () => {
     // expect the header to be visible
     await expect(page.locator("h4")).toContainText("Source Data");
     // expect source data to load
-    await expect(
-      page.locator('[data-testid="source-data-list"] a').count()
+    expect(
+      await page.locator('[data-testid="source-data-list"] a').count()
     ).toBeGreaterThan(0);
     // expect the header to be visible
     await expect(page.locator("h5")).toContainText("Methodology");
   });
-  test("Link in methodology section links out to scExpression documentation", async ({
+  test.only("Link in methodology section links out to scExpression documentation", async ({
     page,
     context,
   }) => {
     //click the source data icon
-    await page.getByTestId('[data-testid="source-data-button"]').click();
+    await page.getByTestId("source-data-button").click();
+
+    //close notification popup
+    await page.getByTestId("notificationCloseButton").click();
 
     const [newPage] = await Promise.all([
       context.waitForEvent("page"),
       //click our documentation link
-      page.locator("a").locator(getText("our documentation")),
+      await page.locator("a").locator(getText("our documentation")).click(),
     ]);
 
     // wait until the new page fully loads
