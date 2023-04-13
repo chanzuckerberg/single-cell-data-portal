@@ -87,13 +87,12 @@ test.describe("Tests for Gene Expression page", () => {
       "Expressed in Cells (%)"
     );
     await expect(page.locator('[id="expressed-in-cells-dots"]')).toBeVisible();
-    let actualSizes = [];
+    const actualSizes = [];
     for (let i = 0; i < 5; i++) {
       actualSizes.push(
         Number(
           await page
-            .locator('[id="expressed-in-cells-dots"]')
-            .locator("span")
+            .getByTestId("expressed-in-cells-dots-size")
             .nth(i)
             .getAttribute("size")
         )
