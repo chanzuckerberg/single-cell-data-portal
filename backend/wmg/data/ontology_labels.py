@@ -24,7 +24,15 @@ def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     separately by gene_gene_term_label(). Return None if ontology term id is invalid.
     """
     global ontology_term_id_labels
-    return ontology_term_id_labels.get(ontology_term_id)
+
+    # this catches the organoid tissue edge case (e.g. UBERON:0000995 (organoid))
+    is_organoid_tissue = " (organoid)" in ontology_term_id
+    if is_organoid_tissue:
+        ontology_term_id = ontology_term_id.split(" (organoid)")[0]
+    ontology_term_id_label = ontology_term_id_labels.get(ontology_term_id)
+    if is_organoid_tissue:
+        ontology_term_id_label = ontology_term_id_label + " (organoid)"
+    return ontology_term_id_label
 
 
 def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
