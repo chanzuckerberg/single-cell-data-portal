@@ -18,6 +18,7 @@ class OntologyLabelTests(unittest.TestCase):
             "MmusDv:0000000": "mouse life cycle stage",
             "MONDO:0000001": "disease or disorder",
             "UBERON:0002539": "pharyngeal arch",
+            "UBERON:0000995 (organoid)": "uterus (organoid)",
         }
         for ontology_term_id, expected_ontology_term_label in test_cases.items():
             with self.subTest(ontology_term_id):
