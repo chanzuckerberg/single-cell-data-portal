@@ -4,7 +4,7 @@ import {
   goToWMG,
   searchAndAddGene,
   verifyAddedGene,
-} from "tests/utils/geneAndTissueUtils";
+} from "tests/utils/wmgUtil";
 import uaParser from "ua-parser-js";
 const { describe } = test;
 

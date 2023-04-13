@@ -70,6 +70,7 @@ const config: PlaywrightTestConfig = {
   projects: [
     {
       name: "chromium",
+      snapshotDir: "tests/snapshots",
       use: {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
@@ -78,6 +79,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       name: "firefox",
+      snapshotDir: "tests/snapshots",
       use: {
         ...devices["Desktop Firefox"],
         userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
@@ -85,6 +87,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       name: "edge",
+      snapshotDir: "tests/snapshots",
       use: {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,

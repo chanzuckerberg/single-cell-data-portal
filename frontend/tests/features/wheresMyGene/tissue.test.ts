@@ -4,7 +4,7 @@ import {
   goToWMG,
   searchAndAddTissue,
   verifyAddedTissue,
-} from "tests/utils/geneAndTissueUtils";
+} from "tests/utils/wmgUtil";
 
 const { describe } = test;
 
