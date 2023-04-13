@@ -1,6 +1,6 @@
 ARG BASE_TAG=branch-main
 
-FROM python:3.9
+FROM python:3.10
 RUN /usr/local/bin/python -m pip install --upgrade pip && \
     apt update && apt -y install graphviz graphviz-dev && \
     rm -rf /var/lib/apt/lists/* && \
