@@ -31,7 +31,7 @@ export const Grid = styled.table`
 
   th,
   td {
-    ${fontBodyS};
+    ${fontBodyS}
     border: none;
     font-feature-settings: normal; /* required; overrides layout.css specification */
     letter-spacing: -0.006em;

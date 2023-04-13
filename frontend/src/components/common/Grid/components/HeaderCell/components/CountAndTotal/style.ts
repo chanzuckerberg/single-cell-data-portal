@@ -10,7 +10,7 @@ export const CountAndTotal = styled(Tag)`
     margin: 0;
 
     .MuiChip-label {
-      ${fontBodyXs};
+      ${fontBodyXs}
       color: ${gray600};
       font-weight: 500;
       letter-spacing: -0.003em;
