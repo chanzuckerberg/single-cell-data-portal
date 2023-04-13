@@ -25,7 +25,7 @@ function goToWMG(page: Page) {
   ]);
 }
 test.describe("Tests for Gene Expression page", () => {
-  test.only("Should verify main panel components", async ({ page }) => {
+  test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
     // +Tissue button
     await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
