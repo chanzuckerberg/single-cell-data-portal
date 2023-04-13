@@ -19,6 +19,7 @@ class OntologyLabelTests(unittest.TestCase):
             "MONDO:0000001": "disease or disorder",
             "UBERON:0002539": "pharyngeal arch",
             "UBERON:0000995 (organoid)": "uterus (organoid)",
+            "CL:0000082 (cell culture)": "epithelial cell of lung (cell culture)",
         }
         for ontology_term_id, expected_ontology_term_label in test_cases.items():
             with self.subTest(ontology_term_id):
