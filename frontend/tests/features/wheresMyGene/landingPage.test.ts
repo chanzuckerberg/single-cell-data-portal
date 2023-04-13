@@ -13,7 +13,7 @@ const ALERT =
 const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
 const EXPLORE_GENE_EXPRESSION = "explore-gene-expression";
 const LEGEND_WRAPPER = "legend-wrapper";
-const DOT_SIZES: Array<number> = [4, 9, 12, 14, 16];
+const DOT_SIZES = ["4", "9", "12", "14", "16"];
 
 function goToWMG(page: Page) {
   return Promise.all([
@@ -38,8 +38,9 @@ test.describe("Tests for Gene Expression page", () => {
       SURVEY_LINK
     );
     // default organism filter
-    await expect(
-      page.getByTestId("add-organism")).toContainText("Homo sapiens");
+    await expect(page.getByTestId("add-organism")).toContainText(
+      "Homo sapiens"
+    );
 
     // STEP 1 column
     await expect(page.getByTestId("column-one")).toBeVisible();
@@ -86,18 +87,11 @@ test.describe("Tests for Gene Expression page", () => {
       "Expressed in Cells (%)"
     );
     await expect(page.locator('[id="expressed-in-cells-dots"]')).toBeVisible();
-    let actualSizes = [];
-    for (let i = 0; i < 5; i++) {
-      actualSizes.push(
-        Number(
-          await page
-            .locator('[id="expressed-in-cells-dots"]')
-            .locator("span")
-            .nth(i)
-            .getAttribute("size")
-        )
-      );
-    }
-    expect(actualSizes).toEqual(DOT_SIZES);
+    expect(
+      await page.$$eval(
+        '[data-testid="expressed-in-cells-dots-size"]',
+        (dots) => dots.map((d) => d.getAttribute("size"))
+      )
+    ).toStrictEqual(DOT_SIZES);
   });
 });

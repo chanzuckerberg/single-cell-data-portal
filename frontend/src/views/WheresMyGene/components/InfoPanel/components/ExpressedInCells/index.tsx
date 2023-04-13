@@ -15,6 +15,7 @@ export default function ExpressedInCells(): JSX.Element {
             <Dot
               size={convertPercentageToDiameter(percentage)}
               key={percentage}
+              data-testid="expressed-in-cells-dots-size"
             />
           ))}
         </Dots>
