@@ -48,8 +48,8 @@ class ProcessCxg(ProcessingLogic):
         labeled_h5ad_filename = "local.h5ad"
 
         # Download the labeled dataset from the artifact bucket
-        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
-        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        key_prefix = self.get_key_prefix(dataset_id.id)
+        object_key = f"{key_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
@@ -83,8 +83,8 @@ class ProcessCxg(ProcessingLogic):
         cxg_dir = self.convert_file(
             self.make_cxg, local_filename, "Issue creating cxg.", dataset_id, DatasetStatusKey.CXG
         )
-        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
-        s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
+        key_prefix = self.get_key_prefix(dataset_id.id)
+        s3_uri = f"s3://{cellxgene_bucket}/{key_prefix}.cxg/"
         self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADING)
         self.copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         # TODO: this is where we set explorer_url, but we might not need it anymore
