@@ -2,7 +2,6 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-import { selectFirstOption } from "tests/features/wheresMyGene/wheresMyGene.test";
 
 export function goToWMG(page: Page) {
   return Promise.all([
@@ -14,15 +13,15 @@ export function goToWMG(page: Page) {
   ]);
 }
 
-export const selectFIlterOption = async (page: Page, filterName: string) => {
+export const selectFilterOption = async (page: Page, filterName: string) => {
   // click the filter at the corner this is done due to the fact that the default click is being intercepted by another element
-  await page.getByTestId(filterName).click({ position: { x: 0, y: 0 } });
+  await page.getByTestId(filterName).getByRole("button").click();
 
   // select the first option
-  await selectFirstOption(page);
+  await page.locator("[data-option-index='0']").click();
 
   // close the pop-up
-  await page.getByTestId(filterName).click({ position: { x: 0, y: 0 } });
+  await page.getByTestId("dataset-filter").click();
 
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   // expect the selected filter to be visible
@@ -38,7 +37,7 @@ export const pickOptions = async (page: Page, n: number) => {
   }
 };
 
-export const deSelectFIlterOption = async (page: Page, filterName: string) => {
+export const deSelectFilterOption = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   // expect the selected filter to be visible
   await expect(page.locator(filter_label)).toBeVisible();
@@ -51,14 +50,14 @@ export const deSelectFIlterOption = async (page: Page, filterName: string) => {
   expect(visibility).toBeFalsy();
 };
 
-export const selectFilterOption = async (page: Page, filterName: string) => {
+export const selectOption = async (page: Page, filterName: string) => {
   // click the filter
   await page.getByTestId(filterName).click();
 };
 
 export const selectTissueAndGeneOption = async (page: Page) => {
   // click Tissue button
-  await selectFilterOption(page, "add-tissue");
+  await selectOption(page, "add-tissue");
 
   //pick the first 2 elements in tissue
   await pickOptions(page, 2);
@@ -70,7 +69,7 @@ export const selectTissueAndGeneOption = async (page: Page) => {
   await page.locator('[id="heatmap-container-id"]').waitFor();
 
   // click Gene button
-  await selectFilterOption(page, "add-gene");
+  await selectOption(page, "add-gene");
 
   //pick the first n elements in tissue
   await pickOptions(page, 3);

@@ -1,13 +1,10 @@
-/**
- * Test suite for select filter-related utils.
- */
 import { expect, test } from "@playwright/test";
 import {
   checkPlotSize,
   checkSourceData,
-  deSelectFIlterOption,
+  deSelectFilterOption,
   goToWMG,
-  selectFIlterOption,
+  selectFilterOption,
   selectTissueAndGeneOption,
 } from "../../utils/wmgUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
@@ -17,10 +14,16 @@ const { describe, skip } = test;
 
 describe("Left side bar", () => {
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
-
-  test("Left side bar collapse and expand", async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
+    // navigate to gene expression page
     await goToWMG(page);
+
+    //select tissue and gene
     await selectTissueAndGeneOption(page);
+  });
+  test("Left side bar collapse and expand", async ({ page }) => {
+    await page.pause();
+
     // click chevron left to collapse the left tab
     await page.locator(CHEVRON_LEFT).click();
 
@@ -28,73 +31,42 @@ describe("Left side bar", () => {
     expect(await page.getByTestId("add-organism").isVisible()).toBeFalsy();
   });
 
-  test.only("Should be able select and de-select options for datasetfilter", async ({
-    page,
-  }) => {
-    await goToWMG(page);
-    await selectTissueAndGeneOption(page);
-    const countBeforeFIlter = await checkSourceData(page);
-    const plotSizeBeforeFIlter = await checkPlotSize(page);
-    await selectFIlterOption(page, "dataset-filter");
-    const countAfterFIlter = await checkSourceData(page);
-    const plotSizeAfterFIlter = await checkPlotSize(page);
-    expect(countBeforeFIlter).toBeGreaterThan(0);
-    expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
-    expect(plotSizeBeforeFIlter).toBeGreaterThan(0);
-    expect(plotSizeBeforeFIlter === plotSizeAfterFIlter).toBeFalsy();
-    await deSelectFIlterOption(page, "dataset-filter");
-  });
+  [
+    ["dataset-filter"],
+    ["disease-filter"],
+    ["self-reported-ethnicity-filter"],
+    ["sex-filter"],
+  ].forEach(([filterOption]) => {
+    test(`Should be able select and de-select options for ${filterOption} filter`, async ({
+      page,
+    }) => {
+      // check the count of source data displayed before adding a filter
+      const countBeforeFilter = await checkSourceData(page);
 
-  test("Should be able select and de-select options for disease filter", async ({
-    page,
-  }) => {
-    await goToWMG(page);
-    await selectTissueAndGeneOption(page);
-    const countBeforeFIlter = await checkSourceData(page);
-    const plotSizeBeforeFIlter = await checkPlotSize(page);
-    await selectFIlterOption(page, "disease-filter");
-    const countAfterFIlter = await checkSourceData(page);
-    const plotSizeAfterFIlter = await checkPlotSize(page);
-    
-    expect(countBeforeFIlter).toBeGreaterThan(0);
-    expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
-    expect(plotSizeBeforeFIlter).toBeGreaterThan(0);
-    expect(plotSizeBeforeFIlter === plotSizeAfterFIlter).toBeFalsy();
-    await deSelectFIlterOption(page, "disease-filter");
-  });
+      //check plot height before adding a filter
+      const plotSizeBeforeFilter = await checkPlotSize(page);
 
-  test("Should be able select and de-select options for Self-Reported Ethnicity filter", async ({
-    page,
-  }) => {
-    await goToWMG(page);
-    await selectTissueAndGeneOption(page);
-    const countBeforeFIlter = await checkSourceData(page);
-    const plotSizeBeforeFIlter = await checkPlotSize(page);
-    await selectFIlterOption(page, "self-reported-ethnicity-filter");
-    const countAfterFIlter = await checkSourceData(page);
-    const plotSizeAfterFIlter = await checkPlotSize(page);
-    expect(countBeforeFIlter).toBeGreaterThan(0);
-    expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
-    expect(plotSizeBeforeFIlter).toBeGreaterThan(0);
-    expect(plotSizeBeforeFIlter === plotSizeAfterFIlter).toBeFalsy();
-    await deSelectFIlterOption(page, "self-reported-ethnicity-filter");
-  });
+      //select a filter
+      await selectFilterOption(page, filterOption);
 
-  test("Should be able select and de-select options for Self-Reported sex-filter", async ({
-    page,
-  }) => {
-    await goToWMG(page);
-    await selectTissueAndGeneOption(page);
+      // check the count of source data displayed after adding a filter
+      const countAfterFilter = await checkSourceData(page);
 
-    const countBeforeFIlter = await checkSourceData(page);
-    const plotSizeBeforeFIlter = await checkPlotSize(page);
-    await selectFIlterOption(page, "sex-filter");
-    const countAfterFIlter = await checkSourceData(page);
-    const plotSizeAfterFIlter = await checkPlotSize(page);
-    expect(countBeforeFIlter).toBeGreaterThan(0);
-    expect(countBeforeFIlter === countAfterFIlter).toBeFalsy();
-    expect(plotSizeBeforeFIlter).toBeGreaterThan(0);
-    expect(plotSizeBeforeFIlter === plotSizeAfterFIlter).toBeFalsy();
-    await deSelectFIlterOption(page, "sex-filter");
+      //check plot height after adding a filter
+      const plotSizeAfterFilter = await checkPlotSize(page);
+
+      // verify source  data loading some data
+      expect(countBeforeFilter).toBeGreaterThan(0);
+      // verify source  data changed after filter is applied
+      expect(countBeforeFilter === countAfterFilter).toBeFalsy();
+
+      //verify data plot data loading some data
+      expect(plotSizeBeforeFilter).toBeGreaterThan(0);
+
+      //verify data plot data changed after filter was  applied
+      expect(plotSizeBeforeFilter === plotSizeAfterFilter).toBeFalsy();
+      //uncheck filter
+      await deSelectFilterOption(page, filterOption);
+    });
   });
 });
