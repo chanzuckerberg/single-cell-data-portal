@@ -24,9 +24,9 @@ def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmat
     return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X
 
 
-def get_dataset_s3_uris(datasets=None) -> Dict[str, str]:
+def get_dataset_asset_urls(datasets=None) -> Dict[str, str]:
     """
-    Retrieve list of s3 uris for datasets included in the wmg cube
+    Retrieve list of asset urls for datasets included in the wmg cube
 
     :param datasets: list of datasets to check, if None, will retrieve from API
         This parameter is used for tests.
@@ -38,9 +38,9 @@ def get_dataset_s3_uris(datasets=None) -> Dict[str, str]:
         else os.getenv("API_URL")
     )
 
-    s3_uris = dict()
+    asset_urls = dict()
     if API_URL:
-        dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
+        dataset_metadata_url = f"{API_URL}curation/v1/datasets"
         if datasets is None:
             datasets = requests.get(dataset_metadata_url).json()
 
@@ -48,24 +48,21 @@ def get_dataset_s3_uris(datasets=None) -> Dict[str, str]:
             if (
                 dataset["organism"] is not None
                 and dataset["assay"] is not None
-                and dataset["is_primary_data"] == "PRIMARY"
+                and len(dataset["is_primary_data"]) == 1
+                and dataset["is_primary_data"][0]
                 and any(assay["ontology_term_id"] in INCLUDED_ASSAYS for assay in dataset["assay"])
                 and len(dataset["organism"]) < 2
             ):
-                dataset_id = dataset["explorer_url"].split("/")[-2].split(".cxg")[0]
-                s3_uri = next(
-                    a["s3_uri"]
-                    for a in dataset["dataset_assets"]
-                    if a["filetype"] == "H5AD" and a["filename"] == "local.h5ad"
-                )
-                s3_uris[dataset_id] = s3_uri
-    return s3_uris
+                dataset_id = dataset["dataset_id"]
+                asset_url = next(a["url"] for a in dataset["assets"] if a["filetype"] == "H5AD")
+                asset_urls[dataset_id] = asset_url
+    return asset_urls
 
 
 def copy_datasets_to_instance(s3_uris: Dict, dataset_directory: str):
     """Copy given list of s3 uris to the provided path"""
     for dataset in s3_uris:
-        copy_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
+        copy_command = ["wget", s3_uris[dataset], "-O", f"./{dataset_directory}/{dataset}/local.h5ad"]
         subprocess.run(copy_command)
 
 

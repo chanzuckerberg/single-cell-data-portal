@@ -270,16 +270,16 @@ def cxg_remaster(ctx):
 # Command to pull information from the db
 @cli.command()
 @click.pass_context
-def wmg_get_s3_uris(ctx):
+def wmg_get_asset_urls(ctx):
     """
     Print dataset ids and s3_uris for all datasets meeting the wmg criteria
     ./scripts/cxg_admin.py --deployment dev wmg-get-s3-uris
     """
 
-    from backend.wmg.pipeline.integrated_corpus.extract import get_dataset_s3_uris
+    from backend.wmg.pipeline.integrated_corpus.extract import get_dataset_asset_urls
 
-    s3_uris = get_dataset_s3_uris()
-    print(s3_uris)
+    asset_urls = get_dataset_asset_urls()
+    print(asset_urls)
 
 
 # Command to pull information from the db
