@@ -40,7 +40,7 @@ def get_dataset_asset_urls(datasets=None) -> Dict[str, str]:
 
     asset_urls = dict()
     if API_URL:
-        dataset_metadata_url = f"{API_URL}curation/v1/datasets"
+        dataset_metadata_url = f"{API_URL}/curation/v1/datasets"
         if datasets is None:
             datasets = requests.get(dataset_metadata_url).json()
 

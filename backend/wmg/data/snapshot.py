@@ -89,20 +89,20 @@ class WmgSnapshot:
         )
 
         if API_URL:
-            dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
+            dataset_metadata_url = f"{API_URL}/curation/v1/datasets"
             datasets = requests.get(dataset_metadata_url).json()
 
-            collection_metadata_url = f"{API_URL}/dp/v1/collections/index"
+            collection_metadata_url = f"{API_URL}/curation/v1/collections"
             collections = requests.get(collection_metadata_url).json()
 
-            collections_dict = {collection["id"]: collection for collection in collections}
+            collections_dict = {collection["collection_id"]: collection for collection in collections}
 
             dataset_dict = {}
             for dataset in datasets:
-                dataset_id = dataset["explorer_url"].split("/")[-2].split(".cxg")[0]
+                dataset_id = dataset["dataset_id"]
                 dataset_dict[dataset_id] = dict(
                     id=dataset_id,
-                    label=dataset["name"],
+                    label=dataset["title"],
                     collection_id=dataset["collection_id"],
                     collection_label=collections_dict[dataset["collection_id"]]["name"],
                 )
