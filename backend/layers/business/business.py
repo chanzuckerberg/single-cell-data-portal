@@ -578,16 +578,16 @@ class BusinessLogic(BusinessLogicInterface):
         collection_versions = self.database_provider.get_all_versions_for_collection(collection_id)
         datasets_bucket = os.getenv("DATASETS_BUCKET")
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
-        object_keys = []
+        object_keys = set()
         for collection_version in collection_versions:
             for d_v in collection_version.datasets:
                 for file_type in ("h5ad", "rds"):
                     dataset_version_s3_object_key = f"{d_v.version_id.id}.{file_type}"
                     if rdev_prefix:
                         dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
-                    object_keys.append(dataset_version_s3_object_key)
-        self.s3_provider.delete_files(datasets_bucket, object_keys)
-        return object_keys
+                    object_keys.add(dataset_version_s3_object_key)
+        self.s3_provider.delete_files(datasets_bucket, list(object_keys))
+        return list(object_keys)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
         """

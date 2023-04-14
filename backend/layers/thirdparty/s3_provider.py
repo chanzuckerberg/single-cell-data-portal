@@ -52,7 +52,13 @@ class S3Provider(S3ProviderInterface):
         """
         Deletes the objects `object_keys` from bucket `bucket_name`
         """
-        self.client.delete_objects(Bucket=bucket_name, Delete={"Objects": [{"Key": key} for key in object_keys]})
+
+        def chunk_list(items: List[str], chunk_size: int = 1000):  # s3 client delete_objects accepts up to 1000 keys
+            for i in range(0, len(items), chunk_size):
+                yield items[i : i + chunk_size]
+
+        for keys_batch in chunk_list(object_keys):
+            self.client.delete_objects(Bucket=bucket_name, Delete={"Objects": [{"Key": key} for key in keys_batch]})
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """
