@@ -274,25 +274,28 @@ export default memo(function Filters(): JSX.Element {
           InputDropdownProps={InputDropdownProps}
           PopperComponent={StyledPopper}
         />
-        <StyledComplexFilter
-          multiple
-          data-testid="de-development-filter"
-          search
-          label="Development Stage"
-          options={
-            development_stage_terms as unknown as DefaultMenuSelectOption[]
-          }
-          onChange={handleDevelopmentStagesChange}
-          value={
-            selectedDevelopmentStages as unknown as DefaultMenuSelectOption[]
-          }
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          DropdownMenuProps={DropdownMenuProps}
-          InputDropdownProps={InputDropdownProps}
-          PopperComponent={StyledPopper}
-        />
+        {/* (alec) disable development stage filter for now */}
+        {false && (
+          <StyledComplexFilter
+            multiple
+            data-testid="de-development-filter"
+            search
+            label="Development Stage"
+            options={
+              development_stage_terms as unknown as DefaultMenuSelectOption[]
+            }
+            onChange={handleDevelopmentStagesChange}
+            value={
+              selectedDevelopmentStages as unknown as DefaultMenuSelectOption[]
+            }
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            DropdownMenuProps={DropdownMenuProps}
+            InputDropdownProps={InputDropdownProps}
+            PopperComponent={StyledPopper}
+          />
+        )}
         <StyledComplexFilter
           multiple
           data-testid="de-disease-filter"

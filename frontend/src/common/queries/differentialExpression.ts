@@ -257,11 +257,21 @@ export function useFilterDimensions(): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
+  const { organismId } = useContext(StateContext);
   const requestBody = useWMGFiltersQueryRequestBody();
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
+  const { data: primaryFilterDimensions } = usePrimaryFilterDimensions();
 
   return useMemo(() => {
-    if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
+    if (isLoading || !data || !primaryFilterDimensions || !organismId)
+      return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
+
+    const {
+      tissues: { [organismId]: allOrganismTissues },
+    } = primaryFilterDimensions;
+
+    if (!allOrganismTissues)
+      return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
 
     const { filter_dims } = data;
 
@@ -278,6 +288,11 @@ export function useFilterDimensions(): {
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
 
+    const allOrganismTissueIds = allOrganismTissues.map((tissue) => tissue.id);
+    const filtered_tissue_terms = tissue_terms.filter((tissue) =>
+      allOrganismTissueIds.includes(Object.keys(tissue)[0])
+    );
+
     return {
       data: {
         datasets: sortedDatasets.map((dataset) => ({
@@ -289,11 +304,11 @@ export function useFilterDimensions(): {
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
-        tissue_terms: tissue_terms.map(toEntity),
+        tissue_terms: filtered_tissue_terms.map(toEntity),
       },
       isLoading: false,
     };
-  }, [data, isLoading]);
+  }, [data, isLoading, primaryFilterDimensions, organismId]);
 }
 
 function useWMGFiltersQueryRequestBody() {
