@@ -124,6 +124,12 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
+
+      - name: List files
+        run: |
+          ls -la
+          ls -la frontend
+          ls -la frontend/playwright-report
   e2e-result:
     if: ${{ always() }}
     runs-on: ubuntu-latest
