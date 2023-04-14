@@ -1,4 +1,5 @@
 import { Wrapper, StepWrapper, StepTitle, StepText } from "./style";
+
 interface Props {
   step: number;
 }
