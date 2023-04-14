@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 from typing import List, Tuple
@@ -6,6 +7,10 @@ from urllib.parse import urlparse
 import boto3
 
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
+
+AWS_S3_MAX_ITEMS_PER_BATCH = 1000
+
+logger = logging.getLogger(__name__)
 
 
 class S3Provider(S3ProviderInterface):
@@ -52,13 +57,14 @@ class S3Provider(S3ProviderInterface):
         """
         Deletes the objects `object_keys` from bucket `bucket_name`
         """
-
-        def chunk_list(items: List[str], chunk_size: int = 1000):  # s3 client delete_objects accepts up to 1000 keys
-            for i in range(0, len(items), chunk_size):
-                yield items[i : i + chunk_size]
-
-        for keys_batch in chunk_list(object_keys):
-            self.client.delete_objects(Bucket=bucket_name, Delete={"Objects": [{"Key": key} for key in keys_batch]})
+        for i in range(0, len(object_keys), AWS_S3_MAX_ITEMS_PER_BATCH):
+            key_batch = object_keys[i:AWS_S3_MAX_ITEMS_PER_BATCH]
+            logger.info(f"Deleting assets from public-access bucket '{bucket_name}': {key_batch}")
+            self.client.delete_objects(
+                Bucket=bucket_name,
+                Delete={"Objects": [{"Key": key} for key in key_batch]},
+            )
+            logger.info("Successfully deleted key batch")
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """
