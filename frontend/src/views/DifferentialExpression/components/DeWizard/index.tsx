@@ -1,16 +1,19 @@
-// import React, { useContext } from "react";
-// import { DispatchContext, StateContext } from "../../common/store";
+import { Wrapper } from "./style";
+import StepOne from "./components/StepOne";
+import StepTwo from "./components/StepTwo";
+import StepThree from "./components/StepThree";
 
 interface Props {
   step: number;
+  setStep: (step: number) => void;
 }
 
-export default function DeWizard({ step }: Props): JSX.Element {
-  // const state = useContext(StateContext);
-  // const dispatch = useContext(DispatchContext);
-  return (
-    <div style={{ margin: "auto", fontSize: "50px" }}>
-      We are currently on step {step}!
-    </div>
+export default function DeWizard({ step, setStep }: Props): JSX.Element {
+  const stepComponents = [StepOne, StepTwo, StepThree];
+
+  const renderStep = (Component: React.ElementType) => (
+    <Component setStep={setStep} />
   );
+
+  return <Wrapper>{renderStep(stepComponents[step - 1])}</Wrapper>;
 }

@@ -1,25 +1,44 @@
-import { Drawer } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { CommonThemeProps, getFontWeights } from "czifui";
+import {
+  fontHeaderXl,
+  fontBodyS,
+  getColors,
+  CommonThemeProps,
+  Button,
+} from "czifui";
 
-export const SideBarLabel = styled("span")`
-  ${(props: CommonThemeProps) => {
-    const fontWeights = getFontWeights(props);
+export const StepOneHeader = styled.div`
+  ${fontHeaderXl}
 
+  margin-bottom: 14px;
+  margin-top: 6px;
+`;
+
+export const WordPop = styled.span<CommonThemeProps>`
+  ${(props) => {
+    const colors = getColors(props);
     return `
-      font-weight: ${fontWeights?.semibold};
+        color: ${colors?.primary[400]};
     `;
   }}
 `;
 
-export const StyledSidebarDrawer = styled(Drawer)`
-  .bp4-drawer-header {
-    box-shadow: none;
-  }
+export const StepOneSubHeader = styled.div`
+  ${fontBodyS}
+
+  margin-bottom: 32px;
+
+  ${(props) => {
+    const colors = getColors(props);
+    return `
+        color: ${colors?.gray[500]};
+    `;
+  }}
 `;
 
-export const StyledBannerContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  padding-bottom: 20px;
+export const FiltersWrapper = styled.div`
+  width: 216px;
+  margin-bottom: 82px;
 `;
+
+export const NextButton = styled(Button)``;

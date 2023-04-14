@@ -6,7 +6,7 @@ interface StepProps extends CommonThemeProps {
 }
 
 export const Wrapper = styled.div<CommonThemeProps>`
-  width: 240px;
+  width: 280px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -53,10 +53,27 @@ export const StepWrapper = styled.div<StepProps>`
 `;
 
 export const StepTitle = styled.div<CommonThemeProps>`
-  ${fontHeaderM}
-  margin-bottom: 4px;
+  ${fontCapsXxs}
+
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+            color: ${colors?.gray[500]};
+        `;
+  }}
 `;
 
 export const StepText = styled.div<CommonThemeProps>`
-  ${fontCapsXxs}
+  ${fontHeaderM}
+
+  margin-top: 4px;
+
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+            color: ${colors?.gray[400]};
+        `;
+  }}
 `;

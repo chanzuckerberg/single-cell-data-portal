@@ -8,8 +8,8 @@ export default function DifferentialExpression(): JSX.Element {
 
   return (
     <Wrapper>
-      <Steps step={step} setStep={setStep} />
-      <DeWizard step={step} />
+      <Steps step={step} />
+      <DeWizard step={step} setStep={setStep} />
     </Wrapper>
   );
 }
