@@ -105,6 +105,17 @@ const LandingHeader: FC = () => {
                     />
                   </Link>
                 </LinkWrapper>
+                <LinkWrapper>
+                  <Link href={ROUTES.DE} passHref>
+                    <AnchorButton
+                      active={isRouteActive(pathname, ROUTES.DE)}
+                      href="passHref"
+                      minimal
+                      text="Differential Expression"
+                      onClick={handleDEClick}
+                    />
+                  </Link>
+                </LinkWrapper>
               </Nav>
             </Left>
             <Right>
@@ -157,6 +168,10 @@ const LandingHeader: FC = () => {
 
   function handleWMGClick() {
     track(EVENTS.WMG_CLICK_NAV);
+  }
+
+  function handleDEClick() {
+    track(EVENTS.DE_CLICK_NAV);
   }
 };
 
