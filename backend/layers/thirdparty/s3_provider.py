@@ -60,11 +60,12 @@ class S3Provider(S3ProviderInterface):
         for i in range(0, len(object_keys), AWS_S3_MAX_ITEMS_PER_BATCH):
             key_batch = object_keys[i:AWS_S3_MAX_ITEMS_PER_BATCH]
             logger.info(f"Deleting assets from public-access bucket '{bucket_name}': {key_batch}")
-            self.client.delete_objects(
+            resp = self.client.delete_objects(
                 Bucket=bucket_name,
                 Delete={"Objects": [{"Key": key} for key in key_batch]},
             )
-            logger.info("Successfully deleted key batch")
+            logger.info(f"Deleted: {list(resp['Deleted'])}")
+            logger.info(f"Errors: {list(resp['Errors'])}")
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """
