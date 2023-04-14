@@ -1,3 +1,4 @@
+import contextlib
 from typing import List
 
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
@@ -19,7 +20,9 @@ class MockS3Provider(S3ProviderInterface):
         self.mock_s3_fs.append(s3_uri)
 
     def delete_files(self, bucket_name: str, object_keys: List[str]):
-        [self.mock_s3_fs.remove(f"s3://{bucket_name}/{key}") for key in object_keys]
+        for key in object_keys:
+            with contextlib.suppress(ValueError):  # if key is not in bucket
+                self.mock_s3_fs.remove(f"s3://{bucket_name}/{key}")
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         pass

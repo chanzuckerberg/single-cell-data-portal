@@ -1503,7 +1503,6 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
                 self.s3_provider.upload_file(None, "fake-bucket", key, None)  # Populate s3 mock with assets
                 self.assertTrue(self.s3_provider.uri_exists(f"s3://fake-bucket/{key}"))
                 expected_delete_keys.update([f"{d_v_id}.{file_type}"])
-
         actual_delete_keys = set(
             self.business_logic.delete_datasets_from_bucket(published_collection.collection_id, "fake-bucket")
         )
