@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
 import { StepTitle } from "../../../Steps/style";
 import {
-  StepOneHeader,
-  StepOneSubHeader,
+  StepHeader,
+  StepSubHeader,
   WordPop,
   FiltersWrapper,
   NextButton,
@@ -23,11 +23,11 @@ export default function StepOne({ setStep }: Props): JSX.Element {
   return (
     <div>
       <StepTitle>Step 1</StepTitle>
-      <StepOneHeader>
+      <StepHeader>
         <WordPop>Where</WordPop> do you want to find differentially expressed
         genes?
-      </StepOneHeader>
-      <StepOneSubHeader>
+      </StepHeader>
+      <StepSubHeader>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
         veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
@@ -36,7 +36,7 @@ export default function StepOne({ setStep }: Props): JSX.Element {
         <br />
         <br />
         Filters marked by {"\u002A"} require at least one field.
-      </StepOneSubHeader>
+      </StepSubHeader>
       <FiltersWrapper>
         <Filters />
       </FiltersWrapper>

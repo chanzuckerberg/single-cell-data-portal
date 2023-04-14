@@ -4,28 +4,40 @@ export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
 }
+
+interface Filters {
+  datasets: string[];
+  developmentStages: string[];
+  diseases: string[];
+  ethnicities: string[];
+  sexes: string[];
+  tissues: string[];
+}
+type FilterNames = Filters;
+
+export interface QueryGroup extends Filters {
+  cellTypes: string[];
+}
+
 export interface State {
   organismId: string | null;
-  selectedFilters: {
-    datasets: string[];
-    developmentStages: string[];
-    diseases: string[];
-    ethnicities: string[];
-    sexes: string[];
-    tissues: string[];
-  };
-  selectedFilterNames: {
-    datasets: string[];
-    developmentStages: string[];
-    diseases: string[];
-    ethnicities: string[];
-    sexes: string[];
-    tissues: string[];
-  };
+  selectedFilters: Filters;
+  selectedFilterNames: FilterNames;
+  queryGroups: QueryGroup[] | null;
   snapshotId: string | null;
 }
 
 const EMPTY_FILTERS = {
+  datasets: [],
+  developmentStages: [],
+  diseases: [],
+  ethnicities: [],
+  sexes: [],
+  tissues: [],
+};
+
+const EMPTY_QUERY_GROUP = {
+  cellTypes: [],
   datasets: [],
   developmentStages: [],
   diseases: [],
@@ -39,6 +51,7 @@ export const INITIAL_STATE: State = {
   selectedFilters: EMPTY_FILTERS,
   selectedFilterNames: EMPTY_FILTERS,
   snapshotId: null,
+  queryGroups: null,
 };
 
 export const REDUCERS = {
@@ -46,6 +59,7 @@ export const REDUCERS = {
   selectFilters,
   setSnapshotId,
   setSelectedFilterNames,
+  addQueryGroup,
 };
 
 function setSnapshotId(
@@ -71,6 +85,20 @@ function selectOrganism(
   return {
     ...state,
     organismId: action.payload,
+  };
+}
+
+function addQueryGroup(
+  state: State,
+  action: PayloadAction<QueryGroup | null>
+): State {
+  const { queryGroups } = state;
+  const newQueryGroups = queryGroups ? Array.from(queryGroups) : [];
+  if (action.payload) newQueryGroups.push(action.payload);
+  else newQueryGroups.push(EMPTY_QUERY_GROUP);
+  return {
+    ...state,
+    queryGroups: newQueryGroups,
   };
 }
 

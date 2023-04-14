@@ -7,7 +7,7 @@ import {
   Button,
 } from "czifui";
 
-export const StepOneHeader = styled.div`
+export const StepHeader = styled.div`
   ${fontHeaderXl}
 
   margin-bottom: 14px;
@@ -23,7 +23,7 @@ export const WordPop = styled.span<CommonThemeProps>`
   }}
 `;
 
-export const StepOneSubHeader = styled.div`
+export const StepSubHeader = styled.div`
   ${fontBodyS}
 
   margin-bottom: 32px;

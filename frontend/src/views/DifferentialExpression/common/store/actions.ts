@@ -1,4 +1,4 @@
-import { REDUCERS, State } from "./reducer";
+import { QueryGroup, REDUCERS, State } from "./reducer";
 
 export function selectOrganism(
   organismId: State["organismId"]
@@ -35,6 +35,15 @@ export function setSnapshotId(
   return {
     payload: snapshotId,
     type: "setSnapshotId",
+  };
+}
+
+export function addQueryGroup(
+  queryGroup: QueryGroup | null
+): GetActionTypeOfReducer<typeof REDUCERS["addQueryGroup"]> {
+  return {
+    payload: queryGroup,
+    type: "addQueryGroup",
   };
 }
 
