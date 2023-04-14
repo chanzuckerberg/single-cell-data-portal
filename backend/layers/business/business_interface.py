@@ -52,7 +52,7 @@ class BusinessLogicInterface:
     ) -> CollectionVersion:
         pass
 
-    def delete_datasets_from_public_access_bucket(self, collection_id: CollectionId) -> List[str]:
+    def delete_datasets_from_bucket(self, collection_id: CollectionId, bucket: str) -> List[str]:
         pass
 
     def delete_collection(self, collection_id: CollectionId) -> None:

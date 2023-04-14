@@ -1477,10 +1477,14 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
 class TestCollectionUtilities(BaseBusinessLogicTestCase):
     def test__delete_datasets_from_public_access_bucket(self):
+        """
+        Test Dataset deletes when tombstoning a public Collection with published and updated Datasets in an outstanding
+        Revision
+        """
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
-        # We will replace the first dataset
+        # Update the first dataset
         dataset_id_to_replace = published_collection.datasets[0].version_id
 
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -1492,14 +1496,20 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
         dataset_version_ids = [d_v.version_id.id for d_v in published_collection.datasets] + [
             replaced_dataset_version_id
         ]
-        delete_keys = set(
-            self.business_logic.delete_datasets_from_public_access_bucket(published_collection.collection_id)
-        )
         expected_delete_keys = set()
-        for file_type in ("h5ad", "rds"):
-            expected_delete_keys.update([f"{d_v_id}.{file_type}" for d_v_id in dataset_version_ids])
+        for d_v_id in dataset_version_ids:
+            for file_type in ("h5ad", "rds"):
+                key = f"{d_v_id}.{file_type}"
+                self.s3_provider.upload_file(None, "fake-bucket", key, None)  # Populate s3 mock with assets
+                self.assertTrue(self.s3_provider.uri_exists(f"s3://fake-bucket/{key}"))
+                expected_delete_keys.update([f"{d_v_id}.{file_type}"])
+
+        actual_delete_keys = set(
+            self.business_logic.delete_datasets_from_bucket(published_collection.collection_id, "fake-bucket")
+        )
+        self.assertTrue(self.s3_provider.is_empty())
         self.assertTrue(len(expected_delete_keys) > 0)
-        self.assertEqual(expected_delete_keys, delete_keys)
+        self.assertEqual(expected_delete_keys, actual_delete_keys)
 
 
 if __name__ == "__main__":
