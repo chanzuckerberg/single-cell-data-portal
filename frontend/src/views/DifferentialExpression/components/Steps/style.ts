@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontHeaderM, fontCapsXxs, getColors } from "czifui";
+import {
+  CommonThemeProps,
+  fontHeaderM,
+  fontCapsXxs,
+  getColors,
+  fontBodyXs,
+} from "czifui";
 
 interface StepProps extends CommonThemeProps {
   active?: boolean;
@@ -24,7 +30,7 @@ export const StepWrapper = styled.div<StepProps>`
   padding-left: 24px;
   padding-right: 24px;
   padding-top: 30px;
-  height: 124px;
+  min-height: 124px;
 
   ${(props) => {
     const colors = getColors(props);
@@ -74,6 +80,18 @@ export const StepText = styled.div<CommonThemeProps>`
 
     return `
             color: ${colors?.gray[400]};
+        `;
+  }}
+`;
+
+export const StepOneSelectedFilters = styled.div<CommonThemeProps>`
+  ${fontBodyXs}
+  margin-top: 8px;
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+            color: ${colors?.gray[600]};
         `;
   }}
 `;

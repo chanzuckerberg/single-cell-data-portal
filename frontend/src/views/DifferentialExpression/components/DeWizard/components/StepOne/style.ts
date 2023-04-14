@@ -37,8 +37,10 @@ export const StepOneSubHeader = styled.div`
 `;
 
 export const FiltersWrapper = styled.div`
-  width: 216px;
-  margin-bottom: 82px;
+  min-width: 216px;
+  margin-bottom: 42px;
 `;
 
-export const NextButton = styled(Button)``;
+export const NextButton = styled(Button)`
+  margin-bottom: 50px;
+`;

@@ -19,6 +19,16 @@ export function selectFilters(
   };
 }
 
+export function setSelectedFilterNames(
+  key: keyof State["selectedFilterNames"],
+  options: string[]
+): GetActionTypeOfReducer<typeof REDUCERS["setSelectedFilterNames"]> {
+  return {
+    payload: { key, options },
+    type: "setSelectedFilterNames",
+  };
+}
+
 export function setSnapshotId(
   snapshotId: State["snapshotId"]
 ): GetActionTypeOfReducer<typeof REDUCERS["setSnapshotId"]> {

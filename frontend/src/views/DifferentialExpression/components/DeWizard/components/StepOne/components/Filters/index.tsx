@@ -17,7 +17,10 @@ import {
   DispatchContext,
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
-import { selectFilters } from "src/views/DifferentialExpression/common/store/actions";
+import {
+  selectFilters,
+  setSelectedFilterNames,
+} from "src/views/DifferentialExpression/common/store/actions";
 import { Filters as IFilters } from "src/views/DifferentialExpression/common/types";
 import Organism from "./components/Organism";
 import {
@@ -204,6 +207,15 @@ export default memo(function Filters(): JSX.Element {
             options.map((option) => (option as unknown as { id: string }).id)
           )
         );
+
+        dispatch(
+          setSelectedFilterNames(
+            key,
+            options.map(
+              (option) => (option as unknown as { name: string }).name
+            )
+          )
+        );
       };
     },
     [dispatch]
@@ -248,7 +260,7 @@ export default memo(function Filters(): JSX.Element {
           multiple
           data-testid="de-tissue-filter"
           search
-          label="Tissue"
+          label={"Tissue\u002A"}
           options={tissue_terms as unknown as DefaultMenuSelectOption[]}
           onChange={handleTissuesChange}
           value={selectedTissues as unknown as DefaultMenuSelectOption[]}

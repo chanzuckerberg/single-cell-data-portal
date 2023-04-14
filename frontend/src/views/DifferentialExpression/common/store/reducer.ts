@@ -14,10 +14,18 @@ export interface State {
     sexes: string[];
     tissues: string[];
   };
+  selectedFilterNames: {
+    datasets: string[];
+    developmentStages: string[];
+    diseases: string[];
+    ethnicities: string[];
+    sexes: string[];
+    tissues: string[];
+  };
   snapshotId: string | null;
 }
 
-const EMPTY_FILTERS: State["selectedFilters"] = {
+const EMPTY_FILTERS = {
   datasets: [],
   developmentStages: [],
   diseases: [],
@@ -29,6 +37,7 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
 export const INITIAL_STATE: State = {
   organismId: null,
   selectedFilters: EMPTY_FILTERS,
+  selectedFilterNames: EMPTY_FILTERS,
   snapshotId: null,
 };
 
@@ -36,6 +45,7 @@ export const REDUCERS = {
   selectOrganism,
   selectFilters,
   setSnapshotId,
+  setSelectedFilterNames,
 };
 
 function setSnapshotId(
@@ -85,6 +95,30 @@ function selectFilters(
   return {
     ...state,
     selectedFilters: newSelectedFilters,
+  };
+}
+
+function setSelectedFilterNames(
+  state: State,
+  action: PayloadAction<{
+    key: keyof State["selectedFilterNames"];
+    options: string[];
+  }>
+): State {
+  const { key, options } = action.payload;
+
+  const { selectedFilterNames } = state;
+
+  if (isEqual(selectedFilterNames[key], options)) return state;
+
+  const newSelectedFilterNames = {
+    ...state.selectedFilterNames,
+    [key]: options,
+  };
+
+  return {
+    ...state,
+    selectedFilterNames: newSelectedFilterNames,
   };
 }
 
