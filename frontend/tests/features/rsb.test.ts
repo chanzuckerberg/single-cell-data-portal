@@ -10,7 +10,7 @@ import { selectFirstOption } from "./wheresMyGene.test";
 const { describe, skip } = test;
 
 describe("Right side bar", () => {
-  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test.beforeEach(async ({ page }) => {
     // navigate to url
     await goToWMG(page);
@@ -73,7 +73,7 @@ describe("Right side bar", () => {
     // expect the header to be visible
     await expect(page.locator("h5")).toContainText("Methodology");
   });
-  test.only("Link in methodology section links out to scExpression documentation", async ({
+  test("Link in methodology section links out to scExpression documentation", async ({
     page,
     context,
   }) => {
@@ -98,5 +98,24 @@ describe("Right side bar", () => {
         getID("gene-expression--query-gene-expression-across-tissues")
       )
     ).toBeVisible();
+  });
+
+  test("When scaled check box is checked, gene expression should scale from 0 to 1 and darkest color should show up in the dot plot test", async ({
+    page,
+  }) => {
+    const COLOR_SCALE = '[id="relative-gene-expression"] .low-high';
+
+    //verify the correct values are displayed on the color scale
+    await expect(page.locator(COLOR_SCALE)).toContainText("0.0");
+    await expect(page.locator(COLOR_SCALE)).toContainText("1.0");
+
+    //click the color scale drop-down
+    await page.getByTestId("color-scale-dropdown").click();
+    //select the second option
+    await page.locator('[data-option-index="1"]').click();
+
+    //verify the correct values are displayed on the color scale
+    await expect(page.locator(COLOR_SCALE)).toContainText("0.0");
+    await expect(page.locator(COLOR_SCALE)).toContainText("6.0");
   });
 });
