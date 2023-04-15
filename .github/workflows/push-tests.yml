@@ -130,19 +130,28 @@ jobs:
           ls -la
           ls -la frontend
           ls -la frontend/playwright-report
-  e2e-result:
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    name: Final Results
-    needs: [e2e-test]
+  
+  after-e2e-shards:
+    needs: e2e-test # run after e2e shards
+    runs-on: ubuntu-20.04
+    if: success() # only run when all shards have passed
     steps:
-      - run: exit 1
-        # see https://stackoverflow.com/a/67532120/4907315
-        if: >-
-          ${{
-               contains(needs.*.result, 'failure')
-            || contains(needs.*.result, 'cancelled')
-          }}
+      - run: |
+          echo "E2E_RESULT='success'" >> $GITHUB_ENV
+
+  after-e2e-test:
+    name: E2E shard results
+    needs: e2e-test
+    runs-on: ubuntu-20.04
+    if: always() 
+    steps:
+      - run: |
+          if [[ ${{ env.LOGIN_USERNAME}} == "success" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
+          
   backend-unit-test:
     runs-on: ubuntu-20.04
     steps:
