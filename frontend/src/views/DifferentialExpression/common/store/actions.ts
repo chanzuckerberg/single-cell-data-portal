@@ -19,6 +19,17 @@ export function selectFilters(
   };
 }
 
+export function selectQueryGroupFilters(
+  key: keyof QueryGroup,
+  options: string[],
+  index: number
+): GetActionTypeOfReducer<typeof REDUCERS["selectQueryGroupFilters"]> {
+  return {
+    payload: { key, options, index },
+    type: "selectQueryGroupFilters",
+  };
+}
+
 export function setSelectedFilterNames(
   key: keyof State["selectedFilterNames"],
   options: string[]

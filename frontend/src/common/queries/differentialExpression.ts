@@ -1,6 +1,6 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API_URL } from "src/configs/configs";
+import { API_URL } from "src/configs/dev";
 import {
   DispatchContext,
   StateContext,
@@ -164,6 +164,7 @@ interface FiltersQueryResponse {
     development_stage_terms: { [id: string]: string }[];
     self_reported_ethnicity_terms: { [id: string]: string }[];
     tissue_terms: { [id: string]: string }[];
+    cell_type_terms: { [id: string]: string }[];
   };
   snapshot_id: string;
 }
@@ -235,6 +236,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   self_reported_ethnicity_terms: [],
   sex_terms: [],
   tissue_terms: [],
+  cell_type_terms: [],
 };
 
 export interface RawDataset {
@@ -251,14 +253,15 @@ export interface FilterDimensions {
   self_reported_ethnicity_terms: { id: string; name: string }[];
   sex_terms: { id: string; name: string }[];
   tissue_terms: { id: string; name: string }[];
+  cell_type_terms: { id: string; name: string }[];
 }
 
-export function useFilterDimensions(): {
+export function useFilterDimensions(queryGroupIndex = -1): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
   const { organismId } = useContext(StateContext);
-  const requestBody = useWMGFiltersQueryRequestBody();
+  const requestBody = useWMGFiltersQueryRequestBody(queryGroupIndex);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
   const { data: primaryFilterDimensions } = usePrimaryFilterDimensions();
 
@@ -282,6 +285,7 @@ export function useFilterDimensions(): {
       self_reported_ethnicity_terms,
       sex_terms,
       tissue_terms,
+      cell_type_terms,
     } = filter_dims;
 
     const sortedDatasets = Object.values(
@@ -305,17 +309,32 @@ export function useFilterDimensions(): {
           self_reported_ethnicity_terms.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: filtered_tissue_terms.map(toEntity),
+        cell_type_terms: cell_type_terms.map(toEntity),
       },
       isLoading: false,
     };
   }, [data, isLoading, primaryFilterDimensions, organismId]);
 }
 
-function useWMGFiltersQueryRequestBody() {
-  const { organismId, selectedFilters } = useContext(StateContext);
+function useWMGFiltersQueryRequestBody(queryGroupIndex = -1) {
+  const { organismId, selectedFilters, queryGroups } = useContext(StateContext);
 
-  const { datasets, developmentStages, diseases, ethnicities, sexes, tissues } =
-    selectedFilters;
+  let filters;
+  if (queryGroupIndex > -1 && queryGroups) {
+    filters = queryGroups[queryGroupIndex];
+  } else {
+    filters = { ...selectedFilters, cellTypes: [] };
+  }
+
+  const {
+    datasets,
+    developmentStages,
+    diseases,
+    ethnicities,
+    sexes,
+    tissues,
+    cellTypes,
+  } = filters;
 
   return useMemo(() => {
     if (!organismId) {
@@ -331,6 +350,7 @@ function useWMGFiltersQueryRequestBody() {
         self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids: tissues,
+        cell_type_ontology_term_ids: cellTypes,
       },
     };
   }, [
@@ -341,6 +361,7 @@ function useWMGFiltersQueryRequestBody() {
     ethnicities,
     sexes,
     tissues,
+    cellTypes,
   ]);
 }
 

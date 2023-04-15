@@ -8,7 +8,7 @@ import {
 import { Collection, VISIBILITY_TYPE } from "src/common/entities";
 import { buildSummaryCitation } from "src/common/queries/filter";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
-import { API_URL } from "src/configs/configs";
+import { API_URL } from "src/configs/dev";
 import { API } from "../API";
 import HTTP_STATUS_CODE from "../constants/HTTP_STATUS_CODE";
 import checkForRevisionChange from "../utils/checkForRevisionChange";

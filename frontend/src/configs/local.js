@@ -3,7 +3,7 @@
 
 const configs = {
   // Dev
-  API_URL: "https://api.cellxgene.dev.single-cell.czi.technology",
+  API_URL: "https://czde-backend-backend.rdev.single-cell.czi.technology",
   // Staging
   // API_URL: "https://api.cellxgene.staging.single-cell.czi.technology",
   // Prod

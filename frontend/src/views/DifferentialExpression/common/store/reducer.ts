@@ -60,6 +60,7 @@ export const REDUCERS = {
   setSnapshotId,
   setSelectedFilterNames,
   addQueryGroup,
+  selectQueryGroupFilters,
 };
 
 function setSnapshotId(
@@ -123,6 +124,30 @@ function selectFilters(
   return {
     ...state,
     selectedFilters: newSelectedFilters,
+  };
+}
+
+function selectQueryGroupFilters(
+  state: State,
+  action: PayloadAction<{
+    key: keyof QueryGroup;
+    options: string[];
+    index: number;
+  }>
+): State {
+  const { key, options, index } = action.payload;
+
+  const { queryGroups } = state;
+
+  const newQueryGroups = queryGroups ? Array.from(queryGroups) : [];
+
+  const newQueryGroup = { ...newQueryGroups[index] };
+  newQueryGroup[key] = options;
+  newQueryGroups[index] = newQueryGroup;
+
+  return {
+    ...state,
+    queryGroups: newQueryGroups,
   };
 }
 

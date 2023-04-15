@@ -47,7 +47,7 @@ export default function StepOne({ setStep }: Props): JSX.Element {
         onClick={handleGoNext}
         disabled={!selectedFilters.tissues.length}
       >
-        Next: Build query group
+        Next: Build query groups
       </NextButton>
     </div>
   );

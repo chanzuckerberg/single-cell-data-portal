@@ -165,7 +165,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
         "development_stage_ontology_term_id": "",
         "self_reported_ethnicity_ontology_term_id": "",
         "tissue_ontology_term_id": "",
-        "cell_type_ontoloy_term_id": "",
+        "cell_type_ontology_term_id": "",
     }
     for dim in dims:
         dims[dim] = (

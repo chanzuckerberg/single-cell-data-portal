@@ -6,8 +6,10 @@ import {
   ComplexFilterPopper,
   fontBodyS,
   getColors,
-  getSpaces,
   getFontWeights,
+  TagFilter,
+  Tag,
+  fontBodyXs,
 } from "czifui";
 
 export const StyledPopper = styled(ComplexFilterPopper)`
@@ -23,11 +25,14 @@ export const StyledComplexFilterInputDropdown = styled(
 
   .MuiButton-label {
     margin-left: 0;
-    margin-right: 10px;
   }
 
   &.Mui-disabled {
     border: 0;
+  }
+
+  && :nth-last-child(1) {
+    display: none !important;
   }
 
   ${(props: CommonThemeProps) => {
@@ -44,15 +49,15 @@ export const StyledComplexFilterInputDropdown = styled(
 
 export const Wrapper = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  width: 444px;
+  flex-wrap: wrap;
+  column-gap: 16px;
 
-  ${(props: CommonThemeProps) => {
-    const spaces = getSpaces(props);
-
-    return `
-      gap: ${spaces?.xl}px;
-    `;
-  }}
+  // (atarashansky): remove the blue chips from the filters
+  div > div > .MuiChip-root {
+    display: none;
+  }
 `;
 
 export const FilterLabel = styled.div`
@@ -70,6 +75,22 @@ export const FilterLabel = styled.div`
 `;
 
 export const StyledComplexFilter = styled(ComplexFilter)`
-  width: 100%;
   margin-bottom: 16px;
+  min-width: 75px;
 ` as typeof ComplexFilter;
+
+export const StyledTagFilter = styled(TagFilter)`
+  ${fontBodyXs}
+  height: 28px;
+  border-radius: 4px;
+`;
+
+export const StyledTag = styled(Tag)`
+  ${fontBodyXs}
+  height: 28px;
+  border-radius: 4px;
+`;
+
+export const TagWrapper = styled.div`
+  width: 100%;
+`;

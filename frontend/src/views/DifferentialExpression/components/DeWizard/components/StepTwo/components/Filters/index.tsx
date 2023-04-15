@@ -17,18 +17,17 @@ import {
   DispatchContext,
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
-import {
-  selectFilters,
-  setSelectedFilterNames,
-} from "src/views/DifferentialExpression/common/store/actions";
-import { Filters as IFilters } from "src/views/DifferentialExpression/common/types";
+import { selectQueryGroupFilters } from "src/views/DifferentialExpression/common/store/actions";
 import {
   StyledComplexFilter,
   StyledComplexFilterInputDropdown,
   Wrapper,
   StyledPopper,
-  FilterLabel,
+  StyledTagFilter,
+  StyledTag,
+  TagWrapper,
 } from "./style";
+import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 
 const filterOptions = createFilterOptions({
   stringify: (option: RawDataset) =>
@@ -59,14 +58,20 @@ const mapTermToFilterOption = (term: {
 
 const EMPTY_OBJECT = {};
 
-export default memo(function Filters(): JSX.Element {
+interface Props {
+  queryGroupIndex: number;
+  queryGroup: QueryGroup;
+}
+export default memo(function Filters({
+  queryGroupIndex,
+  queryGroup,
+}: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
+  const { selectedFilters } = state;
 
   const [availableFilters, setAvailableFilters] =
     useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
-
-  const { selectedFilters } = state;
 
   const {
     datasets: datasetIds,
@@ -75,7 +80,8 @@ export default memo(function Filters(): JSX.Element {
     sexes,
     tissues,
     developmentStages,
-  } = selectedFilters;
+    cellTypes,
+  } = queryGroup;
 
   const {
     data: {
@@ -85,30 +91,49 @@ export default memo(function Filters(): JSX.Element {
       self_reported_ethnicity_terms: rawEthnicities,
       sex_terms: rawSexes,
       tissue_terms: rawTissues,
+      cell_type_terms: rawCellTypes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions();
+  } = useFilterDimensions(queryGroupIndex);
 
   const InputDropdownProps = {
     sdsStyle: "minimal",
   } as Partial<InputDropdownProps>;
 
   // (thuang): We only update available filters when API call is done,
-  // otherwise when `useFilterDimensions()` is still loading, its filters
+  // otherwise when `useFilterDimensions(queryGroupIndex)` is still loading, its filters
   // will temporarily be empty, and thus resetting the selected filter values
   useEffect(() => {
     if (rawIsLoading) return;
-    const newDatasets = rawDatasets.map((dataset) => ({
-      ...dataset,
-      details: dataset.collection_label,
-      name: dataset.label,
-    }));
+    const newDatasets = rawDatasets
+      .filter((dataset) => {
+        return selectedFilters.datasets.length
+          ? selectedFilters.datasets.includes(dataset.id)
+          : true;
+      })
+      .map((dataset) => ({
+        ...dataset,
+        details: dataset.collection_label,
+        name: dataset.label,
+      }));
     newDatasets.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newSexes = rawSexes.map(mapTermToFilterOption);
+    const newSexes = rawSexes
+      .filter((sex) => {
+        return selectedFilters.sexes.length
+          ? selectedFilters.sexes.includes(sex.id)
+          : true;
+      })
+      .map(mapTermToFilterOption);
     newSexes.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newDiseases = rawDiseases.map(mapTermToFilterOption);
+    const newDiseases = rawDiseases
+      .filter((disease) => {
+        return selectedFilters.diseases.length
+          ? selectedFilters.diseases.includes(disease.id)
+          : true;
+      })
+      .map(mapTermToFilterOption);
     newDiseases.sort((a, b) =>
       a.name === "normal"
         ? -1
@@ -117,15 +142,34 @@ export default memo(function Filters(): JSX.Element {
         : a.name.localeCompare(b.name)
     );
 
-    const newTissues = rawTissues.map(mapTermToFilterOption);
+    const newTissues = rawTissues
+      .filter((tissue) => {
+        return selectedFilters.tissues.length
+          ? selectedFilters.tissues.includes(tissue.id)
+          : true;
+      })
+      .map(mapTermToFilterOption);
     newTissues.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
+    const newCellTypes = rawCellTypes.map(mapTermToFilterOption);
+    newCellTypes.sort((a, b) => a.name.localeCompare(b.name));
+
+    const newEthnicities = rawEthnicities
+      .filter((ethnicity) => {
+        return selectedFilters.ethnicities.length
+          ? selectedFilters.ethnicities.includes(ethnicity.id)
+          : true;
+      })
+      .map(mapTermToFilterOption);
     newEthnicities.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newDevelopmentStages = rawDevelopmentStages.map(
-      mapTermToFilterOption
-    );
+    const newDevelopmentStages = rawDevelopmentStages
+      .filter((stage) => {
+        return selectedFilters.developmentStages.length
+          ? selectedFilters.developmentStages.includes(stage.id)
+          : true;
+      })
+      .map(mapTermToFilterOption);
     newDevelopmentStages.sort((a, b) => a.name.localeCompare(b.name));
 
     const newAvailableFilters = {
@@ -135,12 +179,23 @@ export default memo(function Filters(): JSX.Element {
       self_reported_ethnicity_terms: newEthnicities,
       sex_terms: newSexes,
       tissue_terms: newTissues,
+      cell_type_terms: newCellTypes,
     };
 
     if (isEqual(availableFilters, newAvailableFilters)) return;
 
     setAvailableFilters(newAvailableFilters);
-  }, [rawDatasets, rawDevelopmentStages, rawDiseases, rawEthnicities, rawSexes, rawIsLoading, availableFilters, setAvailableFilters]);
+  }, [
+    rawDatasets,
+    rawDevelopmentStages,
+    rawDiseases,
+    rawEthnicities,
+    rawSexes,
+    rawCellTypes,
+    rawIsLoading,
+    availableFilters,
+    setAvailableFilters,
+  ]);
 
   const {
     datasets = EMPTY_ARRAY,
@@ -149,6 +204,7 @@ export default memo(function Filters(): JSX.Element {
     sex_terms = EMPTY_ARRAY,
     tissue_terms = EMPTY_ARRAY,
     development_stage_terms = EMPTY_ARRAY,
+    cell_type_terms = EMPTY_ARRAY,
   } = availableFilters;
 
   const selectedDatasets = useMemo(() => {
@@ -179,9 +235,15 @@ export default memo(function Filters(): JSX.Element {
     return tissue_terms.filter((tissue) => tissues?.includes(tissue.id));
   }, [tissue_terms, tissues]);
 
+  const selectedCellTypes = useMemo(() => {
+    return cell_type_terms.filter((cellType) =>
+      cellTypes?.includes(cellType.id)
+    );
+  }, [cell_type_terms, cellTypes]);
+
   const handleFilterChange = useCallback(
     function handleFilterChange_(
-      key: keyof IFilters
+      key: keyof QueryGroup
     ): (options: DefaultMenuSelectOption[] | null) => void {
       let currentOptions: DefaultMenuSelectOption[] | null = null;
 
@@ -201,18 +263,10 @@ export default memo(function Filters(): JSX.Element {
         currentOptions = options;
 
         dispatch(
-          selectFilters(
+          selectQueryGroupFilters(
             key,
-            options.map((option) => (option as unknown as { id: string }).id)
-          )
-        );
-
-        dispatch(
-          setSelectedFilterNames(
-            key,
-            options.map(
-              (option) => (option as unknown as { name: string }).name
-            )
+            options.map((option) => (option as unknown as { id: string }).id),
+            queryGroupIndex
           )
         );
       };
@@ -250,86 +304,78 @@ export default memo(function Filters(): JSX.Element {
     [handleFilterChange]
   );
 
+  const handleCellTypesChange = useMemo(
+    () => handleFilterChange("cellTypes"),
+    [handleFilterChange]
+  );
+
   return (
     <Wrapper>
-      <div>
+      {/* <Tag style={{height: "10px"}} color="gray" sdsType="secondary" label="Preselected" /> */}
+      <TagWrapper>
+        <StyledTag color="gray" label="StepOne" />
+        <StyledTagFilter onDelete={() => {}} label="Datasets" />
+      </TagWrapper>
+
+      <StyledComplexFilter
+        multiple
+        data-testid="de-qg-cell-type-filter"
+        search
+        label="Cell Type"
+        options={cell_type_terms as unknown as DefaultMenuSelectOption[]}
+        onChange={handleCellTypesChange}
+        value={selectedCellTypes as unknown as DefaultMenuSelectOption[]}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
+        DropdownMenuProps={DropdownMenuProps}
+        InputDropdownProps={InputDropdownProps}
+        PopperComponent={StyledPopper}
+      />
+      <StyledComplexFilter
+        multiple
+        data-testid="de-qg-tissue-filter"
+        search
+        label={"Tissue\u002A"}
+        options={tissue_terms as unknown as DefaultMenuSelectOption[]}
+        onChange={handleTissuesChange}
+        value={selectedTissues as unknown as DefaultMenuSelectOption[]}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
+        DropdownMenuProps={DropdownMenuProps}
+        InputDropdownProps={InputDropdownProps}
+        PopperComponent={StyledPopper}
+      />
+      <StyledComplexFilter
+        multiple
+        data-testid="de-qg-dataset-filter"
+        search
+        label="Dataset"
+        options={datasets as unknown as DefaultMenuSelectOption[]}
+        onChange={handleDatasetsChange}
+        value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
+        DropdownMenuProps={DropdownMenuProps}
+        InputDropdownProps={InputDropdownProps}
+        PopperComponent={StyledPopper}
+      />
+      {/* (alec) disable development stage filter for now */}
+      {false && (
         <StyledComplexFilter
           multiple
-          data-testid="de-tissue-filter"
+          data-testid="de-qg-development-filter"
           search
-          label={"Tissue\u002A"}
-          options={tissue_terms as unknown as DefaultMenuSelectOption[]}
-          onChange={handleTissuesChange}
-          value={selectedTissues as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          DropdownMenuProps={DropdownMenuProps}
-          InputDropdownProps={InputDropdownProps}
-          PopperComponent={StyledPopper}
-        />
-        <StyledComplexFilter
-          multiple
-          data-testid="de-dataset-filter"
-          search
-          label="Dataset"
-          options={datasets as unknown as DefaultMenuSelectOption[]}
-          onChange={handleDatasetsChange}
-          value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          DropdownMenuProps={DropdownMenuProps}
-          InputDropdownProps={InputDropdownProps}
-          PopperComponent={StyledPopper}
-        />
-        {/* (alec) disable development stage filter for now */}
-        {false && (
-          <StyledComplexFilter
-            multiple
-            data-testid="de-development-filter"
-            search
-            label="Development Stage"
-            options={
-              development_stage_terms as unknown as DefaultMenuSelectOption[]
-            }
-            onChange={handleDevelopmentStagesChange}
-            value={
-              selectedDevelopmentStages as unknown as DefaultMenuSelectOption[]
-            }
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            DropdownMenuProps={DropdownMenuProps}
-            InputDropdownProps={InputDropdownProps}
-            PopperComponent={StyledPopper}
-          />
-        )}
-        <StyledComplexFilter
-          multiple
-          data-testid="de-disease-filter"
-          search
-          label="Disease"
-          options={disease_terms as unknown as DefaultMenuSelectOption[]}
-          onChange={handleDiseasesChange}
-          value={selectedDiseases as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          DropdownMenuProps={DropdownMenuProps}
-          InputDropdownProps={InputDropdownProps}
-          PopperComponent={StyledPopper}
-        />
-        <StyledComplexFilter
-          multiple
-          data-testid="de-self-reported-ethnicity-filter"
-          search
-          label="Self-Reported Ethnicity"
+          label="Development Stage"
           options={
-            self_reported_ethnicity_terms as unknown as DefaultMenuSelectOption[]
+            development_stage_terms as unknown as DefaultMenuSelectOption[]
           }
-          onChange={handleEthnicitiesChange}
-          value={selectedEthnicities as unknown as DefaultMenuSelectOption[]}
+          onChange={handleDevelopmentStagesChange}
+          value={
+            selectedDevelopmentStages as unknown as DefaultMenuSelectOption[]
+          }
           InputDropdownComponent={
             StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
           }
@@ -337,22 +383,54 @@ export default memo(function Filters(): JSX.Element {
           InputDropdownProps={InputDropdownProps}
           PopperComponent={StyledPopper}
         />
-        <StyledComplexFilter
-          multiple
-          data-testid="de-sex-filter"
-          search
-          label="Sex"
-          options={sex_terms as unknown as DefaultMenuSelectOption[]}
-          onChange={handleSexesChange}
-          value={selectedSexes as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          DropdownMenuProps={DropdownMenuProps}
-          InputDropdownProps={InputDropdownProps}
-          PopperComponent={StyledPopper}
-        />
-      </div>
+      )}
+      <StyledComplexFilter
+        multiple
+        data-testid="de-qg-disease-filter"
+        search
+        label="Disease"
+        options={disease_terms as unknown as DefaultMenuSelectOption[]}
+        onChange={handleDiseasesChange}
+        value={selectedDiseases as unknown as DefaultMenuSelectOption[]}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
+        DropdownMenuProps={DropdownMenuProps}
+        InputDropdownProps={InputDropdownProps}
+        PopperComponent={StyledPopper}
+      />
+      <StyledComplexFilter
+        multiple
+        data-testid="de-qg-self-reported-ethnicity-filter"
+        search
+        label="Self-Reported Ethnicity"
+        options={
+          self_reported_ethnicity_terms as unknown as DefaultMenuSelectOption[]
+        }
+        onChange={handleEthnicitiesChange}
+        value={selectedEthnicities as unknown as DefaultMenuSelectOption[]}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
+        DropdownMenuProps={DropdownMenuProps}
+        InputDropdownProps={InputDropdownProps}
+        PopperComponent={StyledPopper}
+      />
+      <StyledComplexFilter
+        multiple
+        data-testid="de-qg-sex-filter"
+        search
+        label="Sex"
+        options={sex_terms as unknown as DefaultMenuSelectOption[]}
+        onChange={handleSexesChange}
+        value={selectedSexes as unknown as DefaultMenuSelectOption[]}
+        InputDropdownComponent={
+          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+        }
+        DropdownMenuProps={DropdownMenuProps}
+        InputDropdownProps={InputDropdownProps}
+        PopperComponent={StyledPopper}
+      />
     </Wrapper>
   );
 });

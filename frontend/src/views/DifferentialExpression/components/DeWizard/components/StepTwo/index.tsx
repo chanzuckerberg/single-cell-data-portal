@@ -8,7 +8,8 @@ import { StepHeader, StepSubHeader, WordPop } from "../StepOne/style";
 import { AddQueryGroupButton } from "./style";
 import { Icon } from "czifui";
 import { addQueryGroup } from "src/views/DifferentialExpression/common/store/actions";
-import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
+import QueryGroupFilters from "./components/Filters";
+
 interface Props {
   setStep: (step: number) => void;
 }
@@ -16,7 +17,7 @@ export default function StepTwo({ setStep }: Props): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { queryGroups, selectedFilters } = state;
+  const { queryGroups } = state;
 
   const handleGoNext = () => {
     setStep(3);
@@ -52,7 +53,7 @@ export default function StepTwo({ setStep }: Props): JSX.Element {
       </AddQueryGroupButton>
       {queryGroups?.map((queryGroup, index) => {
         return (
-          <QueryGroup
+          <QueryGroupFilters
             key={`query-group-${index}`}
             queryGroupIndex={index}
             queryGroup={queryGroup}
@@ -62,11 +63,3 @@ export default function StepTwo({ setStep }: Props): JSX.Element {
     </div>
   );
 }
-
-interface QueryGroupProps {
-  queryGroupIndex: number;
-  queryGroup: QueryGroup;
-}
-const QueryGroup = ({ queryGroup, queryGroupIndex }: QueryGroupProps) => {
-  return <div>Query Group {queryGroupIndex}</div>;
-};
