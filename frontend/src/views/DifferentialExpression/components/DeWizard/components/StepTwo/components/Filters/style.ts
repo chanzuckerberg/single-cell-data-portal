@@ -9,7 +9,6 @@ import {
   getSpaces,
   getFontWeights,
 } from "czifui";
-import { Wrapper as RawWrapper } from "./components/common/style";
 
 export const StyledPopper = styled(ComplexFilterPopper)`
   max-width: 750px;
@@ -43,7 +42,10 @@ export const StyledComplexFilterInputDropdown = styled(
   }}
 `;
 
-export const Wrapper = styled(RawWrapper)`
+export const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+
   ${(props: CommonThemeProps) => {
     const spaces = getSpaces(props);
 
