@@ -131,7 +131,7 @@ jobs:
     if: success() # only run when all shards have passed
     steps:
       - run: |
-          echo "E2E_RESULT='success'" >> $GITHUB_ENV
+          echo "E2E_RESULT=success" >> $GITHUB_ENV
 
   after-e2e-test:
     name: E2E shard results
