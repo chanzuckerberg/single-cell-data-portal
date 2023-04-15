@@ -125,12 +125,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-      - name: List files
-        run: |
-          ls -la
-          ls -la frontend
-          ls -la frontend/playwright-report
-  
   after-e2e-shards:
     needs: e2e-test # run after e2e shards
     runs-on: ubuntu-20.04
@@ -143,15 +137,15 @@ jobs:
     name: E2E shard results
     needs: e2e-test
     runs-on: ubuntu-20.04
-    if: always() 
+    if: always()
     steps:
       - run: |
-          if [[ ${{ env.LOGIN_USERNAME}} == "success" ]]; then
+          if [[ ${{ env.E2E_RESULT }} == "success" ]]; then
             exit 0
           else
             exit 1
           fi
-          
+
   backend-unit-test:
     runs-on: ubuntu-20.04
     steps:
