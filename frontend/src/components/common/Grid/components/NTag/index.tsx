@@ -1,11 +1,6 @@
-import {
-  Popover,
-  PopoverInteractionKind,
-  Position,
-  Tag,
-} from "@blueprintjs/core";
+import { Popover, PopoverInteractionKind, Position } from "@blueprintjs/core";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
-import { ContentColumn, ContentWrapper, FieldValues } from "./style";
+import { ContentColumn, ContentWrapper, FieldValues, Tag } from "./style";
 
 const CHUNK_SIZE = 25;
 
@@ -43,9 +38,13 @@ export default function NTag({ label, values }: Props): JSX.Element {
       }}
       placement={Position.RIGHT}
     >
-      <Tag minimal>
-        {values.length} {label}
-      </Tag>
+      <Tag
+        color="gray"
+        hover={false}
+        label={`${values.length} ${label}`}
+        sdsStyle="square"
+        sdsType="primary"
+      />
     </Popover>
   );
 }
