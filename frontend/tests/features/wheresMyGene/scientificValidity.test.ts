@@ -32,6 +32,7 @@ describe("Rankit value tests", () => {
     // add tissue and gene
     await searchAndAddTissue(page, TISSUE);
     await searchAndAddGene(page, GENE);
-    page.locator(getById("blood-chart")).hover();
+    await page.locator(getById("blood-chart")).hover();
+    await expect(page.getByText("Tissue Composition")).toBeVisible();
   });
 });
