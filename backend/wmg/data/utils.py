@@ -135,7 +135,6 @@ def depluralize(x):
     return x[:-1] if x[-1] == "s" else x
 
 
-
 def to_dict(a, b):
     """
     convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys

@@ -80,10 +80,8 @@ def are_cell_types_colinear(cell_type1, cell_type2):
     return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
 
 
-def _prepare_rollup_array(
-    df, cell_type_col="cell_type_ontology_term_id"
-) -> pd.DataFrame:
-    
+def _prepare_rollup_array(df, cell_type_col="cell_type_ontology_term_id") -> pd.DataFrame:
+
     df = df.copy()
     # numeric data
     numeric_df = df.select_dtypes(include="number")
@@ -111,6 +109,7 @@ def _prepare_rollup_array(
     # slot the numeric data into the multi-dimensional numpy array
     array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
     return array_to_sum, dim_indices, numeric_df, cell_type_column.unique()
+
 
 def rollup_across_cell_type_descendants(
     df, cell_type_col="cell_type_ontology_term_id", ignore_cols=None
