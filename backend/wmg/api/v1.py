@@ -143,7 +143,7 @@ def differentialExpression():
 
     all_results = []
     for filters in queryGroupFilters:
-        all_results.append(run_differential_expression(filters, expression_summary, cell_counts, do_rollup=False, pval_thr=1e-5))    
+        all_results.append(run_differential_expression(filters, expression_summary, cell_counts, snapshot.datset_to_gene_ids, do_rollup=False, pval_thr=1e-5))    
 
     return jsonify(
         dict(
@@ -513,7 +513,7 @@ def rollup_target_population(df, gb_terms, filters):
     df_agg_target = df_agg.groupby(gb_terms).first(numeric_only=True)
     return filter_pandas_dataframe(df_agg_target.reset_index(),filters).groupby('gene_ontology_term_id').sum(numeric_only=True)
 
-def run_differential_expression(filters, expression_summary, cell_counts, do_rollup=False, pval_thr=1e-5):
+def run_differential_expression(filters, expression_summary, cell_counts, dataset_to_gene_ids, do_rollup=False, pval_thr=1e-5):
     genes = list(expression_summary['gene_ontology_term_id'].unique())
     gb_terms = list(filters.keys())
 
@@ -532,7 +532,7 @@ def run_differential_expression(filters, expression_summary, cell_counts, do_rol
     es_agg_total = expression_summary.groupby("gene_ontology_term_id").sum(numeric_only=True)
 
 
-    n_cells_array, index = _calculate_true_n_cells(n_cells, genes, snapshot.dataset_to_gene_ids, keep_dataset_ids, do_rollup=False)
+    n_cells_array, index = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids, do_rollup=False)
     x,y = n_cells_array.nonzero()
     n_data = n_cells_array[x,y]
 
