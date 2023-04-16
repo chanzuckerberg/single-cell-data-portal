@@ -144,8 +144,8 @@ def differentialExpression():
     all_results = []
     for filters in queryGroupFilters:
         all_results.append(
-            run_differential_expression(
-                filters, expression_summary, cell_counts, snapshot.dataset_to_gene_ids, do_rollup=False, pval_thr=1e-5
+            run_differential_expression_simple(
+                filters, expression_summary, cell_counts, pval_thr=1e-5
             )
         )
 
@@ -598,4 +598,58 @@ def run_differential_expression(
             if len(statistics) >= 100:
                 break
 
+    return statistics
+
+def run_differential_expression_simple(filters, expression_summary, cell_counts, pval_thr=1e-5):
+    genes = list(expression_summary["gene_ontology_term_id"].unique())
+    gb_terms = list(filters.keys())
+    gb_terms = [k[:-1] if k[-1] == "s" else k for k in gb_terms]
+
+
+    n_cells = cell_counts.groupby(gb_terms).sum(numeric_only=True)["n_total_cells"]
+
+    total_n_cells = n_cells.sum()
+    target_n_cells = filter_pandas_dataframe(cell_counts,filters).groupby(gb_terms).sum(numeric_only=True)['n_total_cells'].sum()
+    rest_n_cells = total_n_cells - target_n_cells
+
+    es_agg_total = expression_summary.groupby("gene_ontology_term_id").sum(numeric_only=True)
+    genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
+
+    total_sums = np.zeros(len(genes))
+    total_sqsums = np.zeros(len(genes))
+
+    total_sums[genes_indexer[es_agg_total.index]] = es_agg_total["sum"].values
+    total_sqsums[genes_indexer[es_agg_total.index]] = es_agg_total["sqsum"].values
+
+
+    es_agg_target = (
+        filter_pandas_dataframe(expression_summary, filters).groupby("gene_ontology_term_id").sum(numeric_only=True)
+    )
+
+
+    target_sums = np.zeros(len(genes))
+    target_sqsums = np.zeros(len(genes))
+    rest_sums = np.zeros(len(genes))
+    rest_sqsums = np.zeros(len(genes))
+
+    target_sums[genes_indexer[es_agg_target.index]] = es_agg_target["sum"].values
+    target_sqsums[genes_indexer[es_agg_target.index]] = es_agg_target["sqsum"].values
+    rest_sums = total_sums - target_sums
+    rest_sqsums = total_sqsums - target_sqsums
+
+
+    pvals, effects = _run_ttest(target_sums, target_sqsums, target_n_cells, rest_sums, rest_sqsums, rest_n_cells)
+    de_genes = np.array(genes)[np.argsort(-effects)]
+    p = pvals[np.argsort(-effects)]
+    effects = effects[np.argsort(-effects)]
+    statistics = []
+
+    for i in range(len(p)):
+        pi = p[i]
+        ei = effects[i]
+        if ei is not np.nan and pi is not np.nan and pi < pval_thr:
+            statistics.append({"gene_ontology_term_id": de_genes[i], f"p_value": pi, f"effect_size": ei})
+            if len(statistics) >= 100:
+                break
+                
     return statistics
