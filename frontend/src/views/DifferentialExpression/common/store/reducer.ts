@@ -5,7 +5,7 @@ export interface PayloadAction<Payload> {
   payload: Payload;
 }
 
-interface Filters {
+export interface Filters {
   datasets: string[];
   developmentStages: string[];
   diseases: string[];
@@ -19,11 +19,13 @@ export interface QueryGroup extends Filters {
   cellTypes: string[];
 }
 
+export type QueryGroupWithNames = QueryGroup;
 export interface State {
   organismId: string | null;
   selectedFilters: Filters;
   selectedFilterNames: FilterNames;
   queryGroups: QueryGroup[] | null;
+  queryGroupsWithNames: QueryGroupWithNames[] | null;
   snapshotId: string | null;
 }
 
@@ -52,6 +54,7 @@ export const INITIAL_STATE: State = {
   selectedFilterNames: EMPTY_FILTERS,
   snapshotId: null,
   queryGroups: null,
+  queryGroupsWithNames: null,
 };
 
 export const REDUCERS = {
@@ -61,6 +64,7 @@ export const REDUCERS = {
   setSelectedFilterNames,
   addQueryGroup,
   selectQueryGroupFilters,
+  deleteQueryGroup,
 };
 
 function setSnapshotId(
@@ -89,17 +93,45 @@ function selectOrganism(
   };
 }
 
-function addQueryGroup(
-  state: State,
-  action: PayloadAction<QueryGroup | null>
-): State {
-  const { queryGroups } = state;
+function addQueryGroup(state: State, _: PayloadAction<null>): State {
+  const { queryGroups, queryGroupsWithNames } = state;
+
   const newQueryGroups = queryGroups ? Array.from(queryGroups) : [];
-  if (action.payload) newQueryGroups.push(action.payload);
-  else newQueryGroups.push(EMPTY_QUERY_GROUP);
+  newQueryGroups.push(EMPTY_QUERY_GROUP);
+
+  const newQueryGroupsWithNames = queryGroupsWithNames
+    ? Array.from(queryGroupsWithNames)
+    : [];
+  newQueryGroupsWithNames.push(EMPTY_QUERY_GROUP);
+
   return {
     ...state,
     queryGroups: newQueryGroups,
+    queryGroupsWithNames: newQueryGroupsWithNames,
+  };
+}
+
+function deleteQueryGroup(state: State, action: PayloadAction<number>): State {
+  const { queryGroups, queryGroupsWithNames } = state;
+
+  const newQueryGroups: QueryGroup[] = [];
+  queryGroups?.forEach((queryGroup, index) => {
+    if (index !== action.payload) {
+      newQueryGroups.push(queryGroup);
+    }
+  });
+
+  const newQueryGroupsWithNames: QueryGroupWithNames[] = [];
+  queryGroupsWithNames?.forEach((queryGroupWithNames, index) => {
+    if (index !== action.payload) {
+      newQueryGroupsWithNames.push(queryGroupWithNames);
+    }
+  });
+
+  return {
+    ...state,
+    queryGroups: newQueryGroups,
+    queryGroupsWithNames: newQueryGroupsWithNames,
   };
 }
 
@@ -131,23 +163,31 @@ function selectQueryGroupFilters(
   state: State,
   action: PayloadAction<{
     key: keyof QueryGroup;
-    options: string[];
+    options: { id: string; name: string }[];
     index: number;
   }>
 ): State {
   const { key, options, index } = action.payload;
 
-  const { queryGroups } = state;
+  const { queryGroups, queryGroupsWithNames } = state;
 
   const newQueryGroups = queryGroups ? Array.from(queryGroups) : [];
 
   const newQueryGroup = { ...newQueryGroups[index] };
-  newQueryGroup[key] = options;
+  newQueryGroup[key] = options.map((option) => option.id);
   newQueryGroups[index] = newQueryGroup;
+
+  const newQueryGroupsWithNames = queryGroupsWithNames
+    ? Array.from(queryGroupsWithNames)
+    : [];
+  const newQueryGroupWithNames = { ...newQueryGroupsWithNames[index] };
+  newQueryGroupWithNames[key] = options.map((option) => option.name);
+  newQueryGroupsWithNames[index] = newQueryGroupWithNames;
 
   return {
     ...state,
     queryGroups: newQueryGroups,
+    queryGroupsWithNames: newQueryGroupsWithNames,
   };
 }
 

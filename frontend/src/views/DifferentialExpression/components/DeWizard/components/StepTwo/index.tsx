@@ -5,10 +5,17 @@ import {
 } from "src/views/DifferentialExpression/common/store";
 import { StepTitle } from "../../../Steps/style";
 import { StepHeader, StepSubHeader, WordPop } from "../StepOne/style";
-import { AddQueryGroupButton } from "./style";
+import {
+  AddQueryGroupButton,
+  QueryGroupFiltersWrapper,
+  ButtonsWrapper,
+  BackButton,
+  NextButton,
+} from "./style";
 import { Icon } from "czifui";
 import { addQueryGroup } from "src/views/DifferentialExpression/common/store/actions";
 import QueryGroupFilters from "./components/Filters";
+import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 
 interface Props {
   setStep: (step: number) => void;
@@ -17,7 +24,7 @@ export default function StepTwo({ setStep }: Props): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { queryGroups } = state;
+  const { queryGroups, queryGroupsWithNames } = state;
 
   const handleGoNext = () => {
     setStep(3);
@@ -27,8 +34,19 @@ export default function StepTwo({ setStep }: Props): JSX.Element {
   };
   const handleAddQueryGroup = () => {
     if (!dispatch) return null;
-    dispatch(addQueryGroup(null));
+    dispatch(addQueryGroup());
   };
+  let canGoNext;
+  for (const queryGroup of queryGroups ?? []) {
+    canGoNext = false;
+    for (const key in queryGroup) {
+      if (queryGroup[key as keyof QueryGroup].length > 0) {
+        canGoNext = true;
+        break;
+      }
+    }
+    if (!canGoNext) break;
+  }
   return (
     <div>
       <StepTitle> Step 2 </StepTitle>
@@ -51,15 +69,38 @@ export default function StepTwo({ setStep }: Props): JSX.Element {
       >
         Query group
       </AddQueryGroupButton>
-      {queryGroups?.map((queryGroup, index) => {
-        return (
-          <QueryGroupFilters
-            key={`query-group-${index}`}
-            queryGroupIndex={index}
-            queryGroup={queryGroup}
-          />
-        );
-      })}
+      <QueryGroupFiltersWrapper>
+        {queryGroupsWithNames &&
+          queryGroups?.map((queryGroup, index) => {
+            return (
+              <QueryGroupFilters
+                key={`query-group-${index}`}
+                queryGroupIndex={index}
+                queryGroup={queryGroup}
+                queryGroupWithNames={queryGroupsWithNames[index]}
+              />
+            );
+          })}
+      </QueryGroupFiltersWrapper>
+      <ButtonsWrapper>
+        <BackButton
+          color="primary"
+          size="large"
+          variant="contained"
+          onClick={handleGoBack}
+        >
+          Back
+        </BackButton>
+        <NextButton
+          color="primary"
+          size="large"
+          variant="contained"
+          onClick={handleGoNext}
+          disabled={!canGoNext}
+        >
+          Find differentially expressed genes
+        </NextButton>
+      </ButtonsWrapper>
     </div>
   );
 }

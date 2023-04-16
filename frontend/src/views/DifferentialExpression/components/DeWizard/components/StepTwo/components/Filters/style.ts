@@ -8,7 +8,6 @@ import {
   getColors,
   getFontWeights,
   TagFilter,
-  Tag,
   fontBodyXs,
 } from "czifui";
 
@@ -31,10 +30,6 @@ export const StyledComplexFilterInputDropdown = styled(
     border: 0;
   }
 
-  && :nth-last-child(1) {
-    display: none !important;
-  }
-
   ${(props: CommonThemeProps) => {
     const colors = getColors(props);
 
@@ -47,29 +42,60 @@ export const StyledComplexFilterInputDropdown = styled(
   }}
 `;
 
-export const Wrapper = styled.div`
+interface WrapperProps extends CommonThemeProps {
+  active?: boolean;
+}
+
+export const Wrapper = styled.div<WrapperProps>`
   display: flex;
   flex-direction: row;
   width: 444px;
   flex-wrap: wrap;
   column-gap: 16px;
+  padding-top: 12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-bottom: 8px;
 
   // (atarashansky): remove the blue chips from the filters
   div > div > .MuiChip-root {
     display: none;
   }
+
+  ${(props: WrapperProps) => {
+    const colors = getColors(props);
+    return `
+      border: 1px ${props.active ? "solid" : "dashed"} ${colors?.gray[300]};
+      border-radius: 6px;
+    `;
+  }}
 `;
 
-export const FilterLabel = styled.div`
+export const QueryGroupTitle = styled.div`
   ${fontBodyS}
-
   margin-bottom: 8px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 
   ${(props: CommonThemeProps) => {
     const fontWeights = getFontWeights(props);
-
     return `
-      font-weight: ${fontWeights?.semibold};
+      font-weight: ${fontWeights?.semibold}
+    `;
+  }}
+`;
+
+export const EmptyRectangle = styled.div`
+  width: 116px;
+  height: 28px;
+  border-radius: 4px;
+
+  ${(props: CommonThemeProps) => {
+    const colors = getColors(props);
+    return `
+      border: 1px dashed ${colors?.gray[300]};
     `;
   }}
 `;
@@ -85,12 +111,11 @@ export const StyledTagFilter = styled(TagFilter)`
   border-radius: 4px;
 `;
 
-export const StyledTag = styled(Tag)`
-  ${fontBodyXs}
-  height: 28px;
-  border-radius: 4px;
-`;
-
 export const TagWrapper = styled.div`
   width: 100%;
+  margin-bottom: 8px;
+`;
+
+export const IconButtonWrapper = styled.div`
+  cursor: pointer;
 `;

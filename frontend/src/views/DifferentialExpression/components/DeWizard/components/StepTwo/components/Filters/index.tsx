@@ -3,6 +3,7 @@ import { createFilterOptions } from "@mui/material";
 import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
+  Icon,
   InputDropdownProps,
 } from "czifui";
 import isEqual from "lodash/isEqual";
@@ -11,23 +12,31 @@ import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   FilterDimensions,
   RawDataset,
-  useFilterDimensions,
+  useQueryGroupFilterDimensions,
 } from "src/common/queries/differentialExpression";
 import {
   DispatchContext,
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
-import { selectQueryGroupFilters } from "src/views/DifferentialExpression/common/store/actions";
+import {
+  selectQueryGroupFilters,
+  deleteQueryGroup,
+} from "src/views/DifferentialExpression/common/store/actions";
 import {
   StyledComplexFilter,
   StyledComplexFilterInputDropdown,
   Wrapper,
   StyledPopper,
   StyledTagFilter,
-  StyledTag,
   TagWrapper,
+  QueryGroupTitle,
+  EmptyRectangle,
+  IconButtonWrapper,
 } from "./style";
-import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
+import {
+  QueryGroup,
+  QueryGroupWithNames,
+} from "src/views/DifferentialExpression/common/store/reducer";
 
 const filterOptions = createFilterOptions({
   stringify: (option: RawDataset) =>
@@ -61,10 +70,12 @@ const EMPTY_OBJECT = {};
 interface Props {
   queryGroupIndex: number;
   queryGroup: QueryGroup;
+  queryGroupWithNames: QueryGroupWithNames;
 }
 export default memo(function Filters({
   queryGroupIndex,
   queryGroup,
+  queryGroupWithNames,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
@@ -94,7 +105,7 @@ export default memo(function Filters({
       cell_type_terms: rawCellTypes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions(queryGroupIndex);
+  } = useQueryGroupFilterDimensions(queryGroup, availableFilters);
 
   const InputDropdownProps = {
     sdsStyle: "minimal",
@@ -261,13 +272,13 @@ export default memo(function Filters({
         }
 
         currentOptions = options;
-
+        const optionsWithNames = options.map((option) => {
+          const typedOption = option as unknown as { id: string; name: string };
+          const { id, name } = typedOption;
+          return { id, name };
+        });
         dispatch(
-          selectQueryGroupFilters(
-            key,
-            options.map((option) => (option as unknown as { id: string }).id),
-            queryGroupIndex
-          )
+          selectQueryGroupFilters(key, optionsWithNames, queryGroupIndex)
         );
       };
     },
@@ -309,12 +320,56 @@ export default memo(function Filters({
     [handleFilterChange]
   );
 
+  const tagsToShow = [];
+  const deleteHandlers: (() => void)[] = [];
+  for (const key in queryGroupWithNames) {
+    for (const [index, value] of queryGroupWithNames[
+      key as keyof QueryGroupWithNames
+    ].entries()) {
+      tagsToShow.push(value);
+      deleteHandlers.push(() => {
+        if (!dispatch) return;
+        const newOptionsWithNames = queryGroupWithNames[
+          key as keyof QueryGroupWithNames
+        ].filter((_, i) => i !== index);
+        const newOptions = queryGroup[key as keyof QueryGroup].filter(
+          (_, i) => i !== index
+        );
+        const options = newOptions.map((option, i) => {
+          return { id: option, name: newOptionsWithNames[i] };
+        });
+        dispatch(
+          selectQueryGroupFilters(
+            key as keyof QueryGroup,
+            options,
+            queryGroupIndex
+          )
+        );
+      });
+    }
+  }
+
+  const handleDeleteQueryGroup = () => {
+    if (!dispatch) return;
+    dispatch(deleteQueryGroup(queryGroupIndex));
+  };
+  const isActive = !!tagsToShow.length;
   return (
-    <Wrapper>
-      {/* <Tag style={{height: "10px"}} color="gray" sdsType="secondary" label="Preselected" /> */}
+    <Wrapper active={isActive}>
+      <QueryGroupTitle>
+        Query group
+        <IconButtonWrapper onClick={handleDeleteQueryGroup}>
+          <Icon sdsIcon="trashCan" sdsSize="s" sdsType="button" />
+        </IconButtonWrapper>
+      </QueryGroupTitle>
       <TagWrapper>
-        <StyledTag color="gray" label="StepOne" />
-        <StyledTagFilter onDelete={() => {}} label="Datasets" />
+        {isActive ? (
+          tagsToShow.map((tag, index) => (
+            <StyledTagFilter onDelete={deleteHandlers[index]} label={tag} />
+          ))
+        ) : (
+          <EmptyRectangle />
+        )}
       </TagWrapper>
 
       <StyledComplexFilter

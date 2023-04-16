@@ -21,12 +21,21 @@ export function selectFilters(
 
 export function selectQueryGroupFilters(
   key: keyof QueryGroup,
-  options: string[],
+  options: { id: string; name: string }[],
   index: number
 ): GetActionTypeOfReducer<typeof REDUCERS["selectQueryGroupFilters"]> {
   return {
     payload: { key, options, index },
     type: "selectQueryGroupFilters",
+  };
+}
+
+export function deleteQueryGroup(
+  index: number
+): GetActionTypeOfReducer<typeof REDUCERS["deleteQueryGroup"]> {
+  return {
+    payload: index,
+    type: "deleteQueryGroup",
   };
 }
 
@@ -49,11 +58,11 @@ export function setSnapshotId(
   };
 }
 
-export function addQueryGroup(
-  queryGroup: QueryGroup | null
-): GetActionTypeOfReducer<typeof REDUCERS["addQueryGroup"]> {
+export function addQueryGroup(): GetActionTypeOfReducer<
+  typeof REDUCERS["addQueryGroup"]
+> {
   return {
-    payload: queryGroup,
+    payload: null,
     type: "addQueryGroup",
   };
 }
