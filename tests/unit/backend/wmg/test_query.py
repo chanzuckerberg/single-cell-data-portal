@@ -1,7 +1,7 @@
 import unittest
 from typing import NamedTuple
 
-from backend.wmg.api.v1 import agg_cell_type_counts, agg_tissue_counts, get_dot_plot_data
+from backend.wmg.api.v1 import agg_cell_type_counts, agg_tissue_counts, get_dot_plot_data, filter_pandas_dataframe
 from backend.wmg.data.query import (
     FmgQueryCriteria,
     MarkerGeneQueryCriteria,
@@ -30,15 +30,6 @@ ALL_INDEXED_DIMS_FOR_QUERY = [
 #  query methods
 
 
-def _filter_dataframe(dataframe, criteria):
-    for key in criteria:
-        attrs = [criteria[key]] if not isinstance(criteria[key], list) else criteria[key]
-        if len(attrs) > 0:
-            depluralized_key = key[:-1] if key[-1] == "s" else key
-            dataframe = dataframe[dataframe[depluralized_key].isin(attrs)]
-    return dataframe
-
-
 def generate_expected_dot_plot_data_with_pandas(snapshot, criteria):
     """
     Build expected query results from a pandas dataframe.
@@ -48,8 +39,8 @@ def generate_expected_dot_plot_data_with_pandas(snapshot, criteria):
 
     criteria_es = criteria.dict()
     criteria_cc = criteria.copy(exclude={"gene_ontology_term_ids"}).dict()
-    expression_summary = _filter_dataframe(expression_summary, criteria_es)
-    cell_counts = _filter_dataframe(cell_counts, criteria_cc)
+    expression_summary = filter_pandas_dataframe(expression_summary, criteria_es)
+    cell_counts = filter_pandas_dataframe(cell_counts, criteria_cc)
     cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)
     expected, _ = get_dot_plot_data(expression_summary, cell_counts)
     return sorted(
@@ -69,7 +60,7 @@ def generate_expected_marker_gene_data_with_pandas(snapshot, criteria, statistic
     marker_genes = snapshot.marker_genes_cube.df[:]
 
     criteria_mg = criteria.dict()
-    marker_genes = _filter_dataframe(marker_genes, criteria_mg)
+    marker_genes = filter_pandas_dataframe(marker_genes, criteria_mg)
     expected = retrieve_top_n_markers(marker_genes, statistical_test, num_markers)
     return expected
 

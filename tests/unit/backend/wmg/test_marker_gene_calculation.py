@@ -4,7 +4,7 @@ import unittest
 import pytest
 
 from backend.wmg.data.query import retrieve_top_n_markers
-from backend.wmg.pipeline.summary_cubes.calculate_markers import _prepare_indices_and_metrics, get_markers
+from backend.wmg.data.calculate_markers import _prepare_indices_and_metrics, get_markers
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
