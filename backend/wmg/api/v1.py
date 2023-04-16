@@ -126,6 +126,30 @@ def markers():
     )
 
 
+def differentialExpression():
+    request = connexion.request.json
+    contextFilters = request["contextFilters"]
+    queryGroupFilters = request["queryGroupFilters"]
+    criteria = WmgQueryCriteria(**contextFilters)
+    
+    snapshot: WmgSnapshot = load_snapshot()
+    q = WmgQuery(snapshot)
+    expression_summary = q.expression_summary(criteria)
+    cell_counts = q.cell_counts(criteria)
+
+    
+    filtered_expression_summary = filter_pandas_dataframe(expression_summary, queryGroupFilters)
+    filtered_cell_counts = filter_pandas_dataframe(cell_counts, queryGroupFilters)
+
+
+    return jsonify(
+        dict(
+            snapshot_id=snapshot.snapshot_identifier,
+            
+        )
+    )
+
+
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
     return [
         snapshot.dataset_dict.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
@@ -440,3 +464,12 @@ def build_ordered_cell_types_by_tissue(
             }
 
     return structured_result
+
+
+def filter_pandas_dataframe(dataframe, criteria):
+    for key in criteria:
+        attrs = [criteria[key]] if not isinstance(criteria[key], list) else criteria[key]
+        if len(attrs) > 0:
+            depluralized_key = key[:-1] if key[-1] == "s" else key
+            dataframe = dataframe[dataframe[depluralized_key].isin(attrs)]
+    return dataframe
