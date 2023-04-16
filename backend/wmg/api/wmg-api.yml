@@ -599,6 +599,8 @@ paths:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     self_reported_ethnicity_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
               required:
                 - filter
       responses:
@@ -729,6 +731,111 @@ paths:
                           type: number
                           format: float
                           maxLength: 4
+
+  /v1/differentialExpression:
+    post:
+      summary: Prototype ifferential expression endpoint.
+      tags:
+        - wmg
+      operationId: backend.wmg.api.v1.differentialExpression
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contextFilters:
+                  type: object
+                  required:
+                    - organism_ontology_term_id
+                  properties:
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    dataset_ids:
+                      type: array
+                      items:
+                        type: string
+                        format: uuid
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    development_ontology_stage_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"                      
+                  required:
+                    - organism_ontology_term_id                      
+                queryGroupFilters:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      organism_ontology_term_id:
+                        type: string
+                      tissue_ontology_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                      dataset_ids:
+                        type: array
+                        items:
+                          type: string
+                          format: uuid
+                      disease_ontology_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                      sex_ontology_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                      development_ontology_stage_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                      self_reported_ethnicity_ontology_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"   
+                      cell_type_ontology_term_ids:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_list"                        
+              required:
+                - contextFilters
+                - queryGroupFilters
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - differentialExpressionResults
+                properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/wmg_snapshot_id"
+                  differentialExpressionResults:
+                    description: ->
+                      Differential expression results
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        description: ->
+                          Object with gene id, p-value, and effect size.
+                        type: object
+                        properties:
+                          gene_ontology_term_id:
+                            description: gene ontology term id
+                            type: string
+                          p_value:
+                            description: adjusted p-value
+                            type: number
+                            format: float
+                            maxLength: 4
+                            minimum: 0.0
+                            maximum: 1.0
+                          effect_size:
+                            description: effect size
+                            type: number
+                            format: float
+                            maxLength: 4
 
 components:
   schemas:

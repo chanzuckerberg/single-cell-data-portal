@@ -31,7 +31,7 @@ def _ancestors(cell_type):
     return ancestors
 
 
-def find_lineage_per_cell_type(cell_types, descendants=True):
+def find_descendants_per_cell_type(cell_types):
     """
     Find the ancestors or descendants for each cell type in the input list.
 
@@ -39,9 +39,6 @@ def find_lineage_per_cell_type(cell_types, descendants=True):
     ----------
     cell_types : list
         List of cell types (cell type ontology term IDs) to find descendants for
-
-    descendants : bool, optional, default=True
-        If True, find descendants. If False, find ancestors.
 
     Returns
     -------
@@ -51,7 +48,7 @@ def find_lineage_per_cell_type(cell_types, descendants=True):
 
     relatives_per_cell_type = []
     for cell_type in cell_types:
-        relatives = _descendants(cell_type) if descendants else _ancestors(cell_type)
+        relatives = _descendants(cell_type)
         relatives_per_cell_type.append(relatives)
 
     for i, children in enumerate(relatives_per_cell_type):
@@ -76,10 +73,44 @@ def are_cell_types_colinear(cell_type1, cell_type2):
     -------
     bool
     """
-    descendants1, descendants2 = find_lineage_per_cell_type([cell_type1, cell_type2])
-    ancestors1, ancestors2 = find_lineage_per_cell_type([cell_type1, cell_type2], descendants=False)
+    descendants1 = _descendants(cell_type1)
+    descendants2 = _descendants(cell_type2)
+    ancestors1 = _ancestors(cell_type1)
+    ancestors2 = _ancestors(cell_type2)
     return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
 
+
+def _prepare_rollup_array(
+    df, cell_type_col="cell_type_ontology_term_id"
+) -> pd.DataFrame:
+    
+    df = df.copy()
+    # numeric data
+    numeric_df = df.select_dtypes(include="number")
+    # non-numeric data
+    dimensions_df = df.select_dtypes(exclude="number")
+    # move the cell type column to the front of the dataframe
+    cell_type_column = dimensions_df.pop(cell_type_col)
+    dimensions_df.insert(0, cell_type_col, cell_type_column)
+
+    # calculate integer indices for each non-numeric column in the input dataframe
+    # and calculate the shape of the output array
+    dim_indices = []
+    dim_shapes = []
+    for col in dimensions_df.columns:
+        # map each unique value in the column to an integer index
+        dim = dimensions_df[col].to_numpy()
+        unique_dim = dimensions_df[col].unique()
+        indices = pd.Series(data=range(len(unique_dim)), index=unique_dim)[dim].to_numpy()
+        dim_shapes.append(len(unique_dim))
+        dim_indices.append(indices)
+    # the last dimension corresponds to the numeric columns
+    dim_shapes.append(numeric_df.shape[1])
+    dim_shapes = tuple(dim_shapes)
+    array_to_sum = np.zeros(dim_shapes)
+    # slot the numeric data into the multi-dimensional numpy array
+    array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
+    return array_to_sum, dim_indices, numeric_df, cell_type_column.unique()
 
 def rollup_across_cell_type_descendants(
     df, cell_type_col="cell_type_ontology_term_id", ignore_cols=None
@@ -115,35 +146,7 @@ def rollup_across_cell_type_descendants(
         Tidy dataframe with the same dimensions as the input dataframe, but with the numeric
         columns aggregated across the cell type's descendants.
     """
-    df = df.copy()
-    # numeric data
-    numeric_df = df.select_dtypes(include="number")
-    # non-numeric data
-    dimensions_df = df.select_dtypes(exclude="number")
-    # move the cell type column to the front of the dataframe
-    cell_type_column = dimensions_df.pop(cell_type_col)
-    dimensions_df.insert(0, cell_type_col, cell_type_column)
-
-    # calculate integer indices for each non-numeric column in the input dataframe
-    # and calculate the shape of the output array
-    dim_indices = []
-    dim_shapes = []
-    for col in dimensions_df.columns:
-        # map each unique value in the column to an integer index
-        dim = dimensions_df[col].to_numpy()
-        unique_dim = dimensions_df[col].unique()
-        indices = pd.Series(data=range(len(unique_dim)), index=unique_dim)[dim].to_numpy()
-        dim_shapes.append(len(unique_dim))
-        dim_indices.append(indices)
-    # the last dimension corresponds to the numeric columns
-    dim_shapes.append(numeric_df.shape[1])
-    dim_shapes = tuple(dim_shapes)
-    array_to_sum = np.zeros(dim_shapes)
-    # slot the numeric data into the multi-dimensional numpy array
-    array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
-
-    cell_types = cell_type_column.unique()
-
+    array_to_sum, dim_indices, numeric_df, cell_types = _prepare_rollup_array(df, cell_type_col)
     summed = rollup_across_cell_type_descendants_array(array_to_sum, cell_types)
 
     # extract numeric data and write back into the dataframe
@@ -175,7 +178,7 @@ def rollup_across_cell_type_descendants_array(array_to_sum, cell_types) -> np.nd
     summed : numpy array
         Multi-dimensional numpy array aggregated across the cell type's descendants.
     """
-    descendants = find_lineage_per_cell_type(cell_types)
+    descendants = find_descendants_per_cell_type(cell_types)
     # a pandas series to map cell types to their index in the input arrays
     indexer = pd.Series(index=cell_types, data=range(len(cell_types)))
     descendants_indexes = [indexer[children].to_numpy() for children in descendants]

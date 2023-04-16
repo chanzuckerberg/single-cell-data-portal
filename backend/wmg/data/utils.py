@@ -1,6 +1,7 @@
 import logging
 import time
 from typing import Dict, List
+import numpy as np
 
 import tiledb
 
@@ -132,3 +133,22 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
 
 def depluralize(x):
     return x[:-1] if x[-1] == "s" else x
+
+
+
+def to_dict(a, b):
+    """
+    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
+    """
+    a = np.array(a)
+    b = np.array(b)
+    idx = np.argsort(a)
+    a = a[idx]
+    b = b[idx]
+    bounds = np.where(a[:-1] != a[1:])[0] + 1
+    bounds = np.append(np.append(0, bounds), a.size)
+    bounds_left = bounds[:-1]
+    bounds_right = bounds[1:]
+    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    return d
