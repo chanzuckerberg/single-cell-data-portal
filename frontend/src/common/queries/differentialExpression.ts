@@ -147,10 +147,25 @@ interface FilterSecondary {
   sex_ontology_term_ids: string[];
   development_stage_ontology_term_ids: string[];
   self_reported_ethnicity_ontology_term_ids: string[];
+  cell_type_ontology_term_ids?: string[];
 }
 
 export interface FiltersQuery {
   filter: FilterSecondary;
+}
+
+export interface DifferentialExpressionQuery {
+  contextFilters: FilterSecondary;
+  queryGroupFilters: {
+    dataset_ids: string[];
+    development_stage_ontology_term_ids: string[];
+    disease_ontology_term_ids: string[];
+    organism_ontology_term_id: string;
+    self_reported_ethnicity_ontology_term_ids: string[];
+    sex_ontology_term_ids: string[];
+    tissue_ontology_term_ids: string[];
+    cell_type_ontology_term_ids: string[];
+  }[];
 }
 
 interface FiltersQueryResponse {
@@ -168,6 +183,16 @@ interface FiltersQueryResponse {
     tissue_terms: { [id: string]: string }[];
     cell_type_terms: { [id: string]: string }[];
   };
+  snapshot_id: string;
+}
+
+export interface DifferentialExpressionResult {
+  gene_ontology_term_id: string;
+  p_value: number;
+  effect_size: number;
+}
+interface DifferentialExpressionQueryResponse {
+  differentialExpressionResults: DifferentialExpressionResult[][];
   snapshot_id: string;
 }
 
@@ -203,6 +228,38 @@ export const USE_FILTERS_QUERY = {
   id: "de-filters-query",
 };
 
+async function fetchDifferentialExpressionQuery({
+  query,
+  signal,
+}: {
+  query: DifferentialExpressionQuery | null;
+  signal?: AbortSignal;
+}): Promise<DifferentialExpressionQueryResponse | undefined> {
+  if (!query) return;
+
+  const url = API_URL + API.DE_QUERY;
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(query),
+    method: "POST",
+    signal,
+  });
+  const json: DifferentialExpressionQueryResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+
+export const USE_DE_QUERY = {
+  entities: [ENTITIES.DE_QUERY],
+  id: "de-query",
+};
+
 export function useWMGFiltersQuery(
   query: FiltersQuery | null
 ): UseQueryResult<FiltersQueryResponse> {
@@ -214,6 +271,34 @@ export function useWMGFiltersQuery(
   return useQuery(
     [USE_FILTERS_QUERY, query, currentSnapshotId],
     ({ signal }) => fetchFiltersQuery({ query, signal }),
+    {
+      enabled: Boolean(query),
+      onSuccess(response) {
+        if (!response || !dispatch) return;
+
+        const { snapshot_id } = response;
+
+        if (currentSnapshotId !== snapshot_id) {
+          dispatch(setSnapshotId(snapshot_id));
+        }
+      },
+      // (thuang): We don't need to refetch during the session
+      staleTime: Infinity,
+    }
+  );
+}
+
+export function useDEQuery(
+  query: DifferentialExpressionQuery | null
+): UseQueryResult<DifferentialExpressionQueryResponse> {
+  const dispatch = useContext(DispatchContext);
+
+  // (thuang): Refresh query when the snapshotId changes
+  const currentSnapshotId = useSnapshotId();
+
+  return useQuery(
+    [USE_DE_QUERY, query, currentSnapshotId],
+    ({ signal }) => fetchDifferentialExpressionQuery({ query, signal }),
     {
       enabled: Boolean(query),
       onSuccess(response) {
@@ -348,6 +433,66 @@ function useWMGFiltersQueryRequestBody() {
     ethnicities,
     sexes,
     tissues,
+  ]);
+}
+
+export function useDifferentialExpression(): {
+  data: DifferentialExpressionResult[][];
+  isLoading: boolean;
+} {
+  const requestBody = useDEQueryRequestBody();
+  const { data, isLoading } = useDEQuery(requestBody);
+
+  return useMemo(() => {
+    if (isLoading || !data) return { data: [[]], isLoading };
+    return {
+      data: data.differentialExpressionResults,
+      isLoading: false,
+    };
+  }, [data, isLoading]);
+}
+
+function useDEQueryRequestBody() {
+  const { organismId, selectedFilters, queryGroups } = useContext(StateContext);
+
+  const { datasets, developmentStages, diseases, ethnicities, sexes, tissues } =
+    selectedFilters;
+
+  return useMemo(() => {
+    if (!organismId || !queryGroups) {
+      return null;
+    }
+
+    return {
+      contextFilters: {
+        dataset_ids: datasets,
+        development_stage_ontology_term_ids: developmentStages,
+        disease_ontology_term_ids: diseases,
+        organism_ontology_term_id: organismId,
+        self_reported_ethnicity_ontology_term_ids: ethnicities,
+        sex_ontology_term_ids: sexes,
+        tissue_ontology_term_ids: tissues,
+      },
+      queryGroupFilters: queryGroups.map((queryGroup) => ({
+        dataset_ids: queryGroup.datasets,
+        development_stage_ontology_term_ids: queryGroup.developmentStages,
+        disease_ontology_term_ids: queryGroup.diseases,
+        organism_ontology_term_id: organismId,
+        self_reported_ethnicity_ontology_term_ids: queryGroup.ethnicities,
+        sex_ontology_term_ids: queryGroup.sexes,
+        tissue_ontology_term_ids: queryGroup.tissues,
+        cell_type_ontology_term_ids: queryGroup.cellTypes,
+      })),
+    };
+  }, [
+    organismId,
+    datasets,
+    developmentStages,
+    diseases,
+    ethnicities,
+    sexes,
+    tissues,
+    queryGroups,
   ]);
 }
 
