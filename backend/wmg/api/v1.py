@@ -319,7 +319,6 @@ def add_missing_combinations_to_dot_plot_matrix(dot_plot_matrix_df, cell_counts_
     # for each gene, get the set of available combinations of group-by terms from the input expression dataframe
     entries_to_add = []
     for gene in genes:
-        print(gene)
         available_combinations_per_gene = combinations_per_gene[gene]
 
         # get the combinations that are missing in the input expression dataframe
