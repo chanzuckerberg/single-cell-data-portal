@@ -15,6 +15,9 @@ import {
   ButtonsWrapper,
   BackButton,
   RestartButton,
+  NoDeGenesContainer,
+  NoDeGenesDescription,
+  NoDeGenesHeader,
 } from "./style";
 import { QueryGroupWithNames } from "src/views/DifferentialExpression/common/store/reducer";
 interface Props {
@@ -132,42 +135,53 @@ export default function StepThree({ setStep }: Props): JSX.Element {
               {namesToShow[index].join(", ")}
             </QueryGroupSubTitle>
             <TableWrapper>
-              <StyledHTMLTable condensed bordered={false}>
-                <thead>
-                  <tr>
-                    <td>
-                      <CopyGenesButton
-                        onClick={handleCopyGenes(index)}
-                        sdsType="primary"
-                        sdsStyle="minimal"
-                        isAllCaps={false}
-                        startIcon={
-                          <Icon sdsIcon="copy" sdsSize="s" sdsType="button" />
-                        }
-                      >
-                        Copy Genes
-                      </CopyGenesButton>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Gene </td>
-                    <td>P-value</td>
-                    <td>Effect size</td>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((result) => {
-                    const { name: symbol, pValue, effectSize } = result;
-                    return (
-                      <tr key={symbol}>
-                        <td>{symbol}</td>
-                        <td>{pValue.toPrecision(4)}</td>
-                        <td>{effectSize.toPrecision(4)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </StyledHTMLTable>
+              {results.length > 0 ? (
+                <StyledHTMLTable condensed bordered={false}>
+                  <thead>
+                    <tr>
+                      <td>
+                        <CopyGenesButton
+                          onClick={handleCopyGenes(index)}
+                          sdsType="primary"
+                          sdsStyle="minimal"
+                          isAllCaps={false}
+                          startIcon={
+                            <Icon sdsIcon="copy" sdsSize="s" sdsType="button" />
+                          }
+                        >
+                          Copy Genes
+                        </CopyGenesButton>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Gene </td>
+                      <td>P-value</td>
+                      <td>Effect size</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((result) => {
+                      const { name: symbol, pValue, effectSize } = result;
+                      return (
+                        <tr key={symbol}>
+                          <td>{symbol}</td>
+                          <td>{pValue.toPrecision(4)}</td>
+                          <td>{effectSize.toPrecision(4)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </StyledHTMLTable>
+              ) : (
+                <NoDeGenesContainer>
+                  <NoDeGenesHeader>
+                    No Differentially Expressed Genes
+                  </NoDeGenesHeader>
+                  <NoDeGenesDescription>
+                    No differentially expressed genes for this query group.
+                  </NoDeGenesDescription>
+                </NoDeGenesContainer>
+              )}
             </TableWrapper>
           </div>
         );
