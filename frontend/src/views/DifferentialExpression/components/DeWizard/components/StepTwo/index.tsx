@@ -25,9 +25,10 @@ export default function StepTwo({ setStep }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
 
   const { queryGroups, queryGroupsWithNames } = state;
-
+  console.log(queryGroups);
   const handleGoNext = () => {
     setStep(3);
+    // TODO: dispatch action to fetch DE results
   };
   const handleGoBack = () => {
     setStep(1);
