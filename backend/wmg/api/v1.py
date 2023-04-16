@@ -145,7 +145,7 @@ def differentialExpression():
     for filters in queryGroupFilters:
         all_results.append(
             run_differential_expression(
-                filters, expression_summary, cell_counts, snapshot.datset_to_gene_ids, do_rollup=False, pval_thr=1e-5
+                filters, expression_summary, cell_counts, snapshot.dataset_to_gene_ids, do_rollup=False, pval_thr=1e-5
             )
         )
 
