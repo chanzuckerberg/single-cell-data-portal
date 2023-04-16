@@ -999,6 +999,8 @@ components:
           type: string
         publisher_metadata:
           $ref: "#/components/schemas/publisher_metadata"
+        revising_in:
+          $ref: "#/components/schemas/revising_in"
         datasets:
           type: array
           items:
@@ -1032,7 +1034,13 @@ components:
           type: number
         published_year:
           type: number
-
+    revising_in:
+      type: string
+      description: >
+        If there is a private Revision for a public Collection, then `revising_in` is set to the id of 
+        the private Revision in the metadata of the public Collection. The value is `None` if the user is not 
+        authorized or no private Revision exists.
+      nullable: true
     ontology_element:
       type: object
       properties:

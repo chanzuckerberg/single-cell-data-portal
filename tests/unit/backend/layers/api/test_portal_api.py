@@ -27,7 +27,6 @@ from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, Da
 
 
 class TestCollection(BaseAPIPortalTest):
-
     # ✅
     def test__list_collection_options__allow(self):
         origin = "http://localhost:3000"
@@ -244,6 +243,39 @@ class TestCollection(BaseAPIPortalTest):
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
 
+    
+    def test__get_collection_id_returns_revision_of_published_collection(self):
+        version = self.generate_published_collection()
+        revision = self.generate_revision(version.collection_id)
+        test_url = furl(path=f"/dp/v1/collections/{revision.version_id}")
+        headers = dict(host="localhost")
+        headers["Cookie"] = self.get_cxguser_token()
+        response = self.app.get(test_url.url, headers=headers)
+        assert response.status_code == 200
+        
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PRIVATE")
+        self.assertEqual(body["access_type"], "WRITE")
+
+        # check revising_in is set if the collection has a revision and the
+        # user is logged in and has write access.
+        test_url = furl(path=f"/dp/v1/collections/{version.version_id}")
+        response = self.app.get(test_url.url, headers=headers)
+        assert response.status_code == 200
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+        self.assertEqual(body["access_type"], "WRITE")
+        self.assertEqual(body["revising_in"],revision.version_id.id)
+
+        # check revising_in is not set if the collection has a revision and the
+        # user is not logged in.
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        assert response.status_code == 200
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+        self.assertEqual(body["access_type"], "READ")
+        self.assertNotIn("revising_in", body)
+    
     def test__get_collection_id_retrieves_published_version_by_collection_id(self):
         """
         GET /collections/:collection_id retrieves the published version given a canonical collection_id
@@ -275,6 +307,7 @@ class TestCollection(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
         self.assertEqual(body["visibility"], "PRIVATE")
+
 
     def test__get_collection_id_retrieves_unpublished_version(self):
         """
@@ -528,7 +561,6 @@ class TestCollection(BaseAPIPortalTest):
 
     # ✅
     def test__post_collection_adds_publisher_metadata(self):
-
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata())
 
         test_url = furl(path="/dp/v1/collections")
@@ -696,7 +728,6 @@ class TestCollection(BaseAPIPortalTest):
             self.assertEqual(link["link_url"], link["link_url"].strip())
 
     def test__list_collection__check_owner__no_auth(self):
-
         # Generate test collection
         public_owned = self.generate_published_collection(owner="test_user_id")
         private_owned = self.generate_unpublished_collection(owner="test_user_id")
@@ -1121,7 +1152,6 @@ class TestCollectionDeletion(BaseAPIPortalTest):
 
 
 class TestUpdateCollection(BaseAPIPortalTest):
-
     # ✅
     def test__update_collection__OK(self):
         collection = self.generate_unpublished_collection()
@@ -1359,7 +1389,6 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     # ✅
     def test__update_collection_new_doi_updates_metadata(self):
-
         # Generate a collection with "Old Journal" as publisher metadata
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("Old Journal"))
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
@@ -1388,7 +1417,6 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     # ✅
     def test__update_collection_remove_doi_deletes_metadata(self):
-
         # Generate a collection with "Old Journal" as publisher metadata
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("Old Journal"))
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
@@ -1507,7 +1535,6 @@ class TestCollectionsCurators(BaseAPIPortalTest):
 
 # TODO: these tests all require the generation of a dataset
 class TestDataset(BaseAPIPortalTest):
-
     # ✅
     def test__post_dataset_asset__OK(self):
         self.business_logic.get_dataset_artifact_download_data = Mock(
@@ -1631,7 +1658,6 @@ class TestDataset(BaseAPIPortalTest):
             return [dataclasses.asdict(o) for o in ontologies]
 
         if actual_dataset is not None and persisted_dataset is not None:  # pylance
-
             self.assertNotIn("description", actual_dataset)
             self.assertEqual(actual_dataset["id"], persisted_dataset.version_id.id)
             self.assertEqual(actual_dataset["name"], persisted_dataset.metadata.name)
@@ -1660,7 +1686,6 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
-
         import copy
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -1687,7 +1712,6 @@ class TestDataset(BaseAPIPortalTest):
             return [dataclasses.asdict(o) for o in ontologies]
 
         if actual_dataset is not None:  # pylance
-
             self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
             self.assertEqual(
                 actual_dataset["development_stage_ancestors"],
@@ -1832,7 +1856,6 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__delete_public_dataset_returns__405(self):
-
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)],
             publish=True,
@@ -1846,7 +1869,6 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__cancel_dataset_download__user_not_collection_owner(self):
-
         dataset = self.generate_dataset(
             owner="someone_else",
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)],
@@ -1859,7 +1881,6 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__cancel_dataset_download__user_not_logged_in(self):
-
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)],
         )
@@ -1871,7 +1892,6 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__dataset_meta__ok(self):
-
         headers = {"host": "localhost", "Content-Type": "application/json"}
 
         with self.subTest("dataset is public"):
@@ -1951,7 +1971,6 @@ class TestDataset(BaseAPIPortalTest):
             return json.loads(response.data)
 
         with self.subTest("Dataset belonging to an unpublished collection"):
-
             test_uri = "some_uri_0"
 
             dataset = self.generate_dataset(
@@ -1970,7 +1989,6 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to an unpublished collection, replaced"):
-
             test_uri = "some_uri_0"
 
             dataset = self.generate_dataset(
@@ -2001,7 +2019,6 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a published collection"):
-
             test_uri = "some_uri_1"
 
             dataset = self.generate_dataset(
@@ -2019,7 +2036,6 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, not replaced"):
-
             test_uri = "some_uri_2"
 
             dataset = self.generate_dataset(
@@ -2039,7 +2055,6 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, replaced"):
-
             test_uri = "some_uri_1"
 
             dataset = self.generate_dataset(
