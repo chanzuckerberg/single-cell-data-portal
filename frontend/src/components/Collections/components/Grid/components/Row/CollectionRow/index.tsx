@@ -85,10 +85,10 @@ const CollectionRow: FC<Props> = (props) => {
   if (!collection || isTombstonedCollection(collection)) return null;
 
   const handleRevisionClick = () => {
-    if (!collection?.revisioning_in) {
+    if (!collection?.revising_in) {
       mutate(id);
     } else {
-      navigateToRevision(collection?.revisioning_in || collection.id);
+      navigateToRevision(collection?.revising_in || collection.id);
     }
   };
 
@@ -122,7 +122,7 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.revisionsEnabled && collection.revisioning_in && (
+            {props.revisionsEnabled && collection.revising_in && (
               <Tag minimal intent={Intent.PRIMARY} data-testid="revision-tag">
                 Revision Pending
               </Tag>
@@ -137,7 +137,7 @@ const CollectionRow: FC<Props> = (props) => {
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell
-          revisionId={collection.revisioning_in}
+          revisionId={collection.revising_in}
           handleRevisionClick={handleRevisionClick}
           isLoading={isLoading}
         />
@@ -155,7 +155,7 @@ const RevisionCell = ({
 }: {
   handleRevisionClick: () => void;
   isLoading: boolean;
-  revisionId: Collection["revisioning_in"];
+  revisionId: Collection["revising_in"];
 }) => {
   return (
     <RightAlignedDetailsCell>

@@ -36,6 +36,7 @@ import DatasetNameCell from "src/components/Datasets/components/Grid/components/
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
 import { View } from "../globalStyle";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
+import { CATEGORY_FILTER_DENY_LIST } from "src/views/Datasets/common/constants";
 
 /**
  * Collection ID object key.
@@ -147,9 +148,9 @@ export default function Datasets(): JSX.Element {
         id: CATEGORY_FILTER_ID.ORGANISM,
       },
       {
-        Cell: ({ value }: CellPropsValue<number | null>) => (
+        Cell: ({ value }: CellPropsValue<number>) => (
           <RightAlignCell>
-            <CountCell cellCount={value || 0} />
+            <CountCell cellCount={value} />
           </RightAlignCell>
         ),
         Header: "Cells",
@@ -315,13 +316,15 @@ export default function Datasets(): JSX.Element {
 
   // Determine the set of categories to display for the datasets view.
   const categories = useMemo<Set<CATEGORY_FILTER_ID>>(() => {
-    return Object.values(CATEGORY_FILTER_ID).reduce(
-      (accum, categoryFilterId: CATEGORY_FILTER_ID) => {
+    return Object.values(CATEGORY_FILTER_ID)
+      .filter(
+        (categoryFilterId: CATEGORY_FILTER_ID) =>
+          !CATEGORY_FILTER_DENY_LIST.includes(categoryFilterId)
+      )
+      .reduce((accum, categoryFilterId: CATEGORY_FILTER_ID) => {
         accum.add(categoryFilterId);
         return accum;
-      },
-      new Set<CATEGORY_FILTER_ID>()
-    );
+      }, new Set<CATEGORY_FILTER_ID>());
   }, []);
 
   // Set up filter instance.

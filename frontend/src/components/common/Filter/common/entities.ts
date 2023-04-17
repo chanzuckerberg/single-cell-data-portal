@@ -1,6 +1,11 @@
 import { CellValue, FilterValue, Row } from "react-table";
 import { EVENTS } from "src/common/analytics/events";
-import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
+import {
+  Collection,
+  COLLECTION_STATUS,
+  Ontology,
+  PublisherMetadata,
+} from "src/common/entities";
 
 /**
  * Payload key when tracking select of category values. For example, "organ" in FILTER_SELECT_ORGAN : {organ: "brain"}.
@@ -117,6 +122,7 @@ export enum CATEGORY_FILTER_ID {
   "ASSAY" = "ASSAY",
   "CELL_COUNT" = "CELL_COUNT",
   "CELL_TYPE_CALCULATED" = "CELL_TYPE_CALCULATED",
+  "CURATOR_NAME" = "CURATOR_NAME",
   "DEVELOPMENT_STAGE" = "DEVELOPMENT_STAGE",
   "DISEASE" = "DISEASE",
   "SELF_REPORTED_ETHNICITY" = "SELF_REPORTED_ETHNICITY",
@@ -125,6 +131,7 @@ export enum CATEGORY_FILTER_ID {
   "PUBLICATION_AUTHORS" = "PUBLICATION_AUTHORS",
   "PUBLICATION_DATE_VALUES" = "PUBLICATION_DATE_VALUES",
   "SEX" = "SEX",
+  "STATUS" = "STATUS",
   "SUSPENSION_TYPE" = "SUSPENSION_TYPE",
   "TISSUE_CALCULATED" = "TISSUE_CALCULATED",
 }
@@ -317,6 +324,7 @@ export enum CATEGORY_VALUE_KEY {
  */
 export interface Categories {
   assay: Ontology[];
+  cell_count: number;
   cell_type: Ontology[];
   cell_type_ancestors: string[];
   cellTypeCalculated: string[];
@@ -382,12 +390,15 @@ export type CellPropsValue<T> = { value: CellValue<T> };
  * datasets grouped by collection.
  */
 export interface CollectionRow extends Categories, PublisherMetadataCategories {
+  curator_name?: string; // My collections view.
   id: string;
   name: string;
   published_at: number;
   publisher_metadata?: PublisherMetadata; // Collection publication metadata
   recency: number; // Used by sort
   revised_at?: number;
+  revisedBy?: string; // My collections view.
+  status?: COLLECTION_STATUS[]; // My collections view.
   summaryCitation: string;
 }
 
@@ -395,7 +406,6 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
  * Join of dataset and collection information, optimized for filtering datasets.
  */
 export interface DatasetRow extends Categories, PublisherMetadataCategories {
-  cell_count: number | null;
   collection_id: Collection["id"];
   collection_name: Collection["name"];
   explorer_url: string;

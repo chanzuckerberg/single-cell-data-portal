@@ -156,7 +156,7 @@ export interface TombstonedCollection {
   tombstone: true;
 }
 
-function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
+function fetchCollection() {
   return async function (
     id: string
   ): Promise<Collection | TombstonedCollection | null> {
@@ -182,14 +182,6 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     };
 
     let publishedCounterpart;
-
-    if (allCollections && collection.visibility === VISIBILITY_TYPE.PUBLIC) {
-      const collectionsWithID = allCollections.get(id);
-
-      collection.revisioning_in = collectionsWithID?.get(
-        VISIBILITY_TYPE.PRIVATE
-      )?.id;
-    }
 
     if (collection.revision_of) {
       const publicCollectionURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
@@ -228,15 +220,12 @@ export function useCollection({
 }: {
   id?: string;
 }): UseQueryResult<Collection | TombstonedCollection | null> {
-  const { data: collections } = useCollections();
-  const queryFn = fetchCollection(collections);
+  const queryFn = fetchCollection();
 
   return useQuery<Collection | TombstonedCollection | null>(
-    [USE_COLLECTION, id, collections],
+    [USE_COLLECTION, id],
     () => queryFn(id),
-    {
-      enabled: !!collections,
-    }
+    {}
   );
 }
 
@@ -483,8 +472,6 @@ export function useEditCollection(
 > {
   const queryClient = useQueryClient();
 
-  const { data: collections } = useCollections(); //all collections
-
   const { data: collection } = useCollection({
     //revision
     id: collectionID,
@@ -504,28 +491,25 @@ export function useEditCollection(
       if (!newCollection) {
         return;
       }
-      queryClient.setQueryData(
-        [USE_COLLECTION, collectionID, collections],
-        () => {
-          let revision_diff;
-          if (isTombstonedCollection(newCollection)) {
-            return newCollection;
-          } else if (
-            !isTombstonedCollection(collection) &&
-            !isTombstonedCollection(publishedCollection) &&
-            collection?.revision_of &&
+      queryClient.setQueryData([USE_COLLECTION, collectionID], () => {
+        let revision_diff;
+        if (isTombstonedCollection(newCollection)) {
+          return newCollection;
+        } else if (
+          !isTombstonedCollection(collection) &&
+          !isTombstonedCollection(publishedCollection) &&
+          collection?.revision_of &&
+          publishedCollection
+        ) {
+          revision_diff = checkForRevisionChange(
+            newCollection,
             publishedCollection
-          ) {
-            revision_diff = checkForRevisionChange(
-              newCollection,
-              publishedCollection
-            );
+          );
 
-            return { ...collection, ...newCollection, revision_diff };
-          }
-          return { ...collection, ...newCollection };
+          return { ...collection, ...newCollection, revision_diff };
         }
-      );
+        return { ...collection, ...newCollection };
+      });
     },
   });
 }

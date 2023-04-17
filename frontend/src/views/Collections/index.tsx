@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
@@ -12,6 +12,7 @@ import { CollectionsGrid } from "src/components/Collections/components/Grid/comp
 import Filter from "src/components/common/Filter";
 import {
   CATEGORY_FILTER_ID,
+  CategoryView,
   CellPropsValue,
   CollectionRow,
   MultiPanelSelectedUIState,
@@ -25,18 +26,32 @@ import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { Title } from "src/components/common/Grid/components/Title";
 import SideBar from "src/components/common/SideBar";
-import CreateCollection from "src/components/CreateCollectionModal";
 import { CollectionsView as View } from "./style";
+import CreateCollection from "src/components/CreateCollectionModal";
+import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
+import CountCell from "src/components/common/Grid/components/CountCell";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useUserInfo } from "src/common/queries/auth";
 import {
+  CATEGORY_FILTER_DENY_LIST,
+  CATEGORY_FILTER_PARTITION_LIST,
+  COLLECTION_CELL_COUNT,
+  COLLECTION_CURATOR_NAME,
   COLLECTION_ID,
   COLLECTION_NAME,
   COLLECTION_RECENCY,
+  COLLECTION_REVISED_BY,
+  COLLECTION_STATUS,
   COLLECTION_SUMMARY_CITATION,
+  COLLECTIONS_COLUMN_DENY_LIST,
   COLLECTIONS_MODE,
+  COLUMN_DENY_LIST,
   COLUMN_ID_RECENCY,
 } from "src/views/Collections/common/constants";
+import { FilterDivider } from "src/components/common/Filter/common/style";
+import { ALIGNMENT } from "src/components/common/Grid/common/entities";
+import StatusCell from "src/components/common/Grid/components/StatusCell";
+import RevisionButton from "src/components/common/Grid/components/RevisionButton";
 import { get } from "src/common/featureFlags";
 import { BOOLEAN } from "src/common/localStorage/set";
 
@@ -52,8 +67,12 @@ export default function Collections(): JSX.Element {
   // Pop toast if user has been redirected from a tombstoned collection.
   useExplainTombstoned();
 
-  // Filterable collection datasets joined from datasets index and collections index responses.
-  const { isError, isLoading, rows: collectionRows } = useFetchCollectionRows();
+  // Filterable collection datasets joined from datasets index and collections (or my-collections) index responses.
+  const {
+    isError,
+    isLoading,
+    rows: collectionRows,
+  } = useFetchCollectionRows(mode, status);
 
   // Column configuration backing table.
   const columnConfig: Column<CollectionRow>[] = useMemo(
@@ -75,6 +94,30 @@ export default function Collections(): JSX.Element {
         disableSortBy: true,
         showCountAndTotal: true,
       },
+      // Viewable only in my-collections mode, required for filter.
+      {
+        Cell: ({ row }: RowPropsValue<CollectionRow>) => {
+          return (
+            <StatusCell
+              revisionButton={<RevisionButton id={row.values.revisedBy} />}
+              status={row.values.STATUS}
+            />
+          );
+        },
+        Header: "Status",
+        accessor: COLLECTION_STATUS,
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.STATUS,
+      },
+      // Viewable only in my-collections mode, required for filter.
+      {
+        Header: "Curator",
+        accessor: COLLECTION_CURATOR_NAME,
+        disableSortBy: false,
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.CURATOR_NAME,
+      },
+      // Viewable in collections mode, hidden in my-collections mode.
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
           return <div>{row.values.summaryCitation || "No publication"}</div>;
@@ -105,6 +148,16 @@ export default function Collections(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.DISEASE,
       },
+      // Viewable only in my-collections mode, required for filter.
+      {
+        Cell: ({ value }: CellPropsValue<string[]>) => (
+          <NTagCell label={PLURALIZED_METADATA_LABEL.ASSAY} values={value} />
+        ),
+        Header: "Assay",
+        accessor: ontologyLabelCellAccessorFn("assay"),
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.ASSAY,
+      },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.ORGANISM} values={value} />
@@ -115,6 +168,20 @@ export default function Collections(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ORGANISM,
       },
+      // Viewable only in my-collections mode.
+      {
+        Cell: ({ value }: CellPropsValue<number | null>) => (
+          <RightAlignCell>
+            <CountCell cellCount={value || 0} />
+          </RightAlignCell>
+        ),
+        Header: "Cells",
+        accessor: COLLECTION_CELL_COUNT,
+        alignment: ALIGNMENT.RIGHT,
+        filter: "between",
+        sortType: "number",
+        id: CATEGORY_FILTER_ID.CELL_COUNT,
+      },
       // Hidden, required for sorting
       {
         accessor: COLLECTION_RECENCY,
@@ -123,12 +190,6 @@ export default function Collections(): JSX.Element {
       // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.
       {
         accessor: COLLECTION_ID,
-      },
-      // Hidden, required for filter.
-      {
-        accessor: ontologyLabelCellAccessorFn("assay"),
-        filter: "includesSome",
-        id: CATEGORY_FILTER_ID.ASSAY,
       },
       // Hidden, required for filter.
       {
@@ -158,6 +219,10 @@ export default function Collections(): JSX.Element {
         accessor: "publicationDateValues",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
+      },
+      // Hidden, required for accessing revised by via row.values, for building status.
+      {
+        accessor: COLLECTION_REVISED_BY,
       },
       // Hidden, required for filter.
       {
@@ -201,20 +266,7 @@ export default function Collections(): JSX.Element {
       disableSortBy: false,
       initialState: {
         filters: initialFilters,
-        // Only display tissue, disease and organism values.
-        hiddenColumns: [
-          COLLECTION_ID,
-          COLUMN_ID_RECENCY,
-          CATEGORY_FILTER_ID.ASSAY,
-          CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
-          CATEGORY_FILTER_ID.SELF_REPORTED_ETHNICITY,
-          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
-          CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
-          CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
-          CATEGORY_FILTER_ID.SEX,
-          CATEGORY_FILTER_ID.SUSPENSION_TYPE,
-          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
-        ],
+        hiddenColumns: COLLECTIONS_COLUMN_DENY_LIST,
         sortBy: [
           {
             desc: true,
@@ -230,40 +282,48 @@ export default function Collections(): JSX.Element {
   // Determine the set of categories to display for the collections view.
   const categories = useMemo<Set<CATEGORY_FILTER_ID>>(() => {
     return Object.values(CATEGORY_FILTER_ID)
-      .filter((categoryFilterId: CATEGORY_FILTER_ID) => {
-        return (
-          categoryFilterId !== CATEGORY_FILTER_ID.CELL_COUNT &&
-          categoryFilterId !== CATEGORY_FILTER_ID.GENE_COUNT
-        );
-      })
+      .filter(
+        (categoryFilterId: CATEGORY_FILTER_ID) =>
+          !CATEGORY_FILTER_DENY_LIST[mode].includes(categoryFilterId)
+      )
       .reduce((accum, categoryFilterId: CATEGORY_FILTER_ID) => {
         accum.add(categoryFilterId);
         return accum;
       }, new Set<CATEGORY_FILTER_ID>());
-  }, []);
+  }, [mode]);
+
+  // Determine the hidden columns.
+  const hiddenColumns = useMemo<string[]>(() => COLUMN_DENY_LIST[mode], [mode]);
 
   // Filter init.
   const {
     preFilteredRows,
     rows,
     setFilter,
+    setHiddenColumns,
     state: { filters },
   } = tableInstance;
-  const filterInstance = useCategoryFilter(
-    preFilteredRows,
-    categories,
-    filters,
-    setFilter,
-    initialMultiPanelSelectedUIState
-  );
+  const { categoryViews, onFilter, multiPanelSelectedUIState } =
+    useCategoryFilter(
+      preFilteredRows,
+      categories,
+      filters,
+      setFilter,
+      initialMultiPanelSelectedUIState
+    );
+
+  // Updates table hidden columns state.
+  useEffect(() => {
+    setHiddenColumns(hiddenColumns);
+  }, [hiddenColumns, setHiddenColumns]);
 
   // Store latest filter state.
   useEffect(() => {
     storeFilters(filters);
-    storeMultiPanelSelectedUIState(filterInstance.multiPanelSelectedUIState);
+    storeMultiPanelSelectedUIState(multiPanelSelectedUIState);
   }, [
     filters,
-    filterInstance.multiPanelSelectedUIState,
+    multiPanelSelectedUIState,
     storeFilters,
     storeMultiPanelSelectedUIState,
   ]);
@@ -273,6 +333,10 @@ export default function Collections(): JSX.Element {
     KEYS.SIDE_BAR_COLLECTIONS,
     true
   );
+
+  // Partition category views for collections and my-collections mode filtering.
+  const [firstPartitionCategoryViews, secondPartitionCategoryViews] =
+    partitionCategoryViews(categoryViews, mode);
 
   return (
     <>
@@ -286,7 +350,19 @@ export default function Collections(): JSX.Element {
             isOpen={isSideBarOpen}
             onToggle={storeIsSideBarOpen}
           >
-            <Filter {...filterInstance} />
+            <Filter
+              categoryViews={firstPartitionCategoryViews}
+              onFilter={onFilter}
+            />
+            {secondPartitionCategoryViews.length > 0 && (
+              <>
+                <FilterDivider />
+                <Filter
+                  categoryViews={secondPartitionCategoryViews}
+                  onFilter={onFilter}
+                />
+              </>
+            )}
           </SideBar>
           <View>
             {mode === COLLECTIONS_MODE.MY_COLLECTIONS && <CreateCollection />}
@@ -297,6 +373,7 @@ export default function Collections(): JSX.Element {
               </GridHero>
             ) : (
               <CollectionsGrid
+                mode={mode}
                 tableCountSummary={buildTableCountSummary(
                   rows,
                   preFilteredRows
@@ -310,4 +387,30 @@ export default function Collections(): JSX.Element {
       )}
     </>
   );
+}
+
+/**
+ * Partitions the category views for collections and my-collections mode filtering.
+ * @param categoryViews - View models of categories to display.
+ * @param mode - Collections mode.
+ * @returns partitioned category views.
+ */
+function partitionCategoryViews(
+  categoryViews: CategoryView[],
+  mode: COLLECTIONS_MODE
+): [CategoryView[], CategoryView[]] {
+  const firstPartitionCategoryViews = [];
+  const secondPartitionCategoryViews = [];
+  for (const categoryView of categoryViews) {
+    if (
+      CATEGORY_FILTER_PARTITION_LIST[mode].includes(
+        categoryView.categoryFilterId
+      )
+    ) {
+      secondPartitionCategoryViews.push(categoryView);
+    } else {
+      firstPartitionCategoryViews.push(categoryView);
+    }
+  }
+  return [firstPartitionCategoryViews, secondPartitionCategoryViews];
 }
