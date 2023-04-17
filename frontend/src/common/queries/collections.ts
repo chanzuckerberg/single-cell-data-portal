@@ -1,5 +1,4 @@
 import {
-  QueryClient,
   useMutation,
   UseMutationResult,
   useQuery,
@@ -30,6 +29,7 @@ import {
   JSON_BODY_FETCH_OPTIONS,
 } from "./common";
 import { ENTITIES } from "./entities";
+import { QueryClient } from "react-query/core";
 
 /**
  * Never expire cached collection / collections.

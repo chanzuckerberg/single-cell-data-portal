@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useQuery, UseQueryResult } from "react-query";
+import { QueryStatus, useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
 import {
   ACCESS_TYPE,
@@ -32,7 +32,6 @@ import {
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
 import { COLLECTIONS_MODE } from "src/views/Collections/common/constants";
-import { QueryStatus } from "react-query/types/core/types";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
