@@ -260,7 +260,7 @@ export function isCollectionHasPrivateRevision(
   return (
     collection.access_type === ACCESS_TYPE.WRITE &&
     collection.visibility === VISIBILITY_TYPE.PUBLIC &&
-    !!collection.revisioning_in
+    !!collection.revising_in
   );
 }
 

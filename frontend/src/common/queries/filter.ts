@@ -103,7 +103,7 @@ export interface MyCollectionResponse extends CollectionResponse {
  * Model of /collections/index or /my-collections/index JSON response that has been modified to include calculated fields that facilitate filter
  * functionality.
  */
-type ProcessedCollectionResponse = (
+export type ProcessedCollectionResponse = (
   | CollectionResponse
   | MyCollectionResponse
 ) & {

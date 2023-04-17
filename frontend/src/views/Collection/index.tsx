@@ -12,6 +12,7 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import {
   useCollection,
   useCollectionUploadLinks,
+  useCreateRevision,
   useDeleteCollection,
 } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
@@ -40,7 +41,7 @@ import { CollectionActions } from "src/views/Collection/components/ActionButtons
 import AddButton from "src/views/Collection/components/ActionButtons/components/AddButton";
 import MoreDropdown from "src/views/Collection/components/ActionButtons/components/MoreDropdown";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
-import StartRevisionButton from "src/views/Collection/components/ActionButtons/components/StartRevisionButton";
+import CreateRevisionButton from "src/views/Collection/components/ActionButtons/components/CreateRevisionButton";
 
 const Collection: FC = () => {
   const router = useRouter();
@@ -68,6 +69,7 @@ const Collection: FC = () => {
 
   const { data: collection, isError, isFetching } = collectionState;
 
+  const { mutateAsync: createRevision } = useCreateRevision();
   const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
     id,
     collection && "visibility" in collection
@@ -160,6 +162,15 @@ const Collection: FC = () => {
     collection.summaryCitation
   );
 
+  // Creates a revision of the collection and redirects to the private revision collection.
+  const handleCreateRevision = async (): Promise<void> => {
+    await createRevision(id, {
+      onSuccess: (collection) => {
+        router.push(ROUTES.COLLECTION.replace(":id", collection.id));
+      },
+    });
+  };
+
   const handleDeleteCollection = async () => {
     setUserWithdrawn(true);
 
@@ -210,7 +221,9 @@ const Collection: FC = () => {
                     loading={isLoading}
                   />
                   {!hasRevision && (
-                    <StartRevisionButton collection={collection} />
+                    <CreateRevisionButton
+                      handleCreateRevision={handleCreateRevision}
+                    />
                   )}
                 </>
               )}

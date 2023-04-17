@@ -8,7 +8,7 @@ const IGNORED_COLLECTION_FIELDS = [
   "visibility",
   "created_at",
   "updated_at",
-  "revisioning_in",
+  "revising_in",
   "revision_of",
   "revision_diff",
   "published_at",

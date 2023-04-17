@@ -104,8 +104,8 @@ export interface Collection {
   revision_diff: boolean;
   summaryCitation?: string;
   tombstone?: boolean;
+  revising_in?: Collection["id"];
   revision_of?: Collection["id"];
-  revisioning_in?: Collection["id"];
 }
 
 /**

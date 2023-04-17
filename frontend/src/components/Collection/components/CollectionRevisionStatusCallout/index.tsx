@@ -11,15 +11,14 @@ interface Props {
 export default function CollectionRevisionStatusCallout({
   collection,
 }: Props): JSX.Element | null {
-  const { access_type, revision_of, revisioning_in } = collection;
-  return access_type === ACCESS_TYPE.WRITE &&
-    (revision_of || revisioning_in) ? (
+  const { access_type, revision_of, revising_in } = collection;
+  return access_type === ACCESS_TYPE.WRITE && (revision_of || revising_in) ? (
     <CollectionRevisionCallout dismissible={false} sdsType="primary">
       <span data-testid="revision-status">
-        {revisioning_in && (
+        {revising_in && (
           <span>
             This public collection has a pending revision.{" "}
-            <Link href={`/collections/${revisioning_in}`} passHref>
+            <Link href={`/collections/${revising_in}`} passHref>
               <TextLink href="passHref">Continue Revision</TextLink>
             </Link>
           </span>

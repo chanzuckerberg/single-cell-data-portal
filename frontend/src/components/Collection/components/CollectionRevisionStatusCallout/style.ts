@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { Banner, Link } from "czifui";
 import { CollectionHero } from "src/views/Collection/style";
-import { CollectionMigrationCallout } from "src/components/Collection/components/CollectionMigrationCallout/style";
 
 export const CollectionRevisionCallout = styled(Banner)`
   height: 39px;
@@ -20,7 +19,7 @@ export const CollectionRevisionCallout = styled(Banner)`
     width: 22px;
   }
 
-  + ${CollectionMigrationCallout}, + ${CollectionHero} {
+  + ${CollectionHero} {
     // CollectionView top padding is 40px and CollectionRevisionCallout height is 39px.
     // Therefore to meet the desired spacing of 24px between CollectionRevisionCallout and either CollectionHero or
     // CollectionMigrationCallout, margin-top should only be 23px.
