@@ -90,6 +90,11 @@ export async function login(page: Page): Promise<void> {
   await page.context().storageState({ path: LOGIN_STATE_FILENAME });
 }
 
+export async function scrollToPageBottom(page: Page): Promise<void> {
+  return page.evaluate(() =>
+    window.scrollTo(0, document.documentElement.scrollHeight)
+  );
+}
 interface TryUntilConfigs {
   maxRetry?: number;
   page: Page;
