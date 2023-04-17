@@ -57,6 +57,8 @@ export const REDUCERS = {
   addQueryGroup,
   selectQueryGroupFilters,
   deleteQueryGroup,
+  deleteAllQueryGroups,
+  deleteAllSelectedFilters,
 };
 
 function setSnapshotId(
@@ -100,6 +102,14 @@ function addQueryGroup(state: State, _: PayloadAction<null>): State {
     ...state,
     queryGroups: newQueryGroups,
     queryGroupsWithNames: newQueryGroupsWithNames,
+  };
+}
+
+function deleteAllQueryGroups(state: State, _: PayloadAction<null>): State {
+  return {
+    ...state,
+    queryGroups: null,
+    queryGroupsWithNames: null,
   };
 }
 
@@ -148,6 +158,14 @@ function selectFilters(
   return {
     ...state,
     selectedFilters: newSelectedFilters,
+  };
+}
+
+function deleteAllSelectedFilters(state: State, _: PayloadAction<null>): State {
+  return {
+    ...state,
+    selectedFilters: EMPTY_FILTERS,
+    selectedFilterNames: EMPTY_FILTERS,
   };
 }
 

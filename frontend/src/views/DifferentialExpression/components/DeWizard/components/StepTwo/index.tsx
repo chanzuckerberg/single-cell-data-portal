@@ -13,7 +13,10 @@ import {
   NextButton,
 } from "./style";
 import { Icon } from "czifui";
-import { addQueryGroup } from "src/views/DifferentialExpression/common/store/actions";
+import {
+  addQueryGroup,
+  deleteAllQueryGroups,
+} from "src/views/DifferentialExpression/common/store/actions";
 import QueryGroupFilters from "./components/Filters";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 
@@ -29,7 +32,9 @@ export default function StepTwo({ setStep }: Props): JSX.Element {
     setStep(3);
   };
   const handleGoBack = () => {
+    if (!dispatch) return null;
     setStep(1);
+    dispatch(deleteAllQueryGroups());
   };
   const handleAddQueryGroup = () => {
     if (!dispatch) return null;

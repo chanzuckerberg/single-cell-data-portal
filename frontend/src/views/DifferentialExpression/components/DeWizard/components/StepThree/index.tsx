@@ -5,7 +5,10 @@ import {
   useDifferentialExpression,
   usePrimaryFilterDimensions,
 } from "src/common/queries/differentialExpression";
-import { StateContext } from "src/views/DifferentialExpression/common/store";
+import {
+  DispatchContext,
+  StateContext,
+} from "src/views/DifferentialExpression/common/store";
 import {
   CopyGenesButton,
   QueryGroupSubTitle,
@@ -20,6 +23,10 @@ import {
   NoDeGenesHeader,
 } from "./style";
 import { QueryGroupWithNames } from "src/views/DifferentialExpression/common/store/reducer";
+import {
+  deleteAllQueryGroups,
+  deleteAllSelectedFilters,
+} from "src/views/DifferentialExpression/common/store/actions";
 interface Props {
   setStep: (step: number) => void;
 }
@@ -30,6 +37,7 @@ interface DifferentialExpressionRow {
 }
 
 export default function StepThree({ setStep }: Props): JSX.Element {
+  const dispatch = useContext(DispatchContext);
   const { data: rawDifferentialExpressionResults, isLoading } =
     useDifferentialExpression();
   const [differentialExpressionResults, setDifferentialExpressionResults] =
@@ -77,8 +85,6 @@ export default function StepThree({ setStep }: Props): JSX.Element {
       return () => {
         const results = differentialExpressionResults[index];
         const genes = results.map((result) => result.name);
-        console.log(genes);
-        console.log(results);
         navigator.clipboard.writeText(genes.join(", "));
       };
     },
@@ -89,7 +95,10 @@ export default function StepThree({ setStep }: Props): JSX.Element {
     setStep(2);
   };
   const handleStartOver = () => {
+    if (!dispatch) return;
     setStep(1);
+    dispatch(deleteAllQueryGroups());
+    dispatch(deleteAllSelectedFilters());
   };
 
   const namesToShow: string[][] = [];

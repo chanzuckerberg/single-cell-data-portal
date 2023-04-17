@@ -39,6 +39,24 @@ export function deleteQueryGroup(
   };
 }
 
+export function deleteAllQueryGroups(): GetActionTypeOfReducer<
+  typeof REDUCERS["deleteAllQueryGroups"]
+> {
+  return {
+    payload: null,
+    type: "deleteAllQueryGroups",
+  };
+}
+
+export function deleteAllSelectedFilters(): GetActionTypeOfReducer<
+  typeof REDUCERS["deleteAllSelectedFilters"]
+> {
+  return {
+    payload: null,
+    type: "deleteAllSelectedFilters",
+  };
+}
+
 export function setSelectedFilterNames(
   key: keyof State["selectedFilterNames"],
   options: string[]
