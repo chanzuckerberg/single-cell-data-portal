@@ -1,13 +1,12 @@
-import { Intent } from "@blueprintjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
   CollectionDescription as Description,
-  DescriptionText,
   DESCRIPTION_LINE_HEIGHT_PX,
+  DescriptionText,
   MAX_LINE_COUNT,
 } from "src/components/Collection/components/CollectionDescription/style";
-import { StyledPrimaryMinimalButton } from "src/components/common/Button/common/style";
+import { Button } from "czifui";
 
 enum EllipsisMode {
   "NONE" = "NONE",
@@ -57,12 +56,14 @@ export default function CollectionDescription({
         {description}
       </DescriptionText>
       {isModeActivated(ellipsisMode) && (
-        <StyledPrimaryMinimalButton
-          intent={Intent.PRIMARY}
-          minimal
+        <Button
+          isAllCaps={false}
           onClick={onToggleMode}
-          text={getModeText(ellipsisMode)}
-        />
+          sdsStyle="minimal"
+          sdsType="primary"
+        >
+          {getModeText(ellipsisMode)}
+        </Button>
       )}
     </Description>
   );

@@ -5,8 +5,16 @@ import {
   useQueryClient,
   UseQueryResult,
 } from "react-query";
-import { Collection, VISIBILITY_TYPE } from "src/common/entities";
-import { buildSummaryCitation } from "src/common/queries/filter";
+import {
+  Collection,
+  COLLECTION_STATUS,
+  VISIBILITY_TYPE,
+} from "src/common/entities";
+import {
+  buildSummaryCitation,
+  ProcessedCollectionResponse,
+  USE_COLLECTIONS_INDEX,
+} from "src/common/queries/filter";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
@@ -19,6 +27,14 @@ import {
   JSON_BODY_FETCH_OPTIONS,
 } from "./common";
 import { ENTITIES } from "./entities";
+import { QueryClient } from "react-query/core";
+
+/**
+ * Never expire cached collection / collections.
+ */
+const DEFAULT_QUERY_OPTIONS = {
+  staleTime: Infinity,
+};
 
 /**
  * Error text returned from BE when DOI format is identified as invalid.
@@ -129,7 +145,9 @@ async function fetchCollections(): Promise<CollectionResponsesMap> {
 }
 
 export function useCollections(): UseQueryResult<CollectionResponsesMap> {
-  return useQuery([USE_COLLECTIONS], fetchCollections);
+  return useQuery([USE_COLLECTIONS], fetchCollections, {
+    ...DEFAULT_QUERY_OPTIONS,
+  });
 }
 
 export const USE_COLLECTION = {
@@ -221,7 +239,6 @@ export function useCollection({
   id?: string;
 }): UseQueryResult<Collection | TombstonedCollection | null> {
   const queryFn = fetchCollection();
-
   return useQuery<Collection | TombstonedCollection | null>(
     [USE_COLLECTION, id],
     () => queryFn(id),
@@ -259,7 +276,6 @@ export async function createCollection(
 
 export function useCreateCollection() {
   const queryClient = useQueryClient();
-
   return useMutation(createCollection, {
     onSuccess: () => {
       queryClient.invalidateQueries([USE_COLLECTIONS]);
@@ -527,14 +543,65 @@ const createRevision = async function (id: string) {
   return response.json();
 };
 
-export function useCreateRevision(callback: (id: Collection["id"]) => void) {
-  const queryClient = useQueryClient();
+/**
+ * Sets USE_COLLECTION, updates the public collection with:
+ * - revision_diff: the revision difference between the public collection and the private revision, and
+ * - revising_in: the id of the private revision collection.
+ * @param revision - Private revision collection.
+ * @param queryClient - QueryClient to update the cache.
+ */
+function createRevisionSetUseCollection(
+  revision: Collection,
+  queryClient: QueryClient
+): void {
+  // Grab the public collection cache.
+  const publicCollection = queryClient.getQueryData([
+    USE_COLLECTION,
+    revision.revision_of,
+  ]) as Collection;
+  // Update the public collection cache.
+  queryClient.setQueryData([USE_COLLECTION, revision.revision_of], {
+    ...publicCollection,
+    revision_diff: false,
+    revising_in: revision.id,
+  });
+  // Create the private revision collection cache.
+  queryClient.setQueryData([USE_COLLECTION, revision.id], revision);
+}
 
+/**
+ * Sets USE_COLLECTIONS_INDEX, updates the public collection of the new private revision with:
+ * - revisedBy: the id of the new private revision, and
+ * - status: the public collection status.
+ * @param revision - Private revision collection.
+ * @param queryClient - QueryClient to update the cache.
+ */
+function createRevisionSetUseCollectionsIndex(
+  revision: Collection,
+  queryClient: QueryClient
+): void {
+  if (!revision.revision_of) {
+    throw Error("Create revision response does not have a revision_of field");
+  }
+  const updatedCollectionsById = new Map(
+    queryClient.getQueryData([USE_COLLECTIONS_INDEX])
+  ) as Map<string, ProcessedCollectionResponse>;
+  const collection = updatedCollectionsById.get(revision.revision_of);
+  const updatedCollection = {
+    ...collection,
+    revisedBy: revision.id,
+    status: [COLLECTION_STATUS.PUBLISHED, COLLECTION_STATUS.REVISION],
+  } as ProcessedCollectionResponse;
+  updatedCollectionsById.set(revision.revision_of, updatedCollection);
+  queryClient.setQueryData([USE_COLLECTIONS_INDEX], updatedCollectionsById);
+}
+
+export function useCreateRevision() {
+  const queryClient = useQueryClient();
   return useMutation(createRevision, {
-    onSuccess: async (collection: Collection) => {
-      await queryClient.invalidateQueries([USE_COLLECTIONS]);
-      await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
-      callback(collection.id);
+    onSuccess: async (revision) => {
+      createRevisionSetUseCollectionsIndex(revision, queryClient);
+      createRevisionSetUseCollection(revision, queryClient);
     },
   });
 }

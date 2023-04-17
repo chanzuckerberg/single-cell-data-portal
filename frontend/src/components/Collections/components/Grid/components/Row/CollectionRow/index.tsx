@@ -1,15 +1,10 @@
-import { Button, Intent, Tag } from "@blueprintjs/core";
+import { Intent, Tag } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { FC } from "react";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
-import { ROUTES } from "src/common/constants/routes";
-import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
-import {
-  useCollection,
-  useCreateRevision,
-} from "src/common/queries/collections";
+import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
+import { useCollection } from "src/common/queries/collections";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
@@ -74,23 +69,7 @@ const CollectionRow: FC<Props> = (props) => {
     id: props.id,
   });
 
-  const router = useRouter();
-
-  const navigateToRevision = (id: Collection["id"]) => {
-    router.push(ROUTES.COLLECTION.replace(":id", id));
-  };
-
-  const { mutate, isLoading } = useCreateRevision(navigateToRevision);
-
   if (!collection || isTombstonedCollection(collection)) return null;
-
-  const handleRevisionClick = () => {
-    if (!collection?.revising_in) {
-      mutate(id);
-    } else {
-      navigateToRevision(collection?.revising_in || collection.id);
-    }
-  };
 
   // If there is an explicity accessType only show collections with that accessType
   if (props.accessType && collection.access_type !== props.accessType) {
@@ -135,40 +114,8 @@ const CollectionRow: FC<Props> = (props) => {
       {conditionalDiseasePopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.ORGANISM, organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
-      {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
-        <RevisionCell
-          revisionId={collection.revising_in}
-          handleRevisionClick={handleRevisionClick}
-          isLoading={isLoading}
-        />
-      ) : (
-        <RightAlignedDetailsCell />
-      )}
+      <RightAlignedDetailsCell />
     </StyledRow>
-  );
-};
-
-const RevisionCell = ({
-  handleRevisionClick,
-  isLoading,
-  revisionId,
-}: {
-  handleRevisionClick: () => void;
-  isLoading: boolean;
-  revisionId: Collection["revising_in"];
-}) => {
-  return (
-    <RightAlignedDetailsCell>
-      <Button
-        loading={isLoading}
-        intent={Intent.PRIMARY}
-        minimal
-        onClick={handleRevisionClick}
-        data-testid="revision-action-button"
-      >
-        {revisionId ? "Continue" : "Start Revision"}
-      </Button>
-    </RightAlignedDetailsCell>
   );
 };
 

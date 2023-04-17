@@ -6,9 +6,9 @@ import { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { usePublishCollection } from "src/common/queries/collections";
-import { StyledPrimaryButton } from "src/components/common/Button/common/style";
 import Toast from "src/views/Collection/components/Toast";
 import Policy, { POLICY_BULLETS } from "./components/Policy";
+import { ActionButton as Button } from "src/views/Collection/components/ActionButtons/style";
 
 const AsyncAlert = loadable(
   () =>
@@ -74,14 +74,16 @@ const PublishCollection: FC<Props> = ({
 
   return (
     <>
-      <StyledPrimaryButton
-        onMouseEnter={handleHover}
-        onClick={handleClick}
-        intent={Intent.PRIMARY}
-        text="Publish"
-        disabled={!isPublishable}
+      <Button
         data-testid="publish-collection-button"
-      />
+        disabled={!isPublishable}
+        onClick={handleClick}
+        onMouseEnter={handleHover}
+        sdsStyle="square"
+        sdsType="primary"
+      >
+        Publish
+      </Button>
       {isOpen && (
         <AsyncAlert
           cancelButtonText={"Cancel"}

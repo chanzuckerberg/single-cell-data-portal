@@ -2,7 +2,7 @@ import { H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { ReactElement, useState } from "react";
 import { Collection } from "src/common/entities";
-import { StyledOutlineButton } from "src/components/common/Button/common/style";
+import { DeleteButton as Button } from "./style";
 
 const AsyncAlert = loadable(
   () =>
@@ -10,12 +10,14 @@ const AsyncAlert = loadable(
 );
 
 interface Props {
+  disabled?: boolean;
   handleConfirm: () => void;
   collectionName: Collection["name"];
   loading: boolean;
 }
 
 const DeleteCollectionButton = ({
+  disabled = false,
   handleConfirm,
   collectionName,
   loading,
@@ -31,15 +33,16 @@ const DeleteCollectionButton = ({
 
   return (
     <>
-      <StyledOutlineButton
-        onClick={handleClick}
-        text="Delete Collection"
-        intent={Intent.DANGER}
+      <Button
         data-testid="delete-collection-button"
-        minimal
-        outlined
+        disabled={disabled}
+        onClick={handleClick}
         onMouseEnter={handleHover}
-      />
+        sdsStyle="square"
+        sdsType="primary"
+      >
+        Delete
+      </Button>
       {isOpen && (
         <AsyncAlert
           cancelButtonText={"Cancel"}
