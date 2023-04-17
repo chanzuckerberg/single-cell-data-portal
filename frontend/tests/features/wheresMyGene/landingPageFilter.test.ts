@@ -22,8 +22,6 @@ describe("Left side bar", () => {
     await selectTissueAndGeneOption(page);
   });
   test("Left side bar collapse and expand", async ({ page }) => {
-    await page.pause();
-
     // click chevron left to collapse the left tab
     await page.locator(CHEVRON_LEFT).click();
 
