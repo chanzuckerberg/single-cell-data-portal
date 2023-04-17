@@ -1,0 +1,50 @@
+INFO     processing:process.py:84 Batch Job Info: {'AWS_BATCH_CE_NAME': None, 'AWS_BATCH_JOB_ATTEMPT': None, 'AWS_BATCH_JOB_ID': None, 'STEP_NAME': None, 'DROPBOX_URL': None, 'ARTIFACT_BUCKET': 'artifact-bucket', 'CELLXGENE_BUCKET': 'cellxgene-bucket', 'DATASET_ID': None, 'DEPLOYMENT_STAGE': 'test', 'MAX_ATTEMPTS': None}
+INFO     processing:process.py:99 Processing dataset 99ddd978-1070-4f26-9e3f-3066797e2ebe
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:19 Start download_from_source_uri
+INFO     processing:process_download_validate.py:187 Start download
+INFO     backend.layers.processing.downloader:downloader.py:115 Setting up download.
+INFO     backend.layers.processing.downloader:downloader.py:116 file_size: 1
+INFO     processing:process_download_validate.py:196 None
+INFO     processing:process_download_validate.py:209 Download complete
+INFO     root:logger.py:21 Complete download_from_source_uri
+INFO     root:logger.py:19 Start validate_h5ad_file_and_add_labels
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete validate_h5ad_file_and_add_labels
+INFO     root:logger.py:19 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [99ddd978-1070-4f26-9e3f-3066797e2ebe/raw.h5ad] to s3://fake_bucket_name/99ddd978-1070-4f26-9e3f-3066797e2ebe/raw.h5ad
+INFO     processing:process_logic.py:86 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete create_artifact
+INFO     root:logger.py:19 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [99ddd978-1070-4f26-9e3f-3066797e2ebe/local.h5ad] to s3://fake_bucket_name/99ddd978-1070-4f26-9e3f-3066797e2ebe/local.h5ad
+INFO     processing:process_logic.py:86 Updated database with h5ad.
+INFO     processing:process_logic.py:93 Uploaded 99ddd978-1070-4f26-9e3f-3066797e2ebe.h5ad to s3://fake_datasets_bucket/99ddd978-1070-4f26-9e3f-3066797e2ebe/99ddd978-1070-4f26-9e3f-3066797e2ebe.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete create_artifact
+INFO     processing:process.py:84 Batch Job Info: {'AWS_BATCH_CE_NAME': None, 'AWS_BATCH_JOB_ATTEMPT': None, 'AWS_BATCH_JOB_ID': None, 'STEP_NAME': None, 'DROPBOX_URL': None, 'ARTIFACT_BUCKET': 'artifact-bucket', 'CELLXGENE_BUCKET': 'cellxgene-bucket', 'DATASET_ID': None, 'DEPLOYMENT_STAGE': 'test', 'MAX_ATTEMPTS': None}
+INFO     processing:process.py:99 Processing dataset 99ddd978-1070-4f26-9e3f-3066797e2ebe
+INFO     processing:process_logic.py:106 Converting local.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_cxg' id='140494127171664'> in 0:00:00.000729
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_cxg.py:99 Updating database with cxg artifact for dataset 99ddd978-1070-4f26-9e3f-3066797e2ebe. s3_uri is s3://fake_cxg_bucket/99ddd978-1070-4f26-9e3f-3066797e2ebe.cxg/
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process.py:84 Batch Job Info: {'AWS_BATCH_CE_NAME': None, 'AWS_BATCH_JOB_ATTEMPT': None, 'AWS_BATCH_JOB_ID': None, 'STEP_NAME': None, 'DROPBOX_URL': None, 'ARTIFACT_BUCKET': 'artifact-bucket', 'CELLXGENE_BUCKET': 'cellxgene-bucket', 'DATASET_ID': None, 'DEPLOYMENT_STAGE': 'test', 'MAX_ATTEMPTS': None}
+INFO     processing:process.py:99 Processing dataset 99ddd978-1070-4f26-9e3f-3066797e2ebe
+INFO     processing:process_logic.py:106 Converting local.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_seurat' id='140494130292576'> in 0:00:00.000730
+INFO     root:logger.py:19 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [99ddd978-1070-4f26-9e3f-3066797e2ebe/local.rds] to s3://fake_bucket_name/99ddd978-1070-4f26-9e3f-3066797e2ebe/local.rds
+INFO     processing:process_logic.py:86 Updated database with rds.
+INFO     processing:process_logic.py:93 Uploaded 99ddd978-1070-4f26-9e3f-3066797e2ebe.rds to s3://fake_datasets_bucket/99ddd978-1070-4f26-9e3f-3066797e2ebe/99ddd978-1070-4f26-9e3f-3066797e2ebe.rds
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete create_artifact
