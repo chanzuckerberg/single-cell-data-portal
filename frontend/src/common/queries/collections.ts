@@ -437,8 +437,8 @@ export function usePublishCollection() {
   return useMutation(publishCollection, {
     onSuccess: async (collection: Collection): Promise<void> => {
       await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
-      await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
       await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
+      await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
       await queryClient.prefetchQuery([USE_DATASETS_INDEX]);
       await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
       if (collection.revision_of) {
