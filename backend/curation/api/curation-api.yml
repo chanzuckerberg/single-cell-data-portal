@@ -520,7 +520,7 @@ paths:
         in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
-        - collection
+        - collection_version
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -581,7 +581,7 @@ paths:
     get:
       summary: List all versions for a Dataset
       tags:
-        - dataset
+        - dataset_version
       description: |
         List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
         Dataset versions are returned in reverse-chronological order.
