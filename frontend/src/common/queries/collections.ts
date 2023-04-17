@@ -280,10 +280,10 @@ export async function createCollection(
 
 export function useCreateCollection() {
   const queryClient = useQueryClient();
-
   return useMutation(createCollection, {
-    onSuccess: () => {
-      queryClient.invalidateQueries([USE_COLLECTIONS]);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([USE_COLLECTIONS]);
+      await queryClient.prefetchQuery([USE_COLLECTIONS]);
     },
   });
 }
@@ -497,14 +497,10 @@ export function useEditCollection(
   unknown
 > {
   const queryClient = useQueryClient();
-
-  const { data: collections } = useCollections(); //all collections
-
   const { data: collection } = useCollection({
     //revision
     id: collectionID,
   });
-
   const { data: publishedCollection } = useCollection({
     //published collection
     id: publicID,
@@ -512,35 +508,36 @@ export function useEditCollection(
 
   return useMutation(editCollection, {
     // newCollection is the result of the PUT on the revision
-    onSuccess: ({ collection: newCollection }) => {
+    onSuccess: async ({ collection: newCollection }) => {
       // Check for updated collection: it's possible server-side validation errors have occurred where the error has
       // been swallowed (allowing error messages to be displayed on the edit form) and success flow is executed even
       // though update did not occur.
       if (!newCollection) {
         return;
       }
-      queryClient.setQueryData(
-        [USE_COLLECTION, collectionID, collections],
-        () => {
-          let revision_diff;
-          if (isTombstonedCollection(newCollection)) {
-            return newCollection;
-          } else if (
-            !isTombstonedCollection(collection) &&
-            !isTombstonedCollection(publishedCollection) &&
-            collection?.revision_of &&
+      queryClient.setQueryData([USE_COLLECTION, collectionID], () => {
+        let revision_diff;
+        if (isTombstonedCollection(newCollection)) {
+          return newCollection;
+        } else if (
+          !isTombstonedCollection(collection) &&
+          !isTombstonedCollection(publishedCollection) &&
+          collection?.revision_of &&
+          publishedCollection
+        ) {
+          revision_diff = checkForRevisionChange(
+            newCollection,
             publishedCollection
-          ) {
-            revision_diff = checkForRevisionChange(
-              newCollection,
-              publishedCollection
-            );
+          );
 
-            return { ...collection, ...newCollection, revision_diff };
-          }
-          return { ...collection, ...newCollection };
+          return { ...collection, ...newCollection, revision_diff };
         }
-      );
+        return { ...collection, ...newCollection };
+      });
+      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
+      await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
+      await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
+      await queryClient.prefetchQuery([USE_DATASETS_INDEX]);
     },
   });
 }
