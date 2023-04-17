@@ -76,6 +76,7 @@ export default memo(function Filters(): JSX.Element {
     sexes,
     tissues,
     developmentStages,
+    cellTypes,
   } = selectedFilters;
 
   const {
@@ -86,6 +87,7 @@ export default memo(function Filters(): JSX.Element {
       self_reported_ethnicity_terms: rawEthnicities,
       sex_terms: rawSexes,
       tissue_terms: rawTissues,
+      cell_type_terms: rawCellTypes,
     },
     isLoading: rawIsLoading,
   } = useFilterDimensions();
@@ -108,6 +110,9 @@ export default memo(function Filters(): JSX.Element {
 
     const newSexes = rawSexes.map(mapTermToFilterOption);
     newSexes.sort((a, b) => a.name.localeCompare(b.name));
+
+    const newCellTypes = rawCellTypes.map(mapTermToFilterOption);
+    newCellTypes.sort((a, b) => a.name.localeCompare(b.name));
 
     const newDiseases = rawDiseases.map(mapTermToFilterOption);
     newDiseases.sort((a, b) =>
@@ -136,6 +141,7 @@ export default memo(function Filters(): JSX.Element {
       self_reported_ethnicity_terms: newEthnicities,
       sex_terms: newSexes,
       tissue_terms: newTissues,
+      cell_type_terms: newCellTypes,
     };
 
     if (isEqual(availableFilters, newAvailableFilters)) return;
@@ -150,6 +156,7 @@ export default memo(function Filters(): JSX.Element {
     sex_terms = EMPTY_ARRAY,
     tissue_terms = EMPTY_ARRAY,
     development_stage_terms = EMPTY_ARRAY,
+    cell_type_terms = EMPTY_ARRAY,
   } = availableFilters;
 
   const selectedDatasets = useMemo(() => {
@@ -169,6 +176,12 @@ export default memo(function Filters(): JSX.Element {
   const selectedSexes = useMemo(() => {
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
   }, [sex_terms, sexes]);
+
+  const selectedCellTypes = useMemo(() => {
+    return cell_type_terms.filter((cellType) =>
+      cellTypes?.includes(cellType.id)
+    );
+  }, [cell_type_terms, cellTypes]);
 
   const selectedDevelopmentStages = useMemo(() => {
     return development_stage_terms.filter((stage) =>
@@ -251,6 +264,11 @@ export default memo(function Filters(): JSX.Element {
     [handleFilterChange]
   );
 
+  const handleCellTypesChange = useMemo(
+    () => handleFilterChange("cellTypes"),
+    [handleFilterChange]
+  );
+
   return (
     <Wrapper>
       <Organism />
@@ -264,6 +282,21 @@ export default memo(function Filters(): JSX.Element {
           options={tissue_terms as unknown as DefaultMenuSelectOption[]}
           onChange={handleTissuesChange}
           value={selectedTissues as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          DropdownMenuProps={DropdownMenuProps}
+          InputDropdownProps={InputDropdownProps}
+          PopperComponent={StyledPopper}
+        />
+        <StyledComplexFilter
+          multiple
+          data-testid="de-cell-type-filter"
+          search
+          label={"Cell Type"}
+          options={cell_type_terms as unknown as DefaultMenuSelectOption[]}
+          onChange={handleCellTypesChange}
+          value={selectedCellTypes as unknown as DefaultMenuSelectOption[]}
           InputDropdownComponent={
             StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
           }

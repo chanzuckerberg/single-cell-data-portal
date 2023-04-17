@@ -162,7 +162,13 @@ export default memo(function Filters({
       .map(mapTermToFilterOption);
     newTissues.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newCellTypes = rawCellTypes.map(mapTermToFilterOption);
+    const newCellTypes = rawCellTypes
+      .filter((cellType) => {
+        return selectedFilters.cellTypes.length
+          ? selectedFilters.cellTypes.includes(cellType.id)
+          : true;
+      })
+      .map(mapTermToFilterOption);
     newCellTypes.sort((a, b) => a.name.localeCompare(b.name));
 
     const newEthnicities = rawEthnicities

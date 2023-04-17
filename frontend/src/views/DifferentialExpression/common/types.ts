@@ -12,4 +12,5 @@ export interface Filters {
   ethnicities?: DefaultMenuSelectOption[];
   sexes?: DefaultMenuSelectOption[];
   tissues?: DefaultMenuSelectOption[];
+  cellTypes?: DefaultMenuSelectOption[];
 }

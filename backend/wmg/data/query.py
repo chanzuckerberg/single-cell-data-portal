@@ -37,10 +37,7 @@ class WmgFiltersQueryCriteria(BaseModel):
 class FmgQueryCriteria(BaseModel):
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    # for now, we will only support finding marker genes for a single cell type.
-    # this is to account for the fact that roll-up becomes much more complex when
-    # multiple cell types are specified.
-    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0, max_items=1)
+    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching

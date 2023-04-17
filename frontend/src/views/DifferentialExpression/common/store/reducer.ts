@@ -12,6 +12,7 @@ export interface Filters {
   ethnicities: string[];
   sexes: string[];
   tissues: string[];
+  cellTypes: string[];
 }
 type FilterNames = Filters;
 
@@ -36,16 +37,7 @@ const EMPTY_FILTERS = {
   ethnicities: [],
   sexes: [],
   tissues: [],
-};
-
-const EMPTY_QUERY_GROUP = {
   cellTypes: [],
-  datasets: [],
-  developmentStages: [],
-  diseases: [],
-  ethnicities: [],
-  sexes: [],
-  tissues: [],
 };
 
 export const INITIAL_STATE: State = {
@@ -97,12 +89,12 @@ function addQueryGroup(state: State, _: PayloadAction<null>): State {
   const { queryGroups, queryGroupsWithNames } = state;
 
   const newQueryGroups = queryGroups ? Array.from(queryGroups) : [];
-  newQueryGroups.push(EMPTY_QUERY_GROUP);
+  newQueryGroups.push(EMPTY_FILTERS);
 
   const newQueryGroupsWithNames = queryGroupsWithNames
     ? Array.from(queryGroupsWithNames)
     : [];
-  newQueryGroupsWithNames.push(EMPTY_QUERY_GROUP);
+  newQueryGroupsWithNames.push(EMPTY_FILTERS);
 
   return {
     ...state,

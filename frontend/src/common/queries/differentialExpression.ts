@@ -147,7 +147,7 @@ interface FilterSecondary {
   sex_ontology_term_ids: string[];
   development_stage_ontology_term_ids: string[];
   self_reported_ethnicity_ontology_term_ids: string[];
-  cell_type_ontology_term_ids?: string[];
+  cell_type_ontology_term_ids: string[];
 }
 
 export interface FiltersQuery {
@@ -406,8 +406,15 @@ export function useFilterDimensions(): {
 function useWMGFiltersQueryRequestBody() {
   const { organismId, selectedFilters } = useContext(StateContext);
 
-  const { datasets, developmentStages, diseases, ethnicities, sexes, tissues } =
-    selectedFilters;
+  const {
+    datasets,
+    developmentStages,
+    diseases,
+    ethnicities,
+    sexes,
+    tissues,
+    cellTypes,
+  } = selectedFilters;
 
   return useMemo(() => {
     if (!organismId) {
@@ -423,6 +430,7 @@ function useWMGFiltersQueryRequestBody() {
         self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids: tissues,
+        cell_type_ontology_term_ids: cellTypes,
       },
     };
   }, [
@@ -433,6 +441,7 @@ function useWMGFiltersQueryRequestBody() {
     ethnicities,
     sexes,
     tissues,
+    cellTypes,
   ]);
 }
 
@@ -455,8 +464,15 @@ export function useDifferentialExpression(): {
 function useDEQueryRequestBody() {
   const { organismId, selectedFilters, queryGroups } = useContext(StateContext);
 
-  const { datasets, developmentStages, diseases, ethnicities, sexes, tissues } =
-    selectedFilters;
+  const {
+    datasets,
+    developmentStages,
+    diseases,
+    ethnicities,
+    sexes,
+    tissues,
+    cellTypes,
+  } = selectedFilters;
 
   return useMemo(() => {
     if (!organismId || !queryGroups) {
@@ -472,6 +488,7 @@ function useDEQueryRequestBody() {
         self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids: tissues,
+        cell_type_ontology_term_ids: cellTypes,
       },
       queryGroupFilters: queryGroups.map((queryGroup) => ({
         dataset_ids: queryGroup.datasets,
@@ -583,19 +600,17 @@ function useWMGFiltersQueryRequestBodyForQueryGroups(
 
   filters = { ...queryGroup };
   for (const key in filters) {
-    if (key !== "cellTypes") {
-      if (filters[key as keyof Filters].length === 0) {
-        const mappedKey = keyNameMapping[key as keyof Filters];
-        let availableFilterIds: string[] = [];
-        if (mappedKey in availableFilters) {
-          availableFilterIds = availableFilters[
-            mappedKey as keyof FilterDimensions
-          ].map((filter) => filter.id);
-        }
-        filters[key as keyof Filters] = selectedFilters[
-          key as keyof Filters
-        ].filter((value) => availableFilterIds.includes(value));
+    if (filters[key as keyof Filters].length === 0) {
+      const mappedKey = keyNameMapping[key as keyof Filters];
+      let availableFilterIds: string[] = [];
+      if (mappedKey in availableFilters) {
+        availableFilterIds = availableFilters[
+          mappedKey as keyof FilterDimensions
+        ].map((filter) => filter.id);
       }
+      filters[key as keyof Filters] = selectedFilters[
+        key as keyof Filters
+      ].filter((value) => availableFilterIds.includes(value));
     }
   }
 
