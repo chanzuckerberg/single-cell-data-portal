@@ -8,7 +8,7 @@ import { Collection } from "src/common/entities";
 import { usePublishCollection } from "src/common/queries/collections";
 import Toast from "src/views/Collection/components/Toast";
 import Policy, { POLICY_BULLETS } from "./components/Policy";
-import { ActionButton as Button } from "src/views/Collection/components/ActionButtons/style";
+import { ActionButton as Button } from "src/views/Collection/components/CollectionActions/style";
 
 const AsyncAlert = loadable(
   () =>

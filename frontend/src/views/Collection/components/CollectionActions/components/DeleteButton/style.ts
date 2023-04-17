@@ -1,6 +1,6 @@
 import { CommonThemeProps, getColors } from "czifui";
 import styled from "@emotion/styled";
-import { ActionButton } from "src/views/Collection/components/ActionButtons/style";
+import { ActionButton } from "src/views/Collection/components/CollectionActions/style";
 
 const error400 = (props: CommonThemeProps) => getColors(props)?.error[400];
 const error500 = (props: CommonThemeProps) => getColors(props)?.error[500];

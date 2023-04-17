@@ -532,7 +532,7 @@ export function useEditCollection(
   });
 }
 
-const createRevision = async function (id: string) {
+const createRevision = async function (id: Collection["id"]) {
   idError(id);
   const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 

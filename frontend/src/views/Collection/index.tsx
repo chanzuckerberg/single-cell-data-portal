@@ -12,7 +12,6 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import {
   useCollection,
   useCollectionUploadLinks,
-  useCreateRevision,
   useDeleteCollection,
 } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
@@ -22,7 +21,6 @@ import CollectionMetadata from "src/components/Collection/components/CollectionM
 import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
-import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
 import Toast from "./components/Toast";
 import {
   CollectionConsortia,
@@ -37,11 +35,7 @@ import {
   isCollectionPrivateRevision,
   revisionIsPublishable,
 } from "./utils";
-import { CollectionActions } from "src/views/Collection/components/ActionButtons/style";
-import AddButton from "src/views/Collection/components/ActionButtons/components/AddButton";
-import MoreDropdown from "src/views/Collection/components/ActionButtons/components/MoreDropdown";
-import PublishCollection from "src/components/Collections/components/PublishCollection";
-import CreateRevisionButton from "src/views/Collection/components/ActionButtons/components/CreateRevisionButton";
+import CollectionActions from "src/views/Collection/components/CollectionActions";
 
 const Collection: FC = () => {
   const router = useRouter();
@@ -69,13 +63,13 @@ const Collection: FC = () => {
 
   const { data: collection, isError, isFetching } = collectionState;
 
-  const { mutateAsync: createRevision } = useCreateRevision();
-  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id,
-    collection && "visibility" in collection
-      ? collection.visibility
-      : VISIBILITY_TYPE.PRIVATE
-  );
+  const { mutateAsync: deleteMutation, isLoading: isDeleting } =
+    useDeleteCollection(
+      id,
+      collection && "visibility" in collection
+        ? collection.visibility
+        : VISIBILITY_TYPE.PRIVATE
+    );
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
@@ -162,15 +156,6 @@ const Collection: FC = () => {
     collection.summaryCitation
   );
 
-  // Creates a revision of the collection and routes to the private revision collection.
-  const handleCreateRevision = async (): Promise<void> => {
-    await createRevision(id, {
-      onSuccess: (collection) => {
-        router.push(ROUTES.COLLECTION.replace(":id", collection.id));
-      },
-    });
-  };
-
   const handleDeleteCollection = async () => {
     setUserWithdrawn(true);
 
@@ -192,42 +177,17 @@ const Collection: FC = () => {
         {/* Collection title and actions */}
         <CollectionHero>
           <h3 data-testid="collection-name">{collection.name}</h3>
-          {/* Actions when access type is WRITE */}
+          {/* Collection actions; when access type is WRITE */}
           {collection.access_type === ACCESS_TYPE.WRITE && (
-            <CollectionActions>
-              {/* Collection is either private, or a private revision */}
-              {collection.visibility === VISIBILITY_TYPE.PRIVATE && (
-                <>
-                  <MoreDropdown
-                    id={id}
-                    isRevision={isRevision}
-                    visibility={collection.visibility}
-                  />
-                  <AddButton addNewFile={addNewFile} />
-                  <PublishCollection
-                    id={id}
-                    isPublishable={isPublishable}
-                    revisionOf={collection.revision_of}
-                  />
-                </>
-              )}
-              {/* Collection is public */}
-              {collection.visibility === VISIBILITY_TYPE.PUBLIC && (
-                <>
-                  <DeleteCollectionButton
-                    disabled={hasRevision}
-                    collectionName={collection.name}
-                    handleConfirm={handleDeleteCollection}
-                    loading={isLoading}
-                  />
-                  {!hasRevision && (
-                    <CreateRevisionButton
-                      handleCreateRevision={handleCreateRevision}
-                    />
-                  )}
-                </>
-              )}
-            </CollectionActions>
+            <CollectionActions
+              addNewFile={addNewFile}
+              collection={collection}
+              handleDeleteCollection={handleDeleteCollection}
+              hasRevision={hasRevision}
+              isDeleting={isDeleting}
+              isPublishable={isPublishable}
+              isRevision={isRevision}
+            />
           )}
         </CollectionHero>
         {/* Collection consortia, description and metadata */}

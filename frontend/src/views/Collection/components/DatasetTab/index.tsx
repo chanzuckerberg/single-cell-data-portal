@@ -4,16 +4,16 @@ import { FC, useCallback, useState } from "react";
 import { useQueryClient } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
 import {
+  USE_COLLECTION,
   useCollection,
   useCollectionUploadLinks,
   useReuploadDataset,
-  USE_COLLECTION,
 } from "src/common/queries/collections";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { CollectionDatasetsGrid } from "src/components/Collection/components/CollectionDatasetsGrid/style";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
-import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
+import { UploadedFiles } from "src/views/Collection/components/CollectionActions";
 import Toast from "src/views/Collection/components/Toast";
 import EmptyModal from "../EmptyModal";
 

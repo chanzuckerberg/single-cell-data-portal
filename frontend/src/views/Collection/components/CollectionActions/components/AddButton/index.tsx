@@ -4,7 +4,7 @@ import {
   UploadingFile,
 } from "src/components/DropboxChooser";
 import Content from "./components/Content";
-import { ActionButton as Button } from "src/views/Collection/components/ActionButtons/style";
+import { ActionButton as Button } from "src/views/Collection/components/CollectionActions/style";
 
 export interface UploadedFiles {
   [datasetID: string]: UploadingFile;

@@ -6,7 +6,7 @@ import DatasetRow from "src/components/Collection/components/CollectionDatasetsG
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import { Grid as StyledGrid } from "src/components/common/Grid/style";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
-import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
+import { UploadedFiles } from "src/views/Collection/components/CollectionActions";
 import { sortByCellCountDescending } from "./common/util";
 
 interface Props {

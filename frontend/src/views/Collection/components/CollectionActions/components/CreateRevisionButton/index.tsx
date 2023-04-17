@@ -1,4 +1,4 @@
-import { ActionButton as Button } from "src/views/Collection/components/ActionButtons/style";
+import { ActionButton as Button } from "src/views/Collection/components/CollectionActions/style";
 
 interface Props {
   handleCreateRevision: () => void;
