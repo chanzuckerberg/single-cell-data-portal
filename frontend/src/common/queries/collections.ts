@@ -409,15 +409,17 @@ export function useDeleteCollection(
 }
 
 export type PublishCollection = {
-  id: Collection["id"];
+  collection: Collection;
   payload: string;
 };
 
 async function publishCollection({
-  id,
+  collection,
   payload,
-}: PublishCollection): Promise<Collection["id"]> {
-  const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
+}: PublishCollection): Promise<Collection> {
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, {
+    id: collection.id,
+  });
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -427,18 +429,24 @@ async function publishCollection({
   if (!response.ok) {
     throw await response.json();
   }
-  return id;
+  return collection;
 }
 
 export function usePublishCollection() {
   const queryClient = useQueryClient();
   return useMutation(publishCollection, {
-    onSuccess: async (id) => {
+    onSuccess: async (collection: Collection): Promise<void> => {
       await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
       await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
       await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
       await queryClient.prefetchQuery([USE_DATASETS_INDEX]);
-      await queryClient.invalidateQueries([USE_COLLECTION, id]);
+      await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
+      if (collection.revision_of) {
+        await queryClient.invalidateQueries([
+          USE_COLLECTION,
+          collection.revision_of,
+        ]);
+      }
     },
   });
 }

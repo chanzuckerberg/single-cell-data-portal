@@ -66,7 +66,7 @@ const CollectionActions = ({
       data_submission_policy_version: POLICY_BULLETS.version,
     });
     await publishCollection(
-      { id, payload },
+      { collection, payload },
       {
         onSuccess: () => {
           if (revision_of) {
