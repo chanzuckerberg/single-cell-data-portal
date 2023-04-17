@@ -14,6 +14,7 @@ import {
   buildSummaryCitation,
   ProcessedCollectionResponse,
   USE_COLLECTIONS_INDEX,
+  USE_DATASETS_INDEX,
 } from "src/common/queries/filter";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
@@ -412,16 +413,17 @@ export type PublishCollection = {
   payload: string;
 };
 
-async function publishCollection({ id, payload }: PublishCollection) {
+async function publishCollection({
+  id,
+  payload,
+}: PublishCollection): Promise<Collection["id"]> {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
-  console.log("attempting to publish via API call");
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
     body: payload,
     method: "POST",
   });
-
   if (!response.ok) {
     throw await response.json();
   }
@@ -430,12 +432,13 @@ async function publishCollection({ id, payload }: PublishCollection) {
 
 export function usePublishCollection() {
   const queryClient = useQueryClient();
-
   return useMutation(publishCollection, {
-    onSuccess: (id) => {
-      console.log("Completed publish mutation");
-      queryClient.invalidateQueries([USE_COLLECTIONS]);
-      queryClient.invalidateQueries([USE_COLLECTION, id]);
+    onSuccess: async (id) => {
+      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
+      await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
+      await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
+      await queryClient.prefetchQuery([USE_DATASETS_INDEX]);
+      await queryClient.invalidateQueries([USE_COLLECTION, id]);
     },
   });
 }

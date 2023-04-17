@@ -9,10 +9,17 @@ import MoreDropdown from "./components/MoreDropdown";
 import { CollectionActions as Actions } from "./style";
 import DeleteCollectionButton from "src/views/Collection/components/CollectionActions/components/DeleteButton";
 import CreateRevisionButton from "src/views/Collection/components/CollectionActions/components/CreateRevisionButton";
-import React from "react";
-import { useCreateRevision } from "src/common/queries/collections";
+import React, { useState } from "react";
+import {
+  useCreateRevision,
+  usePublishCollection,
+} from "src/common/queries/collections";
 import { ROUTES } from "src/common/constants/routes";
 import { useRouter } from "next/router";
+import { POLICY_BULLETS } from "src/components/Collections/components/PublishCollection/components/Policy";
+import Toast from "src/views/Collection/components/Toast";
+import { IconNames } from "@blueprintjs/icons";
+import { Intent } from "@blueprintjs/core";
 
 export interface UploadedFiles {
   [datasetID: string]: UploadingFile;
@@ -38,8 +45,11 @@ const CollectionActions = ({
   isRevision,
 }: Props): JSX.Element => {
   const { id, name, revision_of, visibility } = collection;
+  const [isPublishOpen, setIsPublishOpen] = useState(false);
   const router = useRouter();
   const { mutateAsync: createRevision } = useCreateRevision();
+  const { mutateAsync: publishCollection, isLoading: isPublishing } =
+    usePublishCollection();
 
   // Creates a revision of the collection and routes to the private revision collection.
   const handleCreateRevision = async (): Promise<void> => {
@@ -48,6 +58,29 @@ const CollectionActions = ({
         router.push(ROUTES.COLLECTION.replace(":id", revision.id));
       },
     });
+  };
+
+  // Publishes a private collection or private revision and routes the published private revision to the published collection.
+  const handlePublishCollection = async () => {
+    const payload = JSON.stringify({
+      data_submission_policy_version: POLICY_BULLETS.version,
+    });
+    await publishCollection(
+      { id, payload },
+      {
+        onSuccess: () => {
+          if (revision_of) {
+            Toast.show({
+              icon: IconNames.TICK,
+              intent: Intent.SUCCESS,
+              message: "New version published",
+            });
+            router.push(ROUTES.COLLECTION.replace(":id", revision_of));
+          }
+        },
+      }
+    );
+    setIsPublishOpen(false);
   };
 
   return (
@@ -62,9 +95,12 @@ const CollectionActions = ({
           />
           <AddButton addNewFile={addNewFile} />
           <PublishCollection
-            id={id}
+            handlePublishCollection={handlePublishCollection}
             isPublishable={isPublishable}
-            revisionOf={revision_of}
+            isPublishing={isPublishing}
+            isPublishOpen={isPublishOpen}
+            revision_of={revision_of}
+            setIsPublishOpen={setIsPublishOpen}
           />
         </>
       )}

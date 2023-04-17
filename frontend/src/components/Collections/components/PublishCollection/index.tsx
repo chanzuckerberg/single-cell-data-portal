@@ -1,13 +1,8 @@
 import { H6, Intent } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
-import { useRouter } from "next/router";
-import { FC, useState } from "react";
-import { ROUTES } from "src/common/constants/routes";
+import { Dispatch, FC, SetStateAction } from "react";
 import { Collection } from "src/common/entities";
-import { usePublishCollection } from "src/common/queries/collections";
-import Toast from "src/views/Collection/components/Toast";
-import Policy, { POLICY_BULLETS } from "./components/Policy";
+import Policy from "./components/Policy";
 import { ActionButton as Button } from "src/views/Collection/components/CollectionActions/style";
 
 const AsyncAlert = loadable(
@@ -16,87 +11,50 @@ const AsyncAlert = loadable(
 );
 
 interface Props {
-  id: Collection["id"];
+  handlePublishCollection: () => void;
   isPublishable: boolean;
-  revisionOf: Collection["revision_of"];
+  isPublishing: boolean;
+  isPublishOpen: boolean;
+  revision_of: Collection["revision_of"];
+  setIsPublishOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const PublishCollection: FC<Props> = ({
-  id = "",
+  handlePublishCollection,
   isPublishable,
-  revisionOf,
+  isPublishing,
+  isPublishOpen,
+  revision_of,
+  setIsPublishOpen,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { mutateAsync: publish, isSuccess, isLoading } = usePublishCollection();
-  const router = useRouter();
-
-  if (isSuccess) {
-    console.log(
-      "IS SUCCESS, used to be private collection redirect, now just refreshes data?"
-    );
-    if (revisionOf) router.push(ROUTES.COLLECTION.replace(":id", revisionOf));
-    else router.reload();
-  }
-
-  const toggleAlert = () => setIsOpen(!isOpen);
-
-  const handleConfirm = async () => {
-    const payload = JSON.stringify({
-      data_submission_policy_version: POLICY_BULLETS.version,
-    });
-    await publish(
-      { id, payload },
-      {
-        onSuccess: () => {
-          //if revision show revision toast
-          if (revisionOf) {
-            console.log("Published a revision");
-            Toast.show({
-              icon: IconNames.TICK,
-              intent: Intent.SUCCESS,
-              message: "New version published",
-            });
-          }
-        },
-      }
-    );
-
-    toggleAlert();
-  };
-
   const handleHover = () => {
     AsyncAlert.preload();
   };
-
-  const handleClick = () => {
-    setIsOpen(!isOpen);
-  };
-
   return (
     <>
       <Button
         data-testid="publish-collection-button"
         disabled={!isPublishable}
-        onClick={handleClick}
+        onClick={() => setIsPublishOpen(false)}
         onMouseEnter={handleHover}
         sdsStyle="square"
         sdsType="primary"
       >
         Publish
       </Button>
-      {isOpen && (
+      {isPublishOpen && (
         <AsyncAlert
           cancelButtonText={"Cancel"}
           confirmButtonText={
-            revisionOf ? "Publish Revision" : "Publish Collection"
+            revision_of ? "Publish Revision" : "Publish Collection"
           }
           intent={Intent.PRIMARY}
-          isOpen={isOpen}
-          onCancel={toggleAlert}
-          onConfirm={handleConfirm}
-          loading={isLoading}
+          isOpen={isPublishOpen}
+          onCancel={() => setIsPublishOpen(false)}
+          onConfirm={handlePublishCollection}
+          loading={isPublishing}
         >
-          {revisionOf ? (
+          {revision_of ? (
             <>
               <H6>
                 Are you sure you want to publish a revision to this collection?
