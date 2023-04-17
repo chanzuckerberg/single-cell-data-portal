@@ -100,7 +100,7 @@ describe("Right side bar", () => {
     ).toBeVisible();
   });
 
-  test("When scaled check box is checked, gene expression should scale from 0 to 1 and darkest color should show up in the dot plot test", async ({
+  test("When scaled check box is checked, gene expression should scale from 0 to 1", async ({
     page,
   }) => {
     const COLOR_SCALE = '[id="relative-gene-expression"] .low-high';
