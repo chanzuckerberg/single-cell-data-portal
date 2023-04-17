@@ -27,7 +27,11 @@ const PublishCollection: FC<Props> = ({
   revisionOf,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { mutateAsync: publish, isSuccess, isLoading } = usePublishCollection();
+  const {
+    mutateAsync: publishCollection,
+    isSuccess,
+    isLoading,
+  } = usePublishCollection();
   const router = useRouter();
 
   if (isSuccess) {
@@ -44,7 +48,7 @@ const PublishCollection: FC<Props> = ({
     const payload = JSON.stringify({
       data_submission_policy_version: POLICY_BULLETS.version,
     });
-    await publish(
+    await publishCollection(
       { id, payload },
       {
         onSuccess: () => {

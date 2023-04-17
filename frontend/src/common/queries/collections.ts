@@ -438,10 +438,12 @@ export function usePublishCollection() {
   const queryClient = useQueryClient();
 
   return useMutation(publishCollection, {
-    onSuccess: (id) => {
+    onSuccess: async (id) => {
       console.log("Completed publish mutation");
-      queryClient.invalidateQueries([USE_COLLECTIONS]);
-      queryClient.invalidateQueries([USE_COLLECTION, id]);
+      await queryClient.invalidateQueries([USE_COLLECTIONS]);
+      await queryClient.prefetchQuery([USE_COLLECTIONS]);
+      await queryClient.invalidateQueries([USE_COLLECTION, id]);
+      await queryClient.prefetchQuery([USE_COLLECTION, id]);
     },
   });
 }
