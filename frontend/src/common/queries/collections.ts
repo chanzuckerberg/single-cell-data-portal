@@ -282,8 +282,8 @@ export function useCreateCollection() {
   const queryClient = useQueryClient();
   return useMutation(createCollection, {
     onSuccess: async () => {
-      await queryClient.invalidateQueries([USE_COLLECTIONS]);
-      await queryClient.prefetchQuery([USE_COLLECTIONS]);
+      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
+      await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
     },
   });
 }
