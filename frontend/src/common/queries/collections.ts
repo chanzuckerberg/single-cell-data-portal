@@ -280,8 +280,8 @@ export async function createCollection(
 export function useCreateCollection() {
   const queryClient = useQueryClient();
   return useMutation(createCollection, {
-    onSuccess: () => {
-      queryClient.invalidateQueries([USE_COLLECTIONS]);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
     },
   });
 }

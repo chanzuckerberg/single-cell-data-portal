@@ -35,7 +35,7 @@ const PublishCollection: FC<Props> = ({
       <Button
         data-testid="publish-collection-button"
         disabled={!isPublishable}
-        onClick={() => setIsPublishOpen(false)}
+        onClick={() => setIsPublishOpen(true)}
         onMouseEnter={handleHover}
         sdsStyle="square"
         sdsType="primary"
