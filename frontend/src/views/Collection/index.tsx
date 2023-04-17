@@ -71,10 +71,10 @@ const Collection: FC = () => {
 
   const { mutateAsync: createRevision } = useCreateRevision();
   const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id,
-    collection && "visibility" in collection
-      ? collection.visibility
-      : VISIBILITY_TYPE.PRIVATE
+    id
+    // collection && "visibility" in collection
+    //   ? collection.visibility
+    //   : VISIBILITY_TYPE.PRIVATE
   );
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -178,7 +178,7 @@ const Collection: FC = () => {
       collectionID: id,
     });
 
-    router.push(ROUTES.MY_COLLECTIONS);
+    router.push(ROUTES.COLLECTIONS);
   };
 
   return (

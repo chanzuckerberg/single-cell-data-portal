@@ -359,8 +359,8 @@ async function deleteCollection({
 }
 
 export function useDeleteCollection(
-  id = "",
-  visibility = ""
+  id = ""
+  // visibility = ""
 ): UseMutationResult<
   void,
   unknown,
@@ -369,44 +369,44 @@ export function useDeleteCollection(
 > {
   const queryClient = useQueryClient();
   return useMutation(deleteCollection, {
-    onError: (
-      _,
-      __,
-      context: { previousCollections: CollectionResponsesMap } | undefined
-    ) => {
-      queryClient.setQueryData([USE_COLLECTIONS], context?.previousCollections);
-    },
-    onMutate: async () => {
-      await queryClient.cancelQueries([USE_COLLECTIONS]);
-
-      const previousCollections = queryClient.getQueryData([
-        USE_COLLECTIONS,
-      ]) as CollectionResponsesMap;
-
-      const newCollections = new Map(previousCollections);
-      const collectionsWithID = newCollections.get(id);
-      // If we're deleting a public collection or there is no revision, nuke it from the cache
-      if (
-        visibility === VISIBILITY_TYPE.PUBLIC ||
-        (collectionsWithID && collectionsWithID.entries.length > 1)
-      ) {
-        newCollections.delete(id);
-      } else {
-        // Otherwise, we need to preserve the public collection
-        collectionsWithID?.delete(VISIBILITY_TYPE.PRIVATE);
-        if (collectionsWithID) newCollections.set(id, collectionsWithID);
-      }
-      queryClient.setQueryData([USE_COLLECTIONS], newCollections);
-
-      return { previousCollections };
-    },
+    // onMutate: async () => {
+    // await queryClient.cancelQueries([USE_COLLECTIONS]);
+    //
+    // const previousCollections = queryClient.getQueryData([
+    //   USE_COLLECTIONS,
+    // ]) as CollectionResponsesMap;
+    //
+    // const newCollections = new Map(previousCollections);
+    // const collectionsWithID = newCollections.get(id);
+    // // If we're deleting a public collection or there is no revision, nuke it from the cache
+    // if (
+    //   visibility === VISIBILITY_TYPE.PUBLIC ||
+    //   (collectionsWithID && collectionsWithID.entries.length > 1)
+    // ) {
+    //   newCollections.delete(id);
+    // } else {
+    //   // Otherwise, we need to preserve the public collection
+    //   collectionsWithID?.delete(VISIBILITY_TYPE.PRIVATE);
+    //   if (collectionsWithID) newCollections.set(id, collectionsWithID);
+    // }
+    // queryClient.setQueryData([USE_COLLECTIONS], newCollections);
+    //
+    // return { previousCollections };
+    // },
     onSuccess: () => {
-      return Promise.all([
-        queryClient.invalidateQueries([USE_COLLECTIONS]),
-        queryClient.removeQueries([USE_COLLECTION, id], {
-          exact: false,
-        }),
-      ]);
+      // TODO(cc) - do we need to delete datasets from the USE_DATASETS_INDEX?
+      queryClient.removeQueries([USE_COLLECTION, id], { exact: true });
+      const updatedCollectionsById = new Map(
+        queryClient.getQueryData([USE_COLLECTIONS_INDEX])
+      ) as Map<string, ProcessedCollectionResponse>;
+      updatedCollectionsById.delete(id);
+      queryClient.setQueryData([USE_COLLECTIONS_INDEX], updatedCollectionsById);
+      // return Promise.all([
+      //   queryClient.invalidateQueries([USE_COLLECTIONS]),
+      //   queryClient.removeQueries([USE_COLLECTION, id], {
+      //     exact: false,
+      //   }),
+      // ]);
     },
   });
 }

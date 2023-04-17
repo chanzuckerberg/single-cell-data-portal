@@ -23,11 +23,11 @@ const DeleteCollection: FC<Props> = ({
   id,
   Button = RawButton,
   isRevision,
-  visibility,
+  // visibility,
 }) => {
   const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id,
-    visibility
+    id
+    // visibility
   );
   const router = useRouter();
 
