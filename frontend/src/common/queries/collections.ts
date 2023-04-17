@@ -500,12 +500,10 @@ export function useEditCollection(
   unknown
 > {
   const queryClient = useQueryClient();
-
   const { data: collection } = useCollection({
     //revision
     id: collectionID,
   });
-
   const { data: publishedCollection } = useCollection({
     //published collection
     id: publicID,
@@ -513,7 +511,7 @@ export function useEditCollection(
 
   return useMutation(editCollection, {
     // newCollection is the result of the PUT on the revision
-    onSuccess: ({ collection: newCollection }) => {
+    onSuccess: async ({ collection: newCollection }) => {
       // Check for updated collection: it's possible server-side validation errors have occurred where the error has
       // been swallowed (allowing error messages to be displayed on the edit form) and success flow is executed even
       // though update did not occur.
@@ -539,6 +537,10 @@ export function useEditCollection(
         }
         return { ...collection, ...newCollection };
       });
+      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
+      await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
+      await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
+      await queryClient.prefetchQuery([USE_DATASETS_INDEX]);
     },
   });
 }
