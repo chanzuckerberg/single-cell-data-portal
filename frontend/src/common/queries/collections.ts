@@ -14,7 +14,9 @@ import {
 import {
   buildSummaryCitation,
   ProcessedCollectionResponse,
+  ProcessedDatasetResponse,
   USE_COLLECTIONS_INDEX,
+  USE_DATASETS_INDEX,
 } from "src/common/queries/filter";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
@@ -198,7 +200,6 @@ function fetchCollection() {
       ...json,
       datasets: generateDatasetMap(json),
     };
-    console.log("collection detail collection", collection);
 
     let publishedCounterpart;
 
@@ -229,8 +230,6 @@ function fetchCollection() {
     collection.summaryCitation = buildSummaryCitation(
       collection.publisher_metadata
     );
-
-    console.log("published counterpart", publishedCounterpart);
 
     return collection;
   };
@@ -357,32 +356,8 @@ export function useDeleteCollection(
 ): UseMutationResult<void, unknown, Collection["id"]> {
   const queryClient = useQueryClient();
   return useMutation(deleteCollection, {
-    // onMutate: async () => {
-    // await queryClient.cancelQueries([USE_COLLECTIONS]);
-    //
-    // const previousCollections = queryClient.getQueryData([
-    //   USE_COLLECTIONS,
-    // ]) as CollectionResponsesMap;
-    //
-    // const newCollections = new Map(previousCollections);
-    // const collectionsWithID = newCollections.get(id);
-    // // If we're deleting a public collection or there is no revision, nuke it from the cache
-    // if (
-    //   visibility === VISIBILITY_TYPE.PUBLIC ||
-    //   (collectionsWithID && collectionsWithID.entries.length > 1)
-    // ) {
-    //   newCollections.delete(id);
-    // } else {
-    //   // Otherwise, we need to preserve the public collection
-    //   collectionsWithID?.delete(VISIBILITY_TYPE.PRIVATE);
-    //   if (collectionsWithID) newCollections.set(id, collectionsWithID);
-    // }
-    // queryClient.setQueryData([USE_COLLECTIONS], newCollections);
-    //
-    // return { previousCollections };
-    // },
     onSuccess: () => {
-      // TODO(cc) - do we need to delete datasets from the USE_DATASETS_INDEX?
+      // TODO(cc) TODO(cc) update comment to accommodate private collections.
       // Removing the public collection from the USE_COLLECTION cache.
       queryClient.removeQueries([USE_COLLECTION, id], { exact: true });
       // Update the USE_COLLECTIONS_INDEX cache by removing the deleted public collection.
@@ -391,6 +366,14 @@ export function useDeleteCollection(
       ) as Map<string, ProcessedCollectionResponse>;
       updatedCollectionsById.delete(id);
       queryClient.setQueryData([USE_COLLECTIONS_INDEX], updatedCollectionsById);
+      // Update the USE_DATASETS_INDEX cache by removing the deleted public collection's datasets.
+      const datasets = queryClient.getQueryData([
+        USE_DATASETS_INDEX,
+      ]) as ProcessedDatasetResponse[];
+      const updatedDatasets = datasets.filter(
+        (dataset) => dataset.collection_id !== id
+      );
+      queryClient.setQueryData([USE_DATASETS_INDEX], updatedDatasets);
     },
   });
 }

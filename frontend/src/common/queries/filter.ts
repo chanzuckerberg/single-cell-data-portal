@@ -143,7 +143,7 @@ export interface DatasetResponse {
  * Model of /datasets/index JSON response that has been modified to include calculated fields that facilitate filter
  * functionality.
  */
-interface ProcessedDatasetResponse extends DatasetResponse {
+export interface ProcessedDatasetResponse extends DatasetResponse {
   cellTypeCalculated: string[]; // Field to drive cell class, cell subclass and cell type filter functionality.
   tissueCalculated: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
 }
@@ -159,7 +159,7 @@ export const USE_COLLECTIONS_INDEX = {
 /**
  * Query key for caching datasets returned from /datasets/index endpoint.
  */
-const USE_DATASETS_INDEX = {
+export const USE_DATASETS_INDEX = {
   entities: [ENTITIES.DATASET],
   id: QUERY_ID_DATASETS,
 };
