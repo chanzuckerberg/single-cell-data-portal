@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 import boto3
 
+from backend.common.utils.http_exceptions import ServerErrorHTTPException
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 
 AWS_S3_MAX_ITEMS_PER_BATCH = 1000
@@ -65,7 +66,9 @@ class S3Provider(S3ProviderInterface):
                 Delete={"Objects": [{"Key": key} for key in key_batch]},
             )
             logger.info(f"Deleted: {list(resp['Deleted'])}")
-            logger.info(f"Errors: {list(resp['Errors'])}")
+            if errors := resp.get("Errors"):
+                logger.info(f"Errors: {errors}")
+                raise ServerErrorHTTPException()
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """
