@@ -242,7 +242,9 @@ export function useCollection({
   return useQuery<Collection | TombstonedCollection | null>(
     [USE_COLLECTION, id],
     () => queryFn(id),
-    {}
+    {
+      ...DEFAULT_QUERY_OPTIONS,
+    }
   );
 }
 
