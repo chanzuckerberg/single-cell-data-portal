@@ -5,7 +5,10 @@ import * as React from "react";
 import { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
-import { useDeleteCollection } from "src/common/queries/collections";
+import {
+  useDeleteCollection,
+  useDeletePrivateRevisionCollection,
+} from "src/common/queries/collections";
 
 const AsyncAlert = loadable(
   () =>
@@ -13,30 +16,44 @@ const AsyncAlert = loadable(
 );
 
 interface Props {
-  id: Collection["id"];
   Button?: React.ElementType;
+  collection: Collection;
   isRevision: boolean;
-  visibility: Collection["visibility"];
 }
 
 const DeleteCollection: FC<Props> = ({
-  id,
   Button = RawButton,
+  collection,
   isRevision,
-  // visibility,
 }) => {
-  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id
-    // visibility
-  );
+  const { id, revision_of } = collection;
   const router = useRouter();
+  const {
+    mutateAsync: deletePrivateCollection,
+    isLoading: isDeletePrivateCollectionLoading,
+  } = useDeleteCollection(id);
+  const {
+    mutateAsync: deletePrivateRevision,
+    isLoading: isDeletePrivateRevisionLoading,
+  } = useDeletePrivateRevisionCollection(collection);
 
-  const handleDelete = async () => {
+  const handleDeletePrivateCollection = async (): Promise<void> => {
     // (thuang): `deleteMutation` should have supported `onSuccess` callback,
     // but it doesn't seem to work. Thus we await the promise then redirect!
-    await deleteMutation({ collectionID: id });
+    await deletePrivateCollection(id);
 
-    router.push(ROUTES.MY_COLLECTIONS);
+    router.push(ROUTES.COLLECTIONS);
+  };
+
+  // Deletes private revision collection (cancel the revision) and routes to the published collection.
+  const handleDeletePrivateRevision = async (): Promise<void> => {
+    // (thuang): `deleteMutation` should have supported `onSuccess` callback,
+    // but it doesn't seem to work. Thus we await the promise then redirect!
+    await deletePrivateRevision(id);
+
+    if (revision_of) {
+      router.push(ROUTES.COLLECTION.replace(":id", revision_of));
+    }
   };
 
   const [isOpen, setIsOpen] = useState(false);
@@ -66,8 +83,14 @@ const DeleteCollection: FC<Props> = ({
           intent={Intent.DANGER}
           isOpen={isOpen}
           onCancel={toggleAlert}
-          onConfirm={handleDelete}
-          loading={isLoading}
+          onConfirm={
+            isRevision
+              ? handleDeletePrivateRevision
+              : handleDeletePrivateCollection
+          }
+          loading={
+            isDeletePrivateCollectionLoading || isDeletePrivateRevisionLoading
+          }
         >
           <H6>
             Are you sure you want to {isRevision ? "cancel" : "delete"} this{" "}

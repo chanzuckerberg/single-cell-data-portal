@@ -5,18 +5,17 @@ import RawMoreDropdown from "src/components/common/MoreDropdown";
 import Menu from "./components/Menu";
 
 interface Props {
-  id: string;
+  collection: Collection;
   isRevision: boolean;
-  visibility: Collection["visibility"];
 }
 
-const MoreDropdown = ({ id = "", isRevision, visibility }: Props) => {
+const MoreDropdown = ({ collection, isRevision }: Props) => {
   const popoverProps = useMemo(() => {
     return {
-      content: <Menu id={id} isRevision={isRevision} visibility={visibility} />,
+      content: <Menu collection={collection} isRevision={isRevision} />,
       position: Position.BOTTOM,
     };
-  }, [id, isRevision]);
+  }, [collection, isRevision]);
 
   return <RawMoreDropdown popoverProps={popoverProps} />;
 };

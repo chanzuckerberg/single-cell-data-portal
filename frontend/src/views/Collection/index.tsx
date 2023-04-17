@@ -70,12 +70,7 @@ const Collection: FC = () => {
   const { data: collection, isError, isFetching } = collectionState;
 
   const { mutateAsync: createRevision } = useCreateRevision();
-  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id
-    // collection && "visibility" in collection
-    //   ? collection.visibility
-    //   : VISIBILITY_TYPE.PRIVATE
-  );
+  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(id);
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
@@ -162,7 +157,7 @@ const Collection: FC = () => {
     collection.summaryCitation
   );
 
-  // Creates a revision of the collection and redirects to the private revision collection.
+  // Creates a revision of the collection and routes to the private revision collection.
   const handleCreateRevision = async (): Promise<void> => {
     await createRevision(id, {
       onSuccess: (collection) => {
@@ -174,9 +169,7 @@ const Collection: FC = () => {
   const handleDeleteCollection = async () => {
     setUserWithdrawn(true);
 
-    await deleteMutation({
-      collectionID: id,
-    });
+    await deleteMutation(id);
 
     router.push(ROUTES.COLLECTIONS);
   };
@@ -199,9 +192,8 @@ const Collection: FC = () => {
               {collection.visibility === VISIBILITY_TYPE.PRIVATE && (
                 <>
                   <MoreDropdown
-                    id={id}
+                    collection={collection}
                     isRevision={isRevision}
-                    visibility={collection.visibility}
                   />
                   <AddButton addNewFile={addNewFile} />
                   <PublishCollection

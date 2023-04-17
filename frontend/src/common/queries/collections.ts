@@ -342,14 +342,8 @@ export function useCollectionUploadLinks(id: string) {
   });
 }
 
-async function deleteCollection({
-  collectionID,
-}: {
-  collectionID: Collection["id"];
-}) {
-  const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
-    id: collectionID,
-  });
+async function deleteCollection(id: Collection["id"]) {
+  const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
   const response = await fetch(finalURL, DELETE_FETCH_OPTIONS);
 
@@ -359,14 +353,8 @@ async function deleteCollection({
 }
 
 export function useDeleteCollection(
-  id = ""
-  // visibility = ""
-): UseMutationResult<
-  void,
-  unknown,
-  { collectionID: string },
-  { previousCollections: CollectionResponsesMap }
-> {
+  id: Collection["id"]
+): UseMutationResult<void, unknown, Collection["id"]> {
   const queryClient = useQueryClient();
   return useMutation(deleteCollection, {
     // onMutate: async () => {
@@ -395,18 +383,49 @@ export function useDeleteCollection(
     // },
     onSuccess: () => {
       // TODO(cc) - do we need to delete datasets from the USE_DATASETS_INDEX?
+      // Removing the public collection from the USE_COLLECTION cache.
       queryClient.removeQueries([USE_COLLECTION, id], { exact: true });
+      // Update the USE_COLLECTIONS_INDEX cache by removing the deleted public collection.
       const updatedCollectionsById = new Map(
         queryClient.getQueryData([USE_COLLECTIONS_INDEX])
       ) as Map<string, ProcessedCollectionResponse>;
       updatedCollectionsById.delete(id);
       queryClient.setQueryData([USE_COLLECTIONS_INDEX], updatedCollectionsById);
-      // return Promise.all([
-      //   queryClient.invalidateQueries([USE_COLLECTIONS]),
-      //   queryClient.removeQueries([USE_COLLECTION, id], {
-      //     exact: false,
-      //   }),
-      // ]);
+    },
+  });
+}
+
+export function useDeletePrivateRevisionCollection(
+  revision: Collection
+): UseMutationResult<void, unknown, Collection["id"]> {
+  const queryClient = useQueryClient();
+  return useMutation(deleteCollection, {
+    onSuccess: () => {
+      if (!revision.revision_of) {
+        throw Error("Delete revision does not have a revision_of field");
+      }
+      const publicCollection = queryClient.getQueryData([
+        USE_COLLECTION,
+        revision.revision_of,
+      ]) as Collection;
+      queryClient.setQueryData([USE_COLLECTION, revision.revision_of], {
+        ...publicCollection,
+        revising_in: undefined,
+      });
+      // Removing the private revision from the USE_COLLECTION cache.
+      queryClient.removeQueries([USE_COLLECTION, revision.id], { exact: true });
+      // Update the USE_COLLECTIONS_INDEX cache by removing the deleted private collection.
+      const updatedCollectionsById = new Map(
+        queryClient.getQueryData([USE_COLLECTIONS_INDEX])
+      ) as Map<string, ProcessedCollectionResponse>;
+      const collection = updatedCollectionsById.get(revision.revision_of);
+      const updatedCollection = {
+        ...collection,
+        revisedBy: undefined,
+        status: [COLLECTION_STATUS.PUBLISHED],
+      } as ProcessedCollectionResponse;
+      updatedCollectionsById.set(revision.revision_of, updatedCollection);
+      queryClient.setQueryData([USE_COLLECTIONS_INDEX], updatedCollectionsById);
     },
   });
 }
