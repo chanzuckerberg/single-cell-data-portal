@@ -42,28 +42,27 @@ const EditButton = (props: Partial<IMenuItemProps>) => {
 };
 
 interface Props {
-  id?: string;
+  collection: Collection;
   isRevision: boolean;
-  visibility: Collection["visibility"];
 }
 
 const StyledMenu = styled(RawMenu)`
   border-radius: 3px;
   padding: 8px;
+
   & > li:last-child {
     margin-bottom: 0;
   }
 `;
 
-const Menu = ({ id = "", isRevision, visibility }: Props) => {
+const Menu = ({ collection, isRevision }: Props) => {
   return (
     <StyledMenu>
-      <CreateCollection id={id} Button={EditButton} />
+      <CreateCollection id={collection.id} Button={EditButton} />
       <DeleteCollection
-        id={id}
-        isRevision={isRevision}
         Button={DeleteButton}
-        visibility={visibility}
+        collection={collection}
+        isRevision={isRevision}
       />
     </StyledMenu>
   );

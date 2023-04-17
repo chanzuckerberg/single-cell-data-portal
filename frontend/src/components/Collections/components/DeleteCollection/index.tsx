@@ -11,31 +11,30 @@ const AsyncAlert = loadable(
   () =>
     /*webpackChunkName: 'src/components/Alert' */ import("src/components/Alert")
 );
+
 interface Props {
-  id: Collection["id"];
   Button?: React.ElementType;
+  collection: Collection;
   isRevision: boolean;
-  visibility: Collection["visibility"];
 }
 
 const DeleteCollection: FC<Props> = ({
-  id,
   Button = RawButton,
+  collection,
   isRevision,
-  visibility,
 }) => {
   const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id,
-    visibility
+    collection.id,
+    collection.visibility
   );
   const router = useRouter();
 
   const handleDelete = async () => {
     // (thuang): `deleteMutation` should have supported `onSuccess` callback,
     // but it doesn't seem to work. Thus we await the promise then redirect!
-    await deleteMutation({ collectionID: id });
+    await deleteMutation({ collectionID: collection.id });
 
-    router.push(ROUTES.MY_COLLECTIONS);
+    router.push(ROUTES.COLLECTIONS);
   };
 
   const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +54,6 @@ const DeleteCollection: FC<Props> = ({
         onMouseEnter={handleHover}
         isRevision={isRevision}
       />
-
       {isOpen && (
         <AsyncAlert
           cancelButtonText={"Cancel"}

@@ -44,7 +44,7 @@ const CollectionActions = ({
   isPublishable,
   isRevision,
 }: Props): JSX.Element => {
-  const { id, name, revision_of, visibility } = collection;
+  const { id, name, revision_of } = collection;
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const router = useRouter();
   const { mutateAsync: createRevision } = useCreateRevision();
@@ -88,11 +88,7 @@ const CollectionActions = ({
       {/* Collection is either private, or a private revision */}
       {collection.visibility === VISIBILITY_TYPE.PRIVATE && (
         <>
-          <MoreDropdown
-            id={id}
-            isRevision={isRevision}
-            visibility={visibility}
-          />
+          <MoreDropdown collection={collection} isRevision={isRevision} />
           <AddButton addNewFile={addNewFile} />
           <PublishCollection
             handlePublishCollection={handlePublishCollection}
