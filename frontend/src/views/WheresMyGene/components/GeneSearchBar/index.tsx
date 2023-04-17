@@ -119,7 +119,7 @@ export default function GeneSearchBar({
           setSelected={handleSelectTissues}
           label=""
           text="Tissue"
-          dataTestId="add-tissue"
+          dataTestId="add-tissue-btn"
           placeholder="Search"
           isLoading={isLoading}
           analyticsEvent={EVENTS.WMG_SELECT_TISSUE}
@@ -134,7 +134,7 @@ export default function GeneSearchBar({
           onItemNotFound={handleGeneNotFound}
           label=""
           text="Gene"
-          dataTestId="add-gene"
+          dataTestId="add-gene-btn"
           placeholder="Search or paste comma separated gene names"
           isLoading={isLoadingPrimaryFilters}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}

@@ -1,6 +1,5 @@
 import { expect, Page, test } from "@playwright/test";
 import { goToPage } from "tests/utils/helpers";
-import { getTestID } from "tests/utils/selectors";
 
 const { describe, skip } = test;
 
@@ -82,10 +81,10 @@ async function assertCsvResult(filename: string, page: Page) {
       fileChooser.setFiles(__dirname + filename);
     }),
 
-    page.click(getTestID("upload-csv")),
+    page.getByTestId("upload-csv").click(),
   ]);
 
-  const csvResult = await page.innerText(getTestID("csv-result"));
+  const csvResult = await page.getByTestId("csv-result").textContent();
 
   await expect(csvResult).toMatchSnapshot();
 }
