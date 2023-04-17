@@ -26,7 +26,7 @@ import {
   DatasetRow,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
-import { API_URL } from "src/configs/dev";
+import { API_URL } from "src/configs/configs";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
