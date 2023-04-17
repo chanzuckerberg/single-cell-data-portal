@@ -33,6 +33,7 @@
     "next-secure-headers": "^2.1.0",
     "next-sitemap": "^3.1.32",
     "papaparse": "^5.3.1",
+    "playwright-merge-html-reports": "^0.2.8",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-intersection-observer": "^9.1.0",

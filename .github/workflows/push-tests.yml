@@ -89,6 +89,7 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps
+          npx playwright-merge-html-reports install --dev
           cp src/configs/local.js src/configs/configs.js
           npm run dev&
 
@@ -98,6 +99,9 @@ jobs:
           CI: true
           PROJECT: ${{ matrix.project }}
         run: DEBUG=pw:api npx playwright test --project ${{ matrix.project }} --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
+
+      - name: Run Report Merge
+        run: npx playwright test tests/merge-reports
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
