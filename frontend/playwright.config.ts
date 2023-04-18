@@ -25,6 +25,10 @@ const CZI_CHECKER = " czi-checker";
  */
 const SHOULD_RETRY = process.env.RETRY !== "false";
 
+if (!SHOULD_RETRY) {
+  console.log('Skipping retry because "RETRY" is set to false');
+}
+
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
 const PLAYWRIGHT_REPORTER = process.env.CI
   ? ([["github"], ["line"], ["allure-playwright"]] as ReporterDescription[])

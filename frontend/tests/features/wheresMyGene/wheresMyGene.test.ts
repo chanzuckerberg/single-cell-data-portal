@@ -13,18 +13,15 @@ const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
-const CELL_TYPE_LABEL_ROW_TEST_ID = "cell-type-label-count";
-const ADD_TISSUE_ID = "add-tissue";
-const ADD_GENE_ID = "add-gene";
+const ADD_TISSUE_ID = "add-tissue-btn";
+const ADD_GENE_ID = "add-gene-btn";
 const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
 const DOWNLOAD_BUTTON_ID = "download-button";
 
-const MARKER_GENE_BUTTON_TEST_ID = "marker-gene-button";
-
 // FMG test IDs
-const ADD_TO_DOTPLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
+const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
 const NO_MARKER_GENES_WARNING_TEST_ID = "no-marker-genes-warning";
 const MARKER_SCORES_FMG_TEST_ID = "marker-scores-fmg";
 
@@ -40,7 +37,7 @@ const RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID = "right-sidebar-close-button";
 const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 
 // Export constants
-const CSV_NUM_METADATA_ROWS = 14;
+const CSV_START_FROM_ROW_NUM = 9; // This is the number of metadata rows + 1
 const PNG_CHECKBOX_ID = "png-checkbox";
 const CSV_CHECKBOX_ID = "csv-checkbox";
 const SVG_CHECKBOX_ID = "svg-checkbox";
@@ -369,23 +366,28 @@ describe("Where's My Gene", () => {
 
       await waitForHeatmapToRender(page);
 
-      const beforeCellTypeNames = await getCellTypeNames(page);
+      await tryUntil(
+        async () => {
+          const beforeCellTypeNames = await getCellTypeNames(page);
 
-      // (thuang): Sometimes when API response is slow, we'll not capture all the
-      // cell type names, so a sanity check that we expect at least 100 names
-      expect(beforeCellTypeNames.length).toBeGreaterThan(
-        CELL_TYPE_SANITY_CHECK_NUMBER
+          // (thuang): Sometimes when API response is slow, we'll not capture all the
+          // cell type names, so a sanity check that we expect at least 100 names
+          expect(beforeCellTypeNames.length).toBeGreaterThan(
+            CELL_TYPE_SANITY_CHECK_NUMBER
+          );
+
+          // beforeCellTypeNames array does not contain "normal"
+
+          /**
+           * (thuang): Make sure the default y axis is not stratified by checking
+           * that there are no 2 spaces in the cell type names for indentation
+           */
+          expect(
+            beforeCellTypeNames.find((name) => name.includes("  "))
+          ).toBeFalsy();
+        },
+        { page }
       );
-
-      // beforeCellTypeNames array does not contain "normal"
-
-      /**
-       * (thuang): Make sure the default y axis is not stratified by checking
-       * that there are no 2 spaces in the cell type names for indentation
-       */
-      expect(
-        beforeCellTypeNames.find((name) => name.includes("  "))
-      ).toBeFalsy();
 
       // Check all 3 Compare options work
       await clickDropdownOptionByName({
@@ -446,9 +448,14 @@ describe("Where's My Gene", () => {
         testId: COMPARE_DROPDOWN_ID,
       });
 
-      expect(
-        beforeCellTypeNames.find((name) => name.includes("  "))
-      ).toBeFalsy();
+      await tryUntil(
+        async () => {
+          expect(
+            (await getCellTypeNames(page)).find((name) => name.includes("  "))
+          ).toBeFalsy();
+        },
+        { page }
+      );
     });
   });
 
@@ -464,9 +471,9 @@ describe("Where's My Gene", () => {
         name: "lung",
       });
 
-      await getCellTypeFmgButtonAndClick(page, "muscle cell");
+      await getCellTypeFmgButtonAndClick(page, "memory B cell");
 
-      await getButtonAndClick(page, ADD_TO_DOTPLOT_BUTTON_TEST_ID);
+      await getButtonAndClick(page, ADD_TO_DOT_PLOT_BUTTON_TEST_ID);
 
       await waitForHeatmapToRender(page);
 
@@ -625,7 +632,7 @@ describe("Where's My Gene", () => {
       // Parsing will validate rows have consistent column counts per row
       const data = parse(csvBuffer, {
         columns: true,
-        from_line: CSV_NUM_METADATA_ROWS, // Start on row with header names, skipping metadata
+        from_line: CSV_START_FROM_ROW_NUM, // Start on row with header names, skipping metadata
         skip_empty_lines: true,
       });
 
@@ -685,7 +692,7 @@ describe("Where's My Gene", () => {
       // Parsing will validate rows have consistent column counts per row
       const data = parse(csvBuffer, {
         columns: true,
-        from_line: CSV_NUM_METADATA_ROWS, // Start on row with header names, skipping metadata
+        from_line: CSV_START_FROM_ROW_NUM, // Start on row with header names, skipping metadata
         skip_empty_lines: true,
       });
 
@@ -989,12 +996,13 @@ async function getFirstButtonAndClick(page: Page, testID: string) {
 
 async function getCellTypeFmgButtonAndClick(page: Page, cellType: string) {
   await waitForElement(page, CELL_TYPE_LABELS_ID);
+
   await tryUntil(
     async () => {
       await page
-        .getByTestId(CELL_TYPE_LABEL_ROW_TEST_ID)
-        .filter({ hasText: new RegExp(`^${cellType}$`) })
-        .getByTestId(MARKER_GENE_BUTTON_TEST_ID)
+        .getByRole("img", {
+          name: "display marker genes for " + cellType,
+        })
         .click();
     },
     { page }
