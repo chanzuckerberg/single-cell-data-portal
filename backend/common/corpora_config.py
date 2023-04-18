@@ -13,8 +13,10 @@ class CorporaConfig(SecretConfig):
 
         # Set collections_base_url
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX")
+        dataset_assets_base_url = None
         if rdev_prefix:
             collections_base_url = f"https://{rdev_prefix.strip('/')}-frontend.rdev.single-cell.czi.technology"
+            dataset_assets_base_url = f"https://env-rdev-datasets.s3.us-west-2.amazonaws.com/{rdev_prefix.strip('/')}"
         else:
             deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
             if deployment_stage == "test":
@@ -28,6 +30,7 @@ class CorporaConfig(SecretConfig):
             "upload_max_file_size_gb": 30,
             "submission_bucket": os.getenv("DATASET_SUBMISSIONS_BUCKET", "cellxgene-dataset-submissions-test"),
             "collections_base_url": collections_base_url,
+            "dataset_assets_base_url": dataset_assets_base_url,
         }
         upload_snf_arn = os.getenv("UPLOAD_SFN_ARN")
         if upload_snf_arn:

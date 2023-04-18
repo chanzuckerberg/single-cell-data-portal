@@ -3,6 +3,7 @@ import {
   CommonThemeProps,
   ComplexFilter,
   ComplexFilterInputDropdown,
+  getColors,
   getSpaces,
 } from "czifui";
 import { Label, Wrapper as RawWrapper } from "./components/common/style";
@@ -22,6 +23,17 @@ export const StyledComplexFilterInputDropdown = styled(
   &.Mui-disabled {
     border: 0;
   }
+
+  ${(props: CommonThemeProps) => {
+    const colors = getColors(props);
+
+    return `
+      .styled-label {
+        // (thuang): Override the default color black to be gray until SDS fixes it
+        color: ${colors?.gray[500]} !important;
+      }
+    `;
+  }}
 `;
 
 export const Wrapper = styled(RawWrapper)`

@@ -1,5 +1,7 @@
 import { List, ListItem } from "czifui";
 import { useContext, useMemo } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import {
   aggregateCollectionsFromDatasets,
   useFilterDimensions,
@@ -39,7 +41,16 @@ export default function SourceData(): JSX.Element {
                 <List
                   key={name}
                   subheader={
-                    <a href={url} target="_blank" rel="noopener">
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener"
+                      onClick={() => {
+                        track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, {
+                          collection_name: name,
+                        });
+                      }}
+                    >
                       <ListSubheader>{name}</ListSubheader>
                     </a>
                   }

@@ -42,6 +42,7 @@ const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 
 // Export constants
 const CSV_NUM_METADATA_ROWS = 14;
+const CSV_START_FROM_ROW_NUM = 9; // This is the number of metadata rows + 1
 const PNG_CHECKBOX_ID = "png-checkbox";
 const CSV_CHECKBOX_ID = "csv-checkbox";
 const SVG_CHECKBOX_ID = "svg-checkbox";
@@ -69,14 +70,14 @@ describe("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     // Getting Started section
-    await expect(page).toHaveSelector(getText("STEP 1"));
-    await expect(page).toHaveSelector(getText("Add Tissues"));
+    await expect(page.getByText("STEP 1")).toBeTruthy();
+    await expect(page.getByText("Add Tissues")).toBeTruthy();
 
-    await expect(page).toHaveSelector(getText("STEP 2"));
-    await expect(page).toHaveSelector(getText("Add Genes"));
+    await expect(page.getByText("STEP 2")).toBeTruthy();
+    await expect(page.getByText("Add Genes")).toBeTruthy();
 
-    await expect(page).toHaveSelector(getText("STEP 3"));
-    await expect(page).toHaveSelector(getText("Explore Gene Expression"));
+    await expect(page.getByText("STEP 3")).toBeTruthy();
+    await expect(page.getByText("Explore Gene Expression")).toBeTruthy();
 
     await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
     await selectFirstOption(page);
@@ -86,24 +87,24 @@ describe("Where's My Gene", () => {
 
     const filtersPanel = page.getByTestId(FILTERS_PANEL);
 
-    await expect(filtersPanel).toHaveSelector(getText("Dataset"));
-    await expect(filtersPanel).toHaveSelector(getText("Disease"));
-    await expect(filtersPanel).toHaveSelector(
-      getText("Self-Reported Ethnicity")
-    );
-    await expect(filtersPanel).toHaveSelector(getText("Sex"));
+    await expect(filtersPanel.getByText("Dataset")).toBeTruthy();
+    await expect(filtersPanel.getByText("Disease")).toBeTruthy();
+    await expect(
+      filtersPanel.getByText("Self-Reported Ethnicity")
+    ).toBeTruthy();
+    await expect(filtersPanel.getByText("Sex")).toBeTruthy();
 
     // Legend
     const Legend = page.getByTestId("legend-wrapper");
-    await expect(Legend).toHaveSelector(getText("Gene Expression"));
-    await expect(Legend).toHaveSelector(getText("Expressed in Cells (%)"));
+    await expect(Legend.getByText("Gene Expression")).toBeTruthy();
+    await expect(Legend.getByText("Expressed in Cells (%)")).toBeTruthy();
 
     // Info Panel
-    await expect(filtersPanel).toHaveSelector(getText("Methodology"));
-    await expect(filtersPanel).toHaveSelector(
-      getText("After filtering cells with low coverage ")
-    );
-    await expect(filtersPanel).toHaveSelector(getText("Source Data"));
+    await expect(filtersPanel.getByText("Methodology")).toBeTruthy();
+    await expect(
+      filtersPanel.getByText("After filtering cells with low coverage ")
+    ).toBeTruthy();
+    await expect(filtersPanel.getByText("Source Data")).toBeTruthy();
   });
 
   test("Filters and Heatmap", async ({ page }) => {
@@ -220,11 +221,11 @@ describe("Where's My Gene", () => {
 
     await waitForHeatmapToRender(page);
     await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
-    await expect(page).toHaveSelector(
-      getText(
+    await expect(
+      page.getByText(
         "After filtering cells with low coverage (less than 500 genes expressed)"
       )
-    );
+    ).toBeTruthy();
 
     await tryUntil(
       async () => {
