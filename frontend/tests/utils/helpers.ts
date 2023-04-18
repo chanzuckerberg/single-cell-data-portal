@@ -5,7 +5,6 @@ import {
 import { ElementHandle, expect, Page } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
-import { getText } from "./selectors";
 
 /**
  * (thuang): From oauth/users.json
@@ -67,7 +66,7 @@ export async function login(page: Page): Promise<void> {
 
   expect(username).toBeDefined();
 
-  await page.click(getText("Log In"));
+  await page.getByText("Log In").click();
 
   await page.fill('[name="Username"], [name="email"]', username);
   await page.fill('[name="Password"], [name="password"]', password);

@@ -1,7 +1,7 @@
 import { Classes, Colors } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { Chip } from "czifui";
+import { Chip, getColors, InputDropdown } from "czifui";
 import { GRAY, PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
 
 export const HEADER_HEIGHT_PX = 48;
@@ -106,4 +106,24 @@ export const BetaChip = styled(Chip)`
   color: white;
   margin-left: ${PT_GRID_SIZE_PX / 2}px;
   height: ${PT_GRID_SIZE_PX * 2}px !important;
+`;
+
+export const StyledInputDropdown = styled(InputDropdown)`
+  /* Overriding colors after SDS v14.5.0 upgrade */
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+      span {
+        color: ${colors?.gray["500"]} !important;
+      }
+
+      :hover {
+        background: none;
+        span {
+          color: ${colors?.gray["600"]} !important;
+        }
+      }
+    `;
+  }}
 `;
