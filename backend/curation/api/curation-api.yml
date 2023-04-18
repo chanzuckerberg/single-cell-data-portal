@@ -176,7 +176,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/collection_get"
+                  - $ref: "#/components/schemas/collection"
         "403":
           $ref: "#/components/responses/403"
     patch:
@@ -531,7 +531,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/collection_get"
+                  $ref: "#/components/schemas/collection"
         "403":
           $ref: "#/components/responses/403"
 
@@ -553,7 +553,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/collection_get"
+                  - $ref: "#/components/schemas/collection"
         "403":
           $ref: "#/components/responses/403"
         "404":
@@ -789,7 +789,7 @@ components:
     collection_description:
       description: A description of the Collection.
       type: string
-    collection_get:
+    collection:
       description: Collection metadata
       properties:
         collection_id:
@@ -833,6 +833,47 @@ components:
           $ref: "#/components/schemas/collection_revising_in"
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
+        visibility:
+          $ref: "#/components/schemas/visibility"
+      type: object
+    collection_version:
+      description: Collection version metadata
+      properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_url:
+          $ref: "#/components/schemas/collection_url"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_id"
+        consortia:
+          $ref: "#/components/schemas/consortia"
+        contact_email:
+          $ref: "#/components/schemas/contact_email"
+        contact_name:
+          $ref: "#/components/schemas/contact_name"
+        created_at:
+          $ref: "#/components/schemas/created_at"
+        curator_name:
+          $ref: "#/components/schemas/curator_name"
+        datasets:
+          type: array
+          description: A list of Dataset metadata associated with the Collection version
+          items:
+            $ref: "#/components/schemas/dataset_version"
+        description:
+          $ref: "#/components/schemas/collection_description"
+        doi:
+          $ref: "#/components/schemas/doi"
+        links:
+          $ref: "#/components/schemas/links"
+        name:
+          $ref: "#/components/schemas/collection_name"
+        processing_status:
+          $ref: "#/components/schemas/processing_status_collection"
+        published_at:
+          $ref: "#/components/schemas/published_at"
+        publisher_metadata:
+          $ref: "#/components/schemas/publisher_metadata"
         visibility:
           $ref: "#/components/schemas/visibility"
       type: object
