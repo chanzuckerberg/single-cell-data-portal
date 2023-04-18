@@ -141,6 +141,7 @@ module backend_service {
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
+  datasets_bucket            = local.datasets_bucket
   execution_role             = local.ecs_execution_role
 
   wait_for_steady_state = local.wait_for_steady_state
