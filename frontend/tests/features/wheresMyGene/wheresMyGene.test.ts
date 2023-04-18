@@ -4,7 +4,7 @@ import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wher
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
-import { TISSUE_DENY_LIST } from "./tissueRollup";
+import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
@@ -40,7 +40,7 @@ const RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID = "right-sidebar-close-button";
 const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 
 // Export constants
-const CSV_START_FROM_ROW_NUM = 9; // This is the number of metadata rows + 1
+const CSV_NUM_METADATA_ROWS = 14;
 const PNG_CHECKBOX_ID = "png-checkbox";
 const CSV_CHECKBOX_ID = "csv-checkbox";
 const SVG_CHECKBOX_ID = "svg-checkbox";
@@ -625,7 +625,7 @@ describe("Where's My Gene", () => {
       // Parsing will validate rows have consistent column counts per row
       const data = parse(csvBuffer, {
         columns: true,
-        from_line: CSV_START_FROM_ROW_NUM, // Start on row with header names, skipping metadata
+        from_line: CSV_NUM_METADATA_ROWS, // Start on row with header names, skipping metadata
         skip_empty_lines: true,
       });
 
@@ -685,7 +685,7 @@ describe("Where's My Gene", () => {
       // Parsing will validate rows have consistent column counts per row
       const data = parse(csvBuffer, {
         columns: true,
-        from_line: CSV_START_FROM_ROW_NUM, // Start on row with header names, skipping metadata
+        from_line: CSV_NUM_METADATA_ROWS, // Start on row with header names, skipping metadata
         skip_empty_lines: true,
       });
 
@@ -915,7 +915,7 @@ async function clickUntilSidebarShowsUp({
 }
 
 // (thuang): This only works when a dropdown is open
-async function selectFirstOption(page: Page) {
+export async function selectFirstOption(page: Page) {
   await selectFirstNOptions(1, page);
 }
 
