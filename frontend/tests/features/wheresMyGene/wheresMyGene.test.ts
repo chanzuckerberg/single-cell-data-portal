@@ -4,8 +4,7 @@ import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wher
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
-import { getText } from "../../utils/selectors";
-import { TISSUE_DENY_LIST } from "../fixtures/wheresMyGene/tissueRollup";
+import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
@@ -42,7 +41,6 @@ const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 
 // Export constants
 const CSV_NUM_METADATA_ROWS = 14;
-const CSV_START_FROM_ROW_NUM = 9; // This is the number of metadata rows + 1
 const PNG_CHECKBOX_ID = "png-checkbox";
 const CSV_CHECKBOX_ID = "csv-checkbox";
 const SVG_CHECKBOX_ID = "svg-checkbox";
