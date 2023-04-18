@@ -24,7 +24,7 @@ from backend.layers.common.entities import (
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
-from tests.unit.backend.layers.common.base_test import DatasetStatusUpdate
+from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 
 mock_config_attr = {
     "curator_role_arn": "test_role_arn",
@@ -632,6 +632,12 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.generate_dataset(
             collection_version=collection_version,
             metadata=dataset_metadata,
+            artifacts=[
+                DatasetArtifactUpdate(type="h5ad", uri="http://test_filename/1234-5678-9/local.h5ad"),
+                DatasetArtifactUpdate(type="rds", uri="http://test_filename/1234-5678-9/local.rds"),
+                DatasetArtifactUpdate(type="cxg", uri="http://test_filename/1234-5678-9/local.cxg"),
+                DatasetArtifactUpdate(type="raw_h5ad", uri="http://test_filename/1234-5678-9/raw.h5ad"),
+            ],
         )
         self.business_logic.publish_collection_version(collection_version.version_id)
         collection_version = self.business_logic.get_collection_version(collection_version.version_id)
