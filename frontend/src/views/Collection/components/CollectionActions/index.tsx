@@ -58,7 +58,7 @@ const CollectionActions = ({
   };
 
   // Deletes a private, or published, or private revision collection.
-  const handleDeleteCollection = async () => {
+  const handleDeleteCollection = async (): Promise<void> => {
     setUserWithdrawn(true);
     await deleteCollectionMutation.mutateAsync(collection, {
       onSuccess: () => {
@@ -74,7 +74,7 @@ const CollectionActions = ({
   };
 
   // Publishes a private collection or private revision.
-  const handlePublishCollection = async () => {
+  const handlePublishCollection = async (): Promise<void> => {
     const payload = JSON.stringify({
       data_submission_policy_version: POLICY_BULLETS.version,
     });
@@ -94,7 +94,6 @@ const CollectionActions = ({
         },
       }
     );
-    setIsPublishOpen(false);
   };
 
   return collection.access_type === ACCESS_TYPE.WRITE ? (
