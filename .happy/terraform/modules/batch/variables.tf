@@ -10,7 +10,7 @@ variable cellxgene_bucket {
 
 variable datasets_bucket {
   type        = string
-  description = "Datasets bucket name"
+  description = "Datasets public-access bucket name"
 }
 
 variable image {
