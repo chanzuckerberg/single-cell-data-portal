@@ -6,6 +6,8 @@ import {
   ADD_GENE_LBL,
   ADD_TISSUE_LBL,
 } from "tests/utils/constants";
+import { getById } from "tests/utils/selectors";
+import { tryUntil } from "tests/utils/helpers";
 
 const ALERT =
   "We would appreciate your feedback, please fill out a quick survey";
@@ -93,5 +95,47 @@ test.describe("Tests for Gene Expression page", () => {
         (dots) => dots.map((d) => d.getAttribute("size"))
       )
     ).toStrictEqual(DOT_SIZES);
+  });
+  test("Should verify top nav", async ({ page }) => {
+    const DOCUMENTATION = "Documentation";
+    await goToWMG(page);
+    // verify logo
+    expect(page.getByTestId("logo")).toBeVisible();
+
+    // Help & Doc
+    expect(await page.getByTestId("InputDropdown").textContent()).toBe(
+      "Help & Documentation"
+    );
+
+    await page.getByTestId("InputDropdown").click();
+
+    const popupPromise = page.waitForEvent("popup");
+    await page.getByText(DOCUMENTATION, { exact: true }).click();
+    const popup = await popupPromise;
+    // Wait for new tab to load.
+    await popup.waitForLoadState();
+    expect(popup.url()).toContain(DOCUMENTATION);
+    expect(
+      popup.locator(
+        getById("gene-expression--query-gene-expression-across-tissues")
+      )
+    ).toBeVisible();
+  });
+  test("Should take user to portal page on clicking on logo", async ({
+    page,
+  }) => {
+    await goToWMG(page);
+
+    await page.getByTestId("logo").click();
+    await page.waitForLoadState();
+
+    await tryUntil(
+      async () => {
+        expect(
+          page.getByTestId("laptop-with-cell-data-on-screen")
+        ).toBeVisible();
+      },
+      { page }
+    );
   });
 });
