@@ -657,12 +657,12 @@ class TestGetCollectionID(BaseAPIPortalTest):
                     {
                         "filesize": -1,
                         "filetype": "H5AD",
-                        "url": "http://domain/1234-5678-9.h5ad",
+                        "url": f"http://domain/{dataset.version_id.id}.h5ad",
                     },
                     {
                         "filesize": -1,
                         "filetype": "RDS",
-                        "url": "http://domain/1234-5678-9.rds",
+                        "url": f"http://domain/{dataset.version_id.id}.rds",
                     },
                 ],
                 "is_primary_data": [True, False],
