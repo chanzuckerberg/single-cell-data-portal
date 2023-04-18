@@ -6,8 +6,8 @@ import { sortByCellCountDescending } from "src/components/Collection/components/
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
-import { getTestID, getText } from "tests/utils/selectors";
-import datasets from "../fixtures/datasets";
+import datasets from "../../fixtures/datasets";
+import { getTestID } from "tests/utils/selectors";
 
 const { describe, skip } = test;
 
@@ -46,8 +46,8 @@ describe("Collection", () => {
       await createCollection({ collection: { name: collectionName }, page });
 
       // Try delete
-      await page.click(getTestID("collection-more-button"));
-      await page.click(getText("Delete Collection"));
+      await page.getByTestId("collection-more-button").click();
+      await page.getByText("Delete Collection").click();
 
       await Promise.all([
         page.waitForNavigation({ waitUntil: "load" }),
@@ -56,7 +56,7 @@ describe("Collection", () => {
 
       await tryUntil(
         async () => {
-          await expect(page).not.toHaveSelector(getText(collectionName));
+          expect(page.getByText(collectionName)).toBeFalsy;
         },
         { page }
       );
@@ -114,7 +114,7 @@ describe("Collection", () => {
         // Attempt submit, confirm error message is displayed.
         const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
-        await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
+        expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeTruthy();
       });
 
       test("doesn't create a collection with an invalid DOI", async ({
@@ -138,7 +138,7 @@ describe("Collection", () => {
         // Attempt submit, confirm error message is displayed.
         const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
-        await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
+        expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeTruthy();
       });
     });
   });
@@ -163,7 +163,7 @@ async function createCollection({
     collection_id: string;
   };
 
-  await expect(page).toHaveSelector(getText(testCollection.name));
+  expect(page.getByText(testCollection.name)).toBeTruthy();
 
   return collection_id;
 }
@@ -173,7 +173,7 @@ async function createCollection({
  */
 async function showCreateForm(page: Page) {
   await goToPage(`${TEST_URL}${ROUTES.MY_COLLECTIONS}`, page);
-  await page.click(getText("Create Collection"));
+  await page.getByText("Create Collection").click();
 }
 
 const collectionEndpointPath = `/dp/v1/collections`;
@@ -189,7 +189,7 @@ async function submitCreateFormInvalid(page: Page) {
         response.url().includes(collectionEndpointPath) &&
         response.status() === HTTP_STATUS_CODE.BAD_REQUEST
     ),
-    page.click(getTestID("create-button")),
+    page.getByTestId("create-button").click(),
   ]);
 }
 
@@ -204,7 +204,7 @@ async function submitCreateForm(page: Page) {
         response.url().includes(collectionEndpointPath) &&
         response.status() === HTTP_STATUS_CODE.OK
     ),
-    page.click(getTestID("create-button")),
+    page.getByTestId("create-button").click(),
   ]);
 }
 
@@ -213,13 +213,13 @@ async function submitCreateForm(page: Page) {
  * @param value - Value to enter in the DOI input field.
  */
 async function populatePublicationDOI(value: string, page: Page) {
-  await page.click(getText("Add Link"));
-  await page.click(getText("Publication DOI"));
-  await expect(page).toHaveSelector(
-    getText(
+  await page.getByText("Add Link").click();
+  await page.getByText("Publication DOI").click();
+  expect(
+    page.getByText(
       "A summary citation linked to this DOI will be automatically added to this collection."
     )
-  );
+  ).toBeTruthy();
   await page.type(ELEMENT_ID_INPUT_DOI, value, BLUEPRINT_SAFE_TYPE_OPTIONS);
 }
 

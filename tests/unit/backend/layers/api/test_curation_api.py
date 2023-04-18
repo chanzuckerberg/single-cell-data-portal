@@ -1783,13 +1783,13 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         dataset_id = collection.datasets[0].dataset_id
         dataset_version_id = collection.datasets[0].version_id
         published_revision = self.generate_revision(collection_id)
-        published_dataset_revision_id = self.generate_dataset(
+        published_dataset_revision = self.generate_dataset(
             collection_version=published_revision, replace_dataset_version_id=dataset_version_id, publish=True
-        ).dataset_version_id
+        )
         unpublished_revision = self.generate_revision(collection_id)
         self.generate_dataset(
             collection_version=unpublished_revision,
-            replace_dataset_version_id=DatasetVersionId(published_dataset_revision_id),
+            replace_dataset_version_id=DatasetVersionId(published_dataset_revision.dataset_version_id),
         )
 
         test_url = f"/curation/v1/datasets/{dataset_id}/versions"
@@ -1798,16 +1798,21 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         expected = defaultdict(list)
         for dataset in response.json:
+            self.assertIsNone(dataset.get("revised_at"))
             expected["dataset_version_ids"].append(dataset["dataset_version_id"])
             expected["collection_ids"].append(dataset["collection_id"])
             expected["collection_version_ids"].append(dataset["collection_version_id"])
+            expected["published_at"].append(dataset["published_at"])
         # Check that only published datasets appear
         # Must be returned in reverse chronological order
-        self.assertEqual([published_dataset_revision_id, dataset_version_id.id], expected["dataset_version_ids"])
+        self.assertEqual(
+            [published_dataset_revision.dataset_version_id, dataset_version_id.id], expected["dataset_version_ids"]
+        )
         self.assertEqual([collection_id.id, collection_id.id], expected["collection_ids"])
         self.assertEqual(
             [published_revision.version_id.id, collection.version_id.id], expected["collection_version_ids"]
         )
+        self.assertTrue(expected["published_at"][0] > expected["published_at"][1])
 
     def test_get_dataset_id_version_4xx(self):
         with self.subTest("Input is not a UUID"):
