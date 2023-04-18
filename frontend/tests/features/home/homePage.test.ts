@@ -89,7 +89,6 @@ describe("Homepage", () => {
 
     await isGlobalLayoutWrapperScrollable(newPage);
   });
-  //todo: tests for gx to be added to the gx main panel tests
 });
 
 async function isPageScrollableToSeeSiteMap(page: Page) {
