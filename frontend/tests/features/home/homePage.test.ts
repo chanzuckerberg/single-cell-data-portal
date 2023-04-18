@@ -5,6 +5,8 @@ import { goToPage, tryUntil } from "tests/utils/helpers";
 
 const { describe } = test;
 const COLLECTION_LINK = "collection-link";
+const SCROLL_Y_PX = 999999;
+
 describe("Homepage", () => {
   test("Should verify the expected elements are rendered", async ({ page }) => {
     await goToPage(undefined, page);
@@ -93,9 +95,37 @@ describe("Homepage", () => {
 
 async function isPageScrollableToSeeSiteMap(page: Page) {
   const SitemapLink = page.locator("a", { hasText: "Sitemap" });
+  const Html = page.locator("html");
+  const Body = page.locator("body");
+
+  const bodyHeight = await Body.evaluate((e) => {
+    return e.clientHeight;
+  });
+  const viewportHeight = await Html.evaluate((e) => {
+    return e.clientHeight;
+  });
+
+  const scrollTopTarget = bodyHeight - viewportHeight - 50;
 
   await expect(SitemapLink).not.toBeInViewport();
-  await page.mouse.wheel(0, 20000);
+
+  /**
+   * (thuang): Scroll to the bottom iteratively, because Firefox somehow has a
+   * max scroll height limit, so we can't just scroll to the bottom in one go
+   */
+  await tryUntil(
+    async () => {
+      await page.mouse.wheel(0, SCROLL_Y_PX);
+
+      const scrollTop = await Html.evaluate(async (e) => {
+        return e.scrollTop;
+      });
+
+      expect(scrollTop > scrollTopTarget).toBeTruthy();
+    },
+    { page }
+  );
+
   await expect(SitemapLink).toBeInViewport();
 }
 
@@ -116,7 +146,7 @@ async function isGlobalLayoutWrapperScrollable(page: Page) {
     async () => {
       // (thuang): Click is needed to focus the scrollable element
       await wrapper.click();
-      await page.mouse.wheel(0, 20000);
+      await page.mouse.wheel(0, SCROLL_Y_PX);
 
       expect(
         await wrapper.evaluate((e) => {
