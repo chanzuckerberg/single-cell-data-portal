@@ -87,9 +87,9 @@ class TestDeleteCollection(BaseAPIPortalTest):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
-                collection_id = self.generate_published_collection().collection_id
-                self.business_logic.tombstone_collection(collection_id)
-                self._test(collection_id, auth, expected_response)
+                collection = self.generate_published_collection()
+                self.business_logic.tombstone_collection(collection.collection_id)
+                self._test(collection.collection_id, auth, expected_response)
 
 
 class TestS3Credentials(BaseAPIPortalTest):
