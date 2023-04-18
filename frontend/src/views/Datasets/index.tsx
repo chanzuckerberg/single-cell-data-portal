@@ -37,6 +37,11 @@ import { DatasetsGrid } from "src/components/Datasets/components/Grid/components
 import { View } from "../globalStyle";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
 import { CATEGORY_FILTER_DENY_LIST } from "src/views/Datasets/common/constants";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
+import { useUserInfo } from "src/common/queries/auth";
+import { COLLECTIONS_MODE } from "src/views/Collections/common/constants";
 
 /**
  * Collection ID object key.
@@ -79,13 +84,25 @@ const RECENCY = "recency";
 const COLUMN_ID_RECENCY = "recency";
 
 export default function Datasets(): JSX.Element {
+  const isCuratorEnabled = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
+  const { status } = useUserInfo(isCuratorEnabled);
+  const mode = useMemo((): COLLECTIONS_MODE => {
+    return status === "success"
+      ? COLLECTIONS_MODE.MY_COLLECTIONS
+      : COLLECTIONS_MODE.COLLECTIONS;
+  }, [status]);
+
   /* Pop toast if user has come from Explorer with work in progress */
   useExplainNewTab(
     "To maintain your in-progress work on the previous dataset, we opened a new tab."
   );
 
   // Filterable datasets joined from datasets and collections responses.
-  const { isError, isLoading, rows: datasetRows } = useFetchDatasetRows();
+  const {
+    isError,
+    isLoading,
+    rows: datasetRows,
+  } = useFetchDatasetRows(mode, status);
 
   // Column configuration backing table.
   const columnConfig: Column<DatasetRow>[] = useMemo(

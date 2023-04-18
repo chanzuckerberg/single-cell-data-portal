@@ -60,15 +60,6 @@ export interface FetchCategoriesRows<T extends Categories> {
 }
 
 /**
- * Model returned on fetch of collection datasets: materialized dataset view models as well as fetch status.
- */
-export interface FetchCollectionDatasetRows {
-  isError: boolean;
-  isLoading: boolean;
-  rows: DatasetRow[];
-}
-
-/**
  * Model of collection IDs in revision keyed by corresponding published collection ID.
  */
 type CollectionRevisionIdByCollectionId = Map<
@@ -164,23 +155,6 @@ export const USE_DATASETS_INDEX = {
 };
 
 /**
- * Fetch datasets for the given collection ID.
- * @param collectionId - ID of collection to fetch datasets for.
- * @returns All public datasets for the given collection ID.
- */
-export function useFetchCollectionDatasetRows(
-  collectionId: string
-): FetchCollectionDatasetRows {
-  const { rows: allRows, isError, isLoading } = useFetchDatasetRows();
-  const datasetsByCollectionId = groupDatasetRowsByCollection(allRows);
-  return {
-    isError,
-    isLoading,
-    rows: datasetsByCollectionId.get(collectionId) ?? [],
-  };
-}
-
-/**
  * Fetch collection and dataset information and build collection-specific filter view model.
  * @param mode - Collections mode.
  * @param status - Query status.
@@ -229,7 +203,7 @@ export function useFetchCollectionRows(
  */
 export function useFetchCollections(
   mode: COLLECTIONS_MODE = COLLECTIONS_MODE.COLLECTIONS,
-  status: QueryStatus = "success"
+  status: QueryStatus
 ): UseQueryResult<Map<string, ProcessedCollectionResponse>> {
   return useQuery<Map<string, ProcessedCollectionResponse>>(
     [USE_COLLECTIONS_INDEX],
@@ -245,9 +219,14 @@ export function useFetchCollections(
 
 /**
  * Fetch collection and dataset information and build filter view model.
+ * @param mode - Collections mode.
+ * @param status - Query status.
  * @returns All public datasets joined with their corresponding collection information.
  */
-export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
+export function useFetchDatasetRows(
+  mode: COLLECTIONS_MODE,
+  status: QueryStatus
+): FetchCategoriesRows<DatasetRow> {
   // Fetch datasets.
   const {
     data: datasets,
@@ -260,7 +239,7 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
     data: collectionsById,
     isError: collectionsError,
     isLoading: collectionsLoading,
-  } = useFetchCollections();
+  } = useFetchCollections(mode, status);
 
   // Build dataset rows once datasets and collections responses have resolved.
   const datasetRows = useMemo(() => {
