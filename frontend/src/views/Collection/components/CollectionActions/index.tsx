@@ -6,7 +6,7 @@ import MoreDropdown from "./components/MoreDropdown";
 import { CollectionActions as Actions } from "./style";
 import DeleteCollectionButton from "src/views/Collection/components/CollectionActions/components/DeleteButton";
 import CreateRevisionButton from "src/views/Collection/components/CollectionActions/components/CreateRevisionButton";
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import {
   useCreateRevision,
   useDeleteCollection,
@@ -22,27 +22,25 @@ import { Intent } from "@blueprintjs/core";
 interface Props {
   addNewFile: DropboxChooserProps["onUploadFile"];
   collection: Collection;
-  handleDeleteCollection: () => void;
   hasRevision: boolean;
-  isDeleting: boolean;
   isPublishable: boolean;
   isRevision: boolean;
+  setUserWithdrawn: Dispatch<SetStateAction<boolean>>;
 }
 
 const CollectionActions = ({
   addNewFile,
   collection,
-  handleDeleteCollection,
   hasRevision,
-  isDeleting,
   isPublishable,
   isRevision,
+  setUserWithdrawn,
 }: Props): JSX.Element | null => {
   const { id, name, revision_of } = collection;
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const router = useRouter();
   const { mutateAsync: createRevision } = useCreateRevision();
-  const { mutateAsync: deleteCollection, isLoading: isDeletingCollection } =
+  const { mutateAsync: deleteCollection, isLoading: isDeleting } =
     useDeleteCollection();
   const { mutateAsync: publishCollection, isLoading: isPublishing } =
     usePublishCollection();
@@ -52,6 +50,17 @@ const CollectionActions = ({
     await createRevision(id, {
       onSuccess: (revision) => {
         router.push(ROUTES.COLLECTION.replace(":id", revision.id));
+      },
+    });
+  };
+
+  // Deletes a published collection and routes to collections index.
+  const handleDeleteCollection = async () => {
+    setUserWithdrawn(true);
+    await deleteCollection(collection, {
+      onSuccess: () => {
+        console.log("Successfully deleted collection!");
+        router.push(ROUTES.COLLECTIONS);
       },
     });
   };
@@ -67,7 +76,7 @@ const CollectionActions = ({
   };
 
   // Deletes a private revision and routes to the published collection.
-  const handleDeletePrivateRevisionCollection = async (): Promise<void> => {
+  const handleDeleteRevisionCollection = async (): Promise<void> => {
     await deleteCollection(collection, {
       onSuccess: () => {
         console.log("Successfully deleted private revision collection!");
@@ -110,10 +119,10 @@ const CollectionActions = ({
             collection={collection}
             handleDeleteCollection={
               isRevision
-                ? handleDeletePrivateRevisionCollection
+                ? handleDeleteRevisionCollection
                 : handleDeletePrivateCollection
             }
-            isDeleting={isDeletingCollection}
+            isDeleting={isDeleting}
             isRevision={isRevision}
           />
           <AddButton addNewFile={addNewFile} />
@@ -134,7 +143,7 @@ const CollectionActions = ({
             disabled={hasRevision}
             collectionName={name}
             handleConfirm={handleDeleteCollection}
-            loading={isDeleting}
+            isDeleting={isDeleting}
           />
           {!hasRevision && (
             <CreateRevisionButton handleCreateRevision={handleCreateRevision} />

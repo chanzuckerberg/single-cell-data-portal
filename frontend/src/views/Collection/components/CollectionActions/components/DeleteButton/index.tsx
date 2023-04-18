@@ -10,17 +10,17 @@ const AsyncAlert = loadable(
 );
 
 interface Props {
+  collectionName: Collection["name"];
   disabled?: boolean;
   handleConfirm: () => void;
-  collectionName: Collection["name"];
-  loading: boolean;
+  isDeleting: boolean;
 }
 
 const DeleteCollectionButton = ({
+  collectionName,
   disabled = false,
   handleConfirm,
-  collectionName,
-  loading,
+  isDeleting,
 }: Props): ReactElement => {
   const [isOpen, setIsOpen] = useState(false);
   const handleHover = () => {
@@ -51,7 +51,7 @@ const DeleteCollectionButton = ({
           isOpen={isOpen}
           onCancel={handleClick}
           onConfirm={handleConfirm}
-          loading={loading}
+          loading={isDeleting}
         >
           <>
             <H6>

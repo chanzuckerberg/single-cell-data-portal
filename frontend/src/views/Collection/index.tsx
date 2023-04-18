@@ -11,7 +11,6 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import {
   useCollection,
   useCollectionUploadLinks,
-  useDeleteCollection,
 } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
@@ -61,9 +60,6 @@ const Collection: FC = () => {
   const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
 
   const { data: collection, isError, isFetching } = collectionState;
-
-  const { mutateAsync: deleteMutation, isLoading: isDeleting } =
-    useDeleteCollection();
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
@@ -150,18 +146,6 @@ const Collection: FC = () => {
     collection.summaryCitation
   );
 
-  const handleDeleteCollection = async () => {
-    setUserWithdrawn(true);
-
-    await deleteMutation(collection, {
-      onSuccess: () => {
-        console.log("Successfully deleted collection!");
-      },
-    });
-
-    router.push(ROUTES.COLLECTIONS);
-  };
-
   return (
     <>
       <Head>
@@ -177,11 +161,10 @@ const Collection: FC = () => {
           <CollectionActions
             addNewFile={addNewFile}
             collection={collection}
-            handleDeleteCollection={handleDeleteCollection}
             hasRevision={hasRevision}
-            isDeleting={isDeleting}
             isPublishable={isPublishable}
             isRevision={isRevision}
+            setUserWithdrawn={setUserWithdrawn}
           />
         </CollectionHero>
         {/* Collection consortia, description and metadata */}
