@@ -4,6 +4,7 @@ import { Dispatch, FC, SetStateAction } from "react";
 import { Collection } from "src/common/entities";
 import Policy from "./components/Policy";
 import { ActionButton as Button } from "src/views/Collection/components/CollectionActions/style";
+import { PublishCollectionFn } from "src/views/Collection/components/CollectionActions";
 
 const AsyncAlert = loadable(
   () =>
@@ -11,7 +12,7 @@ const AsyncAlert = loadable(
 );
 
 interface Props {
-  handlePublishCollection: () => void;
+  handlePublishCollection: PublishCollectionFn;
   isPublishable: boolean;
   isPublishing: boolean;
   isPublishOpen: boolean;

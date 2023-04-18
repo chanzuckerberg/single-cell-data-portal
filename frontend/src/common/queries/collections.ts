@@ -507,8 +507,8 @@ export function useEditCollection(
         return { ...collection, ...newCollection };
       });
       await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
-      await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
       await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
+      await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
       await queryClient.prefetchQuery([USE_DATASETS_INDEX]);
     },
   });

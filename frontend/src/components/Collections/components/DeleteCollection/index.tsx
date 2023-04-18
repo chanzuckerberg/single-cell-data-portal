@@ -2,6 +2,7 @@ import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import * as React from "react";
 import { FC, useState } from "react";
+import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 
 const AsyncAlert = loadable(
   () =>
@@ -10,7 +11,7 @@ const AsyncAlert = loadable(
 
 interface Props {
   Button?: React.ElementType;
-  handleDeleteCollection: () => void;
+  handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
   isRevision: boolean;
 }

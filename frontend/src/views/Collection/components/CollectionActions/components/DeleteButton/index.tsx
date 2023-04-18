@@ -3,6 +3,7 @@ import loadable from "@loadable/component";
 import { ReactElement, useState } from "react";
 import { Collection } from "src/common/entities";
 import { DeleteButton as Button } from "./style";
+import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 
 const AsyncAlert = loadable(
   () =>
@@ -12,14 +13,14 @@ const AsyncAlert = loadable(
 interface Props {
   collectionName: Collection["name"];
   disabled?: boolean;
-  handleConfirm: () => void;
+  handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
 }
 
 const DeleteCollectionButton = ({
   collectionName,
   disabled = false,
-  handleConfirm,
+  handleDeleteCollection,
   isDeleting,
 }: Props): ReactElement => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +51,7 @@ const DeleteCollectionButton = ({
           intent={Intent.DANGER}
           isOpen={isOpen}
           onCancel={handleClick}
-          onConfirm={handleConfirm}
+          onConfirm={handleDeleteCollection}
           loading={isDeleting}
         >
           <>

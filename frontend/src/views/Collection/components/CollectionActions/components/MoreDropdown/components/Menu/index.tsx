@@ -9,6 +9,7 @@ import styled from "@emotion/styled";
 import { Collection } from "src/common/entities";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import CreateCollection from "src/components/CreateCollectionModal";
+import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 
 const DeleteButton = ({
   isRevision,
@@ -43,7 +44,7 @@ const EditButton = (props: Partial<IMenuItemProps>) => {
 
 interface Props {
   collection: Collection;
-  handleDeleteCollection: () => void;
+  handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
   isRevision: boolean;
 }

@@ -1,7 +1,8 @@
 import { ActionButton as Button } from "src/views/Collection/components/CollectionActions/style";
+import { CreateRevisionFn } from "src/views/Collection/components/CollectionActions";
 
 interface Props {
-  handleCreateRevision: () => void;
+  handleCreateRevision: CreateRevisionFn;
 }
 
 export default function CreateRevisionButton({

@@ -3,10 +3,11 @@ import { useMemo } from "react";
 import { Collection } from "src/common/entities";
 import RawMoreDropdown from "src/components/common/MoreDropdown";
 import Menu from "./components/Menu";
+import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 
 interface Props {
   collection: Collection;
-  handleDeleteCollection: () => void;
+  handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
   isRevision: boolean;
 }

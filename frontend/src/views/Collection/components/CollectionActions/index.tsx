@@ -19,6 +19,10 @@ import Toast from "src/views/Collection/components/Toast";
 import { IconNames } from "@blueprintjs/icons";
 import { Intent } from "@blueprintjs/core";
 
+export type CreateRevisionFn = () => void;
+export type DeleteCollectionFn = () => void;
+export type PublishCollectionFn = () => void;
+
 interface Props {
   addNewFile: DropboxChooserProps["onUploadFile"];
   collection: Collection;
@@ -38,65 +42,48 @@ const CollectionActions = ({
 }: Props): JSX.Element | null => {
   const { id, name, revision_of } = collection;
   const [isPublishOpen, setIsPublishOpen] = useState(false);
+  const createRevisionMutation = useCreateRevision();
+  const deleteCollectionMutation = useDeleteCollection();
+  const publishCollectionMutation = usePublishCollection();
   const router = useRouter();
-  const { mutateAsync: createRevision } = useCreateRevision();
-  const { mutateAsync: deleteCollection, isLoading: isDeleting } =
-    useDeleteCollection();
-  const { mutateAsync: publishCollection, isLoading: isPublishing } =
-    usePublishCollection();
 
-  // Creates a revision of the collection and routes to the private revision collection.
+  // Creates a revision of the collection.
   const handleCreateRevision = async (): Promise<void> => {
-    await createRevision(id, {
+    await createRevisionMutation.mutateAsync(id, {
       onSuccess: (revision) => {
+        // Route to the private revision.
         router.push(ROUTES.COLLECTION.replace(":id", revision.id));
       },
     });
   };
 
-  // Deletes a published collection and routes to collections index.
+  // Deletes a private, or published, or private revision collection.
   const handleDeleteCollection = async () => {
     setUserWithdrawn(true);
-    await deleteCollection(collection, {
+    await deleteCollectionMutation.mutateAsync(collection, {
       onSuccess: () => {
-        console.log("Successfully deleted collection!");
-        router.push(ROUTES.COLLECTIONS);
-      },
-    });
-  };
-
-  // Deletes a private collection and routes to the collections index.
-  const handleDeletePrivateCollection = async (): Promise<void> => {
-    await deleteCollection(collection, {
-      onSuccess: () => {
-        console.log("Successfully deleted private collection!");
-        router.push(ROUTES.COLLECTIONS);
-      },
-    });
-  };
-
-  // Deletes a private revision and routes to the published collection.
-  const handleDeleteRevisionCollection = async (): Promise<void> => {
-    await deleteCollection(collection, {
-      onSuccess: () => {
-        console.log("Successfully deleted private revision collection!");
         if (revision_of) {
+          // If the collection is a private revision, route to the published collection.
           router.push(ROUTES.COLLECTION.replace(":id", revision_of));
+        } else {
+          // Otherwise, route to the collections page.
+          router.push(ROUTES.COLLECTIONS);
         }
       },
     });
   };
 
-  // Publishes a private collection or private revision and routes the published private revision to the published collection.
+  // Publishes a private collection or private revision.
   const handlePublishCollection = async () => {
     const payload = JSON.stringify({
       data_submission_policy_version: POLICY_BULLETS.version,
     });
-    await publishCollection(
+    await publishCollectionMutation.mutateAsync(
       { collection, payload },
       {
         onSuccess: () => {
           if (revision_of) {
+            // If the collection is a private revision, show toast, and route to the published collection.
             Toast.show({
               icon: IconNames.TICK,
               intent: Intent.SUCCESS,
@@ -117,19 +104,15 @@ const CollectionActions = ({
         <>
           <MoreDropdown
             collection={collection}
-            handleDeleteCollection={
-              isRevision
-                ? handleDeleteRevisionCollection
-                : handleDeletePrivateCollection
-            }
-            isDeleting={isDeleting}
+            handleDeleteCollection={handleDeleteCollection}
+            isDeleting={deleteCollectionMutation.isLoading}
             isRevision={isRevision}
           />
           <AddButton addNewFile={addNewFile} />
           <PublishCollection
             handlePublishCollection={handlePublishCollection}
             isPublishable={isPublishable}
-            isPublishing={isPublishing}
+            isPublishing={publishCollectionMutation.isLoading}
             isPublishOpen={isPublishOpen}
             revision_of={revision_of}
             setIsPublishOpen={setIsPublishOpen}
@@ -142,8 +125,8 @@ const CollectionActions = ({
           <DeleteCollectionButton
             disabled={hasRevision}
             collectionName={name}
-            handleConfirm={handleDeleteCollection}
-            isDeleting={isDeleting}
+            handleDeleteCollection={handleDeleteCollection}
+            isDeleting={deleteCollectionMutation.isLoading}
           />
           {!hasRevision && (
             <CreateRevisionButton handleCreateRevision={handleCreateRevision} />
