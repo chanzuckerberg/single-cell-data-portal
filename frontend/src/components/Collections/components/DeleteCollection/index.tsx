@@ -1,7 +1,7 @@
 import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import * as React from "react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 
 const AsyncAlert = loadable(
@@ -24,18 +24,24 @@ const DeleteCollection: FC<Props> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleAlert = () => {
-    setIsOpen(!isOpen);
-  };
-
   const handleHover = () => {
     AsyncAlert.preload();
   };
 
+  // Closes delete collection dialog when component unmounts.
+  // Successful deletion of a private revision collection, or deletion of a private collection routes to either
+  // the corresponding published collection, or the collections index respectively.
+  // In both cases, the component unmounts, and the delete collection dialog is closed.
+  useEffect(() => {
+    return () => {
+      setIsOpen(false);
+    };
+  }, []);
+
   return (
     <>
       <Button
-        onClick={toggleAlert}
+        onClick={() => setIsOpen(true)}
         onMouseEnter={handleHover}
         isRevision={isRevision}
       />
@@ -47,7 +53,7 @@ const DeleteCollection: FC<Props> = ({
           }
           intent={Intent.DANGER}
           isOpen={isOpen}
-          onCancel={toggleAlert}
+          onCancel={() => setIsOpen(false)}
           onConfirm={handleDeleteCollection}
           loading={isDeleting}
         >
