@@ -403,13 +403,17 @@ export function usePublishCollection() {
     onSuccess: async (collection: Collection): Promise<void> => {
       await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
       await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
-      await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
       if (collection.revision_of) {
+        // If the collection is a revision, invalidate the published collection.
         await queryClient.invalidateQueries([
           USE_COLLECTION,
           collection.revision_of,
         ]);
       }
+      // Invalidate the private or private revision collection.
+      // This will cause an immediate update of the collection page cache, and executes before
+      // the onSuccess callback of the usePublishCollection mutate function.
+      await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
     },
   });
 }

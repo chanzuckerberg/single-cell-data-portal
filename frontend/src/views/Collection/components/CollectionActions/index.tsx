@@ -6,7 +6,7 @@ import MoreDropdown from "./components/MoreDropdown";
 import { CollectionActions as Actions } from "./style";
 import DeleteCollectionButton from "src/views/Collection/components/CollectionActions/components/DeleteButton";
 import CreateRevisionButton from "src/views/Collection/components/CollectionActions/components/CreateRevisionButton";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import {
   useCreateRevision,
   useDeleteCollection,
@@ -41,7 +41,6 @@ const CollectionActions = ({
   setUserWithdrawn,
 }: Props): JSX.Element | null => {
   const { id, name, revision_of } = collection;
-  const [isPublishOpen, setIsPublishOpen] = useState(false);
   const createRevisionMutation = useCreateRevision();
   const deleteCollectionMutation = useDeleteCollection();
   const publishCollectionMutation = usePublishCollection();
@@ -112,9 +111,7 @@ const CollectionActions = ({
             handlePublishCollection={handlePublishCollection}
             isPublishable={isPublishable}
             isPublishing={publishCollectionMutation.isLoading}
-            isPublishOpen={isPublishOpen}
             revision_of={revision_of}
-            setIsPublishOpen={setIsPublishOpen}
           />
         </>
       )}

@@ -1,6 +1,6 @@
 import { H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import { Dispatch, FC, SetStateAction } from "react";
+import { FC, useEffect, useState } from "react";
 import { Collection } from "src/common/entities";
 import Policy from "./components/Policy";
 import { ActionButton as Button } from "src/views/Collection/components/CollectionActions/style";
@@ -15,22 +15,30 @@ interface Props {
   handlePublishCollection: PublishCollectionFn;
   isPublishable: boolean;
   isPublishing: boolean;
-  isPublishOpen: boolean;
   revision_of: Collection["revision_of"];
-  setIsPublishOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const PublishCollection: FC<Props> = ({
   handlePublishCollection,
   isPublishable,
   isPublishing,
-  isPublishOpen,
   revision_of,
-  setIsPublishOpen,
 }) => {
+  const [isPublishOpen, setIsPublishOpen] = useState(false);
+
   const handleHover = () => {
     AsyncAlert.preload();
   };
+
+  // Closes publish collection dialog when component unmounts.
+  // The collection is no longer "private" (i.e. unpublished or a private revision) and the invalidation of the
+  // collection cache - with an update of collection visibility to "PUBLIC" - will cause the component to unmount.
+  useEffect(() => {
+    return () => {
+      setIsPublishOpen(false);
+    };
+  }, []);
+
   return (
     <>
       <Button
