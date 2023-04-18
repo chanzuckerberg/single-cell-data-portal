@@ -339,11 +339,7 @@ export function useCollectionUploadLinks(id: string) {
   });
 }
 
-async function deleteCollection({
-  collectionID,
-}: {
-  collectionID: Collection["id"];
-}) {
+async function deleteCollection(collectionID: Collection["id"]): Promise<void> {
   const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
     id: collectionID,
   });
@@ -356,54 +352,14 @@ async function deleteCollection({
 }
 
 export function useDeleteCollection(
-  id = "",
-  visibility = ""
-): UseMutationResult<
-  void,
-  unknown,
-  { collectionID: string },
-  { previousCollections: CollectionResponsesMap }
-> {
+  id = ""
+): UseMutationResult<void, unknown, Collection["id"]> {
   const queryClient = useQueryClient();
   return useMutation(deleteCollection, {
-    onError: (
-      _,
-      __,
-      context: { previousCollections: CollectionResponsesMap } | undefined
-    ) => {
-      queryClient.setQueryData([USE_COLLECTIONS], context?.previousCollections);
-    },
-    onMutate: async () => {
-      await queryClient.cancelQueries([USE_COLLECTIONS]);
-
-      const previousCollections = queryClient.getQueryData([
-        USE_COLLECTIONS,
-      ]) as CollectionResponsesMap;
-
-      const newCollections = new Map(previousCollections);
-      const collectionsWithID = newCollections.get(id);
-      // If we're deleting a public collection or there is no revision, nuke it from the cache
-      if (
-        visibility === VISIBILITY_TYPE.PUBLIC ||
-        (collectionsWithID && collectionsWithID.entries.length > 1)
-      ) {
-        newCollections.delete(id);
-      } else {
-        // Otherwise, we need to preserve the public collection
-        collectionsWithID?.delete(VISIBILITY_TYPE.PRIVATE);
-        if (collectionsWithID) newCollections.set(id, collectionsWithID);
-      }
-      queryClient.setQueryData([USE_COLLECTIONS], newCollections);
-
-      return { previousCollections };
-    },
     onSuccess: () => {
-      return Promise.all([
-        queryClient.invalidateQueries([USE_COLLECTIONS]),
-        queryClient.removeQueries([USE_COLLECTION, id], {
-          exact: false,
-        }),
-      ]);
+      queryClient.removeQueries([USE_COLLECTION, id], {
+        exact: false,
+      });
     },
   });
 }

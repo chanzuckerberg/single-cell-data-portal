@@ -4,7 +4,6 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { FC, useEffect, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import { VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
@@ -64,12 +63,7 @@ const Collection: FC = () => {
   const { data: collection, isError, isFetching } = collectionState;
 
   const { mutateAsync: deleteMutation, isLoading: isDeleting } =
-    useDeleteCollection(
-      id,
-      collection && "visibility" in collection
-        ? collection.visibility
-        : VISIBILITY_TYPE.PRIVATE
-    );
+    useDeleteCollection(id);
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
@@ -159,11 +153,13 @@ const Collection: FC = () => {
   const handleDeleteCollection = async () => {
     setUserWithdrawn(true);
 
-    await deleteMutation({
-      collectionID: id,
+    await deleteMutation(id, {
+      onSuccess: () => {
+        console.log("Successfully deleted collection!");
+      },
     });
 
-    router.push(ROUTES.MY_COLLECTIONS);
+    router.push(ROUTES.COLLECTIONS);
   };
 
   return (

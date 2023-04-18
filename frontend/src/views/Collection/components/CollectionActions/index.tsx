@@ -1,9 +1,6 @@
 import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
-import {
-  Props as DropboxChooserProps,
-  UploadingFile,
-} from "src/components/DropboxChooser";
+import { Props as DropboxChooserProps } from "src/components/DropboxChooser";
 import AddButton from "./components/AddButton";
 import MoreDropdown from "./components/MoreDropdown";
 import { CollectionActions as Actions } from "./style";
@@ -20,10 +17,6 @@ import { POLICY_BULLETS } from "src/components/Collections/components/PublishCol
 import Toast from "src/views/Collection/components/Toast";
 import { IconNames } from "@blueprintjs/icons";
 import { Intent } from "@blueprintjs/core";
-
-export interface UploadedFiles {
-  [datasetID: string]: UploadingFile;
-}
 
 interface Props {
   addNewFile: DropboxChooserProps["onUploadFile"];
