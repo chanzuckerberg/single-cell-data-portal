@@ -65,10 +65,12 @@ class S3Provider(S3ProviderInterface):
                 Bucket=bucket_name,
                 Delete={"Objects": [{"Key": key} for key in key_batch]},
             )
-            logger.info(f"Deleted: {list(resp['Deleted'])}")
+            if deleted := resp.get("Deleted"):
+                logger.info(f"Deleted: {deleted}")
             if errors := resp.get("Errors"):
                 logger.info(f"Errors: {errors}")
                 raise ServerErrorHTTPException()
+        return resp
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """
