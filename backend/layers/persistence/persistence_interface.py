@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.common.entities import (
+    CanonicalCollection,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -32,6 +33,11 @@ class DatabaseProviderInterface:
         """
         Creates a new canonical collection, generating a canonical collection_id and a new version_id.
         Returns the newly created CollectionVersion
+        """
+
+    def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:
+        """
+        Return the canonical collection with id `collection_id`
         """
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:

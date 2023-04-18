@@ -23,4 +23,6 @@ def get(dataset_id: str):
     # business function returns in chronological order; must return in reverse chronological
     dataset_versions.reverse()
 
-    return make_response(jsonify(reshape_datasets_for_curation_api(dataset_versions, use_canonical_url=False)), 200)
+    return make_response(
+        jsonify(reshape_datasets_for_curation_api(dataset_versions, use_canonical_url=False, as_version=True)), 200
+    )
