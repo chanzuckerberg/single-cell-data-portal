@@ -124,14 +124,14 @@ test.describe("Tests for Gene Expression page", () => {
   test("Should take user to portal page on clicking on logo", async ({
     page,
   }) => {
-    await goToWMG(page);
-
-    await page.getByTestId("logo").click();
-    await page.waitForLoadState();
-
     await tryUntil(
       async () => {
-        expect(
+        await goToWMG(page);
+
+        await page.getByTestId("logo").click();
+        await page.waitForLoadState();
+
+        await expect(
           page.getByTestId("laptop-with-cell-data-on-screen")
         ).toBeVisible();
       },
