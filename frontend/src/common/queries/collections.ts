@@ -339,11 +339,9 @@ export function useCollectionUploadLinks(id: string) {
   });
 }
 
-async function deleteCollection(
-  collectionID: Collection["id"]
-): Promise<Collection["id"]> {
+async function deleteCollection(collection: Collection): Promise<Collection> {
   const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
-    id: collectionID,
+    id: collection.id,
   });
 
   const response = await fetch(finalURL, DELETE_FETCH_OPTIONS);
@@ -351,20 +349,30 @@ async function deleteCollection(
   if (!response.ok) {
     throw await response.json();
   }
-  return collectionID;
+  return collection;
 }
 
 export function useDeleteCollection(): UseMutationResult<
-  Collection["id"],
+  Collection,
   unknown,
-  Collection["id"]
+  Collection
 > {
   const queryClient = useQueryClient();
   return useMutation(deleteCollection, {
-    onSuccess: (id: Collection["id"]) => {
-      queryClient.removeQueries([USE_COLLECTION, id], {
+    onSuccess: async (collection: Collection) => {
+      queryClient.removeQueries([USE_COLLECTION, collection.id], {
         exact: false,
       });
+      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
+      await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
+      await queryClient.prefetchQuery([USE_COLLECTIONS_INDEX]);
+      await queryClient.prefetchQuery([USE_DATASETS_INDEX]);
+      if (collection.revision_of) {
+        await queryClient.invalidateQueries([
+          USE_COLLECTION,
+          collection.revision_of,
+        ]);
+      }
     },
   });
 }

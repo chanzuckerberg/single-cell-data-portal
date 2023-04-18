@@ -153,7 +153,7 @@ const Collection: FC = () => {
   const handleDeleteCollection = async () => {
     setUserWithdrawn(true);
 
-    await deleteMutation(id, {
+    await deleteMutation(collection, {
       onSuccess: () => {
         console.log("Successfully deleted collection!");
       },

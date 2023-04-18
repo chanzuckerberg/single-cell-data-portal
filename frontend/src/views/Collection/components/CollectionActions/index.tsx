@@ -58,7 +58,7 @@ const CollectionActions = ({
 
   // Deletes a private collection and routes to the collections index.
   const handleDeletePrivateCollection = async (): Promise<void> => {
-    await deleteCollection(collection.id, {
+    await deleteCollection(collection, {
       onSuccess: () => {
         console.log("Successfully deleted private collection!");
         router.push(ROUTES.COLLECTIONS);
@@ -68,7 +68,7 @@ const CollectionActions = ({
 
   // Deletes a private revision and routes to the published collection.
   const handleDeletePrivateRevisionCollection = async (): Promise<void> => {
-    await deleteCollection(collection.id, {
+    await deleteCollection(collection, {
       onSuccess: () => {
         console.log("Successfully deleted private revision collection!");
         if (revision_of) {
