@@ -19,14 +19,13 @@ const DOT_SIZES = ["4", "9", "12", "14", "16"];
 
 function goToWMG(page: Page) {
   return Promise.all([
-    page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
     page.waitForResponse(
       (resp: { url: () => string | string[]; status: () => number }) =>
         resp.url().includes("/wmg/v1/filters") && resp.status() === 200
     ),
+    page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
   ]);
 }
-
 test.describe("Tests for Gene Expression page", () => {
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
@@ -122,7 +121,9 @@ test.describe("Tests for Gene Expression page", () => {
       )
     ).toBeVisible();
   });
-  test("Should logo takes user to portal page", async ({ page }) => {
+  test("Should take user to portal page on clicking on logo", async ({
+    page,
+  }) => {
     await goToWMG(page);
 
     await page.getByTestId("logo").click();
