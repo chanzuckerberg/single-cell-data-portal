@@ -40,9 +40,7 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
         filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
         if filesize is None:
             filesize = -1
-        # Note: this key parsing assumes asset.uri from DB has `<bucket>/<uuid>/local.<file_type>` directory structure
-        key_uuid = urlparse(asset.uri).path.split("/")[-2]
-        url = f"{base_url}/{key_uuid}.{asset.type}"
+        url = f"{base_url}/{dataset_version.version_id.id}.{asset.type}"
         result = {
             "filesize": filesize,
             "filetype": asset.type.upper(),
