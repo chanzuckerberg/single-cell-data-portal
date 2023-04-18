@@ -6,16 +6,30 @@ import Menu from "./components/Menu";
 
 interface Props {
   collection: Collection;
+  handleDeleteCollection: () => void;
+  isDeleting: boolean;
   isRevision: boolean;
 }
 
-const MoreDropdown = ({ collection, isRevision }: Props) => {
+const MoreDropdown = ({
+  collection,
+  handleDeleteCollection,
+  isDeleting,
+  isRevision,
+}: Props) => {
   const popoverProps = useMemo(() => {
     return {
-      content: <Menu collection={collection} isRevision={isRevision} />,
+      content: (
+        <Menu
+          collection={collection}
+          handleDeleteCollection={handleDeleteCollection}
+          isDeleting={isDeleting}
+          isRevision={isRevision}
+        />
+      ),
       position: Position.BOTTOM,
     };
-  }, [collection, isRevision]);
+  }, [collection, handleDeleteCollection, isDeleting, isRevision]);
 
   return <RawMoreDropdown popoverProps={popoverProps} />;
 };

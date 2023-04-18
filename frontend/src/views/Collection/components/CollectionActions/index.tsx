@@ -9,6 +9,7 @@ import CreateRevisionButton from "src/views/Collection/components/CollectionActi
 import React, { useState } from "react";
 import {
   useCreateRevision,
+  useDeleteCollection,
   usePublishCollection,
 } from "src/common/queries/collections";
 import { ROUTES } from "src/common/constants/routes";
@@ -41,6 +42,8 @@ const CollectionActions = ({
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const router = useRouter();
   const { mutateAsync: createRevision } = useCreateRevision();
+  const { mutateAsync: deleteCollection, isLoading: isDeletingCollection } =
+    useDeleteCollection(collection.id);
   const { mutateAsync: publishCollection, isLoading: isPublishing } =
     usePublishCollection();
 
@@ -49,6 +52,28 @@ const CollectionActions = ({
     await createRevision(id, {
       onSuccess: (revision) => {
         router.push(ROUTES.COLLECTION.replace(":id", revision.id));
+      },
+    });
+  };
+
+  // Deletes a private collection and routes to the collections index.
+  const handleDeletePrivateCollection = async (): Promise<void> => {
+    await deleteCollection(collection.id, {
+      onSuccess: () => {
+        console.log("Successfully deleted private collection!");
+        router.push(ROUTES.COLLECTIONS);
+      },
+    });
+  };
+
+  // Deletes a private revision and routes to the published collection.
+  const handleDeletePrivateRevisionCollection = async (): Promise<void> => {
+    await deleteCollection(collection.id, {
+      onSuccess: () => {
+        console.log("Successfully deleted private revision collection!");
+        if (revision_of) {
+          router.push(ROUTES.COLLECTION.replace(":id", revision_of));
+        }
       },
     });
   };
@@ -81,7 +106,16 @@ const CollectionActions = ({
       {/* Collection is either private, or a private revision */}
       {collection.visibility === VISIBILITY_TYPE.PRIVATE && (
         <>
-          <MoreDropdown collection={collection} isRevision={isRevision} />
+          <MoreDropdown
+            collection={collection}
+            handleDeleteCollection={
+              isRevision
+                ? handleDeletePrivateRevisionCollection
+                : handleDeletePrivateCollection
+            }
+            isDeleting={isDeletingCollection}
+            isRevision={isRevision}
+          />
           <AddButton addNewFile={addNewFile} />
           <PublishCollection
             handlePublishCollection={handlePublishCollection}

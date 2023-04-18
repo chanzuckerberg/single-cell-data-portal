@@ -43,6 +43,8 @@ const EditButton = (props: Partial<IMenuItemProps>) => {
 
 interface Props {
   collection: Collection;
+  handleDeleteCollection: () => void;
+  isDeleting: boolean;
   isRevision: boolean;
 }
 
@@ -55,13 +57,19 @@ const StyledMenu = styled(RawMenu)`
   }
 `;
 
-const Menu = ({ collection, isRevision }: Props) => {
+const Menu = ({
+  collection,
+  handleDeleteCollection,
+  isDeleting,
+  isRevision,
+}: Props) => {
   return (
     <StyledMenu>
       <CreateCollection id={collection.id} Button={EditButton} />
       <DeleteCollection
         Button={DeleteButton}
-        collection={collection}
+        handleDeleteCollection={handleDeleteCollection}
+        isDeleting={isDeleting}
         isRevision={isRevision}
       />
     </StyledMenu>

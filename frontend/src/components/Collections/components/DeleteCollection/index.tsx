@@ -1,11 +1,7 @@
 import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import { useRouter } from "next/router";
 import * as React from "react";
 import { FC, useState } from "react";
-import { ROUTES } from "src/common/constants/routes";
-import { Collection } from "src/common/entities";
-import { useDeleteCollection } from "src/common/queries/collections";
 
 const AsyncAlert = loadable(
   () =>
@@ -14,32 +10,17 @@ const AsyncAlert = loadable(
 
 interface Props {
   Button?: React.ElementType;
-  collection: Collection;
+  handleDeleteCollection: () => void;
+  isDeleting: boolean;
   isRevision: boolean;
 }
 
 const DeleteCollection: FC<Props> = ({
   Button = RawButton,
-  collection,
+  handleDeleteCollection,
+  isDeleting,
   isRevision,
 }) => {
-  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    collection.id
-  );
-  const router = useRouter();
-
-  const handleDelete = async () => {
-    // (thuang): `deleteMutation` should have supported `onSuccess` callback,
-    // but it doesn't seem to work. Thus we await the promise then redirect!
-    await deleteMutation(collection.id, {
-      onSuccess: () => {
-        console.log("Successfully deleted private/revision collection!");
-      },
-    });
-
-    router.push(ROUTES.COLLECTIONS);
-  };
-
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleAlert = () => {
@@ -66,8 +47,8 @@ const DeleteCollection: FC<Props> = ({
           intent={Intent.DANGER}
           isOpen={isOpen}
           onCancel={toggleAlert}
-          onConfirm={handleDelete}
-          loading={isLoading}
+          onConfirm={handleDeleteCollection}
+          loading={isDeleting}
         >
           <H6>
             Are you sure you want to {isRevision ? "cancel" : "delete"} this{" "}
