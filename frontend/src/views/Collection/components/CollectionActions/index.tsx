@@ -43,7 +43,7 @@ const CollectionActions = ({
   const router = useRouter();
   const { mutateAsync: createRevision } = useCreateRevision();
   const { mutateAsync: deleteCollection, isLoading: isDeletingCollection } =
-    useDeleteCollection(collection.id);
+    useDeleteCollection();
   const { mutateAsync: publishCollection, isLoading: isPublishing } =
     usePublishCollection();
 

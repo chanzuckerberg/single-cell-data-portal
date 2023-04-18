@@ -339,7 +339,9 @@ export function useCollectionUploadLinks(id: string) {
   });
 }
 
-async function deleteCollection(collectionID: Collection["id"]): Promise<void> {
+async function deleteCollection(
+  collectionID: Collection["id"]
+): Promise<Collection["id"]> {
   const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
     id: collectionID,
   });
@@ -349,14 +351,17 @@ async function deleteCollection(collectionID: Collection["id"]): Promise<void> {
   if (!response.ok) {
     throw await response.json();
   }
+  return collectionID;
 }
 
-export function useDeleteCollection(
-  id = ""
-): UseMutationResult<void, unknown, Collection["id"]> {
+export function useDeleteCollection(): UseMutationResult<
+  Collection["id"],
+  unknown,
+  Collection["id"]
+> {
   const queryClient = useQueryClient();
   return useMutation(deleteCollection, {
-    onSuccess: () => {
+    onSuccess: (id: Collection["id"]) => {
       queryClient.removeQueries([USE_COLLECTION, id], {
         exact: false,
       });

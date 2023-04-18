@@ -63,7 +63,7 @@ const Collection: FC = () => {
   const { data: collection, isError, isFetching } = collectionState;
 
   const { mutateAsync: deleteMutation, isLoading: isDeleting } =
-    useDeleteCollection(id);
+    useDeleteCollection();
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
