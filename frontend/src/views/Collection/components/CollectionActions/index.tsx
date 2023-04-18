@@ -1,4 +1,4 @@
-import { Collection, VISIBILITY_TYPE } from "src/common/entities";
+import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
 import {
   Props as DropboxChooserProps,
@@ -43,7 +43,7 @@ const CollectionActions = ({
   isDeleting,
   isPublishable,
   isRevision,
-}: Props): JSX.Element => {
+}: Props): JSX.Element | null => {
   const { id, name, revision_of } = collection;
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const router = useRouter();
@@ -83,7 +83,7 @@ const CollectionActions = ({
     setIsPublishOpen(false);
   };
 
-  return (
+  return collection.access_type === ACCESS_TYPE.WRITE ? (
     <Actions data-testid="collection-actions">
       {/* Collection is either private, or a private revision */}
       {collection.visibility === VISIBILITY_TYPE.PRIVATE && (
@@ -115,7 +115,7 @@ const CollectionActions = ({
         </>
       )}
     </Actions>
-  );
+  ) : null;
 };
 
 export default CollectionActions;

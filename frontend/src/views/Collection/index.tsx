@@ -4,7 +4,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { FC, useEffect, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
+import { VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
@@ -177,18 +177,16 @@ const Collection: FC = () => {
         {/* Collection title and actions */}
         <CollectionHero>
           <h3 data-testid="collection-name">{collection.name}</h3>
-          {/* Collection actions; when access type is WRITE */}
-          {collection.access_type === ACCESS_TYPE.WRITE && (
-            <CollectionActions
-              addNewFile={addNewFile}
-              collection={collection}
-              handleDeleteCollection={handleDeleteCollection}
-              hasRevision={hasRevision}
-              isDeleting={isDeleting}
-              isPublishable={isPublishable}
-              isRevision={isRevision}
-            />
-          )}
+          {/* Collection actions */}
+          <CollectionActions
+            addNewFile={addNewFile}
+            collection={collection}
+            handleDeleteCollection={handleDeleteCollection}
+            hasRevision={hasRevision}
+            isDeleting={isDeleting}
+            isPublishable={isPublishable}
+            isRevision={isRevision}
+          />
         </CollectionHero>
         {/* Collection consortia, description and metadata */}
         <CollectionDetail>
