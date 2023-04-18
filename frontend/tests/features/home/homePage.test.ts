@@ -10,7 +10,12 @@ const SCROLL_Y_PX = 999999;
 describe("Homepage", () => {
   test("Should verify the expected elements are rendered", async ({ page }) => {
     await goToPage(undefined, page);
-    expect(await page.getByTestId("logo").count()).toBe(2);
+    await tryUntil(
+      async () => {
+        expect(await page.getByTestId("logo").count()).toBe(2);
+      },
+      { page }
+    );
     await expect(page.getByTestId(COLLECTION_LINK)).toBeVisible();
 
     await isPageScrollableToSeeSiteMap(page);

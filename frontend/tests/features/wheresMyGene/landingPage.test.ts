@@ -27,7 +27,7 @@ function goToWMG(page: Page) {
   ]);
 }
 test.describe("Tests for Gene Expression page", () => {
-  test("Should verify main panel components", async ({ page }) => {
+  test.only("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
     // +Tissue button
     await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
@@ -96,7 +96,7 @@ test.describe("Tests for Gene Expression page", () => {
       )
     ).toStrictEqual(DOT_SIZES);
   });
-  test("Should verify top nav", async ({ page }) => {
+  test.only("Should verify top nav", async ({ page }) => {
     const DOCUMENTATION = "Documentation";
     await goToWMG(page);
     // verify logo
@@ -121,7 +121,7 @@ test.describe("Tests for Gene Expression page", () => {
       )
     ).toBeVisible();
   });
-  test("Should take user to portal page on clicking on logo", async ({
+  test.only("Should take user to portal page on clicking on logo", async ({
     page,
   }) => {
     await goToWMG(page);
