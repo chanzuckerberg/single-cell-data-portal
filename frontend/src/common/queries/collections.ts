@@ -409,10 +409,10 @@ export function usePublishCollection() {
       await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
       if (collection.revision_of) {
         // If the collection is a revision, invalidate the published collection.
-        await queryClient.invalidateQueries([
-          USE_COLLECTION,
-          collection.revision_of,
-        ]);
+        await queryClient.invalidateQueries(
+          [USE_COLLECTION, collection.revision_of],
+          { refetchInactive: true }
+        );
       }
     },
   });
