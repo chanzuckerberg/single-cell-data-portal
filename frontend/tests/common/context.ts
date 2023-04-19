@@ -3,6 +3,10 @@ import { Config } from "@playwright/test";
 const isHeadful =
   process.env.HEADFUL === "true" || process.env.HEADLESS === "false";
 
+if (isHeadful) {
+  console.log("Running tests in headful mode");
+}
+
 const VIEWPORT = {
   height: 1080,
   width: 1920,

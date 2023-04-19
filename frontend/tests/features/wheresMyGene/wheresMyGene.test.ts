@@ -3,9 +3,8 @@ import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
-import { TEST_URL } from "../common/constants";
-import { getText } from "../utils/selectors";
-import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
+import { TEST_URL } from "../../common/constants";
+import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
@@ -14,18 +13,15 @@ const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
-const CELL_TYPE_LABEL_ROW_TEST_ID = "cell-type-label-count";
-const ADD_TISSUE_ID = "add-tissue";
-const ADD_GENE_ID = "add-gene";
+const ADD_TISSUE_ID = "add-tissue-btn";
+const ADD_GENE_ID = "add-gene-btn";
 const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
 const DOWNLOAD_BUTTON_ID = "download-button";
 
-const MARKER_GENE_BUTTON_TEST_ID = "marker-gene-button";
-
 // FMG test IDs
-const ADD_TO_DOTPLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
+const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
 const NO_MARKER_GENES_WARNING_TEST_ID = "no-marker-genes-warning";
 const MARKER_SCORES_FMG_TEST_ID = "marker-scores-fmg";
 
@@ -69,14 +65,14 @@ describe("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     // Getting Started section
-    await expect(page).toHaveSelector(getText("STEP 1"));
-    await expect(page).toHaveSelector(getText("Add Tissues"));
+    await expect(page.getByText("STEP 1")).toBeTruthy();
+    await expect(page.getByText("Add Tissues")).toBeTruthy();
 
-    await expect(page).toHaveSelector(getText("STEP 2"));
-    await expect(page).toHaveSelector(getText("Add Genes"));
+    await expect(page.getByText("STEP 2")).toBeTruthy();
+    await expect(page.getByText("Add Genes")).toBeTruthy();
 
-    await expect(page).toHaveSelector(getText("STEP 3"));
-    await expect(page).toHaveSelector(getText("Explore Gene Expression"));
+    await expect(page.getByText("STEP 3")).toBeTruthy();
+    await expect(page.getByText("Explore Gene Expression")).toBeTruthy();
 
     await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
     await selectFirstOption(page);
@@ -86,24 +82,24 @@ describe("Where's My Gene", () => {
 
     const filtersPanel = page.getByTestId(FILTERS_PANEL);
 
-    await expect(filtersPanel).toHaveSelector(getText("Dataset"));
-    await expect(filtersPanel).toHaveSelector(getText("Disease"));
-    await expect(filtersPanel).toHaveSelector(
-      getText("Self-Reported Ethnicity")
-    );
-    await expect(filtersPanel).toHaveSelector(getText("Sex"));
+    await expect(filtersPanel.getByText("Dataset")).toBeTruthy();
+    await expect(filtersPanel.getByText("Disease")).toBeTruthy();
+    await expect(
+      filtersPanel.getByText("Self-Reported Ethnicity")
+    ).toBeTruthy();
+    await expect(filtersPanel.getByText("Sex")).toBeTruthy();
 
     // Legend
     const Legend = page.getByTestId("legend-wrapper");
-    await expect(Legend).toHaveSelector(getText("Gene Expression"));
-    await expect(Legend).toHaveSelector(getText("Expressed in Cells (%)"));
+    await expect(Legend.getByText("Gene Expression")).toBeTruthy();
+    await expect(Legend.getByText("Expressed in Cells (%)")).toBeTruthy();
 
     // Info Panel
-    await expect(filtersPanel).toHaveSelector(getText("Methodology"));
-    await expect(filtersPanel).toHaveSelector(
-      getText("After filtering cells with low coverage ")
-    );
-    await expect(filtersPanel).toHaveSelector(getText("Source Data"));
+    await expect(filtersPanel.getByText("Methodology")).toBeTruthy();
+    await expect(
+      filtersPanel.getByText("After filtering cells with low coverage ")
+    ).toBeTruthy();
+    await expect(filtersPanel.getByText("Source Data")).toBeTruthy();
   });
 
   test("Filters and Heatmap", async ({ page }) => {
@@ -220,11 +216,11 @@ describe("Where's My Gene", () => {
 
     await waitForHeatmapToRender(page);
     await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
-    await expect(page).toHaveSelector(
-      getText(
+    await expect(
+      page.getByText(
         "After filtering cells with low coverage (less than 500 genes expressed)"
       )
-    );
+    ).toBeTruthy();
 
     await tryUntil(
       async () => {
@@ -370,23 +366,28 @@ describe("Where's My Gene", () => {
 
       await waitForHeatmapToRender(page);
 
-      const beforeCellTypeNames = await getCellTypeNames(page);
+      await tryUntil(
+        async () => {
+          const beforeCellTypeNames = await getCellTypeNames(page);
 
-      // (thuang): Sometimes when API response is slow, we'll not capture all the
-      // cell type names, so a sanity check that we expect at least 100 names
-      expect(beforeCellTypeNames.length).toBeGreaterThan(
-        CELL_TYPE_SANITY_CHECK_NUMBER
+          // (thuang): Sometimes when API response is slow, we'll not capture all the
+          // cell type names, so a sanity check that we expect at least 100 names
+          expect(beforeCellTypeNames.length).toBeGreaterThan(
+            CELL_TYPE_SANITY_CHECK_NUMBER
+          );
+
+          // beforeCellTypeNames array does not contain "normal"
+
+          /**
+           * (thuang): Make sure the default y axis is not stratified by checking
+           * that there are no 2 spaces in the cell type names for indentation
+           */
+          expect(
+            beforeCellTypeNames.find((name) => name.includes("  "))
+          ).toBeFalsy();
+        },
+        { page }
       );
-
-      // beforeCellTypeNames array does not contain "normal"
-
-      /**
-       * (thuang): Make sure the default y axis is not stratified by checking
-       * that there are no 2 spaces in the cell type names for indentation
-       */
-      expect(
-        beforeCellTypeNames.find((name) => name.includes("  "))
-      ).toBeFalsy();
 
       // Check all 3 Compare options work
       await clickDropdownOptionByName({
@@ -447,9 +448,14 @@ describe("Where's My Gene", () => {
         testId: COMPARE_DROPDOWN_ID,
       });
 
-      expect(
-        beforeCellTypeNames.find((name) => name.includes("  "))
-      ).toBeFalsy();
+      await tryUntil(
+        async () => {
+          expect(
+            (await getCellTypeNames(page)).find((name) => name.includes("  "))
+          ).toBeFalsy();
+        },
+        { page }
+      );
     });
   });
 
@@ -465,9 +471,9 @@ describe("Where's My Gene", () => {
         name: "lung",
       });
 
-      await getCellTypeFmgButtonAndClick(page, "muscle cell");
+      await getCellTypeFmgButtonAndClick(page, "memory B cell");
 
-      await getButtonAndClick(page, ADD_TO_DOTPLOT_BUTTON_TEST_ID);
+      await getButtonAndClick(page, ADD_TO_DOT_PLOT_BUTTON_TEST_ID);
 
       await waitForHeatmapToRender(page);
 
@@ -916,7 +922,7 @@ async function clickUntilSidebarShowsUp({
 }
 
 // (thuang): This only works when a dropdown is open
-async function selectFirstOption(page: Page) {
+export async function selectFirstOption(page: Page) {
   await selectFirstNOptions(1, page);
 }
 
@@ -990,12 +996,13 @@ async function getFirstButtonAndClick(page: Page, testID: string) {
 
 async function getCellTypeFmgButtonAndClick(page: Page, cellType: string) {
   await waitForElement(page, CELL_TYPE_LABELS_ID);
+
   await tryUntil(
     async () => {
       await page
-        .getByTestId(CELL_TYPE_LABEL_ROW_TEST_ID)
-        .filter({ hasText: new RegExp(`^${cellType}$`) })
-        .getByTestId(MARKER_GENE_BUTTON_TEST_ID)
+        .getByRole("img", {
+          name: "display marker genes for " + cellType,
+        })
         .click();
     },
     { page }
