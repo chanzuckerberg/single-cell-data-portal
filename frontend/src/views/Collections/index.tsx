@@ -104,8 +104,10 @@ export default function Collections(): JSX.Element {
         },
         Header: "Status",
         accessor: COLLECTION_STATUS,
+        disableSortBy: false,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.STATUS,
+        sortType: arraySortingFn,
       },
       // Viewable only in my-collections mode, required for filter.
       {
@@ -114,6 +116,7 @@ export default function Collections(): JSX.Element {
         disableSortBy: false,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.CURATOR_NAME,
+        sortType: "alphanumeric",
       },
       // Viewable in collections mode, hidden in my-collections mode.
       {
@@ -153,8 +156,10 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Assay",
         accessor: ontologyLabelCellAccessorFn("assay"),
+        disableSortBy: false,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ASSAY,
+        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -176,6 +181,7 @@ export default function Collections(): JSX.Element {
         Header: "Cells",
         accessor: COLLECTION_CELL_COUNT,
         alignment: ALIGNMENT.RIGHT,
+        disableSortBy: false,
         filter: "between",
         sortType: "number",
         id: CATEGORY_FILTER_ID.CELL_COUNT,
