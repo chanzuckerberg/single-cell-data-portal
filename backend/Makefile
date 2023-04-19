@@ -112,13 +112,12 @@ SSH_SERVER_ALIVE_COUNT_MAX?=60
 SSH_SOCKET=/tmp/data-portal-ssh-db-tunnel-socket-${DEPLOYMENT_STAGE}
 ifeq ($(DEPLOYMENT_STAGE), rdev)
 	SSH_BASTION_HOST=bastion.dev.single-cell.czi.technology
+	CLUSTER_NAME=dataportal-rdev-happy
+
 else
 	SSH_BASTION_HOST=bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
-endif
-ifeq ($(DEPLOYMENT_STAGE), rdev)
-	CLUSTER_NAME=dataportal-rdev-happy
-else
 	CLUSTER_NAME=corpora-${DEPLOYMENT_STAGE}-corpora-api
+
 endif
 # TODO:
 # - add db/tunnel as a dependency for all targets so that a tunnel is automatically opened if not already
