@@ -1,4 +1,5 @@
 git+https://github.com/chanzuckerberg/single-cell-curation.git@51907ef539b8e2a11ad442e2514431c18d991e20#egg=cellxgene-schema&subdirectory=cellxgene_schema_cli
+connexion==2.13.0
 dataclasses-json
 matplotlib==3.6.3 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
 numba==0.56.2
@@ -9,6 +10,7 @@ psycopg2-binary>=2.8.5
 pyarrow>=1.0
 pydantic>=1.9.0
 python-json-logger
+requests>=2.22.0
 scanpy==1.6.0
 SQLAlchemy-Utils>=0.36.8
 SQLAlchemy>=1.4.0,<1.5
