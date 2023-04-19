@@ -251,7 +251,6 @@ async function deleteRevision(page: Page) {
 
 function getCollectionMoreButtonLocator(page: Page) {
   return page
-    .locator("div")
-    .filter({ hasText: /^AddPublish$/ })
+    .getByTestId("collection-actions")
     .getByTestId("collection-more-button");
 }
