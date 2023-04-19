@@ -17,6 +17,8 @@ genes_files = [
     "genes_mus_musculus.csv.gz",
 ]
 
+SUFFIXES_TO_STRIP = ["organoid", "cell culture"]
+
 
 def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     """
@@ -24,7 +26,22 @@ def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     separately by gene_gene_term_label(). Return None if ontology term id is invalid.
     """
     global ontology_term_id_labels
-    return ontology_term_id_labels.get(ontology_term_id)
+
+    # this catches the organoid tissue edge case (e.g. UBERON:0000995 (organoid)) or the cell culture edge case
+    # (e.g. CL:0000082 (cell culture))
+    suffix_to_strip = None
+    for suffix in SUFFIXES_TO_STRIP:
+        if suffix in ontology_term_id:
+            suffix_to_strip = suffix
+            break
+
+    if suffix_to_strip:
+        ontology_term_id = ontology_term_id.split(f"({suffix_to_strip})")[0].strip()
+    ontology_term_id_label = ontology_term_id_labels.get(ontology_term_id)
+    if suffix_to_strip:
+        ontology_term_id_label = ontology_term_id_label + f" ({suffix_to_strip})"
+
+    return ontology_term_id_label
 
 
 def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
