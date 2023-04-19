@@ -1684,7 +1684,36 @@ class TestDataset(BaseAPIPortalTest):
             )
             # self.assertEqual(actual_dataset["revised_at"], persisted_dataset.revised_at.timestamp())
 
-    # ✅
+    def test__get_all_datasets_for_user_index(self):
+        # reurn the datasets related to the collections the user has WRITE access to.
+
+        private_dataset = self.generate_dataset()
+        public_dataset = self.generate_dataset(publish=True)
+
+        test_url = furl(path="/dp/v1/user-datasets/index")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+    
+        # initialize an empty list to store the dataset ids
+        dataset_ids = set()
+
+        # iterate over the collections in the body list
+        for collection in body:
+            # iterate over the datasets in the "dataset_assets" list for each collection
+            for dataset in collection['dataset_assets']:
+                # append the dataset_id to the list of dataset ids
+                dataset_ids.add(dataset['dataset_id'])
+
+        dataset_ids = list(dataset_ids)
+        print("dataset_ids: ", dataset_ids)
+        print("public_dataset.dataset_version_id: ", public_dataset.dataset_version_id)
+        print("private_dataset.dataset_version_id: ", private_dataset.dataset_version_id)
+        self.assertIn(public_dataset.dataset_version_id, dataset_ids)
+        self.assertIn(private_dataset.dataset_version_id, dataset_ids)
+
+    # ✅    
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
         import copy
 

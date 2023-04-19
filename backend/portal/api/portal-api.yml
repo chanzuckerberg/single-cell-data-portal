@@ -750,7 +750,88 @@ paths:
                       type: number
         "400":
           $ref: "#/components/responses/400"
-
+  /v1/user-datasets/index:
+    get:
+      tags:
+        - datasets
+      summary: >-
+        Returns all public and private, non tombstoned datasets where the user has WRITE access. This endpoint is meant to be used for displaying datasets
+        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      security:
+        - cxguserCookieLenient: []
+        - {}
+      description: >-
+        Returns all datasets that belong to public and private, non tombstoned collections where the user has WRITE access. This endpoint is meant to be used 
+        for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      operationId: backend.portal.api.portal_api.get_user_datasets_index
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    collection_id:
+                      type: string
+                    assay:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    tissue:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    tissue_ancestors:
+                      type: array
+                      items:
+                        type: string
+                    disease:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    sex:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    self_reported_ethnicity:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    organism:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    development_stage:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    development_stage_ancestors:
+                      type: array
+                      items:
+                        type: string
+                    cell_count:
+                      type: integer
+                    cell_type:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    cell_type_ancestors:
+                      type: array
+                      items:
+                        type: string
+                    mean_genes_per_cell:
+                      type: number
+                    is_primary_data:
+                      $ref: "#/components/schemas/is_primary_data"
+                    donor_id:
+                      type: array
+                      items:
+                        type: string
+                    suspension_type:
+                      type: array
+                      items:
+                        type: string
+                    schema_version:
+                      type: string
+                    explorer_url:
+                      type: string
+                    published_at:
+                      type: number
+                    revised_at:
+                      type: number
+        "400":
+          $ref: "#/components/responses/400"
   /v1/login:
     get:
       tags:

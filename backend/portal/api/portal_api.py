@@ -443,6 +443,21 @@ def get_collection_index():
 
     return make_response(jsonify(response), 200)
 
+def get_user_writable_collections(token_info: dict):
+
+    user_info = UserInfo(token_info)
+     # Get all public collections
+    collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=True))
+
+    # Get all private collections the user has access to
+    all_owned_collections = []
+    if user_info.is_super_curator():
+        all_owned_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=False))
+    else:
+        all_owned_collections = get_business_logic().get_collections(
+            CollectionQueryFilter(is_published=False, owner=user_info.user_id)
+        )
+    return itertools.chain(all_owned_collections,  collections)
 
 def get_my_collection_index(token_info):
     """
@@ -740,13 +755,35 @@ def get_status(dataset_id: str, token_info: dict):
     return make_response(response, 200)
 
 
-def get_datasets_index():
+def get_datasets_index(token_info: dict):
     """
     Returns a list of all the datasets that currently belong to a published and active collection
     """
 
     response = []
     for dataset in get_business_logic().get_all_mapped_datasets():
+        payload = _dataset_to_response(dataset, is_tombstoned=False)
+        enrich_dataset_with_ancestors(
+            payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
+        )
+        enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
+        enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
+        payload["explorer_url"] = explorer_url.generate(dataset)
+        response.append(payload)
+
+    return make_response(jsonify(response), 200)
+
+def get_user_datasets_index(token_info: dict):
+    """
+    Returns a list of all the datasets that currently belong to a published and active collection
+    """
+
+    collections = get_user_writable_collections(token_info)
+    user_datasets = get_business_logic().get_datasets_for_collections(collections)
+
+
+    response = []
+    for dataset in user_datasets:
         payload = _dataset_to_response(dataset, is_tombstoned=False)
         enrich_dataset_with_ancestors(
             payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
