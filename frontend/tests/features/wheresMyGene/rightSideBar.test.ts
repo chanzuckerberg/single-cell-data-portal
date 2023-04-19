@@ -2,10 +2,9 @@
  * Test suite for select filter-related utils.
  */
 import { expect, test } from "@playwright/test";
-import { goToWMG } from "../utils/wmgUtils";
-import { isDevStagingProd } from "tests/utils/helpers";
-import { getID, getTestID, getText } from "tests/utils/selectors";
-import { selectFirstOption } from "./wheresMyGene.test";
+import { goToWMG } from "../../utils/wmgUtils";
+import { isDevStagingProd, selectFirstOption } from "tests/utils/helpers";
+import { getById } from "tests/utils/selectors";
 
 const { describe, skip } = test;
 
@@ -23,7 +22,7 @@ describe("Right side bar", () => {
     //click  documentation under Help and documentation this opens on a new page
     const [newPage] = await Promise.all([
       context.waitForEvent("page"),
-      await page.click(getTestID("InputDropdown")),
+      await page.getByTestId("InputDropdown").click(),
       await selectFirstOption(page),
     ]);
 
@@ -32,8 +31,8 @@ describe("Right side bar", () => {
 
     // expect the header on the new page to be visible
     expect(
-      newPage.locator(
-        getID("gene-expression--query-gene-expression-across-tissues")
+      newPage.getByTestId(
+        "gene-expression--query-gene-expression-across-tissues"
       )
     ).toBeVisible();
   });
@@ -44,7 +43,7 @@ describe("Right side bar", () => {
     //click the  logo on the top bar opens  opens on a new page
     await Promise.all([
       page.waitForNavigation({ waitUntil: "load" }),
-      page.click(getTestID("logo")),
+      page.getByTestId("logo").click(),
     ]);
 
     // expect the header on the new page to be visible
@@ -57,9 +56,9 @@ describe("Right side bar", () => {
   }) => {
     //verify gene-expression color scale is visible
     await expect(
-      page.locator(getID("visualization-color-scale"))
+      page.locator(getById("visualization-color-scale"))
     ).toBeVisible();
-    await page.locator(getTestID("add-tissue")).click();
+    await page.getByTestId("add-tissue").click();
 
     //click the source data icon
     await page.getByTestId("source-data-button").click();
@@ -68,7 +67,7 @@ describe("Right side bar", () => {
     await expect(page.locator("h4")).toContainText("Source Data");
     // expect source data to load
     expect(
-      await page.locator('[data-testid="source-data-list"] a').count()
+      await page.getByTestId("source-data-list").locator("a").count()
     ).toBeGreaterThan(0);
     // expect the header to be visible
     await expect(page.locator("h5")).toContainText("Methodology");
@@ -86,7 +85,7 @@ describe("Right side bar", () => {
     const [newPage] = await Promise.all([
       context.waitForEvent("page"),
       //click our documentation link
-      await page.locator("a").locator(getText("our documentation")).click(),
+      await page.locator("a").getByText("our documentation").click(),
     ]);
 
     // wait until the new page fully loads
@@ -95,7 +94,7 @@ describe("Right side bar", () => {
     // expect the header on the new page to be visible
     expect(
       newPage.locator(
-        getID("gene-expression--query-gene-expression-across-tissues")
+        getById("gene-expression--query-gene-expression-across-tissues")
       )
     ).toBeVisible();
   });

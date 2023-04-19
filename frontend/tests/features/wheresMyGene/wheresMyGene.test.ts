@@ -1,15 +1,43 @@
-import { expect, Page, test, Locator } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import { clickDropdownOptionByName, clickUntilDownloadModalShowsUp, clickUntilOptionsShowUp, clickUntilSidebarShowsUp, countLocator, getButtonAndClick, getCellTypeFmgButtonAndClick, getCellTypeNames, getFirstButtonAndClick, getGeneNames, goToPage, isDevStagingProd, selectFirstNOptions, selectFirstOption, selectNthOption, tryUntil, waitForElement, waitForElementToBeRemoved, waitForHeatmapToRender } from "tests/utils/helpers";
+import {
+  clickDropdownOptionByName,
+  clickUntilDownloadModalShowsUp,
+  clickUntilOptionsShowUp,
+  clickUntilSidebarShowsUp,
+  countLocator,
+  getButtonAndClick,
+  getCellTypeFmgButtonAndClick,
+  getCellTypeNames,
+  getFirstButtonAndClick,
+  getGeneNames,
+  goToPage,
+  isDevStagingProd,
+  selectFirstNOptions,
+  selectFirstOption,
+  selectNthOption,
+  tryUntil,
+  waitForElement,
+  waitForElementToBeRemoved,
+  waitForHeatmapToRender,
+} from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
-import { ADD_TISSUE_ID, ADD_GENE_ID, CELL_TYPE_LABELS_ID, SOURCE_DATA_BUTTON_ID, SOURCE_DATA_LIST_SELECTOR, GENE_DELETE_BUTTON, HOMO_SAPIENS_TERM_ID, DOWNLOAD_BUTTON_ID } from "tests/utils/constants";
-
+import {
+  ADD_TISSUE_ID,
+  ADD_GENE_ID,
+  CELL_TYPE_LABELS_ID,
+  SOURCE_DATA_BUTTON_ID,
+  SOURCE_DATA_LIST_SELECTOR,
+  GENE_DELETE_BUTTON,
+  HOMO_SAPIENS_TERM_ID,
+  DOWNLOAD_BUTTON_ID,
+} from "tests/utils/constants";
 
 // FMG test IDs
 const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
@@ -72,9 +100,7 @@ describe("Where's My Gene", () => {
 
     expect(filtersPanel.getByText("Dataset")).toBeTruthy();
     expect(filtersPanel.getByText("Disease")).toBeTruthy();
-    expect(
-      filtersPanel.getByText("Self-Reported Ethnicity")
-    ).toBeTruthy();
+    expect(filtersPanel.getByText("Self-Reported Ethnicity")).toBeTruthy();
     expect(filtersPanel.getByText("Sex")).toBeTruthy();
 
     // Legend
@@ -187,9 +213,7 @@ describe("Where's My Gene", () => {
     selectFirstOption(page);
 
     waitForElement(page, CELL_TYPE_LABELS_ID);
-    const numCellTypes = countLocator(
-      page.getByTestId(CELL_TYPE_LABELS_ID)
-    );
+    const numCellTypes = countLocator(page.getByTestId(CELL_TYPE_LABELS_ID));
     expect(numCellTypes).toBeGreaterThan(0);
   });
 
@@ -275,8 +299,12 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        expect((await afterGeneNames).length).toBe((await beforeGeneNames).length);
-        expect((await afterCellTypeNames).length).toBe((await beforeCellTypeNames).length);
+        expect((await afterGeneNames).length).toBe(
+          (await beforeGeneNames).length
+        );
+        expect((await afterCellTypeNames).length).toBe(
+          (await beforeCellTypeNames).length
+        );
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
@@ -308,7 +336,9 @@ describe("Where's My Gene", () => {
 
         const afterGeneNames = getGeneNames(page);
 
-        expect((await afterGeneNames).length).toBe((await beforeGeneNames).length - 1);
+        expect((await afterGeneNames).length).toBe(
+          (await beforeGeneNames).length - 1
+        );
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
       },
       { page }
@@ -806,4 +836,3 @@ describe("Where's My Gene", () => {
     });
   });
 });
-
