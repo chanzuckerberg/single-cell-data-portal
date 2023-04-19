@@ -32,11 +32,16 @@ export default function Grid<T extends Categories>({
               {headerGroup.headers.map((column) => {
                 const { key, ...restColumnHeaderProps } =
                   column.getHeaderProps();
+                const { onClick } = column.getSortByToggleProps();
                 return (
                   <HeaderCell
                     key={key}
                     alignment={column.alignment}
+                    isSortable={column.canSort}
+                    isSorted={column.isSorted}
+                    isSortedDesc={column.isSortedDesc}
                     label={column.render("Header")}
+                    onSort={onClick}
                     tag={
                       column.showCountAndTotal ? (
                         <CountAndTotal tableCountSummary={tableCountSummary} />

@@ -266,6 +266,7 @@ export default function Datasets(): JSX.Element {
     {
       columns: columnConfig,
       data: datasetRows,
+      disableSortBy: true,
       initialState: {
         filters: initialFilters,
         hiddenColumns: [

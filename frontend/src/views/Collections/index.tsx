@@ -18,7 +18,10 @@ import {
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
-import { buildTableCountSummary } from "src/components/common/Grid/common/utils";
+import {
+  arraySortingFn,
+  buildTableCountSummary,
+} from "src/components/common/Grid/common/utils";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
@@ -72,6 +75,7 @@ export default function Collections(): JSX.Element {
         },
         Header: "Collections",
         accessor: COLLECTION_NAME,
+        disableSortBy: false,
         showCountAndTotal: true,
       },
       {
@@ -80,6 +84,7 @@ export default function Collections(): JSX.Element {
         },
         Header: "Publication",
         accessor: COLLECTION_SUMMARY_CITATION,
+        disableSortBy: false,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -87,7 +92,9 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Tissue",
         accessor: ontologyLabelCellAccessorFn("tissue"),
+        disableSortBy: false,
         id: "tissue",
+        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -98,8 +105,10 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Disease",
         accessor: ontologyLabelCellAccessorFn("disease"),
+        disableSortBy: true,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.DISEASE,
+        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -107,8 +116,10 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Organism",
         accessor: ontologyLabelCellAccessorFn("organism"),
+        disableSortBy: false,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ORGANISM,
+        sortType: arraySortingFn,
       },
       // Hidden, required for sorting
       {
@@ -193,6 +204,7 @@ export default function Collections(): JSX.Element {
     {
       columns: columnConfig,
       data: collectionRows,
+      disableSortBy: false,
       initialState: {
         filters: initialFilters,
         // Only display tissue, disease and organism values.
