@@ -1,4 +1,4 @@
-import { ElementHandle, expect, Page, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import {
