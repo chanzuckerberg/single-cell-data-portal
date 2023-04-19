@@ -103,8 +103,11 @@ const config: PlaywrightTestConfig = {
 
   testDir: "tests",
 
-  /* Maximum time one test can run for. */
-  timeout: 3 * 60 * 1000,
+  /**
+   * Maximum time one test can run for.
+   * (thuang): 5 mins because FF and Edge need extra time to tear down context
+   */
+  timeout: 5 * 60 * 1000,
 
   use: {
     ...COMMON_PLAYWRIGHT_CONTEXT,
