@@ -1,6 +1,8 @@
 import styled from "@emotion/styled";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
-import { CommonThemeProps } from "czifui";
+import { CommonThemeProps, getSpaces } from "czifui";
+
+const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
 
 interface Props extends CommonThemeProps {
   alignment: ALIGNMENT;
@@ -10,7 +12,7 @@ export const Header = styled("span")`
   align-items: center;
   align-self: center;
   display: flex;
-  gap: 4px; /* gap between header and sort icon */
+  gap: ${spacesXxs}px; /* gap between header and sort icon */
 
   span {
     min-width: 0; /* facilitates breaking of word on columns; flex default for min width is "auto" */
@@ -19,7 +21,7 @@ export const Header = styled("span")`
 
 export const HeaderCell = styled("th")<Props>`
   display: flex;
-  gap: 4px; /* gap between header and count */
+  gap: ${spacesXxs}px; /* gap between header and count */
   justify-content: ${(props) =>
     props.alignment === ALIGNMENT.LEFT ? "flex-start" : "flex-end"};
 `;
