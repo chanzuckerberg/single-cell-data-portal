@@ -88,19 +88,19 @@ export const COLLECTIONS_MODE_COLUMN_DENY_LIST: (
 ];
 
 /**
- * Category filter id deny list for my-collections mode.
+ * Category filter id deny list for my-collections (curator) mode.
  */
 export const MY_COLLECTIONS_MODE_CATEGORY_FILTER_DENY_LIST: CATEGORY_FILTER_ID[] =
   [CATEGORY_FILTER_ID.GENE_COUNT];
 
 /**
- * Category filter id partition list for my-collections mode.
+ * Category filter id partition list for my-collections (curator) mode.
  */
 export const MY_COLLECTIONS_MODE_CATEGORY_FILTER_PARTITION_LIST: CATEGORY_FILTER_ID[] =
   [CATEGORY_FILTER_ID.CURATOR_NAME, CATEGORY_FILTER_ID.STATUS];
 
 /**
- * Column deny list for my-collections mode.
+ * Column deny list for my-collections (curator) mode.
  */
 export const MY_COLLECTIONS_MODE_COLUMN_DENY_LIST: (
   | string
@@ -108,44 +108,42 @@ export const MY_COLLECTIONS_MODE_COLUMN_DENY_LIST: (
 )[] = [...COLLECTIONS_COLUMN_DENY_LIST, COLLECTION_SUMMARY_CITATION];
 
 /**
- * Collections mode (collections or my-collections).
+ * View mode (view is either default or authenticated / curator mode).
  */
-export enum COLLECTIONS_MODE {
-  COLLECTIONS = "COLLECTIONS",
-  MY_COLLECTIONS = "MY_COLLECTIONS",
+export enum VIEW_MODE {
+  DEFAULT = "DEFAULT",
+  CURATOR = "CURATOR",
 }
 
 /**
  * Category filter id deny list.
  */
 export const CATEGORY_FILTER_DENY_LIST: Record<
-  COLLECTIONS_MODE,
+  VIEW_MODE,
   CATEGORY_FILTER_ID[]
 > = {
-  [COLLECTIONS_MODE.COLLECTIONS]: COLLECTIONS_MODE_CATEGORY_FILTER_DENY_LIST,
-  [COLLECTIONS_MODE.MY_COLLECTIONS]:
-    MY_COLLECTIONS_MODE_CATEGORY_FILTER_DENY_LIST,
+  [VIEW_MODE.DEFAULT]: COLLECTIONS_MODE_CATEGORY_FILTER_DENY_LIST,
+  [VIEW_MODE.CURATOR]: MY_COLLECTIONS_MODE_CATEGORY_FILTER_DENY_LIST,
 };
 
 /**
  * Category filter id partition list.
  */
 export const CATEGORY_FILTER_PARTITION_LIST: Record<
-  COLLECTIONS_MODE,
+  VIEW_MODE,
   CATEGORY_FILTER_ID[]
 > = {
-  [COLLECTIONS_MODE.COLLECTIONS]: [],
-  [COLLECTIONS_MODE.MY_COLLECTIONS]:
-    MY_COLLECTIONS_MODE_CATEGORY_FILTER_PARTITION_LIST,
+  [VIEW_MODE.DEFAULT]: [],
+  [VIEW_MODE.CURATOR]: MY_COLLECTIONS_MODE_CATEGORY_FILTER_PARTITION_LIST,
 };
 
 /**
  * Column deny list.
  */
 export const COLUMN_DENY_LIST: Record<
-  COLLECTIONS_MODE,
+  VIEW_MODE,
   (string | CATEGORY_FILTER_ID)[]
 > = {
-  [COLLECTIONS_MODE.COLLECTIONS]: COLLECTIONS_MODE_COLUMN_DENY_LIST,
-  [COLLECTIONS_MODE.MY_COLLECTIONS]: MY_COLLECTIONS_MODE_COLUMN_DENY_LIST,
+  [VIEW_MODE.DEFAULT]: COLLECTIONS_MODE_COLUMN_DENY_LIST,
+  [VIEW_MODE.CURATOR]: MY_COLLECTIONS_MODE_COLUMN_DENY_LIST,
 };

@@ -31,7 +31,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
-import { COLLECTIONS_MODE } from "src/views/Collections/common/constants";
+import { VIEW_MODE } from "src/views/Collections/common/constants";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
@@ -156,12 +156,12 @@ export const USE_DATASETS_INDEX = {
 
 /**
  * Fetch collection and dataset information and build collection-specific filter view model.
- * @param mode - Collections mode.
+ * @param mode - View mode.
  * @param status - Query status.
  * @returns All public collections and the aggregated metadata of their datasets.
  */
 export function useFetchCollectionRows(
-  mode: COLLECTIONS_MODE,
+  mode: VIEW_MODE,
   status: QueryStatus
 ): FetchCategoriesRows<CollectionRow> {
   // Fetch datasets.
@@ -169,7 +169,7 @@ export function useFetchCollectionRows(
     data: datasets,
     isError: datasetsError,
     isLoading: datasetsLoading,
-  } = useFetchDatasets();
+  } = useFetchDatasets(mode, status);
 
   // Fetch collections.
   const {
@@ -197,19 +197,17 @@ export function useFetchCollectionRows(
 
 /**
  * Cache-enabled hook for fetching public collections and returning only core collection fields.
- * @param mode - Collections mode.
+ * @param mode - View mode.
  * @param status - Query status.
  * @returns Array of collections - possible cached from previous request - containing only ID, name and recency values.
  */
 export function useFetchCollections(
-  mode: COLLECTIONS_MODE = COLLECTIONS_MODE.COLLECTIONS,
+  mode: VIEW_MODE = VIEW_MODE.DEFAULT,
   status: QueryStatus
 ): UseQueryResult<Map<string, ProcessedCollectionResponse>> {
   return useQuery<Map<string, ProcessedCollectionResponse>>(
     [USE_COLLECTIONS_INDEX],
-    mode === COLLECTIONS_MODE.COLLECTIONS
-      ? fetchCollections
-      : fetchMyCollections,
+    mode === VIEW_MODE.DEFAULT ? fetchCollections : fetchMyCollections,
     {
       ...DEFAULT_QUERY_OPTIONS,
       enabled: status === "success" || status === "error",
@@ -219,12 +217,12 @@ export function useFetchCollections(
 
 /**
  * Fetch collection and dataset information and build filter view model.
- * @param mode - Collections mode.
+ * @param mode - View mode.
  * @param status - Query status.
  * @returns All public datasets joined with their corresponding collection information.
  */
 export function useFetchDatasetRows(
-  mode: COLLECTIONS_MODE,
+  mode: VIEW_MODE,
   status: QueryStatus
 ): FetchCategoriesRows<DatasetRow> {
   // Fetch datasets.
@@ -232,7 +230,7 @@ export function useFetchDatasetRows(
     data: datasets,
     isError: datasetsError,
     isLoading: datasetsLoading,
-  } = useFetchDatasets();
+  } = useFetchDatasets(mode, status);
 
   // Fetch collections.
   const {
@@ -258,15 +256,21 @@ export function useFetchDatasetRows(
 
 /**
  * Cache-enabled hook for fetching public, non-tombstoned, datasets returning only filterable and sortable fields.
+ * @param mode - View mode.
+ * @param status - Query status.
  * @returns Array of datasets - possible cached from previous request - containing filterable and sortable dataset
  * fields.
  */
-export function useFetchDatasets(): UseQueryResult<ProcessedDatasetResponse[]> {
+export function useFetchDatasets(
+  mode: VIEW_MODE = VIEW_MODE.DEFAULT,
+  status: QueryStatus
+): UseQueryResult<ProcessedDatasetResponse[]> {
   return useQuery<ProcessedDatasetResponse[]>(
     [USE_DATASETS_INDEX],
-    fetchDatasets,
+    mode === VIEW_MODE.DEFAULT ? fetchDatasets : fetchMyDatasets,
     {
       ...DEFAULT_QUERY_OPTIONS,
+      enabled: status === "success" || status === "error",
     }
   );
 }
@@ -680,6 +684,28 @@ async function fetchMyCollections(): Promise<
 async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
   const datasets = await (
     await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
+  ).json();
+
+  // Correct any dirty data returned from endpoint.
+  const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
+    return sanitizeDatasetResponse(dataset);
+  });
+
+  return sanitizedDatasets.map((dataset: DatasetResponse) =>
+    processDatasetResponse(dataset)
+  );
+}
+
+/**
+ * Fetch public, non-tombstoned, partial datasets from /user-datasets/index endpoint. Datasets are partial in that they
+ * do not contain all fields; only fields required for filtering and sorting are returned. Correct any dirt data
+ * returned from endpoint.
+ * @returns Promise resolving to an array of datasets - possible cached from previous request - containing
+ * filterable and sortable dataset fields.
+ */
+async function fetchMyDatasets(): Promise<ProcessedDatasetResponse[]> {
+  const datasets = await (
+    await fetch(API_URL + API.MY_DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
   ).json();
 
   // Correct any dirty data returned from endpoint.

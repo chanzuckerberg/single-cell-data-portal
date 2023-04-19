@@ -44,9 +44,9 @@ import {
   COLLECTION_STATUS,
   COLLECTION_SUMMARY_CITATION,
   COLLECTIONS_COLUMN_DENY_LIST,
-  COLLECTIONS_MODE,
   COLUMN_DENY_LIST,
   COLUMN_ID_RECENCY,
+  VIEW_MODE,
 } from "src/views/Collections/common/constants";
 import { FilterDivider } from "src/components/common/Filter/common/style";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
@@ -58,10 +58,8 @@ import { BOOLEAN } from "src/common/localStorage/set";
 export default function Collections(): JSX.Element {
   const isCuratorEnabled = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const { status } = useUserInfo(isCuratorEnabled);
-  const mode = useMemo((): COLLECTIONS_MODE => {
-    return status === "success"
-      ? COLLECTIONS_MODE.MY_COLLECTIONS
-      : COLLECTIONS_MODE.COLLECTIONS;
+  const mode = useMemo((): VIEW_MODE => {
+    return status === "success" ? VIEW_MODE.CURATOR : VIEW_MODE.DEFAULT;
   }, [status]);
 
   // Pop toast if user has been redirected from a tombstoned collection.
@@ -365,7 +363,7 @@ export default function Collections(): JSX.Element {
             )}
           </SideBar>
           <View>
-            {mode === COLLECTIONS_MODE.MY_COLLECTIONS && <CreateCollection />}
+            {mode === VIEW_MODE.CURATOR && <CreateCollection />}
             {!rows || rows.length === 0 ? (
               <GridHero>
                 <h3>No Results</h3>
@@ -392,12 +390,12 @@ export default function Collections(): JSX.Element {
 /**
  * Partitions the category views for collections and my-collections mode filtering.
  * @param categoryViews - View models of categories to display.
- * @param mode - Collections mode.
+ * @param mode - View mode.
  * @returns partitioned category views.
  */
 function partitionCategoryViews(
   categoryViews: CategoryView[],
-  mode: COLLECTIONS_MODE
+  mode: VIEW_MODE
 ): [CategoryView[], CategoryView[]] {
   const firstPartitionCategoryViews = [];
   const secondPartitionCategoryViews = [];

@@ -14,6 +14,7 @@ export enum API {
   LOG_IN = "/dp/v1/login",
   LOG_OUT = "/dp/v1/logout",
   MY_COLLECTIONS_INDEX = "/dp/v1/my-collections/index", // Filter-specific endpoint
+  MY_DATASETS_INDEX = "/dp/v1/user-datasets/index", // Filter-specific endpoint
   USER_INFO = "/dp/v1/userinfo",
   WMG_PRIMARY_FILTER_DIMENSIONS = "/wmg/v1/primary_filter_dimensions",
   WMG_QUERY = "/wmg/v1/query",

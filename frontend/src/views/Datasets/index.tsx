@@ -41,7 +41,7 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
-import { COLLECTIONS_MODE } from "src/views/Collections/common/constants";
+import { VIEW_MODE } from "src/views/Collections/common/constants";
 
 /**
  * Collection ID object key.
@@ -86,10 +86,8 @@ const COLUMN_ID_RECENCY = "recency";
 export default function Datasets(): JSX.Element {
   const isCuratorEnabled = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const { status } = useUserInfo(isCuratorEnabled);
-  const mode = useMemo((): COLLECTIONS_MODE => {
-    return status === "success"
-      ? COLLECTIONS_MODE.MY_COLLECTIONS
-      : COLLECTIONS_MODE.COLLECTIONS;
+  const mode = useMemo((): VIEW_MODE => {
+    return status === "success" ? VIEW_MODE.CURATOR : VIEW_MODE.DEFAULT;
   }, [status]);
 
   /* Pop toast if user has come from Explorer with work in progress */
