@@ -105,7 +105,7 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Disease",
         accessor: ontologyLabelCellAccessorFn("disease"),
-        disableSortBy: true,
+        disableSortBy: false,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.DISEASE,
         sortType: arraySortingFn,

@@ -24,7 +24,10 @@ import {
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
-import { buildTableCountSummary } from "src/components/common/Grid/common/utils";
+import {
+  arraySortingFn,
+  buildTableCountSummary,
+} from "src/components/common/Grid/common/utils";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
@@ -101,6 +104,7 @@ export default function Datasets(): JSX.Element {
         },
         Header: "Datasets",
         accessor: DATASET_NAME,
+        disableSortBy: false,
         showCountAndTotal: true,
       },
       {
@@ -109,7 +113,9 @@ export default function Datasets(): JSX.Element {
         )) as Renderer<CellProps<DatasetRow>>,
         Header: "Tissue",
         accessor: ontologyLabelCellAccessorFn("tissue"),
+        disableSortBy: false,
         id: "tissue",
+        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -120,8 +126,10 @@ export default function Datasets(): JSX.Element {
         ),
         Header: "Disease",
         accessor: ontologyLabelCellAccessorFn("disease"),
+        disableSortBy: false,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.DISEASE,
+        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -129,8 +137,10 @@ export default function Datasets(): JSX.Element {
         ),
         Header: "Assay",
         accessor: ontologyLabelCellAccessorFn("assay"),
+        disableSortBy: false,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ASSAY,
+        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -138,8 +148,10 @@ export default function Datasets(): JSX.Element {
         ),
         Header: "Organism",
         accessor: ontologyLabelCellAccessorFn("organism"),
+        disableSortBy: false,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ORGANISM,
+        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<number | null>) => (
@@ -150,8 +162,10 @@ export default function Datasets(): JSX.Element {
         Header: "Cells",
         accessor: "cell_count",
         alignment: ALIGNMENT.RIGHT,
+        disableSortBy: false,
         filter: "between",
         id: CATEGORY_FILTER_ID.CELL_COUNT,
+        sortType: "number",
       },
       {
         Cell: ({ row: { values } }: RowPropsValue<DatasetRow>) => (
@@ -164,6 +178,7 @@ export default function Datasets(): JSX.Element {
           />
         ),
         accessor: (datasetRow: DatasetRow): DatasetRow => datasetRow,
+        disableSortBy: true,
         id: "dataset_actions",
       },
       // Hidden, required for sorting by recency.
@@ -266,7 +281,7 @@ export default function Datasets(): JSX.Element {
     {
       columns: columnConfig,
       data: datasetRows,
-      disableSortBy: true,
+      disableSortBy: false,
       initialState: {
         filters: initialFilters,
         hiddenColumns: [
