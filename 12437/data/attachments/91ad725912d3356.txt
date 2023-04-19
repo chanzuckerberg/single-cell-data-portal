@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0mwaiting for selector "internal:attr=[data-testid="get-started-step-1"]" [38;5;45m+1ms[0m

@@ -1,1 +1,0 @@
-INFO     root:crossref_provider.py:54 No Crossref API key found, skipping metadata fetching.
