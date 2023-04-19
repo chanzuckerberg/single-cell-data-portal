@@ -1,15 +1,14 @@
 import logging
-import os
 import subprocess
 from typing import Dict, Union
 
 import anndata
 import numpy as np
-import requests
 from anndata._core.views import ArrayView
 from scipy import sparse
 
 from backend.wmg.data.constants import INCLUDED_ASSAYS
+from backend.wmg.data.utils import get_datasets_from_curation_api
 
 logger = logging.getLogger(__name__)
 
@@ -31,31 +30,22 @@ def get_dataset_asset_urls(datasets=None) -> Dict[str, str]:
     :param datasets: list of datasets to check, if None, will retrieve from API
         This parameter is used for tests.
     """
-    # hardcode to dev backend if deployment is rdev or test
-    API_URL = (
-        "https://api.cellxgene.dev.single-cell.czi.technology"
-        if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
-        else os.getenv("API_URL")
-    )
+    if datasets is None:
+        datasets = get_datasets_from_curation_api()
 
     asset_urls = dict()
-    if API_URL:
-        dataset_metadata_url = f"{API_URL}/curation/v1/datasets"
-        if datasets is None:
-            datasets = requests.get(dataset_metadata_url).json()
-
-        for dataset in datasets:
-            if (
-                dataset["organism"] is not None
-                and dataset["assay"] is not None
-                and len(dataset["is_primary_data"]) == 1
-                and dataset["is_primary_data"][0]
-                and any(assay["ontology_term_id"] in INCLUDED_ASSAYS for assay in dataset["assay"])
-                and len(dataset["organism"]) < 2
-            ):
-                dataset_id = dataset["dataset_id"]
-                asset_url = next(a["url"] for a in dataset["assets"] if a["filetype"] == "H5AD")
-                asset_urls[dataset_id] = asset_url
+    for dataset in datasets:
+        if (
+            dataset["organism"] is not None
+            and dataset["assay"] is not None
+            and len(dataset["is_primary_data"]) == 1
+            and dataset["is_primary_data"][0]
+            and any(assay["ontology_term_id"] in INCLUDED_ASSAYS for assay in dataset["assay"])
+            and len(dataset["organism"]) < 2
+        ):
+            dataset_id = dataset["dataset_id"]
+            asset_url = next(a["url"] for a in dataset["assets"] if a["filetype"] == "H5AD")
+            asset_urls[dataset_id] = asset_url
     return asset_urls
 
 

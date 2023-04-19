@@ -1,8 +1,12 @@
 import logging
+import os
 import time
 from typing import Dict, List
 
+import requests
 import tiledb
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 from backend.wmg.data.snapshot import WmgSnapshot
@@ -132,3 +136,58 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
 
 def depluralize(x):
     return x[:-1] if x[-1] == "s" else x
+
+
+def _setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502, 503, 504), method_whitelist=None):
+    session = requests.Session()
+
+    if method_whitelist is None:
+        method_whitelist = {"GET"}
+
+    retry = Retry(
+        total=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+        allowed_methods=method_whitelist,
+    )
+
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+
+    return session
+
+
+def get_datasets_from_curation_api():
+    # hardcode to dev backend if deployment is rdev or test
+    API_URL = (
+        "https://api.cellxgene.dev.single-cell.czi.technology"
+        if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
+        else os.getenv("API_URL")
+    )
+
+    datasets = {}
+    if API_URL:
+        session = _setup_retry_session()
+        dataset_metadata_url = f"{API_URL}/curation/v1/datasets"
+        response = session.get(dataset_metadata_url)
+        if response.status_code == 200:
+            datasets = response.json()
+    return datasets
+
+
+def get_collections_from_curation_api():
+    # hardcode to dev backend if deployment is rdev or test
+    API_URL = (
+        "https://api.cellxgene.dev.single-cell.czi.technology"
+        if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
+        else os.getenv("API_URL")
+    )
+
+    collections = {}
+    if API_URL:
+        session = _setup_retry_session()
+        dataset_metadata_url = f"{API_URL}/curation/v1/collections"
+        response = session.get(dataset_metadata_url)
+        if response.status_code == 200:
+            collections = response.json()
+    return collections

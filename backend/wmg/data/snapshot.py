@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 import pandas as pd
-import requests
 import tiledb
 from pandas import DataFrame
 from tiledb import Array
@@ -17,6 +16,7 @@ from backend.wmg.data.schemas.corpus_schema import (
     FILTER_RELATIONSHIPS_NAME,
 )
 from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.data.utils import get_collections_from_curation_api, get_datasets_from_curation_api
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
@@ -81,33 +81,19 @@ class WmgSnapshot:
         return hash(None)  # hash is not used for WmgSnapshot
 
     def build_dataset_metadata_dict(self):
-        # hardcode to dev backend if deployment is rdev or test
-        API_URL = (
-            "https://api.cellxgene.dev.single-cell.czi.technology"
-            if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
-            else os.getenv("API_URL")
-        )
-
-        if API_URL:
-            dataset_metadata_url = f"{API_URL}/curation/v1/datasets"
-            datasets = requests.get(dataset_metadata_url).json()
-
-            collection_metadata_url = f"{API_URL}/curation/v1/collections"
-            collections = requests.get(collection_metadata_url).json()
-
-            collections_dict = {collection["collection_id"]: collection for collection in collections}
-
-            dataset_dict = {}
-            for dataset in datasets:
-                dataset_id = dataset["dataset_id"]
-                dataset_dict[dataset_id] = dict(
-                    id=dataset_id,
-                    label=dataset["title"],
-                    collection_id=dataset["collection_id"],
-                    collection_label=collections_dict[dataset["collection_id"]]["name"],
-                )
-
-            self.dataset_dict = dataset_dict
+        datasets = get_datasets_from_curation_api()
+        collections = get_collections_from_curation_api()
+        collections_dict = {collection["collection_id"]: collection for collection in collections}
+        dataset_dict = {}
+        for dataset in datasets:
+            dataset_id = dataset["dataset_id"]
+            dataset_dict[dataset_id] = dict(
+                id=dataset_id,
+                label=dataset["title"],
+                collection_id=dataset["collection_id"],
+                collection_label=collections_dict[dataset["collection_id"]]["name"],
+            )
+        self.dataset_dict = dataset_dict
 
 
 # Cached data
