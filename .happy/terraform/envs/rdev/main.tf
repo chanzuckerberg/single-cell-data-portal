@@ -16,7 +16,7 @@ module stack {
   wmg_desired_vcpus                = 128
   backend_instance_count       = 1
   frontend_instance_count      = 1
-  backend_memory               = 8192
+  backend_memory               = 32768
   frontend_memory              = 4096
 
   wait_for_steady_state        = var.wait_for_steady_state
