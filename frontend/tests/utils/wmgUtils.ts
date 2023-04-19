@@ -2,7 +2,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-import { selectFirstOption } from "../features/wheresMyGene.test";
+import { selectFirstOption } from "./helpers";
 
 export function goToWMG(page: Page) {
   return Promise.all([
@@ -56,9 +56,9 @@ export const selectFilterOption = async (page: Page, filterName: string) => {
   await page.getByTestId(filterName).click();
 };
 
-export const selectTissueandGeneOption = async (page: Page) => {
+export const selectTissueAndGeneOption = async (page: Page) => {
   // click Tissue button
-  await selectFilterOption(page, "add-tissue");
+  await selectFilterOption(page, "add-tissue-btn");
 
   //pick the first 2 elements in tissue
   await pickOptions(page, 2);
@@ -70,7 +70,7 @@ export const selectTissueandGeneOption = async (page: Page) => {
   await page.locator('[id="heatmap-container-id"]').waitFor();
 
   // click Gene button
-  await selectFilterOption(page, "add-gene");
+  await selectFilterOption(page, "add-gene-btn");
 
   //pick the first n elements in tissue
   await pickOptions(page, 3);
