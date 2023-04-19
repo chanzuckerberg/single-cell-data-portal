@@ -57,7 +57,7 @@ export const selectOption = async (page: Page, filterName: string) => {
 
 export const selectTissueAndGeneOption = async (page: Page) => {
   // click Tissue button
-  await selectOption(page, "add-tissue");
+  await selectOption(page, "add-tissue-btn");
 
   //pick the first 2 elements in tissue
   await pickOptions(page, 2);
@@ -69,7 +69,7 @@ export const selectTissueAndGeneOption = async (page: Page) => {
   await page.locator('[id="heatmap-container-id"]').waitFor();
 
   // click Gene button
-  await selectOption(page, "add-gene");
+  await selectOption(page, "add-gene-btn");
 
   //pick the first n elements in tissue
   await pickOptions(page, 3);
