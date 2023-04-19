@@ -1,11 +1,17 @@
+import logging
 import os
 import subprocess
-from typing import Tuple
+from typing import List, Tuple
 from urllib.parse import urlparse
 
 import boto3
 
+from backend.layers.thirdparty.s3_exceptions import S3DeleteException
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
+
+AWS_S3_MAX_ITEMS_PER_BATCH = 1000
+
+logger = logging.getLogger(__name__)
 
 
 class S3Provider(S3ProviderInterface):
@@ -47,6 +53,23 @@ class S3Provider(S3ProviderInterface):
             dst_file,
             ExtraArgs=extra_args,
         )
+
+    def delete_files(self, bucket_name: str, object_keys: List[str]) -> None:
+        """
+        Deletes the objects `object_keys` from bucket `bucket_name`
+        """
+        for i in range(0, len(object_keys), AWS_S3_MAX_ITEMS_PER_BATCH):
+            key_batch = object_keys[i:AWS_S3_MAX_ITEMS_PER_BATCH]
+            logger.info(f"Deleting assets from public-access bucket '{bucket_name}': {key_batch}")
+            resp = self.client.delete_objects(
+                Bucket=bucket_name,
+                Delete={"Objects": [{"Key": key} for key in key_batch]},
+            )
+            if deleted := resp.get("Deleted"):
+                logger.info(f"Deleted: {deleted}")
+            if errors := resp.get("Errors"):
+                logger.info(f"Errors: {errors}")
+                raise S3DeleteException(errors)
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """
