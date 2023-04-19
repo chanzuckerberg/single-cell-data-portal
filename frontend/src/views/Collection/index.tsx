@@ -8,16 +8,12 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { BOOLEAN } from "src/common/localStorage/set";
-import {
-  useCollection,
-  useCollectionUploadLinks,
-} from "src/common/queries/collections";
+import { useCollection } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import CollectionDescription from "src/components/Collection/components/CollectionDescription";
 import CollectionMetadata from "src/components/Collection/components/CollectionMetadata";
 import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
-import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import Toast from "./components/Toast";
 import {
@@ -36,9 +32,12 @@ import {
 import CollectionActions from "src/views/Collection/components/CollectionActions";
 
 const Collection: FC = () => {
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
 
+  const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
+  const [isUploadingLink, setIsUploadingLink] = useState(false);
   const [userWithdrawn, setUserWithdrawn] = useState(false);
 
   let id = "";
@@ -49,19 +48,8 @@ const Collection: FC = () => {
     id = params;
   }
 
-  const { mutateAsync: uploadLink } = useCollectionUploadLinks(id);
-
-  const [isUploadingLink, setIsUploadingLink] = useState(false);
-
-  const collectionState = useCollection({
-    id,
-  });
-
-  const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
-
+  const collectionState = useCollection({ id });
   const { data: collection, isError, isFetching } = collectionState;
-
-  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
   useEffect(() => {
     if (
@@ -101,29 +89,6 @@ const Collection: FC = () => {
   const hasRevision = isCollectionHasPrivateRevision(collection);
   const isRevision = isCollectionPrivateRevision(collection);
 
-  const addNewFile = (newFile: UploadingFile) => {
-    if (!newFile.link) return;
-
-    const payload = JSON.stringify({ url: newFile.link });
-
-    setIsUploadingLink(true);
-
-    uploadLink(
-      { collectionId: id, payload },
-      {
-        onSettled: () => setIsUploadingLink(false),
-        onSuccess: () => {
-          Toast.show({
-            icon: IconNames.TICK,
-            intent: Intent.PRIMARY,
-            message:
-              "Your file is being uploaded which will continue in the background, even if you close this window.",
-          });
-        },
-      }
-    );
-  };
-
   let datasets = Array.from(collection.datasets.values());
 
   // Filter out tombstoned datasets if we're not looking at revision
@@ -159,11 +124,11 @@ const Collection: FC = () => {
           <h3 data-testid="collection-name">{collection.name}</h3>
           {/* Collection actions */}
           <CollectionActions
-            addNewFile={addNewFile}
             collection={collection}
             hasRevision={hasRevision}
             isPublishable={isPublishable}
             isRevision={isRevision}
+            setIsUploadingLink={setIsUploadingLink}
             setUserWithdrawn={setUserWithdrawn}
           />
         </CollectionHero>

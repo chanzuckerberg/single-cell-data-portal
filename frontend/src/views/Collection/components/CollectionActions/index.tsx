@@ -1,6 +1,6 @@
 import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
-import { Props as DropboxChooserProps } from "src/components/DropboxChooser";
+import { UploadingFile } from "src/components/DropboxChooser";
 import AddButton from "./components/AddButton";
 import MoreDropdown from "./components/MoreDropdown";
 import { CollectionActions as Actions } from "./style";
@@ -8,6 +8,7 @@ import DeleteCollectionButton from "src/views/Collection/components/CollectionAc
 import CreateRevisionButton from "src/views/Collection/components/CollectionActions/components/CreateRevisionButton";
 import React, { Dispatch, SetStateAction } from "react";
 import {
+  useCollectionUploadLinks,
   useCreateRevision,
   useDeleteCollection,
   usePublishCollection,
@@ -24,27 +25,52 @@ export type DeleteCollectionFn = () => void;
 export type PublishCollectionFn = () => void;
 
 interface Props {
-  addNewFile: DropboxChooserProps["onUploadFile"];
   collection: Collection;
   hasRevision: boolean;
   isPublishable: boolean;
   isRevision: boolean;
+  setIsUploadingLink: Dispatch<SetStateAction<boolean>>;
   setUserWithdrawn: Dispatch<SetStateAction<boolean>>;
 }
 
 const CollectionActions = ({
-  addNewFile,
   collection,
   hasRevision,
   isPublishable,
   isRevision,
+  setIsUploadingLink,
   setUserWithdrawn,
 }: Props): JSX.Element | null => {
   const { id, name, revision_of } = collection;
   const createRevisionMutation = useCreateRevision();
+  const uploadLinksMutation = useCollectionUploadLinks(id);
   const deleteCollectionMutation = useDeleteCollection();
   const publishCollectionMutation = usePublishCollection();
   const router = useRouter();
+
+  // Adds a new file to the collection.
+  const handleAddNewFile = (newFile: UploadingFile) => {
+    if (!newFile.link) return;
+
+    const payload = JSON.stringify({ url: newFile.link });
+    setIsUploadingLink(true);
+
+    // TODO(cc) use mutate function?
+    uploadLinksMutation.mutateAsync(
+      { collectionId: id, payload },
+      {
+        onSettled: () => setIsUploadingLink(false),
+        onSuccess: () => {
+          Toast.show({
+            icon: IconNames.TICK,
+            intent: Intent.PRIMARY,
+            message:
+              "Your file is being uploaded which will continue in the background, even if you close this window.",
+          });
+        },
+      }
+    );
+  };
 
   // Creates a revision of the collection.
   const handleCreateRevision = async (): Promise<void> => {
@@ -106,7 +132,7 @@ const CollectionActions = ({
             isDeleting={deleteCollectionMutation.isLoading}
             isRevision={isRevision}
           />
-          <AddButton addNewFile={addNewFile} />
+          <AddButton addNewFile={handleAddNewFile} />
           <PublishCollection
             handlePublishCollection={handlePublishCollection}
             isPublishable={isPublishable}

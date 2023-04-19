@@ -331,7 +331,6 @@ async function collectionUploadLinks({
 
 export function useCollectionUploadLinks(id: string) {
   const queryCache = useQueryClient();
-
   return useMutation(collectionUploadLinks, {
     onSuccess: () => {
       queryCache.invalidateQueries([USE_COLLECTION, id]);
