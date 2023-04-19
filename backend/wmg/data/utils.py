@@ -9,7 +9,6 @@ from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
-from backend.wmg.data.snapshot import WmgSnapshot
 
 
 def log_func_runtime(func):
@@ -53,7 +52,7 @@ def create_empty_cube(uri: str, schema):
     tiledb.Array.create(uri, schema, overwrite=True)
 
 
-def find_all_dim_option_values(snapshot: WmgSnapshot, dimension: str) -> list:
+def find_all_dim_option_values(snapshot, dimension: str) -> list:
     all_filter_options = set()
     for key in snapshot.filter_relationships:
         if key.startswith(dimension):
@@ -63,7 +62,7 @@ def find_all_dim_option_values(snapshot: WmgSnapshot, dimension: str) -> list:
     return [option.split("__")[1] for option in all_filter_options]
 
 
-def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> list:
+def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
 
