@@ -31,10 +31,17 @@ import { ENTITIES } from "./entities";
 import { QueryClient } from "react-query/core";
 
 /**
- * Never expire cached collection / collections.
+ * Never expire cached query.
  */
 const DEFAULT_QUERY_OPTIONS = {
   staleTime: Infinity,
+};
+/**
+ * Cached query matching the refetch predicate, that are not being rendered, will be invalidated and refetched
+ * in the background.
+ */
+const DEFAULT_BACKGROUND_REFETCH = {
+  refetchInactive: true,
 };
 
 /**
@@ -281,7 +288,10 @@ export function useCreateCollection() {
   const queryClient = useQueryClient();
   return useMutation(createCollection, {
     onSuccess: async () => {
-      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
+      await queryClient.invalidateQueries(
+        [USE_COLLECTIONS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
     },
   });
 }
@@ -360,13 +370,19 @@ export function useDeleteCollection(): UseMutationResult<
   return useMutation(deleteCollection, {
     onSuccess: async (collection: Collection) => {
       queryClient.removeQueries([USE_COLLECTION, collection.id]);
-      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
-      await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
+      await queryClient.invalidateQueries(
+        [USE_COLLECTIONS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
+      await queryClient.invalidateQueries(
+        [USE_DATASETS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
       if (collection.revision_of) {
-        await queryClient.invalidateQueries([
-          USE_COLLECTION,
-          collection.revision_of,
-        ]);
+        await queryClient.invalidateQueries(
+          [USE_COLLECTION, collection.revision_of],
+          DEFAULT_BACKGROUND_REFETCH
+        );
       }
     },
   });
@@ -400,8 +416,14 @@ export function usePublishCollection() {
   const queryClient = useQueryClient();
   return useMutation(publishCollection, {
     onSuccess: async (collection: Collection): Promise<void> => {
-      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
-      await queryClient.invalidateQueries([USE_DATASETS_INDEX]);
+      await queryClient.invalidateQueries(
+        [USE_COLLECTIONS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
+      await queryClient.invalidateQueries(
+        [USE_DATASETS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
       // Invalidate the private or private revision collection.
       // This will cause an immediate update of the collection page cache, and executes before
       // the onSuccess callback of the usePublishCollection mutate function.
@@ -410,7 +432,7 @@ export function usePublishCollection() {
         // If the collection is a revision, invalidate the published collection.
         await queryClient.invalidateQueries(
           [USE_COLLECTION, collection.revision_of],
-          { refetchInactive: true }
+          DEFAULT_BACKGROUND_REFETCH
         );
       }
     },
@@ -503,7 +525,10 @@ export function useEditCollection(
         }
         return { ...collection, ...newCollection };
       });
-      await queryClient.invalidateQueries([USE_COLLECTIONS_INDEX]);
+      await queryClient.invalidateQueries(
+        [USE_COLLECTIONS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
     },
   });
 }

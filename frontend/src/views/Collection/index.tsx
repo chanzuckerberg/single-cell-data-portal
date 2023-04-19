@@ -48,8 +48,7 @@ const Collection: FC = () => {
     id = params;
   }
 
-  const collectionState = useCollection({ id });
-  const { data: collection, isError, isFetching } = collectionState;
+  const { data: collection, isError, isFetching } = useCollection({ id });
 
   useEffect(() => {
     if (
