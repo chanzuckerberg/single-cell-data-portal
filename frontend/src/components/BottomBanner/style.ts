@@ -34,15 +34,13 @@ export const StyledBanner = styled(Banner)`
       background-color: ${colors?.beta[100]};
       color: black;
 
-      /* Hide svg icon as it is not in figma */
-      svg {
+      /* Hide default svg icon in the Banner as it is not in figma */
+      :first-child > div:first-child > div:first-child {
         display: none;
       }
 
-      /* But don't have the close button icon */
+      /* Change close button icon default color */
       button svg {
-        display: block;
-  
         path {
           fill: ${colors?.gray[500]};
         }
@@ -167,7 +165,7 @@ export const NewsletterModal = styled(Modal)`
 `;
 
 export const FooterContentWrapper = styled.div`
-  margin: 24px 0 40px 0;
+  margin: 24px 24px 40px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
