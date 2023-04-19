@@ -1,13 +1,10 @@
-import { test } from "@playwright/test";
-import { goToWMG, selectTissueAndGeneOption } from "../../utils/wmgUtils";
-import * as fs from "fs";
-import AdmZip from "adm-zip";
+import { expect, test } from "@playwright/test";
+import { downloadCsv, getCsvHeaders, getCsvMetadata, goToWMG, selectTissueAndGeneOption } from "../../utils/wmgUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
-import readline from "readline";
+
 
 const { describe, skip } = test;
-
-describe("Left side bar", () => {
+describe("Csv download", () => {
   // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test.beforeEach(async ({ page }) => {
     // navigate to gene expression page
@@ -17,50 +14,47 @@ describe("Left side bar", () => {
     await selectTissueAndGeneOption(page);
   });
 
-  test.only("check download", async ({ page }) => {
-    // await page.pause();
-    const downloadPromise = page.waitForEvent("download");
-    await page.getByTestId("download-button").click();
-    await page.getByTestId("png-checkbox").click();
-    await page.getByTestId("csv-checkbox").click();
-    await page.getByTestId("dialog-download-button").click();
-    const download = await downloadPromise;
-    // Wait for the download process to complete
-    console.log(await download.path());
-    // Save downloaded file somewhere
-    await download.saveAs("./tests/utils/download.zip");
-    const zipFilePath = "./tests/utils/download.zip";
-    const extractDirPath = "./tests/utils/download";
-    const zip = new AdmZip(zipFilePath);
-    zip.extractAllTo(extractDirPath);
-    const csvFilePath = "./tests/utils/download/blood.csv";
-
-    // Open the CSV file for reading
-    const fileStream = fs.createReadStream("./tests/utils/download/blood.csv", {
-      encoding: "utf8",
-    });
-
-    // Create a readline interface for the file stream
-    const rl = readline.createInterface({ input: fileStream });
-
-    // Create an empty array to store the parsed data
-    let data: string[]=[];
-
-    // Listen for 'line' events emitted by the readline interface
-    rl.on("line", (line) => {
-      const row = line.split(",");
-      if (row.length == 1) {
-        data.push(row[0]);
-      }
-    });
-
-    // Listen for the 'close' event to know when the parsing is complete
-    rl.on("close", () => {
-      const outputStream = fs.createWriteStream(
-        "./tests/utils/download/file.json"
-      );
-      outputStream.write(JSON.stringify(data));
-      outputStream.end();
-    });
+  test("Verify metadata displayed on csv file", async ({ page }) => {
+   // await page.pause();
+    await downloadCsv(page);
+    const META_DATA=  await  getCsvMetadata("blood");
+    
+    // verify the date is valid
+    const dateString = META_DATA[0].substring(14);
+    const date = new Date(dateString);
+    // Check if the resulting date is valid
+    expect(!isNaN(date.getTime())).toBe(true);
+//expect ( META_DATA[2]).toMatchText("https://localhost:3000/gene-expression")
+    const EXPECTED_METADATA = [
+        '# We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future.',
+        '# Dataset Filter Values: No selection',
+        '# Disease Filter Values: No selection',
+        '# Self-Reported Ethnicity Filter Values: No selection',
+        '# Sex Filter Values: No selection',
+        '# Organism Filter Value: Homo sapiens'
+      ];
+      
+      expect(META_DATA).toEqual(expect.arrayContaining( EXPECTED_METADATA ));
+    
   });
+  test.only("Verify headers displayed on csv file", async ({ page }) => {
+    // await page.pause();
+     await downloadCsv(page);
+     const HEADERS=  await  getCsvHeaders("blood");
+     const expectedHeaders = [
+        'Tissue',
+        'Cell Type',
+        'Cell Count',
+        'Tissue Composition',
+        'Gene Symbol',
+        'Expression',
+        '"Expression',
+        ' Scaled"',
+        'Number of Cells Expressing Genes'
+      ]
+      
+       
+       expect(HEADERS[0]).toEqual(expect.arrayContaining(expectedHeaders));
+     
+   });
 });

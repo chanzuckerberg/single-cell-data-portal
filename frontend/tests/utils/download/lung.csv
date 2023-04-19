@@ -1,0 +1,462 @@
+# Created At: Wed Apr 19 2023 03:57:39 GMT+0100 (West Africa Standard Time)
+# We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future.
+# Link Generated: https://localhost:3000/gene-expression?tissues=blood%2Clung&genes=TSPAN6%2CTNMD%2CDPM1&ver=2
+# Dataset Filter Values: No selection
+# Disease Filter Values: No selection
+# Self-Reported Ethnicity Filter Values: No selection
+# Sex Filter Values: No selection
+# Organism Filter Value: Homo sapiens
+Tissue,Cell Type,Cell Count,Tissue Composition,Gene Symbol,Expression,"Expression, Scaled",Number of Cells Expressing Genes
+lung,native cell,592617,1.94%,TSPAN6,1.3812834663228404,0.29207721192285147,11488
+lung,native cell,592617,0.01%,TNMD,1.6533544157680713,0.42437092882742417,38
+lung,native cell,592617,2.69%,DPM1,1.2879540572223918,0.246696055090114,15929
+lung,plasmablast,36,,TSPAN6,,,
+lung,plasmablast,36,,TNMD,,,
+lung,plasmablast,36,0.00%,DPM1,1.0603956646389432,0.13604644097629792,9
+lung,germinal center B cell,4,,TSPAN6,,,
+lung,germinal center B cell,4,,TNMD,,,
+lung,germinal center B cell,4,,DPM1,,,
+lung,B-1a B cell,279,,TSPAN6,,,
+lung,B-1a B cell,279,,TNMD,,,
+lung,B-1a B cell,279,0.00%,DPM1,1.0274155139923096,0.12000993754948053,3
+lung,B-1b B cell,555,,TSPAN6,,,
+lung,B-1b B cell,555,,TNMD,,,
+lung,B-1b B cell,555,0.00%,DPM1,1.3093308210372925,0.25709044503226286,1
+lung,memory B cell,143,,TSPAN6,,,
+lung,memory B cell,143,,TNMD,,,
+lung,memory B cell,143,,DPM1,,,
+lung,naive B cell,79,,TSPAN6,,,
+lung,naive B cell,79,,TNMD,,,
+lung,naive B cell,79,,DPM1,,,
+lung,dendritic cell,9913,0.00%,TSPAN6,1.314077377319336,0.25939844437702453,9
+lung,dendritic cell,9913,,TNMD,,,
+lung,dendritic cell,9913,0.03%,DPM1,1.274297882528866,0.24005577940986036,153
+lung,plasmacytoid dendritic cell,366,,TSPAN6,,,
+lung,plasmacytoid dendritic cell,366,,TNMD,,,
+lung,plasmacytoid dendritic cell,366,0.00%,DPM1,1.2342497110366821,0.2205824711689918,4
+lung,"plasmacytoid dendritic cell, human",116,,TSPAN6,,,
+lung,"plasmacytoid dendritic cell, human",116,,TNMD,,,
+lung,"plasmacytoid dendritic cell, human",116,0.00%,DPM1,1.252900759379069,0.22965148979965577,3
+lung,"dendritic cell, human",528,,TSPAN6,,,
+lung,"dendritic cell, human",528,,TNMD,,,
+lung,"dendritic cell, human",528,0.00%,DPM1,1.2269811153411865,0.217048137410851,10
+lung,"myeloid dendritic cell, human",130,,TSPAN6,,,
+lung,"myeloid dendritic cell, human",130,,TNMD,,,
+lung,"myeloid dendritic cell, human",130,0.00%,DPM1,1.274334192276001,0.24007343492000632,4
+lung,conventional dendritic cell,937,,TSPAN6,,,
+lung,conventional dendritic cell,937,,TNMD,,,
+lung,conventional dendritic cell,937,0.00%,DPM1,1.1654265880584718,0.18711742550228858,20
+lung,CD1c-positive myeloid dendritic cell,236,,TSPAN6,,,
+lung,CD1c-positive myeloid dendritic cell,236,,TNMD,,,
+lung,CD1c-positive myeloid dendritic cell,236,0.00%,DPM1,1.1755556530422635,0.1920426542273918,9
+lung,macrophage,96790,0.00%,TSPAN6,1.1751996216021086,0.19186953496328432,19
+lung,macrophage,96790,,TNMD,,,
+lung,macrophage,96790,0.81%,DPM1,1.1202375022074105,0.16514436243566308,4789
+lung,elicited macrophage,44,,TSPAN6,,,
+lung,elicited macrophage,44,,TNMD,,,
+lung,elicited macrophage,44,,DPM1,,,
+lung,lung macrophage,49640,0.00%,TSPAN6,0.9535345236460367,0.084085518417526,3
+lung,lung macrophage,49640,,TNMD,,,
+lung,lung macrophage,49640,0.61%,DPM1,1.0996332250496264,0.15512559190946998,3609
+lung,alveolar macrophage,44372,0.00%,TSPAN6,0.9535345236460367,0.084085518417526,3
+lung,alveolar macrophage,44372,,TNMD,,,
+lung,alveolar macrophage,44372,0.58%,DPM1,1.0985678655207418,0.1546075639016903,3417
+lung,mononuclear cell,196811,0.00%,TSPAN6,1.3570275676661525,0.28028285094202265,29
+lung,mononuclear cell,196811,,TNMD,,,
+lung,mononuclear cell,196811,0.23%,DPM1,1.2825093474391673,0.2440485806127463,1343
+lung,lymphocyte,138544,0.00%,TSPAN6,1.4075965122743086,0.30487185486102114,11
+lung,lymphocyte,138544,,TNMD,,,
+lung,lymphocyte,138544,0.16%,DPM1,1.2769516634790203,0.24134617276667533,948
+lung,innate lymphoid cell,26022,0.00%,TSPAN6,1.6195006370544434,0.4079096262649015,3
+lung,innate lymphoid cell,26022,,TNMD,,,
+lung,innate lymphoid cell,26022,0.01%,DPM1,1.3260607984330919,0.26522534843864554,54
+lung,natural killer cell,25441,0.00%,TSPAN6,1.6195006370544434,0.4079096262649015,3
+lung,natural killer cell,25441,,TNMD,,,
+lung,natural killer cell,25441,0.01%,DPM1,1.3260607984330919,0.26522534843864554,54
+lung,"CD16-negative, CD56-bright natural killer cell, human",1214,,TSPAN6,,,
+lung,"CD16-negative, CD56-bright natural killer cell, human",1214,,TNMD,,,
+lung,"CD16-negative, CD56-bright natural killer cell, human",1214,,DPM1,,,
+lung,"CD16-positive, CD56-dim natural killer cell, human",3458,,TSPAN6,,,
+lung,"CD16-positive, CD56-dim natural killer cell, human",3458,,TNMD,,,
+lung,"CD16-positive, CD56-dim natural killer cell, human",3458,0.00%,DPM1,1.578769326210022,0.38810414347818173,4
+lung,group 3 innate lymphoid cell,175,,TSPAN6,,,
+lung,group 3 innate lymphoid cell,175,,TNMD,,,
+lung,group 3 innate lymphoid cell,175,,DPM1,,,
+lung,group 2 innate lymphoid cell,149,,TSPAN6,,,
+lung,group 2 innate lymphoid cell,149,,TNMD,,,
+lung,group 2 innate lymphoid cell,149,,DPM1,,,
+lung,"CD34-positive, CD56-positive, CD117-positive common innate lymphoid precursor, human",80,,TSPAN6,,,
+lung,"CD34-positive, CD56-positive, CD117-positive common innate lymphoid precursor, human",80,,TNMD,,,
+lung,"CD34-positive, CD56-positive, CD117-positive common innate lymphoid precursor, human",80,,DPM1,,,
+lung,precursor B cell,2638,,TSPAN6,,,
+lung,precursor B cell,2638,,TNMD,,,
+lung,precursor B cell,2638,0.00%,DPM1,1.0153080789666427,0.11412273207975974,19
+lung,large pre-B-II cell,546,,TSPAN6,,,
+lung,large pre-B-II cell,546,,TNMD,,,
+lung,large pre-B-II cell,546,0.00%,DPM1,1.0153080789666427,0.11412273207975974,19
+lung,small pre-B-II cell,453,,TSPAN6,,,
+lung,small pre-B-II cell,453,,TNMD,,,
+lung,small pre-B-II cell,453,,DPM1,,,
+lung,pre-B-I cell,541,,TSPAN6,,,
+lung,pre-B-I cell,541,,TNMD,,,
+lung,pre-B-I cell,541,,DPM1,,,
+lung,late pro-B cell,449,,TSPAN6,,,
+lung,late pro-B cell,449,,TNMD,,,
+lung,late pro-B cell,449,,DPM1,,,
+lung,immature B cell,526,,TSPAN6,,,
+lung,immature B cell,526,,TNMD,,,
+lung,immature B cell,526,,DPM1,,,
+lung,B cell,14439,,TSPAN6,,,
+lung,B cell,14439,,TNMD,,,
+lung,B cell,14439,0.01%,DPM1,1.238081005112878,0.22244542689773808,58
+lung,plasma cell,2482,,TSPAN6,,,
+lung,plasma cell,2482,,TNMD,,,
+lung,plasma cell,2482,0.01%,DPM1,1.1697289148966472,0.1892094195572257,72
+lung,T cell,95260,0.00%,TSPAN6,1.3281324654817581,0.26623269058456606,8
+lung,T cell,95260,,TNMD,,,
+lung,T cell,95260,0.13%,DPM1,1.2871193378730683,0.2462901752065052,757
+lung,gamma-delta T cell,247,,TSPAN6,,,
+lung,gamma-delta T cell,247,,TNMD,,,
+lung,gamma-delta T cell,247,0.00%,DPM1,1.2924506664276123,0.24888251838742276,1
+lung,mature gamma-delta T cell,82,,TSPAN6,,,
+lung,mature gamma-delta T cell,82,,TNMD,,,
+lung,mature gamma-delta T cell,82,,DPM1,,,
+lung,"effector CD4-positive, alpha-beta T cell",132,,TSPAN6,,,
+lung,"effector CD4-positive, alpha-beta T cell",132,,TNMD,,,
+lung,"effector CD4-positive, alpha-beta T cell",132,,DPM1,,,
+lung,"effector CD8-positive, alpha-beta T cell",80,,TSPAN6,,,
+lung,"effector CD8-positive, alpha-beta T cell",80,,TNMD,,,
+lung,"effector CD8-positive, alpha-beta T cell",80,,DPM1,,,
+lung,regulatory T cell,876,,TSPAN6,,,
+lung,regulatory T cell,876,,TNMD,,,
+lung,regulatory T cell,876,0.00%,DPM1,1.2287763357162476,0.2179210581565753,2
+lung,"naive thymus-derived CD4-positive, alpha-beta T cell",473,,TSPAN6,,,
+lung,"naive thymus-derived CD4-positive, alpha-beta T cell",473,,TNMD,,,
+lung,"naive thymus-derived CD4-positive, alpha-beta T cell",473,,DPM1,,,
+lung,"naive thymus-derived CD8-positive, alpha-beta T cell",1450,,TSPAN6,,,
+lung,"naive thymus-derived CD8-positive, alpha-beta T cell",1450,,TNMD,,,
+lung,"naive thymus-derived CD8-positive, alpha-beta T cell",1450,0.00%,DPM1,1.5821685791015625,0.38975702042310173,1
+lung,"effector memory CD4-positive, alpha-beta T cell",3365,,TSPAN6,,,
+lung,"effector memory CD4-positive, alpha-beta T cell",3365,,TNMD,,,
+lung,"effector memory CD4-positive, alpha-beta T cell",3365,0.00%,DPM1,1.3136476278305054,0.2591894799237039,4
+lung,"CD8-positive, alpha-beta memory T cell",2215,,TSPAN6,,,
+lung,"CD8-positive, alpha-beta memory T cell",2215,,TNMD,,,
+lung,"CD8-positive, alpha-beta memory T cell",2215,0.00%,DPM1,1.9031797647476196,0.5458477864664998,1
+lung,"effector memory CD8-positive, alpha-beta T cell, terminally differentiated",945,,TSPAN6,,,
+lung,"effector memory CD8-positive, alpha-beta T cell, terminally differentiated",945,,TNMD,,,
+lung,"effector memory CD8-positive, alpha-beta T cell, terminally differentiated",945,,DPM1,,,
+lung,"CD8-positive, alpha-beta memory T cell, CD45RO-positive",1188,,TSPAN6,,,
+lung,"CD8-positive, alpha-beta memory T cell, CD45RO-positive",1188,,TNMD,,,
+lung,"CD8-positive, alpha-beta memory T cell, CD45RO-positive",1188,0.00%,DPM1,1.9031797647476196,0.5458477864664998,1
+lung,"effector memory CD8-positive, alpha-beta T cell",771,,TSPAN6,,,
+lung,"effector memory CD8-positive, alpha-beta T cell",771,,TNMD,,,
+lung,"effector memory CD8-positive, alpha-beta T cell",771,,DPM1,,,
+lung,mature alpha-beta T cell,39905,0.00%,TSPAN6,1.540005366007487,0.3692552792845181,3
+lung,mature alpha-beta T cell,39905,,TNMD,,,
+lung,mature alpha-beta T cell,39905,0.09%,DPM1,1.1946045551919764,0.2013051281279518,554
+lung,"CD4-positive, alpha-beta T cell",15517,,TSPAN6,,,
+lung,"CD4-positive, alpha-beta T cell",15517,,TNMD,,,
+lung,"CD4-positive, alpha-beta T cell",15517,0.01%,DPM1,1.4438527703285218,0.32250135609525254,30
+lung,CD4-positive helper T cell,2122,,TSPAN6,,,
+lung,CD4-positive helper T cell,2122,,TNMD,,,
+lung,CD4-positive helper T cell,2122,0.00%,DPM1,1.3749879598617554,0.2890160400070996,1
+lung,T-helper 17 cell,167,,TSPAN6,,,
+lung,T-helper 17 cell,167,,TNMD,,,
+lung,T-helper 17 cell,167,0.00%,DPM1,1.3749879598617554,0.2890160400070996,1
+lung,T follicular helper cell,79,,TSPAN6,,,
+lung,T follicular helper cell,79,,TNMD,,,
+lung,T follicular helper cell,79,,DPM1,,,
+lung,"CD8-positive, alpha-beta T cell",17158,,TSPAN6,,,
+lung,"CD8-positive, alpha-beta T cell",17158,,TNMD,,,
+lung,"CD8-positive, alpha-beta T cell",17158,0.03%,DPM1,1.2724647344146645,0.2391644164100295,181
+lung,"CD8-positive, alpha-beta cytotoxic T cell",5059,,TSPAN6,,,
+lung,"CD8-positive, alpha-beta cytotoxic T cell",5059,,TNMD,,,
+lung,"CD8-positive, alpha-beta cytotoxic T cell",5059,0.00%,DPM1,1.2717621543190696,0.23882278885861713,11
+lung,mucosal invariant T cell,124,,TSPAN6,,,
+lung,mucosal invariant T cell,124,,TNMD,,,
+lung,mucosal invariant T cell,124,,DPM1,,,
+lung,mature NK T cell,760,,TSPAN6,,,
+lung,mature NK T cell,760,,TNMD,,,
+lung,mature NK T cell,760,0.00%,DPM1,2.430493116378784,0.8022523875565465,2
+lung,alpha-beta T cell,46559,0.00%,TSPAN6,1.6336740553379059,0.4148014101535741,4
+lung,alpha-beta T cell,46559,,TNMD,,,
+lung,alpha-beta T cell,46559,0.09%,DPM1,1.1960720438075452,0.20201869024792307,557
+lung,immature alpha-beta T cell,6406,0.00%,TSPAN6,1.9146801233291626,0.5514398027607421,1
+lung,immature alpha-beta T cell,6406,,TNMD,,,
+lung,immature alpha-beta T cell,6406,0.00%,DPM1,1.4670682748158772,0.333789828402603,3
+lung,"CD8-positive, alpha-beta thymocyte",3307,0.00%,TSPAN6,1.9146801233291626,0.5514398027607421,1
+lung,"CD8-positive, alpha-beta thymocyte",3307,,TNMD,,,
+lung,"CD8-positive, alpha-beta thymocyte",3307,0.00%,DPM1,1.3853199481964111,0.29403993962811165,1
+lung,"CD4-positive, alpha-beta thymocyte",2961,,TSPAN6,,,
+lung,"CD4-positive, alpha-beta thymocyte",2961,,TNMD,,,
+lung,"CD4-positive, alpha-beta thymocyte",2961,0.00%,DPM1,1.5079424381256104,0.35366477278984876,2
+lung,thymocyte,6280,0.00%,TSPAN6,1.9146801233291626,0.5514398027607421,1
+lung,thymocyte,6280,,TNMD,,,
+lung,thymocyte,6280,0.00%,DPM1,1.4670682748158772,0.333789828402603,3
+lung,monocyte,48121,0.00%,TSPAN6,1.5535395940144856,0.37583625873907117,6
+lung,monocyte,48121,,TNMD,,,
+lung,monocyte,48121,0.04%,DPM1,1.3217499923706055,0.26312923138526684,225
+lung,non-classical monocyte,2764,,TSPAN6,,,
+lung,non-classical monocyte,2764,,TNMD,,,
+lung,non-classical monocyte,2764,0.00%,DPM1,1.4958978380475725,0.34780812063274846,7
+lung,"CD14-positive, CD16-positive monocyte",532,,TSPAN6,,,
+lung,"CD14-positive, CD16-positive monocyte",532,,TNMD,,,
+lung,"CD14-positive, CD16-positive monocyte",532,0.00%,DPM1,1.175985336303711,0.19225158647783777,4
+lung,"CD14-positive, CD16-negative classical monocyte",12067,0.00%,TSPAN6,1.6049950122833252,0.40085630792677235,2
+lung,"CD14-positive, CD16-negative classical monocyte",12067,,TNMD,,,
+lung,"CD14-positive, CD16-negative classical monocyte",12067,0.01%,DPM1,1.3147577558244978,0.25972927646892324,84
+lung,intermediate monocyte,440,,TSPAN6,,,
+lung,intermediate monocyte,440,,TNMD,,,
+lung,intermediate monocyte,440,0.00%,DPM1,1.3227909406026204,0.26363538947013143,6
+lung,classical monocyte,19185,0.00%,TSPAN6,2.107079188028971,0.6449932947818552,3
+lung,classical monocyte,19185,,TNMD,,,
+lung,classical monocyte,19185,0.02%,DPM1,1.400808370338296,0.30157114036201993,106
+lung,myeloid leukocyte,155921,0.00%,TSPAN6,1.266001214981079,0.23602154866947317,25
+lung,myeloid leukocyte,155921,,TNMD,,,
+lung,myeloid leukocyte,155921,0.85%,DPM1,1.1318912242871288,0.17081095128993978,5054
+lung,neutrophil,1232,,TSPAN6,,,
+lung,neutrophil,1232,,TNMD,,,
+lung,neutrophil,1232,0.00%,DPM1,1.5539519786834717,0.37603677959867,2
+lung,eosinophil,13,,TSPAN6,,,
+lung,eosinophil,13,,TNMD,,,
+lung,eosinophil,13,0.00%,DPM1,1.0081253051757812,0.11063012897599071,2
+lung,basophil,692,,TSPAN6,,,
+lung,basophil,692,,TNMD,,,
+lung,basophil,692,0.00%,DPM1,2.837174415588379,1,4
+lung,mast cell,6806,,TSPAN6,,,
+lung,mast cell,6806,,TNMD,,,
+lung,mast cell,6806,0.00%,DPM1,1.4322029460560193,0.31683666253852755,11
+lung,mesenchymal cell,324,0.01%,TSPAN6,1.2661467729988745,0.2360923258371152,59
+lung,mesenchymal cell,324,,TNMD,,,
+lung,mesenchymal cell,324,0.00%,DPM1,1.180538296699524,0.19446545037955015,2
+lung,Schwann cell precursor,192,0.00%,TSPAN6,1.268533420562744,0.23725282635291584,20
+lung,Schwann cell precursor,192,,TNMD,,,
+lung,Schwann cell precursor,192,0.00%,DPM1,1.1226987838745117,0.1663411535695708,7
+lung,neural progenitor cell,15,,TSPAN6,,,
+lung,neural progenitor cell,15,,TNMD,,,
+lung,neural progenitor cell,15,,DPM1,,,
+lung,progenitor cell,48811,0.00%,TSPAN6,1.3343040759746845,0.26923361844202864,26
+lung,progenitor cell,48811,,TNMD,,,
+lung,progenitor cell,48811,0.04%,DPM1,1.3018339291030978,0.253445102884456,243
+lung,early lymphoid progenitor,21,,TSPAN6,,,
+lung,early lymphoid progenitor,21,,TNMD,,,
+lung,early lymphoid progenitor,21,,DPM1,,,
+lung,pro-B cell,135,,TSPAN6,,,
+lung,pro-B cell,135,,TNMD,,,
+lung,pro-B cell,135,0.00%,DPM1,1.1003570556640625,0.15547755246456907,2
+lung,erythroblast,82,,TSPAN6,,,
+lung,erythroblast,82,,TNMD,,,
+lung,erythroblast,82,0.00%,DPM1,0.9553542137145996,0.08497033748135985,5
+lung,promyelocyte,33,,TSPAN6,,,
+lung,promyelocyte,33,,TNMD,,,
+lung,promyelocyte,33,,DPM1,,,
+lung,promonocyte,124,,TSPAN6,,,
+lung,promonocyte,124,,TNMD,,,
+lung,promonocyte,124,0.00%,DPM1,0.9429352879524231,0.07893167053661491,1
+lung,granulocyte monocyte progenitor cell,28,,TSPAN6,,,
+lung,granulocyte monocyte progenitor cell,28,,TNMD,,,
+lung,granulocyte monocyte progenitor cell,28,,DPM1,,,
+lung,megakaryocyte-erythroid progenitor cell,28,,TSPAN6,,,
+lung,megakaryocyte-erythroid progenitor cell,28,,TNMD,,,
+lung,megakaryocyte-erythroid progenitor cell,28,0.00%,DPM1,1.0575281778971355,0.13465213379274216,3
+lung,hematopoietic stem cell,29,,TSPAN6,,,
+lung,hematopoietic stem cell,29,,TNMD,,,
+lung,hematopoietic stem cell,29,,DPM1,,,
+lung,basal cell,4452,0.05%,TSPAN6,1.3672791861153983,0.28526767093733507,286
+lung,basal cell,4452,0.00%,TNMD,1.6236716508865356,0.4099377697481842,1
+lung,basal cell,4452,0.04%,DPM1,1.492989399394051,0.3463939006998676,244
+lung,respiratory basal cell,1489,0.01%,TSPAN6,1.1862411499023438,0.19723844635247764,47
+lung,respiratory basal cell,1489,,TNMD,,,
+lung,respiratory basal cell,1489,0.01%,DPM1,1.1445465087890625,0.17696454699230885,67
+lung,pulmonary interstitial fibroblast,8323,0.05%,TSPAN6,1.5077289608742694,0.3535609700901778,278
+lung,pulmonary interstitial fibroblast,8323,,TNMD,,,
+lung,pulmonary interstitial fibroblast,8323,0.00%,DPM1,1.4480557441711426,0.32454504004176277,5
+lung,ciliated cell,8023,0.28%,TSPAN6,1.5626954103741024,0.3802882481189709,1674
+lung,ciliated cell,8023,,TNMD,,,
+lung,ciliated cell,8023,0.06%,DPM1,1.3739771161760603,0.28852452017132585,364
+lung,lung ciliated cell,5977,0.24%,TSPAN6,1.5606225073754372,0.37928030499591703,1430
+lung,lung ciliated cell,5977,,TNMD,,,
+lung,lung ciliated cell,5977,0.05%,DPM1,1.3994206166107384,0.3008963491020889,298
+lung,ciliated epithelial cell,909,0.00%,TSPAN6,2.438506762186686,0.8061489997896636,3
+lung,ciliated epithelial cell,909,,TNMD,,,
+lung,ciliated epithelial cell,909,,DPM1,,,
+lung,animal cell,580653,1.57%,TSPAN6,1.3543752215730644,0.27899315528033064,9310
+lung,animal cell,580653,0.01%,TNMD,1.6533544157680713,0.42437092882742417,38
+lung,animal cell,580653,2.60%,DPM1,1.2874141548419127,0.24643352910994287,15407
+lung,bone marrow cell,37,,TSPAN6,,,
+lung,bone marrow cell,37,,TNMD,,,
+lung,bone marrow cell,37,,DPM1,,,
+lung,myeloid cell,157355,0.00%,TSPAN6,1.2387944007741993,0.2227923134868878,29
+lung,myeloid cell,157355,,TNMD,,,
+lung,myeloid cell,157355,0.86%,DPM1,1.1314016939689664,0.17057291858023946,5074
+lung,primitive red blood cell,263,,TSPAN6,,,
+lung,primitive red blood cell,263,,TNMD,,,
+lung,primitive red blood cell,263,,DPM1,,,
+lung,reticulocyte,223,,TSPAN6,,,
+lung,reticulocyte,223,,TNMD,,,
+lung,reticulocyte,223,,DPM1,,,
+lung,erythrocyte,302,,TSPAN6,,,
+lung,erythrocyte,302,,TNMD,,,
+lung,erythrocyte,302,,DPM1,,,
+lung,enucleate erythrocyte,202,,TSPAN6,,,
+lung,enucleate erythrocyte,202,,TNMD,,,
+lung,enucleate erythrocyte,202,,DPM1,,,
+lung,megakaryocyte,141,0.00%,TSPAN6,1.0687518119812012,0.1401095935957293,4
+lung,megakaryocyte,141,,TNMD,,,
+lung,megakaryocyte,141,0.00%,DPM1,1.0237869782881304,0.11824557249615295,11
+lung,platelet,20,,TSPAN6,,,
+lung,platelet,20,,TNMD,,,
+lung,platelet,20,,DPM1,,,
+lung,common myeloid progenitor,7,,TSPAN6,,,
+lung,common myeloid progenitor,7,,TNMD,,,
+lung,common myeloid progenitor,7,,DPM1,,,
+lung,fibroblast,50701,0.49%,TSPAN6,1.3290640987326943,0.26668569457418545,2890
+lung,fibroblast,50701,0.00%,TNMD,1.5450620651245117,0.37171408469106126,3
+lung,fibroblast,50701,0.11%,DPM1,1.235512755229652,0.2211966227762966,679
+lung,fibroblast of lung,24320,0.43%,TSPAN6,1.3061306179036916,0.2555343554598296,2552
+lung,fibroblast of lung,24320,0.00%,TNMD,1.5450620651245117,0.37171408469106126,3
+lung,fibroblast of lung,24320,0.03%,DPM1,1.1344055572113434,0.17203353844508495,154
+lung,bronchus fibroblast of lung,309,0.00%,TSPAN6,1.429418921470642,0.31548293858856424,1
+lung,bronchus fibroblast of lung,309,,TNMD,,,
+lung,bronchus fibroblast of lung,309,,DPM1,,,
+lung,stromal cell,8903,0.00%,TSPAN6,1.7067705154418946,0.45034435371091314,10
+lung,stromal cell,8903,,TNMD,,,
+lung,stromal cell,8903,0.00%,DPM1,2.413569768269857,0.7940234581968882,9
+lung,chondrocyte,496,0.00%,TSPAN6,1.453394889831543,0.3271411842679271,7
+lung,chondrocyte,496,,TNMD,,,
+lung,chondrocyte,496,,DPM1,,,
+lung,adventitial cell,373,0.01%,TSPAN6,1.9046813609988191,0.5465779333262296,43
+lung,adventitial cell,373,0.00%,TNMD,2.5957725048065186,0.8826190149653328,8
+lung,adventitial cell,373,0.02%,DPM1,2.5616754755243525,0.8660394325132568,111
+lung,pericyte,4782,0.02%,TSPAN6,1.3638531170060149,0.28360175468359144,113
+lung,pericyte,4782,0.00%,TNMD,1.6232373714447021,0.40972660261824057,4
+lung,pericyte,4782,0.00%,DPM1,1.4030267275296724,0.30264981016806713,13
+lung,Schwann cell,170,0.00%,TSPAN6,1.383345815870497,0.29308002346069584,9
+lung,Schwann cell,170,0.00%,TNMD,1.6272175312042236,0.41166194385748267,1
+lung,Schwann cell,170,0.00%,DPM1,1.345569133758545,0.27471122039993884,1
+lung,immature Schwann cell,31,,TSPAN6,,,
+lung,immature Schwann cell,31,,TNMD,,,
+lung,immature Schwann cell,31,,DPM1,,,
+lung,neuron,1153,0.02%,TSPAN6,1.3208510202305916,0.26269210876692556,131
+lung,neuron,1153,,TNMD,,,
+lung,neuron,1153,0.00%,DPM1,1.0308992365996044,0.1217038876508172,24
+lung,neuroendocrine cell,805,0.02%,TSPAN6,1.3208567711614794,0.26269490514053456,124
+lung,neuroendocrine cell,805,,TNMD,,,
+lung,neuroendocrine cell,805,0.00%,DPM1,1.0038028898693265,0.10852836696111148,21
+lung,lung neuroendocrine cell,518,0.02%,TSPAN6,1.3208567711614794,0.26269490514053456,124
+lung,lung neuroendocrine cell,518,,TNMD,,,
+lung,lung neuroendocrine cell,518,0.00%,DPM1,1.0038028898693265,0.10852836696111148,21
+lung,visceromotor neuron,80,,TSPAN6,,,
+lung,visceromotor neuron,80,,TNMD,,,
+lung,visceromotor neuron,80,,DPM1,,,
+lung,epithelial cell,196491,0.97%,TSPAN6,1.3643672340674815,0.2838517426265312,5761
+lung,epithelial cell,196491,0.00%,TNMD,1.7354146242141724,0.4642724692433887,1
+lung,epithelial cell,196491,1.38%,DPM1,1.3644566285013568,0.2838952104129746,8152
+lung,pulmonary ionocyte,41,0.00%,TSPAN6,1.3956454594930012,0.2990606898079872,3
+lung,pulmonary ionocyte,41,,TNMD,,,
+lung,pulmonary ionocyte,41,,DPM1,,,
+lung,epithelial cell of lung,81527,0.55%,TSPAN6,1.319032487442764,0.26180785242752175,3287
+lung,epithelial cell of lung,81527,,TNMD,,,
+lung,epithelial cell of lung,81527,0.35%,DPM1,1.1526620741115925,0.18091071729637315,2073
+lung,lung microvascular endothelial cell,484,0.00%,TSPAN6,1.3059938975742884,0.255467875592758,7
+lung,lung microvascular endothelial cell,484,,TNMD,,,
+lung,lung microvascular endothelial cell,484,0.00%,DPM1,1.2512385845184326,0.22884326205278563,4
+lung,epithelial cell of alveolus of lung,74384,0.04%,TSPAN6,1.225757127649644,0.21645297691506935,255
+lung,epithelial cell of alveolus of lung,74384,,TNMD,,,
+lung,epithelial cell of alveolus of lung,74384,0.30%,DPM1,1.167628147367245,0.18818792738621756,1797
+lung,pneumocyte,56481,0.04%,TSPAN6,1.225757127649644,0.21645297691506935,255
+lung,pneumocyte,56481,,TNMD,,,
+lung,pneumocyte,56481,0.30%,DPM1,1.1659784162769222,0.18738575038688393,1793
+lung,type I pneumocyte,11840,0.01%,TSPAN6,1.1805938720703124,0.1944924737438048,30
+lung,type I pneumocyte,11840,,TNMD,,,
+lung,type I pneumocyte,11840,0.01%,DPM1,1.4469367518569485,0.3240009332463322,33
+lung,type II pneumocyte,39352,0.03%,TSPAN6,1.2449805991163532,0.22580033464409402,206
+lung,type II pneumocyte,39352,,TNMD,,,
+lung,type II pneumocyte,39352,0.26%,DPM1,1.1631667193244486,0.18601857082798406,1564
+lung,lung goblet cell,159,0.01%,TSPAN6,1.2051150321960449,0.20641581735127207,80
+lung,lung goblet cell,159,,TNMD,,,
+lung,lung goblet cell,159,0.01%,DPM1,1.1725237919734075,0.19056842049992076,52
+lung,squamous epithelial cell,19423,0.09%,TSPAN6,1.33933246158204,0.2716786564859026,530
+lung,squamous epithelial cell,19423,0.00%,TNMD,1.7354146242141724,0.4642724692433887,1
+lung,squamous epithelial cell,19423,0.06%,DPM1,1.4156404730318641,0.30878320765124534,357
+lung,mesothelial cell,666,0.01%,TSPAN6,1.2067505163805825,0.20721106683363064,84
+lung,mesothelial cell,666,,TNMD,,,
+lung,mesothelial cell,666,0.00%,DPM1,1.0664457908043494,0.13898829742879773,26
+lung,mesothelial cell of pleura,29,0.00%,TSPAN6,0.966343343257904,0.09031377012565343,2
+lung,mesothelial cell of pleura,29,,TNMD,,,
+lung,mesothelial cell of pleura,29,0.00%,DPM1,1.1463301522391183,0.1778318384915355,7
+lung,blood vessel endothelial cell,18196,0.06%,TSPAN6,1.2461325508391785,0.226360467857206,334
+lung,blood vessel endothelial cell,18196,0.00%,TNMD,1.7354146242141724,0.4642724692433887,1
+lung,blood vessel endothelial cell,18196,0.05%,DPM1,1.4529655300202917,0.326932409294209,305
+lung,capillary endothelial cell,11170,0.03%,TSPAN6,1.1984488518683465,0.20317440633364744,182
+lung,capillary endothelial cell,11170,0.00%,TNMD,1.7354146242141724,0.4642724692433887,1
+lung,capillary endothelial cell,11170,0.02%,DPM1,1.8529082964051444,0.5214034295263796,106
+lung,endothelial cell of artery,2020,0.01%,TSPAN6,1.3364315032958984,0.2702680738601525,48
+lung,endothelial cell of artery,2020,,TNMD,,,
+lung,endothelial cell of artery,2020,0.01%,DPM1,1.400899842728016,0.3016156185485182,43
+lung,vein endothelial cell,2154,0.01%,TSPAN6,1.436064346976902,0.31871425763393907,46
+lung,vein endothelial cell,2154,,TNMD,,,
+lung,vein endothelial cell,2154,0.01%,DPM1,1.4630425976168724,0.3318323544392847,31
+lung,endothelial cell,40720,0.09%,TSPAN6,1.266185181614026,0.23611100191579948,514
+lung,endothelial cell,40720,0.00%,TNMD,1.7354146242141724,0.4642724692433887,1
+lung,endothelial cell,40720,0.09%,DPM1,1.4114560417662887,0.3067485399795095,532
+lung,endothelial cell of vascular tree,25377,0.08%,TSPAN6,1.2597410889990128,0.2329775804099176,463
+lung,endothelial cell of vascular tree,25377,0.00%,TNMD,1.7354146242141724,0.4642724692433887,1
+lung,endothelial cell of vascular tree,25377,0.06%,DPM1,1.4395315063760636,0.3204001539229438,376
+lung,endothelial cell of lymphatic vessel,3274,0.02%,TSPAN6,1.2729629156157727,0.23940665558668905,127
+lung,endothelial cell of lymphatic vessel,3274,,TNMD,,,
+lung,endothelial cell of lymphatic vessel,3274,0.01%,DPM1,1.2676284790039063,0.2368128011218348,65
+lung,respiratory epithelial cell,40245,0.13%,TSPAN6,1.5594880136700184,0.37872866069357336,789
+lung,respiratory epithelial cell,40245,,TNMD,,,
+lung,respiratory epithelial cell,40245,0.04%,DPM1,1.5308938416567717,0.36482482676659755,220
+lung,epithelial cell of lower respiratory tract,37335,0.03%,TSPAN6,2.1025170412930576,0.6427749640486815,176
+lung,epithelial cell of lower respiratory tract,37335,,TNMD,,,
+lung,epithelial cell of lower respiratory tract,37335,0.02%,DPM1,1.9076441021288855,0.5480185576821991,118
+lung,bronchial epithelial cell,5364,0.01%,TSPAN6,1.426189757229989,0.3139127667610964,57
+lung,bronchial epithelial cell,5364,,TNMD,,,
+lung,bronchial epithelial cell,5364,0.01%,DPM1,1.293317042864286,0.24930379143873457,52
+lung,club cell,4832,0.01%,TSPAN6,1.426189757229989,0.3139127667610964,57
+lung,club cell,4832,,TNMD,,,
+lung,club cell,4832,0.01%,DPM1,1.2788214590035232,0.24225535546439592,51
+lung,goblet cell,1156,0.03%,TSPAN6,1.2584731043601523,0.23236102652500334,196
+lung,goblet cell,1156,,TNMD,,,
+lung,goblet cell,1156,0.02%,DPM1,1.2688760843362894,0.23741944562756934,111
+lung,respiratory goblet cell,921,0.03%,TSPAN6,1.2584731043601523,0.23236102652500334,196
+lung,respiratory goblet cell,921,,TNMD,,,
+lung,respiratory goblet cell,921,0.02%,DPM1,1.2688760843362894,0.23741944562756934,111
+lung,myofibroblast cell,1664,0.01%,TSPAN6,1.2027071826862838,0.20524500745024196,53
+lung,myofibroblast cell,1664,,TNMD,,,
+lung,myofibroblast cell,1664,0.00%,DPM1,1.276974582672119,0.2413573171584219,5
+lung,muscle cell,6855,0.02%,TSPAN6,1.2657825292501235,0.23591521336156507,133
+lung,muscle cell,6855,0.00%,TNMD,1.297342413663864,0.2512611164162126,20
+lung,muscle cell,6855,0.01%,DPM1,1.4172100927315505,0.3095464307172197,51
+lung,smooth muscle cell,6088,0.02%,TSPAN6,1.2657825292501235,0.23591521336156507,133
+lung,smooth muscle cell,6088,0.00%,TNMD,1.297342413663864,0.2512611164162126,20
+lung,smooth muscle cell,6088,0.01%,DPM1,1.5009575684865315,0.3502684000108665,36
+lung,tracheobronchial smooth muscle cell,3671,0.01%,TSPAN6,1.278795840839545,0.24224289870581933,48
+lung,tracheobronchial smooth muscle cell,3671,0.00%,TNMD,1.1720696687698364,0.19034760439788734,1
+lung,tracheobronchial smooth muscle cell,3671,0.00%,DPM1,1.6756503241402763,0.4352122501678216,14
+lung,bronchial smooth muscle cell,772,0.00%,TSPAN6,1.017828106880188,0.11534808840709267,1
+lung,bronchial smooth muscle cell,772,,TNMD,,,
+lung,bronchial smooth muscle cell,772,0.00%,DPM1,1.9242089986801147,0.5560731910025529,8
+lung,vascular associated smooth muscle cell,1394,0.00%,TSPAN6,1.3120750947432085,0.25842484023138057,11
+lung,vascular associated smooth muscle cell,1394,0.00%,TNMD,1.3392831087112427,0.2716546587943777,2
+lung,vascular associated smooth muscle cell,1394,0.00%,DPM1,1.577963638305664,0.3877123800512157,10
+lung,contractile cell,13408,0.05%,TSPAN6,1.291665415700064,0.24850069247891907,299
+lung,contractile cell,13408,0.00%,TNMD,1.3516582399606705,0.27767203078321734,24
+lung,contractile cell,13408,0.01%,DPM1,1.4043758710225422,0.303305827312394,69
+lung,secretory cell,55451,0.17%,TSPAN6,1.2849273597244668,0.24522433213416178,1017
+lung,secretory cell,55451,,TNMD,,,
+lung,secretory cell,55451,0.32%,DPM1,1.1696642543337925,0.1891779785444508,1904
+lung,mucus secreting cell,1647,0.04%,TSPAN6,1.234376402925854,0.22064407473583483,242
+lung,mucus secreting cell,1647,,TNMD,,,
+lung,mucus secreting cell,1647,0.03%,DPM1,1.2192295412474041,0.21327895679521125,158
+lung,tracheobronchial serous cell,39,0.00%,TSPAN6,1.1963933944702148,0.2021749460836931,10
+lung,tracheobronchial serous cell,39,,TNMD,,,
+lung,tracheobronchial serous cell,39,,DPM1,,,
+lung,serous cell of epithelium of bronchus,15,0.00%,TSPAN6,1.1010576248168946,0.15581820220084497,5
+lung,serous cell of epithelium of bronchus,15,,TNMD,,,
+lung,serous cell of epithelium of bronchus,15,,DPM1,,,
+lung,lung secretory cell,40156,0.08%,TSPAN6,1.2819133353444327,0.24375877144534605,452
+lung,lung secretory cell,40156,,TNMD,,,
+lung,lung secretory cell,40156,0.28%,DPM1,1.1613018469086065,0.18511178197769476,1639

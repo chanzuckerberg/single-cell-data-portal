@@ -2,7 +2,9 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-
+import AdmZip from "adm-zip";
+import * as fs from "fs";
+import readline from "readline";
 export function goToWMG(page: Page) {
   return Promise.all([
     page.waitForResponse(
@@ -108,4 +110,115 @@ export const checkPlotSize = async (page: Page) => {
     }
   }
   return sumOfHeights;
+};
+export const downloadCsv = async (page: Page) => {
+  const zipFilePath = "./tests/utils/download.zip";
+  const extractDirPath = "./tests/utils/download";
+
+  //wait for download file
+  const downloadPromise = page.waitForEvent("download");
+
+  //click the download icon
+
+  await page.getByTestId("download-button").click();
+  const checkboxClassPng = await page
+    .getByTestId("png-checkbox")
+    .getAttribute("class");
+
+  if (checkboxClassPng && checkboxClassPng.includes("Mui-checked")) {
+    await page.getByTestId("png-checkbox").click();
+  }
+  const checkboxClassSvg = await page
+    .getByTestId("svg-checkbox")
+    .getAttribute("class");
+
+  if (checkboxClassSvg && checkboxClassSvg.includes("Mui-checked")) {
+    await page.getByTestId("svg-checkbox").click();
+  }
+
+  const checkboxClassCsv = await page
+    .getByTestId("csv-checkbox")
+    .getAttribute("class");
+
+  if (checkboxClassCsv && !checkboxClassCsv.includes("Mui-checked")) {
+    await page.getByTestId("csv-checkbox").click();
+  }
+
+  await page.getByTestId("dialog-download-button").click();
+  const download = await downloadPromise;
+
+  // Save downloaded file in a directory
+  await download.saveAs(zipFilePath);
+
+  //extract zip file
+  const zip = new AdmZip(zipFilePath);
+  zip.extractAllTo(extractDirPath);
+};
+
+export const getCsvMetadata = (tissue: string): Promise<string[]> => {
+  return new Promise((resolve, reject) => {
+    // Open the CSV file for reading
+    const fileStream = fs.createReadStream(
+      `./tests/utils/download/${tissue}.csv`,
+      { encoding: "utf8" }
+    );
+
+    // Create a readline interface for the file stream
+    const rl = readline.createInterface({ input: fileStream });
+
+    // Create an empty array to store the parsed data
+    const data: string[] = [];
+
+    // Listen for 'line' events emitted by the readline interface
+    rl.on("line", (line) => {
+      const row = line.split(",");
+      if (row.length === 1) {
+        data.push(row[0]);
+      }
+    });
+
+    // Listen for the 'close' event to know when the parsing is complete
+    rl.on("close", () => {
+      resolve(data);
+    });
+
+    // Listen for any errors during reading and parsing the file
+    rl.on("error", (err) => {
+      reject(err);
+    });
+  });
+};
+
+export const getCsvHeaders = (tissue: string): Promise<string[][]> => {
+  return new Promise((resolve, reject) => {
+    // Open the CSV file for reading
+    const fileStream = fs.createReadStream(
+      `./tests/utils/download/${tissue}.csv`,
+      { encoding: "utf8" }
+    );
+
+    // Create a readline interface for the file stream
+    const rl = readline.createInterface({ input: fileStream });
+
+    // Create an empty array to store the parsed data
+    const data: string[][] = [];
+
+    // Listen for 'line' events emitted by the readline interface
+    rl.on("line", (line) => {
+      const row = line.split(",");
+      if (row.length > 1) {
+        data.push(row);
+      }
+    });
+
+    // Listen for the 'close' event to know when the parsing is complete
+    rl.on("close", () => {
+      resolve(data);
+    });
+
+    // Listen for any errors during reading and parsing the file
+    rl.on("error", (err) => {
+      reject(err);
+    });
+  });
 };
