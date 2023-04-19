@@ -49,6 +49,7 @@ import {
 } from "src/views/Collections/common/constants";
 import { get } from "src/common/featureFlags";
 import { BOOLEAN } from "src/common/localStorage/set";
+import BottomBanner from "src/components/BottomBanner";
 
 export default function Collections(): JSX.Element {
   const isCuratorEnabled = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -316,6 +317,7 @@ export default function Collections(): JSX.Element {
               />
             )}
           </View>
+          <BottomBanner survey={false} />
         </>
       )}
     </>

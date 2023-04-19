@@ -14,9 +14,17 @@ const TWITTER_URL = "https://cdn.syndication.twimg.com platform.twitter.com";
 
 const WISTIA_URL = "https://fast.wistia.net/";
 
+const HUBSPOT_JS_URL = "https://js.hsforms.net";
+
+const HUBSPOT_FORMS_URL = "https://forms.hsforms.com";
+const HUBSPOT_S3_URL = "https://hubspot-forms-static-embed.s3.amazonaws.com";
+
 const SCRIPT_SRC = [
   "'self'",
   "'wasm-unsafe-eval'",
+  HUBSPOT_JS_URL,
+  HUBSPOT_FORMS_URL,
+  HUBSPOT_S3_URL,
   PLAUSIBLE_URL,
   TWITTER_URL,
   WISTIA_URL,
@@ -29,16 +37,24 @@ const defaultSecureHeaders = {
       connectSrc: [
         "'self'",
         "sentry.prod.si.czi.technology",
+        HUBSPOT_JS_URL,
+        HUBSPOT_FORMS_URL,
+        HUBSPOT_S3_URL,
         PLAUSIBLE_URL,
         configs.API_URL,
       ],
-      defaultSrc: ["'self'"],
+      defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      formAction: "'self'",
+      formAction: ["'self'", HUBSPOT_FORMS_URL],
       frameAncestors: ["'none'"],
       // 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed
       // frameSrc: [TWITTER_URL, WISTIA_URL],
-      imgSrc: ["'self'", "data:"],
+      imgSrc: [
+        "'self'",
+        "data:",
+        HUBSPOT_FORMS_URL,
+        "https://forms-na1.hsforms.com",
+      ],
       manifestSrc: ["'self'"],
       mediaSrc: ["'self'"],
       objectSrc: ["'none'"],

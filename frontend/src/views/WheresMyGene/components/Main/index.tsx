@@ -29,7 +29,6 @@ import {
 } from "../../common/store/actions";
 import { GeneExpressionSummary } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
-import Beta from "../Beta";
 import CellInfoBar from "../CellInfoSideBar";
 import GeneInfoBar from "../GeneInfoSideBar";
 import Filters from "../Filters";
@@ -49,6 +48,7 @@ import {
 } from "./style";
 import RightSideBar from "../RightSideBar";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
+import BottomBanner from "src/components/BottomBanner";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -400,9 +400,9 @@ export default function WheresMyGene(): JSX.Element {
             />
           ) : null}
         </Wrapper>
-
-        <Beta />
       </View>
+
+      <BottomBanner survey />
     </>
   );
 }

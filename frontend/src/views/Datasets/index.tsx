@@ -16,6 +16,7 @@ import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { useSessionStorage } from "src/common/hooks/useSessionStorage";
 import { useFetchDatasetRows } from "src/common/queries/filter";
 import { KEYS } from "src/common/sessionStorage/set";
+import BottomBanner from "src/components/BottomBanner";
 import Filter from "src/components/common/Filter";
 import {
   CATEGORY_FILTER_ID,
@@ -380,6 +381,7 @@ export default function Datasets(): JSX.Element {
               />
             )}
           </View>
+          <BottomBanner survey={false} />
         </>
       )}
     </>
