@@ -1,7 +1,7 @@
 import { Page, expect } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
-import { ADD_GENE_BTN } from "./constants";
+import { ADD_GENE_BTN, ADD_TISSUE_BTN } from "./constants";
 
 const FMG_EXCLUDE_TISSUES = ["blood"];
 const CELL_COUNT_ID = "cell-count";
@@ -19,11 +19,19 @@ export async function goToWMG(page: Page) {
   ]);
 }
 export async function searchAndAddGene(page: Page, geneName: string) {
-  await goToWMG(page);
   // click +Tissue button
   await page.getByTestId(ADD_GENE_BTN).click();
   await page.getByPlaceholder("Search").type(geneName);
   await page.getByText(geneName).click();
+
+  // close dropdown
+  await page.keyboard.press("Escape");
+}
+export async function searchAndAddTissue(page: Page, tissueName: string) {
+  // click +Tissue button
+  await page.getByTestId(ADD_TISSUE_BTN).click();
+  await page.getByPlaceholder("Search").type(tissueName);
+  await page.getByText(tissueName).click();
 
   // close dropdown
   await page.keyboard.press("Escape");
