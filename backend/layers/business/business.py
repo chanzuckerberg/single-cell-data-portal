@@ -14,6 +14,7 @@ from backend.layers.business.entities import (
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
     CollectionCreationException,
+    CollectionDeleteException,
     CollectionIsPublishedException,
     CollectionNotFoundException,
     CollectionPublishException,
@@ -61,7 +62,8 @@ from backend.layers.thirdparty.crossref_provider import (
     CrossrefException,
     CrossrefProviderInterface,
 )
-from backend.layers.thirdparty.s3_provider import S3ProviderInterface
+from backend.layers.thirdparty.s3_exceptions import S3DeleteException
+from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -585,7 +587,10 @@ class BusinessLogic(BusinessLogicInterface):
                     if rdev_prefix:
                         dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                     object_keys.add(dataset_version_s3_object_key)
-        self.s3_provider.delete_files(bucket, list(object_keys))
+        try:
+            self.s3_provider.delete_files(bucket, list(object_keys))
+        except S3DeleteException as e:
+            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
         return list(object_keys)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:

@@ -22,6 +22,7 @@ from backend.layers.business.entities import CollectionMetadataUpdate, Collectio
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
     CollectionCreationException,
+    CollectionDeleteException,
     CollectionIsPublishedException,
     CollectionNotFoundException,
     CollectionPublishException,
@@ -454,7 +455,10 @@ def delete_collection(collection_id: str, token_info: dict):
         except CollectionIsPublishedException:
             raise ForbiddenHTTPException() from None
     elif isinstance(resource_id, CollectionId):
-        get_business_logic().tombstone_collection(resource_id)
+        try:
+            get_business_logic().tombstone_collection(resource_id)
+        except CollectionDeleteException() as e:
+            raise ServerErrorHTTPException(e.errors) from e
 
 
 def update_collection(collection_id: str, body: dict, token_info: dict):
