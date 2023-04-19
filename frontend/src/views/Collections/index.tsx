@@ -77,6 +77,7 @@ export default function Collections(): JSX.Element {
         accessor: COLLECTION_NAME,
         disableSortBy: false,
         showCountAndTotal: true,
+        sortType: "alphanumeric",
       },
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
@@ -85,6 +86,7 @@ export default function Collections(): JSX.Element {
         Header: "Publication",
         accessor: COLLECTION_SUMMARY_CITATION,
         disableSortBy: false,
+        sortType: "alphanumeric",
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (

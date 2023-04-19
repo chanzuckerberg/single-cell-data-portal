@@ -106,6 +106,7 @@ export default function Datasets(): JSX.Element {
         accessor: DATASET_NAME,
         disableSortBy: false,
         showCountAndTotal: true,
+        sortType: "alphanumeric",
       },
       {
         Cell: (({ value }: CellPropsValue<string[]>) => (
