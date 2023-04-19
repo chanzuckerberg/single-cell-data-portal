@@ -42,7 +42,7 @@ from backend.layers.thirdparty.crossref_provider import (
     CrossrefException,
     CrossrefProviderInterface,
 )
-from backend.layers.thirdparty.s3_provider import S3ProviderInterface
+from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from tests.unit.backend.layers.fixtures import test_user_name
@@ -94,7 +94,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.crossref_provider = CrossrefProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
         self.step_function_provider.start_step_function = Mock()
-        self.s3_provider = S3ProviderInterface()
+        self.s3_provider = MockS3Provider()
         self.uri_provider = UriProviderInterface()
         self.uri_provider.validate = Mock(return_value=True)  # By default, every link should be valid
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
@@ -1473,6 +1473,42 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         self.assertEqual(dataset_0.canonical_dataset.published_at, published_collection.published_at)
         self.assertEqual(dataset_1.canonical_dataset.published_at, published_collection.published_at)
+
+
+class TestCollectionUtilities(BaseBusinessLogicTestCase):
+    def test__delete_datasets_from_public_access_bucket(self):
+        """
+        Test Dataset deletes when tombstoning a public Collection with published and updated Datasets in an outstanding
+        Revision
+        """
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+
+        # Update the first dataset
+        dataset_id_to_replace = published_collection.datasets[0].version_id
+
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            new_version.version_id, "http://fake.url", None, dataset_id_to_replace
+        )
+
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
+
+        dataset_version_ids = [d_v.version_id.id for d_v in published_collection.datasets] + [
+            replaced_dataset_version_id
+        ]
+        expected_delete_keys = set()
+        for d_v_id in dataset_version_ids:
+            for file_type in ("h5ad", "rds"):
+                key = f"{d_v_id}.{file_type}"
+                self.s3_provider.upload_file(None, "fake-bucket", key, None)  # Populate s3 mock with assets
+                self.assertTrue(self.s3_provider.uri_exists(f"s3://fake-bucket/{key}"))
+                expected_delete_keys.update([f"{d_v_id}.{file_type}"])
+        actual_delete_keys = set(
+            self.business_logic.delete_datasets_from_bucket(published_collection.collection_id, "fake-bucket")
+        )
+        self.assertTrue(self.s3_provider.is_empty())
+        self.assertTrue(len(expected_delete_keys) > 0)
+        self.assertEqual(expected_delete_keys, actual_delete_keys)
 
 
 if __name__ == "__main__":
