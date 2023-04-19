@@ -104,7 +104,7 @@ export default function ShareButton(): JSX.Element {
             key={showURLCopyNotification}
             autoDismiss={5000}
             onClose={noop}
-            dismissDirection={"left"}
+            slideDirection={"left"}
             intent={"info"}
             icon={
               <StyledIcon sdsIcon={"link"} sdsSize={"s"} sdsType={"static"} />
