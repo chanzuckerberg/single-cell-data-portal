@@ -259,8 +259,11 @@ export const verifyMetadata = async (
   if (linkMatch) {
     const link = linkMatch[0];
     //verify link is valid
-    page.goto(link);
-    page.waitForEvent("load");
+
+    await page.goto(link);
+
+    // wait until the new page fully loads
+    await page.waitForLoadState();
     // expect the header on the new page to be visible
     expect(page.getByTestId("download-button")).toBeVisible();
   }
