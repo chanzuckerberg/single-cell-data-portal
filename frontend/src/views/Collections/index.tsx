@@ -18,10 +18,7 @@ import {
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
-import {
-  arraySortingFn,
-  buildTableCountSummary,
-} from "src/components/common/Grid/common/utils";
+import { buildTableCountSummary } from "src/components/common/Grid/common/utils";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
@@ -75,9 +72,8 @@ export default function Collections(): JSX.Element {
         },
         Header: "Collections",
         accessor: COLLECTION_NAME,
-        disableSortBy: false,
+        disableSortBy: true,
         showCountAndTotal: true,
-        sortType: "alphanumeric",
       },
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
@@ -85,8 +81,7 @@ export default function Collections(): JSX.Element {
         },
         Header: "Publication",
         accessor: COLLECTION_SUMMARY_CITATION,
-        disableSortBy: false,
-        sortType: "alphanumeric",
+        disableSortBy: true,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -94,9 +89,8 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Tissue",
         accessor: ontologyLabelCellAccessorFn("tissue"),
-        disableSortBy: false,
+        disableSortBy: true,
         id: "tissue",
-        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -107,10 +101,9 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Disease",
         accessor: ontologyLabelCellAccessorFn("disease"),
-        disableSortBy: false,
+        disableSortBy: true,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.DISEASE,
-        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -118,10 +111,9 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Organism",
         accessor: ontologyLabelCellAccessorFn("organism"),
-        disableSortBy: false,
+        disableSortBy: true,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ORGANISM,
-        sortType: arraySortingFn,
       },
       // Hidden, required for sorting
       {

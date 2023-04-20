@@ -58,15 +58,15 @@ export function arraySortingFn<T extends object>(
   rowB: Row<T>,
   columnId: string
 ): number {
-  const columnAValue = rowA.values[columnId];
-  const columnBValue = rowB.values[columnId];
-  const columnALength = columnAValue?.length || 0;
-  const columnBLength = columnBValue?.length || 0;
+  const rowAValue = rowA.values[columnId];
+  const rowBValue = rowB.values[columnId];
+  const rowALength = rowAValue?.length || 0;
+  const rowBLength = rowBValue?.length || 0;
   // Start with a comparison between the first value of each array and continue until a non-zero result is found.
-  for (let i = 0; i < Math.min(columnALength, columnBLength); i++) {
+  for (let i = 0; i < Math.min(rowALength, rowBLength); i++) {
     const result = basicSort(
-      toString(columnAValue[i]).toLowerCase(),
-      toString(columnBValue[i]).toLowerCase()
+      toString(rowAValue[i]).toLowerCase(),
+      toString(rowBValue[i]).toLowerCase()
     );
     if (result !== 0) {
       return result; // Return the first non-zero result.
@@ -74,7 +74,7 @@ export function arraySortingFn<T extends object>(
   }
   // If each array value is equal, then compare the length of the arrays.
   // The array with the least values is sorted first.
-  return Math.sign(columnALength - columnBLength);
+  return Math.sign(rowALength - rowBLength);
 }
 
 /**
