@@ -475,8 +475,8 @@ class TestGetCollections(BaseAPIPortalTest):
         resp_collection = resp[0]
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
         self.assertEqual(public_collection.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
-        self.expected_collection_columns.pop("processing_status")
-        self.expected_dataset_columns.pop("processing_status")
+        self.expected_collection_columns.remove("processing_status")
+        self.expected_dataset_columns.remove("processing_status")
         self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
         self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
