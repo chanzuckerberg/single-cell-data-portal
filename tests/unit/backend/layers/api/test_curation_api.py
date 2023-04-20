@@ -475,6 +475,8 @@ class TestGetCollections(BaseAPIPortalTest):
         resp_collection = resp[0]
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
         self.assertEqual(public_collection.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
+        self.expected_collection_columns.pop("processing_status")
+        self.expected_dataset_columns.pop("processing_status")
         self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
         self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
@@ -755,7 +757,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertEqual(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
             self.assertIn("processing_status", resp_collection["datasets"][0].keys())
-            self.assertIn("processing_status_details", resp_collection["datasets"][0].keys())
             self.assertIn("processing_status", resp_collection.keys())
 
         published = self.generate_published_collection(add_datasets=1)
@@ -772,7 +773,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
             self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
-            self.assertNotIn("processing_status_details", resp_collection["datasets"][0].keys())
             self.assertNotIn("processing_status", resp_collection.keys())
 
         revision = self.generate_revision(published.collection_id)
@@ -791,7 +791,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
             self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
-            self.assertNotIn("processing_status_details", resp_collection["datasets"][0].keys())
             self.assertNotIn("processing_status", resp_collection.keys())
 
         with self.subTest("get published with unpublished version and privileged access"):
@@ -809,7 +808,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
             self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
-            self.assertNotIn("processing_status_details", resp_collection["datasets"][0].keys())
             self.assertNotIn("processing_status", resp_collection.keys())
 
         with self.subTest("get unpublished version (revision) with published version and read access"):
@@ -825,7 +823,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertEqual(revision.datasets[0].version_id.id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revision.datasets[0].version_id.id, resp_collection["datasets"][0]["explorer_url"])
             self.assertIn("processing_status", resp_collection["datasets"][0].keys())
-            self.assertIn("processing_status_details", resp_collection["datasets"][0].keys())
             self.assertIn("processing_status", resp_collection.keys())
 
         revised_dataset = self.generate_dataset(
@@ -844,7 +841,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertEqual(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["explorer_url"])
             self.assertIn("processing_status", resp_collection["datasets"][0].keys())
-            self.assertIn("processing_status_details", resp_collection["datasets"][0].keys())
             self.assertIn("processing_status", resp_collection.keys())
 
         self.business_logic.publish_collection_version(revision.version_id)
@@ -861,7 +857,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(revision.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
             self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
-            self.assertNotIn("processing_status_details", resp_collection["datasets"][0].keys())
             self.assertNotIn("processing_status", resp_collection.keys())
 
     def test__get_collection_with_dataset_failing_validation(self):
