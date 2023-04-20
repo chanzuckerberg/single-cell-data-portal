@@ -27,7 +27,7 @@ const ActionButtons = ({
   visibility,
 }: Props): JSX.Element => {
   return (
-    <CollectionActions>
+    <CollectionActions data-testid="collection-actions">
       <MoreDropdown id={id} isRevision={!!revisionOf} visibility={visibility} />
       <AddButton addNewFile={addNewFile} />
       <PublishCollection

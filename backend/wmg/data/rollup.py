@@ -31,7 +31,7 @@ def _ancestors(cell_type):
     return ancestors
 
 
-def find_lineage_per_cell_type(cell_types, descendants=True):
+def find_descendants_per_cell_type(cell_types):
     """
     Find the ancestors or descendants for each cell type in the input list.
 
@@ -39,9 +39,6 @@ def find_lineage_per_cell_type(cell_types, descendants=True):
     ----------
     cell_types : list
         List of cell types (cell type ontology term IDs) to find descendants for
-
-    descendants : bool, optional, default=True
-        If True, find descendants. If False, find ancestors.
 
     Returns
     -------
@@ -51,7 +48,7 @@ def find_lineage_per_cell_type(cell_types, descendants=True):
 
     relatives_per_cell_type = []
     for cell_type in cell_types:
-        relatives = _descendants(cell_type) if descendants else _ancestors(cell_type)
+        relatives = _descendants(cell_type)
         relatives_per_cell_type.append(relatives)
 
     for i, children in enumerate(relatives_per_cell_type):
@@ -76,8 +73,10 @@ def are_cell_types_colinear(cell_type1, cell_type2):
     -------
     bool
     """
-    descendants1, descendants2 = find_lineage_per_cell_type([cell_type1, cell_type2])
-    ancestors1, ancestors2 = find_lineage_per_cell_type([cell_type1, cell_type2], descendants=False)
+    descendants1 = _descendants(cell_type1)
+    descendants2 = _descendants(cell_type2)
+    ancestors1 = _ancestors(cell_type1)
+    ancestors2 = _ancestors(cell_type2)
     return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
 
 
@@ -175,7 +174,7 @@ def rollup_across_cell_type_descendants_array(array_to_sum, cell_types) -> np.nd
     summed : numpy array
         Multi-dimensional numpy array aggregated across the cell type's descendants.
     """
-    descendants = find_lineage_per_cell_type(cell_types)
+    descendants = find_descendants_per_cell_type(cell_types)
     # a pandas series to map cell types to their index in the input arrays
     indexer = pd.Series(index=cell_types, data=range(len(cell_types)))
     descendants_indexes = [indexer[children].to_numpy() for children in descendants]
