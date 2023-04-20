@@ -231,7 +231,8 @@ export const verifyMetadata = async (
   page: Page,
   filterName: string,
   data: string[],
-  noSelectionText = "No selection"
+  noSelectionText = "No selection",
+  context
 ) => {
   //verify the date is valid
   const dateString = data[0].substring(14);
@@ -249,6 +250,21 @@ export const verifyMetadata = async (
   expect(
     data[2].includes("https://localhost:3000/gene-expression")
   ).toBeTruthy();
+
+  //verify url is reachable
+  const [newPage] = await Promise.all([
+    context.waitForEvent("page"),
+    await page.getByTestId("InputDropdown").click(),
+  ]);
+
+  // wait until the new page fully loads
+  await newPage.waitForLoadState();
+
+  // expect the header on the new page to be visible
+  expect(
+    newPage.getByTestId("gene-expression--query-gene-expression-across-tissues")
+  ).toBeVisible();
+
   let text: string | null = "";
   if (filterName !== "no-filter") {
     text = await getFilterText(page, filterName);
