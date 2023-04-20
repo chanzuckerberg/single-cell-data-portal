@@ -101,3 +101,11 @@ class CollectionPublishException(BusinessException):
 
 class ArtifactNotFoundException(BusinessException):
     pass
+
+
+class CollectionDeleteException(BusinessException):
+    """
+    Raised when an attempt to delete a Collection fails
+    """
+
+    pass
