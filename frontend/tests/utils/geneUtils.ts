@@ -9,13 +9,15 @@ const CELL_TYPE_NAME_ID = "cell-type-name";
 const MARKER_GENE_BUTTON_ID = "marker-gene-button";
 const REGEX = /^\d+\.?\d{0,2}$/;
 
-export async function goToWMG(page: Page) {
+export async function goToWMG(page: Page, url?: string) {
+  const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
+  console.log(targetUrl);
   return Promise.all([
     page.waitForResponse(
       (resp: { url: () => string | string[]; status: () => number }) =>
         resp.url().includes("/wmg/v1/filters") && resp.status() === 200
     ),
-    page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
+    page.goto(targetUrl),
   ]);
 }
 export async function searchAndAddGene(page: Page, geneName: string) {
@@ -35,6 +37,18 @@ export async function searchAndAddTissue(page: Page, tissueName: string) {
 
   // close dropdown
   await page.keyboard.press("Escape");
+}
+export async function addTissuesAndGenes(
+  page: Page,
+  tissues: string[],
+  genes: string[]
+) {
+  for await (const tissue of tissues) {
+    await searchAndAddTissue(page, tissue);
+  }
+  for await (const gene of genes) {
+    await searchAndAddGene(page, gene);
+  }
 }
 export async function verifyAddedTissue(page: Page, tissue: string) {
   // STEP 1 & Add Tissues texts should disappear
