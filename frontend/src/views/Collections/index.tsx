@@ -19,7 +19,10 @@ import {
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
-import { buildTableCountSummary } from "src/components/common/Grid/common/utils";
+import {
+  arraySortingFn,
+  buildTableCountSummary,
+} from "src/components/common/Grid/common/utils";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
