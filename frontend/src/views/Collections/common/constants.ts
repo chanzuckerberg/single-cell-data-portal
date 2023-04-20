@@ -91,7 +91,7 @@ export const COLLECTIONS_MODE_COLUMN_DENY_LIST: (
  * Category filter id deny list for my-collections (curator) mode.
  */
 export const MY_COLLECTIONS_MODE_CATEGORY_FILTER_DENY_LIST: CATEGORY_FILTER_ID[] =
-  [CATEGORY_FILTER_ID.GENE_COUNT];
+  [CATEGORY_FILTER_ID.CELL_COUNT, CATEGORY_FILTER_ID.GENE_COUNT];
 
 /**
  * Category filter id partition list for my-collections (curator) mode.
