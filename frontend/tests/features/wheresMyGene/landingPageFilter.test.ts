@@ -7,21 +7,21 @@ import {
   selectFilterOption,
   selectTissueAndGeneOption,
 } from "../../utils/wmgUtils";
-import { isDevStagingProd } from "tests/utils/helpers";
+import { isDevStagingProd, tryUntil } from "tests/utils/helpers";
 const CHEVRON_LEFT = '[data-icon="chevron-left"]';
 
 const { describe, skip } = test;
 
 describe("Left side bar", () => {
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
-  test.beforeEach(async ({ page }) => {
+
+  test("Left side bar collapse and expand", async ({ page }) => {
     // navigate to gene expression page
     await goToWMG(page);
 
     //select tissue and gene
     await selectTissueAndGeneOption(page);
-  });
-  test("Left side bar collapse and expand", async ({ page }) => {
+
     // click chevron left to collapse the left tab
     await page.locator(CHEVRON_LEFT).click();
 
@@ -38,33 +38,44 @@ describe("Left side bar", () => {
     test(`Should be able select and de-select options for ${filterOption} filter`, async ({
       page,
     }) => {
-      // check the count of source data displayed before adding a filter
-      const countBeforeFilter = await checkSourceData(page);
+      // navigate to gene expression page
+      await goToWMG(page);
 
-      //check plot height before adding a filter
-      const plotSizeBeforeFilter = await checkPlotSize(page);
+      //select tissue and gene
+      await selectTissueAndGeneOption(page);
 
-      //select a filter
-      await selectFilterOption(page, filterOption);
+      await tryUntil(
+        async () => {
+          // check the count of source data displayed before adding a filter
+          const countBeforeFilter = await checkSourceData(page);
 
-      // check the count of source data displayed after adding a filter
-      const countAfterFilter = await checkSourceData(page);
+          //check plot height before adding a filter
+          const plotSizeBeforeFilter = await checkPlotSize(page);
 
-      //check plot height after adding a filter
-      const plotSizeAfterFilter = await checkPlotSize(page);
+          //select a filter
+          await selectFilterOption(page, filterOption);
 
-      // verify source  data loading some data
-      expect(countBeforeFilter).toBeGreaterThan(0);
-      // verify source  data changed after filter is applied
-      expect(countBeforeFilter === countAfterFilter).toBeFalsy();
+          // check the count of source data displayed after adding a filter
+          const countAfterFilter = await checkSourceData(page);
 
-      //verify data plot data loading some data
-      expect(plotSizeBeforeFilter).toBeGreaterThan(0);
+          //check plot height after adding a filter
+          const plotSizeAfterFilter = await checkPlotSize(page);
 
-      //verify data plot data changed after filter was  applied
-      expect(plotSizeBeforeFilter === plotSizeAfterFilter).toBeFalsy();
-      //uncheck filter
-      await deSelectFilterOption(page, filterOption);
+          // verify source  data loading some data
+          expect(countBeforeFilter).toBeGreaterThan(0);
+          // verify source  data changed after filter is applied
+          expect(countBeforeFilter === countAfterFilter).toBeFalsy();
+
+          //verify data plot data loading some data
+          expect(plotSizeBeforeFilter).toBeGreaterThan(0);
+
+          //verify data plot data changed after filter was  applied
+          expect(plotSizeBeforeFilter === plotSizeAfterFilter).toBeFalsy();
+          //uncheck filter
+          await deSelectFilterOption(page, filterOption);
+        },
+        { page }
+      );
     });
   });
 });

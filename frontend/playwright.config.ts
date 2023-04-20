@@ -27,6 +27,10 @@ const SHOULD_RETRY = process.env.RETRY !== "false";
 
 const CLIPBOARD_READ = "clipboard-read";
 const CLIPBOARD_WRITE = "clipboard-write";
+if (!SHOULD_RETRY) {
+  console.log('Skipping retry because "RETRY" is set to false');
+}
+
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
 const PLAYWRIGHT_REPORTER = process.env.CI
   ? ([["github"], ["line"], ["allure-playwright"]] as ReporterDescription[])
@@ -96,15 +100,18 @@ const config: PlaywrightTestConfig = {
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: PLAYWRIGHT_REPORTER,
 
-  //retries: SHOULD_RETRY ? 2 : 0,
+  retries: SHOULD_RETRY ? 2 : 0,
 
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: "./__snapshots__",
 
   testDir: "tests",
 
-  /* Maximum time one test can run for. */
-  timeout: 3 * 60 * 1000,
+  /**
+   * Maximum time one test can run for.
+   * (thuang): 5 mins because FF and Edge need extra time to tear down context
+   */
+  timeout: 5 * 60 * 1000,
 
   use: {
     ...COMMON_PLAYWRIGHT_CONTEXT,
