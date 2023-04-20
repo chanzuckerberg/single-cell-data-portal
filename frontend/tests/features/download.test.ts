@@ -38,7 +38,7 @@ describe("Csv download", () => {
     ["self-reported-ethnicity-filter"],
     ["sex-filter"],
   ].forEach(([filter]) => {
-    test.only(`Verify metadata and header displayed on csv file with ${filter} applied`, async ({
+    test(`Verify metadata and header displayed on csv file with ${filter} applied`, async ({
       page,
     }) => {
       //select filter
@@ -62,7 +62,7 @@ describe("Csv download", () => {
       deleteCsvFile(`./tests/utils/download/blood.csv`);
     });
   });
-  test.only("Verify metadata displayed on csv file with no filter", async ({
+  test("Verify metadata displayed on csv file with no filter", async ({
     page,
   }) => {
     //download and extract the csv file
