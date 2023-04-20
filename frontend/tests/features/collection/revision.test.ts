@@ -1,4 +1,4 @@
-import { ElementHandle, expect, Page, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import {
@@ -26,13 +26,14 @@ describe("Collection Revision", () => {
 
     await expect(publishButton).toBeDisabled();
 
-    await page.click(getText("My Collections"));
+    await page.getByText("My Collections").click();
 
-    const COLLECTION_ROW_SELECTOR = `*${getTestID(
-      COLLECTION_ROW_ID
-    )} >> text="${collectionName}"`;
-
-    let collectionRowContinue: ElementHandle | null = null;
+    const collectionRowContinueLocator = page
+      .getByTestId(COLLECTION_ROW_ID)
+      .filter({ hasText: collectionName })
+      .filter({ hasText: "Published" })
+      .filter({ hasText: "Revision Pending" })
+      .first();
 
     // (thuang): Staging is slow due to the amount of collections we fetch,
     // so upping this for avoid flakiness
@@ -40,34 +41,14 @@ describe("Collection Revision", () => {
 
     await tryUntil(
       async () => {
-        const collections = await page.$$(COLLECTION_ROW_SELECTOR);
-
-        for (const collection of collections) {
-          const hasPublished = Boolean(
-            await collection.$(getText("Published"))
-          );
-          const hasRevisionPending = Boolean(
-            await collection.$(getText("Revision Pending"))
-          );
-
-          if (hasPublished && hasRevisionPending) {
-            collectionRowContinue = collection;
-            break;
-          }
-        }
-
-        if (!collectionRowContinue) {
-          throw new Error("Collection not found");
-        }
+        await expect(collectionRowContinueLocator).toBeVisible();
       },
       { maxRetry: RETRY_TIMES, page }
     );
 
-    expect(collectionRowContinue).not.toBe(null);
-
-    const actionButtonContinue = await (
-      collectionRowContinue as unknown as ElementHandle<HTMLElement>
-    ).$(getTestID("revision-action-button"));
+    const actionButtonContinue = await collectionRowContinueLocator.getByTestId(
+      "revision-action-button"
+    );
 
     await expect(actionButtonContinue).toMatchText("Continue");
 
@@ -100,9 +81,9 @@ describe("Collection Revision", () => {
       await page.getAttribute(getTestID(COLLECTION_CONTACT_ID), "href")
     )?.replace(/^mailto:/, "");
 
-    await page.click(getTestID("collection-more-button"));
+    await getCollectionMoreButtonLocator(page).click();
 
-    await page.click(getTestID("dropdown-edit-details"));
+    await page.getByTestId("dropdown-edit-details").click();
 
     const COLLECTION_CONTENT_ID = "collection-form-content";
 
@@ -124,18 +105,17 @@ describe("Collection Revision", () => {
 
     await page.fill("input#name", newCollectionName);
 
-    await page.click(getTestID("create-button"));
+    await page.getByTestId("create-button").click();
 
     await tryUntil(
       async () => {
-        await expect(page).not.toHaveSelector(getTestID(COLLECTION_CONTENT_ID));
+        await expect(page.getByTestId(COLLECTION_CONTENT_ID)).not.toBeVisible();
+        await expect(page).toMatchText(new RegExp(newCollectionName));
+        await expect(page).toMatchText(new RegExp(collectionDescription));
+        await expect(page).toMatchText(new RegExp(collectionContactName));
       },
       { page }
     );
-
-    await expect(page).toMatchText(new RegExp(newCollectionName));
-    await expect(page).toMatchText(new RegExp(collectionDescription));
-    await expect(page).toMatchText(new RegExp(collectionContactName));
 
     const REVISION_STATUS_TEXT =
       "This collection has changed since you last published it";
@@ -167,7 +147,7 @@ async function startRevision(page: Page): Promise<string> {
   await tryUntil(
     async () => {
       try {
-        await expect(page).toHaveSelector(getText("Start Revision"));
+        await expect(page.getByText("Start Revision")).toBeTruthy();
 
         await tryUntil(
           async () => {
@@ -181,7 +161,7 @@ async function startRevision(page: Page): Promise<string> {
           { page }
         );
       } catch {
-        await page.click(getText("Continue"));
+        await page.getByText("Continue").first().click();
         await deleteRevision(page);
         throw new Error("No available collection");
       }
@@ -244,13 +224,33 @@ async function startRevision(page: Page): Promise<string> {
 async function deleteRevision(page: Page) {
   const DROPDOWN_CANCEL_ID = "dropdown-cancel-revision";
 
+  /**
+   * (thuang): Sometimes the dropdown is already open, so we need to check if it's
+   * visible before clicking on the "More" button
+   */
   if (!(await page.$(getTestID(DROPDOWN_CANCEL_ID)))) {
-    await page.click(getTestID("collection-more-button"));
+    await getCollectionMoreButtonLocator(page).click();
+    await tryUntil(
+      async () => {
+        await expect(page.getByTestId(DROPDOWN_CANCEL_ID)).toBeVisible();
+      },
+      { page }
+    );
   }
 
-  await page.click(getTestID(DROPDOWN_CANCEL_ID));
+  await page.getByTestId(DROPDOWN_CANCEL_ID).click();
 
-  await page.click(".bp4-alert-footer >> text=Cancel Revision");
+  await page
+    .locator(".bp4-alert-footer")
+    .locator("button")
+    .filter({ hasText: "Cancel Revision" })
+    .click();
 
   await page.waitForURL(TEST_URL + ROUTES.MY_COLLECTIONS);
+}
+
+function getCollectionMoreButtonLocator(page: Page) {
+  return page
+    .getByTestId("collection-actions")
+    .getByTestId("collection-more-button");
 }
