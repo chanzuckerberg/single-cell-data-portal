@@ -5,6 +5,7 @@ import { getTestID, getText } from "tests/utils/selectors";
 import AdmZip from "adm-zip";
 import * as fs from "fs";
 import readline from "readline";
+
 export function goToWMG(page: Page) {
   return Promise.all([
     page.waitForResponse(
@@ -226,48 +227,120 @@ export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();
 };
-export const getFilterTextApplied = async (
+export const verifyMetadata = async (
   page: Page,
   filterName: string,
-  data: string[]
+  data: string[],
+  noSelectionText = "No selection"
 ) => {
-  const text = await getFilterText(page, filterName);
-  if (filterName === "dataset-filter") {
-    expect(
-      data[3].includes("# Dataset Filter Values: " + `${text}`)
-    ).toBeTruthy();
-    expect(
-      data[4].includes("# Disease Filter Values: No selection")
-    ).toBeTruthy();
-    expect(
-      data[5].includes("# Self-Reported Ethnicity Filter Values: No selection")
-    ).toBeTruthy();
-    expect(data[6].includes("# Sex Filter Values: No selection")).toBeTruthy();
+  //verify the date is valid
+  const dateString = data[0].substring(14);
+  const date = new Date(dateString);
+  // Check if the resulting date is valid
+  expect(!isNaN(date.getTime())).toBe(true);
+
+  expect(
+    data[1].includes(
+      "# We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future."
+    )
+  ).toBeTruthy();
+
+  //check if the 3 column contains the gene expression link
+  expect(
+    data[2].includes("https://localhost:3000/gene-expression")
+  ).toBeTruthy();
+  let text: string | null = "";
+  if (filterName !== "no-filter") {
+    text = await getFilterText(page, filterName);
+  }
+
+  //verify the text displayed in the filter section of meta data
+  switch (filterName) {
+    case "dataset-filter":
+      expect(
+        data[3].includes("# Dataset Filter Values: " + `${text}`)
+      ).toBeTruthy();
+      expect(
+        data[4].includes(`# Disease Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      expect(
+        data[5].includes(
+          `# Self-Reported Ethnicity Filter Values: ${noSelectionText}`
+        )
+      ).toBeTruthy();
+      expect(
+        data[6].includes(`# Sex Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      break;
+    case "disease-filter":
+      expect(data[4].includes(`# Disease Filter Values: ${text}`)).toBeTruthy();
+      expect(
+        data[3].includes(`# Dataset Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      expect(
+        data[5].includes(
+          `# Self-Reported Ethnicity Filter Values: ${noSelectionText}`
+        )
+      ).toBeTruthy();
+      expect(
+        data[6].includes(`# Sex Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      break;
+    case "self-reported-ethnicity-filter":
+      expect(
+        data[5].includes(`# Self-Reported Ethnicity Filter Values: ${text}`)
+      ).toBeTruthy();
+      expect(
+        data[3].includes(`# Dataset Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      expect(
+        data[4].includes(`# Disease Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      expect(
+        data[6].includes(`# Sex Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      break;
+    case "sex-filter":
+      expect(data[6].includes(`# Sex Filter Values: ${text}`)).toBeTruthy();
+      expect(
+        data[3].includes(`# Dataset Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      expect(
+        data[4].includes(`# Disease Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      expect(
+        data[5].includes(
+          `# Self-Reported Ethnicity Filter Values: ${noSelectionText}`
+        )
+      ).toBeTruthy();
+      break;
+    case "no-filter":
+      expect(
+        data[6].includes(`# Sex Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      expect(
+        data[3].includes(`# Dataset Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      expect(
+        data[4].includes(`# Disease Filter Values: ${noSelectionText}`)
+      ).toBeTruthy();
+      expect(
+        data[5].includes(
+          `# Self-Reported Ethnicity Filter Values: ${noSelectionText}`
+        )
+      ).toBeTruthy();
+      break;
+    default:
+      throw new Error(`Invalid filter name: ${filterName}`);
   }
 };
 
-// export const verifyMetadataHeader= async (page: Page,data:[],filter=false) => {
-// //  if(data.length>=7){
-
-// //   // verify the date is valid
-// //   const dateString = data[0].substring(14);
-// //   const date = new Date(dateString);
-// //   // Check if the resulting date is valid
-// //   expect(!isNaN(date.getTime())).toBe(true);
-
-// //  //
-// //  expect(data[1].includes("# We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future.",)).toBeTruthy()
-
-// //   //check if the 3 column contains the gene expression link
-// //   expect(
-// //    data[2].includes("https://localhost:3000/gene-expression")
-// //   ).toBeTruthy();
-
-// //   //verify all the metadata are present in the csv
-// //  expect(
-// //   data[3].includes("# Dataset Filter Values: " +`${}`)
-// //  )
-
-//  }
-
-// };
+export const deleteCsvFile = (filePath: string): void => {
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(`File ${filePath} has been deleted`);
+    }
+  });
+};
