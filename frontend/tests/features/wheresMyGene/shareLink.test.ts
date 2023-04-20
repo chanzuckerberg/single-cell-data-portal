@@ -5,7 +5,7 @@ import { addTissuesAndGenes, goToWMG } from "tests/utils/geneUtils";
 const { describe } = test;
 
 describe("Share link tests", () => {
-  test.only("Should share link with single tissue and single gene", async ({
+  test("Should share link with single tissue and single gene", async ({
     page,
     browserName,
   }) => {
@@ -23,7 +23,7 @@ describe("Share link tests", () => {
     // verify link
     await verifyShareLink(page, tissues, genes);
   });
-  test.only("Should share link with multiple tissues and multiple genes", async ({
+  test("Should share link with multiple tissues and multiple genes", async ({
     page,
     browserName,
   }) => {
@@ -41,7 +41,7 @@ describe("Share link tests", () => {
     // verify link
     await verifyShareLink(page, tissues, genes);
   });
-  test.only("Should rendered shared link", async ({ page, browserName }) => {
+  test("Should rendered shared link", async ({ page, browserName }) => {
     test.skip(browserName === "firefox", "No Clipboard read permission");
     const tissues = ["blood", "lung", "liver"];
     const genes = ["SCYL3", "TSPAN6", "TNMD"];
