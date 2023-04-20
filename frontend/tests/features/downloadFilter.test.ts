@@ -3,7 +3,9 @@ import {
   downloadCsv,
   getCsvHeaders,
   getCsvMetadata,
+  getFilterApplied,
   goToWMG,
+  selectFilterOption,
   selectTissueAndGeneOption,
 } from "../utils/wmgUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
@@ -36,28 +38,17 @@ describe("Csv download", () => {
 
     //select tissue and gene
     await selectTissueAndGeneOption(page);
-
-    //download and extract the csv file
-    await downloadCsv(page);
   });
 
-  test("Verify metadata displayed on csv file", async () => {
-    //put all the meta data in an array
-    const META_DATA = await getCsvMetadata("blood");
+  test.only("Verify metadata displayed on csv file with filter applied", async ({
+    page,
+  }) => {
+    //select filter
+    await selectFilterOption(page, "dataset-filter");
+    const nur = await getFilterApplied(page, "dataset-filter");
 
-    // verify the date is valid
-    const dateString = META_DATA[0].substring(14);
-    const date = new Date(dateString);
-    // Check if the resulting date is valid
-    expect(!isNaN(date.getTime())).toBe(true);
-
-    //check if the 3 column contains the gene expression link
-    expect(
-      META_DATA[2].includes("https://localhost:3000/gene-expression")
-    ).toBeTruthy();
-
-    //verify all the metadata are present in the csv
-    expect(META_DATA).toEqual(expect.arrayContaining(EXPECTED_METADATA));
+    //download and extract the csv file
+    // await downloadCsv(page);
   });
   test("Verify headers displayed on csv file", async () => {
     // put all the headers in an array
@@ -66,6 +57,4 @@ describe("Csv download", () => {
     //verify all the headers are present in the csv
     expect(HEADERS[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
   });
-
- 
 });

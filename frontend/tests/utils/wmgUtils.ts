@@ -222,3 +222,52 @@ export const getCsvHeaders = (tissue: string): Promise<string[][]> => {
     });
   });
 };
+export const getFilterText = async (page: Page, filterName: string) => {
+  const filter_label = `${getTestID(filterName)} [role="button"]`;
+  return await page.locator(filter_label).textContent();
+};
+export const getFilterTextApplied = async (
+  page: Page,
+  filterName: string,
+  data: string[]
+) => {
+  const text = await getFilterText(page, filterName);
+  if (filterName === "dataset-filter") {
+    expect(
+      data[3].includes("# Dataset Filter Values: " + `${text}`)
+    ).toBeTruthy();
+    expect(
+      data[4].includes("# Disease Filter Values: No selection")
+    ).toBeTruthy();
+    expect(
+      data[5].includes("# Self-Reported Ethnicity Filter Values: No selection")
+    ).toBeTruthy();
+    expect(data[6].includes("# Sex Filter Values: No selection")).toBeTruthy();
+  }
+};
+
+// export const verifyMetadataHeader= async (page: Page,data:[],filter=false) => {
+// //  if(data.length>=7){
+
+// //   // verify the date is valid
+// //   const dateString = data[0].substring(14);
+// //   const date = new Date(dateString);
+// //   // Check if the resulting date is valid
+// //   expect(!isNaN(date.getTime())).toBe(true);
+
+// //  //
+// //  expect(data[1].includes("# We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future.",)).toBeTruthy()
+
+// //   //check if the 3 column contains the gene expression link
+// //   expect(
+// //    data[2].includes("https://localhost:3000/gene-expression")
+// //   ).toBeTruthy();
+
+// //   //verify all the metadata are present in the csv
+// //  expect(
+// //   data[3].includes("# Dataset Filter Values: " +`${}`)
+// //  )
+
+//  }
+
+// };
