@@ -150,6 +150,8 @@ def reshape_for_curation_api(
         revision_of=revision_of,
         visibility=get_visibility(collection_version),
     )
+    if reshape_for_version_endpoint:
+        del response["revised_at"], response["revising_in"], response["revision_of"]
     return response
 
 
