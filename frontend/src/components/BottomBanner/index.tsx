@@ -187,7 +187,7 @@ export default function BottomBanner({
   return (
     <>
       <Script
-        onLoad={() => {
+        onReady={() => {
           console.log("Script loaded");
           setIsHubSpotReady(true);
         }}
