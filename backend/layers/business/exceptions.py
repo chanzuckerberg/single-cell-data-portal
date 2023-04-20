@@ -108,4 +108,8 @@ class CollectionDeleteException(BusinessException):
     Raised when an attempt to delete a Collection fails
     """
 
-    pass
+
+class CollectionIsTombstonedException(BusinessException):
+    """
+    Raised when an attempt is made to access a tombstoned Collection
+    """

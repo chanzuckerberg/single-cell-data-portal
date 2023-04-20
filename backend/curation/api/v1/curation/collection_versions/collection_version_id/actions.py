@@ -1,11 +1,14 @@
 from flask import jsonify
 
-from backend.common.utils.http_exceptions import NotFoundHTTPException
+from backend.common.utils.http_exceptions import GoneHTTPException, NotFoundHTTPException
 from backend.curation.api.v1.curation.collections.common import (
     reshape_for_curation_api,
     validate_uuid_else_forbidden,
 )
-from backend.layers.business.exceptions import PublishedCollectionVersionNotFoundException
+from backend.layers.business.exceptions import (
+    CollectionIsTombstonedException,
+    PublishedCollectionVersionNotFoundException,
+)
 from backend.layers.common.entities import CollectionVersionId
 from backend.portal.api.providers import get_business_logic
 
@@ -21,5 +24,7 @@ def get(collection_version_id: str):
         )
     except PublishedCollectionVersionNotFoundException as e:
         raise NotFoundHTTPException() from e
+    except CollectionIsTombstonedException as e:
+        raise GoneHTTPException() from e
     response = reshape_for_curation_api(version, reshape_for_version_endpoint=True)
     return jsonify(response)

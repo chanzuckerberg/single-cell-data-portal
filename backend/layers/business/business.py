@@ -16,6 +16,7 @@ from backend.layers.business.exceptions import (
     CollectionCreationException,
     CollectionDeleteException,
     CollectionIsPublishedException,
+    CollectionIsTombstonedException,
     CollectionNotFoundException,
     CollectionPublishException,
     CollectionUpdateException,
@@ -148,14 +149,12 @@ class BusinessLogic(BusinessLogicInterface):
         collection_version = self.database_provider.get_collection_version_with_datasets(
             CollectionVersionId(collection_version_id)
         )
-        if (
-            collection_version is None
-            or collection_version.published_at is None
-            or collection_version.canonical_collection.tombstoned is True
-        ):
-            raise PublishedCollectionVersionNotFoundException("No such published version")
-        all_collection_versions = self.get_all_published_collection_versions_from_canonical(
-            collection_version.canonical_collection.id
+        if collection_version is None or collection_version.published_at is None:
+            raise PublishedCollectionVersionNotFoundException()
+        if collection_version.canonical_collection.tombstoned is True:
+            raise CollectionIsTombstonedException()
+        all_collection_versions = list(
+            self.get_all_published_collection_versions_from_canonical(collection_version.canonical_collection.id)
         )
         published_datasets_for_collection: List[PublishedDatasetVersion] = []
         for dataset_version in collection_version.datasets:

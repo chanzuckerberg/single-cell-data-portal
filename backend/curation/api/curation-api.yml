@@ -554,6 +554,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/collection_version"
+        "403":
+          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
 
