@@ -38,7 +38,7 @@ export const pickOptions = async (page: Page, n: number) => {
   }
 };
 
-export const deSelectFIlterOption = async (page: Page, filterName: string) => {
+export const deSelectFilterOption = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   // expect the selected filter to be visible
   await expect(page.locator(filter_label)).toBeVisible();
