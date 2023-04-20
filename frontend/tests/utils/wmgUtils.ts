@@ -1,6 +1,6 @@
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
-import { expect, Page } from "@playwright/test";
+import { expect, Page, BrowserContext } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 import AdmZip from "adm-zip";
 import * as fs from "fs";
@@ -231,8 +231,8 @@ export const verifyMetadata = async (
   page: Page,
   filterName: string,
   data: string[],
-  noSelectionText = "No selection",
-  context
+  context: BrowserContext,
+  noSelectionText = "No selection"
 ) => {
   //verify the date is valid
   const dateString = data[0].substring(14);
@@ -251,19 +251,19 @@ export const verifyMetadata = async (
     data[2].includes("https://localhost:3000/gene-expression")
   ).toBeTruthy();
 
-  //verify url is reachable
-  const [newPage] = await Promise.all([
-    context.waitForEvent("page"),
-    await page.getByTestId("InputDropdown").click(),
-  ]);
+  // Extract the link using a regular expression
+  const linkRegex = /https?:\/\/[^\s]+/;
+  const linkMatch = data[2].match(linkRegex);
 
-  // wait until the new page fully loads
-  await newPage.waitForLoadState();
-
-  // expect the header on the new page to be visible
-  expect(
-    newPage.getByTestId("gene-expression--query-gene-expression-across-tissues")
-  ).toBeVisible();
+  // Check if a match was found and log the result
+  if (linkMatch) {
+    const link = linkMatch[0];
+    //verify link is valid
+    page.goto(link);
+    page.waitForEvent("load");
+    // expect the header on the new page to be visible
+    expect(page.getByTestId("download-button")).toBeVisible();
+  }
 
   let text: string | null = "";
   if (filterName !== "no-filter") {

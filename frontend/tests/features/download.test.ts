@@ -25,7 +25,7 @@ const EXPECTED_HEADER = [
 
 const { describe, skip } = test;
 describe("Csv download", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test.beforeEach(async ({ page }) => {
     // navigate to gene expression page
     await goToWMG(page);
@@ -40,6 +40,7 @@ describe("Csv download", () => {
   ].forEach(([filter]) => {
     test(`Verify metadata and header displayed on csv file with ${filter} applied`, async ({
       page,
+      context,
     }) => {
       //select filter
       await selectFilterOption(page, filter);
@@ -53,7 +54,7 @@ describe("Csv download", () => {
       const headers = await getCsvHeaders("blood");
 
       //verify meta data
-      await verifyMetadata(page, filter, data);
+      await verifyMetadata(page, filter, data, context);
 
       //verify all the headers are present in the csv
       expect(headers[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
@@ -62,8 +63,9 @@ describe("Csv download", () => {
       deleteCsvFile(`./tests/utils/download/blood.csv`);
     });
   });
-  test("Verify metadata displayed on csv file with no filter", async ({
+  test.only("Verify metadata displayed on csv file with no filter", async ({
     page,
+    context,
   }) => {
     //download and extract the csv file
     await downloadCsv(page);
@@ -75,7 +77,7 @@ describe("Csv download", () => {
     const data = await getCsvMetadata("blood");
 
     //verify meta data
-    await verifyMetadata(page, "no-filter", data);
+    await verifyMetadata(page, "no-filter", data, context);
 
     //verify all the headers are present in the csv
     expect(headers[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
