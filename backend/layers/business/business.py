@@ -58,7 +58,6 @@ from backend.layers.common.entities import (
     PublishedDatasetVersion,
 )
 from backend.layers.common.helpers import (
-    get_dataset_versions_with_published_at_and_collection_version_id,
     get_published_at_and_collection_version_id_else_not_found,
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
@@ -146,9 +145,9 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_mapped_version(collection_id)
 
-    def get_published_collection_version__discover_api(
+    def get_published_collection_version_with_datasets(
         self, collection_version_id: str
-    ) -> CollectionVersionWithPublishedDatasets:
+    ) -> CollectionVersionWithDatasets:
         collection_version = self.database_provider.get_collection_version_with_datasets(
             CollectionVersionId(collection_version_id)
         )
@@ -156,13 +155,7 @@ class BusinessLogic(BusinessLogicInterface):
             raise PublishedCollectionVersionNotFoundException()
         if collection_version.canonical_collection.tombstoned is True:
             raise CollectionIsTombstonedException()
-        all_collection_versions = list(
-            self.get_all_published_collection_versions_from_canonical(collection_version.canonical_collection.id)
-        )
-        collection_version.datasets = get_dataset_versions_with_published_at_and_collection_version_id(
-            collection_version.datasets, all_collection_versions
-        )  # hack to allow unpacking via **vars() below
-        return CollectionVersionWithPublishedDatasets(**vars(collection_version))
+        return collection_version
 
     def get_unpublished_collection_version_from_canonical(
         self, collection_id: CollectionId

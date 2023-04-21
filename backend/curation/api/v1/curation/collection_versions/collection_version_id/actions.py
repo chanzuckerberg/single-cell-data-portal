@@ -9,7 +9,8 @@ from backend.layers.business.exceptions import (
     CollectionIsTombstonedException,
     PublishedCollectionVersionNotFoundException,
 )
-from backend.layers.common.entities import CollectionVersionId
+from backend.layers.common.entities import CollectionVersionId, CollectionVersionWithPublishedDatasets
+from backend.layers.common.helpers import get_dataset_versions_with_published_at_and_collection_version_id
 from backend.portal.api.providers import get_business_logic
 
 
@@ -19,12 +20,23 @@ def get(collection_version_id: str):
     """
     validate_uuid_else_forbidden(collection_version_id)
     try:
-        version = get_business_logic().get_published_collection_version__discover_api(
+        collection_version = get_business_logic().get_published_collection_version_with_datasets(
             CollectionVersionId(collection_version_id)
         )
     except PublishedCollectionVersionNotFoundException as e:
         raise NotFoundHTTPException() from e
     except CollectionIsTombstonedException as e:
         raise GoneHTTPException() from e
-    response = reshape_for_curation_api(version, reshape_for_version_endpoint=True)
+
+    all_collection_versions = list(
+        get_business_logic().get_all_published_collection_versions_from_canonical(
+            collection_version.canonical_collection.id
+        )
+    )
+    collection_version.datasets = get_dataset_versions_with_published_at_and_collection_version_id(
+        collection_version.datasets, all_collection_versions
+    )  # hack to allow unpacking via **vars() below
+    response = reshape_for_curation_api(
+        CollectionVersionWithPublishedDatasets(**vars(collection_version)), reshape_for_version_endpoint=True
+    )
     return jsonify(response)

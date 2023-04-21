@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    CollectionVersionWithPublishedDatasets,
     DatasetArtifactType,
     DatasetId,
     DatasetProcessingStatus,
@@ -66,7 +67,7 @@ def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]
 
 
 def reshape_for_curation_api(
-    collection_version: Union[CollectionVersion, CollectionVersionWithDatasets],
+    collection_version: Union[CollectionVersion, CollectionVersionWithDatasets, CollectionVersionWithPublishedDatasets],
     user_info: UserInfo = None,
     reshape_for_version_endpoint: bool = False,
     preview: bool = False,
