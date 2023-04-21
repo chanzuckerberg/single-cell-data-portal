@@ -25,8 +25,8 @@ const CZI_CHECKER = " czi-checker";
  */
 const SHOULD_RETRY = process.env.RETRY !== "false";
 
-const CLIPBOARD_READ = "clipboard-read";
-const CLIPBOARD_WRITE = "clipboard-write";
+const CLIPBOARD_PERMISSIONS = ["clipboard-read", "clipboard-write"];
+
 if (!SHOULD_RETRY) {
   console.log('Skipping retry because "RETRY" is set to false');
 }
@@ -77,7 +77,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
-        permissions: [CLIPBOARD_READ, CLIPBOARD_WRITE],
+        permissions: CLIPBOARD_PERMISSIONS,
       },
     },
     {
@@ -92,7 +92,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
-        permissions: [CLIPBOARD_READ, CLIPBOARD_WRITE],
+        permissions: CLIPBOARD_PERMISSIONS,
       },
     },
   ],

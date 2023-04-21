@@ -5,6 +5,9 @@ import { addTissuesAndGenes, goToWMG } from "tests/utils/geneUtils";
 
 const { describe } = test;
 
+const tissues = ["blood", "lung", "liver"];
+const genes = ["SCYL3", "TSPAN6", "TNMD"];
+
 describe("Share link tests", () => {
   test("Should share link with single tissue and single gene", async ({
     page,
@@ -21,18 +24,11 @@ describe("Share link tests", () => {
   }) => {
     skipFirefox(browserName);
 
-    await setupStateAndVerifyShareLink(
-      page,
-      ["blood", "lung", "liver"],
-      ["SCYL3", "TSPAN6", "TNMD"]
-    );
+    await setupStateAndVerifyShareLink(page, tissues, genes);
   });
 
   test("Should rendered shared link", async ({ page, browserName }) => {
     skipFirefox(browserName);
-
-    const tissues = ["blood", "lung", "liver"];
-    const genes = ["SCYL3", "TSPAN6", "TNMD"];
 
     await setupStateAndCopyShareLink(page, tissues, genes);
 
