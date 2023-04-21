@@ -32,7 +32,7 @@ export default class Document extends RawDocument {
           <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
           <meta name="theme-color" content="#000000" />
           <link
-            href="https://fonts.googleapis.com/css?family=Inter:400,500,700&amp;display=swap"
+            href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800&amp;display=swap"
             rel="stylesheet"
           />
 

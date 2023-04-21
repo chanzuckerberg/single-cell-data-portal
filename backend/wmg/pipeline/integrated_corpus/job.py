@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 
 @log_func_runtime
 def extract_datasets(dataset_directory: List):
-    s3_uris = extract.get_dataset_s3_uris()
-    extract.copy_datasets_to_instance(s3_uris, dataset_directory)
+    asset_urls = extract.get_dataset_asset_urls()
+    extract.copy_datasets_to_instance(asset_urls, dataset_directory)
     logger.info("Copied datasets to instance")
 
 
