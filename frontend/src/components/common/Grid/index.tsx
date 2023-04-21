@@ -4,6 +4,9 @@ import {
   TableCountSummary,
 } from "src/components/common/Filter/common/entities";
 import { Grid as StyledGrid } from "./style";
+import React from "react";
+import HeaderCell from "src/components/common/Grid/components/HeaderCell";
+import CountAndTotal from "src/components/common/Grid/components/HeaderCell/components/CountAndTotal";
 
 interface Props<T extends Categories> {
   className?: string;
@@ -30,9 +33,17 @@ export default function Grid<T extends Categories>({
                 const { key, ...restColumnHeaderProps } =
                   column.getHeaderProps();
                 return (
-                  <th key={key} {...restColumnHeaderProps}>
-                    {column.render("Header", { tableCountSummary })}
-                  </th>
+                  <HeaderCell
+                    key={key}
+                    alignment={column.alignment}
+                    label={column.render("Header")}
+                    tag={
+                      column.showCountAndTotal ? (
+                        <CountAndTotal tableCountSummary={tableCountSummary} />
+                      ) : undefined
+                    }
+                    {...restColumnHeaderProps}
+                  />
                 );
               })}
             </tr>
