@@ -1,5 +1,6 @@
 import copy
 import logging
+import os
 from collections import defaultdict
 from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
@@ -13,6 +14,7 @@ from backend.layers.business.entities import (
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
     CollectionCreationException,
+    CollectionDeleteException,
     CollectionIsPublishedException,
     CollectionNotFoundException,
     CollectionPublishException,
@@ -60,7 +62,8 @@ from backend.layers.thirdparty.crossref_provider import (
     CrossrefException,
     CrossrefProviderInterface,
 )
-from backend.layers.thirdparty.s3_provider import S3ProviderInterface
+from backend.layers.thirdparty.s3_exceptions import S3DeleteException
+from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -570,10 +573,31 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.database_provider.delete_collection_version(version_id)
 
+    def delete_datasets_from_bucket(self, collection_id: CollectionId, bucket: str) -> List[str]:
+        """
+        Delete all associated publicly-accessible Datasets in s3
+        """
+        collection_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
+        object_keys = set()
+        for collection_version in collection_versions:
+            for d_v in collection_version.datasets:
+                for file_type in ("h5ad", "rds"):
+                    dataset_version_s3_object_key = f"{d_v.version_id.id}.{file_type}"
+                    if rdev_prefix:
+                        dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
+                    object_keys.add(dataset_version_s3_object_key)
+        try:
+            self.s3_provider.delete_files(bucket, list(object_keys))
+        except S3DeleteException as e:
+            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
+        return list(object_keys)
+
     def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
         Tombstones a canonical collection
         """
+        self.delete_datasets_from_bucket(collection_id, os.getenv("DATASETS_BUCKET"))
         self.database_provider.delete_canonical_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
