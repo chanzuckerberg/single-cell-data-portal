@@ -558,6 +558,13 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
             received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
             self.assertEqual(expected_version_ids, received_version_ids)
 
+    def test__get_collection_versions_tombstoned__410(self):
+        published_collection = self.generate_published_collection()
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+        with self.subTest("Returns 410 when a tombstoned canonical id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            self.assertEqual(410, resp.status_code)
+
     def test__get_collection_versions_not_published_canonical__404(self):
         published_collection = self.generate_published_collection()
         revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
