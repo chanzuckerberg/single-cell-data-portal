@@ -654,10 +654,9 @@ export function useReuploadDataset(
   collectionId: string
 ): UseMutationResult<unknown, unknown, ReuploadLink, unknown> {
   const queryClient = useQueryClient();
-
   return useMutation(reuploadDataset, {
-    onSuccess: () => {
-      queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
     },
   });
 }

@@ -79,6 +79,7 @@ const handlePossibleError = (
 };
 
 interface Props {
+  collectionId: Collection["id"];
   dataset: Dataset;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
@@ -89,6 +90,7 @@ interface Props {
 }
 
 const DatasetRow: FC<Props> = ({
+  collectionId,
   dataset,
   file,
   invalidateCollectionQuery,
@@ -101,8 +103,8 @@ const DatasetRow: FC<Props> = ({
 
   const datasetStatusResult = useDatasetStatus(
     dataset.id,
-    checkIfLoading(dataset.processing_status),
-    invalidateCollectionQuery
+    collectionId,
+    checkIfLoading(dataset.processing_status)
   );
 
   const datasetStatus = datasetStatusResult.data || dataset.processing_status;
@@ -217,7 +219,7 @@ const DatasetRow: FC<Props> = ({
           {visibility === VISIBILITY_TYPE.PRIVATE &&
             accessType === ACCESS_TYPE.WRITE && (
               <MoreDropdown
-                collectionId={dataset.collection_id}
+                collectionId={collectionId}
                 datasetId={dataset.id}
                 revisionsEnabled={revisionsEnabled}
                 onUploadFile={onUploadFile}

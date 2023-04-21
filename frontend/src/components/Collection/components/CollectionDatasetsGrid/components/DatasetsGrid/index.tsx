@@ -11,6 +11,7 @@ import { UploadedFiles } from "src/views/Collection/components/CollectionActions
 
 interface Props {
   className?: string;
+  collectionId: Collection["id"];
   datasets: Dataset[];
   uploadedFiles: UploadedFiles;
   invalidateCollectionQuery: () => void;
@@ -36,6 +37,7 @@ interface Props {
 
 const DatasetsGrid: FC<Props> = ({
   className,
+  collectionId,
   datasets,
   uploadedFiles,
   invalidateCollectionQuery,
@@ -66,6 +68,7 @@ const DatasetsGrid: FC<Props> = ({
             visibility={visibility}
             accessType={accessType}
             key={dataset.id}
+            collectionId={collectionId}
             dataset={dataset}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}

@@ -148,7 +148,7 @@ const Collection: FC = () => {
         {/* Collection grid */}
         {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
         <DatasetTab
-          collectionID={id}
+          collectionId={id}
           datasets={datasets}
           isRevision={isRevision}
           visibility={collection.visibility}

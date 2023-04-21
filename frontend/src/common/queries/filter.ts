@@ -675,6 +675,28 @@ async function fetchMyCollections(): Promise<
 }
 
 /**
+ * Fetch and process dataset response from given dataset endpoint.
+ * @param url - URL of dataset endpoint.
+ * @returns Promise that resolves to a processed dataset response - possible cached from previous request.
+ */
+function fetchAndProcessDatasetResponse(
+  url: string
+): Promise<ProcessedDatasetResponse[]> {
+  return fetch(url, DEFAULT_FETCH_OPTIONS)
+    .then((response) => response.json())
+    .then((datasets: DatasetResponse[]) => {
+      // Correct any dirty data returned from endpoint.
+      const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
+        return sanitizeDatasetResponse(dataset);
+      });
+      // Process dataset response.
+      return sanitizedDatasets.map((dataset: DatasetResponse) =>
+        processDatasetResponse(dataset)
+      );
+    });
+}
+
+/**
  * Fetch public, non-tombstoned, partial datasets from /datasets/index endpoint. Datasets are partial in that they
  * do not contain all fields; only fields required for filtering and sorting are returned. Correct any dirt data
  * returned from endpoint.
@@ -682,18 +704,7 @@ async function fetchMyCollections(): Promise<
  * filterable and sortable dataset fields.
  */
 async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
-  const datasets = await (
-    await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
-  ).json();
-
-  // Correct any dirty data returned from endpoint.
-  const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
-    return sanitizeDatasetResponse(dataset);
-  });
-
-  return sanitizedDatasets.map((dataset: DatasetResponse) =>
-    processDatasetResponse(dataset)
-  );
+  return await fetchAndProcessDatasetResponse(API_URL + API.DATASETS_INDEX);
 }
 
 /**
@@ -704,18 +715,7 @@ async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
  * filterable and sortable dataset fields.
  */
 async function fetchMyDatasets(): Promise<ProcessedDatasetResponse[]> {
-  const datasets = await (
-    await fetch(API_URL + API.MY_DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
-  ).json();
-
-  // Correct any dirty data returned from endpoint.
-  const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
-    return sanitizeDatasetResponse(dataset);
-  });
-
-  return sanitizedDatasets.map((dataset: DatasetResponse) =>
-    processDatasetResponse(dataset)
-  );
+  return await fetchAndProcessDatasetResponse(API_URL + API.MY_DATASETS_INDEX);
 }
 
 /**

@@ -9,7 +9,6 @@ import { useFetchCollectionRows } from "src/common/queries/filter";
 import { KEYS } from "src/common/sessionStorage/set";
 import { useExplainTombstoned } from "src/components/Collections/common/utils";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
-import Filter from "src/components/common/Filter";
 import {
   CATEGORY_FILTER_ID,
   CategoryView,
@@ -51,12 +50,12 @@ import {
   COLUMN_ID_RECENCY,
   VIEW_MODE,
 } from "src/views/Collections/common/constants";
-import { FilterDivider } from "src/components/common/Filter/common/style";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
 import StatusCell from "src/components/common/Grid/components/StatusCell";
 import RevisionButton from "src/components/common/Grid/components/RevisionButton";
 import { get } from "src/common/featureFlags";
 import { BOOLEAN } from "src/common/localStorage/set";
+import CategoryFilters from "src/components/common/Filter/components/Filters";
 
 export default function Collections(): JSX.Element {
   const isCuratorEnabled = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -159,10 +158,9 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Assay",
         accessor: ontologyLabelCellAccessorFn("assay"),
-        disableSortBy: false,
+        disableSortBy: true,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ASSAY,
-        sortType: arraySortingFn,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -184,9 +182,8 @@ export default function Collections(): JSX.Element {
         Header: "Cells",
         accessor: COLLECTION_CELL_COUNT,
         alignment: ALIGNMENT.RIGHT,
-        disableSortBy: false,
+        disableSortBy: true,
         filter: "between",
-        sortType: "number",
         id: CATEGORY_FILTER_ID.CELL_COUNT,
       },
       // Hidden, required for sorting
@@ -341,10 +338,6 @@ export default function Collections(): JSX.Element {
     true
   );
 
-  // Partition category views for collections and my-collections mode filtering.
-  const [firstPartitionCategoryViews, secondPartitionCategoryViews] =
-    partitionCategoryViews(categoryViews, mode);
-
   return (
     <>
       <Head>
@@ -357,19 +350,10 @@ export default function Collections(): JSX.Element {
             isOpen={isSideBarOpen}
             onToggle={storeIsSideBarOpen}
           >
-            <Filter
-              categoryViews={firstPartitionCategoryViews}
+            <CategoryFilters
+              filters={partitionCategoryViews(categoryViews, mode)}
               onFilter={onFilter}
             />
-            {secondPartitionCategoryViews.length > 0 && (
-              <>
-                <FilterDivider />
-                <Filter
-                  categoryViews={secondPartitionCategoryViews}
-                  onFilter={onFilter}
-                />
-              </>
-            )}
           </SideBar>
           <View>
             {mode === VIEW_MODE.CURATOR && <CreateCollection />}
@@ -405,19 +389,24 @@ export default function Collections(): JSX.Element {
 function partitionCategoryViews(
   categoryViews: CategoryView[],
   mode: VIEW_MODE
-): [CategoryView[], CategoryView[]] {
-  const firstPartitionCategoryViews = [];
-  const secondPartitionCategoryViews = [];
+): CategoryView[][] {
+  const partitionedValues: CategoryView[][] = [[]];
   for (const categoryView of categoryViews) {
     if (
       CATEGORY_FILTER_PARTITION_LIST[mode].includes(
         categoryView.categoryFilterId
       )
     ) {
-      secondPartitionCategoryViews.push(categoryView);
+      if (!partitionedValues[1]) {
+        // Create the second partition if not already defined.
+        partitionedValues.push([]);
+      }
+      // Assign category to the second partition.
+      partitionedValues[1].push(categoryView);
     } else {
-      firstPartitionCategoryViews.push(categoryView);
+      // Assign category to the first partition.
+      partitionedValues[0].push(categoryView);
     }
   }
-  return [firstPartitionCategoryViews, secondPartitionCategoryViews];
+  return partitionedValues;
 }

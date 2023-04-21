@@ -18,14 +18,14 @@ import EmptyModal from "../EmptyModal";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
 
 interface Props {
-  collectionID: Collection["id"];
+  collectionId: Collection["id"];
   visibility: Collection["visibility"];
   datasets: Array<Dataset>;
   isRevision: boolean;
 }
 
 const DatasetTab: FC<Props> = ({
-  collectionID: collectionId,
+  collectionId,
   visibility,
   datasets,
   isRevision,
@@ -77,6 +77,7 @@ const DatasetTab: FC<Props> = ({
       {isDatasetPresent ? (
         <CollectionDatasetsGrid
           accessType={collection?.access_type}
+          collectionId={collectionId}
           datasets={datasets}
           invalidateCollectionQuery={invalidateCollectionQuery}
           isRevision={isRevision}

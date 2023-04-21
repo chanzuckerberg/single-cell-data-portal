@@ -1,5 +1,6 @@
 import {
   useMutation,
+  UseMutationResult,
   useQuery,
   useQueryClient,
   UseQueryResult,
@@ -7,6 +8,8 @@ import {
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
 import {
+  Collection,
+  Dataset,
   DatasetAsset,
   DatasetUploadStatus,
   PROCESSING_STATUS,
@@ -42,8 +45,8 @@ const REFETCH_INTERVAL_MS = 10 * 1000;
 
 export function useDatasetStatus(
   dataset_id: string,
-  shouldFetch: boolean,
-  invalidateCollectionQuery: () => void
+  collectionId: Collection["id"],
+  shouldFetch: boolean
 ): UseQueryResult<DatasetUploadStatus> {
   const queryClient = useQueryClient();
   return useQuery<DatasetUploadStatus>(
@@ -52,11 +55,11 @@ export function useDatasetStatus(
     {
       enabled: shouldFetch,
       onSuccess: async (data: DatasetUploadStatus): Promise<void> => {
-        // When the dataset has been successfully processed, invalidate the collection query.
+        // When the dataset has been successfully processed, invalidate the collection query, and the datasets index query.
         // The collection query will fetch with the updated dataset list, which will no longer be in a loading state.
         // As a result, the useDatasetStatus query's status will be updated to "idle".
         if (data.processing_status === PROCESSING_STATUS.SUCCESS) {
-          invalidateCollectionQuery();
+          await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
           await queryClient.invalidateQueries(
             [USE_DATASETS_INDEX],
             DEFAULT_BACKGROUND_REFETCH
@@ -73,33 +76,41 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(dataset_id = ""): Promise<DatasetUploadStatus> {
-  if (!dataset_id) throw new Error("No dataset id provided");
-
-  const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_id });
-  const response = await fetch(url, DELETE_FETCH_OPTIONS);
-
-  if (response.ok) return await response.json();
-
-  throw Error(response.statusText);
+export interface DeleteDataset {
+  collectionId: Collection["id"];
+  datasetId: Dataset["id"];
 }
 
-export function useDeleteDataset(collection_id = "") {
-  if (!collection_id) {
-    throw new Error("No collection id given");
+async function deleteDataset({
+  collectionId,
+  datasetId,
+}: DeleteDataset): Promise<DeleteDataset> {
+  const url = apiTemplateToUrl(API_URL + API.DATASET, { datasetId });
+  const response = await fetch(url, DELETE_FETCH_OPTIONS);
+
+  if (!response.ok) {
+    throw Error(response.statusText);
   }
 
+  return { collectionId, datasetId };
+}
+
+export function useDeleteDataset(): UseMutationResult<
+  DeleteDataset,
+  unknown,
+  DeleteDataset
+> {
   const queryClient = useQueryClient();
-
   return useMutation(deleteDataset, {
-    onSuccess: (uploadStatus: DatasetUploadStatus) => {
-      queryClient.invalidateQueries([USE_COLLECTION, collection_id]);
-
-      queryClient.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
-
-      queryClient.setQueryData(
-        [USE_DATASET_STATUS, uploadStatus.dataset_id],
-        uploadStatus
+    onSuccess: async ({
+      collectionId,
+      datasetId,
+    }: DeleteDataset): Promise<void> => {
+      await queryClient.cancelQueries([USE_DATASET_STATUS, datasetId]);
+      await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+      await queryClient.invalidateQueries(
+        [USE_DATASETS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
       );
     },
   });
