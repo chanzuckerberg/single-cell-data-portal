@@ -159,13 +159,15 @@ def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
 @contextlib.contextmanager
 def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
-        cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts.csv", index_col=0)
-        expression_summary = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary.csv", index_col=0)
-        expression_summary_fmg = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_fmg.csv", index_col=0)
-        expression_summary_default = pd.read_csv(
-            f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default.csv", index_col=0
+        cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts.csv.gz", index_col=0)
+        expression_summary = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary.csv.gz", index_col=0)
+        expression_summary_fmg = pd.read_csv(
+            f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_fmg.csv.gz", index_col=0
         )
-        marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes.csv", index_col=0)
+        expression_summary_default = pd.read_csv(
+            f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default.csv.gz", index_col=0
+        )
+        marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes.csv.gz", index_col=0)
 
         tiledb.Array.create(f"{cube_dir}/expression_summary", expression_summary_schema_actual, overwrite=True)
         tiledb.Array.create(f"{cube_dir}/expression_summary_fmg", expression_summary_fmg_schema_actual, overwrite=True)
