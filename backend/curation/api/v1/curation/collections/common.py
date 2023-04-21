@@ -85,6 +85,7 @@ def reshape_for_curation_api(
     # get collection attributes based on endpoint type and published status
     collection_id = collection_version.collection_id.id
     if not reshape_for_version_endpoint:
+        published_at = collection_version.canonical_collection.originally_published_at
         if is_published:
             # Published
             collection_url = f"{get_collections_base_url()}/collections/{collection_version.collection_id.id}"
@@ -119,12 +120,16 @@ def reshape_for_curation_api(
     else:
         collection_url = f"{get_collections_base_url()}/collections/{collection_version.version_id.id}"
         use_canonical_url = False
+        published_at = collection_version.published_at
         revision_of = collection_version.collection_id.id
         revising_in = None
 
     # get collection dataset attributes
-    response_datasets = reshape_datasets_for_curation_api(
-        collection_version.datasets, use_canonical_url, preview, as_version=reshape_for_version_endpoint
+    response_datasets = sorted(
+        reshape_datasets_for_curation_api(
+            collection_version.datasets, use_canonical_url, preview, as_version=reshape_for_version_endpoint
+        ),
+        key=lambda d: d["dataset_id"],  # For stable ordering
     )
 
     # build response
@@ -144,7 +149,7 @@ def reshape_for_curation_api(
         links=links,
         name=collection_version.metadata.name,
         processing_status=get_collection_level_processing_status(collection_version.datasets),
-        published_at=collection_version.canonical_collection.originally_published_at,
+        published_at=published_at,
         publisher_metadata=collection_version.publisher_metadata,
         revised_at=collection_version.canonical_collection.revised_at,
         revising_in=revising_in,
@@ -165,10 +170,8 @@ def reshape_datasets_for_curation_api(
     active_datasets = []
     for dv in datasets:
         dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
-        reshaped_dataset = (
-            reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview, as_canonical=False)
-            if as_version
-            else reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
+        reshaped_dataset = reshape_dataset_for_curation_api(
+            dataset_version, use_canonical_url, preview, as_canonical=not as_version
         )
         active_datasets.append(reshaped_dataset)
     return active_datasets
