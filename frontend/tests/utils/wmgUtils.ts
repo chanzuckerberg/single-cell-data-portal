@@ -60,7 +60,7 @@ export const selectOption = async (page: Page, filterName: string) => {
 
 export const selectTissueAndGeneOption = async (page: Page) => {
   // click Tissue button
-  await selectOption(page, "add-tissue");
+  await selectOption(page, "add-tissue-btn");
 
   //pick the first 2 elements in tissue
   await pickOptions(page, 2);
@@ -72,7 +72,7 @@ export const selectTissueAndGeneOption = async (page: Page) => {
   await page.locator('[id="heatmap-container-id"]').waitFor();
 
   // click Gene button
-  await selectOption(page, "add-gene");
+  await selectOption(page, "add-gene-btn");
 
   //pick the first n elements in tissue
   await pickOptions(page, 3);
@@ -112,10 +112,10 @@ export const checkPlotSize = async (page: Page) => {
   }
   return sumOfHeights;
 };
-export const downloadCsv = async (page: Page) => {
+export const downloadCsv = async (page: Page, fileFactor: string) => {
   const zipFilePath = "./tests/utils/download.zip";
-  const extractDirPath = "./tests/utils/download";
-
+  const extractDirPath = `./tests/utils/download/${fileFactor}`;
+  const CHECK = "Mui-checked";
   //wait for download file
   const downloadPromise = page.waitForEvent("download");
 
@@ -126,14 +126,14 @@ export const downloadCsv = async (page: Page) => {
     .getByTestId("png-checkbox")
     .getAttribute("class");
 
-  if (checkboxClassPng && checkboxClassPng.includes("Mui-checked")) {
+  if (checkboxClassPng && checkboxClassPng.includes(CHECK)) {
     await page.getByTestId("png-checkbox").click();
   }
   const checkboxClassSvg = await page
     .getByTestId("svg-checkbox")
     .getAttribute("class");
 
-  if (checkboxClassSvg && checkboxClassSvg.includes("Mui-checked")) {
+  if (checkboxClassSvg && checkboxClassSvg.includes(CHECK)) {
     await page.getByTestId("svg-checkbox").click();
   }
 
@@ -141,7 +141,7 @@ export const downloadCsv = async (page: Page) => {
     .getByTestId("csv-checkbox")
     .getAttribute("class");
 
-  if (checkboxClassCsv && !checkboxClassCsv.includes("Mui-checked")) {
+  if (checkboxClassCsv && !checkboxClassCsv.includes(CHECK)) {
     await page.getByTestId("csv-checkbox").click();
   }
 
@@ -156,11 +156,14 @@ export const downloadCsv = async (page: Page) => {
   zip.extractAllTo(extractDirPath);
 };
 
-export const getCsvMetadata = (tissue: string): Promise<string[]> => {
+export const getCsvMetadata = (
+  tissue: string,
+  fileFactor: string
+): Promise<string[]> => {
   return new Promise((resolve, reject) => {
     // Open the CSV file for reading
     const fileStream = fs.createReadStream(
-      `./tests/utils/download/${tissue}.csv`,
+      `./tests/utils/download/${fileFactor}/${tissue}.csv`,
       { encoding: "utf8" }
     );
 
@@ -190,11 +193,14 @@ export const getCsvMetadata = (tissue: string): Promise<string[]> => {
   });
 };
 
-export const getCsvHeaders = (tissue: string): Promise<string[][]> => {
+export const getCsvHeaders = (
+  tissue: string,
+  fileFactor: string
+): Promise<string[][]> => {
   return new Promise((resolve, reject) => {
     // Open the CSV file for reading
     const fileStream = fs.createReadStream(
-      `./tests/utils/download/${tissue}.csv`,
+      `./tests/utils/download/${fileFactor}/${tissue}.csv`,
       { encoding: "utf8" }
     );
 
@@ -254,6 +260,10 @@ export const verifyMetadata = async (
   // Extract the link using a regular expression
   const linkRegex = /https?:\/\/[^\s]+/;
   const linkMatch = data[2].match(linkRegex);
+  let text: string | null = "";
+  if (filterName !== "no-filter") {
+    text = await getFilterText(page, filterName);
+  }
 
   // Check if a match was found and log the result
   if (linkMatch) {
@@ -266,11 +276,6 @@ export const verifyMetadata = async (
     await page.waitForLoadState();
     // expect the header on the new page to be visible
     expect(page.getByTestId("download-button")).toBeVisible();
-  }
-
-  let text: string | null = "";
-  if (filterName !== "no-filter") {
-    text = await getFilterText(page, filterName);
   }
 
   //verify the text displayed in the filter section of meta data
@@ -355,11 +360,11 @@ export const verifyMetadata = async (
 };
 
 export const deleteCsvFile = (filePath: string): void => {
-  fs.unlink(filePath, (err) => {
+  fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
-      console.error(err);
+      console.error(`Error deleting folder: ${err}`);
     } else {
-      console.log(`File ${filePath} has been deleted`);
+      console.log("Folder deleted successfully");
     }
   });
 };
