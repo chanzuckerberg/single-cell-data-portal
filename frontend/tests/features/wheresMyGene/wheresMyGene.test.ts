@@ -20,7 +20,6 @@ const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
 const ADD_TISSUE_ID = "add-tissue-btn";
 const ADD_GENE_ID = "add-gene-btn";
-const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
 const DOWNLOAD_BUTTON_ID = "download-button";
@@ -297,36 +296,6 @@ describe("Where's My Gene", () => {
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
-      },
-      { page }
-    );
-  });
-
-  test("delete genes", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    await selectFirstNOptions(1, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-    await selectFirstNOptions(3, page);
-
-    await waitForHeatmapToRender(page);
-
-    const beforeGeneNames = await getGeneNames(page);
-
-    await tryUntil(
-      async () => {
-        await page.keyboard.press("Backspace");
-
-        // Testing single gene delete
-        await page.hover(".gene-label-container");
-        await getFirstButtonAndClick(page, GENE_DELETE_BUTTON);
-
-        const afterGeneNames = await getGeneNames(page);
-
-        expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
-        expect(afterGeneNames).not.toEqual(beforeGeneNames);
       },
       { page }
     );

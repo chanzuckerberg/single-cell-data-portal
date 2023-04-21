@@ -70,6 +70,7 @@ describe("Manage gene tests", () => {
     // delete gene
     await page.getByTestId(`gene-name-${GENE}`).hover();
     await page.getByTestId(`gene-delete-icon-${GENE}`).click();
+
     // check gene is deleted
     expect(page.getByTestId(`gene-name-${GENE}`)).not.toBeVisible();
   });
