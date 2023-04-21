@@ -16,7 +16,6 @@ from backend.layers.business.exceptions import (
     CollectionCreationException,
     CollectionDeleteException,
     CollectionIsPublishedException,
-    CollectionIsTombstonedException,
     CollectionNotFoundException,
     CollectionPublishException,
     CollectionUpdateException,
@@ -28,7 +27,6 @@ from backend.layers.business.exceptions import (
     DatasetVersionNotFoundException,
     InvalidURIException,
     MaxFileSizeExceededException,
-    PublishedCollectionVersionNotFoundException,
 )
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
@@ -148,14 +146,7 @@ class BusinessLogic(BusinessLogicInterface):
     def get_published_collection_version_with_datasets(
         self, collection_version_id: str
     ) -> CollectionVersionWithDatasets:
-        collection_version = self.database_provider.get_collection_version_with_datasets(
-            CollectionVersionId(collection_version_id)
-        )
-        if collection_version is None or collection_version.published_at is None:
-            raise PublishedCollectionVersionNotFoundException()
-        if collection_version.canonical_collection.tombstoned is True:
-            raise CollectionIsTombstonedException()
-        return collection_version
+        return self.database_provider.get_collection_version_with_datasets(CollectionVersionId(collection_version_id))
 
     def get_unpublished_collection_version_from_canonical(
         self, collection_id: CollectionId
