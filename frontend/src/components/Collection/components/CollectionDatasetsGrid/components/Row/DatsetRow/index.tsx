@@ -101,7 +101,8 @@ const DatasetRow: FC<Props> = ({
 
   const datasetStatusResult = useDatasetStatus(
     dataset.id,
-    checkIfLoading(dataset.processing_status)
+    checkIfLoading(dataset.processing_status),
+    invalidateCollectionQuery
   );
 
   const datasetStatus = datasetStatusResult.data || dataset.processing_status;

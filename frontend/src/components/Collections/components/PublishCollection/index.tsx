@@ -31,8 +31,10 @@ const PublishCollection: FC<Props> = ({
   };
 
   // Closes publish collection dialog when component unmounts.
-  // The collection is no longer "private" (i.e. unpublished or a private revision) and the invalidation of the
-  // collection cache - with an update of collection visibility to "PUBLIC" - will cause the component to unmount.
+  // When a collection is successfully published, its visibility is changed to "PUBLIC" either through cache
+  // invalidation (for a private collection) or by using the "usePublishCollection" mutate function's onSuccess
+  // callback to direct the user to the published collection (for a private revision).
+  // In either case, the PublishCollection component will unmount and the publish collection dialog will be closed.
   useEffect(() => {
     return () => {
       setIsPublishOpen(false);

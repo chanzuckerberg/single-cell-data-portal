@@ -36,6 +36,7 @@ import { QueryClient } from "react-query/core";
 const DEFAULT_QUERY_OPTIONS = {
   staleTime: Infinity,
 };
+
 /**
  * Cached query matching the refetch predicate, that are not being rendered, will be invalidated and refetched
  * in the background.
@@ -287,7 +288,7 @@ export async function createCollection(
 export function useCreateCollection() {
   const queryClient = useQueryClient();
   return useMutation(createCollection, {
-    onSuccess: async () => {
+    onSuccess: async (): Promise<void> => {
       await queryClient.invalidateQueries(
         [USE_COLLECTIONS_INDEX],
         DEFAULT_BACKGROUND_REFETCH
@@ -342,8 +343,8 @@ async function collectionUploadLinks({
 export function useCollectionUploadLinks(id: string) {
   const queryCache = useQueryClient();
   return useMutation(collectionUploadLinks, {
-    onSuccess: () => {
-      queryCache.invalidateQueries([USE_COLLECTION, id]);
+    onSuccess: async (): Promise<void> => {
+      await queryCache.invalidateQueries([USE_COLLECTION, id]);
     },
   });
 }
@@ -368,7 +369,7 @@ export function useDeleteCollection(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation(deleteCollection, {
-    onSuccess: async (collection: Collection) => {
+    onSuccess: async (collection: Collection): Promise<void> => {
       queryClient.removeQueries([USE_COLLECTION, collection.id]);
       await queryClient.invalidateQueries(
         [USE_COLLECTIONS_INDEX],
@@ -425,11 +426,20 @@ export function usePublishCollection() {
         DEFAULT_BACKGROUND_REFETCH
       );
       // Invalidate the private or private revision collection.
-      // This will cause an immediate update of the collection page cache, and executes before
-      // the onSuccess callback of the usePublishCollection mutate function.
-      await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
-      if (collection.revision_of) {
-        // If the collection is a revision, invalidate the published collection.
+      // If the collection is a private revision, the query should be marked as invalid without executing a background
+      // re-fetch. A background refresh on the "active" private revision collection query will trigger an immediate
+      // re-fetch of the collection. However, the response returns published values where the "id" corresponds
+      // to the published collection's "id", which is the "revision_of" value of the private revision.
+      // Additionally, the visibility of the collection is updated to "PUBLIC".
+      // This re-fetch happens before the "usePublishCollection" mutate function executes the "onSuccess" callback,
+      // resulting in unintended consequences. For example, the "Publish" button unmounts before the user is routed
+      // to the updated collection because the visibility is no longer "PRIVATE."
+      const inRevision = Boolean(collection.revision_of);
+      await queryClient.invalidateQueries([USE_COLLECTION, collection.id], {
+        refetchActive: !inRevision, // If the collection is in revision, mark as invalid without executing a re-fetch.
+      });
+      if (inRevision) {
+        // If the collection is in revision, invalidate the published collection.
         await queryClient.invalidateQueries(
           [USE_COLLECTION, collection.revision_of],
           DEFAULT_BACKGROUND_REFETCH
@@ -499,7 +509,7 @@ export function useEditCollection(
 
   return useMutation(editCollection, {
     // newCollection is the result of the PUT on the revision
-    onSuccess: async ({ collection: newCollection }) => {
+    onSuccess: async ({ collection: newCollection }): Promise<void> => {
       // Check for updated collection: it's possible server-side validation errors have occurred where the error has
       // been swallowed (allowing error messages to be displayed on the edit form) and success flow is executed even
       // though update did not occur.
@@ -602,7 +612,7 @@ function createRevisionSetUseCollectionsIndex(
 export function useCreateRevision() {
   const queryClient = useQueryClient();
   return useMutation(createRevision, {
-    onSuccess: async (revision) => {
+    onSuccess: async (revision): Promise<void> => {
       createRevisionSetUseCollectionsIndex(revision, queryClient);
       createRevisionSetUseCollection(revision, queryClient);
     },

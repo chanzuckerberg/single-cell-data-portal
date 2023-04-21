@@ -29,9 +29,9 @@ const DeleteCollection: FC<Props> = ({
   };
 
   // Closes delete collection dialog when component unmounts.
-  // Successful deletion of a private revision collection, or deletion of a private collection routes to either
-  // the corresponding published collection, or the collections index respectively.
-  // In both cases, the component unmounts, and the delete collection dialog is closed.
+  // If a private revision collection is successfully deleted or a private collection is deleted, the user will be
+  // directed to the corresponding published collection or the collections index, respectively.
+  // In either case, the component will unmount and the delete collection dialog will be closed.
   useEffect(() => {
     return () => {
       setIsOpen(false);

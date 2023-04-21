@@ -6,11 +6,24 @@ import {
 } from "react-query";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import { DatasetAsset, DatasetUploadStatus } from "../entities";
+import {
+  DatasetAsset,
+  DatasetUploadStatus,
+  PROCESSING_STATUS,
+} from "../entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
 import { USE_COLLECTION } from "./collections";
 import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
+import { USE_DATASETS_INDEX } from "src/common/queries/filter";
+
+/**
+ * Cached query matching the refetch predicate, that are not being rendered, will be invalidated and refetched
+ * in the background.
+ */
+const DEFAULT_BACKGROUND_REFETCH = {
+  refetchInactive: true,
+};
 
 export const USE_DATASET_STATUS = {
   entities: [ENTITIES.DATASET_STATUS],
@@ -29,12 +42,29 @@ const REFETCH_INTERVAL_MS = 10 * 1000;
 
 export function useDatasetStatus(
   dataset_id: string,
-  shouldFetch: boolean
+  shouldFetch: boolean,
+  invalidateCollectionQuery: () => void
 ): UseQueryResult<DatasetUploadStatus> {
+  const queryClient = useQueryClient();
   return useQuery<DatasetUploadStatus>(
     [USE_DATASET_STATUS, dataset_id],
     () => fetchDatasetStatus(dataset_id),
-    { enabled: shouldFetch, refetchInterval: REFETCH_INTERVAL_MS }
+    {
+      enabled: shouldFetch,
+      onSuccess: async (data: DatasetUploadStatus): Promise<void> => {
+        // When the dataset has been successfully processed, invalidate the collection query.
+        // The collection query will fetch with the updated dataset list, which will no longer be in a loading state.
+        // As a result, the useDatasetStatus query's status will be updated to "idle".
+        if (data.processing_status === PROCESSING_STATUS.SUCCESS) {
+          invalidateCollectionQuery();
+          await queryClient.invalidateQueries(
+            [USE_DATASETS_INDEX],
+            DEFAULT_BACKGROUND_REFETCH
+          );
+        }
+      },
+      refetchInterval: REFETCH_INTERVAL_MS,
+    }
   );
 }
 
