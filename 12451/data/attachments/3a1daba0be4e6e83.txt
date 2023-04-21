@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0m  navigated to "https://localhost:3000/gene-expression?tissues=blood%2Clung%2Cliver&genes=SCYL3%2CTSPAN6%2CTNMD&ver=2" [38;5;45m+42ms[0m
