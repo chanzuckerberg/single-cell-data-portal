@@ -25,6 +25,7 @@ const CZI_CHECKER = " czi-checker";
  */
 const SHOULD_RETRY = process.env.RETRY !== "false";
 
+const CLIPBOARD_PERMISSIONS = ["clipboard-read", "clipboard-write"];
 if (!SHOULD_RETRY) {
   console.log('Skipping retry because "RETRY" is set to false');
 }
@@ -75,6 +76,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
+        permissions: CLIPBOARD_PERMISSIONS,
       },
     },
     {
@@ -89,6 +91,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
+        permissions: CLIPBOARD_PERMISSIONS,
       },
     },
   ],
@@ -96,7 +99,7 @@ const config: PlaywrightTestConfig = {
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: PLAYWRIGHT_REPORTER,
 
-  retries: SHOULD_RETRY ? 2 : 0,
+  //retries: SHOULD_RETRY ? 2 : 0,
 
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: "./__snapshots__",
