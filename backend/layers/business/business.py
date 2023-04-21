@@ -57,7 +57,10 @@ from backend.layers.common.entities import (
     Link,
     PublishedDatasetVersion,
 )
-from backend.layers.common.helpers import get_published_at_and_collection_version_id_else_not_found
+from backend.layers.common.helpers import (
+    get_dataset_versions_with_published_at_and_collection_version_id,
+    get_published_at_and_collection_version_id_else_not_found,
+)
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
@@ -156,19 +159,9 @@ class BusinessLogic(BusinessLogicInterface):
         all_collection_versions = list(
             self.get_all_published_collection_versions_from_canonical(collection_version.canonical_collection.id)
         )
-        published_datasets_for_collection: List[PublishedDatasetVersion] = []
-        for dataset_version in collection_version.datasets:
-            published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
-                dataset_version, all_collection_versions
-            )
-            published_datasets_for_collection.append(
-                PublishedDatasetVersion(
-                    collection_version_id=collection_version_id,
-                    published_at=published_at,
-                    **vars(dataset_version),
-                )
-            )
-        collection_version.datasets = published_datasets_for_collection  # hack to allow unpacking via **vars() below
+        collection_version.datasets = get_dataset_versions_with_published_at_and_collection_version_id(
+            collection_version.datasets, all_collection_versions
+        )  # hack to allow unpacking via **vars() below
         return CollectionVersionWithPublishedDatasets(**vars(collection_version))
 
     def get_unpublished_collection_version_from_canonical(
