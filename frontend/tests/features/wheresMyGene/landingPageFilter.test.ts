@@ -61,16 +61,18 @@ describe("Left side bar", () => {
           //check plot height after adding a filter
           const plotSizeAfterFilter = await checkPlotSize(page);
 
-          // verify source  data loading some data
+          // verify source data loading some data
           expect(countBeforeFilter).toBeGreaterThan(0);
-          // verify source  data changed after filter is applied
+
+          // verify source data changed after filter is applied
           expect(countBeforeFilter === countAfterFilter).toBeFalsy();
 
           //verify data plot data loading some data
           expect(plotSizeBeforeFilter).toBeGreaterThan(0);
 
-          //verify data plot data changed after filter was  applied
+          //verify data plot data changed after filter was applied
           expect(plotSizeBeforeFilter === plotSizeAfterFilter).toBeFalsy();
+
           //uncheck filter
           await deSelectFilterOption(page, filterOption);
         },
