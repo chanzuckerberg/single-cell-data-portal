@@ -148,11 +148,14 @@ def reshape_for_curation_api(
         name=collection_version.metadata.name,
         published_at=collection_version.canonical_collection.originally_published_at,
         publisher_metadata=collection_version.publisher_metadata,
-        revised_at=collection_version.canonical_collection.revised_at,
-        revising_in=revising_in,
-        revision_of=revision_of,
         visibility=get_visibility(collection_version),
     )
+    if not reshape_for_version_endpoint:
+        response.update(
+            revised_at=collection_version.canonical_collection.revised_at,
+            revising_in=revising_in,
+            revision_of=revision_of,
+        )
     if not is_published:
         response.update(processing_status=get_collection_level_processing_status(collection_version.datasets))
     return response

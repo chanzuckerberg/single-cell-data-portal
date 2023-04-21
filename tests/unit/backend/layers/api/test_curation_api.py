@@ -968,7 +968,77 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             f"/curation/v1/collection_versions/{first_version.version_id}", headers=self.make_owner_header()
         )
         self.assertEqual(200, res.status_code)
-        self.assertEqual(res.json["collection_version_id"], first_version.version_id.id)
+        received_body = res.json
+        expected_body = {
+            "collection_id": f"{first_version.collection_id.id}",
+            "collection_url": f"https://frontend.corporanet.local:3000/collections/{first_version.version_id.id}",
+            "collection_version_id": f"{first_version.version_id.id}",
+            "consortia": ["Consortia 1", "Consortia 2"],
+            "contact_email": "john.doe@email.com",
+            "contact_name": "john doe",
+            "curator_name": "Jane Smith",
+            "datasets": [
+                {
+                    "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
+                    "assets": [
+                        {
+                            "filesize": -1,
+                            "filetype": "H5AD",
+                            "url": f"None/{first_version.datasets[0].version_id.id}.h5ad",
+                        },
+                        {
+                            "filesize": -1,
+                            "filetype": "RDS",
+                            "url": f"None/{first_version.datasets[0].version_id.id}.rds",
+                        },
+                    ],
+                    "batch_condition": ["test_batch_1", "test_batch_2"],
+                    "collection_id": f"{first_version.collection_id.id}",
+                    "collection_version_id": f"{first_version.version_id.id}",
+                    "cell_count": 10,
+                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
+                    "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
+                    "development_stage": [
+                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
+                    ],
+                    "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
+                    "donor_id": ["test_donor_1"],
+                    "explorer_url": f"/e/{first_version.datasets[0].version_id.id}.cxg/",
+                    "is_primary_data": [True, False],
+                    "mean_genes_per_cell": 0.5,
+                    "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
+                    "schema_version": "3.0.0",
+                    "self_reported_ethnicity": [
+                        {
+                            "label": "test_self_reported_ethnicity_label",
+                            "ontology_term_id": "test_self_reported_ethnicity_term_id",
+                        }
+                    ],
+                    "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
+                    "suspension_type": ["test_suspension_type"],
+                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "title": "test_dataset_name",
+                    "tombstone": False,
+                    "x_approximate_distribution": "NORMAL",
+                }
+            ],
+            "description": "described",
+            "doi": None,
+            "links": [],
+            "name": "test_collection",
+            "publisher_metadata": None,
+            "visibility": "PUBLIC",
+        }
+        # Confirm fields are present but ignore equality comparison for timestamps
+        self.assertIn("created_at", received_body)
+        received_body.pop("created_at")
+        self.assertIn("published_at", received_body)
+        received_body.pop("published_at")
+        [self.assertIn("published_at", d) for d in received_body["datasets"]]
+        [d.pop("published_at") for d in received_body["datasets"]]
+
+        self.assertEqual(received_body, expected_body)
         # test correct dataset explorer url is used
         explorer_url = res.json["datasets"][0]["explorer_url"]
         self.assertTrue(explorer_url.endswith(f"{first_version.datasets[0].version_id.id}.cxg/"))
@@ -1001,20 +1071,20 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             res = self.app.get(
                 f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
             )
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(410, res.status_code)
         with self.subTest("Collection Version is unpublished collection"):
             collection = self.generate_unpublished_collection()
             res = self.app.get(
                 f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
             )
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(404, res.status_code)
         with self.subTest("Collection Version is unpublished revision"):
             first_version = self.generate_published_collection()
             revision = self.generate_revision(first_version.collection_id)
             res = self.app.get(
                 f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header()
             )
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(404, res.status_code)
 
 
 class TestPatchCollectionID(BaseAPIPortalTest):
