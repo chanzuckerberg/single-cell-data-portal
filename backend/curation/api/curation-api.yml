@@ -874,8 +874,6 @@ components:
           $ref: "#/components/schemas/links"
         name:
           $ref: "#/components/schemas/collection_name"
-        processing_status:
-          $ref: "#/components/schemas/processing_status_collection"
         published_at:
           $ref: "#/components/schemas/published_at"
         publisher_metadata:
@@ -1147,14 +1145,6 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
-          nullable: true
-        processing_status:
-          $ref: "#/components/schemas/processing_status_dataset"
-        processing_status_detail:
-          type: string
-          description: |
-            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
-            the dataset can be found in `processing_status_detail`.
           nullable: true
         published_at:
           $ref: "#/components/schemas/dataset_version_published_at"

@@ -123,7 +123,11 @@ def reshape_for_curation_api(
 
     # get collection dataset attributes
     response_datasets = reshape_datasets_for_curation_api(
-        collection_version.datasets, use_canonical_url, preview, as_version=reshape_for_version_endpoint
+        collection_version.datasets,
+        use_canonical_url,
+        preview,
+        as_version=reshape_for_version_endpoint,
+        is_published=is_published,
     )
 
     # build response
@@ -142,7 +146,6 @@ def reshape_for_curation_api(
         doi=doi,
         links=links,
         name=collection_version.metadata.name,
-        processing_status=get_collection_level_processing_status(collection_version.datasets),
         published_at=collection_version.canonical_collection.originally_published_at,
         publisher_metadata=collection_version.publisher_metadata,
         visibility=get_visibility(collection_version),
@@ -153,6 +156,8 @@ def reshape_for_curation_api(
             revising_in=revising_in,
             revision_of=revision_of,
         )
+    if not is_published:
+        response.update(processing_status=get_collection_level_processing_status(collection_version.datasets))
     return response
 
 
@@ -161,21 +166,24 @@ def reshape_datasets_for_curation_api(
     use_canonical_url: bool,
     preview: bool = False,
     as_version: bool = False,
+    is_published: bool = False,
 ) -> List[dict]:
     active_datasets = []
     for dv in datasets:
         dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
-        reshaped_dataset = (
-            reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview, as_canonical=False)
-            if as_version
-            else reshape_dataset_for_curation_api(dataset_version, use_canonical_url, preview)
+        reshaped_dataset = reshape_dataset_for_curation_api(
+            dataset_version, use_canonical_url, preview, as_canonical=not as_version, is_published=is_published
         )
         active_datasets.append(reshaped_dataset)
     return active_datasets
 
 
 def reshape_dataset_for_curation_api(
-    dataset_version: DatasetVersion, use_canonical_url: bool, preview=False, as_canonical=True
+    dataset_version: DatasetVersion,
+    use_canonical_url: bool,
+    preview=False,
+    as_canonical=True,
+    is_published=False,
 ) -> dict:
     ds = dict()
 
@@ -197,7 +205,6 @@ def reshape_dataset_for_curation_api(
     # Get none preview specific dataset fields
     if not preview:
         ds["assets"] = extract_dataset_assets(dataset_version)
-        ds["processing_status_detail"] = dataset_version.status.validation_message
         ds["title"] = ds.pop("name", None)
         ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
@@ -205,7 +212,7 @@ def reshape_dataset_for_curation_api(
             ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
             if ds["x_approximate_distribution"]:
                 ds["x_approximate_distribution"] = ds["x_approximate_distribution"].upper()
-        if status := dataset_version.status:
+        if not is_published and (status := dataset_version.status):
             if status.processing_status == DatasetProcessingStatus.FAILURE:
                 if status.validation_status == DatasetValidationStatus.INVALID:
                     ds["processing_status_detail"] = status.validation_message
