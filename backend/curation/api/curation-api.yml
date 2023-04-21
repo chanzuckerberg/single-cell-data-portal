@@ -558,6 +558,8 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/datasets:
     get:
@@ -1491,6 +1493,12 @@ components:
           schema:
             $ref: "#/components/schemas/problem"
       description: File conflict
+    "410":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Content has been removed
     "413":
       content:
         application/problem+json:
