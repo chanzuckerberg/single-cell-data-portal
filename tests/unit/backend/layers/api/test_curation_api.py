@@ -475,6 +475,7 @@ class TestGetCollections(BaseAPIPortalTest):
         resp_collection = resp[0]
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
         self.assertEqual(public_collection.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
+        self.expected_collection_columns.remove("processing_status")
         self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
         self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
@@ -600,7 +601,7 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
 
 class TestGetCollectionID(BaseAPIPortalTest):
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test__get_collection_verify_body_is_reshaped_correctly__OK(self, mock_config: Mock):
+    def test__get_published_collection_verify_body_is_reshaped_correctly__OK(self, mock_config: Mock):
         # Setup
         # test fixtures
         dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -663,9 +664,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "explorer_url": f"/e/{dataset.dataset_id}.cxg/",
                 "dataset_id": dataset.dataset_id.id,
                 "dataset_version_id": dataset.version_id.id,
-                "processing_status": "INITIALIZED",
                 "tombstone": False,
-                "processing_status_detail": None,
                 "assets": [  # Filter out disallowed file types + properly construct url
                     {
                         "filesize": -1,
@@ -692,7 +691,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "datasets": [expect_dataset],
                 "doi": None,
                 "links": links,
-                "processing_status": "PENDING",
                 "publisher_metadata": None,
                 "revision_of": None,
                 "revising_in": None,
@@ -770,6 +768,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertIn("processing_status", resp_collection.keys())
 
         published = self.generate_published_collection(add_datasets=1)
         with self.subTest("get published version"):
@@ -784,6 +784,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
         revision = self.generate_revision(published.collection_id)
         with self.subTest("get published with unpublished version and restricted access"):
@@ -800,6 +802,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
         with self.subTest("get published with unpublished version and privileged access"):
             resp_collection = _test_responses(
@@ -815,6 +819,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
         with self.subTest("get unpublished version (revision) with published version and read access"):
             resp_collection = _test_responses(revision.version_id, revision.version_id, all_headers)
@@ -828,6 +834,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(revision.datasets[0].version_id.id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revision.datasets[0].version_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertIn("processing_status", resp_collection.keys())
 
         revised_dataset = self.generate_dataset(
             collection_version=revision, replace_dataset_version_id=revision.datasets[0].version_id
@@ -844,6 +852,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertIn("processing_status", resp_collection.keys())
 
         self.business_logic.publish_collection_version(revision.version_id)
         with self.subTest("get updated published version"):
@@ -858,6 +868,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNotNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(revision.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
     def test__get_collection_with_dataset_failing_validation(self):
         collection_version = self.generate_collection(
@@ -1009,8 +1021,6 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "is_primary_data": [True, False],
                     "mean_genes_per_cell": 0.5,
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
-                    "processing_status": "INITIALIZED",
-                    "processing_status_detail": None,
                     "schema_version": "3.0.0",
                     "self_reported_ethnicity": [
                         {
@@ -1030,7 +1040,6 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             "doi": None,
             "links": [],
             "name": "test_collection",
-            "processing_status": "PENDING",
             "publisher_metadata": None,
             "visibility": "PUBLIC",
         }

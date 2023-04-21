@@ -558,6 +558,8 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/datasets:
     get:
@@ -868,8 +870,6 @@ components:
           $ref: "#/components/schemas/links"
         name:
           $ref: "#/components/schemas/collection_name"
-        processing_status:
-          $ref: "#/components/schemas/processing_status_collection"
         published_at:
           $ref: "#/components/schemas/published_at"
         publisher_metadata:
@@ -1141,14 +1141,6 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
-          nullable: true
-        processing_status:
-          $ref: "#/components/schemas/processing_status_dataset"
-        processing_status_detail:
-          type: string
-          description: |
-            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
-            the dataset can be found in `processing_status_detail`.
           nullable: true
         published_at:
           $ref: "#/components/schemas/dataset_version_published_at"
@@ -1491,6 +1483,12 @@ components:
           schema:
             $ref: "#/components/schemas/problem"
       description: File conflict
+    "410":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Content has been removed
     "413":
       content:
         application/problem+json:
