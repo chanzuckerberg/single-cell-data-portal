@@ -2,7 +2,12 @@ import { expect, Page, test, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
+import {
+  goToPage,
+  isDevStagingProd,
+  selectNthOption,
+  tryUntil,
+} from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
@@ -276,10 +281,10 @@ describe("Where's My Gene", () => {
     );
 
     await page.getByTestId("cell-type-sort-dropdown").click();
-    await selectNthOption(2, page);
+    await selectNthOption(page, 2);
 
     await page.getByTestId("gene-sort-dropdown").click();
-    await selectNthOption(2, page);
+    await selectNthOption(page, 2);
 
     const afterGeneNames = await getGeneNames(page);
 
@@ -766,7 +771,7 @@ describe("Where's My Gene", () => {
 
       // Select second tissue
       await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectNthOption(2, page);
+      await selectNthOption(page, 2);
 
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstOption(page);
@@ -932,18 +937,6 @@ async function selectFirstNOptions(count: number, page: Page) {
     await page.keyboard.press("Enter");
   }
 
-  await page.keyboard.press("Escape");
-}
-
-async function selectNthOption(number: number, page: Page) {
-  // (thuang): Since the first option is now active, we need to offset by 1
-  const step = number - 1;
-
-  for (let i = 0; i < step; i++) {
-    await page.keyboard.press("ArrowDown");
-  }
-
-  await page.keyboard.press("Enter");
   await page.keyboard.press("Escape");
 }
 
