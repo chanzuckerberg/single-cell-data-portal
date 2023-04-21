@@ -94,6 +94,17 @@ const Header: FC = () => {
                 />
               </Link>
             </LinkWrapper>
+            <LinkWrapper>
+              <Link href={ROUTES.CELL_CARDS} passHref>
+                <AnchorButton
+                  active={isRouteActive(pathname, ROUTES.CELL_CARDS)}
+                  href="passHref"
+                  minimal
+                  text="Cell Cards"
+                  onClick={handleCellCardsClick}
+                />
+              </Link>
+            </LinkWrapper>
           </Nav>
         </Left>
         <Right>
@@ -182,6 +193,10 @@ const Header: FC = () => {
 
   function handleWMGClick() {
     track(EVENTS.WMG_CLICK_NAV);
+  }
+
+  function handleCellCardsClick() {
+    track(EVENTS.CELL_CARDS_CLICK_NAV);
   }
 };
 
