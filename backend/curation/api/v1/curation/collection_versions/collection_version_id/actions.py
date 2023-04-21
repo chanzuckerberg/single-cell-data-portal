@@ -15,9 +15,7 @@ def get(collection_version_id: str):
     Fetch the full metadata of a published CollectionVersion, including its datasets
     """
     validate_uuid_else_forbidden(collection_version_id)
-    collection_version = get_business_logic().get_published_collection_version_with_datasets(
-        CollectionVersionId(collection_version_id)
-    )
+    collection_version = get_business_logic().get_collection_version(CollectionVersionId(collection_version_id))
     if collection_version is None or collection_version.published_at is None:
         raise NotFoundHTTPException()
     if collection_version.canonical_collection.tombstoned is True:

@@ -143,11 +143,6 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_mapped_version(collection_id)
 
-    def get_published_collection_version_with_datasets(
-        self, collection_version_id: str
-    ) -> CollectionVersionWithDatasets:
-        return self.database_provider.get_collection_version_with_datasets(CollectionVersionId(collection_version_id))
-
     def get_unpublished_collection_version_from_canonical(
         self, collection_id: CollectionId
     ) -> Optional[CollectionVersionWithDatasets]:
