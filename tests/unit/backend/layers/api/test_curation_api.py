@@ -588,7 +588,7 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
 
 class TestGetCollectionID(BaseAPIPortalTest):
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test__get_collection_verify_body_is_reshaped_correctly__OK(self, mock_config: Mock):
+    def test__get_published_collection_verify_body_is_reshaped_correctly__OK(self, mock_config: Mock):
         # Setup
         # test fixtures
         dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
