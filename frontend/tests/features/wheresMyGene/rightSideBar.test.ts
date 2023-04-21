@@ -15,7 +15,7 @@ describe("Right side bar", () => {
     await goToWMG(page);
   });
 
-  test("Documentation should link out to cellxgene documentation", async ({
+  test.only("Documentation should link out to cellxgene documentation", async ({
     page,
     context,
   }) => {
@@ -26,18 +26,18 @@ describe("Right side bar", () => {
       await selectFirstOption(page),
     ]);
 
-    // wait until the new page fully loads
+    // wait until the new page to fully loads
     await newPage.waitForLoadState();
 
     // expect the header on the new page to be visible
     expect(
-      newPage.getByTestId(
-        "gene-expression--query-gene-expression-across-tissues"
+      newPage.locator(
+        getById("gene-expression--query-gene-expression-across-tissues")
       )
     ).toBeVisible();
   });
 
-  test("Clicking on cellxgene logo takes you back to data portal", async ({
+  test.only("Clicking on cellxgene logo takes you back to data portal", async ({
     page,
   }) => {
     //click the  logo on the top bar opens  opens on a new page
@@ -51,28 +51,30 @@ describe("Right side bar", () => {
       "Discover the mechanisms of human health"
     );
   });
-  test("Right side bar loads with legend, methodology, and source data", async ({
+  test.only("Right side bar loads with legend, methodology, and source data", async ({
     page,
   }) => {
     //verify gene-expression color scale is visible
     await expect(
       page.locator(getById("visualization-color-scale"))
     ).toBeVisible();
-    await page.getByTestId("add-tissue").click();
+    await page.getByTestId("add-tissue-btn").click();
 
     //click the source data icon
     await page.getByTestId("source-data-button").click();
 
     // expect the header to be visible
     await expect(page.locator("h4")).toContainText("Source Data");
+
     // expect source data to load
     expect(
       await page.getByTestId("source-data-list").locator("a").count()
     ).toBeGreaterThan(0);
+
     // expect the header to be visible
     await expect(page.locator("h5")).toContainText("Methodology");
   });
-  test("Link in methodology section links out to scExpression documentation", async ({
+  test.only("Link in methodology section links out to scExpression documentation", async ({
     page,
     context,
   }) => {
@@ -99,7 +101,7 @@ describe("Right side bar", () => {
     ).toBeVisible();
   });
 
-  test("When scaled check box is checked, gene expression should scale from 0 to 1", async ({
+  test.only("When scaled check box is checked, gene expression should scale from 0 to 1", async ({
     page,
   }) => {
     const COLOR_SCALE = '[id="relative-gene-expression"] .low-high';
@@ -110,6 +112,7 @@ describe("Right side bar", () => {
 
     //click the color scale drop-down
     await page.getByTestId("color-scale-dropdown").click();
+
     //select the second option
     await page.locator('[data-option-index="1"]').click();
 
