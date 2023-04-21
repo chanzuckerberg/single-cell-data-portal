@@ -11,7 +11,6 @@ const REGEX = /^\d+\.?\d{0,2}$/;
 
 export async function goToWMG(page: Page, url?: string) {
   const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
-  console.log(targetUrl);
   return Promise.all([
     page.waitForResponse(
       (resp: { url: () => string | string[]; status: () => number }) =>
