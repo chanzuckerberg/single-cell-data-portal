@@ -19,7 +19,6 @@ export const HiddenHubspotForm = styled.div`
 
 export const StyledBanner = styled(Banner)`
   ${fontBodyS}
-  font-weight: 500;
   letter-spacing: -0.006em;
 
   height: auto;
@@ -52,12 +51,19 @@ export const StyledBanner = styled(Banner)`
 export const StyledBottomBannerWrapper = styled.div`
   ${asFooter}
   width: 100%;
-  z-index: 9999;
+
+  /* Right behind modal overlay */
+  z-index: 19;
 `;
 
 export const StyledLink = styled.a`
   text-decoration-line: underline;
   color: #8f5aff;
+  font-weight: 500;
+
+  :hover {
+    color: #5826c1;
+  }
 `;
 
 export const HeaderContainer = styled.div`
@@ -108,6 +114,11 @@ export const StyledSubmitButton = styled(Button)`
   width: 91px;
   height: 34px;
   background: #8f5aff;
+  font-weight: 500;
+
+  :hover {
+    background: #5826c1;
+  }
 `;
 
 export const StyledDisclaimer = styled.div`
@@ -154,12 +165,13 @@ export const NewsletterModal = styled(Modal)`
   }
 
   min-width: 400px !important;
-  min-height: 244px !important;
+  min-height: 266px !important;
   max-width: 400px !important;
+  max-height: 266px !important;
 
   margin: 0;
 
-  padding: 24px 32px;
+  padding: 24px;
 
   padding-bottom: 24px !important;
 `;
