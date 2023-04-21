@@ -1,0 +1,3 @@
+{'is_published': True, 'curator_name': 'Not A Curator'}
+{'is_published': True, 'curator_name': 'John Smith'}
+{'is_published': False, 'curator_name': 'John Smith'}
