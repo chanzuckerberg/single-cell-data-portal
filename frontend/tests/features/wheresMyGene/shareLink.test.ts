@@ -1,7 +1,7 @@
 import { Page, expect, test } from "@playwright/test";
 import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGene/components/GeneSearchBar/components/ShareButton/utils";
 import { TEST_URL } from "tests/common/constants";
-import { addTissuesAndGenes, goToWMG } from "tests/utils/geneUtils";
+import { goToWMG, addTissuesAndGenes } from "tests/utils/wmgUtils";
 
 const { describe } = test;
 
