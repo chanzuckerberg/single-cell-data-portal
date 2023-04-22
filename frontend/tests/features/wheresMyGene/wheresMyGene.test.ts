@@ -288,10 +288,10 @@ describe("Where's My Gene", () => {
     );
 
     await page.getByTestId("cell-type-sort-dropdown").click();
-    selectNthOption(2, page);
+    await selectNthOption(page, 2);
 
     await page.getByTestId("gene-sort-dropdown").click();
-    selectNthOption(2, page);
+    await selectNthOption(page, 2);
 
     const afterGeneNames = getGeneNames(page);
 
@@ -783,8 +783,8 @@ describe("Where's My Gene", () => {
       selectFirstOption(page);
 
       // Select second tissue
-      clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      selectNthOption(2, page);
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
+      await selectNthOption(page, 2);
 
       clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       selectFirstOption(page);

@@ -184,21 +184,7 @@ export async function waitForElementToBeRemoved(page: Page, selector: string) {
   );
 }
 
-// (thuang): This only works when a dropdown is open
-export async function selectFirstOption(page: Page) {
-  await selectFirstNOptions(1, page);
-}
-
-export async function selectFirstNOptions(count: number, page: Page) {
-  for (let i = 0; i < count; i++) {
-    await page.keyboard.press("ArrowDown");
-    await page.keyboard.press("Enter");
-  }
-
-  await page.keyboard.press("Escape");
-}
-
-export async function selectNthOption(number: number, page: Page) {
+export async function selectNthOption(page: Page, number: number) {
   // (thuang): Since the first option is now active, we need to offset by 1
   const step = number - 1;
 
@@ -394,4 +380,18 @@ export async function clickUntilSidebarShowsUp({
     },
     { page }
   );
+}
+
+// (thuang): This only works when a dropdown is open
+export async function selectFirstOption(page: Page) {
+  await selectFirstNOptions(1, page);
+}
+
+export async function selectFirstNOptions(count: number, page: Page) {
+  for (let i = 0; i < count; i++) {
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+  }
+
+  await page.keyboard.press("Escape");
 }
