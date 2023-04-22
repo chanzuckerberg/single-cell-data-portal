@@ -134,6 +134,7 @@ def reshape_for_curation_api(
             is_published=is_published,
         ),
         key=lambda d: d["dataset_id"],  # For stable ordering
+        reverse=True,  # To stay consistent with Datasets index endpoint sorting
     )
 
     # build response

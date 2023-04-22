@@ -556,8 +556,7 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
         revision_collection_2 = self.generate_revision(collection_id=published_collection.collection_id)
         expected_version_ids.append(revision_collection_2.version_id.id)
         self.business_logic.publish_collection_version(revision_collection_2.version_id)
-
-        expected_version_ids.sort(reverse=True)
+        expected_version_ids.reverse()
 
         with self.subTest("Published versions are returned in reverse chronological order with no revision open"):
             resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
