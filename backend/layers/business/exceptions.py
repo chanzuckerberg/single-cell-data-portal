@@ -31,12 +31,6 @@ class CollectionIsPublishedException(CollectionUpdateException):
     """
 
 
-class PublishedCollectionVersionNotFoundException(BusinessException):
-    """
-    Raised when an attempt is made to fetch an unpublished version via a Discover API 'version' endpoint
-    """
-
-
 class InvalidLinkException(BusinessException):
     def __init__(self, errors: Optional[List[str]] = None) -> None:
         self.errors: Optional[List[str]] = errors
@@ -106,10 +100,4 @@ class ArtifactNotFoundException(BusinessException):
 class CollectionDeleteException(BusinessException):
     """
     Raised when an attempt to delete a Collection fails
-    """
-
-
-class CollectionIsTombstonedException(BusinessException):
-    """
-    Raised when an attempt is made to access a tombstoned Collection
     """
