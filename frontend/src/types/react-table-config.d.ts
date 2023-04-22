@@ -12,6 +12,7 @@ import {
   UseSortByOptions,
   UseSortByState,
 } from "react-table";
+import { GridColumnProps } from "src/components/common/Grid/common/entities";
 
 declare module "react-table" {
   export interface TableOptions<D extends Record<string, unknown>>
@@ -35,10 +36,12 @@ declare module "react-table" {
   export interface ColumnInterface<
     D extends Record<string, unknown> = Record<string, unknown>
   > extends UseFiltersColumnOptions<D>,
-      UseSortByColumnOptions<D> {}
+      UseSortByColumnOptions<D>,
+      GridColumnProps {}
 
   export interface ColumnInstance<
     D extends Record<string, unknown> = Record<string, unknown>
   > extends UseFiltersColumnProps<D>,
-      UseSortByColumnProps<D> {}
+      UseSortByColumnProps<D>,
+      GridColumnProps {}
 }

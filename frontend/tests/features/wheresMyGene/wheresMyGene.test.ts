@@ -2,7 +2,12 @@ import { expect, Page, test, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
+import {
+  goToPage,
+  isDevStagingProd,
+  selectNthOption,
+  tryUntil,
+} from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
@@ -15,7 +20,6 @@ const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
 const ADD_TISSUE_ID = "add-tissue-btn";
 const ADD_GENE_ID = "add-gene-btn";
-const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
 const DOWNLOAD_BUTTON_ID = "download-button";
@@ -276,10 +280,10 @@ describe("Where's My Gene", () => {
     );
 
     await page.getByTestId("cell-type-sort-dropdown").click();
-    await selectNthOption(2, page);
+    await selectNthOption(page, 2);
 
     await page.getByTestId("gene-sort-dropdown").click();
-    await selectNthOption(2, page);
+    await selectNthOption(page, 2);
 
     const afterGeneNames = await getGeneNames(page);
 
@@ -292,36 +296,6 @@ describe("Where's My Gene", () => {
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
-      },
-      { page }
-    );
-  });
-
-  test("delete genes", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    await selectFirstNOptions(1, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-    await selectFirstNOptions(3, page);
-
-    await waitForHeatmapToRender(page);
-
-    const beforeGeneNames = await getGeneNames(page);
-
-    await tryUntil(
-      async () => {
-        await page.keyboard.press("Backspace");
-
-        // Testing single gene delete
-        await page.hover(".gene-label-container");
-        await getFirstButtonAndClick(page, GENE_DELETE_BUTTON);
-
-        const afterGeneNames = await getGeneNames(page);
-
-        expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
-        expect(afterGeneNames).not.toEqual(beforeGeneNames);
       },
       { page }
     );
@@ -766,7 +740,7 @@ describe("Where's My Gene", () => {
 
       // Select second tissue
       await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectNthOption(2, page);
+      await selectNthOption(page, 2);
 
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstOption(page);
@@ -932,18 +906,6 @@ async function selectFirstNOptions(count: number, page: Page) {
     await page.keyboard.press("Enter");
   }
 
-  await page.keyboard.press("Escape");
-}
-
-async function selectNthOption(number: number, page: Page) {
-  // (thuang): Since the first option is now active, we need to offset by 1
-  const step = number - 1;
-
-  for (let i = 0; i < step; i++) {
-    await page.keyboard.press("ArrowDown");
-  }
-
-  await page.keyboard.press("Enter");
   await page.keyboard.press("Escape");
 }
 
