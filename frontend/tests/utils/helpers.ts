@@ -183,3 +183,15 @@ export async function waitForElementToBeRemoved(page: Page, selector: string) {
     { page }
   );
 }
+
+export async function selectNthOption(page: Page, number: number) {
+  // (thuang): Since the first option is now active, we need to offset by 1
+  const step = number - 1;
+
+  for (let i = 0; i < step; i++) {
+    await page.keyboard.press("ArrowDown");
+  }
+
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Escape");
+}
