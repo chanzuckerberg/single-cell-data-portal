@@ -2,7 +2,7 @@ from typing import List
 
 from flask import jsonify, make_response
 
-from backend.common.utils.http_exceptions import NotFoundHTTPException
+from backend.common.utils.http_exceptions import GoneHTTPException, NotFoundHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api, validate_uuid_else_forbidden
 from backend.layers.common.entities import CollectionId, CollectionVersionWithPublishedDatasets
 from backend.layers.common.helpers import get_dataset_versions_with_published_at_and_collection_version_id
@@ -14,6 +14,12 @@ def get(collection_id: str):
     Return all published versions for a Collection
     """
     validate_uuid_else_forbidden(collection_id)
+    business_logic = get_business_logic()
+    canonical_collection = business_logic.get_canonical_collection(CollectionId(collection_id))
+    if not canonical_collection:
+        raise NotFoundHTTPException("Collection not found!")
+    if canonical_collection.tombstoned:
+        raise GoneHTTPException()
 
     all_collection_versions = list(
         get_business_logic().get_all_published_collection_versions_from_canonical(CollectionId(collection_id))
