@@ -1,53 +1,44 @@
 import styled from "@emotion/styled";
-import { css } from "@emotion/react";
-import { DropdownPopper as SDSDropdownPopper } from "czifui";
+import { Popper, PopperProps } from "@mui/material";
+import { fontBodyXs, fontCapsXxxs, getColors } from "czifui";
 
-const scrollbar = css`
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
+interface StyledPopperProps extends PopperProps {
+  width: number;
+}
 
-  &::-webkit-scrollbar-thumb {
-    background-clip: content-box;
-    background-color: rgba(0, 0, 0, 0.15);
-    border-radius: 10px;
-  }
+export const StyledPopper = styled(Popper)<StyledPopperProps>`
+  z-index: 99;
+  background-color: white;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15), 0px 2px 10px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  max-height: 250px;
+  overflow-y: scroll;
+  padding: 8px 12px 8px 12px;
+
+  ${(props) => {
+    return `
+      width: ${props.width}px;
+      `;
+  }}
 `;
 
-export const DropdownPopper = styled(SDSDropdownPopper)`
-  border: none;
+export const SectionTitle = styled.div`
+  ${fontCapsXxxs}
+  font-weight: 600;
+  margin-bottom: 10px;
 
-  .MuiAutocomplete-popper .MuiAutocomplete-paper {
-    & .MuiAutocomplete-listbox {
-      max-height: 224px; /* Displays max 7 options at 32px height each */
-      padding-right: 4px; /* Allowance for scrollbar */
+  ${(props) => {
+    const colors = getColors(props);
+    return `
+      color: ${colors?.gray[500]};
+      `;
+  }}
+`;
 
-      .MuiAutocomplete-option {
-        margin: 0;
-
-        .MuiMenuItem-root {
-          padding: 6px 8px;
-          text-overflow: ellipsis;
-
-          .MuiSvgIcon-root {
-            align-self: center;
-            margin: 0 10px 0 0;
-          }
-
-          & span {
-            min-width: 0;
-
-            div {
-              letter-spacing: -0.003em;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-          }
-        }
-      }
-
-      ${scrollbar}
-    }
-  }
+export const SectionItem = styled.div`
+  ${fontBodyXs}
+  font-weight: 400;
+  margin-bottom: 12px;
+  padding-left: 8px;
+  cursor: pointer;
 `;
