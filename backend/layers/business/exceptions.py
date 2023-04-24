@@ -101,5 +101,3 @@ class CollectionDeleteException(BusinessException):
     """
     Raised when an attempt to delete a Collection fails
     """
-
-    pass

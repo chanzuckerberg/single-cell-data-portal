@@ -7,6 +7,7 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     CollectionVersionWithDatasets,
     DatasetVersion,
+    PublishedDatasetVersion,
 )
 
 
@@ -51,3 +52,27 @@ def set_revised_at_field(dataset_versions: List[DatasetVersion], collection_vers
         except DatasetVersionNotFoundException:
             # Dataset has never been published
             pass
+
+
+def get_dataset_versions_with_published_at_and_collection_version_id(
+    dataset_versions: List[DatasetVersion],
+    all_collection_versions: Union[List[CollectionVersionWithDatasets], List[CollectionVersion]],
+) -> List[PublishedDatasetVersion]:
+    """
+    Takes a list of DatasetVersion entities and determines the initial data of publish as well as the id of
+    the CollectionVersion for that initial publication, then returns a list of the corresponding
+    PublishedDatasetVersion which contains these two extra values.
+    """
+    published_datasets_for_collection: List[PublishedDatasetVersion] = []
+    for dataset_version in dataset_versions:
+        published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
+            dataset_version, all_collection_versions
+        )
+        published_datasets_for_collection.append(
+            PublishedDatasetVersion(
+                collection_version_id=collection_version_id,
+                published_at=published_at,
+                **vars(dataset_version),
+            )
+        )
+    return published_datasets_for_collection
