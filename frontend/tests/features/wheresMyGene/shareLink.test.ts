@@ -203,7 +203,6 @@ async function verifyShareLink(
     encodedLink += verifySimpleParameter(urlParams, "compare", _compare);
   }
 
-
   // version
   const version = ver !== undefined ? ver : LATEST_SHARE_LINK_VERSION;
   encodedLink += verifySimpleParameter(urlParams, "ver", version);
@@ -245,9 +244,7 @@ function verifySimpleParameter(
   if (param !== undefined && param !== "" && data !== undefined) {
     console.log(param);
     console.log(urlParams.get(param)?.split(","));
-    expect([data]).toMatchObject(
-      urlParams.get(param)?.split(",") || {}
-    );
+    expect([data]).toMatchObject(urlParams.get(param)?.split(",") || {});
     return `&${param}=${encodeURIComponent(data)}`;
   }
   return "";
