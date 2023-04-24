@@ -99,6 +99,7 @@ const LandingHeader: FC = () => {
         </Wrapper>
       </MobileNavTray>
     </MobileNavWrapper>
+  );
 };
 
 /**
