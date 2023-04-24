@@ -49,6 +49,8 @@ export default function BottomBanner({
   }
 
   useEffect(() => {
+    // Reads a query parameter from the URL to auto open the newsletter signup modal
+    // Allows sharing of a URL to lead directly to the newsletter signup, specifically for conferences
     if (window) {
       const openModalParam = new URLSearchParams(window.location.search).get(
         "newsletter_signup"
@@ -59,6 +61,7 @@ export default function BottomBanner({
       }
     }
 
+    // Observer to observe changes in the Hubspot embedded form, which is hidden from the user in order to use our own form view
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (let i = 0; i < mutation.addedNodes.length; i++) {

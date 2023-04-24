@@ -75,13 +75,10 @@ export const HeaderContainer = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
-  width: 100%;
 `;
 
 export const StyledTitle = styled.div`
   ${fontHeaderXl}
-
-  width: 100%;
 
   letter-spacing: -0.019em;
   font-size: 24px !important;
@@ -134,8 +131,6 @@ export const StyledSubmitButton = styled(Button)`
 
 export const StyledDisclaimer = styled.div`
   ${fontBodyXxxs}
-
-  width: 100%;
 
   letter-spacing: -0.005em;
 
@@ -208,6 +203,7 @@ function asFooter({ asFooter }: { asFooter: boolean }) {
   if (asFooter) {
     return `
       display: block;
+      text-align: center;
     `;
   } else {
     return `
