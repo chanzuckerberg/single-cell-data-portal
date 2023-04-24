@@ -2,7 +2,6 @@ import { expect, test } from "@playwright/test";
 import {
   deleteCsvFile,
   downloadCsv,
-  getCsvHeaders,
   getCsvMetadata,
   goToWMG,
   selectFilterOption,
@@ -22,7 +21,8 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
-
+const BLOOD_TISSUE_COUNT =
+  '[data-testid="cell-type-labels-blood"] [data-testid="cell-type-label-count"]';
 const { describe, skip } = test;
 describe("Csv download", () => {
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
@@ -37,53 +37,44 @@ describe("Csv download", () => {
     ["disease-filter"],
     ["self-reported-ethnicity-filter"],
     ["sex-filter"],
+    ["no-filter"],
   ].forEach(([filter]) => {
-    test(`Verify metadata and header displayed on csv file with ${filter} applied`, async ({
+    test.only(`Verify metadata and header displayed on csv file with ${filter} applied`, async ({
       page,
-      context,
     }) => {
       // to differentiate file in each test run
       const randomNumber: number = Math.floor(Math.random() * 90000) + 10000;
       const fileFactor: string = randomNumber.toString();
-      //select filter
-      await selectFilterOption(page, filter);
+
+      if (filter !== "no-filter") {
+        //select filter
+        await selectFilterOption(page, filter);
+      }
+
       //download and extract the csv file
       await downloadCsv(page, fileFactor);
+      const metadata = await getCsvMetadata("blood", fileFactor);
 
-      //put all the meta data in an array
-      const data = await getCsvMetadata("blood", fileFactor);
-
+      // extract the headers and data arrays from the metadata object
       // put all the headers in an array
-      const headers = await getCsvHeaders("blood", fileFactor);
+      const headers = metadata.headers;
+      const data = metadata.data;
+
+      //get number of element in csv
+      const csvElementsCount = metadata.rowCount;
+
+      //get number of element displayed in ui
+      const uiElementsCount = await page.locator(BLOOD_TISSUE_COUNT).count();
+
+      //verify the number of element in teh csv
+      expect(csvElementsCount).toEqual(uiElementsCount * 3);
 
       //verify meta data
-      await verifyMetadata(page, filter, data, context);
+      await verifyMetadata(page, filter, headers);
 
       //verify all the headers are present in the csv
-      expect(headers[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
+      expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
     });
-  });
-  test("Verify metadata displayed on csv file with no filter", async ({
-    page,
-    context,
-  }) => {
-    // to differentiate file in each test run
-    const randomNumber: number = Math.floor(Math.random() * 90000) + 10000;
-    const fileFactor: string = randomNumber.toString();
-    //download and extract the csv file
-    await downloadCsv(page, fileFactor);
-
-    // put all the headers in an array
-    const headers = await getCsvHeaders("blood", fileFactor);
-
-    //put all the meta data in an array
-    const data = await getCsvMetadata("blood", fileFactor);
-
-    //verify meta data
-    await verifyMetadata(page, "no-filter", data, context);
-
-    //verify all the headers are present in the csv
-    expect(headers[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
   });
   test.afterAll(async () => {
     //delete csv

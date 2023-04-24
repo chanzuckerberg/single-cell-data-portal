@@ -1,6 +1,6 @@
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
-import { expect, Page, BrowserContext } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 import AdmZip from "adm-zip";
 import * as fs from "fs";
@@ -156,79 +156,6 @@ export const downloadCsv = async (page: Page, fileFactor: string) => {
   zip.extractAllTo(extractDirPath);
 };
 
-export const getCsvMetadata = (
-  tissue: string,
-  fileFactor: string
-): Promise<string[]> => {
-  return new Promise((resolve, reject) => {
-    // Open the CSV file for reading
-    const fileStream = fs.createReadStream(
-      `./tests/utils/download/${fileFactor}/${tissue}.csv`,
-      { encoding: "utf8" }
-    );
-
-    // Create a readline interface for the file stream
-    const rl = readline.createInterface({ input: fileStream });
-
-    // Create an empty array to store the parsed data
-    const data: string[] = [];
-
-    // Listen for 'line' events emitted by the readline interface
-    rl.on("line", (line) => {
-      const row = line.split(",");
-      if (row.length === 1) {
-        data.push(row[0]);
-      }
-    });
-
-    // Listen for the 'close' event to know when the parsing is complete
-    rl.on("close", () => {
-      resolve(data);
-    });
-
-    // Listen for any errors during reading and parsing the file
-    rl.on("error", (err) => {
-      reject(err);
-    });
-  });
-};
-
-export const getCsvHeaders = (
-  tissue: string,
-  fileFactor: string
-): Promise<string[][]> => {
-  return new Promise((resolve, reject) => {
-    // Open the CSV file for reading
-    const fileStream = fs.createReadStream(
-      `./tests/utils/download/${fileFactor}/${tissue}.csv`,
-      { encoding: "utf8" }
-    );
-
-    // Create a readline interface for the file stream
-    const rl = readline.createInterface({ input: fileStream });
-
-    // Create an empty array to store the parsed data
-    const data: string[][] = [];
-
-    // Listen for 'line' events emitted by the readline interface
-    rl.on("line", (line) => {
-      const row = line.split(",");
-      if (row.length > 1) {
-        data.push(row);
-      }
-    });
-
-    // Listen for the 'close' event to know when the parsing is complete
-    rl.on("close", () => {
-      resolve(data);
-    });
-
-    // Listen for any errors during reading and parsing the file
-    rl.on("error", (err) => {
-      reject(err);
-    });
-  });
-};
 export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();
@@ -237,12 +164,12 @@ export const verifyMetadata = async (
   page: Page,
   filterName: string,
   data: string[],
-  context: BrowserContext,
   noSelectionText = "No selection"
 ) => {
   //verify the date is valid
   const dateString = data[0].substring(14);
   const date = new Date(dateString);
+
   // Check if the resulting date is valid
   expect(!isNaN(date.getTime())).toBe(true);
 
@@ -366,5 +293,54 @@ export const deleteCsvFile = (filePath: string): void => {
     } else {
       console.log("Folder deleted successfully");
     }
+  });
+};
+
+export interface CsvMetadata {
+  rowCount: number;
+  data: string[][];
+  headers: string[];
+}
+
+export const getCsvMetadata = (
+  tissue: string,
+  fileFactor: string
+): Promise<CsvMetadata> => {
+  return new Promise((resolve, reject) => {
+    // Open the CSV file for reading
+    const fileStream = fs.createReadStream(
+      `./tests/utils/download/${fileFactor}/${tissue}.csv`,
+      { encoding: "utf8" }
+    );
+
+    // Create a readline interface for the file stream
+    const rl = readline.createInterface({ input: fileStream });
+
+    // Create counters and arrays to store the parsed data
+    let rowCount = -1;
+    const data: string[][] = [];
+    const headers: string[] = [];
+
+    // Listen for 'line' events emitted by the readline interface
+    rl.on("line", (line) => {
+      const row = line.split(",");
+      if (row.length > 1) {
+        data.push(row);
+        rowCount++;
+      } else if (row.length === 1) {
+        headers.push(row[0]);
+      }
+    });
+
+    // Listen for the 'close' event to know when the parsing is complete
+    rl.on("close", () => {
+      const csvMetadata: CsvMetadata = { rowCount, data, headers };
+      resolve(csvMetadata);
+    });
+
+    // Listen for any errors during reading and parsing the file
+    rl.on("error", (err) => {
+      reject(err);
+    });
   });
 };
