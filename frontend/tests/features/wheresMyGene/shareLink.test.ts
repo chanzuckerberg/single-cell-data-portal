@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Page, expect, test } from "@playwright/test";
-import _ from "lodash";
 import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGene/components/GeneSearchBar/components/ShareButton/utils";
 import { TEST_URL } from "tests/common/constants";
 import { goToWMG, addTissuesAndGenes } from "tests/utils/wmgUtils";
@@ -137,9 +137,9 @@ async function verifyShareLink(
   page: Page,
   tissues?: string[],
   genes?: string[],
-  datasets?: Array<{ id: string; text: string }>,
-  sexes?: Array<{ id: string; text: string }>,
-  diseases?: Array<{ id: string; text: string }>,
+  datasets?: Array<any>,
+  sexes?: Array<any>,
+  diseases?: Array<any>,
   ethnicities?: string[],
   ver?: string,
   _compare?: string
@@ -219,7 +219,7 @@ async function verifyComplexParameter(
   page: Page,
   urlParams: URLSearchParams,
   param: string,
-  data: Array<{ id: string; text: string }>
+  data: Array<any>
 ): Promise<string> {
   if (data) {
     expect(Object.keys(data)).toMatchObject(
@@ -227,10 +227,10 @@ async function verifyComplexParameter(
     );
     const ids: string[] = urlParams.get("datasets")?.split(",") || [];
     ids.forEach(async (_id: string) => {
-      const item = _.filter(data, function (o: { id: string; text: string }) {
-        if (o.id === _id) return o;
-      });
-      expect(page.getByText(item["text"])).toBeVisible();
+      const item = data.find((item) => item.id === _id);
+      if (item) {
+        expect(page.getByText(item.text)).toBeVisible();
+      }
     });
     return `&${param}=${encodeURIComponent(ids.toString())}`;
   }
