@@ -19,6 +19,9 @@ export const HiddenHubspotForm = styled.div`
 
 export const StyledBanner = styled(Banner)`
   ${fontBodyS}
+
+  padding-left: 16px;
+
   letter-spacing: -0.006em;
 
   height: auto;
@@ -50,6 +53,7 @@ export const StyledBanner = styled(Banner)`
 
 export const StyledBottomBannerWrapper = styled.div`
   ${asFooter}
+
   width: 100%;
 
   /* Right behind modal overlay */
@@ -71,10 +75,13 @@ export const HeaderContainer = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
+  width: 100%;
 `;
 
 export const StyledTitle = styled.div`
   ${fontHeaderXl}
+
+  width: 100%;
 
   letter-spacing: -0.019em;
   font-size: 24px !important;
@@ -103,6 +110,10 @@ export const StyledForm = styled.form`
 `;
 
 export const StyledInputText = styled(InputText)`
+  .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #5826c1 !important;
+  }
+
   flex: 1;
   margin-right: 4px;
   margin-bottom: 0px;
@@ -123,6 +134,8 @@ export const StyledSubmitButton = styled(Button)`
 
 export const StyledDisclaimer = styled.div`
   ${fontBodyXxxs}
+
+  width: 100%;
 
   letter-spacing: -0.005em;
 
@@ -174,6 +187,14 @@ export const NewsletterModal = styled(Modal)`
   padding: 24px;
 
   padding-bottom: 24px !important;
+
+  @media only screen and (max-width: 600px) {
+    min-width: 100vw !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+    padding-top: 170px;
+    border-radius: 0 !important;
+  }
 `;
 
 export const FooterContentWrapper = styled.div`

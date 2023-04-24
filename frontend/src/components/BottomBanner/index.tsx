@@ -49,6 +49,16 @@ export default function BottomBanner({
   }
 
   useEffect(() => {
+    if (window) {
+      const openModalParam = new URLSearchParams(window.location.search).get(
+        "newsletter_signup"
+      );
+
+      if (openModalParam) {
+        setNewsletterModalIsOpen(openModalParam.toLowerCase() === "true");
+      }
+    }
+
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (let i = 0; i < mutation.addedNodes.length; i++) {
@@ -136,14 +146,15 @@ export default function BottomBanner({
 
       <StyledDescription>
         {isSubmitted
-          ? "Thank you for signing up! Keep a lookout for our monthly newsletter in your email inbox."
-          : "We'll send the newest CellxGene updates and developments to your email once a month."}
+          ? "Thanks for subscribing!"
+          : "Get a quarterly email with the latest CELLxGENE features and data."}
       </StyledDescription>
 
       <StyledForm onSubmit={handleSubmit} noValidate>
         {!isSubmitted && (
           <>
             <StyledInputText
+              intent={error ? "error" : "default"}
               inputRef={emailRef}
               placeholder={"Enter email address"}
               label={"Email"}
