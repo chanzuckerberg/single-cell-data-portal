@@ -196,7 +196,7 @@ export function useFetchCollectionRows(
 }
 
 /**
- * Cache-enabled hook for fetching public collections and returning only core collection fields.
+ * Cache-enabled hook for fetching collections and returning only core collection fields.
  * @param mode - View mode.
  * @param status - Query status.
  * @returns Array of collections - possible cached from previous request - containing only ID, name and recency values.
@@ -244,7 +244,13 @@ export function useFetchDatasetRows(
     if (!datasets || !collectionsById) {
       return [];
     }
-    return buildDatasetRows(collectionsById, datasets);
+    // Default view mode displays all datasets, while the curator view mode only displays published datasets.
+    // If the curator view mode is active, any private collections are removed from the collectionsById map, and
+    // the corresponding datasets are not shown in the dataset rows.
+    return buildDatasetRows(
+      deletePrivateCollectionsById(collectionsById),
+      datasets
+    );
   }, [datasets, collectionsById]);
 
   return {
@@ -428,10 +434,13 @@ function buildDatasetRows(
   datasets: ProcessedDatasetResponse[]
 ): DatasetRow[] {
   // Join collection and dataset information to create dataset rows.
-  return datasets.map((dataset: ProcessedDatasetResponse) => {
+  return datasets.reduce((acc, dataset: ProcessedDatasetResponse) => {
     const collection = collectionsById.get(dataset.collection_id);
-    return buildDatasetRow(dataset, collection);
-  });
+    if (collection) {
+      acc.push(buildDatasetRow(dataset, collection));
+    }
+    return acc;
+  }, [] as DatasetRow[]);
 }
 
 /**
@@ -566,6 +575,26 @@ export function calculateRecency(
 
   // Collection (or dataset's collection) has no publication metadata, use revised at or published at, in priority order.
   return response.revised_at ?? response.published_at;
+}
+
+/**
+ * Removes private collections from the given processed collection response.
+ * @param collectionsById - Processed collection response.
+ * @returns processed collection response with private collections removed.
+ */
+export function deletePrivateCollectionsById(
+  collectionsById: Map<string, ProcessedCollectionResponse>
+): Map<string, ProcessedCollectionResponse> {
+  const publishedCollectionsById = new Map(collectionsById);
+  for (const [id, collection] of publishedCollectionsById.entries()) {
+    if (
+      "visibility" in collection &&
+      collection?.visibility === VISIBILITY_TYPE.PRIVATE
+    ) {
+      publishedCollectionsById.delete(id);
+    }
+  }
+  return publishedCollectionsById;
 }
 
 /**

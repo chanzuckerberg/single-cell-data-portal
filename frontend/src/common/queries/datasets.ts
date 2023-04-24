@@ -106,7 +106,9 @@ export function useDeleteDataset(): UseMutationResult<
       collectionId,
       datasetId,
     }: DeleteDataset): Promise<void> => {
+      // If the dataset was in the process of loading, the dataset status query will be cancelled.
       await queryClient.cancelQueries([USE_DATASET_STATUS, datasetId]);
+      // Invalidate the collection query, and datasets index query.
       await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
       await queryClient.invalidateQueries(
         [USE_DATASETS_INDEX],
