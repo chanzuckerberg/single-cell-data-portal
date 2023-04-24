@@ -55,7 +55,9 @@ from backend.layers.common.entities import (
     Link,
     PublishedDatasetVersion,
 )
-from backend.layers.common.helpers import get_published_at_and_collection_version_id_else_not_found
+from backend.layers.common.helpers import (
+    get_published_at_and_collection_version_id_else_not_found,
+)
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,

@@ -6,14 +6,22 @@ import AdmZip from "adm-zip";
 import * as fs from "fs";
 import readline from "readline";
 
-export function goToWMG(page: Page) {
-  return Promise.all([
-    page.waitForResponse(
-      (resp: { url: () => string | string[]; status: () => number }) =>
-        resp.url().includes("/wmg/v1/filters") && resp.status() === 200
-    ),
-    page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
-  ]);
+/**
+ * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
+ */
+export async function goToWMG(page: Page) {
+  return await tryUntil(
+    async () => {
+      await Promise.all([
+        page.waitForResponse(
+          (resp: { url: () => string | string[]; status: () => number }) =>
+            resp.url().includes("/wmg/v1/filters") && resp.status() === 200
+        ),
+        page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
+      ]);
+    },
+    { page }
+  );
 }
 
 export const selectFilterOption = async (page: Page, filterName: string) => {
@@ -91,10 +99,37 @@ export const checkSourceData = async (page: Page) => {
   //click on source data icon
   await page.locator('[data-testid="source-data-button"]').click();
 
-  // number of elemet displayed on source data
+  // number of element displayed on source data
   const n = await page.locator('[data-testid="source-data-list"] a').count();
+
   // close the pop-up
-  await page.keyboard.press("Escape");
+  /**
+   * (thuang): Sometimes pressing escape once wasn't closing the side panel, so
+   * wrapping this to retry and assert the panel is indeed closed
+   */
+  await tryUntil(
+    async () => {
+      await page.keyboard.press("Escape");
+
+      await tryUntil(
+        async () => {
+          expect(
+            await page.locator('[data-testid="source-data-list"]').isVisible()
+          ).toBeFalsy();
+        },
+        {
+          page,
+          /**
+           * (thuang): we don't need to wait for too long to retry pressing escape
+           * button, since the source data panel should close within 2s
+           */
+          maxRetry: 10,
+        }
+      );
+    },
+    { page }
+  );
+
   return n;
 };
 export const checkPlotSize = async (page: Page) => {
