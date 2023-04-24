@@ -58,6 +58,19 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
           />
         </Link>
       </LinkWrapper>
+      <LinkWrapper>
+        <Link href={ROUTES.CELL_CARDS} passHref>
+          <AnchorButton
+            active={isRouteActive(pathname, ROUTES.CELL_CARDS)}
+            href="passHref"
+            minimal
+            onClick={() => {
+              track(EVENTS.CELL_CARDS_CLICK_NAV);
+            }}
+            text="Cell Cards"
+          />
+        </Link>
+      </LinkWrapper>
       <NavDivider />
       <LinkWrapper>
         <AnchorButton

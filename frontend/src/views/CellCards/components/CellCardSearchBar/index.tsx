@@ -1,5 +1,5 @@
-import { DefaultDropdownMenuOption, InputSearch } from "czifui";
-import { useState, useEffect, useRef } from "react";
+import { InputSearch } from "czifui";
+import { useState, useRef } from "react";
 import { noop } from "src/common/constants/utils";
 import { SectionItem, SectionTitle, StyledPopper } from "./style";
 import { allCellTypes } from "./fixture";
