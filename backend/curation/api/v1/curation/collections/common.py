@@ -352,6 +352,7 @@ def get_inferred_collection_version(collection_id: str) -> CollectionVersionWith
         # Only allow fetch by Collection Version ID if unpublished revision of published collection
         if version.published_at is not None or version.canonical_collection.originally_published_at is None:
             raise ForbiddenHTTPException()
+
     if version.canonical_collection.tombstoned is True:
         raise ForbiddenHTTPException()
     return version
