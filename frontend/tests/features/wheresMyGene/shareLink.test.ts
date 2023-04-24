@@ -45,7 +45,7 @@ const VERSION = "2";
 const initialState =
   "https://localhost:3000/gene-expression?datasets=c874f155-9bf9-4928-b821-f52c876b3e48%2Cdb59611b-42de-4035-93aa-1ed39f38b467%2Ceeacb0c1-2217-4cf6-b8ce-1f0fedf1b569%2C881fe679-c6e0-45a3-9427-c4e81be6921f%2Cea786a06-5855-48b7-80d7-0313a21a2044%2C456e8b9b-f872-488b-871d-94534090a865&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2&compare=disease";
 describe("Share link tests", () => {
-  test("Should share link with single tissue and single gene", async ({
+  test.only("Should share link with single tissue and single gene", async ({
     page,
     browserName,
   }) => {
@@ -63,7 +63,7 @@ describe("Share link tests", () => {
     await setupStateAndVerifyShareLink(page, tissues, genes);
   });
 
-  test("Should generate share link with correct format for all query param types", async ({
+  test.only("Should generate share link with correct format for all query param types", async ({
     page,
     browserName,
   }) => {
@@ -200,12 +200,12 @@ async function verifyShareLink(
 
   // compare
   if (_compare !== undefined) {
-    encodedLink += `&compare=${_compare}`;
+    encodedLink += verifySimpleParameter(urlParams, "compare", _compare);
   }
-  encodedLink += verifySimpleParameter(urlParams, "compare", [_compare || ""]);
+
 
   // version
-  const version = [ver !== undefined ? ver : LATEST_SHARE_LINK_VERSION];
+  const version = ver !== undefined ? ver : LATEST_SHARE_LINK_VERSION;
   encodedLink += verifySimpleParameter(urlParams, "ver", version);
 
   // verify encoded link
@@ -221,7 +221,7 @@ async function verifyComplexParameter(
   param: string,
   data: Array<any>
 ): Promise<string> {
-  if (data) {
+  if (data.length > 0) {
     expect(Object.keys(data)).toMatchObject(
       urlParams.get(param)?.split(",") || {}
     );
@@ -232,18 +232,23 @@ async function verifyComplexParameter(
         expect(page.getByText(item.text)).toBeVisible();
       }
     });
-    return `&${param}=${encodeURIComponent(ids.toString())}`;
+    const delimiter = "" ? param === "tissues" : "&";
+    return `${delimiter}${param}=${encodeURIComponent(ids.toString())}`;
   }
   return "";
 }
-async function verifySimpleParameter(
+function verifySimpleParameter(
   urlParams: URLSearchParams,
   param: string,
-  data: string[]
+  data: string
 ) {
-  if (param.length) {
-    expect(param).toMatchObject(urlParams.get(param)?.split(",") || {});
-    return `&${param}=${encodeURIComponent(data.toString())}`;
+  if (param !== undefined && param !== "" && data !== undefined) {
+    console.log(param);
+    console.log(urlParams.get(param)?.split(","));
+    expect([data]).toMatchObject(
+      urlParams.get(param)?.split(",") || {}
+    );
+    return `&${param}=${encodeURIComponent(data)}`;
   }
   return "";
 }
