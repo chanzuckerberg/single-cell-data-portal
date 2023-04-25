@@ -16,7 +16,6 @@ from backend.layers.business.exceptions import (
     CollectionCreationException,
     CollectionDeleteException,
     CollectionIsPublishedException,
-    CollectionIsTombstonedException,
     CollectionNotFoundException,
     CollectionPublishException,
     CollectionUpdateException,
@@ -28,11 +27,11 @@ from backend.layers.business.exceptions import (
     DatasetVersionNotFoundException,
     InvalidURIException,
     MaxFileSizeExceededException,
-    PublishedCollectionVersionNotFoundException,
 )
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
 from backend.layers.common.entities import (
+    CanonicalCollection,
     CollectionId,
     CollectionLinkType,
     CollectionMetadata,
@@ -57,7 +56,9 @@ from backend.layers.common.entities import (
     Link,
     PublishedDatasetVersion,
 )
-from backend.layers.common.helpers import get_published_at_and_collection_version_id_else_not_found
+from backend.layers.common.helpers import (
+    get_published_at_and_collection_version_id_else_not_found,
+)
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
@@ -143,34 +144,6 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_mapped_version(collection_id)
 
-    def get_published_collection_version__discover_api(
-        self, collection_version_id: str
-    ) -> CollectionVersionWithPublishedDatasets:
-        collection_version = self.database_provider.get_collection_version_with_datasets(
-            CollectionVersionId(collection_version_id)
-        )
-        if collection_version is None or collection_version.published_at is None:
-            raise PublishedCollectionVersionNotFoundException()
-        if collection_version.canonical_collection.tombstoned is True:
-            raise CollectionIsTombstonedException()
-        all_collection_versions = list(
-            self.get_all_published_collection_versions_from_canonical(collection_version.canonical_collection.id)
-        )
-        published_datasets_for_collection: List[PublishedDatasetVersion] = []
-        for dataset_version in collection_version.datasets:
-            published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
-                dataset_version, all_collection_versions
-            )
-            published_datasets_for_collection.append(
-                PublishedDatasetVersion(
-                    collection_version_id=collection_version_id,
-                    published_at=published_at,
-                    **vars(dataset_version),
-                )
-            )
-        collection_version.datasets = published_datasets_for_collection  # hack to allow unpacking via **vars() below
-        return CollectionVersionWithPublishedDatasets(**vars(collection_version))
-
     def get_unpublished_collection_version_from_canonical(
         self, collection_id: CollectionId
     ) -> Optional[CollectionVersionWithDatasets]:
@@ -198,6 +171,9 @@ class BusinessLogic(BusinessLogicInterface):
         Returns all the collection versions connected to a canonical collection
         """
         return self.database_provider.get_all_versions_for_collection(collection_id)
+
+    def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:
+        return self.database_provider.get_canonical_collection(collection_id)
 
     def get_all_published_collection_versions_from_canonical(
         self, collection_id: CollectionId

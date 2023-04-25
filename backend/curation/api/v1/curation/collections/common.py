@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    CollectionVersionWithPublishedDatasets,
     DatasetArtifactType,
     DatasetId,
     DatasetProcessingStatus,
@@ -66,7 +67,7 @@ def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]
 
 
 def reshape_for_curation_api(
-    collection_version: Union[CollectionVersion, CollectionVersionWithDatasets],
+    collection_version: Union[CollectionVersion, CollectionVersionWithDatasets, CollectionVersionWithPublishedDatasets],
     user_info: UserInfo = None,
     reshape_for_version_endpoint: bool = False,
     preview: bool = False,
@@ -84,6 +85,7 @@ def reshape_for_curation_api(
     # get collection attributes based on endpoint type and published status
     collection_id = collection_version.collection_id.id
     if not reshape_for_version_endpoint:
+        published_at = collection_version.canonical_collection.originally_published_at
         if is_published:
             # Published
             collection_url = f"{get_collections_base_url()}/collections/{collection_version.collection_id.id}"
@@ -118,16 +120,21 @@ def reshape_for_curation_api(
     else:
         collection_url = f"{get_collections_base_url()}/collections/{collection_version.version_id.id}"
         use_canonical_url = False
+        published_at = collection_version.published_at
         revision_of = collection_version.collection_id.id
         revising_in = None
 
     # get collection dataset attributes
-    response_datasets = reshape_datasets_for_curation_api(
-        collection_version.datasets,
-        use_canonical_url,
-        preview,
-        as_version=reshape_for_version_endpoint,
-        is_published=is_published,
+    response_datasets = sorted(
+        reshape_datasets_for_curation_api(
+            collection_version.datasets,
+            use_canonical_url,
+            preview,
+            as_version=reshape_for_version_endpoint,
+            is_published=is_published,
+        ),
+        key=lambda d: d["dataset_id"],  # For stable ordering
+        reverse=True,  # To stay consistent with Datasets index endpoint sorting
     )
 
     # build response
@@ -146,7 +153,7 @@ def reshape_for_curation_api(
         doi=doi,
         links=links,
         name=collection_version.metadata.name,
-        published_at=collection_version.canonical_collection.originally_published_at,
+        published_at=published_at,
         publisher_metadata=collection_version.publisher_metadata,
         visibility=get_visibility(collection_version),
     )
@@ -345,6 +352,7 @@ def get_inferred_collection_version(collection_id: str) -> CollectionVersionWith
         # Only allow fetch by Collection Version ID if unpublished revision of published collection
         if version.published_at is not None or version.canonical_collection.originally_published_at is None:
             raise ForbiddenHTTPException()
+
     if version.canonical_collection.tombstoned is True:
         raise ForbiddenHTTPException()
     return version

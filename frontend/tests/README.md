@@ -12,6 +12,12 @@ There are a number of scripts for running E2E tests and one can choose depending
 
 NOTE. It is advised to run the default `npm run e2e` once PR is ready to ensure all tests pass in their entirety as that is what the CI will.
 
+## Flags
+
+1. `SKIP_LOGIN`: Add `SKIP_LOGIN=true` to your test command if you don't need Playwright to log into Data Portal
+1. `HEADLESS` and `HEADFUL`: Add `HEADLESS=false` or `HEADFUL=true` to your test command to launch browser
+1. `RETRY`: Add `RETRY=false` if you don't want to retry your test. This is good for failing fast when you're writing tests
+
 ### What
 
 Running E2E tests locally means the tests are run in your local machine against the web app that's either running locally as well (localhost, docker) OR a deployed environment (dev, staging, prod, and rdev)

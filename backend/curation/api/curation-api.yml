@@ -534,6 +534,10 @@ paths:
                   $ref: "#/components/schemas/collection"
         "403":
           $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/collection_versions/{collection_version_id}:
     get:
