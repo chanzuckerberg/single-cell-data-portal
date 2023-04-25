@@ -39,7 +39,7 @@ describe("Csv download", () => {
     ["sex-filter"],
     ["no-filter"],
   ].forEach(([filter]) => {
-    test.only(`Verify metadata and header displayed on csv file with ${filter} applied`, async ({
+    test(`Verify metadata and header displayed on csv file with ${filter} applied`, async ({
       page,
     }) => {
       // to differentiate file in each test run
