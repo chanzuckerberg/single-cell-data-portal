@@ -70,7 +70,7 @@ jobs:
             DOMAIN_NAME=public-frontend.production.single-cell.czi.technology
             ALIAS=cellxgene.cziscience.com
           else
-            DOMAIN_NAME=public-frontend.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+            DOMAIN_NAME=frontend.${DEPLOYMENT_STAGE}.single-cell.czi.technology
             ALIAS=cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology
           fi
           DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" --output text)
