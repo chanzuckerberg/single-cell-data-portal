@@ -33,7 +33,7 @@ info:
     private revisions of published Collections, and their constituent (private) Datasets are not available as Versions
     until they are published, and therefore must be referenced via their `collection_id` and `dataset_id` identifiers
     using `Collection` and `Dataset` endpoints. As such, mutation actions cannot be
-    performed using version identifiers.
+    performed using Version identifiers.
 
 servers:
   - description: Production environment
@@ -534,9 +534,9 @@ paths:
 
   /v1/collections/{collection_id}/versions:
     get:
-      summary: Fetch all versions of a Collection with corresponding Dataset Versions
+      summary: Fetch all Collection Versions for a given Collection
       description: >
-        Fetch full metadata for all versions of a Collection and their corresponding Dataset Versions. The
+        Fetch full metadata for all published Collection Versions and their constituent Dataset Versions. The
         `collection_id` must reference a *Collection*, **NOT** a *Collection Version*. Collection Versions are returned
         in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
@@ -606,12 +606,12 @@ paths:
 
   /v1/datasets/{dataset_id}/versions:
     get:
-      summary: List all versions for a Dataset
+      summary: List all Dataset Versions for a given Dataset
       tags:
         - Dataset
       description: |
-        List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset Version*.
-        Dataset Versions are returned in reverse-chronological order.
+        List all published Dataset Versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a
+        *Dataset Version*. Dataset Versions are returned in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.datasets.dataset_id.versions.actions.get
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
