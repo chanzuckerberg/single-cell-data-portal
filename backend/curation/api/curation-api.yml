@@ -1136,7 +1136,7 @@ components:
           $ref: "#/components/schemas/collection_id"
         collection_version_id:
           description: |
-            The *Collection Version* in which this *Dataset Version* was first published.
+            The Collection Version in which this Dataset Version was first published.
           type: string
           format: uuid
         dataset_id:
