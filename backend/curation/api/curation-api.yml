@@ -885,9 +885,9 @@ components:
           $ref: "#/components/schemas/created_at"
         curator_name:
           $ref: "#/components/schemas/curator_name"
-        datasets:
+        dataset_versions:
           type: array
-          description: A list of Dataset metadata associated with the Collection Version
+          description: A list of Dataset Versions associated with the Collection Version
           items:
             $ref: "#/components/schemas/dataset_version"
         description:
