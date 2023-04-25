@@ -15,7 +15,7 @@ describe("Right side bar", () => {
     await goToWMG(page);
   });
 
-  test.only("Documentation should link out to cellxgene documentation", async ({
+  test("Documentation should link out to cellxgene documentation", async ({
     page,
     context,
   }) => {
@@ -37,7 +37,7 @@ describe("Right side bar", () => {
     ).toBeVisible();
   });
 
-  test.only("Clicking on cellxgene logo takes you back to data portal", async ({
+  test("Clicking on cellxgene logo takes you back to data portal", async ({
     page,
   }) => {
     //click the  logo on the top bar opens  opens on a new page
@@ -51,7 +51,7 @@ describe("Right side bar", () => {
       "Discover the mechanisms of human health"
     );
   });
-  test.only("Right side bar loads with legend, methodology, and source data", async ({
+  test("Right side bar loads with legend, methodology, and source data", async ({
     page,
   }) => {
     //verify gene-expression color scale is visible
@@ -74,7 +74,7 @@ describe("Right side bar", () => {
     // expect the header to be visible
     await expect(page.locator("h5")).toContainText("Methodology");
   });
-  test.only("Link in methodology section links out to scExpression documentation", async ({
+  test("Link in methodology section links out to scExpression documentation", async ({
     page,
     context,
   }) => {
@@ -101,7 +101,7 @@ describe("Right side bar", () => {
     ).toBeVisible();
   });
 
-  test.only("When scaled check box is checked, gene expression should scale from 0 to 1", async ({
+  test("When scaled check box is checked, gene expression should scale from 0 to 1", async ({
     page,
   }) => {
     const COLOR_SCALE = '[id="relative-gene-expression"] .low-high';

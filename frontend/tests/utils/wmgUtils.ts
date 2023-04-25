@@ -2,7 +2,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-import { tryUntil } from "./helpers";
+import { selectFirstOption, tryUntil } from "./helpers";
 
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
