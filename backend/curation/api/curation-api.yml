@@ -37,22 +37,6 @@ info:
     using `../collections/..` and `../datasets/..` endpoints, respectively. As such, mutation actions cannot be
     performed using version identifiers.
 
-    #### Interpreting `published_at` and `revised_at` timestamps with versions
-    When retrieving data about *Collections* or *Datasets*, these fields convey the following:
-
-    * `published_at`: the timestamp of the first publication of the *Collection*/*Dataset*, i.e., the publication
-    of the first version.
-
-    * `revised_at`: the timestamp of the publication of the most recent revision of the *Collection*/*Dataset*
-
-    However, when retrieving data about *Collection versions* or *Dataset versions*:
-
-    * `published_at`: the timestamp of the publication of this particular version
-
-    Therefore, in the case of a Collection, the `published_at` timestamp for its latest *Collection version* will be
-    equal to the `revised_at` timestamp for the *Collection*. There is no `revised_at` attribute associated with an
-    entity version.
-
 servers:
   - description: Production environment
     url: https://api.cellxgene.cziscience.com/
@@ -814,6 +798,9 @@ components:
       description: A timestamp indicating the last time a Revision for this Dataset was published.
       nullable: true
       type: string
+    collection_version_published_at:
+      description: A timestamp of when this Collection Version was published.
+      type: string
     collection_revising_in:
       type: string
       description: >
@@ -914,7 +901,7 @@ components:
         name:
           $ref: "#/components/schemas/collection_name"
         published_at:
-          $ref: "#/components/schemas/published_at"
+          $ref: "#/components/schemas/collection_version_published_at"
         publisher_metadata:
           $ref: "#/components/schemas/publisher_metadata"
         visibility:
