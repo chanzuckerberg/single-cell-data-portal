@@ -149,8 +149,8 @@ export const checkPlotSize = async (page: Page) => {
   return sumOfHeights;
 };
 export const downloadCsv = async (page: Page, fileFactor: string) => {
-  const zipFilePath = "./tests/utils/download.zip";
-  const extractDirPath = `./tests/utils/download/${fileFactor}`;
+  const zipFilePath = "./tests/download.zip";
+  const extractDirPath = `./tests/download/${fileFactor}`;
   const CHECK = "Mui-checked";
   //wait for download file
   const downloadPromise = page.waitForEvent("download");
@@ -322,7 +322,7 @@ export const verifyMetadata = async (
   }
 };
 
-export const deleteCsvFile = (filePath: string): void => {
+export const deleteCsvDownloads = (filePath: string): void => {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);
@@ -345,7 +345,7 @@ export const getCsvMetadata = (
   return new Promise((resolve, reject) => {
     // Open the CSV file for reading
     const fileStream = fs.createReadStream(
-      `./tests/utils/download/${fileFactor}/${tissue}.csv`,
+      `./tests/download/${fileFactor}/${tissue}.csv`,
       { encoding: "utf8" }
     );
 

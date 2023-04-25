@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
-  deleteCsvFile,
+  deleteCsvDownloads,
   downloadCsv,
   getCsvMetadata,
   goToWMG,
@@ -78,6 +78,6 @@ describe("Csv download", () => {
   });
   test.afterAll(async () => {
     //delete csv
-    deleteCsvFile(`./tests/utils/download`);
+    deleteCsvDownloads(`./tests/download`);
   });
 });
