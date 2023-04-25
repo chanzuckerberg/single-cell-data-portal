@@ -26,13 +26,13 @@ info:
     While the *Collection* identifier `collection_id` will always refer to the latest published instance of a Collection
     (like the "head" in version-control terminology), and must be used with `Collection` endpoints, the
     *Collection Version* identifier `collection_version_id` points always to one specific published instance (version)
-    of a Collection (like a commit hash) and must be used with `Collection Version` endpoints.
-    endpoints. The same is true for *Datasets* and *Dataset Versions*, though it is important to note that if a given Dataset
+    of a Collection (like a commit hash) and must be used with `Collection Version` endpoints. The same is true for
+    *Datasets* and *Dataset Versions*, though it is important to note that if a given Dataset
     is not updated during the course of a revision of its parent Collection, then its Dataset Version (and identifier
     `dataset_version_id`) will not change even though a new Collection Version has been published. Private Collections,
-    private revisions of published Collections, and their constituent (private) Datasets are not available as *Versions*
+    private revisions of published Collections, and their constituent (private) Datasets are not available as Versions
     until they are published, and therefore must be referenced via their `collection_id` and `dataset_id` identifiers
-    using `Collection` and `Dataset` endpoints, respectively. As such, mutation actions cannot be
+    using `Collection` and `Dataset` endpoints. As such, mutation actions cannot be
     performed using version identifiers.
 
 servers:
