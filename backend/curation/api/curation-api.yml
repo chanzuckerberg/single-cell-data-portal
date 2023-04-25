@@ -554,7 +554,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/collection"
+                  $ref: "#/components/schemas/collection_version"
         "403":
           $ref: "#/components/responses/403"
         "404":
