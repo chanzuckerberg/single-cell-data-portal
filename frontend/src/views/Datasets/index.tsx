@@ -381,7 +381,7 @@ export default function Datasets(): JSX.Element {
               />
             )}
           </View>
-          <BottomBanner survey={false} />
+          <BottomBanner />
         </>
       )}
     </>

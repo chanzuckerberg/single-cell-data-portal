@@ -317,7 +317,7 @@ export default function Collections(): JSX.Element {
               />
             )}
           </View>
-          <BottomBanner survey={false} />
+          <BottomBanner />
         </>
       )}
     </>
