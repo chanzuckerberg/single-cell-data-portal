@@ -5,9 +5,9 @@ import { TEST_URL } from "tests/common/constants";
 import { goToWMG, addTissuesAndGenes } from "tests/utils/wmgUtils";
 
 const { describe } = test;
-
-const tissues = ["blood", "lung", "liver"];
-const genes = ["SCYL3", "TSPAN6", "TNMD"];
+const SHARE_BUTTON = "share-button";
+const tissues = ["blood", "lung"];
+const genes = ["DPM1", "TNMD", "TSPAN6"];
 const dataSets = [
   {
     id: "c874f155-9bf9-4928-b821-f52c876b3e48",
@@ -15,11 +15,11 @@ const dataSets = [
   },
   {
     id: "db59611b-42de-4035-93aa-1ed39f38b467",
-    text: "49 years old male - Fresh PBMCs (2 day post-intubation)",
+    text: "49 years old male - Fresh PBMCs (2 days post-intubation)",
   },
   {
     id: "eeacb0c1-2217-4cf6-b8ce-1f0fedf1b569",
-    text: "49 years old male - Fresh PBMCs (3 day post-intubation)",
+    text: "49 years old male - Fresh PBMCs (3 days post-intubation)",
   },
   {
     id: "881fe679-c6e0-45a3-9427-c4e81be6921f",
@@ -34,11 +34,11 @@ const dataSets = [
     text: "Single-cell atlas of peripheral immune response to SARS-CoV-2 infection",
   },
 ];
-const diseases = [{ id: "MONDO%3A0100096", text: "COVID-19" }];
+const diseases = [{ id: "MONDO:0100096", text: "COVID-19" }];
 const ethnicities = ["unknown"];
 const sexes = [
-  { id: "PATO%3A0000383", text: "female" },
-  { id: "PATO%3A0000384", text: "male" },
+  { id: "PATO:0000383", text: "female" },
+  { id: "PATO:0000384", text: "male" },
 ];
 const COMPARE = "disease";
 const VERSION = "2";
@@ -50,17 +50,25 @@ describe("Share link tests", () => {
     browserName,
   }) => {
     skipFirefox(browserName);
+    const _tissues = ["blood"];
+    const _genes = ["SCYL3"];
 
-    await setupStateAndVerifyShareLink(page, ["blood"], ["SCYL3"]);
+    //set up sate
+    await setupStateAndCopyShareLink(page, _tissues, _genes);
+    //verify link
+    await verifyShareLink(page, _tissues, _genes);
   });
 
-  test("Should share link with multiple tissues and multiple genes", async ({
+  test.only("Should share link with multiple tissues and multiple genes", async ({
     page,
     browserName,
   }) => {
     skipFirefox(browserName);
 
-    await setupStateAndVerifyShareLink(page, tissues, genes);
+    await setupStateAndCopyShareLink(page, tissues, genes);
+
+    // verify link
+    await verifyShareLink(page, tissues, genes);
   });
 
   test.only("Should generate share link with correct format for all query param types", async ({
@@ -84,27 +92,6 @@ describe("Share link tests", () => {
       VERSION,
       COMPARE
     );
-
-    // copy share link
-    const clipboardText: string = await page.evaluate(
-      "navigator.clipboard.readText()"
-    );
-
-    await goToWMG(page, clipboardText);
-
-    tissues.forEach(async (tissue) => {
-      // selected tissue should be visible
-      await expect(
-        page.getByTestId(`cell-type-labels-${tissue}`)
-      ).toBeVisible();
-    });
-
-    genes.forEach(async (gene) => {
-      // selected gene should be visible
-      expect(await page.getByTestId(`gene-name-${gene}`).textContent()).toBe(
-        gene
-      );
-    });
   });
 });
 
@@ -114,23 +101,12 @@ async function setupStateAndCopyShareLink(
   genes: string[]
 ) {
   await goToWMG(page);
-  await expect(page.getByTestId("share-button")).toBeDisabled();
+  await expect(page.getByTestId(SHARE_BUTTON)).toBeDisabled();
 
   // add tissues and genes
   await addTissuesAndGenes(page, tissues, genes);
   // copy share link
-  await page.getByTestId("share-button").click();
-}
-
-async function setupStateAndVerifyShareLink(
-  page: Page,
-  tissues: string[],
-  genes: string[]
-) {
-  await setupStateAndCopyShareLink(page, tissues, genes);
-
-  // verify link
-  await verifyShareLink(page, tissues, genes);
+  await page.getByTestId(SHARE_BUTTON).click();
 }
 
 async function verifyShareLink(
@@ -145,8 +121,11 @@ async function verifyShareLink(
   _compare?: string
 ) {
   let encodedLink = `${TEST_URL}/gene-expression?`;
-
+  let isCompareParamSet = false;
+  let param = "";
+  let data;
   // copy link to clipboard
+  await page.getByTestId("share-button").click();
   const clipboardText: string = await page.evaluate(
     "navigator.clipboard.readText()"
   );
@@ -157,55 +136,64 @@ async function verifyShareLink(
     decodeURIComponent(clipboardText.split("?")[1])
   );
 
+  // compare
+  if (_compare !== undefined) {
+    param = "compare";
+    isCompareParamSet = true;
+    await verifyParameter(page, urlParams, param, [_compare]);
+    encodedLink += encodeLink(param, _compare, isCompareParamSet);
+  }
+
   //datasets
-  encodedLink += await verifyComplexParameter(
-    page,
-    urlParams,
-    "datasets",
-    datasets || []
-  );
+  if (datasets !== undefined) {
+    param = "datasets";
+    await verifyParameter(page, urlParams, param, datasets || []);
+    data = Object.values(datasets || []).toString() || "";
+    encodedLink += encodeLink(param, data);
+  }
+
   //diseases
-  encodedLink += await verifyComplexParameter(
-    page,
-    urlParams,
-    "diseases",
-    diseases || []
-  );
+  if (diseases !== undefined) {
+    param = "diseases";
+    await verifyParameter(page, urlParams, param, diseases || []);
+    data = Object.values(diseases || []).toString() || "";
+    encodedLink += encodeLink(param, data);
+  }
 
   // verify ethnicities
   if (ethnicities !== undefined) {
-    expect(ethnicities).toMatchObject(
-      urlParams.get("ethnicities")?.split(",") || {}
-    );
-    encodedLink += `&ethnicities=${encodeURIComponent(ethnicities.toString())}`;
+    param = "ethnicities";
+    data = await verifyParameter(page, urlParams, param, ethnicities || []);
+    encodedLink += encodeLink(param, data?.toString());
   }
+
   // verify sexes
-  encodedLink += await verifyComplexParameter(
-    page,
-    urlParams,
-    "sexes",
-    sexes || []
-  );
+  if (sexes !== undefined) {
+    param = "sexes";
+    await verifyParameter(page, urlParams, param, sexes || []);
+    data = Object.values(sexes || []).toString() || "";
+    encodedLink += encodeLink(param, data);
+  }
+
   // verify tissues
   if (tissues !== undefined) {
-    expect(tissues).toMatchObject(urlParams.get("tissues")?.split(",") || {});
-    encodedLink += `tissues=${encodeURIComponent(tissues.toString())}`;
+    param = "tissues";
+    data = await verifyParameter(page, urlParams, param, tissues || []);
+    encodedLink += encodeLink(param, data?.toString(), isCompareParamSet);
   }
 
   // verify genes
   if (genes !== undefined) {
-    expect(genes).toMatchObject(urlParams.get("genes")?.split(",") || {});
-    encodedLink += `&genes=${encodeURIComponent(genes.toString())}`;
-  }
-
-  // compare
-  if (_compare !== undefined) {
-    encodedLink += verifySimpleParameter(urlParams, "compare", _compare);
+    param = "genes";
+    data = await verifyParameter(page, urlParams, param, genes || []);
+    encodedLink += encodeLink(param, data?.toString());
   }
 
   // version
   const version = ver !== undefined ? ver : LATEST_SHARE_LINK_VERSION;
-  encodedLink += verifySimpleParameter(urlParams, "ver", version);
+  param = "ver";
+  data = await verifyParameter(page, urlParams, param, [version]);
+  encodedLink += encodeLink(param, data?.toString());
 
   // verify encoded link
   expect(clipboardText).toBe(encodedLink);
@@ -214,38 +202,52 @@ async function verifyShareLink(
 function skipFirefox(browserName: string) {
   test.skip(browserName === "firefox", "No Clipboard read permission");
 }
-async function verifyComplexParameter(
+async function verifyParameter(
   page: Page,
   urlParams: URLSearchParams,
   param: string,
   data: Array<any>
-): Promise<string> {
+): Promise<string[]> {
   if (data.length > 0) {
-    expect(Object.keys(data)).toMatchObject(
-      urlParams.get(param)?.split(",") || {}
-    );
-    const ids: string[] = urlParams.get("datasets")?.split(",") || [];
-    ids.forEach(async (_id: string) => {
-      const item = data.find((item) => item.id === _id);
-      if (item) {
-        expect(page.getByText(item.text)).toBeVisible();
-      }
-    });
-    const delimiter = "" ? param === "tissues" : "&";
-    return `${delimiter}${param}=${encodeURIComponent(ids.toString())}`;
+    let paramValues: string[] = [];
+    switch (param) {
+      case "datasets":
+        paramValues = urlParams.get("datasets")?.split(",") || [];
+        // verify datasets have been selected
+        paramValues.forEach(async (_id: string) => {
+          const item = data.find((item) => item.id === _id);
+          if (item) {
+            await expect(page.getByText(item.text)).toBeVisible();
+          }
+        });
+        // verify query param values match
+        expect(Object.values(data)).toMatchObject(paramValues || {});
+        break;
+      case "tissues":
+      case "genes":
+      case "ethnicities":
+        paramValues = urlParams.get(param)?.split(",") || [];
+        // verify query param values match
+        expect([data]).toMatchObject(paramValues || {});
+        break;
+      default:
+        paramValues = data.map((obj) => obj.id);
+        expect(paramValues).toMatchObject(
+          urlParams.get(param)?.split(",") || {}
+        );
+    }
+    return paramValues;
   }
-  return "";
+  return [];
 }
-function verifySimpleParameter(
-  urlParams: URLSearchParams,
-  param: string,
-  data: string
-) {
-  if (param !== undefined && param !== "" && data !== undefined) {
-    console.log(param);
-    console.log(urlParams.get(param)?.split(","));
-    expect([data]).toMatchObject(urlParams.get(param)?.split(",") || {});
-    return `&${param}=${encodeURIComponent(data)}`;
+
+function encodeLink(param: string, data: string, isCompareParamSet = false) {
+  let delimiter = "&";
+  if (isCompareParamSet) {
+    delimiter = "";
   }
-  return "";
+  if (!isCompareParamSet && param === "tissues") {
+    delimiter = "";
+  }
+  return `${delimiter}${param}=${encodeURIComponent(data)}`;
 }

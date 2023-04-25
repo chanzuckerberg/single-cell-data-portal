@@ -140,7 +140,6 @@ export const checkPlotSize = async (page: Page) => {
 
 export async function goToWMG(page: Page, url?: string) {
   const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
-  console.log(targetUrl);
   return Promise.all([
     page.waitForResponse(
       (resp: { url: () => string | string[]; status: () => number }) =>
