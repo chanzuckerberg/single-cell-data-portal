@@ -18,10 +18,9 @@ info:
     ## Working with versions
 
     #### Access to prior published version history
-    The CZ CELLxGENE Discover API employs the concept of *versions* for our two core entities, *Collections* and
-    *Datasets*. This is to permit access to prior published instances (versions) of these entities even as they are
-    changed over time via revisions (at present the Data Portal web application UI offers access to only the latest
-    published version of a given Collection and/or Dataset).
+    The CZ CELLxGENE Discover API employs the concept of *Versions* for our two core entities, *Collections* and
+    *Datasets*. This is to permit access to prior published instances (versions) of these entities even as new updates
+    for them are published.
 
     #### Version identifiers
     While the *Collection* identifier `collection_id` will always refer to the latest published instance of a Collection
@@ -30,9 +29,8 @@ info:
     of a Collection (like a commit hash) and must be used with `../collection_version/..`
     endpoints. The same is true for *Datasets* and *Dataset Versions*, though it is important to note that if a given Dataset
     is not updated during the course of a revision of its parent Collection, then its *Dataset Version* identifier
-    `dataset_version_id` will not change and will appear identically in the list of *Dataset Versions* associated with the
-    Collection Version from *before* the revision as well as with the Collection Version from *after* the revision. Private Collections,
-    private revisions of published Collections, and their constituent (private) Datasets are not available as *versions*
+    `dataset_version_id` will not change even though a new Collection Version has been published. Private Collections,
+    private revisions of published Collections, and their constituent (private) Datasets are not available as *Versions*
     until they are published, and therefore must be referenced via their `collection_id` and `dataset_id` identifiers
     using `../collections/..` and `../datasets/..` endpoints, respectively. As such, mutation actions cannot be
     performed using version identifiers.
@@ -543,7 +541,7 @@ paths:
         in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
-        - Collection Version
+        - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -610,7 +608,7 @@ paths:
     get:
       summary: List all versions for a Dataset
       tags:
-        - Dataset Version
+        - Dataset
       description: |
         List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset Version*.
         Dataset Versions are returned in reverse-chronological order.
