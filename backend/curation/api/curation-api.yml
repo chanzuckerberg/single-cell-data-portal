@@ -14,6 +14,45 @@ info:
     ## Data Model
     <!-- Data model diagram created via Lucid: https://lucid.app/lucidchart/8d085832-34f4-4413-9c1d-44e77d06e326/edit?invitationId=inv_ed354532-7256-4e0a-9ad0-b622905e5198&page=Vfzkzdv~I1fL# -->
     <img src="/static/discover-api-data-model.png" width="50%"/>
+
+    ## Working with versions
+
+    #### Access to prior published version history
+    The CZ CELLxGENE Discover API employs the concept of *versions* for our two core entities, *Collections* and
+    *Datasets*. This is to permit access to prior published instances (versions) of these entities even as they are
+    changed over time via revisions (at present the Data Portal web application UI offers access to only the latest
+    published version of a given Collection and/or Dataset).
+
+    #### Version identifiers
+    While the *Collection* identifier `collection_id` will always refer to the latest published instance of a Collection
+    (like the "head" in version-control terminology), and must be used with `../collections/..` endpoints, the
+    *Collection version* identifier `collection_version_id` points always to one specific published instance (version)
+    of a Collection (like a commit hash) and must be used with `../collection_version/..`
+    endpoints. The same is true for *Datasets* and *Dataset versions*, though it is important to note that if a given Dataset
+    is not updated during the course of a revision of its parent Collection, then its *Dataset version* identifier
+    `dataset_version_id` will not change and will appear identically in the list of *Dataset versions* associated with the
+    Collection version from *before* the revision as well as with the Collection version from *after* the revision. Private Collections,
+    private revisions of published Collections, and their constituent (private) Datasets are not available as *versions*
+    until they are published, and therefore must be referenced via their `collection_id` and `dataset_id` identifiers
+    using `../collections/..` and `../datasets/..` endpoints, respectively. As such, mutation actions cannot be
+    performed using version identifiers.
+
+    #### Interpreting `published_at` and `revised_at` timestamps with versions
+    When retrieving data about *Collections* or *Datasets*, these fields convey the following:
+
+    * `published_at`: the timestamp of the first publication of the *Collection*/*Dataset*, i.e., the publication
+    of the first version.
+
+    * `revised_at`: the timestamp of the publication of the most recent revision of the *Collection*/*Dataset*
+
+    However, when retrieving data about *Collection versions* or *Dataset versions*:
+
+    * `published_at`: the timestamp of the publication of this particular version
+
+    Therefore, in the case of a Collection, the `published_at` timestamp for its latest *Collection version* will be
+    equal to the `revised_at` timestamp for the *Collection*. There is no `revised_at` attribute associated with an
+    entity version.
+
 servers:
   - description: Production environment
     url: https://api.cellxgene.cziscience.com/
@@ -803,7 +842,7 @@ components:
         collection_url:
           $ref: "#/components/schemas/collection_url"
         collection_version_id:
-          $ref: "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_version_id"
         consortia:
           $ref: "#/components/schemas/consortia"
         contact_email:
@@ -850,7 +889,7 @@ components:
         collection_url:
           $ref: "#/components/schemas/collection_url"
         collection_version_id:
-          $ref: "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_version_id"
         consortia:
           $ref: "#/components/schemas/consortia"
         contact_email:
@@ -1112,7 +1151,7 @@ components:
           $ref: "#/components/schemas/collection_id"
         collection_version_id:
           description: |
-            The first Collection Version this Dataset Version was published under
+            The *Collection Version* in which this *Dataset version* was first published.
           type: string
           format: uuid
         dataset_id:
