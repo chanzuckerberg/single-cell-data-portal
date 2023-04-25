@@ -402,7 +402,7 @@ export default function WheresMyGene(): JSX.Element {
         </Wrapper>
       </View>
 
-      <BottomBanner survey />
+      <BottomBanner includeSurveyLink />
     </>
   );
 }

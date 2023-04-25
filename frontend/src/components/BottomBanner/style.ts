@@ -20,8 +20,6 @@ export const HiddenHubspotForm = styled.div`
 export const StyledBanner = styled(Banner)`
   ${fontBodyS}
 
-  padding-left: 16px;
-
   letter-spacing: -0.006em;
 
   height: auto;
@@ -200,6 +198,7 @@ export const FooterContentWrapper = styled.div`
 `;
 
 function asFooter({ asFooter }: { asFooter: boolean }) {
+  // If rendered as part of the footer then have it as a block element that goes with the flow of the page, instead of having it "floating"
   if (asFooter) {
     return `
       display: block;

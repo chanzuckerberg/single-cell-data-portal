@@ -21,56 +21,96 @@ import {
   FooterContentWrapper,
 } from "./style";
 import cellxgeneLogoSvg from "./CellxGene.svg";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const FORM_CONTAINER_ID = "hubspot-form-container";
 export const FORM_CONTAINER_ID_QUERY = `#${FORM_CONTAINER_ID}`;
 
 export const SUBMIT_ISSUE_URL = "https://airtable.com/shrLwepDSEX1HI6bo";
 
+export const FAILED_EMAIL_VALIDATION_STRING =
+  "Please provide a valid email address.";
+
 export interface Props {
-  survey?: boolean;
+  includeSurveyLink?: boolean;
   asFooter?: boolean;
 }
 
 export default function BottomBanner({
-  survey = false,
+  includeSurveyLink = false,
   asFooter = false,
 }: Props): JSX.Element {
   const [newsletterModalIsOpen, setNewsletterModalIsOpen] = useState(false);
   const [isHubSpotReady, setIsHubSpotReady] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [emailValidationError, setError] = useState("");
+  const [isDirectLink, setIsDirectLink] = useState(false);
+
+  // For analytics if submit button was made enabled by user input
+  const [submitButtonEnabledOnce, setSubmitButtonEnabledOnce] = useState(false);
 
   function toggleNewsletterSignupModal() {
+    // Track when modal is opened
+    if (!newsletterModalIsOpen) {
+      track(EVENTS.NEWSLETTER_OPEN_MODAL_CLICKED);
+    }
+
     setError("");
     setEmail("");
     setNewsletterModalIsOpen(!newsletterModalIsOpen);
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useEffect(() => {
     // Reads a query parameter from the URL to auto open the newsletter signup modal
     // Allows sharing of a URL to lead directly to the newsletter signup, specifically for conferences
-    if (window) {
+    if (!asFooter && window) {
       const openModalParam = new URLSearchParams(window.location.search).get(
         "newsletter_signup"
       );
 
       if (openModalParam) {
-        setNewsletterModalIsOpen(openModalParam.toLowerCase() === "true");
+        const openModal = openModalParam.toLowerCase() === "true";
+
+        if (openModal) {
+          setNewsletterModalIsOpen(true);
+          setIsDirectLink(() => {
+            track(EVENTS.NEWSLETTER_DIRECT_LINK_NAVIGATED);
+            return true;
+          });
+        }
       }
     }
 
     // Observer to observe changes in the Hubspot embedded form, which is hidden from the user in order to use our own form view
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
+        // Loop through all added nodes that were detected
         for (let i = 0; i < mutation.addedNodes.length; i++) {
           const node = mutation.addedNodes.item(i);
+
+          // Submission success flow
           if (
             node?.textContent?.includes("Thank you for joining our newsletter.")
           ) {
             console.log("is submitted!!!!");
             setIsSubmitted(true);
+            setError("");
+
+            track(EVENTS.NEWSLETTER_SIGNUP_SUCCESS);
+          }
+
+          // Hubspot email validation failure flow
+          else if (
+            node?.textContent?.includes("Please enter a valid email address.")
+          ) {
+            // HTML email validation may pass, but may not pass validation for Hubspot
+            // ex. "ashintest_04252023_invalid_email@contractor.chanzuckerberg" does not validate with Hubspot but does with HTML email validation
+            setError(FAILED_EMAIL_VALIDATION_STRING);
+
+            track(EVENTS.NEWSLETTER_SIGNUP_FAILURE);
           }
         }
       }
@@ -96,28 +136,28 @@ export default function BottomBanner({
     }
 
     return () => observer.disconnect();
-  }, [isHubSpotReady]);
+  }, [asFooter, isHubSpotReady]);
 
   const emailRef = useRef<HTMLInputElement | null>(null);
 
+  // Validates if the email is valid or missing
   const validate = () => {
     const validityState = emailRef.current?.validity;
-    if (validityState?.valueMissing) {
-      console.log("missingEmail");
-      setError("missingEmail");
+    if (validityState?.valueMissing || validityState?.typeMismatch) {
+      console.log("invalid or missing email: " + email);
+      setError(FAILED_EMAIL_VALIDATION_STRING);
+
+      track(EVENTS.NEWSLETTER_SIGNUP_FAILURE);
+
       return false;
     }
-    if (validityState?.typeMismatch) {
-      console.log("invalidEmail");
-      setError("invalidEmail");
-      return false;
-    }
-    console.log("no email error");
-    setError(""); // no error
+    setError(""); // email validation passed, no error
     return true;
   };
 
   const handleSubmit = (event: React.FormEvent) => {
+    track(EVENTS.NEWSLETTER_EMAIL_SUBMITTED);
+
     event.preventDefault();
     const isValid = validate();
     const form: HTMLFormElement | null = isValid
@@ -157,13 +197,19 @@ export default function BottomBanner({
         {!isSubmitted && (
           <>
             <StyledInputText
-              intent={error ? "error" : "default"}
+              intent={emailValidationError ? "error" : "default"}
               inputRef={emailRef}
               placeholder={"Enter email address"}
               label={"Email"}
               hideLabel
               onChange={(event) => {
-                if (error) setError("");
+                if (emailValidationError) setError("");
+
+                if (!submitButtonEnabledOnce) {
+                  setSubmitButtonEnabledOnce(true);
+                  track(EVENTS.NEWSLETTER_SUBSCRIBE_BUTTON_AVAILABLE);
+                }
+
                 setEmail(event.target.value);
               }}
               id={"email-input"}
@@ -186,9 +232,7 @@ export default function BottomBanner({
         )}
       </StyledForm>
 
-      <StyledErrorMessage>
-        {error ? "Please provide a valid email address." : ""}
-      </StyledErrorMessage>
+      <StyledErrorMessage>{emailValidationError}</StyledErrorMessage>
 
       <StyledDisclaimer>
         {isSubmitted
@@ -221,45 +265,49 @@ export default function BottomBanner({
           {asFooter ? (
             <FooterContentWrapper>{modalContent}</FooterContentWrapper>
           ) : (
-            <div>
-              <StyledLink onClick={toggleNewsletterSignupModal}>
-                Subscribe
-              </StyledLink>{" "}
-              to our newsletter to receive updates about new features.{" "}
-              {survey && (
-                <>
-                  Send us feedback with this{" "}
-                  <StyledLink
-                    href="https://airtable.com/shrLwepDSEX1HI6bo"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    quick survey
-                  </StyledLink>
-                  .
-                </>
-              )}
-            </div>
+            <>
+              <div>
+                <StyledLink onClick={toggleNewsletterSignupModal}>
+                  Subscribe
+                </StyledLink>{" "}
+                to our newsletter to receive updates about new features.{" "}
+                {includeSurveyLink && (
+                  <>
+                    Send us feedback with this{" "}
+                    <StyledLink
+                      href="https://airtable.com/shrLwepDSEX1HI6bo"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      quick survey
+                    </StyledLink>
+                    .
+                  </>
+                )}
+              </div>
+
+              <NewsletterModal
+                isOpen={newsletterModalIsOpen}
+                title=""
+                onClose={toggleNewsletterSignupModal}
+                isCloseButtonShown={false}
+              >
+                <HeaderContainer>
+                  <Image alt="CellxGene Logo" src={cellxgeneLogoSvg} />
+                  {!isDirectLink && (
+                    <ButtonIcon
+                      sdsIcon="xMark"
+                      sdsSize="small"
+                      onClick={toggleNewsletterSignupModal}
+                    />
+                  )}
+                </HeaderContainer>
+                {modalContent}
+              </NewsletterModal>
+            </>
           )}
         </StyledBanner>
       </StyledBottomBannerWrapper>
-
-      <NewsletterModal
-        isOpen={newsletterModalIsOpen}
-        title=""
-        onClose={toggleNewsletterSignupModal}
-        isCloseButtonShown={false}
-      >
-        <HeaderContainer>
-          <Image alt="CellxGene Logo" src={cellxgeneLogoSvg} />
-          <ButtonIcon
-            sdsIcon="xMark"
-            sdsSize="small"
-            onClick={toggleNewsletterSignupModal}
-          />
-        </HeaderContainer>
-        {modalContent}
-      </NewsletterModal>
     </>
   );
 }
