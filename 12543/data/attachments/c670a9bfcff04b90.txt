@@ -1,0 +1,1 @@
+  [38;5;45;1mpw:api [0m  checking visibility of "css=[data-testid="self-reported-ethnicity-filter"] [role="button"]" [38;5;45m+450ms[0m
