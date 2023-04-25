@@ -26,12 +26,12 @@ info:
     #### Version identifiers
     While the *Collection* identifier `collection_id` will always refer to the latest published instance of a Collection
     (like the "head" in version-control terminology), and must be used with `../collections/..` endpoints, the
-    *Collection version* identifier `collection_version_id` points always to one specific published instance (version)
+    *Collection Version* identifier `collection_version_id` points always to one specific published instance (version)
     of a Collection (like a commit hash) and must be used with `../collection_version/..`
-    endpoints. The same is true for *Datasets* and *Dataset versions*, though it is important to note that if a given Dataset
-    is not updated during the course of a revision of its parent Collection, then its *Dataset version* identifier
-    `dataset_version_id` will not change and will appear identically in the list of *Dataset versions* associated with the
-    Collection version from *before* the revision as well as with the Collection version from *after* the revision. Private Collections,
+    endpoints. The same is true for *Datasets* and *Dataset Versions*, though it is important to note that if a given Dataset
+    is not updated during the course of a revision of its parent Collection, then its *Dataset Version* identifier
+    `dataset_version_id` will not change and will appear identically in the list of *Dataset Versions* associated with the
+    Collection Version from *before* the revision as well as with the Collection Version from *after* the revision. Private Collections,
     private revisions of published Collections, and their constituent (private) Datasets are not available as *versions*
     until they are published, and therefore must be referenced via their `collection_id` and `dataset_id` identifiers
     using `../collections/..` and `../datasets/..` endpoints, respectively. As such, mutation actions cannot be
@@ -536,14 +536,14 @@ paths:
 
   /v1/collections/{collection_id}/versions:
     get:
-      summary: Fetch all versions of a Collection with corresponding Dataset versions
+      summary: Fetch all versions of a Collection with corresponding Dataset Versions
       description: >
-        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The
-        `collection_id` must reference a *Collection*, **NOT** a *Collection version*. Collection versions are returned
+        Fetch full metadata for all versions of a Collection and their corresponding Dataset Versions. The
+        `collection_id` must reference a *Collection*, **NOT** a *Collection Version*. Collection Versions are returned
         in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
-        - Collection version
+        - Collection Version
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -564,13 +564,13 @@ paths:
 
   /v1/collection_versions/{collection_version_id}:
     get:
-      summary: Fetch a Collection version with Dataset versions
+      summary: Fetch a Collection Version with Dataset Versions
       description: >
-        Fetch full metadata for a published Collection version and its Dataset versions. The `collection_version_id` 
-        must reference a *Collection version*, **NOT** a *Collection*.
+        Fetch full metadata for a published Collection Version and its Dataset Versions. The `collection_version_id`
+        must reference a *Collection Version*, **NOT** a *Collection*.
       operationId: backend.curation.api.v1.curation.collection_versions.collection_version_id.actions.get
       tags:
-        - Collection version
+        - Collection Version
       parameters:
         - $ref: "#/components/parameters/path_collection_version_id"
       responses:
@@ -610,10 +610,10 @@ paths:
     get:
       summary: List all versions for a Dataset
       tags:
-        - Dataset version
+        - Dataset Version
       description: |
-        List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
-        Dataset versions are returned in reverse-chronological order.
+        List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset Version*.
+        Dataset Versions are returned in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.datasets.dataset_id.versions.actions.get
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
@@ -633,11 +633,11 @@ paths:
 
   /v1/dataset_versions/{dataset_version_id}:
     get:
-      summary: Get full metadata for a Dataset version
+      summary: Get full metadata for a Dataset Version
       tags:
-        - Dataset version
+        - Dataset Version
       description: |
-        Fetch Dataset metadata for a Dataset version. The `dataset_version_id` must reference a *Dataset version*,
+        Fetch Dataset metadata for a Dataset Version. The `dataset_version_id` must reference a *Dataset Version*,
         **NOT** a *Dataset*.
       operationId: backend.curation.api.v1.curation.dataset_versions.dataset_version_id.actions.get
       parameters:
@@ -869,7 +869,7 @@ components:
           $ref: "#/components/schemas/visibility"
       type: object
     collection_version:
-      description: Collection version metadata
+      description: Collection Version metadata
       properties:
         collection_id:
           $ref: "#/components/schemas/collection_id"
@@ -889,7 +889,7 @@ components:
           $ref: "#/components/schemas/curator_name"
         datasets:
           type: array
-          description: A list of Dataset metadata associated with the Collection version
+          description: A list of Dataset metadata associated with the Collection Version
           items:
             $ref: "#/components/schemas/dataset_version"
         description:
@@ -1138,7 +1138,7 @@ components:
           $ref: "#/components/schemas/collection_id"
         collection_version_id:
           description: |
-            The *Collection Version* in which this *Dataset version* was first published.
+            The *Collection Version* in which this *Dataset Version* was first published.
           type: string
           format: uuid
         dataset_id:
