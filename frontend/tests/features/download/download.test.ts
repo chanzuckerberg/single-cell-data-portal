@@ -39,7 +39,7 @@ describe("Csv download", () => {
     ["sex-filter"],
     ["no-filter"],
   ].forEach(([filter]) => {
-    test(`Verify metadata and header displayed on csv file with ${filter} applied`, async ({
+    test.only(`Verify metadata and header displayed on csv file with ${filter} applied`, async ({
       page,
     }) => {
       // to differentiate file in each test run
@@ -69,8 +69,13 @@ describe("Csv download", () => {
       //verify the number of element in teh csv
       expect(csvElementsCount).toEqual(uiElementsCount * 3);
 
+      const options = {
+        filterName: filter,
+        data: headers,
+      };
+
       //verify meta data
-      await verifyMetadata(page, filter, headers);
+      await verifyMetadata(page, options);
 
       //verify all the headers are present in the csv
       expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));

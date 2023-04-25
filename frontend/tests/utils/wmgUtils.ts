@@ -196,131 +196,6 @@ export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();
 };
-export const verifyMetadata = async (
-  page: Page,
-  filterName: string,
-  data: string[],
-  noSelectionText = "No selection"
-) => {
-  //verify the date is valid
-  const dateString = data[0].substring(14);
-  const date = new Date(dateString);
-
-  // Check if the resulting date is valid
-  expect(!isNaN(date.getTime())).toBe(true);
-
-  expect(
-    data[1].includes(
-      "# We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future."
-    )
-  ).toBeTruthy();
-
-  //check if the 3 column contains the gene expression link
-  expect(
-    data[2].includes("https://localhost:3000/gene-expression")
-  ).toBeTruthy();
-
-  // Extract the link using a regular expression
-  const linkRegex = /https?:\/\/[^\s]+/;
-  const linkMatch = data[2].match(linkRegex);
-  let text: string | null = "";
-  if (filterName !== "no-filter") {
-    text = await getFilterText(page, filterName);
-  }
-
-  // Check if a match was found and log the result
-  if (linkMatch) {
-    const link = linkMatch[0];
-    //verify link is valid
-
-    await page.goto(link);
-
-    // wait until the new page fully loads
-    await page.waitForLoadState();
-    // expect the header on the new page to be visible
-    expect(page.getByTestId("download-button")).toBeVisible();
-  }
-
-  //verify the text displayed in the filter section of meta data
-  switch (filterName) {
-    case "dataset-filter":
-      expect(
-        data[3].includes("# Dataset Filter Values: " + `${text}`)
-      ).toBeTruthy();
-      expect(
-        data[4].includes(`# Disease Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      expect(
-        data[5].includes(
-          `# Self-Reported Ethnicity Filter Values: ${noSelectionText}`
-        )
-      ).toBeTruthy();
-      expect(
-        data[6].includes(`# Sex Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      break;
-    case "disease-filter":
-      expect(data[4].includes(`# Disease Filter Values: ${text}`)).toBeTruthy();
-      expect(
-        data[3].includes(`# Dataset Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      expect(
-        data[5].includes(
-          `# Self-Reported Ethnicity Filter Values: ${noSelectionText}`
-        )
-      ).toBeTruthy();
-      expect(
-        data[6].includes(`# Sex Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      break;
-    case "self-reported-ethnicity-filter":
-      expect(
-        data[5].includes(`# Self-Reported Ethnicity Filter Values: ${text}`)
-      ).toBeTruthy();
-      expect(
-        data[3].includes(`# Dataset Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      expect(
-        data[4].includes(`# Disease Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      expect(
-        data[6].includes(`# Sex Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      break;
-    case "sex-filter":
-      expect(data[6].includes(`# Sex Filter Values: ${text}`)).toBeTruthy();
-      expect(
-        data[3].includes(`# Dataset Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      expect(
-        data[4].includes(`# Disease Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      expect(
-        data[5].includes(
-          `# Self-Reported Ethnicity Filter Values: ${noSelectionText}`
-        )
-      ).toBeTruthy();
-      break;
-    case "no-filter":
-      expect(
-        data[6].includes(`# Sex Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      expect(
-        data[3].includes(`# Dataset Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      expect(
-        data[4].includes(`# Disease Filter Values: ${noSelectionText}`)
-      ).toBeTruthy();
-      expect(
-        data[5].includes(
-          `# Self-Reported Ethnicity Filter Values: ${noSelectionText}`
-        )
-      ).toBeTruthy();
-      break;
-    default:
-      throw new Error(`Invalid filter name: ${filterName}`);
-  }
-};
 
 export const deleteCsvDownloads = (filePath: string): void => {
   fs.rmdir(filePath, { recursive: true }, (err) => {
@@ -379,4 +254,107 @@ export const getCsvMetadata = (
       reject(err);
     });
   });
+};
+
+interface MetadataVerificationOptions {
+  filterName: string;
+  data: string[];
+  noSelectionText?: string;
+}
+
+export const verifyMetadata = async (
+  page: Page,
+  options: MetadataVerificationOptions
+) => {
+  //verify the date is valid
+  const dateString = options.data[0].substring(14);
+  const date = new Date(dateString);
+
+  // Check if the resulting date is valid
+  expect(!isNaN(date.getTime())).toBe(true);
+
+  expect(
+    options.data[1].includes(
+      "# We regularly expand our single cell data corpus to improve results. Downloaded data and figures may differ in the future."
+    )
+  ).toBeTruthy();
+
+  //check if the 3 column contains the gene expression link
+  expect(
+    options.data[2].includes("https://localhost:3000/gene-expression")
+  ).toBeTruthy();
+
+  // Extract the link using a regular expression
+  const linkRegex = /https?:\/\/[^\s]+/;
+  const linkMatch = options.data[2].match(linkRegex);
+  let text: string | null = "";
+  if (options.filterName !== "no-filter") {
+    text = await getFilterText(page, options.filterName);
+  }
+
+  // Check if a match was found and log the result
+  if (linkMatch) {
+    const link = linkMatch[0];
+    //verify link is valid
+
+    await page.goto(link);
+
+    // wait until the new page fully loads
+    await page.waitForLoadState();
+    // expect the header on the new page to be visible
+    expect(page.getByTestId("download-button")).toBeVisible();
+  }
+
+  verifyFilterValues(
+    options.data,
+    options.filterName,
+    text,
+    options.noSelectionText
+  );
+};
+
+const verifyFilterValues = (
+  data: string[],
+  filterValue: string,
+  filterText: string | null,
+  noSelectionText = "No selection"
+) => {
+  let datasetFilterValue = noSelectionText;
+  let diseaseFilterValue = noSelectionText;
+  let ethnicityFilterValue = noSelectionText;
+  let sexFilterValue = noSelectionText;
+
+  switch (filterValue) {
+    case "dataset-filter":
+      datasetFilterValue = filterText || noSelectionText;
+      break;
+    case "disease-filter":
+      diseaseFilterValue = filterText || noSelectionText;
+      break;
+    case "self-reported-ethnicity-filter":
+      ethnicityFilterValue = filterText || noSelectionText;
+      break;
+    case "sex-filter":
+      sexFilterValue = filterText || noSelectionText;
+      break;
+    case "no-filter":
+      break;
+    default:
+      throw new Error(`Invalid filter name: ${filterValue}`);
+  }
+
+  expect(
+    data[3].includes(`# Dataset Filter Values: ${datasetFilterValue}`)
+  ).toBeTruthy();
+  expect(
+    data[4].includes(`# Disease Filter Values: ${diseaseFilterValue}`)
+  ).toBeTruthy();
+  expect(
+    data[5].includes(
+      `# Self-Reported Ethnicity Filter Values: ${ethnicityFilterValue}`
+    )
+  ).toBeTruthy();
+  expect(
+    data[6].includes(`# Sex Filter Values: ${sexFilterValue}`)
+  ).toBeTruthy();
 };
