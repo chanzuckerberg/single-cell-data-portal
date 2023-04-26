@@ -2,7 +2,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-import AdmZip from "adm-zip";
+
 import { tryUntil } from "./helpers";
 
 /**
@@ -147,7 +147,3 @@ export const checkPlotSize = async (page: Page) => {
   return sumOfHeights;
 };
 
-export const getFilterText = async (page: Page, filterName: string) => {
-  const filter_label = `${getTestID(filterName)} [role="button"]`;
-  return await page.locator(filter_label).textContent();
-};

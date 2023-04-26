@@ -1,6 +1,8 @@
 import { Page, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
+import AdmZip from "adm-zip";
+import { getTestID } from "./selectors";
 
 const BLOOD_TISSUE_COUNT =
   '[data-testid="cell-type-labels-blood"] [data-testid="cell-type-label-count"]';
@@ -16,7 +18,10 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
-export async function downloadAndVerifyCsv(page: Page) {
+export async function downloadAndVerifyCsv(
+  page: Page,
+  filterName: string
+): Promise<void> {
   // generate sub folder
   const randomNumber: number = Math.floor(Math.random() * 90000) + 10000;
   const subDirectory: string = randomNumber.toString();
@@ -40,7 +45,7 @@ export async function downloadAndVerifyCsv(page: Page) {
   expect(csvElementsCount).toEqual(uiElementsCount * 3);
 
   const options = {
-    filterName: filter,
+    filterName: filterName,
     data: headers,
   };
 
@@ -255,4 +260,8 @@ export const downloadCsv = async (page: Page, fileFactor: string) => {
   //extract zip file
   const zip = new AdmZip(zipFilePath);
   zip.extractAllTo(extractDirPath);
+};
+export const getFilterText = async (page: Page, filterName: string) => {
+  const filter_label = `${getTestID(filterName)} [role="button"]`;
+  return await page.locator(filter_label).textContent();
 };
