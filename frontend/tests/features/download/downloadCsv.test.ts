@@ -6,7 +6,6 @@ import {
   selectTissueAndGeneOption,
 } from "../../utils/wmgUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
-import { SHARED_LINK } from "tests/common/constants";
 import {
   downloadAndVerifyCsv,
   deleteCsvDownloads,
@@ -21,7 +20,7 @@ describe("CSV download tests", () => {
     //select tissue and gene
     await selectTissueAndGeneOption(page);
   });
-  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test(`Should verify CSV metadata and header for lung tissue with no filter applied`, async ({
     page,
   }) => {
@@ -49,7 +48,6 @@ describe("CSV download tests", () => {
   test(`Should verify CSV metadata and header with dataset filter applied and group by selected`, async ({
     page,
   }) => {
-  
     // set app state
     await goToWMG(page);
 
