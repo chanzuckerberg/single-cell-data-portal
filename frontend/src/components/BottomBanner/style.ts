@@ -182,11 +182,12 @@ export const NewsletterModal = styled(Modal)`
   padding-bottom: 24px !important;
 
   @media only screen and (max-width: 600px) {
-    min-width: 100vw !important;
-    min-height: 100vh !important;
+    min-width: 100% !important;
+    min-height: -webkit-fill-available !important;
     overflow: hidden !important;
     padding-top: 170px;
     border-radius: 0 !important;
+    position: fixed;
   }
 `;
 
