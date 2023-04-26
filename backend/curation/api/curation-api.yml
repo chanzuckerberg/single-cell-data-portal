@@ -17,7 +17,7 @@ info:
 
     ## Working with versions
 
-    #### Access to prior published version history
+    #### Access to published version history
     The CZ CELLxGENE Discover API supports access to all published versions of Collections and Datasets. For example,
     if a Dataset was published and then later updated and published again, then both Dataset Versions can be accessed.
 
