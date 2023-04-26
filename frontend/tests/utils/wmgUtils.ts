@@ -191,7 +191,49 @@ export const downloadCsv = async (page: Page, fileFactor: string) => {
   const zip = new AdmZip(zipFilePath);
   zip.extractAllTo(extractDirPath);
 };
+export const downloadSvg = async (page: Page, fileFactor: string) => {
+  const zipFilePath = "./tests/download.zip";
+  const extractDirPath = `./tests/download/${fileFactor}`;
+  const CHECK = "Mui-checked";
+  //wait for download file
+  const downloadPromise = page.waitForEvent("download");
 
+  //click the download icon
+
+  await page.getByTestId("download-button").click();
+  const checkboxClassPng = await page
+    .getByTestId("png-checkbox")
+    .getAttribute("class");
+
+  if (checkboxClassPng && checkboxClassPng.includes(CHECK)) {
+    await page.getByTestId("png-checkbox").click();
+  }
+  const checkboxClassSvg = await page
+    .getByTestId("svg-checkbox")
+    .getAttribute("class");
+
+  if (checkboxClassSvg && !checkboxClassSvg.includes(CHECK)) {
+    await page.getByTestId("svg-checkbox").click();
+  }
+
+  const checkboxClassCsv = await page
+    .getByTestId("csv-checkbox")
+    .getAttribute("class");
+
+  if (checkboxClassCsv && checkboxClassCsv.includes(CHECK)) {
+    await page.getByTestId("csv-checkbox").click();
+  }
+
+  await page.getByTestId("dialog-download-button").click();
+  const download = await downloadPromise;
+
+  // Save downloaded file in a directory
+  await download.saveAs(zipFilePath);
+
+  //extract zip file
+  const zip = new AdmZip(zipFilePath);
+  zip.extractAllTo(extractDirPath);
+};
 export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();

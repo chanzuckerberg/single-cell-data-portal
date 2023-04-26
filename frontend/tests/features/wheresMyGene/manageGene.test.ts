@@ -6,7 +6,7 @@ import {
   verifyAddedGene,
 } from "tests/utils/geneUtils";
 import { selectNthOption } from "tests/utils/helpers";
-import uaParser from "ua-parser-js";
+//import uaParser from "ua-parser-js";
 const { describe } = test;
 
 describe("Manage gene tests", () => {
