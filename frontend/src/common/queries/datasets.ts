@@ -85,7 +85,9 @@ async function deleteDataset({
   collectionId,
   datasetId,
 }: DeleteDataset): Promise<DeleteDataset> {
-  const url = apiTemplateToUrl(API_URL + API.DATASET, { datasetId });
+  const url = apiTemplateToUrl(API_URL + API.DATASET, {
+    dataset_id: datasetId,
+  });
   const response = await fetch(url, DELETE_FETCH_OPTIONS);
 
   if (!response.ok) {
@@ -107,8 +109,13 @@ export function useDeleteDataset(): UseMutationResult<
       datasetId,
     }: DeleteDataset): Promise<void> => {
       // If the dataset was in the process of loading, the dataset status query will be cancelled.
+      // This is not an essential step, but cancels the request prior to invalidating the collection query (which
+      // would have cancelled the dataset status query anyway).
       await queryClient.cancelQueries([USE_DATASET_STATUS, datasetId]);
       // Invalidate the collection query, and datasets index query.
+      // Invalidation of the collection query triggers an immediate re-fetch with the dataset removed from the
+      // list of datasets. Note, this re-fetch happens before the "useDeleteDataset" mutate function executes the
+      // "onSuccess" callback.
       await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
       await queryClient.invalidateQueries(
         [USE_DATASETS_INDEX],

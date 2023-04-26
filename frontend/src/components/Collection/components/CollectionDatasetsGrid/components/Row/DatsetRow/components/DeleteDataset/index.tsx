@@ -2,7 +2,7 @@ import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import * as React from "react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useDeleteDataset } from "src/common/queries/datasets";
 import { Collection } from "src/common/entities";
 
@@ -23,7 +23,17 @@ const DeleteDataset: FC<Props> = ({
   datasetId,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { mutateAsync: deleteDataset, isLoading } = useDeleteDataset();
+  const { mutate: deleteDataset, isLoading } = useDeleteDataset();
+
+  // Closes delete dataset dialog when component unmounts.
+  // In the event of a successful dataset deletion, the cache invalidation of the collection triggers the
+  // unmounting of both the DatasetRow and DeleteDataset components resulting in the closing of the delete dataset
+  // dialog via the useEffect cleanup function.
+  useEffect(() => {
+    return () => {
+      setIsOpen(false);
+    };
+  }, []);
 
   const handleHover = () => {
     AsyncAlert.preload();
@@ -32,14 +42,7 @@ const DeleteDataset: FC<Props> = ({
   // Deletes dataset.
   const handleDeleteDataset = async (): Promise<void> => {
     if (!datasetId) return;
-    await deleteDataset(
-      { collectionId, datasetId },
-      {
-        onSuccess: () => {
-          setIsOpen(false);
-        },
-      }
-    );
+    await deleteDataset({ collectionId, datasetId });
   };
 
   return (
