@@ -183,7 +183,7 @@ export default function BottomBanner({
   // ashintest_04192023@contractor.chanzuckerberg.com
 
   const modalContent = (
-    <>
+    <div data-testid="newsletter-modal-content">
       <StyledTitle>Join Our Newsletter</StyledTitle>
 
       <StyledDescription>
@@ -215,6 +215,7 @@ export default function BottomBanner({
               value={email}
               required
               type="email"
+              inputProps={{ "data-testid": "newsletter-email-input" }}
             />
             <StyledSubmitButton
               type="submit"
@@ -222,8 +223,8 @@ export default function BottomBanner({
               name="subscribe"
               variant="contained"
               disableElevation
-              data-testid="newsletter-submit-button"
               disabled={!email}
+              data-testid="newsletter-subscribe-button"
             >
               Subscribe
             </StyledSubmitButton>
@@ -231,14 +232,16 @@ export default function BottomBanner({
         )}
       </StyledForm>
 
-      <StyledErrorMessage>{emailValidationError}</StyledErrorMessage>
+      <StyledErrorMessage data-testid="newsletter-validation-error-message">
+        {emailValidationError}
+      </StyledErrorMessage>
 
       <StyledDisclaimer>
         {isSubmitted
           ? 'To unsubscribe, click on the "Unsubscribe" link at the bottom of the newsletter.'
           : "Unsubscribe at any time."}
       </StyledDisclaimer>
-    </>
+    </div>
   );
 
   return (
@@ -266,7 +269,10 @@ export default function BottomBanner({
           ) : (
             <>
               <div>
-                <StyledLink onClick={toggleNewsletterSignupModal}>
+                <StyledLink
+                  onClick={toggleNewsletterSignupModal}
+                  data-testid="newsletter-modal-open-button"
+                >
                   Subscribe
                 </StyledLink>{" "}
                 to our newsletter to receive updates about new features.{" "}
@@ -298,6 +304,7 @@ export default function BottomBanner({
                     sdsSize="small"
                     onClick={toggleNewsletterSignupModal}
                     hideCloseButton={isDirectLink}
+                    data-testid="newsletter-modal-close-button"
                   />
                 </HeaderContainer>
                 {modalContent}
