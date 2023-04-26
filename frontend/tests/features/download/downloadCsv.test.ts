@@ -28,13 +28,13 @@ describe("CSV download tests", () => {
     //download and verify csv file
     await downloadAndVerifyCsv(page, "no-filter", "lung");
   });
-  test.only(`Should verify CSV metadata and header for blood tissue with no filter applied`, async ({
+  test(`Should verify CSV metadata and header for blood tissue with no filter applied`, async ({
     page,
   }) => {
     //download and verify csv file
     await downloadAndVerifyCsv(page, "no-filter", "blood");
   });
-  test.only(`Should verify CSV metadata and header for blood tissue with filter applied and group by selected`, async ({
+  test(`Should verify CSV metadata and header for blood tissue with filter applied and group by selected`, async ({
     page,
   }) => {
     //group by
@@ -46,7 +46,7 @@ describe("CSV download tests", () => {
     //download and verify csv file
     await downloadAndVerifyCsv(page, DATASET_FILTER, "blood");
   });
-  test.only(`Should verify CSV metadata and header with dataset filter applied and group by selected`, async ({
+  test(`Should verify CSV metadata and header with dataset filter applied and group by selected`, async ({
     page,
   }) => {
   
@@ -65,7 +65,7 @@ describe("CSV download tests", () => {
     //download and verify csv file
     await downloadAndVerifyCsv(page, DATASET_FILTER, "blood");
   });
-  test.only(`Should verify CSV metadata and header with sex filter applied and group by selected`, async ({
+  test(`Should verify CSV metadata and header with sex filter applied and group by selected`, async ({
     page,
   }) => {
     // set app state
