@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0m=> expect.toContainText started [38;5;45m+20ms[0m
