@@ -41,11 +41,10 @@ const sexes = [
   { id: "PATO:0000384", text: "male" },
 ];
 const COMPARE = "disease";
-const VERSION = "2";
 const initialState =
   "https://localhost:3000/gene-expression?datasets=c874f155-9bf9-4928-b821-f52c876b3e48%2Cdb59611b-42de-4035-93aa-1ed39f38b467%2Ceeacb0c1-2217-4cf6-b8ce-1f0fedf1b569%2C881fe679-c6e0-45a3-9427-c4e81be6921f%2Cea786a06-5855-48b7-80d7-0313a21a2044%2C456e8b9b-f872-488b-871d-94534090a865&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2&compare=disease";
 describe("Share link tests", () => {
-  test.only("Should share link with single tissue and single gene", async ({
+  test("Should share link with single tissue and single gene", async ({
     page,
     browserName,
   }) => {
@@ -56,10 +55,10 @@ describe("Share link tests", () => {
     //set up sate
     await setupStateAndCopyShareLink(page, _tissues, _genes);
     //verify link
-    await verifyShareLink(page, VERSION, _tissues, _genes);
+    await verifyShareLink(page, LATEST_SHARE_LINK_VERSION, _tissues, _genes);
   });
 
-  test.only("Should share link with multiple tissues and multiple genes", async ({
+  test("Should share link with multiple tissues and multiple genes", async ({
     page,
     browserName,
   }) => {
@@ -68,10 +67,10 @@ describe("Share link tests", () => {
     await setupStateAndCopyShareLink(page, tissues, genes);
 
     // verify link
-    await verifyShareLink(page, VERSION, tissues, genes);
+    await verifyShareLink(page, LATEST_SHARE_LINK_VERSION, tissues, genes);
   });
 
-  test.only("Should generate share link with correct format for all query param types", async ({
+  test("Should generate share link with correct format for all query param types", async ({
     page,
     browserName,
   }) => {
@@ -83,7 +82,7 @@ describe("Share link tests", () => {
     // verify link parameters and app state
     await verifyShareLink(
       page,
-      VERSION,
+      LATEST_SHARE_LINK_VERSION,
       tissues,
       genes,
       dataSets,
@@ -109,6 +108,7 @@ async function setupStateAndCopyShareLink(
   await page.getByTestId(SHARE_BUTTON).click();
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 async function verifyShareLink(
   page: Page,
   version: string,
@@ -121,7 +121,7 @@ async function verifyShareLink(
   _compare?: string
 ) {
   let encodedLink = `${TEST_URL}/gene-expression?`;
-  let isCompareParamSet = false;
+  let isFirstParam = false;
   let param = "";
   let data;
   // copy link to clipboard
@@ -139,27 +139,23 @@ async function verifyShareLink(
   // compare
   if (_compare !== undefined) {
     param = "compare";
-    isCompareParamSet = true;
+    isFirstParam = true;
     await verifyParameter(page, urlParams, param, [_compare]);
-    encodedLink += encodeLink(param, _compare, isCompareParamSet);
+    encodedLink += encodeLink(param, _compare, isFirstParam);
   }
 
   //datasets
   if (datasets !== undefined) {
     param = "datasets";
-    await verifyParameter(page, urlParams, param, datasets || []);
-    data = Object.values(datasets || []).toString() || "";
-    encodedLink += encodeLink(param, data);
+    data = await verifyParameter(page, urlParams, param, datasets || []);
+    encodedLink += encodeLink(param, data.toString());
   }
 
   //diseases
   if (diseases !== undefined) {
     param = "diseases";
-    console.log("been here");
-    console.log(diseases?.toString());
-    await verifyParameter(page, urlParams, param, diseases || []);
-    data = Object.values(diseases || []).toString() || "";
-    encodedLink += encodeLink(param, data);
+    data = await verifyParameter(page, urlParams, param, diseases || []);
+    encodedLink += encodeLink(param, data.toString());
   }
 
   // verify ethnicities
@@ -172,18 +168,19 @@ async function verifyShareLink(
   // verify sexes
   if (sexes !== undefined) {
     param = "sexes";
-    await verifyParameter(page, urlParams, param, sexes || []);
-    data = Object.values(sexes || []).toString() || "";
-    encodedLink += encodeLink(param, data);
+    data = await verifyParameter(page, urlParams, param, sexes || []);
+    encodedLink += encodeLink(param, data.toString());
   }
 
   // verify tissues
   if (tissues !== undefined) {
     param = "tissues";
     data = await verifyParameter(page, urlParams, param, tissues || []);
-    // console.log(tissues.toString());
-    // console.log("data is " + data);
-    encodedLink += encodeLink(param, data?.toString(), isCompareParamSet);
+    if (!isFirstParam) {
+      encodedLink += encodeLink(param, data?.toString(), true);
+    } else {
+      encodedLink += encodeLink(param, data?.toString());
+    }
   }
 
   // verify genes
@@ -196,9 +193,6 @@ async function verifyShareLink(
   // version
   param = "ver";
   data = await verifyParameter(page, urlParams, param, [version]);
-  console.log("been here");
-  console.log(version.toString());
-  console.log("data is " + data);
   encodedLink += encodeLink(param, data?.toString());
 
   // verify encoded link
@@ -216,6 +210,8 @@ async function verifyParameter(
 ): Promise<string[]> {
   if (data.length > 0) {
     let paramValues: string[] = [];
+    // extact array od id attribute for {id: sting, text: string} data
+    const ids = data.map((obj) => obj.id);
     switch (param) {
       case "datasets":
         paramValues = urlParams.get("datasets")?.split(",") || [];
@@ -227,8 +223,6 @@ async function verifyParameter(
           }
         });
         // verify query param values match
-        // eslint-disable-next-line no-case-declarations
-        const ids = data.map((obj) => obj.id);
         expect(ids).toMatchObject(paramValues || {});
         break;
       case "tissues":
@@ -237,16 +231,11 @@ async function verifyParameter(
       case "ver":
       case "compare":
         paramValues = urlParams.get(param)?.split(",") || [];
-        // console.log(paramValues);
-        // console.log(data);
-        // verify query param values match
+        //verify query param values match
         expect(data).toMatchObject(paramValues || {});
         break;
       default:
         paramValues = data.map((obj) => obj.id);
-        console.log(paramValues);
-        console.log(data);
-        console.log(urlParams.get(param)?.split(","));
         expect(paramValues).toMatchObject(
           urlParams.get(param)?.split(",") || {}
         );
@@ -256,12 +245,9 @@ async function verifyParameter(
   return [];
 }
 
-function encodeLink(param: string, data: string, isCompareParamSet = false) {
+function encodeLink(param: string, data: string, isFirstParam?: boolean) {
   let delimiter = "&";
-  if (isCompareParamSet) {
-    delimiter = "";
-  }
-  if (!isCompareParamSet && param === "tissues") {
+  if (isFirstParam) {
     delimiter = "";
   }
   return `${delimiter}${param}=${encodeURIComponent(data)}`;
