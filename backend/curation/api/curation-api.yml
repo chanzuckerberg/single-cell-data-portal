@@ -28,11 +28,7 @@ info:
     of a Collection and must be used with `Collection Version` endpoints. The same is true for
     *Datasets* and *Dataset Versions*, though it is important to note that if a given Dataset
     is not updated during the course of a revision of its parent Collection, then its Dataset Version (and identifier
-    `dataset_version_id`) will not change even though a new Collection Version has been published. Private Collections,
-    private revisions of published Collections, and any new or updated Datasets are not available as Versions
-    until they are published, and therefore must be referenced via their `collection_id` and `dataset_id` identifiers
-    using `Collection` and `Dataset` endpoints. As such, mutation actions cannot be
-    performed using Version identifiers.
+    `dataset_version_id`) will not change even though a new Collection Version has been published.
 
 servers:
   - description: Production environment
