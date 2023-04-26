@@ -25,9 +25,12 @@ info:
     While the *Collection* identifier `collection_id` will always refer to the latest published version of a Collection,
     and must be used with `Collection` endpoints, the *Collection Version* identifier `collection_version_id`
     refers to one specific published version of a Collection and must be used with `Collection Version` endpoints.
-    The same is true for *Datasets* and *Dataset Versions*, though it is important to note that if a given Dataset
-    is not updated during the course of a revision of its parent Collection, then its Dataset Version (and identifier
-    `dataset_version_id`) will not change even though a new Collection Version has been published.
+    The same is true for the *Dataset* identifier `dataset_id` and the *Dataset Version* identifier
+    `dataset_version_id`.
+
+    **Important Note:** if a given Dataset is not updated during the course of a
+    revision of its parent Collection, then its Dataset Version (and identifier `dataset_version_id`) will not change
+    even though a new Collection Version has been published.
 
 servers:
   - description: Production environment
