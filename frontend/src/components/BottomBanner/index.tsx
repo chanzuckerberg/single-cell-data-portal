@@ -94,7 +94,6 @@ export default function BottomBanner({
           if (
             node?.textContent?.includes("Thank you for joining our newsletter.")
           ) {
-            console.log("is submitted!!!!");
             setIsSubmitted(true);
             setError("");
 
@@ -116,7 +115,6 @@ export default function BottomBanner({
     });
 
     if (isHubSpotReady) {
-      console.log("Creating Hubspot form. Target: " + FORM_CONTAINER_ID_QUERY);
       hbspt.forms.create({
         region: "na1",
         portalId: "7272273",
@@ -126,7 +124,6 @@ export default function BottomBanner({
 
       const form = document.querySelector(FORM_CONTAINER_ID_QUERY);
       if (form) {
-        console.log("observing...");
         observer.observe(form, {
           childList: true,
           subtree: true,
@@ -143,7 +140,6 @@ export default function BottomBanner({
   const validate = () => {
     const validityState = emailRef.current?.validity;
     if (validityState?.valueMissing || validityState?.typeMismatch) {
-      console.log("invalid or missing email: " + email);
       setError(FAILED_EMAIL_VALIDATION_STRING);
 
       track(EVENTS.NEWSLETTER_SIGNUP_FAILURE);
@@ -164,13 +160,11 @@ export default function BottomBanner({
       : null;
 
     if (!isValid || !form) {
-      console.log("form not valid!!!");
       return;
     }
 
     const input = form.querySelector("input");
     if (!input) {
-      console.log("input not valid!!!");
       return;
     }
 
@@ -179,8 +173,6 @@ export default function BottomBanner({
 
     form.submit();
   };
-
-  // ashintest_04192023@contractor.chanzuckerberg.com
 
   const modalContent = (
     <div data-testid="newsletter-modal-content">
@@ -248,7 +240,6 @@ export default function BottomBanner({
     <>
       <Script
         onReady={() => {
-          console.log("Script loaded");
           setIsHubSpotReady(true);
         }}
         type="text/javascript"
