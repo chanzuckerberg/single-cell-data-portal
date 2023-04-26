@@ -10,7 +10,7 @@ import {
 } from "src/components/common/SideBar/style";
 
 const COLLAPSED_WIDTH_PX = 36;
-export const EXPANDED_WIDTH_PX = 240;
+export const FILTERS_PANEL_EXPANDED_WIDTH_PX = 240;
 
 /**
  * Function prop called on toggle of side bar expanded state, if specified.
@@ -29,7 +29,7 @@ export interface Props {
   SideBarOpenButtonWrapperComponent?: typeof SideBarOpenButtonWrapper;
   testId?: string;
   disabled?: boolean;
-  forceToggle?: boolean;
+  forceOpen?: boolean;
   wmgSideBar?: boolean;
   truncatedLabel?: string;
 }
@@ -39,14 +39,14 @@ export default function SideBar({
   label,
   isOpen = false,
   onToggle,
-  width = EXPANDED_WIDTH_PX,
+  width = FILTERS_PANEL_EXPANDED_WIDTH_PX,
   position = Position.LEFT,
   SideBarWrapperComponent = SideBarWrapper,
   SideBarPositionerComponent = SideBarPositioner,
   SideBarOpenButtonWrapperComponent = SideBarOpenButtonWrapper,
   testId,
   disabled,
-  forceToggle,
+  forceOpen,
   wmgSideBar,
   truncatedLabel = "",
 }: Props): JSX.Element {
@@ -72,13 +72,13 @@ export default function SideBar({
 
   useEffect(() => {
     if (!(disabled && !isExpanded) && wmgSideBar) handleExpandedClick(true);
-  }, [forceToggle]);
+  }, [forceOpen]);
 
   return (
     <SideBarWrapperComponent
       sideBarWidth={sideBarWidth}
       position={position}
-      data-test-id={testId}
+      data-testid={testId}
     >
       <SideBarPositionerComponent isExpanded={isExpanded}>
         <SideBarToggleButtonWrapper>

@@ -113,7 +113,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.wmg.pipeline.integrated_corpus.job.tiledb.consolidate", new=Mock())  # Slow
     @patch("backend.wmg.pipeline.integrated_corpus.job.tiledb.vacuum", new=Mock())  # Slow
     @patch("backend.wmg.pipeline.cube_pipeline.upload_artifacts_to_s3", new=Mock())  # Don't upload the cube.
-    @patch("backend.wmg.pipeline.integrated_corpus.job.extract.get_dataset_s3_uris", new=Mock(return_value={}))
+    @patch("backend.wmg.pipeline.integrated_corpus.job.extract.get_dataset_asset_urls", new=Mock(return_value={}))
     def test_snapshot_creation_works_as_expected(self):
         generate_cells = 5000
         expected_datasets = 2
@@ -264,7 +264,9 @@ class TestCorpusLoad(unittest.TestCase):
         # Create dataset with mixture of included and not included assays
         CELL_COUNT = 5
         test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=CELL_COUNT)
-        test_anndata_object.obs["assay_ontology_term_id"].cat.add_categories(["NOT_INCLUDED"], inplace=True)
+        test_anndata_object.obs["assay_ontology_term_id"] = test_anndata_object.obs[
+            "assay_ontology_term_id"
+        ].cat.add_categories(["NOT_INCLUDED"])
         test_anndata_object.obs["assay_ontology_term_id"][0] = "NOT_INCLUDED"
 
         # pre_concatenation filters remove irrelevant data

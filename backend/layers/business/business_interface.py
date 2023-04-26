@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    CollectionVersionWithPublishedDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetId,
@@ -51,6 +52,9 @@ class BusinessLogicInterface:
     ) -> CollectionVersion:
         pass
 
+    def delete_datasets_from_bucket(self, collection_id: CollectionId, bucket: str) -> List[str]:
+        pass
+
     def delete_collection(self, collection_id: CollectionId) -> None:
         pass
 
@@ -75,7 +79,10 @@ class BusinessLogicInterface:
     ) -> Tuple[DatasetVersionId, DatasetId]:
         pass
 
-    def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_mapped_datasets(self) -> List[DatasetVersion]:
+        pass
+
+    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithPublishedDatasets]:
         pass
 
     def remove_dataset_version(

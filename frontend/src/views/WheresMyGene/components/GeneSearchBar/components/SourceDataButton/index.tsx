@@ -1,6 +1,8 @@
 import { MouseEventHandler } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { StyledButtonIcon } from "../QuickSelect/style";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveImage";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
 import { StyledButtonDiv, StyledLabel } from "./style";
 
 export default function SourceDataButton({
@@ -13,8 +15,11 @@ export default function SourceDataButton({
       <StyledLabel>Source Data</StyledLabel>
 
       <StyledButtonIcon
-        data-test-id={"source-data-button"}
-        onClick={handleRightSidebarButtonClick}
+        data-testid={"source-data-button"}
+        onClick={(event) => {
+          track(EVENTS.WMG_SOURCE_DATA_CLICKED);
+          handleRightSidebarButtonClick(event);
+        }}
         sdsSize="medium"
         sdsType="primary"
         sdsIcon="infoCircle"

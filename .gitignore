@@ -148,3 +148,7 @@ tsconfig.tsbuildinfo
 # allure test report files
 allure-results
 /.ruff_cache/
+
+# playwright
+html-reports
+loginState.json

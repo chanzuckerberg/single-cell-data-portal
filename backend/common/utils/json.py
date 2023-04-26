@@ -2,8 +2,6 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from json import JSONEncoder
 
-from backend.common.corpora_orm import Base
-
 time_zone_info = datetime.now(timezone.utc).astimezone().tzinfo  # Get AWS env time zone info
 
 
@@ -17,8 +15,6 @@ class CustomJSONEncoder(JSONEncoder):
             return obj.timestamp()
         elif isinstance(obj, Enum):
             return str(obj.name)
-        elif isinstance(obj, (Base)):
-            return obj.to_dict()
         else:
             return super().default(obj)
 

@@ -3,16 +3,28 @@
  * in `./reducer.ts`.
  */
 
-import { CellTypeMetadata } from "../../components/HeatMap/utils";
-import { CellType, Tissue } from "../types";
-import { AddCellInfoCellTypePayload, REDUCERS, State } from "./reducer";
+import {
+  AddCellInfoCellTypePayload,
+  LoadStateFromURLPayload,
+  REDUCERS,
+  State,
+} from "./reducer";
 
-export function deleteSelectedGenesAndSelectedCellTypeIds(): GetActionTypeOfReducer<
-  typeof REDUCERS["deleteSelectedGenesAndSelectedCellTypeIds"]
+export function deleteSingleGene(
+  geneToDelete: string
+): GetActionTypeOfReducer<typeof REDUCERS["deleteSingleGene"]> {
+  return {
+    payload: geneToDelete,
+    type: "deleteSingleGene",
+  };
+}
+
+export function deleteSelectedGenes(): GetActionTypeOfReducer<
+  typeof REDUCERS["deleteSelectedGenes"]
 > {
   return {
     payload: null,
-    type: "deleteSelectedGenesAndSelectedCellTypeIds",
+    type: "deleteSelectedGenes",
   };
 }
 
@@ -22,15 +34,6 @@ export function toggleGeneToDelete(
   return {
     payload: geneToDelete,
     type: "toggleGeneToDelete",
-  };
-}
-
-export function toggleCellTypeIdToDelete(
-  cellTypeIdToDelete: CellTypeMetadata
-): GetActionTypeOfReducer<typeof REDUCERS["toggleCellTypeIdToDelete"]> {
-  return {
-    payload: cellTypeIdToDelete,
-    type: "toggleCellTypeIdToDelete",
   };
 }
 
@@ -61,15 +64,6 @@ export function addSelectedGenes(
   };
 }
 
-export function selectCellTypeIds(
-  cellTypeIndices: State["selectedCellTypeIds"]
-): GetActionTypeOfReducer<typeof REDUCERS["selectCellTypeIds"]> {
-  return {
-    payload: cellTypeIndices,
-    type: "selectCellTypeIds",
-  };
-}
-
 export function selectTissues(
   tissues: State["selectedTissues"]
 ): GetActionTypeOfReducer<typeof REDUCERS["selectTissues"]> {
@@ -88,32 +82,21 @@ export function selectSortBy(
   };
 }
 
-export function resetGenesToDeleteAndCellTypeIdsToDelete(): GetActionTypeOfReducer<
-  typeof REDUCERS["resetGenesToDeleteAndCellTypeIdsToDelete"]
+export function selectCompare(
+  Compare: State["compare"]
+): GetActionTypeOfReducer<typeof REDUCERS["selectCompare"]> {
+  return {
+    payload: Compare,
+    type: "selectCompare",
+  };
+}
+
+export function resetGenesToDelete(): GetActionTypeOfReducer<
+  typeof REDUCERS["resetGenesToDelete"]
 > {
   return {
     payload: null,
-    type: "resetGenesToDeleteAndCellTypeIdsToDelete",
-  };
-}
-
-export function tissueCellTypesFetched(
-  tissue: Tissue,
-  cellTypes: CellType[]
-): GetActionTypeOfReducer<typeof REDUCERS["tissueCellTypesFetched"]> {
-  return {
-    payload: { cellTypes, tissue },
-    type: "tissueCellTypesFetched",
-  };
-}
-
-export function resetTissueCellTypes(
-  tissue: Tissue,
-  cellTypes: CellType[]
-): GetActionTypeOfReducer<typeof REDUCERS["resetTissueCellTypes"]> {
-  return {
-    payload: { cellTypes, tissue },
-    type: "resetTissueCellTypes",
+    type: "resetGenesToDelete",
   };
 }
 
@@ -142,6 +125,60 @@ export function addCellInfoCellType(
   return {
     payload,
     type: "addCellInfoCellType",
+  };
+}
+
+export function addGeneInfoGene(
+  payload: string
+): GetActionTypeOfReducer<typeof REDUCERS["addGeneInfoGene"]> {
+  return {
+    payload,
+    type: "addGeneInfoGene",
+  };
+}
+
+export function clearGeneInfoGene(): GetActionTypeOfReducer<
+  typeof REDUCERS["clearGeneInfoGene"]
+> {
+  return {
+    payload: null,
+    type: "clearGeneInfoGene",
+  };
+}
+
+export function clearCellInfoCellType(): GetActionTypeOfReducer<
+  typeof REDUCERS["clearCellInfoCellType"]
+> {
+  return {
+    payload: null,
+    type: "clearCellInfoCellType",
+  };
+}
+
+export function closeRightSidebar(): GetActionTypeOfReducer<
+  typeof REDUCERS["closeRightSidebar"]
+> {
+  return {
+    payload: null,
+    type: "closeRightSidebar",
+  };
+}
+
+export function selectGeneInfoFromXAxis(
+  payload: string
+): GetActionTypeOfReducer<typeof REDUCERS["selectGeneInfoFromXAxis"]> {
+  return {
+    payload,
+    type: "selectGeneInfoFromXAxis",
+  };
+}
+
+export function loadStateFromURL(
+  payload: LoadStateFromURLPayload
+): GetActionTypeOfReducer<typeof REDUCERS["loadStateFromURL"]> {
+  return {
+    payload,
+    type: "loadStateFromURL",
   };
 }
 

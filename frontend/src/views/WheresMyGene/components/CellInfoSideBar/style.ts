@@ -1,7 +1,8 @@
 import { HTMLTable } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { Button } from "czifui";
+import { Button, fontBodyS } from "czifui";
 import Image from "next/image";
+import { fontBodyXxs, getColors } from "czifui";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
 
@@ -51,9 +52,27 @@ export const TooltipButton = styled(Button)`
 `;
 
 export const CopyGenesButton = styled(Button)`
+  ${fontBodyS}
   font-weight: 500;
-  font-size: 14px;
-  margin-left: 10px;
+  margin-left: -5px;
+`;
+
+export const MarkerStrengthContainer = styled("div")`
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: flex-end;
+`;
+
+export const MarkerStrengthLabel = styled("div")`
+  ${fontBodyXxs}
+  ${(props) => {
+    const colors = getColors(props);
+    return `
+      color: ${colors?.gray[500]};
+    `;
+  }}
+  line-height: unset;
 `;
 
 export const TissueName = styled.div`
@@ -68,7 +87,7 @@ export const StyledHTMLTable = styled(HTMLTable)`
   & thead td {
     color: #767676 !important;
     font-weight: 500;
-    padding-bottom: 4px !important;
+    padding: 0 !important;
   }
   & td:nth-of-type(2) {
     text-align: end;
@@ -77,4 +96,34 @@ export const StyledHTMLTable = styled(HTMLTable)`
   & tr:not(thead tr) {
     border-bottom: 1px solid #cccccc;
   }
+`;
+
+export const NoMarkerGenesContainer = styled("div")`
+  margin-top: 16px;
+  background: #f8f8f8;
+
+  width: 100%;
+  height: 120px;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  text-align: center;
+`;
+
+export const NoMarkerGenesHeader = styled("span")`
+  ${fontBodyS}
+  color: black;
+  font-weight: 500;
+`;
+
+export const NoMarkerGenesDescription = styled("span")`
+  ${fontBodyXxs}
+  ${(props) => {
+    const colors = getColors(props);
+    return `
+      color: ${colors?.gray[500]};
+    `;
+  }}
 `;

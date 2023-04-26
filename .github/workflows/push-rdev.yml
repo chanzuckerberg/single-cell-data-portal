@@ -36,9 +36,9 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.23.0"
+          happy_version: "0.59.0"
       - name: Build component
         shell: bash
         run: |
@@ -46,5 +46,5 @@ jobs:
       - name: Create Summary With Happy Commands
         run: |
           echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
-          echo "* `happy create <stack-name> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag`" >> $GITHUB_STEP_SUMMARY
-          echo "* `happy update <stack-name> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag`" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy create <_stack-name_> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy update <_stack-name_> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY

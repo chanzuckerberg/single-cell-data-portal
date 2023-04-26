@@ -2,11 +2,10 @@ from dataclasses import asdict
 
 from flask import Response, jsonify, make_response
 
-from backend.common.corpora_orm import ProjectLinkType
 from backend.common.utils.http_exceptions import InvalidParametersHTTPException, MethodNotAllowedException
 from backend.curation.api.v1.curation.collections.common import (
     extract_doi_from_links,
-    get_infered_collection_version_else_forbidden,
+    get_inferred_collection_version,
     is_owner_or_allowed_else_forbidden,
     reshape_for_curation_api,
 )
@@ -14,13 +13,13 @@ from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidMetadataException
 from backend.layers.common import doi
-from backend.layers.common.entities import Link
+from backend.layers.common.entities import CollectionLinkType, Link
 from backend.portal.api.providers import get_business_logic
 
 
 def delete(collection_id: str, token_info: dict) -> Response:
     user_info = UserInfo(token_info)
-    collection_version = get_infered_collection_version_else_forbidden(collection_id)
+    collection_version = get_inferred_collection_version(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at:
         raise MethodNotAllowedException(detail="Cannot delete a published collection through API.")
@@ -30,7 +29,7 @@ def delete(collection_id: str, token_info: dict) -> Response:
 
 
 def get(collection_id: str, token_info: dict) -> Response:
-    collection_version = get_infered_collection_version_else_forbidden(collection_id)
+    collection_version = get_inferred_collection_version(collection_id)
     user_info = UserInfo(token_info)
     response = reshape_for_curation_api(collection_version, user_info)
     return jsonify(response)
@@ -42,7 +41,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     if "links" in body and not body["links"]:
         raise InvalidParametersHTTPException(detail="If provided, the 'links' array may not be empty")
 
-    collection_version = get_infered_collection_version_else_forbidden(collection_id)
+    collection_version = get_inferred_collection_version(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at is not None:
         raise MethodNotAllowedException(
@@ -53,7 +52,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     # Verify DOI
     if (doi_url := body.pop("doi", None)) and (doi_url := doi.curation_get_normalized_doi_url(doi_url, errors)):
         links = body.get("links", [])
-        links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
+        links.append({"link_type": CollectionLinkType.DOI.name, "link_url": doi_url})
         body["links"] = links
 
     # TODO: dedup

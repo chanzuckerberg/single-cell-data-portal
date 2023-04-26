@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import tempfile
+import uuid
 from collections import namedtuple
 from itertools import cycle, filterfalse, islice
 from typing import Callable, Dict, List, NamedTuple, Tuple
@@ -13,10 +14,25 @@ import tiledb
 from numpy.random import randint, random
 from pandas import DataFrame
 
-from backend.common.corpora_orm import CollectionVisibility, DbCollection, DbDataset
-from backend.common.entities import Collection
-from backend.common.utils.db_session import db_session_manager
-from backend.wmg.data.schemas.cube_schema import (
+from backend.wmg.data.schemas.cube_schema import cell_counts_schema as cell_counts_schema_actual
+from backend.wmg.data.schemas.cube_schema import expression_summary_schema as expression_summary_schema_actual
+from backend.wmg.data.schemas.cube_schema_default import (
+    expression_summary_schema as expression_summary_default_schema_actual,
+)
+from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import (
+    expression_summary_fmg_schema as expression_summary_fmg_schema_actual,
+)
+from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema as marker_genes_schema_actual
+from backend.wmg.data.snapshot import (
+    CELL_TYPE_ORDERINGS_FILENAME,
+    DATASET_TO_GENE_IDS_FILENAME,
+    FILTER_RELATIONSHIPS_FILENAME,
+    WmgSnapshot,
+)
+from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.pipeline.summary_cubes.cell_count import create_filter_relationships_graph
+from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
+from tests.unit.backend.wmg.fixtures.test_cube_schema import (
     cell_counts_indexed_dims,
     cell_counts_logical_attrs,
     cell_counts_logical_dims,
@@ -26,9 +42,6 @@ from backend.wmg.data.schemas.cube_schema import (
     expression_summary_logical_dims,
     expression_summary_schema,
 )
-from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME, WmgSnapshot
-from backend.wmg.data.tiledb import create_ctx
-from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
 
 
@@ -64,7 +77,7 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     if dimension_name == "cell_type_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("CL")][:dim_size]
     if dimension_name == "dataset_id":
-        return [create_dataset(i) for i in range(dim_size)]
+        return [str(uuid.UUID()) for i in range(dim_size)]
     if dimension_name == "assay_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("EFO")][:dim_size]
     if dimension_name == "development_stage_ontology_term_id":
@@ -144,27 +157,59 @@ def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
 
 
 @contextlib.contextmanager
-def load_test_fmg_snapshot(snapshot_name: str) -> WmgSnapshot:
-    with tiledb.open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_fmg", ctx=create_ctx()
-    ) as expression_summary_fmg_cube, tiledb.open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts", ctx=create_ctx()
-    ) as cell_counts_cube, tiledb.open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes", ctx=create_ctx()
-    ) as marker_genes_cube, open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/dataset_to_gene_ids.json", "r"
-    ) as f:
-        dataset_to_gene_ids = json.load(f)
-        yield WmgSnapshot(
-            snapshot_identifier=snapshot_name,
-            expression_summary_cube=None,
-            expression_summary_fmg_cube=expression_summary_fmg_cube,
-            marker_genes_cube=marker_genes_cube,
-            cell_counts_cube=cell_counts_cube,
-            cell_type_orderings=None,
-            primary_filter_dimensions=None,
-            dataset_to_gene_ids=dataset_to_gene_ids,
+def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
+    with tempfile.TemporaryDirectory() as cube_dir:
+        cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts.csv.gz", index_col=0)
+        expression_summary = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary.csv.gz", index_col=0)
+        expression_summary_fmg = pd.read_csv(
+            f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_fmg.csv.gz", index_col=0
         )
+        expression_summary_default = pd.read_csv(
+            f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default.csv.gz", index_col=0
+        )
+        marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes.csv.gz", index_col=0)
+
+        tiledb.Array.create(f"{cube_dir}/expression_summary", expression_summary_schema_actual, overwrite=True)
+        tiledb.Array.create(f"{cube_dir}/expression_summary_fmg", expression_summary_fmg_schema_actual, overwrite=True)
+        tiledb.Array.create(
+            f"{cube_dir}/expression_summary_default", expression_summary_default_schema_actual, overwrite=True
+        )
+        tiledb.Array.create(f"{cube_dir}/cell_counts", cell_counts_schema_actual, overwrite=True)
+        tiledb.Array.create(f"{cube_dir}/marker_genes", marker_genes_schema_actual, overwrite=True)
+
+        tiledb.from_pandas(f"{cube_dir}/expression_summary", expression_summary, mode="append")
+        tiledb.from_pandas(f"{cube_dir}/expression_summary_fmg", expression_summary_fmg, mode="append")
+        tiledb.from_pandas(f"{cube_dir}/expression_summary_default", expression_summary_default, mode="append")
+        tiledb.from_pandas(f"{cube_dir}/cell_counts", cell_counts, mode="append")
+        tiledb.from_pandas(f"{cube_dir}/marker_genes", marker_genes, mode="append")
+
+        with tiledb.open(f"{cube_dir}/expression_summary", ctx=create_ctx()) as expression_summary_cube, tiledb.open(
+            f"{cube_dir}/expression_summary_default", ctx=create_ctx()
+        ) as expression_summary_default_cube, tiledb.open(
+            f"{cube_dir}/expression_summary_fmg", ctx=create_ctx()
+        ) as expression_summary_fmg_cube, tiledb.open(
+            f"{cube_dir}/cell_counts", ctx=create_ctx()
+        ) as cell_counts_cube, tiledb.open(
+            f"{cube_dir}/marker_genes", ctx=create_ctx()
+        ) as marker_genes_cube, open(
+            f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_TO_GENE_IDS_FILENAME}", "r"
+        ) as f, open(
+            f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}", "r"
+        ) as fr:
+            dataset_to_gene_ids = json.load(f)
+            filter_relationships = json.load(fr)
+            yield WmgSnapshot(
+                snapshot_identifier=snapshot_name,
+                expression_summary_cube=expression_summary_cube,
+                expression_summary_fmg_cube=expression_summary_fmg_cube,
+                expression_summary_default_cube=expression_summary_default_cube,
+                marker_genes_cube=marker_genes_cube,
+                cell_counts_cube=cell_counts_cube,
+                cell_type_orderings=None,
+                primary_filter_dimensions=None,
+                dataset_to_gene_ids=dataset_to_gene_ids,
+                filter_relationships=filter_relationships,
+            )
 
 
 @contextlib.contextmanager
@@ -191,15 +236,19 @@ def create_temp_wmg_snapshot(
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube, tiledb.open(
             cell_counts_cube_dir, ctx=create_ctx()
         ) as cell_counts_cube:
+            cc = cell_counts_cube.df[:]
+            filter_relationships = create_filter_relationships_graph(cc)
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
+                expression_summary_default_cube=None,
                 expression_summary_fmg_cube=None,
                 marker_genes_cube=None,
                 cell_counts_cube=cell_counts_cube,
                 cell_type_orderings=cell_type_orderings,
                 primary_filter_dimensions=primary_filter_dimensions,
                 dataset_to_gene_ids=None,
+                filter_relationships=filter_relationships,
             )
 
 
@@ -223,28 +272,6 @@ def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> D
                 )
             )
     return pd.concat(cell_type_orderings)
-
-
-def create_dataset(dataset_id_ordinal: int) -> str:
-    coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
-    with db_session_manager() as session:
-        if coll := Collection.get(session, coll_id):
-            Collection.delete(coll)
-
-        collection = DbCollection(
-            id=coll_id,
-            visibility=CollectionVisibility.PUBLIC.name,
-            name=f"dataset_id_{dataset_id_ordinal}_coll_name",
-            owner="owner",
-        )
-        session.add(collection)
-        dataset = DbDataset(
-            id=f"dataset_id_{dataset_id_ordinal}",
-            name=f"dataset_name_{dataset_id_ordinal}",
-            collection_id=coll_id,
-        )
-        session.add(dataset)
-        return dataset.id
 
 
 def create_cubes(

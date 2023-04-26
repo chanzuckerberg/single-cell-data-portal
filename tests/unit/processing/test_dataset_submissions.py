@@ -1,11 +1,11 @@
 from unittest.mock import Mock, patch
 
-from backend.common.corpora_orm import generate_id
 from backend.common.utils.exceptions import (
     CorporaException,
     NonExistentCollectionException,
     NonExistentDatasetException,
 )
+from backend.layers.common.entities import EntityId
 from backend.layers.processing.submissions.app import dataset_submissions_handler
 from tests.unit.backend.layers.common.base_test import BaseTest
 
@@ -20,14 +20,14 @@ class TestDatasetSubmissions(BaseTest):
         self.mock.start()
 
     def test__missing_curator_file_name__raises_error(self):
-        mock_collection_id = generate_id()
+        mock_collection_id = EntityId()
         s3_event = create_s3_event(key=f"{self.user_name}/{mock_collection_id}/")
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
 
     def test__missing_collection_id__raises_error(self):
-        mock_collection_id = generate_id()
-        mock_dataset_id = generate_id()
+        mock_collection_id = EntityId()
+        mock_dataset_id = EntityId()
 
         s3_event = create_s3_event(key=f"{self.user_name}/{mock_collection_id}/{mock_dataset_id}")
         with self.assertRaises(NonExistentCollectionException):
@@ -35,7 +35,7 @@ class TestDatasetSubmissions(BaseTest):
 
     def test__nonexistent_dataset__raises_error(self):
         version = self.generate_unpublished_collection()
-        mock_dataset_id = generate_id()
+        mock_dataset_id = EntityId()
 
         s3_event = create_s3_event(key=f"{self.user_name}/{version.version_id}/{mock_dataset_id}")
         with self.assertRaises(NonExistentDatasetException):
@@ -43,7 +43,7 @@ class TestDatasetSubmissions(BaseTest):
 
     def test__non_owner__raises_error(self):
         version = self.generate_unpublished_collection(owner="someone_else")
-        mock_dataset_id = generate_id()
+        mock_dataset_id = EntityId()
 
         s3_event = create_s3_event(key=f"{self.user_name}/{version.version_id}/{mock_dataset_id}")
         with self.assertRaises(CorporaException):

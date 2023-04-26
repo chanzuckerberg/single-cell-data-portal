@@ -18,7 +18,7 @@ const Privacy = (): JSX.Element => {
           </Head>
           <header>
             <Image
-              data-test-id="cellxgene-logo"
+              data-testid="cellxgene-logo"
               src={rawCellxgeneLogo}
               alt="CELLxGENE logo"
               width="119"

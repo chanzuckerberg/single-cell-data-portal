@@ -13,19 +13,18 @@ import AuthButtons from "src/components/Header/components/AuthButtons";
 import { HomepageLink } from "../common/HomepageLink";
 import {
   DesktopHomeLink,
-  HiringLink,
   Left,
-  LinkWrapper,
   MainWrapper,
   MobileHomeLink,
   MobileMenuButton,
   MobileMenuButtonBar,
   MobileNavTray,
   MobileNavWrapper,
-  Nav,
+  Navigation as Nav,
   Right,
   Wrapper,
 } from "./style";
+import { LinkWrapper } from "src/components/Header/components/Nav/style";
 
 const LandingHeader: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -66,62 +65,9 @@ const LandingHeader: FC = () => {
               <DesktopHomeLink>
                 <HomepageLink />
               </DesktopHomeLink>
-              <Nav>
-                <LinkWrapper>
-                  <Link href={ROUTES.COLLECTIONS} passHref>
-                    <AnchorButton
-                      data-test-id="collection-link"
-                      onClick={() => {
-                        track(EVENTS.COLLECTIONS_CLICK_NAV);
-                      }}
-                      active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
-                      href="passHref"
-                      minimal
-                      text="Collections"
-                    />
-                  </Link>
-                </LinkWrapper>
-                <LinkWrapper>
-                  <Link href={ROUTES.DATASETS} passHref>
-                    <AnchorButton
-                      onClick={() => {
-                        track(EVENTS.DATASETS_CLICK_NAV);
-                      }}
-                      active={isRouteActive(pathname, ROUTES.DATASETS)}
-                      href="passHref"
-                      minimal
-                      text="Datasets"
-                    />
-                  </Link>
-                </LinkWrapper>
-                <LinkWrapper>
-                  <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
-                    <AnchorButton
-                      active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
-                      href="passHref"
-                      minimal
-                      text="Gene Expression"
-                      onClick={handleWMGClick}
-                    />
-                  </Link>
-                </LinkWrapper>
-              </Nav>
+              <Nav pathname={pathname} />
             </Left>
             <Right>
-              {pathname === ROUTES.HOMEPAGE && (
-                <HiringLink
-                  onClick={() => {
-                    track(EVENTS.BROWSE_CAREERS_CLICKED, {
-                      button: "we're hiring",
-                    });
-                  }}
-                  href="https://chanzuckerberg.com/careers/career-opportunities/?team=data,design,engineering,product,technical-program-management&initiative=science&gh_src=20d9f28d1us"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  We&apos;re Hiring!
-                </HiringLink>
-              )}
               {isMyCollectionsShown && (
                 <LinkWrapper>
                   <Link href={ROUTES.MY_COLLECTIONS} passHref>
@@ -154,10 +100,6 @@ const LandingHeader: FC = () => {
       </MobileNavTray>
     </MobileNavWrapper>
   );
-
-  function handleWMGClick() {
-    track(EVENTS.WMG_CLICK_NAV);
-  }
 };
 
 /**

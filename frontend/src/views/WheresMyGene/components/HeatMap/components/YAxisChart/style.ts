@@ -34,6 +34,9 @@ export const TissueName = styled.div`
   transform: rotate(180deg);
   font-size: 12px;
   font-weight: bold;
+
+  /* Fixes bug where some tissue names were wrapping on the last character for png download */
+  white-space: nowrap;
 `;
 
 export const Container = styled.div`
@@ -43,22 +46,28 @@ export const Container = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
 `;
 
-export const CellTypeButtonStyle = styled.button`
-  height: ${HEAT_MAP_BASE_CELL_PX}px;
-  background-color: ${({ active }: { active: boolean }) =>
-    active ? SELECTED_STYLE.backgroundColor : "white"};
-  font: normal
-    ${({ active }: { active: boolean }) =>
-      active ? SELECTED_STYLE.fontWeight : "normal"}
-    ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
-  padding: ${({ active }: { active: boolean }) =>
-    active ? SELECTED_STYLE.padding : "unset"};
+export const CellTypeLabelStyle = styled.div`
+  margin: auto;
+  font: normal 12px sans-serif;
   white-space: pre;
-  cursor: pointer;
   border: none;
   width: 100%;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   text-align: left;
+`;
+
+export const HiddenCellTypeLabelStyle = styled.div`
+  /* Overlay invisible, un-intractable element with full name of cell type for ctrl+f page search */
+  position: absolute;
+  z-index: 1;
+  color: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  user-select: none;
+`;
+
+export const CellTypeLabelTooltipStyle = styled.div`
+  margin: 0 -10px;
+  text-align: center;
 `;
 
 export const CellCountLabelStyle = styled.div`
@@ -82,16 +91,6 @@ export const FlexRowJustified = styled.div`
 export const FlexRow = styled.div`
   display: flex;
   flex-direction: row;
-`;
-
-export const InfoButtonWrapper = styled.div`
-  padding-left: 2px;
-  cursor: pointer;
-`;
-
-export const ResetImageWrapper = styled.div`
-  margin-top: 3px;
-  cursor: pointer;
 `;
 
 function yAxisHeight({ height }: { height: number }) {

@@ -82,6 +82,19 @@ class DatasetArtifactType(str, Enum):
     CXG = "cxg"
 
 
+class CollectionVisibility(Enum):
+    """
+    Describes a DbCollection's visibility.
+    At most, one LIVE and one EDIT entry of a Collection may exist at a time.
+
+    PUBLIC - a published and publicly viewable Collection.
+    PRIVATE - an open Submission, i.e an unpublished and non-public Collection.
+    """
+
+    PUBLIC = "Public"
+    PRIVATE = "Private"
+
+
 @dataclass_json
 @dataclass
 class DatasetStatus:
@@ -189,6 +202,13 @@ class DatasetVersion:
 
 
 @dataclass
+class PublishedDatasetVersion(DatasetVersion):
+    collection_version_id: CollectionVersionId  # Pointer to collection version it was originally published under
+    published_at: datetime
+    revised_at: datetime = None
+
+
+@dataclass
 class Link:
     name: Optional[str]
     type: str
@@ -264,3 +284,8 @@ class CollectionVersion(CollectionVersionBase):
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
     datasets: List[DatasetVersion]
+
+
+@dataclass
+class CollectionVersionWithPublishedDatasets(CollectionVersionBase):
+    datasets: List[PublishedDatasetVersion]

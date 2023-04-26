@@ -5,24 +5,29 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 import pandas as pd
-import requests
 import tiledb
 from pandas import DataFrame
 from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.schemas.corpus_schema import DATASET_TO_GENE_IDS_NAME
+from backend.wmg.data.schemas.corpus_schema import (
+    DATASET_TO_GENE_IDS_NAME,
+    FILTER_RELATIONSHIPS_NAME,
+)
 from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.data.utils import get_collections_from_curation_api, get_datasets_from_curation_api
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
+EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
 EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
 DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
+FILTER_RELATIONSHIPS_FILENAME = f"{FILTER_RELATIONSHIPS_NAME}.json"
 
 logger = logging.getLogger("wmg")
 
@@ -45,6 +50,11 @@ class WmgSnapshot:
     # See the full schema at backend/wmg/data/schemas/expression_summary_fmg_cube_schema.py.
     expression_summary_fmg_cube: Array
 
+    # TileDB array containing expression summary statistics optimized for querying with no
+    # secondary filters selected.
+    # See the full schema at backend/wmg/data/schemas/cube_schema_default.py.
+    expression_summary_default_cube: Array
+
     # TileDB array containing the precomputed marker genes.
     # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
     marker_genes_cube: Array
@@ -64,39 +74,26 @@ class WmgSnapshot:
     # dictionary of gene IDs mapped to dataset IDs
     dataset_to_gene_ids: Dict
 
+    # precomputed filter relationships graph
+    filter_relationships: Dict
+
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot
 
     def build_dataset_metadata_dict(self):
-        # hardcode to dev backend if deployment is rdev
-        API_URL = (
-            "https://api.cellxgene.dev.single-cell.czi.technology"
-            if os.environ.get("REMOTE_DEV_PREFIX")
-            else os.getenv("API_URL")
-        )
-
-        # this should always be true for deployed environments.
-        # otherwise, skip so tests pass.
-        if API_URL:
-            dataset_metadata_url = f"{API_URL}/dp/v1/datasets/index"
-            datasets = requests.get(dataset_metadata_url).json()
-
-            collection_metadata_url = f"{API_URL}/dp/v1/collections/index"
-            collections = requests.get(collection_metadata_url).json()
-
-            collections_dict = {collection["id"]: collection for collection in collections}
-
-            dataset_dict = {}
-            for dataset in datasets:
-                dataset_id = dataset["explorer_url"].split("/")[-2].split(".cxg")[0]
-                dataset_dict[dataset_id] = dict(
-                    id=dataset_id,
-                    label=dataset["name"],
-                    collection_id=dataset["collection_id"],
-                    collection_label=collections_dict[dataset["collection_id"]]["name"],
-                )
-
-            self.dataset_dict = dataset_dict
+        datasets = get_datasets_from_curation_api()
+        collections = get_collections_from_curation_api()
+        collections_dict = {collection["collection_id"]: collection for collection in collections}
+        dataset_dict = {}
+        for dataset in datasets:
+            dataset_id = dataset["dataset_id"]
+            dataset_dict[dataset_id] = dict(
+                id=dataset_id,
+                label=dataset["title"],
+                collection_id=dataset["collection_id"],
+                collection_label=collections_dict[dataset["collection_id"]]["name"],
+            )
+        self.dataset_dict = dataset_dict
 
 
 # Cached data
@@ -120,6 +117,7 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     cell_type_orderings = _load_cell_type_order(new_snapshot_identifier)
     primary_filter_dimensions = _load_primary_filter_data(new_snapshot_identifier)
     dataset_to_gene_ids = _load_dataset_to_gene_ids_data(new_snapshot_identifier)
+    filter_relationships = _load_filter_graph_data(new_snapshot_identifier)
 
     snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
     logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
@@ -130,12 +128,14 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     return WmgSnapshot(
         snapshot_identifier=new_snapshot_identifier,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        expression_summary_default_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
         expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=cell_type_orderings,
         primary_filter_dimensions=primary_filter_dimensions,
         dataset_to_gene_ids=dataset_to_gene_ids,
+        filter_relationships=filter_relationships,
     )
 
 
@@ -153,6 +153,13 @@ def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
 
 def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
     return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
+
+
+def _load_filter_graph_data(snapshot_identifier: str) -> str:
+    try:
+        return json.loads(_read_s3obj(f"{snapshot_identifier}/{FILTER_RELATIONSHIPS_FILENAME}"))
+    except Exception:
+        return None
 
 
 def _read_s3obj(relative_path: str) -> str:

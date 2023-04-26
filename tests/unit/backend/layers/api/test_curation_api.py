@@ -1,20 +1,23 @@
 import copy
 import json
 import uuid
+from collections import defaultdict
 from dataclasses import asdict
 from unittest.mock import Mock, patch
 
-from backend.common.corpora_orm import CollectionVisibility
 from backend.common.utils.api_key import generate
 from backend.curation.api.v1.curation.collections.common import EntityColumns
 from backend.layers.common.entities import (
     CollectionId,
+    CollectionLinkType,
+    CollectionMetadata,
     CollectionVersion,
-    DatasetArtifactType,
+    CollectionVisibility,
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
+    DatasetVersionId,
     Link,
     OntologyTermId,
 )
@@ -23,79 +26,16 @@ from tests.unit.backend.layers.api.test_portal_api import generate_mock_publishe
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 
+mock_config_attr = {
+    "curator_role_arn": "test_role_arn",
+    "submission_bucket": "cellxgene-dataset-submissions-test",
+    "upload_max_file_size_gb": 1,
+    "dataset_assets_base_url": "http://domain",
+}
 
-class TestAsset(BaseAPIPortalTest):
-    def setUp(self):
-        # Needed for proper setUp resolution in multiple inheritance
-        super().setUp()
 
-    def test__get_dataset_asset__OK(self):
-        self.business_logic.s3_provider.get_file_size = Mock(return_value=1000)
-        self.business_logic.s3_provider.generate_presigned_url = Mock(return_value="http://mock.uri/presigned_url")
-
-        dataset = self.generate_dataset(
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.CXG, "http://mock.uri/asset.cxg"),
-                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "http://mock.uri/raw.h5ad"),
-            ],
-            publish=True,
-        )
-
-        expected_body = [dict(filename="asset.h5ad", filesize=1000, filetype="H5AD")]
-
-        response = self.app.get(
-            f"/curation/v1/collections/test_collection_id/datasets/{dataset.dataset_id}/assets",
-        )
-        self.assertEqual(200, response.status_code)
-        actual_body = response.json
-        presign_url = actual_body[0].pop("presigned_url")
-        self.assertIsNotNone(presign_url)
-        self.assertEqual(expected_body, actual_body)
-
-    def test__get_dataset_asset__file_error(self):
-        self.business_logic.s3_provider.get_file_size = Mock(return_value=None)
-        self.business_logic.s3_provider.generate_presigned_url = Mock(return_value=None)
-
-        dataset = self.generate_dataset(
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.CXG, "http://mock.uri/asset.cxg"),
-                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "http://mock.uri/raw.h5ad"),
-            ],
-            publish=True,
-        )
-
-        expected_body = [dict(filename="asset.h5ad", filesize=-1, filetype="H5AD")]
-
-        response = self.app.get(
-            f"/curation/v1/collections/test_collection_id/datasets/{dataset.dataset_id}/assets",
-        )
-        self.assertEqual(202, response.status_code)
-        actual_body = response.json
-        presign_url = actual_body[0].pop("presigned_url", None)
-        self.assertEqual(presign_url, "Not Found.")
-        self.assertEqual(expected_body, actual_body)
-
-    def test__get_dataset_asset__dataset_NOT_FOUND(self):
-        collection = self.generate_published_collection()
-        bad_id = str(uuid.uuid4())
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{bad_id}/assets"
-        response = self.app.get(test_url)
-        self.assertEqual(404, response.status_code)
-        actual_body = response.json
-        self.assertEqual("Dataset not found.", actual_body["detail"])
-
-    def test__get_dataset_asset__asset_NOT_FOUND(self):
-        dataset = self.generate_dataset(
-            artifacts=[],
-        )
-        response = self.app.get(
-            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}/assets"
-        )
-        self.assertEqual(404, response.status_code)
-        actual_body = response.json
-        self.assertEqual("No assets found. The dataset may still be processing.", actual_body["detail"])
+def mock_config_fn(name):
+    return mock_config_attr[name]
 
 
 class TestDeleteCollection(BaseAPIPortalTest):
@@ -113,7 +53,7 @@ class TestDeleteCollection(BaseAPIPortalTest):
         self.assertEqual(expected_status, response.status_code)
         if response.status_code == 204:
             response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(404, response.status_code)
 
     def test__delete_public_collection(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 405), ("super", 405)]
@@ -136,27 +76,26 @@ class TestDeleteCollection(BaseAPIPortalTest):
                 private_collection_id = self.generate_unpublished_collection().collection_id
                 self._test(private_collection_id, auth, expected_response)
 
+    def test__delete_private_collection_by_collection_version_id(self):
+        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
+        for auth, expected_response in tests:
+            with self.subTest(auth):
+                private_collection_version_id = self.generate_unpublished_collection().version_id
+                self._test(private_collection_version_id, auth, expected_response)
+
     def test__delete_tombstone_collection(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
-                collection_id = self.generate_published_collection().collection_id
-                self.business_logic.tombstone_collection(collection_id)
-                self._test(collection_id, auth, expected_response)
+                collection = self.generate_published_collection()
+                self.business_logic.tombstone_collection(collection.collection_id)
+                self._test(collection.collection_id, auth, expected_response)
 
 
 class TestS3Credentials(BaseAPIPortalTest):
-    @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
     @patch("backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock, mock_config: Mock):
-        def mock_config_fn(name):
-            if name == "curator_role_arn":
-                return "test_role_arn"
-            if name == "submission_bucket":
-                return "cellxgene-dataset-submissions-test"
-
-        mock_config.side_effect = mock_config_fn
-
         def _test(token, is_super_curator: bool = False):
             sts_client.assume_role_with_web_identity = Mock(
                 return_value={
@@ -167,24 +106,35 @@ class TestS3Credentials(BaseAPIPortalTest):
                     }
                 }
             )
-            unpublished_collection = self.generate_unpublished_collection()
             headers = {"Authorization": f"Bearer {token}"}
 
-            for id in [unpublished_collection.collection_id, unpublished_collection.version_id]:
-                response = self.app.get(f"/curation/v1/collections/{id}/s3-upload-credentials", headers=headers)
+            with self.subTest(f"{token}, unpublished collection"):
+                unpublished_collection = self.generate_unpublished_collection()
+
+                _id = unpublished_collection.collection_id
+                response = self.app.get(f"/curation/v1/collections/{_id}/s3-upload-credentials", headers=headers)
                 self.assertEqual(200, response.status_code)
                 token_sub = self._mock_assert_authorized_token(token)["sub"]
                 self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
                 if is_super_curator:
-                    self.assertEqual(response.json["UploadKeyPrefix"], f"super/{id}/")
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"super/{_id}/")
                 else:
-                    self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{id}/")
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{_id}/")
 
-        with self.subTest("collection owner"):
-            _test("owner")
+            with self.subTest(f"{token}, unpublished revision"):
+                collection_id = self.generate_published_collection().collection_id
+                _id = self.generate_revision(collection_id).version_id
+                response = self.app.get(f"/curation/v1/collections/{_id}/s3-upload-credentials", headers=headers)
+                self.assertEqual(200, response.status_code)
+                token_sub = self._mock_assert_authorized_token(token)["sub"]
+                self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
+                if is_super_curator:
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"super/{_id}/")
+                else:
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{_id}/")
 
-        with self.subTest("super curator"):
-            _test("super", is_super_curator=True)
+        _test("owner")
+        _test("super", is_super_curator=True)
 
     def test__generate_s3_credentials__Not_Owner(self):
         collection_id = self.generate_unpublished_collection(owner="not_test_user").collection_id
@@ -205,6 +155,22 @@ class TestS3Credentials(BaseAPIPortalTest):
         response = self.app.get(f"/curation/v1/collections/{collection_id}/s3-upload-credentials")
         self.assertEqual(401, response.status_code)
 
+    def test__generate_s3_credentials__by_collection_version_id(self):
+        unpublished_collection = self.generate_unpublished_collection()
+        version_id = unpublished_collection.version_id
+
+        with self.subTest("collection owner"):
+            token = "owner"
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.app.get(f"/curation/v1/collections/{version_id}/s3-upload-credentials", headers=headers)
+            self.assertEqual(403, response.status_code)
+
+        with self.subTest("super curator"):
+            token = "super"
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.app.get(f"/curation/v1/collections/{version_id}/s3-upload-credentials", headers=headers)
+            self.assertEqual(403, response.status_code)
+
 
 class TestPostCollection(BaseAPIPortalTest):
     def setUp(self):
@@ -221,11 +187,11 @@ class TestPostCollection(BaseAPIPortalTest):
         response = self.app.post(
             "/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(self.test_collection)
         )
-        self.assertIn("id", response.json.keys())
+        self.assertIn("collection_id", response.json.keys())
         self.assertEqual(201, response.status_code)
 
         # Check that the collection_id is the canonical collection ID
-        collection_id = response.json["id"]
+        collection_id = response.json["collection_id"]
         version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         self.assertEqual(version.collection_id.id, collection_id)
 
@@ -294,11 +260,11 @@ class TestPostCollection(BaseAPIPortalTest):
         response = self.app.post(
             "/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(collection_metadata)
         )
-        self.assertIn("id", response.json.keys())
+        self.assertIn("collection_id", response.json.keys())
         self.assertEqual(201, response.status_code)
 
         # Check that the collection_id is the canonical collection ID
-        collection_id = response.json["id"]
+        collection_id = response.json["collection_id"]
         version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         self.assertEqual(version.collection_id.id, collection_id)
 
@@ -315,7 +281,10 @@ class TestGetCollections(BaseAPIPortalTest):
         self.test_collection = dict(
             name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
         )
-        self.expected_dataset_columns = EntityColumns.dataset_metadata_preview_cols + ["id"]
+        self.expected_dataset_columns = EntityColumns.dataset_metadata_preview_cols + [
+            "dataset_id",
+            "dataset_version_id",
+        ]
         self.expected_collection_columns = EntityColumns.collections_cols.copy()
         self.expected_collection_columns.remove("tombstone")
         self.expected_collection_columns.remove("owner")
@@ -348,7 +317,7 @@ class TestGetCollections(BaseAPIPortalTest):
         self.generate_revision(collection_id)
         resp = self._test_response(auth=True)
         self.assertEqual(1, len(resp))
-        self.assertEqual(collection_id.id, resp[0]["id"])
+        self.assertEqual(collection_id.id, resp[0]["collection_id"])
         self.assertIsNone(resp[0]["revising_in"])
 
     def test__get_collections_with_auth__OK_2(self):
@@ -356,7 +325,7 @@ class TestGetCollections(BaseAPIPortalTest):
         collection_id = self.generate_published_collection(owner="Someone Else").collection_id
         resp = self._test_response(auth=True)
         self.assertEqual(1, len(resp))
-        self.assertEqual(collection_id.id, resp[0]["id"])
+        self.assertEqual(collection_id.id, resp[0]["collection_id"])
         self.assertIsNone(resp[0]["revising_in"])
 
     def test__get_collections_with_auth__OK_3(self):
@@ -365,7 +334,7 @@ class TestGetCollections(BaseAPIPortalTest):
         revision_id = self.generate_revision(collection_id).version_id
         resp = self._test_response(auth=True)
         self.assertEqual(1, len(resp))
-        self.assertEqual(collection_id.id, resp[0]["id"])
+        self.assertEqual(collection_id.id, resp[0]["collection_id"])
         self.assertEqual(revision_id.id, resp[0]["revising_in"])
         self.assertIsNone(resp[0]["revision_of"])
 
@@ -375,7 +344,7 @@ class TestGetCollections(BaseAPIPortalTest):
         collection_revision_id = self.generate_revision(published_collection_id).version_id
         resp = self._test_response(visibility="PRIVATE", auth=True)
         self.assertEqual(1, len(resp))
-        self.assertEqual(collection_revision_id.id, resp[0]["id"])
+        self.assertEqual(collection_revision_id.id, resp[0]["collection_version_id"])
         self.assertEqual(published_collection_id.id, resp[0]["revision_of"])
 
     def test__get_collections_with_auth__OK_5(self):
@@ -384,7 +353,7 @@ class TestGetCollections(BaseAPIPortalTest):
         resp = self._test_response(visibility="PUBLIC", auth=True)
         self.assertEqual(1, len(resp))
         resp_collection = resp[0]
-        self.assertEqual(published_collection_id.id, resp_collection["id"])
+        self.assertEqual(published_collection_id.id, resp_collection["collection_id"])
         self.assertIsNone(resp_collection["revision_of"])
 
     def test__get_collections_with_auth__OK_6(self):
@@ -505,7 +474,8 @@ class TestGetCollections(BaseAPIPortalTest):
         self.assertEqual(1, len(resp))
         resp_collection = resp[0]
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
-        self.assertEqual(public_collection.datasets[0].dataset_id.id, resp_collection["datasets"][0]["id"])
+        self.assertEqual(public_collection.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
+        self.expected_collection_columns.remove("processing_status")
         self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
         self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
@@ -527,7 +497,7 @@ class TestGetCollections(BaseAPIPortalTest):
         resp_collection = body[0]
 
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
-        self.assertEqual(private_collection.datasets[0].dataset_id.id, resp_collection["datasets"][0]["id"])
+        self.assertEqual(private_collection.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
         self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
         self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
@@ -549,8 +519,10 @@ class TestGetCollections(BaseAPIPortalTest):
         resp_collection = body[0]
 
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
-        self.assertEqual(unpublished_version.datasets[0].version_id.id, resp_collection["datasets"][0]["id"])
-        self.check_fields(self.expected_dataset_columns + ["original_id"], resp_collection["datasets"][0], "datasets")
+        self.assertEqual(
+            unpublished_version.datasets[0].version_id.id, resp_collection["datasets"][0]["dataset_version_id"]
+        )
+        self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
         self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
     def check_fields(self, fields: list, response: dict, entity: str):
@@ -562,9 +534,80 @@ class TestGetCollections(BaseAPIPortalTest):
             self.assertFalse(response)
 
 
-class TestGetCollectionID(BaseAPIPortalTest):
-    def test__get_collection_verify_body_is_reshaped_correctly__OK(self):
+class TestGetCollectionVersions(BaseAPIPortalTest):
+    def confirm_timestamp_fields_present_then_remove(self, received_body: dict):
+        # Confirm fields are present on Collection version body but ignore equality comparison for timestamps
+        self.assertIn("created_at", received_body)
+        self.assertIn("published_at", received_body)
+        [self.assertIn("published_at", d) for d in received_body["datasets"]]
+        received_body.pop("created_at")
+        received_body.pop("published_at")
+        [d.pop("published_at") for d in received_body["datasets"]]
 
+    def test__get_collection_versions__200(self):
+        # Create published collection with 2 published revisions and 1 unpublished revision
+        published_collection = self.generate_published_collection()
+        expected_version_ids = [published_collection.version_id.id]
+
+        revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
+        expected_version_ids.append(revision_collection.version_id.id)
+        self.business_logic.publish_collection_version(revision_collection.version_id)
+
+        revision_collection_2 = self.generate_revision(collection_id=published_collection.collection_id)
+        expected_version_ids.append(revision_collection_2.version_id.id)
+        self.business_logic.publish_collection_version(revision_collection_2.version_id)
+        expected_version_ids.reverse()
+
+        with self.subTest("Published versions are returned in reverse chronological order with no revision open"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            [self.confirm_timestamp_fields_present_then_remove(c_v) for c_v in resp.json]
+            self.assertEqual(expected_version_ids, received_version_ids)
+
+        self.generate_revision(collection_id=published_collection.collection_id)
+        with self.subTest("Published versions are returned in reverse chronological order with a revision open"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            [self.confirm_timestamp_fields_present_then_remove(c_v) for c_v in resp.json]
+            self.assertEqual(expected_version_ids, received_version_ids)
+
+    def test__get_collection_versions_tombstoned__410(self):
+        published_collection = self.generate_published_collection()
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+        with self.subTest("Returns 410 when a tombstoned canonical id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            self.assertEqual(410, resp.status_code)
+
+    def test__get_collection_versions_not_published_canonical__404(self):
+        published_collection = self.generate_published_collection()
+        revision_collection = self.generate_revision(collection_id=published_collection.collection_id)
+        unpublished_collection = self.generate_unpublished_collection()
+        with self.subTest("Returns 404 when nonexistent id is requested"):
+            resp = self.app.get("/curation/v1/collections/01234567-89ab-cdef-0123-456789abcdef/versions")
+            self.assertEqual(404, resp.status_code)
+
+        with self.subTest("Returns 404 when revision id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{revision_collection.version_id.id}/versions")
+            self.assertEqual(404, resp.status_code)
+
+        with self.subTest("Returns 404 when published version id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.version_id.id}/versions")
+            self.assertEqual(404, resp.status_code)
+
+        with self.subTest("Returns empty list when unpublished canonical id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{unpublished_collection.collection_id.id}/versions")
+            self.assertEqual(404, resp.status_code)
+
+    def test__get_collection_versions_not_a_uuid__403(self):
+        self.generate_published_collection()
+        with self.subTest("Returns 403 when id is not uuid format"):
+            resp = self.app.get("/curation/v1/collections/this_identifier_is_not_a_uuid/versions")
+            self.assertEqual(403, resp.status_code)
+
+
+class TestGetCollectionID(BaseAPIPortalTest):
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test__get_published_collection_verify_body_is_reshaped_correctly__OK(self, mock_config: Mock):
         # Setup
         # test fixtures
         dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -609,7 +652,12 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.generate_dataset(
             collection_version=collection_version,
             metadata=dataset_metadata,
-            artifacts=[DatasetArtifactUpdate(type="h5ad", uri="http://test_filename")],
+            artifacts=[
+                DatasetArtifactUpdate(type="h5ad", uri="http://test_filename/1234-5678-9/local.h5ad"),
+                DatasetArtifactUpdate(type="rds", uri="http://test_filename/1234-5678-9/local.rds"),
+                DatasetArtifactUpdate(type="cxg", uri="http://test_filename/1234-5678-9/local.cxg"),
+                DatasetArtifactUpdate(type="raw_h5ad", uri="http://test_filename/1234-5678-9/raw.h5ad"),
+            ],
         )
         self.business_logic.publish_collection_version(collection_version.version_id)
         collection_version = self.business_logic.get_collection_version(collection_version.version_id)
@@ -620,13 +668,21 @@ class TestGetCollectionID(BaseAPIPortalTest):
         expect_dataset.update(
             **{
                 "explorer_url": f"/e/{dataset.dataset_id}.cxg/",
-                "id": dataset.dataset_id.id,
-                "processing_status": "INITIALIZED",
-                "revision": 0,
-                "revision_of": None,
+                "dataset_id": dataset.dataset_id.id,
+                "dataset_version_id": dataset.version_id.id,
                 "tombstone": False,
-                "processing_status_detail": None,
-                "dataset_assets": [{"filename": "test_filename", "filetype": "H5AD"}],
+                "assets": [  # Filter out disallowed file types + properly construct url
+                    {
+                        "filesize": -1,
+                        "filetype": "H5AD",
+                        "url": f"http://domain/{dataset.version_id.id}.h5ad",
+                    },
+                    {
+                        "filesize": -1,
+                        "filetype": "RDS",
+                        "url": f"http://domain/{dataset.version_id.id}.rds",
+                    },
+                ],
                 "is_primary_data": [True, False],
                 "x_approximate_distribution": "NORMAL",
             }
@@ -634,13 +690,13 @@ class TestGetCollectionID(BaseAPIPortalTest):
         expected_body = asdict(collection_version.metadata)
         expected_body.update(
             **{
+                "collection_id": collection_version.collection_id.id,
                 "collection_url": f"https://frontend.corporanet.local:3000/collections/"
                 f"{collection_version.collection_id}",
+                "collection_version_id": collection_version.version_id.id,
                 "datasets": [expect_dataset],
                 "doi": None,
-                "id": collection_version.collection_id.id,
                 "links": links,
-                "processing_status": "PENDING",
                 "publisher_metadata": None,
                 "revision_of": None,
                 "revising_in": None,
@@ -656,8 +712,9 @@ class TestGetCollectionID(BaseAPIPortalTest):
         del res_body["created_at"]  # too finicky; ignore
         del res_body["revised_at"]  # too finicky; ignore
         del res_body["published_at"]  # too finicky; ignore
-        del res_body["datasets"][0]["revised_at"]  # too finicky; ignore
-
+        for dataset in res_body["datasets"]:
+            del dataset["revised_at"]  # too finicky; ignore
+            del dataset["published_at"]  # too finicky; ignore
         self.maxDiff = None
         self.assertDictEqual(expected_body, res_body)  # Confirm dict has been packaged in list
         self.assertEqual(json.dumps(expected_body, sort_keys=True), json.dumps(res_body))
@@ -680,65 +737,66 @@ class TestGetCollectionID(BaseAPIPortalTest):
         collection_version = self.generate_unpublished_collection()
         self._test_response(collection_version)
 
+    def test__get_public_collection__OK(self):
+        collection_version = self.generate_published_collection()
+        self._test_response(collection_version)
+
+    def test__get_unbpublished_revision__OK(self):
+        collection_id = self.generate_published_collection().collection_id
+        revision = self.generate_revision(collection_id)
+        self._test_response(revision)
+
     def test_get_collection_dynamic_fields(self):
-        def _test_responses_are_equal(test_ids, expected_id, auth_headers) -> dict:
-            last_resp = None
+        def _test_responses(test_id, expected_id, auth_headers) -> dict:
+            response = None
             for header in auth_headers:
                 """Check that a request with different permissions levels returns same response."""
-                for identifier in test_ids:
-                    """Check that a request with the listed IDs return the same response."""
-                    resp = self.app.get(f"/curation/v1/collections/{identifier}", headers=header)
-                    self.assertEqual(200, resp.status_code)
-                    self.assertEqual(expected_id.id, resp.json["id"])
-                    if not last_resp:
-                        last_resp = resp
-                    else:
-                        self.assertEqual(resp.json, last_resp.json, "All of the response bodies should be the same.")
-            return last_resp.json
+                resp = self.app.get(f"/curation/v1/collections/{test_id}", headers=header)
+                self.assertEqual(200, resp.status_code)
+                self.assertTrue(resp.json["collection_url"].endswith(expected_id.id))
+                if not response:
+                    response = resp
+            return response.json
 
-        privilage_access_headers = [self.make_owner_header(), self.make_super_curator_header()]
+        privileged_access_headers = [self.make_owner_header(), self.make_super_curator_header()]
         restricted_access_headers = [self.make_not_owner_header(), self.make_not_auth_header()]
-        all_headers = [*privilage_access_headers, *restricted_access_headers]
+        all_headers = [*privileged_access_headers, *restricted_access_headers]
         unpublished = self.generate_unpublished_collection(add_datasets=1)
         with self.subTest("get unpublished version"):
-            resp_collection = _test_responses_are_equal(
-                [unpublished.version_id, unpublished.collection_id], unpublished.collection_id, all_headers
-            )
+            resp_collection = _test_responses(unpublished.collection_id, unpublished.collection_id, all_headers)
             self.assertEqual("PRIVATE", resp_collection["visibility"])
             self.assertIsNone(resp_collection.get("revising_in"))
             self.assertIsNone(resp_collection["revised_at"])
             self.assertIsNone(resp_collection["revision_of"])
             self.assertIsNone(resp_collection["published_at"])
             self.assertTrue(resp_collection["collection_url"].endswith(unpublished.collection_id.id))
-            self.assertEqual(unpublished.collection_id.id, resp_collection["id"])
-            self.assertIsNone(resp_collection["datasets"][0]["revision_of"])
+            self.assertEqual(unpublished.collection_id.id, resp_collection["collection_id"])
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
-            self.assertEqual(0, resp_collection["datasets"][0]["revision"])
-            self.assertEqual(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["id"])
+            self.assertEqual(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertIn("processing_status", resp_collection.keys())
 
         published = self.generate_published_collection(add_datasets=1)
         with self.subTest("get published version"):
-            resp_collection = _test_responses_are_equal(
-                [published.version_id, published.collection_id], published.collection_id, all_headers
-            )
+            resp_collection = _test_responses(published.collection_id, published.collection_id, all_headers)
             self.assertEqual("PUBLIC", resp_collection["visibility"])
             self.assertIsNone(resp_collection.get("revising_in"))
             self.assertIsNone(resp_collection["revised_at"])
             self.assertIsNone(resp_collection["revision_of"])
             self.assertIsNotNone(resp_collection["published_at"])
             self.assertTrue(resp_collection["collection_url"].endswith(published.collection_id.id))
-            self.assertEqual(published.collection_id.id, resp_collection["id"])
-            self.assertIsNone(resp_collection["datasets"][0]["revision_of"])
+            self.assertEqual(published.collection_id.id, resp_collection["collection_id"])
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
-            self.assertEqual(0, resp_collection["datasets"][0]["revision"])
-            self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["id"])
+            self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
         revision = self.generate_revision(published.collection_id)
         with self.subTest("get published with unpublished version and restricted access"):
-            resp_collection = _test_responses_are_equal(
-                [published.version_id, published.collection_id], published.collection_id, restricted_access_headers
+            resp_collection = _test_responses(
+                published.collection_id, published.collection_id, restricted_access_headers
             )
             self.assertEqual("PUBLIC", resp_collection["visibility"])
             self.assertIsNone(resp_collection.get("revising_in"))
@@ -746,16 +804,16 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["revision_of"])
             self.assertIsNotNone(resp_collection["published_at"])
             self.assertTrue(resp_collection["collection_url"].endswith(published.collection_id.id))
-            self.assertEqual(published.collection_id.id, resp_collection["id"])
-            self.assertIsNone(resp_collection["datasets"][0]["revision_of"])
+            self.assertEqual(published.collection_id.id, resp_collection["collection_id"])
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
-            self.assertEqual(0, resp_collection["datasets"][0]["revision"])
-            self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["id"])
+            self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
-        with self.subTest("get published with unpublished version and privilaged access"):
-            resp_collection = _test_responses_are_equal(
-                [published.version_id, published.collection_id], published.collection_id, privilage_access_headers
+        with self.subTest("get published with unpublished version and privileged access"):
+            resp_collection = _test_responses(
+                published.collection_id, published.collection_id, privileged_access_headers
             )
             self.assertEqual("PUBLIC", resp_collection["visibility"])
             self.assertEqual(revision.version_id.id, resp_collection["revising_in"])
@@ -763,63 +821,61 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["revision_of"])
             self.assertIsNotNone(resp_collection["published_at"])
             self.assertTrue(resp_collection["collection_url"].endswith(published.collection_id.id))
-            self.assertEqual(published.collection_id.id, resp_collection["id"])
-            self.assertIsNone(resp_collection["datasets"][0]["revision_of"])
+            self.assertEqual(published.collection_id.id, resp_collection["collection_id"])
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
-            self.assertEqual(0, resp_collection["datasets"][0]["revision"])
-            self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["id"])
+            self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
-        with self.subTest("get unpublished version with published version and read access"):
-            resp_collection = _test_responses_are_equal([revision.version_id], revision.version_id, all_headers)
+        with self.subTest("get unpublished version (revision) with published version and read access"):
+            resp_collection = _test_responses(revision.version_id, revision.version_id, all_headers)
             self.assertEqual("PRIVATE", resp_collection["visibility"])
             self.assertIsNone(resp_collection.get("revising_in"))
             self.assertEqual(revision.collection_id.id, resp_collection["revision_of"])
             self.assertIsNone(resp_collection["revised_at"])
             self.assertIsNotNone(resp_collection["published_at"])
             self.assertTrue(resp_collection["collection_url"].endswith(revision.version_id.id))
-            self.assertEqual(revision.version_id.id, resp_collection["id"])
-            self.assertIsNone(resp_collection["datasets"][0]["revision_of"])
+            self.assertEqual(revision.version_id.id, resp_collection["collection_version_id"])
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
-            self.assertEqual(0, resp_collection["datasets"][0]["revision"])
-            self.assertEqual(revision.datasets[0].version_id.id, resp_collection["datasets"][0]["id"])
+            self.assertEqual(revision.datasets[0].version_id.id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revision.datasets[0].version_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertIn("processing_status", resp_collection.keys())
 
         revised_dataset = self.generate_dataset(
             collection_version=revision, replace_dataset_version_id=revision.datasets[0].version_id
         )
         with self.subTest("get unpublished version with replace dataset and published version"):
-            resp_collection = _test_responses_are_equal([revision.version_id], revision.version_id, all_headers)
+            resp_collection = _test_responses(revision.version_id, revision.version_id, all_headers)
             self.assertEqual("PRIVATE", resp_collection["visibility"])
             self.assertIsNone(resp_collection.get("revising_in"))
             self.assertEqual(revision.collection_id.id, resp_collection["revision_of"])
             self.assertIsNone(resp_collection["revised_at"])
             self.assertIsNotNone(resp_collection["published_at"])
             self.assertTrue(resp_collection["collection_url"].endswith(revision.version_id.id))
-            self.assertEqual(revision.version_id.id, resp_collection["id"])
-            self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["revision_of"])
-            self.assertIsNotNone(resp_collection["datasets"][0]["revised_at"])
-            self.assertEqual(0, resp_collection["datasets"][0]["revision"])
-            self.assertEqual(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["id"])
+            self.assertEqual(revision.version_id.id, resp_collection["collection_version_id"])
+            self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
+            self.assertEqual(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertIn("processing_status", resp_collection.keys())
 
         self.business_logic.publish_collection_version(revision.version_id)
         with self.subTest("get updated published version"):
-            resp_collection = _test_responses_are_equal(
-                [published.collection_id, revision.version_id], published.collection_id, all_headers
-            )
+            resp_collection = _test_responses(published.collection_id, published.collection_id, all_headers)
             self.assertEqual("PUBLIC", resp_collection["visibility"])
             self.assertIsNone(resp_collection.get("revising_in"))
             self.assertIsNone(resp_collection["revision_of"])
             self.assertIsNotNone(resp_collection["revised_at"])
             self.assertIsNotNone(resp_collection["published_at"])
             self.assertTrue(resp_collection["collection_url"].endswith(published.collection_id.id))
-            self.assertEqual(published.collection_id.id, resp_collection["id"])
-            self.assertIsNone(resp_collection["datasets"][0]["revision_of"])
+            self.assertEqual(published.collection_id.id, resp_collection["collection_id"])
             self.assertIsNotNone(resp_collection["datasets"][0]["revised_at"])
-            self.assertEqual(0, resp_collection["datasets"][0]["revision"])
-            self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["id"])
+            self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(revision.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
     def test__get_collection_with_dataset_failing_validation(self):
         collection_version = self.generate_collection(
@@ -836,7 +892,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         res_json = self._test_response(collection_version)
         self.assertEqual("FAILURE", res_json["processing_status"])
         actual_dataset = res_json["datasets"][0]
-        self.assertEqual(dataset.dataset_id, actual_dataset["id"])
+        self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
         self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
         self.assertEqual("test message", actual_dataset["processing_status_detail"])
 
@@ -853,14 +909,20 @@ class TestGetCollectionID(BaseAPIPortalTest):
         res_json = self._test_response(collection)
         self.assertEqual("FAILURE", res_json["processing_status"])
         actual_dataset = res_json["datasets"][0]
-        self.assertEqual(dataset.dataset_id, actual_dataset["id"])
+        self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
         self.assertEqual("PIPELINE_FAILURE", actual_dataset["processing_status"])
 
-    def test__get_nonexistent_collection__403(self):
+    def test__get_nonexistent_collection__4xx(self):
+        with self.subTest("Querying with historical collection version ID"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            self.business_logic.publish_collection_version(revision.version_id)
+            res = self.app.get(f"/curation/v1/collections/{collection.version_id}")
+            self.assertEqual(403, res.status_code)
         with self.subTest("UUID input valid, but not found"):
             non_existent_id = str(uuid.uuid4())
             res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(404, res.status_code)
         with self.subTest("UUID input invalid"):
             non_existent_id = "123-example-fake-uuid"
             res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
@@ -875,7 +937,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         collection_version = self.generate_unpublished_collection(add_datasets=0)
         self._test_response(collection_version)
 
-    def test_get_colletion_with_dataset_no_metadata(self):
+    def test_get_collection_with_dataset_no_metadata(self):
         """
         GET collection should work when the collection has datasets with no metadata.
         This happens when the dataset did not complete ingestion yet.
@@ -887,19 +949,25 @@ class TestGetCollectionID(BaseAPIPortalTest):
     def _test_response(self, collection_version: CollectionVersion, status_code=200, auth=True) -> dict:
         version_id = collection_version.version_id
         collection_id = collection_version.collection_id
+        is_open_revision = (
+            collection_version.published_at is None
+            and collection_version.canonical_collection.originally_published_at is not None
+        )
         headers = self.make_owner_header() if auth else self.make_not_owner_header()
         res_1 = self.app.get(f"/curation/v1/collections/{version_id}", headers=headers)
-        self.assertEqual(status_code, res_1.status_code)
-        if status_code == 200:
-            self.assertEqual(collection_version.collection_id.id, res_1.json["id"])
+        if is_open_revision:
+            self.assertEqual(status_code, res_1.status_code)
+            if status_code == 200:
+                self.assertEqual(collection_version.version_id.id, res_1.json["collection_id"])
+        else:
+            self.assertEqual(403, res_1.status_code)
 
         res_2 = self.app.get(f"/curation/v1/collections/{collection_id}", headers=headers)
         self.assertEqual(status_code, res_2.status_code)
         if status_code == 200:
-            self.assertEqual(collection_version.collection_id.id, res_2.json["id"])
+            self.assertEqual(collection_version.collection_id.id, res_2.json["collection_id"])
 
-        self.assertEqual(res_1.json, res_2.json)
-        return res_1.json
+        return res_1.json if is_open_revision else res_2.json
 
     def test__get_collection_with_x_approximate_distribution_none__OK(self):
         metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -908,6 +976,134 @@ class TestGetCollectionID(BaseAPIPortalTest):
         res = self.app.get(f"/curation/v1/collections/{dataset.collection_id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertIsNone(res.json["datasets"][0]["x_approximate_distribution"])
+
+
+class TestGetCollectionVersionID(BaseAPIPortalTest):
+    def test_get_collection_version_ok(self):
+        first_version = self.generate_published_collection()
+        revision = self.generate_revision(first_version.collection_id)
+        self.business_logic.publish_collection_version(revision.version_id)
+        res = self.app.get(
+            f"/curation/v1/collection_versions/{first_version.version_id}", headers=self.make_owner_header()
+        )
+        self.assertEqual(200, res.status_code)
+        received_body = res.json
+        expected_body = {
+            "collection_id": f"{first_version.collection_id.id}",
+            "collection_url": f"https://frontend.corporanet.local:3000/collections/{first_version.version_id.id}",
+            "collection_version_id": f"{first_version.version_id.id}",
+            "consortia": ["Consortia 1", "Consortia 2"],
+            "contact_email": "john.doe@email.com",
+            "contact_name": "john doe",
+            "curator_name": "Jane Smith",
+            "datasets": [
+                {
+                    "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
+                    "assets": [
+                        {
+                            "filesize": -1,
+                            "filetype": "H5AD",
+                            "url": f"None/{first_version.datasets[0].version_id.id}.h5ad",
+                        },
+                        {
+                            "filesize": -1,
+                            "filetype": "RDS",
+                            "url": f"None/{first_version.datasets[0].version_id.id}.rds",
+                        },
+                    ],
+                    "batch_condition": ["test_batch_1", "test_batch_2"],
+                    "collection_id": f"{first_version.collection_id.id}",
+                    "collection_version_id": f"{first_version.version_id.id}",
+                    "cell_count": 10,
+                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
+                    "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
+                    "development_stage": [
+                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
+                    ],
+                    "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
+                    "donor_id": ["test_donor_1"],
+                    "explorer_url": f"/e/{first_version.datasets[0].version_id.id}.cxg/",
+                    "is_primary_data": [True, False],
+                    "mean_genes_per_cell": 0.5,
+                    "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
+                    "schema_version": "3.0.0",
+                    "self_reported_ethnicity": [
+                        {
+                            "label": "test_self_reported_ethnicity_label",
+                            "ontology_term_id": "test_self_reported_ethnicity_term_id",
+                        }
+                    ],
+                    "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
+                    "suspension_type": ["test_suspension_type"],
+                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "title": "test_dataset_name",
+                    "tombstone": False,
+                    "x_approximate_distribution": "NORMAL",
+                }
+            ],
+            "description": "described",
+            "doi": None,
+            "links": [],
+            "name": "test_collection",
+            "publisher_metadata": None,
+            "visibility": "PUBLIC",
+        }
+        # Confirm fields are present but ignore equality comparison for timestamps
+        self.assertIn("created_at", received_body)
+        received_body.pop("created_at")
+        self.assertIn("published_at", received_body)
+        received_body.pop("published_at")
+        [self.assertIn("published_at", d) for d in received_body["datasets"]]
+        [d.pop("published_at") for d in received_body["datasets"]]
+
+        self.assertEqual(received_body, expected_body)
+        # test correct dataset explorer url is used
+        explorer_url = res.json["datasets"][0]["explorer_url"]
+        self.assertTrue(explorer_url.endswith(f"{first_version.datasets[0].version_id.id}.cxg/"))
+
+        res = self.app.get(f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header())
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(res.json["collection_version_id"], revision.version_id.id)
+        # test correct dataset explorer url is used
+        explorer_url = res.json["datasets"][0]["explorer_url"]
+        self.assertTrue(explorer_url.endswith(f"{revision.datasets[0].version_id.id}.cxg/"))
+
+    def test_get_collection_version_4xx(self):
+        with self.subTest("Query endpoint with incorrect ID"):
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{str(uuid.uuid4())}", headers=self.make_owner_header()
+            )
+            self.assertEqual(404, res.status_code)
+        with self.subTest("Query endpoint with Canonical ID"):
+            collection = self.generate_published_collection()
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.collection_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(404, res.status_code)
+        with self.subTest("Query endpoint with non-UUID"):
+            res = self.app.get("/curation/v1/collection_versions/bad-input-id", headers=self.make_owner_header())
+            self.assertEqual(403, res.status_code)
+        with self.subTest("Collection Version is part of tombstoned Collection"):
+            collection = self.generate_published_collection()
+            self.business_logic.tombstone_collection(collection.collection_id)
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(410, res.status_code)
+        with self.subTest("Collection Version is unpublished collection"):
+            collection = self.generate_unpublished_collection()
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(404, res.status_code)
+        with self.subTest("Collection Version is unpublished revision"):
+            first_version = self.generate_published_collection()
+            revision = self.generate_revision(first_version.collection_id)
+            res = self.app.get(
+                f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header()
+            )
+            self.assertEqual(404, res.status_code)
 
 
 class TestPatchCollectionID(BaseAPIPortalTest):
@@ -926,6 +1122,25 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         collection_id = self.generate_collection(visibility="PRIVATE").collection_id
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
+            data=json.dumps(self.test_collection),
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+
+    def test__update_collection_by_version_id__403(self):
+        version_id = self.generate_collection(visibility="PRIVATE").version_id
+        response = self.app.patch(
+            f"/curation/v1/collections/{version_id}",
+            data=json.dumps(self.test_collection),
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(403, response.status_code)
+
+    def test__update_revision__OK(self):
+        collection_id = self.generate_published_collection().collection_id
+        revision_id = self.generate_revision(collection_id).version_id
+        response = self.app.patch(
+            f"/curation/v1/collections/{revision_id}",
             data=json.dumps(self.test_collection),
             headers=self.make_owner_header(),
         )
@@ -1244,17 +1459,20 @@ class TestDeleteDataset(BaseAPIPortalTest):
 
     def test__delete_dataset_by_version_id(self):
         """
-        Calling DELETE /collections/:collection_id/datasets/:dataset_id should work according to the
-        auth token passed and when using versioned ids
+        Calling DELETE /collections/:collection_id/datasets/:dataset_id should return a 403 in all cases with auth
+        credentials, and a 401 without auth credentials
         """
-        for auth, auth_description, expected_status_code in self.auth_credentials:
-            with self.subTest(f"{auth_description} {expected_status_code}"):
+        for auth, auth_description, _ in self.auth_credentials:
+            with self.subTest(f"{auth_description}"):
                 dataset = self.generate_dataset(
                     statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
                     publish=False,
                 )
                 response = self._delete(auth, dataset.collection_version_id, dataset.dataset_version_id)
-                self.assertEqual(expected_status_code, response.status_code)
+                if auth:
+                    self.assertEqual(403, response.status_code)
+                else:
+                    self.assertEqual(401, response.status_code)
 
     def test__delete_dataset_by_canonical_id(self):
         """
@@ -1273,45 +1491,79 @@ class TestDeleteDataset(BaseAPIPortalTest):
 
 
 class TestGetDatasets(BaseAPIPortalTest):
-    def test_get_dataset_in_a_collection_200(self):
+    def test_get_dataset_in_a_collection(self):
         dataset = self.generate_dataset(name="test")
 
-        with self.subTest("by canonical collection_id"):
+        with self.subTest("by canonical dataset ID"):
+            test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
+
+            response = self.app.get(test_url)
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(dataset.dataset_id, response.json["dataset_id"])
+
+        with self.subTest("by dataset version ID"):
             test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
 
             response = self.app.get(test_url)
-            self.assertEqual(200, response.status_code)
-            self.assertEqual(dataset.dataset_id, response.json["id"])
+            self.assertEqual(403, response.status_code)
 
-        with self.subTest("by version_id"):
-            test_url = f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}"
-
+        collection = self.generate_published_collection()
+        collection_id = collection.collection_id
+        dataset_id = collection.datasets[0].dataset_id.id
+        revision_id = self.generate_revision(collection_id).version_id
+        self.business_logic.publish_collection_version(revision_id)
+        unbpublished_revision_id = self.generate_revision(collection_id).version_id
+        with self.subTest("by historical collection version ID"):
+            test_url = f"/curation/v1/collections/{revision_id}/datasets/{dataset_id}"
+            response = self.app.get(test_url)
+            self.assertEqual(403, response.status_code)
+        with self.subTest("by unpublished, active revision ID"):
+            test_url = f"/curation/v1/collections/{unbpublished_revision_id}/datasets/{dataset_id}"
             response = self.app.get(test_url)
             self.assertEqual(200, response.status_code)
-            self.assertEqual(dataset.dataset_id, response.json["id"])
+            self.assertEqual(dataset_id, response.json["dataset_id"])
 
-    def test_get_dataset_shape(self):
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test_get_dataset_shape(self, mock_config: Mock):
         # retrieve a private dataset
         private_dataset = self.generate_dataset(name="test")
-        test_url = (
-            f"/curation/v1/collections/{private_dataset.collection_id}/datasets/{private_dataset.dataset_version_id}"
-        )
+        test_url = f"/curation/v1/collections/{private_dataset.collection_id}/datasets/{private_dataset.dataset_id}"
         response = self.app.get(test_url)
         body = response.json
         self.assertEqual("test", body["title"])
-        self.assertEqual(None, body["revision_of"])
-        self.assertTrue("original_id" not in body)
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{private_dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{private_dataset.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
 
         # retrieve a public dataset
         public_dataset = self.generate_dataset(name="test", publish=True)
-        test_url = (
-            f"/curation/v1/collections/{public_dataset.collection_id}/datasets/{public_dataset.dataset_version_id}"
-        )
+        test_url = f"/curation/v1/collections/{public_dataset.collection_id}/datasets/{public_dataset.dataset_id}"
         response = self.app.get(test_url)
         body = response.json
         self.assertEqual("test", body["title"])
-        self.assertEqual(None, body["revision_of"])
-        self.assertTrue("original_id" not in body)
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{public_dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{public_dataset.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
 
         # retrieve a revised dataset using version_id
         collection_id = self.generate_published_collection(add_datasets=2).canonical_collection.id
@@ -1319,34 +1571,63 @@ class TestGetDatasets(BaseAPIPortalTest):
         dataset_version = self.generate_dataset(
             collection_version=version, replace_dataset_version_id=version.datasets[0].version_id
         )
-        test_url = f"/curation/v1/collections/{version.version_id}/datasets/{dataset_version.dataset_version_id}"
-        response = self.app.get(test_url)
-        body = response.json
-        self.assertEqual(dataset_version.dataset_id, body["revision_of"])
-        self.assertEqual(dataset_version.dataset_id, body["original_id"])
-
-        # retrieve an unrevised dataset in a revision Collection
-        unreplaced_dataset = version.datasets[1]
-        test_url = f"/curation/v1/collections/{version.version_id}/datasets/{unreplaced_dataset.version_id}"
-        response = self.app.get(test_url)
-        body = response.json
-        self.assertEqual(None, body["revision_of"])
-        self.assertEqual(unreplaced_dataset.dataset_id.id, body["original_id"])
-
-        # retrieve a newly added dataset in a revision Collection
-        new_dataset = self.generate_dataset(collection_version=version)
-        test_url = f"/curation/v1/collections/{version.version_id}/datasets/{new_dataset.dataset_version_id}"
-        response = self.app.get(test_url)
-        body = response.json
-        self.assertEqual(None, body["revision_of"])
-        self.assertEqual(None, body["original_id"])
-
-        # retrieve a revision using dataset_id
         test_url = f"/curation/v1/collections/{version.version_id}/datasets/{dataset_version.dataset_id}"
         response = self.app.get(test_url)
         body = response.json
-        self.assertEqual(None, body["revision_of"])
-        self.assertEqual(dataset_version.dataset_id, body["original_id"])
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{dataset_version.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{dataset_version.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
+        self.assertEqual("test_dataset_name", body["title"])
+
+        # retrieve an unrevised dataset in a revision Collection
+        unreplaced_dataset = version.datasets[1]
+        test_url = f"/curation/v1/collections/{version.version_id}/datasets/{unreplaced_dataset.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+        self.assertEqual("test_dataset_name", body["title"])
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{unreplaced_dataset.version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{unreplaced_dataset.version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
+
+        # retrieve a newly added dataset in a revision Collection
+        new_dataset = self.generate_dataset(collection_version=version)
+        test_url = f"/curation/v1/collections/{version.version_id}/datasets/{new_dataset.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+        self.assertEqual("test_dataset_name", body["title"])
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{new_dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{new_dataset.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(expected_assets, body["assets"])
 
     def test_get_dataset_is_primary_data_shape(self):
         tests = [
@@ -1359,24 +1640,29 @@ class TestGetDatasets(BaseAPIPortalTest):
                 metadata = self.sample_dataset_metadata
                 metadata.is_primary_data = is_primary_data
                 dataset = self.generate_dataset(metadata=metadata)
-                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
+                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
                 response = self.app.get(test_url)
                 self.assertEqual(result, response.json["is_primary_data"])
 
-    def test_get_nonexistent_dataset_404(self):
-        collection = self.generate_unpublished_collection()
+    def test_get_nonexistent_dataset_4xx(self):
+        collection = self.generate_unpublished_collection(add_datasets=1)
+        with self.subTest("Querying with version ID instead of canonical"):
+            dataset = collection.datasets[0]
+            test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.version_id}"
+            response = self.app.get(test_url)
+            self.assertEqual(403, response.status_code)
+        with self.subTest("UUID input invalid"):
+            non_existent_dataset_id = "123-example-fake-uuid"
+            test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{non_existent_dataset_id}"
+            response = self.app.get(test_url)
+            self.assertEqual(403, response.status_code)
         with self.subTest("UUID input valid, but not found"):
             non_existent_dataset_id = str(uuid.uuid4())
             test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{non_existent_dataset_id}"
             response = self.app.get(test_url)
             self.assertEqual(404, response.status_code)
-        with self.subTest("UUID input invalid"):
-            non_existent_dataset_id = "123-example-fake-uuid"
-            test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{non_existent_dataset_id}"
-            response = self.app.get(test_url)
-            self.assertEqual(404, response.status_code)
 
-    def test_get_datasets_nonexistent_collection_404(self):
+    def test_get_datasets_nonexistent_collection_4xx(self):
         with self.subTest("UUID input valid, but not found"):
             non_existent_id = str(uuid.uuid4())
             test_url = f"/curation/v1/collections/{non_existent_id}/datasets/{non_existent_id}"
@@ -1386,6 +1672,263 @@ class TestGetDatasets(BaseAPIPortalTest):
         with self.subTest("UUID input invalid"):
             non_existent_id = "123-example-fake-uuid"
             test_url = f"/curation/v1/collections/{non_existent_id}/datasets/{non_existent_id}"
+            headers = self.make_owner_header()
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(403, response.status_code)
+
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test_get_dataset_no_assets(self, mock_config: Mock):
+        private_dataset = self.generate_dataset(artifacts=[])
+        test_url = f"/curation/v1/collections/{private_dataset.collection_id}/datasets/{private_dataset.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+        self.assertEqual([], body["assets"])
+
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test_get_all_datasets_200(self, mock_config: Mock):
+        published_collection_1 = self.generate_published_collection(
+            add_datasets=2,
+            metadata=CollectionMetadata(
+                "test_collection_1",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+        published_collection_2 = self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_2",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+        self.generate_unpublished_collection(add_datasets=4)
+        revision = self.generate_revision(published_collection_1.collection_id)
+
+        with self.subTest("With super curator credentials"):
+            headers = self.make_super_curator_header()
+            super_curator_response = self.app.get("/curation/v1/datasets", headers=headers)
+            self.assertEqual(3, len(super_curator_response.json))
+
+        response = self.app.get("/curation/v1/datasets")
+
+        with self.subTest("With no credentials"):
+            self.assertEqual(3, len(response.json))
+
+        with self.subTest("Contains collection_name and collection_doi"):
+            collection_names = {published_collection_1.metadata.name, published_collection_2.metadata.name}
+            expected_collection_dois = {"12.3456/j.celrep", "78.91011/j.celrep"}
+
+            received_collection_names = set()
+            received_collection_dois = set()
+            for dataset in response.json:
+                received_collection_names.add(dataset["collection_name"])
+                received_collection_dois.add(dataset["collection_doi"])
+
+            self.assertEqual(collection_names, received_collection_names)
+            self.assertEqual(expected_collection_dois, received_collection_dois)
+
+        self.generate_dataset(
+            collection_version=revision,
+            replace_dataset_version_id=revision.datasets[0].version_id,
+            publish=True,
+        )
+
+        with self.subTest("Only public datasets are returned, in reverse-chronological order"):
+            # Endpoint uses secondary sort by dataset_id for consistency with Datasets in same Collection
+            sorted_dataset_ids = [published_collection_2.datasets[0].dataset_id.id] + sorted(
+                [d.dataset_id.id for d in published_collection_1.datasets], reverse=True
+            )
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+
+            self.assertEqual(sorted_dataset_ids, received_dataset_ids)
+
+        with self.subTest("The 'revised_at' field is populated for revised Datasets only"):
+            response = self.app.get(
+                "/curation/v1/datasets"
+            )  # Refresh response because 'revised_at' is calculated field
+            for dataset in response.json:
+                if dataset["dataset_id"] == published_collection_1.datasets[0].dataset_id.id:
+                    self.assertIsNotNone(dataset["revised_at"])
+                else:
+                    self.assertIsNone(dataset["revised_at"])
+
+        with self.subTest("Response Dataset objects contain index-specific attributes"):
+            index_specific_attributes = ("collection_doi", "collection_id", "collection_name")
+            dataset = response.json[0]
+            for attribute in index_specific_attributes:
+                self.assertIn(attribute, dataset)
+
+        with self.subTest("Response Dataset objects contain only expected assets"):
+            dataset = response.json[0]
+            expected_assets = [  # Filter out disallowed file types + properly construct url
+                {
+                    "filesize": -1,
+                    "filetype": "H5AD",
+                    "url": f"http://domain/{dataset['dataset_version_id']}.h5ad",
+                },
+                {
+                    "filesize": -1,
+                    "filetype": "RDS",
+                    "url": f"http://domain/{dataset['dataset_version_id']}.rds",
+                },
+            ]
+            self.assertEqual(expected_assets, dataset["assets"])
+
+
+class TestGetDatasetVersion(BaseAPIPortalTest):
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test_get_dataset_version_ok(self, mock_config: Mock):
+        collection = self.generate_published_collection()
+        collection_id = collection.collection_id
+        initial_published_dataset = collection.datasets[0]
+        initial_published_dataset_version_id = collection.datasets[0].version_id
+        published_revision = self.generate_revision(collection_id)
+        published_dataset_revision = self.generate_dataset(
+            collection_version=published_revision,
+            replace_dataset_version_id=initial_published_dataset_version_id,
+            publish=True,
+        )
+
+        headers = self.make_owner_header()
+
+        # get previously published dataset version
+        test_url = f"/curation/v1/dataset_versions/{initial_published_dataset_version_id}"
+        response = self.app.get(test_url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(initial_published_dataset_version_id.id, response.json["dataset_version_id"])
+        self.assertEqual(initial_published_dataset.dataset_id.id, response.json["dataset_id"])
+        self.assertEqual(collection_id.id, response.json["collection_id"])
+        self.assertTrue(response.json["explorer_url"].endswith(f"/e/{initial_published_dataset_version_id}.cxg/"))
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{initial_published_dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{initial_published_dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(response.json["assets"], expected_assets)
+
+        # get currently published dataset version
+        test_url = f"/curation/v1/dataset_versions/{published_dataset_revision.dataset_version_id}"
+        response = self.app.get(test_url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(published_dataset_revision.dataset_version_id, response.json["dataset_version_id"])
+        self.assertEqual(published_dataset_revision.dataset_id, response.json["dataset_id"])
+        self.assertEqual(collection_id.id, response.json["collection_id"])
+        self.assertTrue(
+            response.json["explorer_url"].endswith(f"/e/{published_dataset_revision.dataset_version_id}.cxg/")
+        )
+        expected_assets = [  # Filter out disallowed file types + properly construct url
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{published_dataset_revision.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "RDS",
+                "url": f"http://domain/{published_dataset_revision.dataset_version_id}.rds",
+            },
+        ]
+        self.assertEqual(response.json["assets"], expected_assets)
+
+    def test_get_dataset_version_4xx(self):
+        headers = self.make_owner_header()
+        with self.subTest("Input is not valid UUID"):
+            test_url = "/curation/v1/dataset_versions/bad-input-id"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(403, response.status_code)
+        with self.subTest("Input is valid (canonical dataset ID) but not found"):
+            dataset = self.generate_published_collection().datasets[0]
+            # passing in canonical dataset ID instead of version ID
+            test_url = f"/curation/v1/dataset_versions/{dataset.dataset_id}"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
+        with self.subTest("Input is ID for unpublished dataset version"):
+            dataset = self.generate_unpublished_collection(add_datasets=1).datasets[0]
+            test_url = f"/curation/v1/dataset_versions/{dataset.dataset_id}"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
+        with self.subTest("Input is ID for unpublished dataset revision"):
+            collection = self.generate_published_collection(add_datasets=1)
+            unpublished_revision = self.generate_revision(collection.collection_id)
+            unpublished_dataset_revision = self.generate_dataset(
+                collection_version=unpublished_revision,
+                replace_dataset_version_id=DatasetVersionId(collection.datasets[0].version_id),
+            )
+            test_url = f"/curation/v1/dataset_versions/{unpublished_dataset_revision.dataset_version_id}"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
+
+
+class TestGetDatasetIdVersions(BaseAPIPortalTest):
+    def test_get_dataset_id_versions_ok(self):
+        collection = self.generate_published_collection()
+        collection_id = collection.collection_id
+        dataset_id = collection.datasets[0].dataset_id
+        dataset_version_id = collection.datasets[0].version_id
+        published_revision = self.generate_revision(collection_id)
+        published_dataset_revision = self.generate_dataset(
+            collection_version=published_revision, replace_dataset_version_id=dataset_version_id, publish=True
+        )
+        unpublished_revision = self.generate_revision(collection_id)
+        self.generate_dataset(
+            collection_version=unpublished_revision,
+            replace_dataset_version_id=DatasetVersionId(published_dataset_revision.dataset_version_id),
+        )
+
+        test_url = f"/curation/v1/datasets/{dataset_id}/versions"
+        headers = self.make_owner_header()
+        response = self.app.get(test_url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        expected = defaultdict(list)
+        for dataset in response.json:
+            self.assertIsNone(dataset.get("revised_at"))
+            expected["dataset_version_ids"].append(dataset["dataset_version_id"])
+            expected["collection_ids"].append(dataset["collection_id"])
+            expected["collection_version_ids"].append(dataset["collection_version_id"])
+            expected["published_at"].append(dataset["published_at"])
+        # Check that only published datasets appear
+        # Must be returned in reverse chronological order
+        self.assertEqual(
+            [published_dataset_revision.dataset_version_id, dataset_version_id.id], expected["dataset_version_ids"]
+        )
+        self.assertEqual([collection_id.id, collection_id.id], expected["collection_ids"])
+        self.assertEqual(
+            [published_revision.version_id.id, collection.version_id.id], expected["collection_version_ids"]
+        )
+        self.assertTrue(expected["published_at"][0] > expected["published_at"][1])
+
+    def test_get_dataset_id_version_4xx(self):
+        with self.subTest("Input is not a UUID"):
+            test_url = "/curation/v1/datasets/not-uuid-input/versions"
+            headers = self.make_owner_header()
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(403, response.status_code)
+        with self.subTest("Dataset with that UUID does not exist"):
+            test_url = f"/curation/v1/datasets/{str(uuid.uuid4())}/versions"
+            headers = self.make_owner_header()
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(404, response.status_code)
+        with self.subTest("Dataset Exists, but not published so no public version history"):
+            dataset_id = self.generate_unpublished_collection(add_datasets=1).datasets[0].dataset_id
+            test_url = f"/curation/v1/datasets/{dataset_id}/versions"
             headers = self.make_owner_header()
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(404, response.status_code)
@@ -1402,7 +1945,7 @@ class TestPostDataset(BaseAPIPortalTest):
             test_url = f"/curation/v1/collections/{non_existent_collection_id}/datasets"
             headers = self.make_owner_header()
             response = self.app.post(test_url, headers=headers)
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(404, response.status_code)
         with self.subTest("UUID input invalid"):
             non_existent_collection_id = "123-example-fake-uuid"
             test_url = f"/curation/v1/collections/{non_existent_collection_id}/datasets"
@@ -1412,35 +1955,39 @@ class TestPostDataset(BaseAPIPortalTest):
 
     def test_post_datasets_with_collection_201(self):
         collection = self.generate_unpublished_collection()
-        test_ids = [(collection.version_id, "version_id"), (collection.collection_id, "canonical_collection_id")]
-        for test_id, test_name in test_ids:
-            test_url = f"/curation/v1/collections/{test_id}/datasets"
-            with self.subTest(test_name):
-                headers = self.make_owner_header()
-                response = self.app.post(test_url, headers=headers)
-                self.assertEqual(201, response.status_code)
-                self.assertTrue(response.json["id"])
+        test_id = collection.collection_id
+        test_url = f"/curation/v1/collections/{test_id}/datasets"
+        headers = self.make_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(201, response.status_code)
+        self.assertTrue(response.json["dataset_id"])
+
+    def test_post_datasets_with_collection_version_id_403(self):
+        collection = self.generate_unpublished_collection()
+        test_id = collection.version_id
+        test_url = f"/curation/v1/collections/{test_id}/datasets"
+        headers = self.make_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(403, response.status_code)
 
     def test_post_datasets_super(self):
         collection = self.generate_unpublished_collection()
-        test_ids = [(collection.version_id, "version_id"), (collection.collection_id, "canonical_collection_id")]
-        for test_id, test_name in test_ids:
-            test_url = f"/curation/v1/collections/{test_id}/datasets"
-            with self.subTest(test_name):
-                headers = self.make_super_curator_header()
-                response = self.app.post(test_url, headers=headers)
-                self.assertEqual(201, response.status_code)
+        test_id = collection.collection_id
+        test_url = f"/curation/v1/collections/{test_id}/datasets"
+        headers = self.make_super_curator_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(201, response.status_code)
 
     def test_post_datasets_not_owner_403(self):
         collection = self.generate_collection()
-        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
         headers = self.make_not_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test_post_datasets_public_collection_405(self):
         collection = self.generate_collection(visibility="PUBLIC")
-        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
         headers = self.make_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(405, response.status_code)
@@ -1456,14 +2003,14 @@ class TestPostDataset(BaseAPIPortalTest):
         POST /datasets returns the canonical dataset id on creation.
         """
         collection = self.generate_unpublished_collection()
-        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
         headers = self.make_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
 
         looked_up_version = self.business_logic.get_collection_version(collection.version_id)
         self.assertEqual(1, len(looked_up_version.datasets))
-        self.assertEqual(response.json["id"], looked_up_version.datasets[0].dataset_id.id)
+        self.assertEqual(response.json["dataset_id"], looked_up_version.datasets[0].dataset_id.id)
 
 
 class TestPostRevision(BaseAPIPortalTest):
@@ -1495,14 +2042,22 @@ class TestPostRevision(BaseAPIPortalTest):
             headers=self.make_owner_header(),
         )
         self.assertEqual(201, response.status_code)
-        self.assertNotEqual(collection_id, response.json["id"])
+        self.assertNotEqual(collection_id, response.json["collection_id"])
+
+    def test__post_revision_by_collection_version_id_403(self):
+        version_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).version_id
+        response = self.app.post(
+            f"/curation/v1/collections/{version_id}/revision",
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(403, response.status_code)
 
     def test__post_revision__Super_Curator(self):
         collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
         headers = self.make_super_curator_header()
         response = self.app.post(f"/curation/v1/collections/{collection_id}/revision", headers=headers)
         self.assertEqual(201, response.status_code)
-        self.assertNotEqual(collection_id, response.json["id"])
+        self.assertNotEqual(collection_id, response.json["collection_id"])
 
 
 @patch(
@@ -1528,7 +2083,7 @@ class TestPutLink(BaseAPIPortalTest):
         headers = None
         for id in [dataset.dataset_version_id, dataset.dataset_id]:
             response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{id}",
+                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}",
                 json=body,
                 headers=headers,
             )
@@ -1548,7 +2103,7 @@ class TestPutLink(BaseAPIPortalTest):
         headers = self.make_owner_header()
         for id in [dataset.dataset_version_id, dataset.dataset_id]:
             response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{id}",
+                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}",
                 json=body,
                 headers=headers,
             )
@@ -1568,7 +2123,7 @@ class TestPutLink(BaseAPIPortalTest):
         headers = self.make_not_owner_header()
         for id in [dataset.dataset_version_id, dataset.dataset_id]:
             response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{id}",
+                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}",
                 json=body,
                 headers=headers,
             )
@@ -1577,81 +2132,99 @@ class TestPutLink(BaseAPIPortalTest):
 
     def test__new_from_link__OK(self, *mocks):
         """
-        Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by the owner of the collection
+        Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by the owner of the collection or
+        a super curator
         """
 
-        def _test_create(collection_id, dataset_id):
+        def _test_create(collection_id, dataset_id, headers):
             body = {"link": self.good_link}
-            headers = self.make_owner_header()
             response = self.app.put(
                 f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
                 json=body,
                 headers=headers,
             )
             self.assertEqual(202, response.status_code)
+            headers = [("owner", self.make_owner_header()), ("super curator", self.make_super_curator_header())]
+            for auth_type, header in headers:
+                with self.subTest(f"{auth_type}, unpublished collection"):
+                    dataset = self.generate_dataset(
+                        statuses=[
+                            DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)
+                        ],
+                    )
+                    _test_create(dataset.collection_id, dataset.dataset_id, header)
 
-        with self.subTest("with version_ids"):
-            dataset = self.generate_dataset(
-                statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
-            )
-            _test_create(dataset.collection_version_id, dataset.dataset_version_id)
-
-        with self.subTest("with collection_ids"):
-            dataset = self.generate_dataset(
-                statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
-            )
-            _test_create(dataset.collection_id, dataset.dataset_id)
-
-    def test__new_from_link__Super_Curator(self, *mocks):
-        """
-        Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by a super curator
-        """
-
-        dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
-        )
-        body = {"link": self.good_link}
-        headers = self.make_super_curator_header()
-        response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
-            json=body,
-            headers=headers,
-        )
-        self.assertEqual(202, response.status_code)
+                with self.subTest(f"{auth_type}, revision"):
+                    collection_id = self.generate_published_collection().collection_id
+                    revision = self.generate_revision(collection_id)
+                    dataset = self.generate_dataset(
+                        statuses=[
+                            DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)
+                        ],
+                        collection_version=revision,
+                    )
+                    _test_create(revision.version_id, dataset.dataset_id, header)
 
     def test__existing_from_link__OK(self, *mocks):
         """
-        Calling PUT /datasets/:dataset_id on an existing dataset_id
-        should succeed if a valid link is uploaded by the owner of the collection
+        Calling PUT /datasets/:dataset_id on an existing dataset_id should succeed if a valid link is uploaded by the
+        owner of the collection or a super curator
         """
-        dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
-        )
-        body = {"link": self.good_link}
-        headers = self.make_owner_header()
-        response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
-            json=body,
-            headers=headers,
-        )
-        self.assertEqual(202, response.status_code)
 
-    def test__existing_from_link__Super_Curator(self, *mocks):
+        def _test_create(collection_id, dataset_id, headers):
+            body = {"link": self.good_link}
+            response = self.app.put(
+                f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
+                json=body,
+                headers=headers,
+            )
+            self.assertEqual(202, response.status_code)
+            headers = [("owner", self.make_owner_header()), ("super curator", self.make_super_curator_header())]
+            for auth_type, header in headers:
+                with self.subTest(f"{auth_type}, unpublished collection"):
+                    dataset = self.generate_dataset(
+                        statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
+                    )
+                    _test_create(dataset.collection_id, dataset.dataset_id, header)
+
+                with self.subTest(f"{auth_type}, revision"):
+                    collection_id = self.generate_published_collection().collection_id
+                    revision = self.generate_revision(collection_id)
+                    dataset = self.generate_dataset(
+                        statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
+                        collection_version=revision,
+                    )
+                    _test_create(revision.version_id, dataset.dataset_id, header)
+
+    def test_from_link__403(self, *mocks):
         """
-        Calling PUT /datasets/:dataset_id on an existing dataset_id
-        should succeed if a valid link is uploaded by a super curator
+        Calling PUT /datasets/:dataset_id  should fail if version IDs are used for unpublished collections or
+        for referencing datasets
         """
-        dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
-        )
-        body = {"link": self.good_link}
-        headers = self.make_super_curator_header()
-        response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
-            json=body,
-            headers=headers,
-        )
-        self.assertEqual(202, response.status_code)
+
+        def _test_create(collection_version_id, dataset_version_id):
+            body = {"link": self.good_link}
+            headers = self.make_owner_header()
+            response = self.app.put(
+                f"/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}",
+                json=body,
+                headers=headers,
+            )
+            self.assertEqual(403, response.status_code)
+
+        with self.subTest("use collection version ID for unpublished collection"):
+            collection = self.generate_unpublished_collection()
+            dataset = self.generate_dataset(
+                statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
+                collection_version=collection,
+            )
+            _test_create(collection.version_id, dataset.dataset_id)
+
+        with self.subTest("use dataset version ID for unpublished collection"):
+            dataset = self.generate_dataset(
+                statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
+            )
+            _test_create(dataset.collection_id, dataset.dataset_version_id)
 
 
 class TestAuthToken(BaseAPIPortalTest):

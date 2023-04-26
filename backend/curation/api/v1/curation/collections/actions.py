@@ -1,13 +1,12 @@
 from flask import jsonify, make_response
 
-from backend.common.corpora_orm import CollectionVisibility, ProjectLinkType
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.business.exceptions import CollectionCreationException, InvalidMetadataException
 from backend.layers.common import doi
-from backend.layers.common.entities import CollectionMetadata, Link
+from backend.layers.common.entities import CollectionLinkType, CollectionMetadata, CollectionVisibility, Link
 from backend.portal.api.providers import get_business_logic
 
 
@@ -52,7 +51,7 @@ def post(body: dict, token_info: dict):
     errors = []
     if (doi_url := body.get("doi")) and (doi_url := doi.curation_get_normalized_doi_url(doi_url, errors)):
         links = body.get("links", [])
-        links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
+        links.append({"link_type": CollectionLinkType.DOI.name, "link_url": doi_url})
         body["links"] = links
 
     # Build CollectionMetadata object
@@ -74,4 +73,4 @@ def post(body: dict, token_info: dict):
         errors.extend(ex.errors)
     if errors:
         raise InvalidParametersHTTPException(ext=dict(invalid_parameters=errors))
-    return make_response(jsonify({"id": version.collection_id.id}), 201)
+    return make_response(jsonify({"collection_id": version.collection_id.id}), 201)

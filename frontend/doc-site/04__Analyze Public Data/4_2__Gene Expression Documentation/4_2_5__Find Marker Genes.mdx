@@ -27,6 +27,7 @@ Clicking on the info button next to another cell type will replace the marker ge
 For a selected cell type in a tissue,
 
 - Use Welch's t-test to compare the gene expressions in the selected cell type to each other cell type in the tissue.
+  - Note: each cell type contains cells labeled as that cell type as well as its descendants in the cell ontology. Consequently, cell types are only compared to other cell types that are not in the same lineage (i.e. comparisons with ancestors and descendants are ignored).
   - Record the effect size for each gene in each comparison.
 - For each gene, calculate the 5th percentile of the effect sizes across all comparisons. This is the marker score.
   - Let $T_t$ be the set of cell types $\{c_1,\ldots,c_n\}$ in tissue $t$. The marker score ($S_{c_ig_j}$) for gene $g_j$ in cell type $c_i$ is $S_{c_ig_j}=p_5(\{e_{c_kg_j} : c_k \in T_t, c_k \neq c_i\})$ where $p_5$ is the 5th percentile operator and $e_{c_kg_j}$ is the effect size of the t-test comparing $g_j$ in $c_i$ to $c_k$.
@@ -47,6 +48,83 @@ Welch's t-test is a statistical test for comparing the means of two independent 
 - Approximate degrees of freedom using Satterthwaite formula:
   - $df = \frac{\left(\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}\right)^2}{\frac{\left(\frac{s_1^2}{n_1}\right)^2}{n_1 - 1} + \frac{\left(\frac{s_2^2}{n_2}\right)^2}{n_2 - 1}}$.
 - Calculate the p-value using the t-distribution ($P(T >t)$).
+
+## Validation
+
+To determine if the genes reported by Find Marker Genes contain biologically relevant information, we can check to see if the marker genes alone are enough to recapiulate the cell type clustering of a few test datasets:
+
+1. [Tabula Sapiens blood data](https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5)
+2. [COVID blood data (Arunachalam et al.)](https://cellxgene.cziscience.com/collections/b9fc3d70-5a72-4479-a046-c2cc1ab19efc)
+3. [Human Lung Cell Atlas lung data](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a)
+
+Each test dataset was run through one of three analysis workflows:
+
+1. **Standard analysis**: This is the standard analysis workflow offered by [Scanpy](https://scanpy.readthedocs.io/en/stable/) with cell types clustered using the Leiden algorithm.
+2. **Marker gene analysis**: We take the union of the top 5 marker genes per cell type, subsample the data down to the resulting genes, and run the standard analysis workflow on the subsampled data.
+3. **Random gene analysis**: We subsample the data down to $N$ random genes and run the standard analysis workflow on the subsampled data, where $N$ is the number of marker genes used in (2).
+
+For each dataset and workflow, we report the adjusted rand index (ARI) and normalized mutual information (NMI) between the Leiden clustering results and the original cell type annotations. We also present the UMAP visualizations to qualitatively illustrate the clustering quality for each workflow.
+
+### Tabula Sapiens blood data
+
+**Standard analysis**
+
+<Image src={"/doc-site/4-2_blood1_standard_umap.png"} height={250} />
+ARI: 0.35, NMI: 0.69
+
+**Marker gene analysis**
+
+<Image src={"/doc-site/4-2_blood1_marker_umap.png"} height={250} />
+ARI: 0.31, NMI: 0.68
+
+**Random analysis**
+
+<Image src={"/doc-site/4-2_blood1_random_umap.png"} height={250} />
+ARI: 0.16, NMI: 0.45
+
+### COVID blood data (Arunachalam et al.)
+
+**Standard analysis**
+
+<Image src={"/doc-site/4-2_blood2_standard_umap.png"} height={250} />
+ARI: 0.50, NMI: 0.75
+
+**Marker gene analysis**
+
+<Image src={"/doc-site/4-2_blood2_marker_umap.png"} height={250} />
+ARI: 0.56, NMI: 0.75
+
+**Random analysis**
+
+<Image src={"/doc-site/4-2_blood2_random_umap.png"} height={250} />
+ARI: 0.17, NMI: 0.33
+
+### Human Lung Cell Atlas lung data
+
+**Standard analysis**
+
+<Image src={"/doc-site/4-2_lung_standard_umap.png"} height={250} />
+ARI: 0.50, NMI: 0.80
+
+**Marker gene analysis**
+
+<Image src={"/doc-site/4-2_lung_marker_umap.png"} height={250} />
+ARI: 0.50, NMI: 0.79
+
+**Random analysis**
+
+<Image src={"/doc-site/4-2_lung_random_umap.png"} height={250} />
+ARI: 0.18, NMI: 0.41
+
+### Discussion
+
+Subsampling the data down to the union of the top 5 marker genes per cell type typically yields around 250-350 unique genes. If this set of genes were not enriched in biologically relevant genes, subsetting the data down to such a small number of genes would give very low quality results (as shown in the random gene analysis results). Encouragingly, we do not observe any significant decrease in clustering accuracy when subsetting down to the marker genes in any of the datasets tested.
+
+### Reproducibility notebooks
+
+1. [Tabula Sapiens blood data](/doc-site/clustering_validation_blood1.pdf)
+2. [COVID blood data (Arunachalam et al.)](/doc-site/clustering_validation_blood2.pdf)
+3. [Human Lung Cell Atlas lung data](/doc-site/clustering_validation_lung.pdf)
 
 ## Caveats
 

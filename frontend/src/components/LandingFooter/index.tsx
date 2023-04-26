@@ -50,6 +50,7 @@ const LandingFooter = (): JSX.Element => {
           <a href={ROUTES.TOS} target="_blank" rel="noopener">
             Terms
           </a>
+          <a href={ROUTES.SITEMAP}>Sitemap</a>
           <a
             onClick={() => {
               track(EVENTS.CONTACT_US_CLICKED);

@@ -5,7 +5,6 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from backend.common.corpora_config import CorporaDbConfig
-from backend.common.corpora_orm import Base as corpora_orm
 from backend.layers.persistence import orm as persistence_orm
 
 # this is the Alembic Config object, which provides access to the values within the .ini file in use.
@@ -19,8 +18,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-# TODO remove support for corpora_orm.metadata once the old database is fully deprecaited.
-target_metadata = [corpora_orm.metadata, persistence_orm.metadata]
+target_metadata = [persistence_orm.metadata]
 
 # other values from the config, defined by the needs of env.py, can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

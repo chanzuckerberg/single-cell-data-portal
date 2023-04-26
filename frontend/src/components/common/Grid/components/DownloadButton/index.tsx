@@ -12,7 +12,7 @@ interface Props {
 export default function DownloadButton({
   datasetName,
   onClick,
-  ...props /* Spread props to allow for data-test-id and other ButtonProps e.g. "disabled". */
+  ...props /* Spread props to allow for data-testid and other ButtonProps e.g. "disabled". */
 }: Props): JSX.Element {
   return (
     <StyledOutlineButton

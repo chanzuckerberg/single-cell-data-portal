@@ -1,7 +1,10 @@
-import { Dispatch, memo, MouseEventHandler } from "react";
+import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
+import { FilterDimensions } from "src/common/queries/wheresMyGene";
 import { CellType } from "src/views/WheresMyGene/common/types";
-import SaveImage from "../../../GeneSearchBar/components/SaveImage";
+import SaveExport from "../../../GeneSearchBar/components/SaveExport";
+import ShareButton from "../../../GeneSearchBar/components/ShareButton";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
+import { ChartProps } from "../../../HeatMap/hooks/common/types";
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
@@ -12,8 +15,14 @@ interface Props {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
-  setIsDownloading: (isDownloading: boolean) => void;
-  setEchartsRendererMode: Dispatch<React.SetStateAction<"canvas" | "svg">>;
+  setDownloadStatus: Dispatch<
+    SetStateAction<{
+      isLoading: boolean;
+    }>
+  >;
+  setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
+  allChartProps: { [tissue: string]: ChartProps };
+  availableFilters: Partial<FilterDimensions>;
 }
 
 export default memo(function Legend({
@@ -22,19 +31,23 @@ export default memo(function Legend({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
-  setIsDownloading,
+  setDownloadStatus,
   setEchartsRendererMode,
+  allChartProps,
+  availableFilters,
 }: Props): JSX.Element {
   return (
-    <LegendWrapper>
-      <SaveImage
+    <LegendWrapper data-testid="legend-wrapper">
+      <SaveExport
         selectedTissues={selectedTissues}
         selectedGenes={selectedGenes}
         selectedCellTypes={selectedCellTypes}
-        setIsDownloading={setIsDownloading}
+        setDownloadStatus={setDownloadStatus}
         setEchartsRendererMode={setEchartsRendererMode}
+        allChartProps={allChartProps}
+        availableFilters={availableFilters}
       />
-
+      <ShareButton />
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}
       />

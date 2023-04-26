@@ -25,7 +25,7 @@ export default function DatasetNameCell({
         (collectionId ? (
           <SubTitle>
             <LinkCell
-              data-test-id="collection-link"
+              data-testid="collection-link"
               url={url}
               value={collectionName}
             />

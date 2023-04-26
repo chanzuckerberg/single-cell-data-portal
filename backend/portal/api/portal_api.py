@@ -2,7 +2,6 @@ import itertools
 from datetime import datetime
 from typing import List, Optional, Tuple
 from urllib.parse import urlparse
-from uuid import UUID
 
 from flask import Response, jsonify, make_response
 
@@ -17,11 +16,13 @@ from backend.common.utils.http_exceptions import (
     TooLargeHTTPException,
 )
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
+from backend.curation.api.v1.curation.collections.common import validate_uuid_else_forbidden
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
     CollectionCreationException,
+    CollectionDeleteException,
     CollectionIsPublishedException,
     CollectionNotFoundException,
     CollectionPublishException,
@@ -454,7 +455,10 @@ def delete_collection(collection_id: str, token_info: dict):
         except CollectionIsPublishedException:
             raise ForbiddenHTTPException() from None
     elif isinstance(resource_id, CollectionId):
-        get_business_logic().tombstone_collection(resource_id)
+        try:
+            get_business_logic().tombstone_collection(resource_id)
+        except CollectionDeleteException() as e:
+            raise ServerErrorHTTPException(e.errors) from e
 
 
 def update_collection(collection_id: str, body: dict, token_info: dict):
@@ -677,7 +681,7 @@ def get_datasets_index():
     """
 
     response = []
-    for dataset in get_business_logic().get_all_published_datasets():
+    for dataset in get_business_logic().get_all_mapped_datasets():
         payload = _dataset_to_response(dataset, is_tombstoned=False)
         enrich_dataset_with_ancestors(
             payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
@@ -713,19 +717,16 @@ def get_dataset_identifiers(url: str):
     """
     try:
         path = urlparse(url).path
-        id = [segment for segment in path.split("/") if segment][-1].removesuffix(".cxg")
+        _id = [segment for segment in path.split("/") if segment][-1].removesuffix(".cxg")
     except Exception:
         raise ServerErrorHTTPException("Cannot parse URL") from None
 
-    try:
-        UUID(id)
-    except ValueError as e:
-        raise NotFoundHTTPException() from e
+    validate_uuid_else_forbidden(_id)
 
-    dataset = get_business_logic().get_dataset_version(DatasetVersionId(id))
+    dataset = get_business_logic().get_dataset_version(DatasetVersionId(_id))
     if dataset is None:
         # Lookup from canonical if the version cannot be found
-        dataset = get_business_logic().get_dataset_version_from_canonical(DatasetId(id))
+        dataset = get_business_logic().get_dataset_version_from_canonical(DatasetId(_id))
     if dataset is None:
         raise NotFoundHTTPException()
 
@@ -736,13 +737,6 @@ def get_dataset_identifiers(url: str):
     collection = get_business_logic().get_collection_version_from_canonical(dataset.collection_id)
     if collection is None:  # orphaned datasets - shouldn't happen, but we should return 404 just in case
         raise NotFoundHTTPException()
-
-    # If we look up by canonical_id (i.e. the if does not hold), we can run into issues if the collection
-    # is unpublished and the dataset has been replaced. In this case, `get_dataset_version_from_canonical` will return
-    # the initial version (not the replaced one), so we need to update `dataset` using the collection mappings (which are
-    # up to date).
-    if dataset.version_id.id != id:
-        dataset = [d for d in collection.datasets if d.dataset_id.id == id][0]
 
     if dataset.version_id not in [d.version_id for d in collection.datasets]:
         # If the dataset is not in the mapped collection version, it means the dataset belongs to the active

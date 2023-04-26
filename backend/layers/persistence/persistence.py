@@ -4,7 +4,7 @@ import logging
 import uuid
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional, Tuple
 
 from sqlalchemy import create_engine
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
@@ -33,6 +33,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
+from backend.layers.common.helpers import set_revised_at_field
 from backend.layers.persistence.constants import SCHEMA_NAME
 from backend.layers.persistence.orm import (
     CollectionTable,
@@ -122,7 +123,11 @@ class DatabaseProvider(DatabaseProviderInterface):
         )
 
     def _row_to_canonical_dataset(self, row: Any):
-        return CanonicalDataset(DatasetId(str(row.id)), DatasetVersionId(str(row.version_id)), row.published_at)
+        return CanonicalDataset(
+            DatasetId(str(row.id)),
+            None if row.version_id is None else DatasetVersionId(str(row.version_id)),
+            row.published_at,
+        )
 
     def _row_to_dataset_artifact(self, row: Any):
         return DatasetArtifact(
@@ -177,7 +182,11 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset = session.query(DatasetTable).filter_by(id=dataset_id.id).one_or_none()
             if dataset is None:
                 return None
-            return CanonicalDataset(dataset_id, DatasetVersionId(str(dataset.version_id)), dataset.published_at)
+            return CanonicalDataset(
+                dataset_id,
+                None if dataset.version_id is None else DatasetVersionId(str(dataset.version_id)),
+                dataset.published_at,
+            )
 
     def create_canonical_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
@@ -259,8 +268,18 @@ class DatabaseProvider(DatabaseProviderInterface):
                 return None
             collection_id = CollectionId(str(collection_version.collection_id))
             canonical_collection = self.get_canonical_collection(collection_id)
-            datasets = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
-            return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, datasets)
+            all_collection_versions_rows = (
+                session.query(CollectionVersionTable).filter_by(collection_id=canonical_collection.id.id).all()
+            )
+            all_collection_versions = [
+                self._row_to_collection_version(c_v_row, canonical_collection)
+                for c_v_row in all_collection_versions_rows
+            ]
+            dataset_versions = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
+            set_revised_at_field(dataset_versions, all_collection_versions)
+            return self._row_to_collection_version_with_datasets(
+                collection_version, canonical_collection, dataset_versions
+            )
 
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         """
@@ -272,10 +291,18 @@ class DatabaseProvider(DatabaseProviderInterface):
             if version_id is None or version_id[0] is None:
                 return None
             version_id = version_id[0]
-            collection_version = session.query(CollectionVersionTable).filter_by(id=version_id).one()
+            collection_versions = session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id).all()
+
+            collection_version = next(c_v_row for c_v_row in collection_versions if c_v_row.id == version_id)
             canonical_collection = self.get_canonical_collection(collection_id)
-            datasets = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
-            return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, datasets)
+            dataset_versions = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
+            all_collection_versions = [
+                self._row_to_collection_version(c_v_row, canonical_collection) for c_v_row in collection_versions
+            ]
+            set_revised_at_field(dataset_versions, all_collection_versions)
+            return self._row_to_collection_version_with_datasets(
+                collection_version, canonical_collection, dataset_versions
+            )
 
     def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersionWithDatasets]:
         """
@@ -437,7 +464,6 @@ class DatabaseProvider(DatabaseProviderInterface):
             # update canonical collection -> collection version mapping
             collection = session.query(CollectionTable).filter_by(id=collection_id.id).one()
             collection.version_id = version_id.id
-
             # update canonical collection timestamps depending on whether this is its first publish
             if collection.originally_published_at is None:
                 collection.originally_published_at = published_at
@@ -478,19 +504,26 @@ class DatabaseProvider(DatabaseProviderInterface):
         dataset = self.get_canonical_dataset(dataset_id)
         with self._manage_session() as session:
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
+            artifact_ids = [artifact_id for dv in dataset_versions for artifact_id in dv.artifacts]
+            artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
+            artifact_map = {artifact.id: artifact for artifact in artifacts}
             for i in range(len(dataset_versions)):
-                dataset_versions[i] = self._row_to_dataset_version(dataset_versions[i], dataset)
+                version = dataset_versions[i]
+                version_artifacts = [
+                    self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
+                ]
+                dataset_versions[i] = self._row_to_dataset_version(version, dataset, version_artifacts)
             return dataset_versions
 
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
-        Returns all dataset versions in published collections.
+        Returns all mapped datasets and mapped collection versions
         """
-        active_collections = self.get_all_mapped_collection_versions()
+        active_collections = list(self.get_all_mapped_collection_versions())
         dataset_version_ids = []
         for collection in active_collections:
             dataset_version_ids.extend(collection.datasets)
-        return self._get_datasets(dataset_version_ids)
+        return list(self._get_datasets(dataset_version_ids)), active_collections
 
     def get_dataset_artifacts(self, dataset_artifact_id_list: List[DatasetArtifactId]) -> List[DatasetArtifact]:
         """
@@ -525,7 +558,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
         dataset_id = DatasetId()
         dataset_version_id = DatasetVersionId()
-        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=dataset_version_id.id, published_at=None)
+        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=None, published_at=None)
         dataset_version = DatasetVersionTable(
             id=dataset_version_id.id,
             dataset_id=dataset_id.id,
@@ -539,9 +572,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             session.add(canonical_dataset)
             session.add(dataset_version)
-            return self._row_to_dataset_version(
-                dataset_version, CanonicalDataset(dataset_id, dataset_version_id, None), []
-            )
+            return self._row_to_dataset_version(dataset_version, CanonicalDataset(dataset_id, None, None), [])
 
     def add_dataset_artifact(
         self, version_id: DatasetVersionId, artifact_type: DatasetArtifactType, artifact_uri: str

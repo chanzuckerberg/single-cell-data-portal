@@ -436,14 +436,13 @@ secondary_filter_common_case_request_data = {
     "filter": {
         "dataset_ids": [],
         "disease_ontology_term_ids": ["MONDO:0005812", "MONDO:0100096", "PATO:0000461"],
-        "self_reported_ethnicity_ontology_term_ids": ["HANCESTRO:0010", "HANCESTRO:0014"],
         "gene_ontology_term_ids": list(genes_20_count.keys()),
         "organism_ontology_term_id": "NCBITaxon:9606",
         "sex_ontology_term_ids": ["PATO:0000383"],
         "tissue_ontology_term_ids": ["UBERON:0000178"],
     },  # blood (more than 50 cell types)
-    "include_filter_dims": True,
 }
+
 secondary_filter_extreme_case_request_data = {
     "filter": {
         "dataset_ids": [],
@@ -460,5 +459,4 @@ secondary_filter_extreme_case_request_data = {
             "UBERON:0000362",
         ],
     },
-    "include_filter_dims": True,
 }

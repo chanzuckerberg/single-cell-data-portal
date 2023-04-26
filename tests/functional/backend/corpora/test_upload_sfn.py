@@ -47,7 +47,12 @@ class Test_Uploader_SFN(unittest.TestCase):
         :return:
         """
         client_sfn = boto3.client("stepfunctions", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
-        input_params = {"collection_id": "test_collection_id", "url": "test_url", "dataset_id": "test_dataset_id"}
+        # hardcoded example UUIDs because DB throws error if you pass a non-UUID example test ID
+        input_params = {
+            "collection_id": "209c6341-8636-46a6-8afd-bba1dc8b807e",
+            "url": "test_url",
+            "dataset_id": "8ef59748-9e76-412b-9473-8c8e1c04441d",
+        }
         response = start_upload_sfn(**input_params)
         response = client_sfn.describe_execution(executionArn=response["executionArn"])
         self.assertDictEqual(input_params, json.loads(response["input"]))

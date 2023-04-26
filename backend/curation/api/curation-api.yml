@@ -145,7 +145,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  collection_id:
                     $ref: "#/components/schemas/collection_id"
         "400":
           $ref: "#/components/responses/400"
@@ -176,7 +176,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/collection_get"
+                  - $ref: "#/components/schemas/collection"
         "403":
           $ref: "#/components/responses/403"
     patch:
@@ -288,7 +288,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  collection_id:
                     $ref: "#/components/schemas/collection_id"
         "401":
           $ref: "#/components/responses/401"
@@ -318,7 +318,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  dataset_id:
                     $ref: "#/components/schemas/dataset_id"
         "401":
           $ref: "#/components/responses/401"
@@ -511,18 +511,88 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-  /v1/collections/{collection_id}/datasets/{dataset_id}/assets:
+  /v1/collections/{collection_id}/versions:
     get:
-      summary: Retrieve links for downloading a Dataset
+      summary: Fetch all versions of a Collection with corresponding Dataset versions
+      description: >
+        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The
+        `collection_id` must reference a *Collection*, **NOT** a *Collection version*. Collection versions are returned
+        in reverse-chronological order.
+      operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
-        - collection
-      description: |
-        Generate Presigned S3 URLs to download the files associated with the `dataset_id`. 
-        Pre-signed S3 URLs have a life span of up to 1 hour. You should
-        generate a pre-signed URL immediately before each download to ensure it is current.
-      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.assets.get
+        - collection_version
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/collection"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
+
+  /v1/collection_versions/{collection_version_id}:
+    get:
+      summary: Fetch a Collection version with Dataset versions
+      description: >
+        Fetch full metadata for a published Collection version and its Dataset versions. The `collection_version_id` 
+        must reference a *Collection version*, **NOT** a *Collection*.
+      operationId: backend.curation.api.v1.curation.collection_versions.collection_version_id.actions.get
+      tags:
+        - collection_version
+      parameters:
+        - $ref: "#/components/parameters/path_collection_version_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/collection_version"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
+
+  /v1/datasets:
+    get:
+      summary: List all Datasets
+      tags:
+        - dataset
+      description: |
+        List all public Datasets with full metadata as well as Collection name and Collection doi.
+      operationId: backend.curation.api.v1.curation.datasets.actions.get
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/dataset_index"
+
+  /v1/datasets/{dataset_id}/versions:
+    get:
+      summary: List all versions for a Dataset
+      tags:
+        - dataset_version
+      description: |
+        List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
+        Dataset versions are returned in reverse-chronological order.
+      operationId: backend.curation.api.v1.curation.datasets.dataset_id.versions.actions.get
+      parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
         "200":
@@ -530,15 +600,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/asset_response"
-        "202":
-          description: Unable to retrieve one or more asset response fields.
+                type: array
+                items:
+                  $ref: "#/components/schemas/dataset_version"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+
+  /v1/dataset_versions/{dataset_version_id}:
+    get:
+      summary: Get full metadata for a Dataset version
+      tags:
+        - dataset_version
+      description: |
+        Fetch Dataset metadata for a Dataset version. The `dataset_version_id` must reference a *Dataset version*,
+        **NOT** a *Dataset*.
+      operationId: backend.curation.api.v1.curation.dataset_versions.dataset_version_id.actions.get
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_version_id"
+      responses:
+        "200":
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/asset_response"
-        "400":
-          $ref: "#/components/responses/400"
+                $ref: "#/components/schemas/dataset_version"
+        "403":
+          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
 
@@ -547,14 +636,12 @@ components:
     asset_response:
       items:
         properties:
-          filename:
-            $ref: "#/components/schemas/asset_filename"
           filesize:
             description: the size of the file in bytes.
             type: number
           filetype:
             $ref: "#/components/schemas/asset_filetype"
-          presigned_url:
+          url:
             description: A URL to download this asset.
             type: string
         type: object
@@ -565,9 +652,6 @@ components:
         - RDS
       type: string
       description: the file type of the asset.
-    asset_filename:
-      type: string
-      description: the file name of the asset.
     batch_condition:
       description: |
         These keys define the batches that a normalization or integration algorithm should be aware of.
@@ -581,11 +665,15 @@ components:
     collection_list:
       description: Collection metadata
       properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
         collection_url:
           description: |
             The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision, 
             in which case it points to the unpublished revision version.
           type: string
+        collection_version_id:
+          $ref: "#/components/schemas/collection_version_id"
         consortia:
           $ref: "#/components/schemas/consortia"
         contact_email:
@@ -605,8 +693,6 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
-        id:
-          $ref: "#/components/schemas/collection_id"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -674,6 +760,13 @@ components:
       description: A timestamp of when the Collection was first published.
       nullable: true
       type: string
+    dataset_published_at:
+      description: A timestamp of when the Dataset was first published.
+      nullable: true
+      type: string
+    dataset_version_published_at:
+      description: A timestamp of when this Dataset Version was published.
+      type: string
     collection_revised_at:
       description: A timestamp indicating the last time a Revision for this Collection was published.
       nullable: true
@@ -702,11 +795,15 @@ components:
     collection_description:
       description: A description of the Collection.
       type: string
-    collection_get:
+    collection:
       description: Collection metadata
       properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
         collection_url:
           $ref: "#/components/schemas/collection_url"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_id"
         consortia:
           $ref: "#/components/schemas/consortia"
         contact_email:
@@ -726,8 +823,6 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
-        id:
-          $ref: "#/components/schemas/collection_id"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -744,6 +839,45 @@ components:
           $ref: "#/components/schemas/collection_revising_in"
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
+        visibility:
+          $ref: "#/components/schemas/visibility"
+      type: object
+    collection_version:
+      description: Collection version metadata
+      properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_url:
+          $ref: "#/components/schemas/collection_url"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_id"
+        consortia:
+          $ref: "#/components/schemas/consortia"
+        contact_email:
+          $ref: "#/components/schemas/contact_email"
+        contact_name:
+          $ref: "#/components/schemas/contact_name"
+        created_at:
+          $ref: "#/components/schemas/created_at"
+        curator_name:
+          $ref: "#/components/schemas/curator_name"
+        datasets:
+          type: array
+          description: A list of Dataset metadata associated with the Collection version
+          items:
+            $ref: "#/components/schemas/dataset_version"
+        description:
+          $ref: "#/components/schemas/collection_description"
+        doi:
+          $ref: "#/components/schemas/doi"
+        links:
+          $ref: "#/components/schemas/links"
+        name:
+          $ref: "#/components/schemas/collection_name"
+        published_at:
+          $ref: "#/components/schemas/published_at"
+        publisher_metadata:
+          $ref: "#/components/schemas/publisher_metadata"
         visibility:
           $ref: "#/components/schemas/visibility"
       type: object
@@ -769,10 +903,17 @@ components:
       example: fedcba98-7654-3210-fedc-ba9876543210
       type: string
       format: uuid
+    collection_version_id:
+      description: A unique identifier of a Collection Version.
+      example: fedcba98-7654-3210-fedc-ba9876543210
+      type: string
+      format: uuid
     dataset:
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
+        assets:
+          $ref: "#/components/schemas/asset_response"
         batch_condition:
           $ref: "#/components/schemas/batch_condition"
         cell_count:
@@ -786,18 +927,10 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
-        dataset_assets:
-          description: |
-            The assets associated with the Dataset. Links to download the files can be generated using
-            *GET /v1/collections/{collection_id}/datasets/assets*
-          items:
-            properties:
-              filename:
-                $ref: "#/components/schemas/asset_filename"
-              filetype:
-                $ref: "#/components/schemas/asset_filetype"
-            type: object
-          type: array
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
+        dataset_version_id:
+          $ref: "#/components/schemas/dataset_version_id"
         development_stage:
           description: |
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
@@ -812,8 +945,6 @@ components:
           $ref: "#/components/schemas/donor_id"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
-        id:
-          $ref: "#/components/schemas/dataset_id"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
@@ -826,23 +957,197 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
-        original_id:
-          $ref: "#/components/schemas/original_id"
           nullable: true
         processing_status:
           $ref: "#/components/schemas/processing_status_dataset"
         processing_status_detail:
           type: string
           description: |
-            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for 
+            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
             the dataset can be found in `processing_status_detail`.
           nullable: true
+        published_at:
+          $ref: "#/components/schemas/dataset_published_at"
         revised_at:
           $ref: "#/components/schemas/dataset_revised_at"
-        revision:
-          description: The number of times the Dataset has been revised.
+        schema_version:
+          description: |
+            The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
+          nullable: true
+          type: string
+        self_reported_ethnicity:
+          description: |
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        sex:
+          description: |
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        suspension_type:
+          $ref: "#/components/schemas/suspension_type"
+        tissue:
+          $ref: "#/components/schemas/dataset_tissue"
+        x_approximate_distribution:
+          $ref: "#/components/schemas/distribution"
+      type: object
+    dataset_index:
+      properties:
+        assay:
+          $ref: "#/components/schemas/dataset_assay"
+        assets:
+          $ref: "#/components/schemas/asset_response"
+        batch_condition:
+          $ref: "#/components/schemas/batch_condition"
+        cell_count:
+          description: The number of cells in the Dataset.
           nullable: true
           type: integer
+        cell_type:
+          description: |
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        collection_doi:
+          $ref: "#/components/schemas/doi"
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_name:
+          $ref: "#/components/schemas/collection_name"
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
+        dataset_version_id:
+          $ref: "#/components/schemas/dataset_version_id"
+        development_stage:
+          description: |
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+          nullable: true
+        disease:
+          $ref: "#/components/schemas/dataset_disease"
+        donor_id:
+          $ref: "#/components/schemas/donor_id"
+        explorer_url:
+          $ref: "#/components/schemas/explorer_url"
+        is_primary_data:
+          $ref: "#/components/schemas/is_primary_data"
+        mean_genes_per_cell:
+          nullable: true
+          type: number
+        title:
+          description: |
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
+          nullable: true
+          type: string
+        organism:
+          $ref: "#/components/schemas/dataset_organism"
+        processing_status:
+          $ref: "#/components/schemas/processing_status_dataset"
+        processing_status_detail:
+          type: string
+          description: |
+            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
+            the dataset can be found in `processing_status_detail`.
+          nullable: true
+        published_at:
+          $ref: "#/components/schemas/dataset_published_at"
+        revised_at:
+          $ref: "#/components/schemas/dataset_revised_at"
+        schema_version:
+          description: |
+            The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
+          nullable: true
+          type: string
+        self_reported_ethnicity:
+          description: |
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        sex:
+          description: |
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        suspension_type:
+          $ref: "#/components/schemas/suspension_type"
+        tissue:
+          $ref: "#/components/schemas/dataset_tissue"
+        x_approximate_distribution:
+          $ref: "#/components/schemas/distribution"
+      type: object
+    dataset_version:
+      properties:
+        assay:
+          $ref: "#/components/schemas/dataset_assay"
+        assets:
+          $ref: "#/components/schemas/asset_response"
+        batch_condition:
+          $ref: "#/components/schemas/batch_condition"
+        cell_count:
+          description: The number of cells in the Dataset.
+          nullable: true
+          type: integer
+        cell_type:
+          description: |
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_version_id:
+          description: |
+            The first Collection Version this Dataset Version was published under
+          type: string
+          format: uuid
+        dataset_id:
+          $ref: "#/components/schemas/dataset_id"
+        dataset_version_id:
+          $ref: "#/components/schemas/dataset_version_id"
+        development_stage:
+          description: |
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+          nullable: true
+        disease:
+          $ref: "#/components/schemas/dataset_disease"
+        donor_id:
+          $ref: "#/components/schemas/donor_id"
+        explorer_url:
+          $ref: "#/components/schemas/explorer_url"
+        is_primary_data:
+          $ref: "#/components/schemas/is_primary_data"
+        mean_genes_per_cell:
+          nullable: true
+          type: number
+        title:
+          description: |
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
+          nullable: true
+          type: string
+        organism:
+          $ref: "#/components/schemas/dataset_organism"
+          nullable: true
+        published_at:
+          $ref: "#/components/schemas/dataset_version_published_at"
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
@@ -905,13 +1210,18 @@ components:
       example: 01234567-89ab-cdef-0123-456789abcdef
       type: string
       format: uuid
+    dataset_version_id:
+      description: A unique identifier of a Dataset Version.
+      example: 01234567-89ab-cdef-0123-456789abcdef
+      type: string
+      format: uuid
     dataset_preview:
       properties:
         assay:
           $ref: "#/components/schemas/dataset_assay"
         disease:
           $ref: "#/components/schemas/dataset_disease"
-        id:
+        dataset_id:
           $ref: "#/components/schemas/dataset_id"
         organism:
           $ref: "#/components/schemas/dataset_organism"
@@ -989,13 +1299,6 @@ components:
         ontology_term_id:
           type: string
       type: object
-    original_id:
-      description: |
-        For Datasets in private revisions of published Datasets, a unique identifier of the published Dataset 
-        counterpart if applicable. Null if the published Collection does not contain the revision Dataset.
-      example: 01234567-89ab-cdef-0123-456789abcdef
-      type: string
-      nullable: true
     problem:
       description: Error message container for HTTP APIs.
       properties:
@@ -1096,6 +1399,13 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/collection_id"
+    path_collection_version_id:
+      description: The uuid of a Collection Version.
+      in: path
+      name: collection_version_id
+      required: true
+      schema:
+        $ref: "#/components/schemas/collection_version_id"
     path_dataset_id:
       description: The uuid of the Dataset.
       in: path
@@ -1103,6 +1413,13 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/dataset_id"
+    path_dataset_version_id:
+      description: The uuid of the Dataset Version.
+      in: path
+      name: dataset_version_id
+      required: true
+      schema:
+        $ref: "#/components/schemas/dataset_version_id"
   responses:
     "200":
       description: OK
@@ -1170,6 +1487,12 @@ components:
           schema:
             $ref: "#/components/schemas/problem"
       description: File conflict
+    "410":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Content has been removed
     "413":
       content:
         application/problem+json:

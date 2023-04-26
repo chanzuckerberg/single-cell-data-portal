@@ -1,6 +1,6 @@
 import copy
 from datetime import datetime
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.common.entities import (
@@ -92,6 +92,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         copied_version = copy.deepcopy(version)
         if update_datasets:
             copied_version.datasets = [self.get_dataset_version(dataset_id) for dataset_id in copied_version.datasets]
+            # Hack for business logic that uses isinstance
+            copied_version.__class__ = CollectionVersionWithDatasets
         cc = self.collections.get(version.collection_id.id)
         if cc is None:
             return copied_version
@@ -119,6 +121,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             if not get_tombstoned and updated_version.canonical_collection.tombstoned:
                 continue
             yield updated_version
+
+    def get_canonical_collection(self, collection_id: CollectionId) -> Optional[CanonicalCollection]:
+        return self.collections.get(collection_id.id, None)
 
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
@@ -206,7 +211,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_version = self.get_dataset_version(dataset_version_id)
             if self.datasets[dataset_version.dataset_id.id].published_at is None:
                 self.datasets[dataset_version.dataset_id.id].published_at = published_at
-            if self.datasets[dataset_version.dataset_id.id].revised_at is None:
+            elif self.datasets[dataset_version.dataset_id.id].revised_at is None:
                 self.datasets[dataset_version.dataset_id.id].revised_at = published_at
             dataset_version.canonical_dataset.dataset_version_id = dataset_version.version_id
         cc = self.collections.get(collection_id.id)
@@ -236,24 +241,40 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # END OR
 
-    def get_dataset(self, dataset_id: DatasetId) -> DatasetVersion:
-        version_id = self.datasets[dataset_id.id]
-        return copy.deepcopy(self.datasets_versions[version_id])
+    def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:
+        if dataset_id.id is None or dataset_id.id not in self.datasets:
+            return None
+        return self.datasets[dataset_id.id]
 
     def get_dataset_version(self, version_id: DatasetVersionId) -> DatasetVersion:
         version = self.datasets_versions.get(version_id.id)
         if version is not None:
             return self._update_dataset_version_with_canonical(version)
 
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
         For now, this only returns all the active datasets, i.e. the datasets that belong to a published collection
         """
-        active_collections = self.get_all_mapped_collection_versions()
-        active_datasets = [i.id for s in [c.datasets for c in active_collections] for i in s]
+        active_collections = list(self.get_all_mapped_collection_versions())
+        active_datasets_ids = [i.id for s in [c.datasets for c in active_collections] for i in s]
+        active_datasets = []
         for version_id, dataset_version in self.datasets_versions.items():
-            if version_id in active_datasets:
-                yield self._update_dataset_version_with_canonical(dataset_version)
+            if version_id in active_datasets_ids:
+                active_datasets.append(self._update_dataset_version_with_canonical(dataset_version))
+        return active_datasets, active_collections
+
+    def _get_datasets(self, ids: List[DatasetVersionId]) -> List[DatasetVersion]:
+        dataset_versions = []
+        for dv_id in ids:
+            dataset_versions.append(self._update_dataset_version_with_canonical(self.datasets_versions[dv_id.id]))
+        return dataset_versions
+
+    def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+        versions = []
+        for dataset_version in self.datasets_versions.values():
+            if dataset_version.dataset_id == dataset_id:
+                versions.append(dataset_version)
+        return versions
 
     def _get_all_datasets(self) -> Iterable[DatasetVersion]:
         """
@@ -284,7 +305,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         )
         self.datasets_versions[version_id.id] = version
         self.datasets[dataset_id.id] = CanonicalDataset(
-            dataset_id=dataset_id, dataset_version_id=version_id, published_at=None
+            dataset_id=dataset_id, dataset_version_id=None, published_at=None
         )
         return copy.deepcopy(version)
 
@@ -367,5 +388,5 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         cd = self.datasets.get(dataset_id.id)
         if cd is not None:
-            version = self.datasets_versions[cd.dataset_version_id.id]
-            return self._update_dataset_version_with_canonical(version)
+            version = None if cd.dataset_version_id is None else self.datasets_versions[cd.dataset_version_id.id]
+            return None if version is None else self._update_dataset_version_with_canonical(version)

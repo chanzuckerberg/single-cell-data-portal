@@ -4,7 +4,6 @@ import {
   CellProps,
   Column,
   Filters,
-  HeaderProps,
   Renderer,
   useFilters,
   useSortBy,
@@ -21,7 +20,6 @@ import {
   CATEGORY_FILTER_ID,
   CellPropsValue,
   DatasetRow,
-  HeaderPropsValue,
   MultiPanelSelectedUIState,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
@@ -29,7 +27,6 @@ import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common
 import { buildTableCountSummary } from "src/components/common/Grid/common/utils";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
-import HeaderCell from "src/components/common/Grid/components/HeaderCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
@@ -38,6 +35,7 @@ import DatasetsActionsCell from "src/components/Datasets/components/Grid/compone
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
 import { View } from "../globalStyle";
+import { ALIGNMENT } from "src/components/common/Grid/common/entities";
 
 /**
  * Collection ID object key.
@@ -101,15 +99,9 @@ export default function Datasets(): JSX.Element {
             />
           );
         },
-        Header: (({ tableCountSummary }: HeaderPropsValue) => {
-          return (
-            <HeaderCell
-              label={"Datasets"}
-              tableCountSummary={tableCountSummary}
-            />
-          );
-        }) as Renderer<HeaderProps<DatasetRow>>,
+        Header: "Datasets",
         accessor: DATASET_NAME,
+        showCountAndTotal: true,
       },
       {
         Cell: (({ value }: CellPropsValue<string[]>) => (
@@ -155,8 +147,9 @@ export default function Datasets(): JSX.Element {
             <CountCell cellCount={value || 0} />
           </RightAlignCell>
         ),
-        Header: <RightAlignCell>Cells</RightAlignCell>,
+        Header: "Cells",
         accessor: "cell_count",
+        alignment: ALIGNMENT.RIGHT,
         filter: "between",
         id: CATEGORY_FILTER_ID.CELL_COUNT,
       },

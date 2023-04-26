@@ -1,0 +1,188 @@
+name: Build Images and Create Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - prod
+
+env:
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  DEPLOYMENT_STAGE: test
+  # Force using BuildKit instead of normal Docker, required so that metadata
+  # is written/read to allow us to use layers of previous builds as cache.
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+
+jobs:
+  build-frontend-backend-images:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.59.0"
+      - name: Push images
+        run: |
+          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
+          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          happy push --docker-compose-env-file envfile --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
+  build-batch-job-images:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.59.0"
+      - name: Docker build, push, and tag
+        shell: bash
+        run: |
+          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} upload_failures upload_success dataset_submissions processing wmg_processing
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
+  add-image-tags:
+    needs:
+      - build-frontend-backend-images
+      - build-batch-job-images
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.59.0"
+      - name: Docker re-tag
+        shell: bash
+        run: |
+          happy addtags --aws-profile "" --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
+  push-prod-images:
+    needs:
+      - build-frontend-backend-images
+      - build-batch-job-images
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - name: Login to Prod ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO_PROD }}
+      - name: push docker images to prod ecr repo
+        if: ( github.ref == 'refs/heads/prod' )
+        shell: bash
+        run: |
+          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
+          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
+          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
+          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
+          docker pull ${{ secrets.ECR_REPO }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
+          docker tag ${{ secrets.ECR_REPO }}/dataset-submissions:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
+          docker push ${{ secrets.ECR_REPO_PROD }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
+
+  create_deployment:
+    needs:
+      - push-prod-images
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Generate payload
+        run: |
+          echo "payload={\"tag\":\"sha-${GITHUB_SHA:0:8}\"}" >> $GITHUB_ENV
+          if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+            echo "DEPLOYMENT_STAGE=prod" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "DEPLOYMENT_STAGE=stage" >> $GITHUB_ENV
+          else
+            echo "DEPLOYMENT_STAGE=dev" >> $GITHUB_ENV
+          fi
+      - uses: avakar/create-deployment@v1
+        with:
+          auto_merge: false
+          environment: ${{ env.DEPLOYMENT_STAGE }}
+          payload: ${{ env.payload }}
+          required_contexts: "" # Temporary hack to avoid checking Github Status for the commit
+          # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so
+          # it's not considered ready for deploy normally by required_contexts, but we need to
+          # deploy for this to be considered ready.
+          # Unfortunately there is no blocklist for required_contexts, only an allowlist, so
+          # we'd have to enumerate every other Github PR status here, which can be constantly changing.
+          # For now, we just ignore required_contexts to deploy on every success.
+          # See https://github.community/t/can-i-avoid-creating-a-check-run-from-a-job-needed-for-deployments-api/16426
+        env:
+          GITHUB_TOKEN: ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}

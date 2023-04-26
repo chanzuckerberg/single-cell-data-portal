@@ -2,7 +2,7 @@ import csv
 import gzip
 import json
 import pathlib
-from typing import IO, Dict, Optional
+from typing import IO, Optional
 
 # TODO: Place this module into a common ontology util package with development_stage_ontology_mapping.py and
 #  extract_ontology_terms_from_owl.py. https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
@@ -16,8 +16,8 @@ genes_files = [
     "genes_homo_sapiens.csv.gz",
     "genes_mus_musculus.csv.gz",
 ]
-ontology_term_id_labels: Dict[str, str] = None
-gene_term_id_labels: Dict[str, str] = None
+
+SUFFIXES_TO_STRIP = ["organoid", "cell culture"]
 
 
 def ontology_term_label(ontology_term_id: str) -> Optional[str]:
@@ -25,19 +25,30 @@ def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     Returns the label for an ontology term, given its id. This excludes gene ontology term, which are handled
     separately by gene_gene_term_label(). Return None if ontology term id is invalid.
     """
-    if ontology_term_id_labels is None:
-        __load_ontologies()
+    global ontology_term_id_labels
 
-    return ontology_term_id_labels.get(ontology_term_id)
+    # this catches the organoid tissue edge case (e.g. UBERON:0000995 (organoid)) or the cell culture edge case
+    # (e.g. CL:0000082 (cell culture))
+    suffix_to_strip = None
+    for suffix in SUFFIXES_TO_STRIP:
+        if suffix in ontology_term_id:
+            suffix_to_strip = suffix
+            break
+
+    if suffix_to_strip:
+        ontology_term_id = ontology_term_id.split(f"({suffix_to_strip})")[0].strip()
+    ontology_term_id_label = ontology_term_id_labels.get(ontology_term_id)
+    if suffix_to_strip:
+        ontology_term_id_label = ontology_term_id_label + f" ({suffix_to_strip})"
+
+    return ontology_term_id_label
 
 
 def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
     """
     Returns the label for a gene ontology term, given its id. Return None if ontology term id is invalid.
     """
-    if gene_term_id_labels is None:
-        __load_genes()
-
+    global gene_term_id_labels
     return gene_term_id_labels.get(gene_ontology_term_id)
 
 
@@ -68,3 +79,7 @@ def __open_ontology_resource(file) -> IO:
     root_path = curr_path.parent.parent
     file_path = root_path.joinpath("common", "ontology_files", file)
     return gzip.open(file_path)
+
+
+__load_ontologies()
+__load_genes()

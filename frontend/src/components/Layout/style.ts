@@ -2,6 +2,9 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { HEADER_HEIGHT_PX } from "../Header/style";
 
+export const CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX = 24;
+export const CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX = 40;
+
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -9,10 +12,12 @@ export const Wrapper = styled.div`
   min-height: 100vh; /* required for full height flex on child */
   /* TODO(seve): #2755 */
   overflow-x: clip; /* responsive requirement; facilitates hiding of content when viewport is resized and layout min width is applied */
+  overflow-y: auto;
 `;
 
 export const contentWrapper = css`
-  padding: 24px 40px;
+  padding: ${CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX}px
+    ${CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX}px;
 `;
 
 export const MainWrapper = styled.div`
@@ -37,6 +42,7 @@ export const SidebarMainWrapper = styled(MainWrapper)`
 
 export const StyledDocsLayout = styled(MainWrapper)`
   justify-content: center; /* Allows for center resizing based on viewport width */
+
   main {
     display: grid;
     grid-template-areas: "leftsidebar content rightsidebar";

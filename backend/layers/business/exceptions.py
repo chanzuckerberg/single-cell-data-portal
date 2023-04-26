@@ -55,6 +55,12 @@ class DatasetIngestException(BusinessException):
     pass
 
 
+class DatasetVersionNotFoundException(BusinessException):
+    """
+    Raised when a Dataset version is not found
+    """
+
+
 class InvalidURIException(DatasetIngestException):
     """
     Raised when trying to ingest a dataset with an invalid URI
@@ -89,3 +95,9 @@ class CollectionPublishException(BusinessException):
 
 class ArtifactNotFoundException(BusinessException):
     pass
+
+
+class CollectionDeleteException(BusinessException):
+    """
+    Raised when an attempt to delete a Collection fails
+    """

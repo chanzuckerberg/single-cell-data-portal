@@ -1,9 +1,5 @@
-import Image from "next/image";
-import { memo, useContext, useEffect, useMemo, useState } from "react";
-import { DispatchContext } from "src/views/WheresMyGene/common/store";
-import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
+import { memo, useEffect, useMemo, useState } from "react";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
-import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
@@ -13,15 +9,14 @@ import {
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
 import InfoSVG from "./icons/info-sign-icon.svg";
-import ReplaySVG from "./icons/replay.svg";
 import {
   CellCountLabelStyle,
-  CellTypeButtonStyle,
+  CellTypeLabelStyle,
+  CellTypeLabelTooltipStyle,
   Container,
   FlexRow,
   FlexRowJustified,
-  InfoButtonWrapper,
-  ResetImageWrapper,
+  HiddenCellTypeLabelStyle,
   StyledImage,
   TissueName,
   TissueWrapper,
@@ -30,12 +25,13 @@ import {
 import { SELECTED_STYLE } from "../../style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveImage";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
+import { COMPARE_OPTION_ID_FOR_AGGREGATED } from "src/common/queries/wheresMyGene";
+import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
+import { Tooltip } from "czifui";
 
 interface Props {
   cellTypes?: CellType[];
-  hasDeletedCellTypes: boolean;
-  availableCellTypes: CellType[];
   tissue: Tissue;
   tissueID: string;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
@@ -47,17 +43,11 @@ const FMG_EXCLUDE_TISSUES = ["blood"];
 
 export default memo(function YAxisChart({
   cellTypes = [],
-  hasDeletedCellTypes,
-  availableCellTypes,
   tissue,
   generateMarkerGenes,
   tissueID,
 }: Props): JSX.Element {
   const tissueKey = tissue.replace(/\s+/g, "-");
-
-  const dispatch = useContext(DispatchContext);
-
-  const { handleCellTypeClick } = useDeleteGenesAndCellTypes();
 
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
@@ -76,22 +66,9 @@ export default memo(function YAxisChart({
     <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
         <TissueName>{capitalize(tissue)}</TissueName>
-        {hasDeletedCellTypes && (
-          <ResetImageWrapper
-            data-test-id="reset-cell-types"
-            onClick={() => handleResetTissue(tissue)}
-          >
-            <Image
-              src={ReplaySVG.src}
-              width="12"
-              height="12"
-              alt="reset tissue cell types"
-            />
-          </ResetImageWrapper>
-        )}
       </TissueWrapper>
       <Container
-        data-test-id={`cell-type-labels-${tissueKey}`}
+        data-testid={`cell-type-labels-${tissueKey}`}
         height={heatmapHeight}
       >
         {cellTypeMetadata
@@ -112,47 +89,36 @@ export default memo(function YAxisChart({
             return (
               <CellTypeButton
                 key={`${cellType}-cell-type-button`}
-                name={paddedName}
+                formattedName={paddedName}
+                name={name}
                 metadata={cellType}
-                onClick={() => handleCellTypeClick(cellType)}
                 tissueID={tissueID}
                 tissue={tissue}
                 generateMarkerGenes={generateMarkerGenes}
-                date-test-id="cell-type-label"
+                data-testid="cell-type-label"
               />
             );
           })}
       </Container>
     </Wrapper>
   );
-
-  function handleResetTissue(tissue: Tissue) {
-    if (!dispatch) return;
-
-    dispatch(resetTissueCellTypes(tissue, availableCellTypes));
-  }
 });
 
 const CellTypeButton = ({
+  formattedName,
   name,
   metadata,
-  onClick,
   generateMarkerGenes,
   tissueID,
   tissue,
 }: {
+  formattedName: string;
   name: string;
   metadata: CellTypeMetadata;
-  onClick: () => void;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
   tissueID: string;
   tissue: Tissue;
 }) => {
-  const [active, setActive] = useState(false);
-  useEffect(() => {
-    setActive(false);
-  }, [metadata]);
-
   const { total_count } = deserializeCellTypeMetadata(metadata);
   const formattedString = Intl.NumberFormat("en-US", {
     maximumFractionDigits: 1,
@@ -162,27 +128,46 @@ const CellTypeButton = ({
 
   const cellType = deserializeCellTypeMetadata(metadata);
 
+  const isTruncated = formattedName.includes("...");
+
   return (
-    <FlexRowJustified data-test-id="cell-type-label-count">
+    <FlexRowJustified data-testid="cell-type-label-count">
       <FlexRow>
-        <CellTypeButtonStyle
-          active={active}
-          onClick={() => {
-            setActive(!active);
-            onClick();
-          }}
-          data-test-id="cell-type-label"
-        >
-          {name}
-        </CellTypeButtonStyle>
+        <CellTypeLabelStyle>
+          <Tooltip
+            title={
+              // Set tooltip content only if name is truncated
+              isTruncated ? (
+                <CellTypeLabelTooltipStyle>{name}</CellTypeLabelTooltipStyle>
+              ) : null
+            }
+            sdsStyle="light"
+            arrow
+            placement="left"
+            enterNextDelay={700}
+          >
+            {/* Must be wrapped in div and not fragment or else tooltip content won't render */}
+            <div>
+              {/* Hidden labels are only needed if name is truncated */}
+              {isTruncated && (
+                <HiddenCellTypeLabelStyle data-testid="cell-type-full-name">
+                  {name}
+                </HiddenCellTypeLabelStyle>
+              )}
+              <div data-testid="cell-type-name">{formattedName}</div>
+            </div>
+          </Tooltip>
+        </CellTypeLabelStyle>
+
         {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
           cellType &&
-          cellType.total_count > 25 && (
+          cellType.total_count > 25 &&
+          cellType.optionId === COMPARE_OPTION_ID_FOR_AGGREGATED && (
             <InfoButtonWrapper
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               style={{
                 cursor: "pointer",
-                paddingTop: "3px",
+                margin: "auto",
               }}
               onClick={() => {
                 if (cellType) {
@@ -194,24 +179,22 @@ const CellTypeButton = ({
               }}
             >
               <StyledImage
-                id={"marker-gene-button"}
+                data-testid="marker-gene-button"
                 src={InfoSVG.src}
                 width="10"
                 height="10"
-                alt={`display marker genes for ${
-                  deserializeCellTypeMetadata(metadata).name
-                }`}
+                alt={`display marker genes for ${cellType.name}`}
               />
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle data-test-id="cell-count">
+      <CellCountLabelStyle data-testid="cell-count">
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>
   );
 };
 
-function capitalize(str: string): string {
+export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }

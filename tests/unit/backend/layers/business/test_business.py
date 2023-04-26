@@ -1,5 +1,6 @@
 import os
 import unittest
+import uuid
 from datetime import datetime
 from unittest.mock import Mock, patch
 from uuid import uuid4
@@ -25,6 +26,7 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     CollectionVersionWithDatasets,
     DatasetArtifactType,
+    DatasetId,
     DatasetMetadata,
     DatasetProcessingStatus,
     DatasetUploadStatus,
@@ -40,7 +42,7 @@ from backend.layers.thirdparty.crossref_provider import (
     CrossrefException,
     CrossrefProviderInterface,
 )
-from backend.layers.thirdparty.s3_provider import S3ProviderInterface
+from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from tests.unit.backend.layers.fixtures import test_user_name
@@ -92,7 +94,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.crossref_provider = CrossrefProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
         self.step_function_provider.start_step_function = Mock()
-        self.s3_provider = S3ProviderInterface()
+        self.s3_provider = MockS3Provider()
         self.uri_provider = UriProviderInterface()
         self.uri_provider.validate = Mock(return_value=True)  # By default, every link should be valid
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
@@ -798,15 +800,112 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 class TestGetDataset(BaseBusinessLogicTestCase):
     def test_get_all_datasets_ok(self):
         """
-        All dataset that belong to a published collection can be retrieved with `get_all_published_datasets`
+        All dataset that belong to a published collection can be retrieved with `get_all_mapped_datasets`
         """
         # This will add 4 datasets, but only 2 should be retrieved by `get_all_datasets`
         published_version = self.initialize_published_collection()
         self.initialize_unpublished_collection()
 
-        datasets = list(self.business_logic.get_all_published_datasets())
+        datasets = self.business_logic.get_all_mapped_datasets()
         self.assertEqual(2, len(datasets))
         self.assertCountEqual([d.version_id for d in datasets], [d.version_id for d in published_version.datasets])
+
+    def test_get_dataset_version_from_canonical(self):
+        """
+        Get currently published dataset version using canonical dataset ID, or most recently created unpublished dataset
+        if none are published.
+        """
+        with self.subTest("Dataset is published with a revision open, get published dataset version"):
+            published_version = self.initialize_published_collection()
+            published_dataset = self.business_logic.get_all_mapped_datasets()[0]
+            self.business_logic.create_collection_version(published_version.collection_id)
+
+            dataset_version = self.business_logic.get_dataset_version_from_canonical(published_dataset.dataset_id)
+            self.assertEqual(dataset_version.version_id, published_dataset.version_id)
+        with self.subTest("Dataset has never been published, get latest unpublished version"):
+            unpublished_collection = self.initialize_unpublished_collection()
+            init_dataset = unpublished_collection.datasets[0]
+            new_dataset = self.database_provider.replace_dataset_in_collection_version(
+                unpublished_collection.version_id, init_dataset.version_id
+            )
+
+            dataset_version = self.business_logic.get_dataset_version_from_canonical(init_dataset.dataset_id)
+            self.assertEqual(dataset_version.version_id, new_dataset.version_id)
+        with self.subTest("Dataset does not exist"):
+            dataset_version = self.business_logic.get_dataset_version_from_canonical(DatasetId(str(uuid.uuid4())))
+            self.assertIsNone(dataset_version)
+
+    def test_get_prior_published_versions_for_dataset(self):
+        """
+        Given a canonical dataset id, return all its DatasetVersions that have been part of published CollectionVersions
+        """
+        self.initialize_published_collection()
+        published_version = self.initialize_published_collection()
+        collection_id = published_version.collection_id
+        dataset = published_version.datasets[0]
+        # Revision 1 (to publish)
+        revision_id = self.business_logic.create_collection_version(collection_id).version_id
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision_id, "http://fake.url", None, dataset.version_id
+        )
+        self.business_logic.publish_collection_version(revision_id)
+        revision = self.business_logic.get_collection_version(revision_id)
+        # Revision 2 (not to publish)
+        unpublished_collection_version_id = self.business_logic.create_collection_version(collection_id).version_id
+        unpublished_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            unpublished_collection_version_id, "http://fake.url", None, new_dataset_version_id
+        )
+
+        version_history = self.business_logic.get_prior_published_versions_for_dataset(dataset.dataset_id)
+        # Check that only published datasets appear
+        self.assertEqual(
+            [dataset.version_id, new_dataset_version_id], [version.version_id for version in version_history]
+        )
+        self.assertEqual(
+            [published_version.published_at, revision.published_at],
+            [version.published_at for version in version_history],
+        )
+
+    def test_get_prior_published_dataset_version(self):
+        """
+        Given a dataset version id, return the DatasetVersion IF its been part of a published CollectionVersion
+        """
+        unpublished_dataset_version_id = self.initialize_unpublished_collection().datasets[0].version_id
+        initial_published_collection_version = self.initialize_published_collection()
+        collection_id = initial_published_collection_version.collection_id
+        dataset = initial_published_collection_version.datasets[0]
+        # Revision 1 (to publish)
+        collection_revision_id = self.business_logic.create_collection_version(collection_id).version_id
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_revision_id, "http://fake.url", None, dataset.version_id
+        )
+        self.business_logic.publish_collection_version(collection_revision_id)
+        # Revision 2 (not to publish)
+        unpublished_collection_version_id = self.business_logic.create_collection_version(collection_id).version_id
+        unpublished_dataset_revision_id, _ = self.business_logic.ingest_dataset(
+            unpublished_collection_version_id, "http://fake.url", None, new_dataset_version_id
+        )
+
+        # test get unpublished dataset version
+        unpublished_dataset_version = self.business_logic.get_prior_published_dataset_version(
+            unpublished_dataset_version_id
+        )
+        self.assertIsNone(unpublished_dataset_version)
+        # test get past published dataset version
+        initial_published_dataset_version = self.business_logic.get_prior_published_dataset_version(dataset.version_id)
+        self.assertEqual(initial_published_dataset_version.version_id, dataset.version_id)
+        self.assertEqual(
+            initial_published_dataset_version.collection_version_id, initial_published_collection_version.version_id
+        )
+        # test currently published dataset version
+        published_dataset_revision = self.business_logic.get_prior_published_dataset_version(new_dataset_version_id)
+        self.assertEqual(published_dataset_revision.version_id, new_dataset_version_id)
+        self.assertEqual(published_dataset_revision.collection_version_id, collection_revision_id)
+        # test get unpublished dataset revision
+        unpublished_dataset_revision = self.business_logic.get_prior_published_dataset_version(
+            unpublished_dataset_revision_id
+        )
+        self.assertIsNone(unpublished_dataset_revision)
 
     def test_get_dataset_artifacts_ok(self):
         """
@@ -1374,6 +1473,42 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         self.assertEqual(dataset_0.canonical_dataset.published_at, published_collection.published_at)
         self.assertEqual(dataset_1.canonical_dataset.published_at, published_collection.published_at)
+
+
+class TestCollectionUtilities(BaseBusinessLogicTestCase):
+    def test__delete_datasets_from_public_access_bucket(self):
+        """
+        Test Dataset deletes when tombstoning a public Collection with published and updated Datasets in an outstanding
+        Revision
+        """
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+
+        # Update the first dataset
+        dataset_id_to_replace = published_collection.datasets[0].version_id
+
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            new_version.version_id, "http://fake.url", None, dataset_id_to_replace
+        )
+
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
+
+        dataset_version_ids = [d_v.version_id.id for d_v in published_collection.datasets] + [
+            replaced_dataset_version_id
+        ]
+        expected_delete_keys = set()
+        for d_v_id in dataset_version_ids:
+            for file_type in ("h5ad", "rds"):
+                key = f"{d_v_id}.{file_type}"
+                self.s3_provider.upload_file(None, "fake-bucket", key, None)  # Populate s3 mock with assets
+                self.assertTrue(self.s3_provider.uri_exists(f"s3://fake-bucket/{key}"))
+                expected_delete_keys.update([f"{d_v_id}.{file_type}"])
+        actual_delete_keys = set(
+            self.business_logic.delete_datasets_from_bucket(published_collection.collection_id, "fake-bucket")
+        )
+        self.assertTrue(self.s3_provider.is_empty())
+        self.assertTrue(len(expected_delete_keys) > 0)
+        self.assertEqual(expected_delete_keys, actual_delete_keys)
 
 
 if __name__ == "__main__":
