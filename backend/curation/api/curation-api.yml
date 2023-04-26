@@ -28,9 +28,9 @@ info:
     The same is true for the *Dataset* identifier `dataset_id` and the *Dataset Version* identifier
     `dataset_version_id`.
 
-    **Important Note:** if a given Dataset is not updated during the course of a
-    revision of its parent Collection, then its Dataset Version (and identifier `dataset_version_id`) will not change
-    even though a new Collection Version has been published.
+    **Important Note:** if a Dataset is NOT updated during a revision of its parent Collection and the revision is
+    published, then its Dataset Version (and identifier `dataset_version_id`) do not change even though there is a new
+    Collection Version (and identifier `collection_version_id`).
 
 servers:
   - description: Production environment
