@@ -4,9 +4,6 @@ import readline from "readline";
 import AdmZip from "adm-zip";
 import { getTestID } from "./selectors";
 
-const BLOOD_TISSUE_COUNT =
-  '[data-testid="cell-type-labels-blood"] [data-testid="cell-type-label-count"]';
-
 const EXPECTED_HEADER = [
   "Tissue",
   "Cell Type",
@@ -20,7 +17,8 @@ const EXPECTED_HEADER = [
 ];
 export async function downloadAndVerifyCsv(
   page: Page,
-  filterName: string
+  filterName: string,
+  tissue: string
 ): Promise<void> {
   // generate sub folder
   const randomNumber: number = Math.floor(Math.random() * 90000) + 10000;
@@ -28,7 +26,7 @@ export async function downloadAndVerifyCsv(
 
   //download and extract the csv file
   await downloadCsv(page, subDirectory);
-  const metadata = await getCsvMetadata("blood", subDirectory);
+  const metadata = await getCsvMetadata(tissue, subDirectory);
 
   // extract the headers and data arrays from the metadata object
   // put all the headers in an array
@@ -39,7 +37,11 @@ export async function downloadAndVerifyCsv(
   const csvElementsCount = metadata.rowCount;
 
   //get number of element displayed in ui
-  const uiElementsCount = await page.locator(BLOOD_TISSUE_COUNT).count();
+  const uiElementsCount = await page
+    .locator(
+      `[data-testid="cell-type-labels-${tissue}"] [data-testid="cell-type-label-count"]`
+    )
+    .count();
 
   //verify the number of element in the csv
   expect(csvElementsCount).toEqual(uiElementsCount * 3);
@@ -222,11 +224,8 @@ export const downloadCsv = async (page: Page, fileFactor: string) => {
   const zipFilePath = "./tests/download.zip";
   const extractDirPath = `./tests/download/${fileFactor}`;
   const CHECK = "Mui-checked";
-  //wait for download file
-  const downloadPromise = page.waitForEvent("download");
 
-  //click the download icon
-
+  //click the download ico
   await page.getByTestId("download-button").click();
   const checkboxClassPng = await page
     .getByTestId("png-checkbox")
@@ -252,6 +251,10 @@ export const downloadCsv = async (page: Page, fileFactor: string) => {
   }
 
   await page.getByTestId("dialog-download-button").click();
+
+  //wait for download file
+  const downloadPromise = page.waitForEvent("download");
+
   const download = await downloadPromise;
 
   // Save downloaded file in a directory
@@ -261,6 +264,7 @@ export const downloadCsv = async (page: Page, fileFactor: string) => {
   const zip = new AdmZip(zipFilePath);
   zip.extractAllTo(extractDirPath);
 };
+
 export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();

@@ -8,8 +8,7 @@ import { tryUntil } from "./helpers";
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
  */
-export async function goToWMG(page: Page, url?: string) {
-  const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
+export async function goToWMG(page: Page) {
   return await tryUntil(
     async () => {
       await Promise.all([
@@ -17,7 +16,7 @@ export async function goToWMG(page: Page, url?: string) {
           (resp: { url: () => string | string[]; status: () => number }) =>
             resp.url().includes("/wmg/v1/filters") && resp.status() === 200
         ),
-        page.goto(targetUrl),
+        page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
       ]);
     },
     { page }
@@ -40,6 +39,7 @@ export const selectFilterOption = async (page: Page, filterName: string) => {
   //wait till loading is complete
   await page.locator(getText("Loading")).waitFor({ state: "hidden" });
 };
+
 export const pickOptions = async (page: Page, n: number) => {
   for (let i = 0; i < n; i++) {
     // select the nth option
@@ -147,3 +147,13 @@ export const checkPlotSize = async (page: Page) => {
   return sumOfHeights;
 };
 
+export const selectGroupByOption = async (page: Page) => {
+  // click the group by dropdown
+  await page.getByTestId("compare-dropdown").click();
+
+  // select the first option
+  await page.locator("[data-option-index='1']").click();
+
+  //wait till loading is complete
+  await page.locator(getText("Loading")).waitFor({ state: "hidden" });
+};
