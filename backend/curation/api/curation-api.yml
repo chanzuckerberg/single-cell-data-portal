@@ -22,11 +22,17 @@ info:
     if a Dataset was published and then later updated and published again, then both Dataset Versions can be accessed.
 
     #### Version identifiers
-    While the *Collection* identifier `collection_id` will always refer to the latest published version of a Collection,
-    and must be used with `Collection` endpoints, the *Collection Version* identifier `collection_version_id`
-    refers to one specific published version of a Collection and must be used with `Collection Version` endpoints.
-    The same is true for the *Dataset* identifier `dataset_id` and the *Dataset Version* identifier
-    `dataset_version_id`.
+    The Collection identifier `collection_id` refers to the latest published version of a Collection and is required by
+    Collection endpoints.
+
+    The Collection Version identifier `collection_version_id` refers to one specific published version of a Collection
+    and is required by the Collection Version endpoint.
+
+    The Dataset identifier `dataset_id` refers to the latest published version of a Dataset and and is required by
+    Dataset endpoints.
+
+    The Dataset Version identifier `dataset_version_id` refers to one specific published version of a Dataset and is
+    required by the Dataset Version endpoint.
 
     **Important Note:** if a Dataset is NOT updated during a revision of its parent Collection and the revision is
     published, then its Dataset Version (and identifier `dataset_version_id`) do not change even though there is a new
