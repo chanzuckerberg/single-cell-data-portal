@@ -23,7 +23,7 @@ const DeleteDataset: FC<Props> = ({
   datasetId,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { mutate: deleteDataset, isLoading } = useDeleteDataset();
+  const { mutateAsync: deleteDataset, isLoading } = useDeleteDataset();
 
   // Closes delete dataset dialog when component unmounts.
   // In the event of a successful dataset deletion, the cache invalidation of the collection triggers the
