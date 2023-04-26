@@ -56,7 +56,7 @@ export async function downloadAndVerifyCsv(
   expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
 }
 
-export const deleteCsvDownloads = (filePath: string): void => {
+export function deleteCsvDownloads(filePath: string) {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);
@@ -64,7 +64,7 @@ export const deleteCsvDownloads = (filePath: string): void => {
       console.log("Folder deleted successfully");
     }
   });
-};
+}
 
 export interface CsvMetadata {
   rowCount: number;
