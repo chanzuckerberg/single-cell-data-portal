@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0m  selector resolved to visible <button disabled tabindex="-1" type="button" data-testid…>…</button> [38;5;45m+14ms[0m
