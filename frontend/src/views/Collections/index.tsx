@@ -1,14 +1,6 @@
 import Head from "next/head";
 import { useEffect, useMemo } from "react";
-import {
-  Column,
-  Filters,
-  HeaderProps,
-  Renderer,
-  useFilters,
-  useSortBy,
-  useTable,
-} from "react-table";
+import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter/useCategoryFilter";
@@ -22,14 +14,12 @@ import {
   CATEGORY_FILTER_ID,
   CellPropsValue,
   CollectionRow,
-  HeaderPropsValue,
   MultiPanelSelectedUIState,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
 import { buildTableCountSummary } from "src/components/common/Grid/common/utils";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
-import HeaderCell from "src/components/common/Grid/components/HeaderCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
@@ -81,15 +71,9 @@ export default function Collections(): JSX.Element {
             </Title>
           );
         },
-        Header: (({ tableCountSummary }: HeaderPropsValue) => {
-          return (
-            <HeaderCell
-              label={"Collections"}
-              tableCountSummary={tableCountSummary}
-            />
-          );
-        }) as Renderer<HeaderProps<CollectionRow>>,
+        Header: "Collections",
         accessor: COLLECTION_NAME,
+        showCountAndTotal: true,
       },
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {

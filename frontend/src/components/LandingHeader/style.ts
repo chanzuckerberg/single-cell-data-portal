@@ -1,15 +1,12 @@
-import { Classes, Colors } from "@blueprintjs/core";
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { Chip } from "czifui";
-import {
-  GRAY,
-  PRIMARY_BLUE,
-  PT_GRID_SIZE_PX,
-  PT_TEXT_COLOR,
-} from "../common/theme";
+import { CommonThemeProps, getSpaces } from "czifui";
+import { PT_TEXT_COLOR } from "../common/theme";
+import Nav from "src/components/Header/components/Nav";
+import { NavDivider } from "src/components/Header/components/Nav/components/NavDivider/style";
 
 export const HEADER_HEIGHT_PX = 48;
+const spacesL = (props: CommonThemeProps) => getSpaces(props)?.l;
+const spacesXl = (props: CommonThemeProps) => getSpaces(props)?.xl;
 
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
@@ -29,11 +26,13 @@ export const Wrapper = styled.div`
 export const MainWrapper = styled.div`
   align-items: center;
   display: flex;
+  gap: ${spacesXl}px;
   height: inherit; /* Take up full height of parent. */
   justify-content: space-between;
   padding: 0 16px;
 
   @media (max-width: 768px) {
+    align-items: flex-start;
     flex-direction: column;
     justify-content: flex-start;
     padding-top: ${HEADER_HEIGHT_PX}px;
@@ -144,7 +143,7 @@ export const Left = styled.span`
 export const Right = styled.span`
   align-items: center;
   display: flex;
-  gap: 24px;
+  gap: ${spacesL}px;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -152,94 +151,15 @@ export const Right = styled.span`
   }
 `;
 
-export const Nav = styled.span`
-  display: flex;
-  gap: 16px;
-
+export const Navigation = styled(Nav)`
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
     padding-top: 16px;
-    position: relative;
-    left: -14px;
-    margin-bottom: 26px;
-  }
-`;
 
-const button = css`
-  display: inline-block; /* Wrapper to mimic line height of children. */
-
-  .${Classes.BUTTON}.${Classes.MINIMAL} {
-    background: none;
-    border-radius: 0;
-    color: ${GRAY.D};
-    font-size: 13px;
-    font-weight: 500;
-    height: 22px;
-    letter-spacing: -0.1px;
-    line-height: 18px;
-    min-height: 22px;
-    padding: 0;
-
-    &.${Classes.ACTIVE}, &:hover {
-      color: ${Colors.WHITE};
+    ${NavDivider} {
+      height: 1px;
+      width: 100%;
     }
-
-    &:focus {
-      outline: none;
-    }
-  }
-`;
-
-const iconButton = css`
-  ${button}
-
-  .${Classes.ICON} {
-    color: inherit; /* Overrides BP button icon color rule by inheriting color from parent. */
-  }
-`;
-
-export const LinkWrapper = styled.span`
-  ${button}
-
-  .${Classes.BUTTON}.${Classes.MINIMAL}.${Classes.ACTIVE} {
-    box-shadow: inset 0 -2px 0 ${Colors.WHITE} !important; /* Overrides specificity of BP button active box shadow rule. */
-  }
-
-  display: flex;
-  align-items: center;
-`;
-
-export const LearnButtonWrapper = styled.span`
-  ${iconButton}
-`;
-
-export const AuthButtonWrapper = styled.span`
-  ${iconButton}
-
-  .${Classes.BUTTON}.${Classes.MINIMAL} {
-    color: ${Colors.WHITE}; /* Overrides locally defined button color rule. */
-    font-weight: 400; /* Overrides locally defined button font weight rule. */
-  }
-`;
-
-export const BetaChip = styled(Chip)`
-  background: #7a41ce;
-  color: white;
-  margin-left: ${PT_GRID_SIZE_PX / 2}px;
-  height: ${PT_GRID_SIZE_PX * 2}px !important;
-`;
-
-export const HiringLink = styled.a`
-  background-color: ${PRIMARY_BLUE};
-  padding: 7px 14px;
-  border-radius: 4px;
-  color: #fff;
-  font-weight: 600;
-  transition: 0.3s;
-  &:hover {
-    color: #fff;
-    text-decoration: none !important;
-    background-color: #0056c6;
   }
 `;

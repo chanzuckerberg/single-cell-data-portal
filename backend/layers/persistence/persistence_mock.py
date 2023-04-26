@@ -122,6 +122,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 continue
             yield updated_version
 
+    def get_canonical_collection(self, collection_id: CollectionId) -> Optional[CanonicalCollection]:
+        return self.collections.get(collection_id.id, None)
+
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
             if version_id in [c.version_id.id for c in self.collections.values()]:

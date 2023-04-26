@@ -31,6 +31,7 @@ from backend.layers.business.exceptions import (
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
 from backend.layers.common.entities import (
+    CanonicalCollection,
     CollectionId,
     CollectionLinkType,
     CollectionMetadata,
@@ -55,7 +56,9 @@ from backend.layers.common.entities import (
     Link,
     PublishedDatasetVersion,
 )
-from backend.layers.common.helpers import get_published_at_and_collection_version_id_else_not_found
+from backend.layers.common.helpers import (
+    get_published_at_and_collection_version_id_else_not_found,
+)
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
@@ -168,6 +171,9 @@ class BusinessLogic(BusinessLogicInterface):
         Returns all the collection versions connected to a canonical collection
         """
         return self.database_provider.get_all_versions_for_collection(collection_id)
+
+    def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:
+        return self.database_provider.get_canonical_collection(collection_id)
 
     def get_all_published_collection_versions_from_canonical(
         self, collection_id: CollectionId

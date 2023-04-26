@@ -176,7 +176,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/collection_get"
+                  - $ref: "#/components/schemas/collection"
         "403":
           $ref: "#/components/responses/403"
     patch:
@@ -531,9 +531,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/collection_get"
+                  $ref: "#/components/schemas/collection"
         "403":
           $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/collection_versions/{collection_version_id}:
     get:
@@ -553,11 +557,13 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/collection_get"
+                  - $ref: "#/components/schemas/collection_version"
         "403":
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/datasets:
     get:
@@ -789,7 +795,7 @@ components:
     collection_description:
       description: A description of the Collection.
       type: string
-    collection_get:
+    collection:
       description: Collection metadata
       properties:
         collection_id:
@@ -833,6 +839,45 @@ components:
           $ref: "#/components/schemas/collection_revising_in"
         revision_of:
           $ref: "#/components/schemas/collection_revision_of"
+        visibility:
+          $ref: "#/components/schemas/visibility"
+      type: object
+    collection_version:
+      description: Collection version metadata
+      properties:
+        collection_id:
+          $ref: "#/components/schemas/collection_id"
+        collection_url:
+          $ref: "#/components/schemas/collection_url"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_id"
+        consortia:
+          $ref: "#/components/schemas/consortia"
+        contact_email:
+          $ref: "#/components/schemas/contact_email"
+        contact_name:
+          $ref: "#/components/schemas/contact_name"
+        created_at:
+          $ref: "#/components/schemas/created_at"
+        curator_name:
+          $ref: "#/components/schemas/curator_name"
+        datasets:
+          type: array
+          description: A list of Dataset metadata associated with the Collection version
+          items:
+            $ref: "#/components/schemas/dataset_version"
+        description:
+          $ref: "#/components/schemas/collection_description"
+        doi:
+          $ref: "#/components/schemas/doi"
+        links:
+          $ref: "#/components/schemas/links"
+        name:
+          $ref: "#/components/schemas/collection_name"
+        published_at:
+          $ref: "#/components/schemas/published_at"
+        publisher_metadata:
+          $ref: "#/components/schemas/publisher_metadata"
         visibility:
           $ref: "#/components/schemas/visibility"
       type: object
@@ -1100,14 +1145,6 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
-          nullable: true
-        processing_status:
-          $ref: "#/components/schemas/processing_status_dataset"
-        processing_status_detail:
-          type: string
-          description: |
-            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for
-            the dataset can be found in `processing_status_detail`.
           nullable: true
         published_at:
           $ref: "#/components/schemas/dataset_version_published_at"
@@ -1450,6 +1487,12 @@ components:
           schema:
             $ref: "#/components/schemas/problem"
       description: File conflict
+    "410":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Content has been removed
     "413":
       content:
         application/problem+json:
