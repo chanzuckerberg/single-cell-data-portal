@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import {
   Banner,
   Button,
+  ButtonIcon,
   CommonThemeProps,
   fontBodyS,
   fontBodyXxxs,
@@ -73,6 +74,13 @@ export const HeaderContainer = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
+`;
+
+export const StyledCloseButtonIcon = styled(ButtonIcon)`
+  /* Only hide close button if mobile view and is a direct link */
+  @media only screen and (max-width: 600px) {
+    ${hideCloseButton}
+  }
 `;
 
 export const StyledTitle = styled.div`
@@ -211,4 +219,11 @@ function asFooter({ asFooter }: { asFooter: boolean }) {
       bottom: 0;
     `;
   }
+}
+
+function hideCloseButton({ hideCloseButton }: { hideCloseButton: boolean }) {
+  if (!hideCloseButton) return null;
+  return `
+    visibility: hidden;
+  `;
 }

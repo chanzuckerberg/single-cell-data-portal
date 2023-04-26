@@ -1,4 +1,3 @@
-import { ButtonIcon } from "czifui";
 import Image from "next/image";
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
@@ -19,6 +18,7 @@ import {
   StyledErrorMessage,
   HiddenHubspotForm,
   FooterContentWrapper,
+  StyledCloseButtonIcon,
 } from "./style";
 import cellxgeneLogoSvg from "./CellxGene.svg";
 import { track } from "src/common/analytics";
@@ -71,16 +71,15 @@ export default function BottomBanner({
         "newsletter_signup"
       );
 
-      if (openModalParam) {
-        const openModal = openModalParam.toLowerCase() === "true";
-
-        if (openModal) {
-          setNewsletterModalIsOpen(true);
-          setIsDirectLink(() => {
+      if (openModalParam && openModalParam.toLowerCase() === "true") {
+        setNewsletterModalIsOpen(true);
+        setIsDirectLink(() => {
+          if (!isDirectLink) {
+            // Tracking this in setter function or else we get window not defined error
             track(EVENTS.NEWSLETTER_DIRECT_LINK_NAVIGATED);
-            return true;
-          });
-        }
+          }
+          return true;
+        });
       }
     }
 
@@ -136,7 +135,7 @@ export default function BottomBanner({
     }
 
     return () => observer.disconnect();
-  }, [asFooter, isHubSpotReady]);
+  }, [asFooter, isDirectLink, isHubSpotReady]);
 
   const emailRef = useRef<HTMLInputElement | null>(null);
 
@@ -294,13 +293,12 @@ export default function BottomBanner({
               >
                 <HeaderContainer>
                   <Image alt="CellxGene Logo" src={cellxgeneLogoSvg} />
-                  {!isDirectLink && (
-                    <ButtonIcon
-                      sdsIcon="xMark"
-                      sdsSize="small"
-                      onClick={toggleNewsletterSignupModal}
-                    />
-                  )}
+                  <StyledCloseButtonIcon
+                    sdsIcon="xMark"
+                    sdsSize="small"
+                    onClick={toggleNewsletterSignupModal}
+                    hideCloseButton={isDirectLink}
+                  />
                 </HeaderContainer>
                 {modalContent}
               </NewsletterModal>
