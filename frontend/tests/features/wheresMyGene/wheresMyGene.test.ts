@@ -508,10 +508,10 @@ describe("Where's My Gene", () => {
       clickDropdownOptionByName({
         page,
         testId: ADD_TISSUE_ID,
-        name: "lung",
+        name: "heart",
       });
 
-      getCellTypeFmgButtonAndClick(page, "native cell");
+      await getCellTypeFmgButtonAndClick(page, "dendritic cell");
 
       waitForElement(page, NO_MARKER_GENES_WARNING_TEST_ID);
     });
