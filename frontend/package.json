@@ -18,6 +18,7 @@
     "@mui/styles": "^5.10.14",
     "@types/d3-scale-chromatic": "^3.0.0",
     "@vgrid/sass-inline-svg": "^1.0.1",
+    "cheerio": "^1.0.0-rc.12",
     "client-zip": "^2.2.2",
     "clipboard-copy": "^4.0.1",
     "csv": "^6.2.8",
