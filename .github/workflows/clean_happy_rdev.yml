@@ -8,7 +8,6 @@ on:
 permissions:
   id-token: write
   contents: read
-  deployments: write
 
 jobs:
   build:

@@ -20,7 +20,6 @@ env:
 permissions:
   id-token: write
   contents: read
-  deployments: write
 
 jobs:
   lint:
