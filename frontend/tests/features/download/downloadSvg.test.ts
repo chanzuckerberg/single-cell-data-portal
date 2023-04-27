@@ -26,6 +26,6 @@ describe("SVG download tests", () => {
 
   test.afterAll(async () => {
     //delete csv
-    deleteCsvDownloads(`./tests/download`);
+    //deleteCsvDownloads(`./tests/download`);
   });
 });

@@ -260,22 +260,29 @@ export async function downloadGeneFile(
 
   //click the download icon
   await page.getByTestId("download-button").click();
-
+  const CHECK = "Mui-checked";
   // uncheck and check file types as needed
   for (const _fileType in allFileTypes) {
-    const checkboxId = `${_fileType}-checkbox`;
+    const checkboxId = `${allFileTypes[_fileType]}-checkbox`;
+
+    console.log(_fileType);
+    console.log("herrrrrrrrrrrrrrr");
     // uncheck unwanted file type
     if (
-      (await page.getByTestId(checkboxId).isChecked()) &&
-      !fileTypes.includes(_fileType)
+      (await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
+        CHECK
+      ) &&
+      !fileTypes.includes(allFileTypes[_fileType])
     ) {
       await page.getByTestId(checkboxId).click();
     }
 
     // ensure wanted file types are checked
     if (
-      !page.getByTestId(checkboxId).isChecked() &&
-      fileTypes.includes(_fileType)
+      !(await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
+        CHECK
+      ) &&
+      fileTypes.includes(allFileTypes[_fileType])
     ) {
       await page.getByTestId(checkboxId).click();
     }
@@ -286,7 +293,7 @@ export async function downloadGeneFile(
 
   // download can be zipped or not depending on number of tissues
   if (fileTypes.length === 1 || tissues.length === 1) {
-    const fileName = `${dirPath}/download.${fileTypes[0]}`;
+    const fileName = `${dirPath}/download.${allFileTypes[0]}`;
     await download.saveAs(fileName);
   } else {
     const fileName = `${dirPath}/download.zip`;
