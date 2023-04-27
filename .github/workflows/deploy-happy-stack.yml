@@ -64,13 +64,13 @@ jobs:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         run: |
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
-            DOMAIN_NAME=public-frontend.stage.single-cell.czi.technology
+            DOMAIN_NAME=frontend.stage.single-cell.czi.technology
             ALIAS=cellxgene.staging.single-cell.czi.technology
           elif [ "${DEPLOYMENT_STAGE}" == "prod" ]; then
-            DOMAIN_NAME=public-frontend.production.single-cell.czi.technology
+            DOMAIN_NAME=frontend.production.single-cell.czi.technology
             ALIAS=cellxgene.cziscience.com
           else
-            DOMAIN_NAME=public-frontend.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+            DOMAIN_NAME=frontend.${DEPLOYMENT_STAGE}.single-cell.czi.technology
             ALIAS=cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology
           fi
           DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" --output text)

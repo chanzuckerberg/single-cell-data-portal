@@ -535,6 +535,15 @@ class TestGetCollections(BaseAPIPortalTest):
 
 
 class TestGetCollectionVersions(BaseAPIPortalTest):
+    def confirm_timestamp_fields_present_then_remove(self, received_body: dict):
+        # Confirm fields are present on Collection version body but ignore equality comparison for timestamps
+        self.assertIn("created_at", received_body)
+        self.assertIn("published_at", received_body)
+        [self.assertIn("published_at", d) for d in received_body["datasets"]]
+        received_body.pop("created_at")
+        received_body.pop("published_at")
+        [d.pop("published_at") for d in received_body["datasets"]]
+
     def test__get_collection_versions__200(self):
         # Create published collection with 2 published revisions and 1 unpublished revision
         published_collection = self.generate_published_collection()
@@ -547,17 +556,27 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
         revision_collection_2 = self.generate_revision(collection_id=published_collection.collection_id)
         expected_version_ids.append(revision_collection_2.version_id.id)
         self.business_logic.publish_collection_version(revision_collection_2.version_id)
+        expected_version_ids.reverse()
 
         with self.subTest("Published versions are returned in reverse chronological order with no revision open"):
             resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
             received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            [self.confirm_timestamp_fields_present_then_remove(c_v) for c_v in resp.json]
             self.assertEqual(expected_version_ids, received_version_ids)
 
         self.generate_revision(collection_id=published_collection.collection_id)
         with self.subTest("Published versions are returned in reverse chronological order with a revision open"):
             resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
             received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            [self.confirm_timestamp_fields_present_then_remove(c_v) for c_v in resp.json]
             self.assertEqual(expected_version_ids, received_version_ids)
+
+    def test__get_collection_versions_tombstoned__410(self):
+        published_collection = self.generate_published_collection()
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+        with self.subTest("Returns 410 when a tombstoned canonical id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            self.assertEqual(410, resp.status_code)
 
     def test__get_collection_versions_not_published_canonical__404(self):
         published_collection = self.generate_published_collection()
