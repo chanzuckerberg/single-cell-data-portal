@@ -1,14 +1,17 @@
+import { useState, useRef, useEffect } from "react";
 import { InputSearch } from "czifui";
-import { useState, useRef } from "react";
 import { noop } from "src/common/constants/utils";
 import { SectionItem, SectionTitle, StyledPopper } from "./style";
-import { allCellTypes } from "./fixture";
+import { ROUTES } from "src/common/constants/routes";
+import { useCellTypes } from "src/common/queries/cellCards";
+import { useRouter } from "next/router";
 
 export default function CellCardSearchBar(): JSX.Element {
   const dropdownRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(
     dropdownRef.current
   );
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   const [value, setValue] = useState("");
@@ -21,8 +24,9 @@ export default function CellCardSearchBar(): JSX.Element {
   const handleBlur = () => {
     setTimeout(() => {
       setOpen(false);
-    }, 100);
+    }, 250);
   };
+
   const handleEscape = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Escape") {
       setOpen(false);
@@ -33,9 +37,14 @@ export default function CellCardSearchBar(): JSX.Element {
     setValue(event.target.value);
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    console.log((event.target as HTMLDivElement).innerText);
-  };
+  useEffect(() => {
+    return () => {
+      setValue("");
+      setOpen(false);
+    };
+  }, []);
+
+  const cellTypes = useCellTypes();
 
   return (
     <div>
@@ -69,18 +78,22 @@ export default function CellCardSearchBar(): JSX.Element {
         ]}
       >
         <SectionTitle>Cell Types</SectionTitle>
-        {allCellTypes
+        {cellTypes
           .filter((cellType) => {
             const [cellTypeName] = Object.values(cellType);
             return cellTypeName.toLowerCase().includes(value.toLowerCase());
           })
           .map((cellType) => {
+            const handleClick = () => {
+              router.push(
+                `${ROUTES.CELL_CARDS}/${cellTypeId.replace(":", "_")}`
+              );
+            };
+
             const [cellTypeId] = Object.keys(cellType);
             const [cellTypeName] = Object.values(cellType);
             return (
-              <SectionItem id={cellTypeId} onClick={handleClick}>
-                {cellTypeName}
-              </SectionItem>
+              <SectionItem onClick={handleClick}>{cellTypeName}</SectionItem>
             );
           })}
       </StyledPopper>

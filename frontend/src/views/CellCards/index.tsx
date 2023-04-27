@@ -5,15 +5,15 @@ import {
   reducer,
   StateContext,
 } from "./common/store";
-import Main from "./components/Main";
+import LandingPage from "./components/LandingPage";
 
-export default function CelCards(): JSX.Element {
+export default function CellCards(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
   return (
     <DispatchContext.Provider value={dispatch}>
       <StateContext.Provider value={state}>
-        <Main />
+        <LandingPage />
       </StateContext.Provider>
     </DispatchContext.Provider>
   );
