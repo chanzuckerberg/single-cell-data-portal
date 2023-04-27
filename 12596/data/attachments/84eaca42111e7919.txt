@@ -1,0 +1,1 @@
+  [38;5;45;1mpw:api [0mwaiting for getByTestId('get-started-step-2') [38;5;45m+1ms[0m
