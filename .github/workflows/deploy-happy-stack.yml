@@ -7,6 +7,11 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
+
 jobs:
   upgrade:
     runs-on: ubuntu-20.04
@@ -46,7 +51,6 @@ jobs:
           state: in_progress
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
       - name: Update deployment
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
         with:
@@ -81,7 +85,6 @@ jobs:
           state: failure
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -151,7 +154,6 @@ jobs:
           state: success
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
       - name: Set deployment status to failure if errors
         uses: avakar/set-deployment-status@v1
         if: failure()
@@ -159,7 +161,6 @@ jobs:
           state: failure
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
 
   functional-test:
     runs-on: ubuntu-20.04
@@ -218,7 +219,6 @@ jobs:
           state: success
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
       - name: Set deployment status to failure if errors
         uses: avakar/set-deployment-status@v1
         if: failure()
@@ -226,7 +226,6 @@ jobs:
           state: failure
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
 
   performance-test:
     runs-on: ubuntu-20.04

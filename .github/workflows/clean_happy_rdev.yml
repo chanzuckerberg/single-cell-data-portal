@@ -4,6 +4,12 @@ on:
   schedule:
     # Runs "every 55th minute" (see https://crontab.guru)
     - cron: "55 * * * *"
+
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
+
 jobs:
   build:
     name: Clean happy stacks
