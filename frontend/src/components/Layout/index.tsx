@@ -16,14 +16,14 @@ const Layout = ({ children }: Props) => {
   if (pathname === ROUTES.HOMEPAGE || pathname === ROUTES.SITEMAP) {
     return (
       <>
-        <LandingHeader />
+        <LandingHeader data-testid="landing-footer" />
         {children}
         <LandingFooter />
       </>
     );
   } else {
     return (
-      <Wrapper>
+      <Wrapper data-testid="global-layout-wrapper">
         <Header />
         {children}
         {/* <Footer /> */}
