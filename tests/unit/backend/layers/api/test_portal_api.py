@@ -1689,23 +1689,25 @@ class TestDataset(BaseAPIPortalTest):
         public_dataset = self.generate_dataset(publish=True)
         # how can I add a dataset to a revision?
         revision = self.business_logic.create_collection_version(CollectionId(public_dataset.collection_id))
-        # revision_dataset = self.generate_dataset(collection_version=revision);
 
         test_url = furl(path="/dp/v1/user-datasets/index")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
+        print(body)
 
         # initialize an empty list to store the dataset ids
-        dataset_ids = set()
+        dataset_ids = []
 
         # iterate over the collections in the body list
         for collection in body:
             # iterate over the datasets in the "dataset_assets" list for each collection
             for dataset in collection["dataset_assets"]:
                 # append the dataset_id to the list of dataset ids
-                dataset_ids.add(dataset["dataset_id"])
+                dataset_ids.append(dataset["dataset_id"])
+
+        self.assertEqual(len(dataset_ids), 6)
 
         dataset_ids = list(dataset_ids)
         print("dataset_ids: ", dataset_ids)

@@ -786,7 +786,7 @@ def get_user_datasets_index(token_info: dict):
 
     collections = get_user_writable_collections(token_info)
     # filter out collections that are revisions
-    collections = [c for c in collections if c.is_initial_unpublished_version]
+    collections = [c for c in collections if c.is_unpublished_version() is False]
     user_datasets = get_business_logic().get_datasets_for_collections(collections)
 
     response = []
