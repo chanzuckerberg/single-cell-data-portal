@@ -243,7 +243,6 @@ class TestCollection(BaseAPIPortalTest):
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
 
-    
     def test__get_collection_id_returns_revision_of_published_collection(self):
         version = self.generate_published_collection()
         revision = self.generate_revision(version.collection_id)
@@ -252,7 +251,7 @@ class TestCollection(BaseAPIPortalTest):
         headers["Cookie"] = self.get_cxguser_token()
         response = self.app.get(test_url.url, headers=headers)
         assert response.status_code == 200
-        
+
         body = json.loads(response.data)
         self.assertEqual(body["visibility"], "PRIVATE")
         self.assertEqual(body["access_type"], "WRITE")
@@ -265,7 +264,7 @@ class TestCollection(BaseAPIPortalTest):
         body = json.loads(response.data)
         self.assertEqual(body["visibility"], "PUBLIC")
         self.assertEqual(body["access_type"], "WRITE")
-        self.assertEqual(body["revising_in"],revision.version_id.id)
+        self.assertEqual(body["revising_in"], revision.version_id.id)
 
         # check revising_in is not set if the collection has a revision and the
         # user is not logged in.
@@ -275,7 +274,7 @@ class TestCollection(BaseAPIPortalTest):
         self.assertEqual(body["visibility"], "PUBLIC")
         self.assertEqual(body["access_type"], "READ")
         self.assertNotIn("revising_in", body)
-    
+
     def test__get_collection_id_retrieves_published_version_by_collection_id(self):
         """
         GET /collections/:collection_id retrieves the published version given a canonical collection_id
@@ -307,7 +306,6 @@ class TestCollection(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
         self.assertEqual(body["visibility"], "PRIVATE")
-
 
     def test__get_collection_id_retrieves_unpublished_version(self):
         """
@@ -1689,31 +1687,35 @@ class TestDataset(BaseAPIPortalTest):
 
         private_dataset = self.generate_dataset()
         public_dataset = self.generate_dataset(publish=True)
+        # how can I add a dataset to a revision?
+        revision = self.business_logic.create_collection_version(CollectionId(public_dataset.collection_id))
+        # revision_dataset = self.generate_dataset(collection_version=revision);
 
         test_url = furl(path="/dp/v1/user-datasets/index")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
-    
+
         # initialize an empty list to store the dataset ids
         dataset_ids = set()
 
         # iterate over the collections in the body list
         for collection in body:
             # iterate over the datasets in the "dataset_assets" list for each collection
-            for dataset in collection['dataset_assets']:
+            for dataset in collection["dataset_assets"]:
                 # append the dataset_id to the list of dataset ids
-                dataset_ids.add(dataset['dataset_id'])
+                dataset_ids.add(dataset["dataset_id"])
 
         dataset_ids = list(dataset_ids)
         print("dataset_ids: ", dataset_ids)
         print("public_dataset.dataset_version_id: ", public_dataset.dataset_version_id)
         print("private_dataset.dataset_version_id: ", private_dataset.dataset_version_id)
+
         self.assertIn(public_dataset.dataset_version_id, dataset_ids)
         self.assertIn(private_dataset.dataset_version_id, dataset_ids)
 
-    # ✅    
+    # ✅
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
         import copy
 

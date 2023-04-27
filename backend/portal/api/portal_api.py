@@ -443,10 +443,10 @@ def get_collection_index():
 
     return make_response(jsonify(response), 200)
 
-def get_user_writable_collections(token_info: dict):
 
+def get_user_writable_collections(token_info: dict):
     user_info = UserInfo(token_info)
-     # Get all public collections
+    # Get all public collections
     collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=True))
 
     # Get all private collections the user has access to
@@ -457,7 +457,8 @@ def get_user_writable_collections(token_info: dict):
         all_owned_collections = get_business_logic().get_collections(
             CollectionQueryFilter(is_published=False, owner=user_info.user_id)
         )
-    return itertools.chain(all_owned_collections,  collections)
+    return itertools.chain(all_owned_collections, collections)
+
 
 def get_my_collection_index(token_info):
     """
@@ -773,14 +774,16 @@ def get_datasets_index(token_info: dict):
 
     return make_response(jsonify(response), 200)
 
+
 def get_user_datasets_index(token_info: dict):
     """
     Returns a list of all the datasets that currently belong to a published and active collection
     """
 
     collections = get_user_writable_collections(token_info)
+    # filter out collections that are revisions
+    collections = [c for c in collections if c.is_initial_unpublished_version]
     user_datasets = get_business_logic().get_datasets_for_collections(collections)
-
 
     response = []
     for dataset in user_datasets:
