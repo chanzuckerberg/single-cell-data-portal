@@ -64,10 +64,10 @@ jobs:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         run: |
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
-            DOMAIN_NAME=frontend.stage.single-cell.czi.technology
+            DOMAIN_NAME=public-frontend.stage.single-cell.czi.technology
             ALIAS=cellxgene.staging.single-cell.czi.technology
           elif [ "${DEPLOYMENT_STAGE}" == "prod" ]; then
-            DOMAIN_NAME=frontend.production.single-cell.czi.technology
+            DOMAIN_NAME=public-frontend.production.single-cell.czi.technology
             ALIAS=cellxgene.cziscience.com
           else
             DOMAIN_NAME=frontend.${DEPLOYMENT_STAGE}.single-cell.czi.technology
