@@ -23,11 +23,11 @@ export async function verifyCsv(
   page: Page,
   subDirectory: string,
   tissues: string[],
-  filterName: string
+  filterName: string,
+  url: string
 ): Promise<void> {
   tissues.forEach(async (tissue) => {
     const metadata = await getCsvMetadata(tissue, subDirectory);
-
     // extract the headers and data arrays from the metadata object
     // put all the headers in an array
     const headers = metadata.headers;
@@ -43,8 +43,8 @@ export async function verifyCsv(
       )
       .count();
 
-    //verify the number of element in the csv
-    expect(csvElementsCount).toEqual(uiElementsCount * 3);
+    //verify the number of element in the csv this is the Ui displayed multiplied by the number of genes selected
+    expect(csvElementsCount).toEqual(uiElementsCount * 4);
 
     const options = {
       filterName: filterName,
@@ -52,7 +52,7 @@ export async function verifyCsv(
     };
 
     //verify meta data
-    await verifyMetadata(page, options);
+    await verifyMetadata(page, options, url);
 
     //verify all the headers are present in the csv
     expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
@@ -63,7 +63,8 @@ export async function downloadAndVerifyFiles(
   page: Page,
   filterName: string,
   fileTypes: string[] = ["png"],
-  tissues: string[]
+  tissues: string[],
+  url: string
 ): Promise<void> {
   // generate sub folder
   const subDirectory: string = (
@@ -73,7 +74,9 @@ export async function downloadAndVerifyFiles(
   //download and extract file
   await downloadGeneFile(page, tissues, subDirectory, fileTypes);
 
-  // verify files are available
+
+  // I think the tissue needs to be added before the extension and I think there is a test for this already
+  // //verify files are available
   // fileTypes.forEach((extension: string) => {
   //   expect(
   //     fs.existsSync(`${downLoadPath}/${subDirectory}/${extension}`)
@@ -83,7 +86,7 @@ export async function downloadAndVerifyFiles(
   // verify CSV
   if (fileTypes.includes("csv")) {
     //verify meta data
-    await verifyCsv(page, subDirectory, tissues, filterName);
+    await verifyCsv(page, subDirectory, tissues, filterName, url);
   }
 }
 export function deleteCsvDownloads(filePath: string) {
@@ -152,7 +155,8 @@ interface MetadataVerificationOptions {
 
 export const verifyMetadata = async (
   page: Page,
-  options: MetadataVerificationOptions
+  options: MetadataVerificationOptions,
+  url: string
 ) => {
   //verify the date is valid
   const dateString = options.data[0].substring(14);
@@ -177,6 +181,7 @@ export const verifyMetadata = async (
   const linkMatch = options.data[2].match(linkRegex);
   let text: string | null = "";
   if (options.filterName !== "no-filter") {
+    //this gets the filter displayed on the ui
     text = await getFilterText(page, options.filterName);
   }
 
@@ -185,7 +190,7 @@ export const verifyMetadata = async (
     const link = linkMatch[0];
     //verify link is valid
 
-    await page.goto(link);
+    expect(link).toEqual(url);
 
     // wait until the new page fully loads
     await page.waitForLoadState();
