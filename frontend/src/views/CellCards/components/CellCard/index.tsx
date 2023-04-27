@@ -36,9 +36,8 @@ export default function CellCard(): JSX.Element {
           const response = await fetch(olsUrl);
           const dataOls = await response.json();
           if (dataOls) {
-            console.log(dataOls);
             if (dataOls?.annotation?.definition)
-              setDescription(dataOls.annotation.definition);
+              setDescription(`From OLS: ${dataOls.annotation.definition}`);
             else setDescription("No description available for this cell type.");
           }
         }

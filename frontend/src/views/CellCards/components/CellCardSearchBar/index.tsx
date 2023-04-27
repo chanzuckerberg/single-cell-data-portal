@@ -83,6 +83,20 @@ export default function CellCardSearchBar(): JSX.Element {
             const [cellTypeName] = Object.values(cellType);
             return cellTypeName.toLowerCase().includes(value.toLowerCase());
           })
+          .sort((cellTypeA, cellTypeB) => {
+            const [aRaw] = Object.values(cellTypeA);
+            const [bRaw] = Object.values(cellTypeB);
+            const a = aRaw.toLowerCase();
+            const b = bRaw.toLowerCase();
+            const searchTerm = value.toLowerCase();
+            if (a.startsWith(searchTerm) && !b.startsWith(searchTerm)) {
+              return -1;
+            }
+            if (!a.startsWith(searchTerm) && b.startsWith(searchTerm)) {
+              return 1;
+            }
+            return a.localeCompare(b);
+          })
           .map((cellType) => {
             const handleClick = () => {
               router.push(

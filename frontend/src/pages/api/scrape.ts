@@ -76,9 +76,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         .join("\n\n");
       if (text.startsWith("\n\n")) text = text.slice(2);
       const cleanedText = text.replace(/\[\d+\]/g, "");
-      res
-        .status(200)
-        .json({ content: cleanedText !== "" ? cleanedText : "Parsing error." });
+      res.status(200).json({
+        content:
+          cleanedText !== ""
+            ? `From Wikipedia: ${cleanedText}`
+            : "Parsing error.",
+      });
     }
   } catch (error) {
     console.error(`Error fetching the Wikipedia page: ${error}`);
