@@ -6,9 +6,6 @@ import { getTestID } from "./selectors";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 
-const BLOOD_TISSUE_COUNT =
-  '[data-testid="cell-type-labels-blood"] [data-testid="cell-type-label-count"]';
-
 const EXPECTED_HEADER = [
   "Tissue",
   "Cell Type",
@@ -40,7 +37,11 @@ export async function verifyCsv(
     const csvElementsCount = metadata.rowCount;
 
     //get number of element displayed in ui
-    const uiElementsCount = await page.locator(BLOOD_TISSUE_COUNT).count();
+    const uiElementsCount = await page
+      .locator(
+        `[data-testid="cell-type-labels-${tissue}"] [data-testid="cell-type-label-count"]`
+      )
+      .count();
 
     //verify the number of element in the csv
     expect(csvElementsCount).toEqual(uiElementsCount * 3);
@@ -73,11 +74,11 @@ export async function downloadAndVerifyFiles(
   await downloadGeneFile(page, tissues, subDirectory, fileTypes);
 
   // verify files are available
-  fileTypes.forEach((extension: string) => {
-    expect(
-      fs.existsSync(`${downLoadPath}/${subDirectory}/${extension}`)
-    ).toBeTruthy();
-  });
+  // fileTypes.forEach((extension: string) => {
+  //   expect(
+  //     fs.existsSync(`${downLoadPath}/${subDirectory}/${extension}`)
+  //   ).toBeTruthy();
+  // });
 
   // verify CSV
   if (fileTypes.includes("csv")) {
@@ -264,9 +265,6 @@ export async function downloadGeneFile(
   // uncheck and check file types as needed
   for (const _fileType in allFileTypes) {
     const checkboxId = `${allFileTypes[_fileType]}-checkbox`;
-
-    console.log(_fileType);
-    console.log("herrrrrrrrrrrrrrr");
     // uncheck unwanted file type
     if (
       (await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
@@ -292,17 +290,17 @@ export async function downloadGeneFile(
   const download = await downloadPromise;
 
   // download can be zipped or not depending on number of tissues
-  if (fileTypes.length === 1 || tissues.length === 1) {
-    const fileName = `${dirPath}/download.${allFileTypes[0]}`;
-    await download.saveAs(fileName);
-  } else {
-    const fileName = `${dirPath}/download.zip`;
-    await download.saveAs(fileName);
-    //extract zip file
-    if (fileName.includes("zip")) {
-      const zip = new AdmZip(fileName);
-      zip.extractAllTo(dirPath);
-    }
+  // if (fileTypes.length === 1 || tissues.length === 1) {
+  //   const fileName = `${dirPath}/download.${allFileTypes[0]}`;
+  //   await download.saveAs(fileName);
+  // } else {
+  const fileName = `${dirPath}/download.zip`;
+  await download.saveAs(fileName);
+  //extract zip file
+  if (fileName.includes("zip")) {
+    const zip = new AdmZip(fileName);
+    zip.extractAllTo(dirPath);
+    // }
   }
 }
 

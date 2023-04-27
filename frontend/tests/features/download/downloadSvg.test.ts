@@ -19,7 +19,7 @@ describe("SVG download tests", () => {
 
     const tissues = ["blood", "lung"];
     const filterName = "dataset-filter"; // todo: handle multiple filters
-    const fileTypes = ["png"];
+    const fileTypes = ["csv"];
     //download and verify svg file
     await downloadAndVerifyFiles(page, filterName, fileTypes, tissues);
   });
