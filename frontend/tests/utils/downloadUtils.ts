@@ -3,6 +3,8 @@ import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
 import { getTestID } from "./selectors";
+import { ROUTES } from "src/common/constants/routes";
+import { TEST_URL } from "tests/common/constants";
 
 const BLOOD_TISSUE_COUNT =
   '[data-testid="cell-type-labels-blood"] [data-testid="cell-type-label-count"]';
@@ -18,44 +20,71 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
-export async function downloadAndVerifyCsv(
+const downLoadPath = "./tests/download/";
+
+export async function verifyCsv(
   page: Page,
+  subDirectory: string,
+  tissues: string[],
   filterName: string
 ): Promise<void> {
-  // generate sub folder
-  const randomNumber: number = Math.floor(Math.random() * 90000) + 10000;
-  const subDirectory: string = randomNumber.toString();
+  tissues.forEach(async (tissue) => {
+    const metadata = await getCsvMetadata(tissue, subDirectory);
 
-  //download and extract the csv file
-  await downloadCsv(page, subDirectory);
-  const metadata = await getCsvMetadata("blood", subDirectory);
+    // extract the headers and data arrays from the metadata object
+    // put all the headers in an array
+    const headers = metadata.headers;
+    const data = metadata.data;
 
-  // extract the headers and data arrays from the metadata object
-  // put all the headers in an array
-  const headers = metadata.headers;
-  const data = metadata.data;
+    //get number of element in csv
+    const csvElementsCount = metadata.rowCount;
 
-  //get number of element in csv
-  const csvElementsCount = metadata.rowCount;
+    //get number of element displayed in ui
+    const uiElementsCount = await page.locator(BLOOD_TISSUE_COUNT).count();
 
-  //get number of element displayed in ui
-  const uiElementsCount = await page.locator(BLOOD_TISSUE_COUNT).count();
+    //verify the number of element in the csv
+    expect(csvElementsCount).toEqual(uiElementsCount * 3);
 
-  //verify the number of element in the csv
-  expect(csvElementsCount).toEqual(uiElementsCount * 3);
+    const options = {
+      filterName: filterName,
+      data: headers,
+    };
 
-  const options = {
-    filterName: filterName,
-    data: headers,
-  };
+    //verify meta data
+    await verifyMetadata(page, options);
 
-  //verify meta data
-  await verifyMetadata(page, options);
-
-  //verify all the headers are present in the csv
-  expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
+    //verify all the headers are present in the csv
+    expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
+  });
 }
 
+export async function downloadAndVerifyFiles(
+  page: Page,
+  filterName: string,
+  fileTypes: string[] = ["png"],
+  tissues: string[]
+): Promise<void> {
+  // generate sub folder
+  const subDirectory: string = (
+    Math.floor(Math.random() * 90000) + 10000
+  ).toString();
+
+  //download and extract file
+  await downloadGeneFile(page, tissues, subDirectory, fileTypes);
+
+  // verify files are available
+  fileTypes.forEach((extension: string) => {
+    expect(
+      fs.existsSync(`${downLoadPath}/${subDirectory}/${extension}`)
+    ).toBeTruthy();
+  });
+
+  // verify CSV
+  if (fileTypes.includes("csv")) {
+    //verify meta data
+    await verifyCsv(page, subDirectory, tissues, filterName);
+  }
+}
 export function deleteCsvDownloads(filePath: string) {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
@@ -65,7 +94,6 @@ export function deleteCsvDownloads(filePath: string) {
     }
   });
 }
-
 export interface CsvMetadata {
   rowCount: number;
   data: string[][];
@@ -74,17 +102,17 @@ export interface CsvMetadata {
 
 export const getCsvMetadata = (
   tissue: string,
-  fileFactor: string
+  subDirectory: string
 ): Promise<CsvMetadata> => {
   return new Promise((resolve, reject) => {
     // Open the CSV file for reading
     const fileStream = fs.createReadStream(
-      `./tests/download/${fileFactor}/${tissue}.csv`,
+      `${downLoadPath}${subDirectory}/${tissue}.csv`,
       { encoding: "utf8" }
     );
 
     // Create a readline interface for the file stream
-    const rl = readline.createInterface({ input: fileStream });
+    const csvFileInterface = readline.createInterface({ input: fileStream });
 
     // Create counters and arrays to store the parsed data
     let rowCount = -1;
@@ -92,7 +120,7 @@ export const getCsvMetadata = (
     const headers: string[] = [];
 
     // Listen for 'line' events emitted by the readline interface
-    rl.on("line", (line) => {
+    csvFileInterface.on("line", (line) => {
       const row = line.split(",");
       if (row.length > 1) {
         data.push(row);
@@ -103,13 +131,13 @@ export const getCsvMetadata = (
     });
 
     // Listen for the 'close' event to know when the parsing is complete
-    rl.on("close", () => {
+    csvFileInterface.on("close", () => {
       const csvMetadata: CsvMetadata = { rowCount, data, headers };
       resolve(csvMetadata);
     });
 
     // Listen for any errors during reading and parsing the file
-    rl.on("error", (err) => {
+    csvFileInterface.on("error", (err) => {
       reject(err);
     });
   });
@@ -140,7 +168,7 @@ export const verifyMetadata = async (
 
   //check if the 3 column contains the gene expression link
   expect(
-    options.data[2].includes("https://localhost:3000/gene-expression")
+    options.data[2].includes(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`)
   ).toBeTruthy();
 
   // Extract the link using a regular expression
@@ -218,49 +246,59 @@ const verifyFilterValues = (
   ).toBeTruthy();
 };
 
-export const downloadCsv = async (page: Page, fileFactor: string) => {
-  const zipFilePath = "./tests/download.zip";
-  const extractDirPath = `./tests/download/${fileFactor}`;
-  const CHECK = "Mui-checked";
+export async function downloadGeneFile(
+  page: Page,
+  tissues: string[],
+  subDirectory: string,
+  fileTypes: string[] = ["png"]
+): Promise<void> {
+  const allFileTypes = ["csv", "png", "svg"];
+  const dirPath = `${downLoadPath}/${subDirectory}`;
+
   //wait for download file
   const downloadPromise = page.waitForEvent("download");
 
   //click the download icon
-
   await page.getByTestId("download-button").click();
-  const checkboxClassPng = await page
-    .getByTestId("png-checkbox")
-    .getAttribute("class");
 
-  if (checkboxClassPng && checkboxClassPng.includes(CHECK)) {
-    await page.getByTestId("png-checkbox").click();
-  }
-  const checkboxClassSvg = await page
-    .getByTestId("svg-checkbox")
-    .getAttribute("class");
+  // uncheck and check file types as needed
+  for (const _fileType in allFileTypes) {
+    const checkboxId = `${_fileType}-checkbox`;
+    // uncheck unwanted file type
+    if (
+      (await page.getByTestId(checkboxId).isChecked()) &&
+      !fileTypes.includes(_fileType)
+    ) {
+      await page.getByTestId(checkboxId).click();
+    }
 
-  if (checkboxClassSvg && checkboxClassSvg.includes(CHECK)) {
-    await page.getByTestId("svg-checkbox").click();
-  }
-
-  const checkboxClassCsv = await page
-    .getByTestId("csv-checkbox")
-    .getAttribute("class");
-
-  if (checkboxClassCsv && !checkboxClassCsv.includes(CHECK)) {
-    await page.getByTestId("csv-checkbox").click();
+    // ensure wanted file types are checked
+    if (
+      !page.getByTestId(checkboxId).isChecked() &&
+      fileTypes.includes(_fileType)
+    ) {
+      await page.getByTestId(checkboxId).click();
+    }
   }
 
   await page.getByTestId("dialog-download-button").click();
   const download = await downloadPromise;
 
-  // Save downloaded file in a directory
-  await download.saveAs(zipFilePath);
+  // download can be zipped or not depending on number of tissues
+  if (fileTypes.length === 1 || tissues.length === 1) {
+    const fileName = `${dirPath}/download.${fileTypes[0]}`;
+    await download.saveAs(fileName);
+  } else {
+    const fileName = `${dirPath}/download.zip`;
+    await download.saveAs(fileName);
+    //extract zip file
+    if (fileName.includes("zip")) {
+      const zip = new AdmZip(fileName);
+      zip.extractAllTo(dirPath);
+    }
+  }
+}
 
-  //extract zip file
-  const zip = new AdmZip(zipFilePath);
-  zip.extractAllTo(extractDirPath);
-};
 export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();
