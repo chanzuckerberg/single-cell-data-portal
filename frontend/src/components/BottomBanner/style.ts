@@ -190,9 +190,9 @@ export const NewsletterModal = styled(Modal)`
   padding-bottom: 24px !important;
 
   @media only screen and (max-width: 600px) {
-    min-width: 100dvw !important;
+    min-width: 100vw 100dvw !important;
+    max-width: 100vw 100dvw !important;
     min-height: 100vh !important;
-    max-width: 100dvw !important;
     max-height: 100vh !important;
     overflow: hidden !important;
     padding-top: 170px;
