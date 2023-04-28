@@ -830,7 +830,7 @@ describe("Where's My Gene", () => {
       await waitForElementToBeRemoved(page, NEWSLETTER_MODAL_CONTENT);
     });
 
-    test.only("Newsletter Modal - Validate Email", async ({ page }) => {
+    test("Newsletter Modal - Validate Email", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
       // Open modal
