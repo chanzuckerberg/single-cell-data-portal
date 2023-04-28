@@ -283,14 +283,15 @@ export async function downloadGeneFile(
   const CHECK = "Mui-checked";
 
   // uncheck and check file types as needed
-  for (const _fileType in allFileTypes) {
-    const checkboxId = `${allFileTypes[_fileType]}-checkbox`;
+
+  allFileTypes.forEach(async (_fileType) => {
+    const checkboxId = `${_fileType}-checkbox`;
     // uncheck unwanted file type
     if (
       (await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
         CHECK
       ) &&
-      !fileTypes.includes(allFileTypes[_fileType])
+      !fileTypes.includes(_fileType)
     ) {
       await page.getByTestId(checkboxId).click();
     }
@@ -300,11 +301,11 @@ export async function downloadGeneFile(
       !(await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
         CHECK
       ) &&
-      fileTypes.includes(allFileTypes[_fileType])
+      fileTypes.includes(_fileType)
     ) {
       await page.getByTestId(checkboxId).click();
     }
-  }
+  });
 
   await page.getByTestId("dialog-download-button").click();
   const download = await downloadPromise;

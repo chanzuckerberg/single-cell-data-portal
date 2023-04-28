@@ -146,4 +146,3 @@ export const checkPlotSize = async (page: Page) => {
   }
   return sumOfHeights;
 };
-
