@@ -5,6 +5,7 @@ import AdmZip from "adm-zip";
 import { getTestID } from "./selectors";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
+import stringSimilarity from "string-similarity";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -17,7 +18,7 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
-const downLoadPath = "./tests/download/";
+const downLoadPath = "./tests/downloads/";
 
 export async function verifyCsv(
   page: Page,
@@ -59,36 +60,49 @@ export async function verifyCsv(
   });
 }
 
+export function subDirectory() {
+  return (Math.floor(Math.random() * 90000) + 10000).toString();
+}
 export async function downloadAndVerifyFiles(
   page: Page,
-  filterName: string,
   fileTypes: string[] = ["png"],
   tissues: string[],
-  url: string
+  subDirectory: string
 ): Promise<void> {
-  // generate sub folder
-  const subDirectory: string = (
-    Math.floor(Math.random() * 90000) + 10000
-  ).toString();
-
   //download and extract file
   await downloadGeneFile(page, tissues, subDirectory, fileTypes);
 
+  // verify files are available
+  fileTypes.forEach((extension: string) => {
+    tissues.forEach((tissue) => {
+      expect(
+        fs.existsSync(`${downLoadPath}/${subDirectory}/${tissue}.${extension}`)
+      ).toBeTruthy();
+    });
+  });
 
-  // I think the tissue needs to be added before the extension and I think there is a test for this already
-  // //verify files are available
-  // fileTypes.forEach((extension: string) => {
-  //   expect(
-  //     fs.existsSync(`${downLoadPath}/${subDirectory}/${extension}`)
-  //   ).toBeTruthy();
-  // });
-
+  // move this to test body
   // verify CSV
-  if (fileTypes.includes("csv")) {
-    //verify meta data
-    await verifyCsv(page, subDirectory, tissues, filterName, url);
-  }
+  // if (fileTypes.includes("csv")) {
+  //   //verify meta data
+  //   await verifyCsv(page, subDirectory, tissues, filterName, url);
+  // }
 }
+
+export function verifySvg(
+  tissues: string[],
+  subFolder: string,
+  fixturePath: string
+) {
+  tissues.forEach((tissue) => {
+    const download = fs
+      .readFileSync(`${downLoadPath}/${subFolder}/${tissue}.svg`)
+      .toString();
+    const fixture = fs.readFileSync(`${fixturePath}/${tissue}.svg`).toString();
+    expect(stringSimilarity.compareTwoStrings(fixture, download)).toBeTruthy();
+  });
+}
+
 export function deleteCsvDownloads(filePath: string) {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
@@ -267,6 +281,7 @@ export async function downloadGeneFile(
   //click the download icon
   await page.getByTestId("download-button").click();
   const CHECK = "Mui-checked";
+
   // uncheck and check file types as needed
   for (const _fileType in allFileTypes) {
     const checkboxId = `${allFileTypes[_fileType]}-checkbox`;
@@ -295,17 +310,16 @@ export async function downloadGeneFile(
   const download = await downloadPromise;
 
   // download can be zipped or not depending on number of tissues
-  // if (fileTypes.length === 1 || tissues.length === 1) {
-  //   const fileName = `${dirPath}/download.${allFileTypes[0]}`;
-  //   await download.saveAs(fileName);
-  // } else {
-  const fileName = `${dirPath}/download.zip`;
+  let fileName = `${dirPath}/download.zip`;
+  if (fileTypes.length === 1 && tissues.length === 1) {
+    fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
+  }
+
   await download.saveAs(fileName);
   //extract zip file
   if (fileName.includes("zip")) {
     const zip = new AdmZip(fileName);
     zip.extractAllTo(dirPath);
-    // }
   }
 }
 
