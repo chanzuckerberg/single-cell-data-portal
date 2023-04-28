@@ -77,10 +77,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       if (text.startsWith("\n\n")) text = text.slice(2);
       const cleanedText = text.replace(/\[\d+\]/g, "");
       res.status(200).json({
-        content:
-          cleanedText !== ""
-            ? `From Wikipedia: ${cleanedText}`
-            : "Parsing error.",
+        content: cleanedText !== "" ? cleanedText : "Parsing error.",
       });
     }
   } catch (error) {
