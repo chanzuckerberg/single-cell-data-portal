@@ -40,13 +40,18 @@ export default function CellCard(): JSX.Element {
         const data = await res.json();
         if (data.content !== "Try OLS") {
           setDescriptionWiki(data.content);
+        } else {
+          setDescriptionWiki("");
         }
       });
       fetch(olsUrl).then(async (res) => {
         const data = await res.json();
         if (data) {
-          if (data?.annotation?.definition)
+          if (data?.annotation?.definition) {
             setDescriptionOls(data.annotation.definition);
+          } else {
+            setDescriptionOls("");
+          }
         }
       });
     }
