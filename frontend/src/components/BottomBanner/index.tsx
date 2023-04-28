@@ -23,6 +23,7 @@ import {
 import cellxgeneLogoSvg from "./CellxGene.svg";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import Head from "next/head";
 
 export const FORM_CONTAINER_ID = "hubspot-form-container";
 export const FORM_CONTAINER_ID_QUERY = `#${FORM_CONTAINER_ID}`;
@@ -238,6 +239,18 @@ export default function BottomBanner({
 
   return (
     <>
+      <Head>
+        {/* This is so that the mobile signup modal is scaled accordingly with the device. If using as footer there is not modal. */}
+        {!asFooter && (
+          <meta
+            id="newsletter-signup-meta"
+            name="viewport"
+            content="width=device-width, initial-scale=1"
+          />
+        )}
+      </Head>
+
+      {/* Script should be outside of <head> or else we get a next warning: "`next/script` should not be used in `next/head` component." */}
       <Script
         onReady={() => {
           setIsHubSpotReady(true);
