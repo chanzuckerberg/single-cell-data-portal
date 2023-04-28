@@ -126,16 +126,19 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Configure AWS Credentials
+        if: ( github.ref == 'refs/heads/prod' )
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
+        if: ( github.ref == 'refs/heads/prod' )
         uses: docker/login-action@v1
         with:
           registry: ${{ secrets.ECR_REPO }}
       - name: Login to Prod ECR
+        if: ( github.ref == 'refs/heads/prod' )
         uses: docker/login-action@v1
         with:
           registry: ${{ secrets.ECR_REPO_PROD }}
