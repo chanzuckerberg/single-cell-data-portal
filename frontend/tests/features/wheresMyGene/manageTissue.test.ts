@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { ADD_TISSUE_BTN } from "tests/utils/constants";
+import { ADD_TISSUE_BTN } from "tests/common/constants";
 import { goToWMG, verifyAddedTissue } from "tests/utils/geneUtils";
 import { selectNthOption } from "tests/utils/helpers";
 

@@ -1,11 +1,12 @@
 import { expect, Page, test } from "@playwright/test";
-import { TEST_URL } from "../../common/constants";
-import { ROUTES } from "src/common/constants/routes";
 import {
   ADD_GENE_BTN,
   ADD_GENE_LBL,
   ADD_TISSUE_LBL,
-} from "tests/utils/constants";
+  TEST_URL,
+} from "../../common/constants";
+import { ROUTES } from "src/common/constants/routes";
+
 import { getById } from "tests/utils/selectors";
 import { tryUntil } from "tests/utils/helpers";
 

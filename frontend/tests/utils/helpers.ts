@@ -3,13 +3,13 @@ import {
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
 import { ElementHandle, expect, Locator, Page } from "@playwright/test";
-import { TEST_ENV } from "tests/common/constants";
-import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
 import {
   CELL_TYPE_LABELS_ID,
   ERROR_NO_TESTID_OR_LOCATOR,
   GENE_LABELS_ID,
-} from "./constants";
+  TEST_ENV,
+} from "tests/common/constants";
+import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
 
 /**
  * (thuang): From oauth/users.json
