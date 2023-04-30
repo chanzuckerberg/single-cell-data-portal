@@ -1,14 +1,9 @@
 import { test } from "@playwright/test";
-import {
-  goToWMG,
-  selectFilterOption,
-  selectGroupByOption,
-  selectTissueAndGeneOption,
-} from "../../utils/wmgUtils";
+import { goToWMG, selectTissueAndGeneOption } from "../../utils/wmgUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
-import { deleteCsvDownloads, downloadPng } from "tests/utils/downloadUtils";
+import { downloadPng, deleteCsvDownloads } from "tests/utils/downloadUtils";
 import pixelmatch from "pixelmatch";
-
+import fs from "fs";
 import { PNG } from "pngjs";
 
 const { describe, skip } = test;
@@ -19,7 +14,7 @@ describe("CSV download tests", () => {
     //select tissue and gene
     await selectTissueAndGeneOption(page);
   });
-  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test.only(`Should verify Png for blood tissue with no filter applied`, async ({
     page,
@@ -30,10 +25,11 @@ describe("CSV download tests", () => {
     //download and verify csv file
     await downloadPng(page, subDirectory);
     // Capture the actual screenshot and compare it with the expected screenshot
-    const expectedImage = await page.screenshot();
-    const expectedPng = PNG.sync.read(expectedImage);
+    const expectedPng = PNG.sync.read(
+      fs.readFileSync(`./tests/fixtures/download/blood.png`)
+    );
     const actualPng = PNG.sync.read(
-      `./tests/download/${subDirectory}/blood.png`
+      fs.readFileSync(`./tests/download/${subDirectory}/blood.png`)
     );
     const { width, height } = expectedPng;
     const diff = new PNG({ width, height });
@@ -53,6 +49,6 @@ describe("CSV download tests", () => {
 
   test.afterAll(async () => {
     //delete csv
-    // deleteCsvDownloads(`./tests/download`);
+    deleteCsvDownloads(`./tests/download`);
   });
 });
