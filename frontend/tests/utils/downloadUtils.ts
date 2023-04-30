@@ -1,4 +1,4 @@
-import { Page, expect } from "@playwright/test";
+import { Page, chromium, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
@@ -18,7 +18,7 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
-const downLoadPath = "./tests/downloads/";
+const downLoadPath = "./tests/downloads";
 
 export async function verifyCsv(
   page: Page,
@@ -75,18 +75,13 @@ export async function downloadAndVerifyFiles(
   // verify files are available
   fileTypes.forEach((extension: string) => {
     tissues.forEach((tissue) => {
+      console.log(tissue);
+      console.log(extension);
       expect(
         fs.existsSync(`${downLoadPath}/${subDirectory}/${tissue}.${extension}`)
       ).toBeTruthy();
     });
   });
-
-  // move this to test body
-  // verify CSV
-  // if (fileTypes.includes("csv")) {
-  //   //verify meta data
-  //   await verifyCsv(page, subDirectory, tissues, filterName, url);
-  // }
 }
 
 export function verifySvg(
@@ -103,7 +98,7 @@ export function verifySvg(
   });
 }
 
-export function deleteCsvDownloads(filePath: string) {
+export function deleteDownloadedFiles(filePath: string) {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);
@@ -282,18 +277,16 @@ export async function downloadGeneFile(
   await page.getByTestId("download-button").click();
   const CHECK = "Mui-checked";
 
-  // uncheck and check file types as needed
-
-  allFileTypes.forEach(async (_fileType) => {
-    const checkboxId = `${_fileType}-checkbox`;
-    // uncheck unwanted file type
+  for (const ext of allFileTypes) {
+    const checkboxId = `${ext}-checkbox`;
+    // uncheck if file type is checked but not
     if (
       (await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
         CHECK
       ) &&
-      !fileTypes.includes(_fileType)
+      !fileTypes.includes(ext)
     ) {
-      await page.getByTestId(checkboxId).click();
+      await page.getByTestId(checkboxId).locator("input").click();
     }
 
     // ensure wanted file types are checked
@@ -301,12 +294,11 @@ export async function downloadGeneFile(
       !(await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
         CHECK
       ) &&
-      fileTypes.includes(_fileType)
+      fileTypes.includes(ext)
     ) {
-      await page.getByTestId(checkboxId).click();
+      await page.getByTestId(checkboxId).locator("input").click();
     }
-  });
-
+  }
   await page.getByTestId("dialog-download-button").click();
   const download = await downloadPromise;
 
@@ -328,3 +320,21 @@ export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();
 };
+export async function compareSvg(
+  webCellImage: string,
+  webGeneImage: string,
+  svgFile: string
+): Promise<void> {
+  const browser = await chromium.launch();
+  const browserContext = await browser.newContext();
+  const page = await browserContext.newPage();
+  await page.goto(svgFile);
+  expect(page.locator("svg").locator("svg").nth(3)).toMatchSnapshot(
+    webCellImage
+  );
+  expect(page.locator("svg").locator("svg").nth(4)).toMatchSnapshot(
+    webCellImage
+  );
+  expect(await page.screenshot()).toMatchSnapshot(webGeneImage);
+  await browser.close();
+}

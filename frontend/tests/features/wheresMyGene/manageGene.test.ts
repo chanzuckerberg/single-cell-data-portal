@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ADD_GENE_BTN } from "tests/utils/constants";
+import { ADD_GENE_BTN } from "tests/common/constants";
 import {
   goToWMG,
   searchAndAddGene,
