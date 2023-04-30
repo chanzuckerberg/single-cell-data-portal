@@ -5,39 +5,26 @@ import {
   useDifferentialExpression,
   usePrimaryFilterDimensions,
 } from "src/common/queries/differentialExpression";
-import {
-  DispatchContext,
-  StateContext,
-} from "src/views/DifferentialExpression/common/store";
+import { StateContext } from "src/views/DifferentialExpression/common/store";
 import {
   CopyGenesButton,
   QueryGroupSubTitle,
   QueryGroupTitle,
   StyledHTMLTable,
   TableWrapper,
-  ButtonsWrapper,
-  BackButton,
-  RestartButton,
   NoDeGenesContainer,
   NoDeGenesDescription,
   NoDeGenesHeader,
 } from "./style";
-import { QueryGroupWithNames } from "src/views/DifferentialExpression/common/store/reducer";
-import {
-  deleteAllQueryGroups,
-  deleteAllSelectedFilters,
-} from "src/views/DifferentialExpression/common/store/actions";
-interface Props {
-  setStep: (step: number) => void;
-}
+import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
+
 interface DifferentialExpressionRow {
   name: string;
   pValue: number;
   effectSize: number;
 }
 
-export default function StepThree({ setStep }: Props): JSX.Element {
-  const dispatch = useContext(DispatchContext);
+export default function DeResults(): JSX.Element {
   const { data: rawDifferentialExpressionResults, isLoading } =
     useDifferentialExpression();
   const [differentialExpressionResults, setDifferentialExpressionResults] =
@@ -91,25 +78,15 @@ export default function StepThree({ setStep }: Props): JSX.Element {
     [differentialExpressionResults]
   );
 
-  const handleGoBack = () => {
-    setStep(2);
-  };
-  const handleStartOver = () => {
-    if (!dispatch) return;
-    setStep(1);
-    dispatch(deleteAllQueryGroups());
-    dispatch(deleteAllSelectedFilters());
-  };
-
   const namesToShow: string[][] = [];
-  for (const [index, queryGroupWithNames] of (
-    queryGroupsWithNames ?? []
-  ).entries()) {
+  const { queryGroup1, queryGroup2 } = queryGroupsWithNames;
+  for (const [index, queryGroupWithNames] of [
+    queryGroup1,
+    queryGroup2,
+  ].entries()) {
     namesToShow.push([]);
     for (const key in queryGroupWithNames) {
-      for (const value of queryGroupWithNames[
-        key as keyof QueryGroupWithNames
-      ]) {
+      for (const value of queryGroupWithNames[key as keyof QueryGroup]) {
         namesToShow[index].push(value);
       }
     }
@@ -117,24 +94,6 @@ export default function StepThree({ setStep }: Props): JSX.Element {
 
   return (
     <div>
-      <ButtonsWrapper>
-        <BackButton
-          color="primary"
-          size="large"
-          variant="contained"
-          onClick={handleGoBack}
-        >
-          Back
-        </BackButton>
-        <RestartButton
-          color="primary"
-          size="large"
-          variant="contained"
-          onClick={handleStartOver}
-        >
-          Start over
-        </RestartButton>
-      </ButtonsWrapper>
       {isLoading && <div>Loading...</div>}
       {differentialExpressionResults.map((results, index) => {
         return (

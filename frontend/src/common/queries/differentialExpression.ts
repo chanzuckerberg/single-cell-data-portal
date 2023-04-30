@@ -1,12 +1,11 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API_URL } from "src/configs/configs";
+import { API_URL } from "src/configs/dev";
 import {
   DispatchContext,
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
 import { setSnapshotId } from "src/views/DifferentialExpression/common/store/actions";
-import { Filters } from "src/views/DifferentialExpression/common/store/reducer";
 import { Organism as IOrganism } from "src/views/DifferentialExpression/common/types";
 import { API } from "../API";
 import { ROUTES } from "../constants/routes";
@@ -155,8 +154,7 @@ export interface FiltersQuery {
 }
 
 export interface DifferentialExpressionQuery {
-  contextFilters: FilterSecondary;
-  queryGroupFilters: {
+  queryGroup1Filters: {
     dataset_ids: string[];
     development_stage_ontology_term_ids: string[];
     disease_ontology_term_ids: string[];
@@ -165,7 +163,17 @@ export interface DifferentialExpressionQuery {
     sex_ontology_term_ids: string[];
     tissue_ontology_term_ids: string[];
     cell_type_ontology_term_ids: string[];
-  }[];
+  };
+  queryGroup2Filters: {
+    dataset_ids: string[];
+    development_stage_ontology_term_ids: string[];
+    disease_ontology_term_ids: string[];
+    organism_ontology_term_id: string;
+    self_reported_ethnicity_ontology_term_ids: string[];
+    sex_ontology_term_ids: string[];
+    tissue_ontology_term_ids: string[];
+    cell_type_ontology_term_ids: string[];
+  };
 }
 
 interface FiltersQueryResponse {
@@ -343,108 +351,6 @@ export interface FilterDimensions {
   cell_type_terms: { id: string; name: string }[];
 }
 
-export function useFilterDimensions(): {
-  data: FilterDimensions;
-  isLoading: boolean;
-} {
-  const { organismId } = useContext(StateContext);
-  const requestBody = useWMGFiltersQueryRequestBody();
-  const { data, isLoading } = useWMGFiltersQuery(requestBody);
-  const { data: primaryFilterDimensions } = usePrimaryFilterDimensions();
-
-  return useMemo(() => {
-    if (isLoading || !data || !primaryFilterDimensions || !organismId)
-      return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
-
-    const {
-      tissues: { [organismId]: allOrganismTissues },
-    } = primaryFilterDimensions;
-
-    if (!allOrganismTissues)
-      return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
-
-    const { filter_dims } = data;
-
-    const {
-      datasets,
-      development_stage_terms,
-      disease_terms,
-      self_reported_ethnicity_terms,
-      sex_terms,
-      tissue_terms,
-      cell_type_terms,
-    } = filter_dims;
-
-    const sortedDatasets = Object.values(
-      aggregateCollectionsFromDatasets(datasets)
-    ).flatMap(({ datasets }) => datasets);
-
-    const allOrganismTissueIds = allOrganismTissues.map((tissue) => tissue.id);
-    const filtered_tissue_terms = tissue_terms.filter((tissue) =>
-      allOrganismTissueIds.includes(Object.keys(tissue)[0])
-    );
-
-    return {
-      data: {
-        datasets: sortedDatasets.map((dataset) => ({
-          ...dataset,
-          name: dataset.label,
-        })),
-        development_stage_terms: development_stage_terms.map(toEntity),
-        disease_terms: disease_terms.map(toEntity),
-        self_reported_ethnicity_terms:
-          self_reported_ethnicity_terms.map(toEntity),
-        sex_terms: sex_terms.map(toEntity),
-        tissue_terms: filtered_tissue_terms.map(toEntity),
-        cell_type_terms: cell_type_terms.map(toEntity),
-      },
-      isLoading: false,
-    };
-  }, [data, isLoading, primaryFilterDimensions, organismId]);
-}
-
-function useWMGFiltersQueryRequestBody() {
-  const { organismId, selectedFilters } = useContext(StateContext);
-
-  const {
-    datasets,
-    developmentStages,
-    diseases,
-    ethnicities,
-    sexes,
-    tissues,
-    cellTypes,
-  } = selectedFilters;
-
-  return useMemo(() => {
-    if (!organismId) {
-      return null;
-    }
-
-    return {
-      filter: {
-        dataset_ids: datasets,
-        development_stage_ontology_term_ids: developmentStages,
-        disease_ontology_term_ids: diseases,
-        organism_ontology_term_id: organismId,
-        self_reported_ethnicity_ontology_term_ids: ethnicities,
-        sex_ontology_term_ids: sexes,
-        tissue_ontology_term_ids: tissues,
-        cell_type_ontology_term_ids: cellTypes,
-      },
-    };
-  }, [
-    organismId,
-    datasets,
-    developmentStages,
-    diseases,
-    ethnicities,
-    sexes,
-    tissues,
-    cellTypes,
-  ]);
-}
-
 export function useDifferentialExpression(): {
   data: DifferentialExpressionResult[][];
   isLoading: boolean;
@@ -462,70 +368,45 @@ export function useDifferentialExpression(): {
 }
 
 function useDEQueryRequestBody() {
-  const { organismId, selectedFilters, queryGroups } = useContext(StateContext);
-
-  const {
-    datasets,
-    developmentStages,
-    diseases,
-    ethnicities,
-    sexes,
-    tissues,
-    cellTypes,
-  } = selectedFilters;
+  const { organismId, queryGroups } = useContext(StateContext);
 
   return useMemo(() => {
     if (!organismId || !queryGroups) {
       return null;
     }
+    const { queryGroup1, queryGroup2 } = queryGroups;
 
     return {
-      contextFilters: {
-        dataset_ids: datasets,
-        development_stage_ontology_term_ids: developmentStages,
-        disease_ontology_term_ids: diseases,
+      queryGroup1Filters: {
+        dataset_ids: queryGroup1.datasets,
+        development_stage_ontology_term_ids: queryGroup1.developmentStages,
+        disease_ontology_term_ids: queryGroup1.diseases,
         organism_ontology_term_id: organismId,
-        self_reported_ethnicity_ontology_term_ids: ethnicities,
-        sex_ontology_term_ids: sexes,
-        tissue_ontology_term_ids: tissues,
-        cell_type_ontology_term_ids: cellTypes,
+        self_reported_ethnicity_ontology_term_ids: queryGroup1.ethnicities,
+        sex_ontology_term_ids: queryGroup1.sexes,
+        tissue_ontology_term_ids: queryGroup1.tissues,
+        cell_type_ontology_term_ids: queryGroup1.cellTypes,
       },
-      queryGroupFilters: queryGroups.map((queryGroup) => ({
-        dataset_ids: queryGroup.datasets,
-        development_stage_ontology_term_ids: queryGroup.developmentStages,
-        disease_ontology_term_ids: queryGroup.diseases,
+      queryGroup2Filters: {
+        dataset_ids: queryGroup2.datasets,
+        development_stage_ontology_term_ids: queryGroup2.developmentStages,
+        disease_ontology_term_ids: queryGroup2.diseases,
         organism_ontology_term_id: organismId,
-        self_reported_ethnicity_ontology_term_ids: queryGroup.ethnicities,
-        sex_ontology_term_ids: queryGroup.sexes,
-        tissue_ontology_term_ids: queryGroup.tissues,
-        cell_type_ontology_term_ids: queryGroup.cellTypes,
-      })),
+        self_reported_ethnicity_ontology_term_ids: queryGroup2.ethnicities,
+        sex_ontology_term_ids: queryGroup2.sexes,
+        tissue_ontology_term_ids: queryGroup2.tissues,
+        cell_type_ontology_term_ids: queryGroup2.cellTypes,
+      },
     };
-  }, [
-    organismId,
-    datasets,
-    developmentStages,
-    diseases,
-    ethnicities,
-    sexes,
-    tissues,
-    queryGroups,
-  ]);
+  }, [organismId, queryGroups]);
 }
 
-// This hook is for the QueryGroupFilters
-export function useQueryGroupFilterDimensions(
-  queryGroup: QueryGroup,
-  availableFilters: Partial<FilterDimensions>
-): {
+export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
   const { organismId } = useContext(StateContext);
-  const requestBody = useWMGFiltersQueryRequestBodyForQueryGroups(
-    queryGroup,
-    availableFilters as FilterDimensions
-  );
+  const requestBody = useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
   const { data: primaryFilterDimensions } = usePrimaryFilterDimensions();
 
@@ -580,40 +461,8 @@ export function useQueryGroupFilterDimensions(
   }, [data, isLoading, primaryFilterDimensions, organismId]);
 }
 
-function useWMGFiltersQueryRequestBodyForQueryGroups(
-  queryGroup: QueryGroup,
-  availableFilters: FilterDimensions
-) {
-  const { organismId, selectedFilters } = useContext(StateContext);
-
-  const keyNameMapping = {
-    tissues: "tissue_terms",
-    cellTypes: "cell_type_terms",
-    developmentStages: "development_stage_terms",
-    diseases: "disease_terms",
-    sexes: "sex_terms",
-    datasets: "datasets",
-    ethnicities: "self_reported_ethnicity_terms",
-  };
-
-  let filters;
-
-  filters = { ...queryGroup };
-  for (const key in filters) {
-    if (filters[key as keyof Filters].length === 0) {
-      const mappedKey = keyNameMapping[key as keyof Filters];
-      let availableFilterIds: string[] = [];
-      if (mappedKey in availableFilters) {
-        availableFilterIds = availableFilters[
-          mappedKey as keyof FilterDimensions
-        ].map((filter) => filter.id);
-      }
-      filters[key as keyof Filters] = selectedFilters[
-        key as keyof Filters
-      ].filter((value) => availableFilterIds.includes(value));
-    }
-  }
-
+function useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {
+  const { organismId } = useContext(StateContext);
   const {
     datasets,
     developmentStages,
@@ -622,7 +471,7 @@ function useWMGFiltersQueryRequestBodyForQueryGroups(
     sexes,
     tissues,
     cellTypes,
-  } = filters;
+  } = queryGroup;
 
   return useMemo(() => {
     if (!organismId) {

@@ -1,5 +1,3 @@
-import isEqual from "lodash/isEqual";
-
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
@@ -20,13 +18,16 @@ export interface QueryGroup extends Filters {
   cellTypes: string[];
 }
 
-export type QueryGroupWithNames = QueryGroup;
+export interface QueryGroups {
+  queryGroup1: QueryGroup;
+  queryGroup2: QueryGroup;
+}
+
+export type QueryGroupsWithNames = QueryGroups;
 export interface State {
   organismId: string | null;
-  selectedFilters: Filters;
-  selectedFilterNames: FilterNames;
-  queryGroups: QueryGroup[] | null;
-  queryGroupsWithNames: QueryGroupWithNames[] | null;
+  queryGroups: QueryGroups;
+  queryGroupsWithNames: QueryGroupsWithNames;
   snapshotId: string | null;
 }
 
@@ -42,23 +43,22 @@ const EMPTY_FILTERS = {
 
 export const INITIAL_STATE: State = {
   organismId: null,
-  selectedFilters: EMPTY_FILTERS,
-  selectedFilterNames: EMPTY_FILTERS,
   snapshotId: null,
-  queryGroups: null,
-  queryGroupsWithNames: null,
+  queryGroups: { queryGroup1: EMPTY_FILTERS, queryGroup2: EMPTY_FILTERS },
+  queryGroupsWithNames: {
+    queryGroup1: EMPTY_FILTERS,
+    queryGroup2: EMPTY_FILTERS,
+  },
 };
 
 export const REDUCERS = {
   selectOrganism,
-  selectFilters,
   setSnapshotId,
-  setSelectedFilterNames,
-  addQueryGroup,
-  selectQueryGroupFilters,
-  deleteQueryGroup,
-  deleteAllQueryGroups,
-  deleteAllSelectedFilters,
+  selectQueryGroup1Filters,
+  selectQueryGroup2Filters,
+  clearQueryGroup1Filters,
+  clearQueryGroup2Filters,
+  copyCellGroup1,
 };
 
 function setSnapshotId(
@@ -87,141 +87,104 @@ function selectOrganism(
   };
 }
 
-function addQueryGroup(state: State, _: PayloadAction<null>): State {
-  const { queryGroups, queryGroupsWithNames } = state;
-
-  const newQueryGroups = queryGroups ? Array.from(queryGroups) : [];
-  newQueryGroups.push(EMPTY_FILTERS);
-
-  const newQueryGroupsWithNames = queryGroupsWithNames
-    ? Array.from(queryGroupsWithNames)
-    : [];
-  newQueryGroupsWithNames.push(EMPTY_FILTERS);
-
-  return {
-    ...state,
-    queryGroups: newQueryGroups,
-    queryGroupsWithNames: newQueryGroupsWithNames,
-  };
-}
-
-function deleteAllQueryGroups(state: State, _: PayloadAction<null>): State {
-  return {
-    ...state,
-    queryGroups: null,
-    queryGroupsWithNames: null,
-  };
-}
-
-function deleteQueryGroup(state: State, action: PayloadAction<number>): State {
-  const { queryGroups, queryGroupsWithNames } = state;
-
-  const newQueryGroups: QueryGroup[] = [];
-  queryGroups?.forEach((queryGroup, index) => {
-    if (index !== action.payload) {
-      newQueryGroups.push(queryGroup);
-    }
-  });
-
-  const newQueryGroupsWithNames: QueryGroupWithNames[] = [];
-  queryGroupsWithNames?.forEach((queryGroupWithNames, index) => {
-    if (index !== action.payload) {
-      newQueryGroupsWithNames.push(queryGroupWithNames);
-    }
-  });
-
-  return {
-    ...state,
-    queryGroups: newQueryGroups,
-    queryGroupsWithNames: newQueryGroupsWithNames,
-  };
-}
-
-function selectFilters(
-  state: State,
-  action: PayloadAction<{
-    key: keyof State["selectedFilters"];
-    options: string[];
-  }>
-): State {
-  const { key, options } = action.payload;
-
-  const { selectedFilters } = state;
-
-  if (isEqual(selectedFilters[key], options)) return state;
-
-  const newSelectedFilters = {
-    ...state.selectedFilters,
-    [key]: options,
-  };
-
-  return {
-    ...state,
-    selectedFilters: newSelectedFilters,
-  };
-}
-
-function deleteAllSelectedFilters(state: State, _: PayloadAction<null>): State {
-  return {
-    ...state,
-    selectedFilters: EMPTY_FILTERS,
-    selectedFilterNames: EMPTY_FILTERS,
-  };
-}
-
-function selectQueryGroupFilters(
+function selectQueryGroup1Filters(
   state: State,
   action: PayloadAction<{
     key: keyof QueryGroup;
     options: { id: string; name: string }[];
-    index: number;
-  }>
-): State {
-  const { key, options, index } = action.payload;
-
-  const { queryGroups, queryGroupsWithNames } = state;
-
-  const newQueryGroups = queryGroups ? Array.from(queryGroups) : [];
-
-  const newQueryGroup = { ...newQueryGroups[index] };
-  newQueryGroup[key] = options.map((option) => option.id);
-  newQueryGroups[index] = newQueryGroup;
-
-  const newQueryGroupsWithNames = queryGroupsWithNames
-    ? Array.from(queryGroupsWithNames)
-    : [];
-  const newQueryGroupWithNames = { ...newQueryGroupsWithNames[index] };
-  newQueryGroupWithNames[key] = options.map((option) => option.name);
-  newQueryGroupsWithNames[index] = newQueryGroupWithNames;
-
-  return {
-    ...state,
-    queryGroups: newQueryGroups,
-    queryGroupsWithNames: newQueryGroupsWithNames,
-  };
-}
-
-function setSelectedFilterNames(
-  state: State,
-  action: PayloadAction<{
-    key: keyof State["selectedFilterNames"];
-    options: string[];
   }>
 ): State {
   const { key, options } = action.payload;
 
-  const { selectedFilterNames } = state;
+  const { queryGroups, queryGroupsWithNames } = state;
 
-  if (isEqual(selectedFilterNames[key], options)) return state;
+  const { queryGroup1 } = queryGroups;
 
-  const newSelectedFilterNames = {
-    ...state.selectedFilterNames,
-    [key]: options,
-  };
+  const newQueryGroup = { ...queryGroup1 };
+  newQueryGroup[key] = options.map((option) => option.id);
+
+  const { queryGroup1: queryGroupWithNames1 } = queryGroupsWithNames;
+
+  const newQueryGroupWithNames = { ...queryGroupWithNames1 };
+  newQueryGroupWithNames[key] = options.map((option) => option.name);
 
   return {
     ...state,
-    selectedFilterNames: newSelectedFilterNames,
+    queryGroups: { ...queryGroups, queryGroup1: newQueryGroup },
+    queryGroupsWithNames: {
+      ...queryGroupsWithNames,
+      queryGroup1: newQueryGroupWithNames,
+    },
+  };
+}
+
+function selectQueryGroup2Filters(
+  state: State,
+  action: PayloadAction<{
+    key: keyof QueryGroup;
+    options: { id: string; name: string }[];
+  }>
+): State {
+  const { key, options } = action.payload;
+
+  const { queryGroups, queryGroupsWithNames } = state;
+
+  const { queryGroup2 } = queryGroups;
+
+  const newQueryGroup = { ...queryGroup2 };
+  newQueryGroup[key] = options.map((option) => option.id);
+
+  const { queryGroup2: queryGroupWithNames2 } = queryGroupsWithNames;
+
+  const newQueryGroupWithNames = { ...queryGroupWithNames2 };
+  newQueryGroupWithNames[key] = options.map((option) => option.name);
+
+  return {
+    ...state,
+    queryGroups: { ...queryGroups, queryGroup2: newQueryGroup },
+    queryGroupsWithNames: {
+      ...queryGroupsWithNames,
+      queryGroup2: newQueryGroupWithNames,
+    },
+  };
+}
+
+function clearQueryGroup1Filters(state: State, _: PayloadAction<null>): State {
+  const { queryGroups, queryGroupsWithNames } = state;
+
+  return {
+    ...state,
+    queryGroups: { ...queryGroups, queryGroup1: EMPTY_FILTERS },
+    queryGroupsWithNames: {
+      ...queryGroupsWithNames,
+      queryGroup1: EMPTY_FILTERS,
+    },
+  };
+}
+
+function clearQueryGroup2Filters(state: State, _: PayloadAction<null>): State {
+  const { queryGroups, queryGroupsWithNames } = state;
+
+  return {
+    ...state,
+    queryGroups: { ...queryGroups, queryGroup2: EMPTY_FILTERS },
+    queryGroupsWithNames: {
+      ...queryGroupsWithNames,
+      queryGroup2: EMPTY_FILTERS,
+    },
+  };
+}
+
+function copyCellGroup1(state: State, _: PayloadAction<null>): State {
+  const { queryGroups, queryGroupsWithNames } = state;
+
+  return {
+    ...state,
+    queryGroups: { ...queryGroups, queryGroup2: queryGroups.queryGroup1 },
+    queryGroupsWithNames: {
+      ...queryGroupsWithNames,
+      queryGroup2: queryGroupsWithNames.queryGroup1,
+    },
   };
 }
 

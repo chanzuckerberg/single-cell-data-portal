@@ -9,6 +9,7 @@ import {
   getFontWeights,
   TagFilter,
   fontBodyXs,
+  fontCapsXxs,
 } from "czifui";
 
 export const StyledPopper = styled(ComplexFilterPopper)`
@@ -42,47 +43,45 @@ export const StyledComplexFilterInputDropdown = styled(
   }}
 `;
 
-interface WrapperProps extends CommonThemeProps {
-  active?: boolean;
-}
-
-export const Wrapper = styled.div<WrapperProps>`
+export const Wrapper = styled.div<CommonThemeProps>`
   display: flex;
   flex-direction: row;
-  width: 444px;
+  width: 100%;
   flex-wrap: wrap;
   column-gap: 16px;
   padding-top: 12px;
   padding-left: 12px;
   padding-right: 12px;
   margin-bottom: 8px;
+  background-color: #f8f8f8;
 
   // (atarashansky): remove the blue chips from the filters
   div > div > .MuiChip-root {
     display: none;
   }
 
-  ${(props: WrapperProps) => {
+  ${(props: CommonThemeProps) => {
     const colors = getColors(props);
     return `
-      border: 1px ${props.active ? "solid" : "dashed"} ${colors?.gray[300]};
+      border: 1px solid ${colors?.gray[200]};
       border-radius: 6px;
     `;
   }}
 `;
 
-export const QueryGroupTitle = styled.div`
-  ${fontBodyS}
-  margin-bottom: 8px;
+export const ClearButtonWrapper = styled.div`
+  ${fontCapsXxs}
+  font-weight: 600;
   width: 100%;
+  justify-content: flex-end;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  cursor: pointer;
 
   ${(props: CommonThemeProps) => {
-    const fontWeights = getFontWeights(props);
+    const colors = getColors(props);
     return `
-      font-weight: ${fontWeights?.semibold}
+      color: ${colors?.gray[400]}
     `;
   }}
 `;
@@ -101,8 +100,17 @@ export const EmptyRectangle = styled.div`
 `;
 
 export const StyledComplexFilter = styled(ComplexFilter)`
-  margin-bottom: 16px;
   min-width: 75px;
+
+  button {
+    padding: 0;
+    > span > span {
+      font-weight: 500 !important;
+      font-size: 14px !important;
+      line-height: 20px !important;
+      color: #767676 !important;
+    }
+  }
 ` as typeof ComplexFilter;
 
 export const StyledTagFilter = styled(TagFilter)`
@@ -114,8 +122,6 @@ export const StyledTagFilter = styled(TagFilter)`
 export const TagWrapper = styled.div`
   width: 100%;
   margin-bottom: 8px;
-`;
-
-export const IconButtonWrapper = styled.div`
-  cursor: pointer;
+  border-bottom: 2px solid #eaeaea;
+  min-height: 127px;
 `;

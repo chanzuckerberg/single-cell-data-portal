@@ -9,61 +9,50 @@ export function selectOrganism(
   };
 }
 
-export function selectFilters(
-  key: keyof State["selectedFilters"],
-  options: string[]
-): GetActionTypeOfReducer<typeof REDUCERS["selectFilters"]> {
-  return {
-    payload: { key, options },
-    type: "selectFilters",
-  };
-}
-
-export function selectQueryGroupFilters(
+export function selectQueryGroup1Filters(
   key: keyof QueryGroup,
-  options: { id: string; name: string }[],
-  index: number
-): GetActionTypeOfReducer<typeof REDUCERS["selectQueryGroupFilters"]> {
-  return {
-    payload: { key, options, index },
-    type: "selectQueryGroupFilters",
-  };
-}
-
-export function deleteQueryGroup(
-  index: number
-): GetActionTypeOfReducer<typeof REDUCERS["deleteQueryGroup"]> {
-  return {
-    payload: index,
-    type: "deleteQueryGroup",
-  };
-}
-
-export function deleteAllQueryGroups(): GetActionTypeOfReducer<
-  typeof REDUCERS["deleteAllQueryGroups"]
-> {
-  return {
-    payload: null,
-    type: "deleteAllQueryGroups",
-  };
-}
-
-export function deleteAllSelectedFilters(): GetActionTypeOfReducer<
-  typeof REDUCERS["deleteAllSelectedFilters"]
-> {
-  return {
-    payload: null,
-    type: "deleteAllSelectedFilters",
-  };
-}
-
-export function setSelectedFilterNames(
-  key: keyof State["selectedFilterNames"],
-  options: string[]
-): GetActionTypeOfReducer<typeof REDUCERS["setSelectedFilterNames"]> {
+  options: { id: string; name: string }[]
+): GetActionTypeOfReducer<typeof REDUCERS["selectQueryGroup1Filters"]> {
   return {
     payload: { key, options },
-    type: "setSelectedFilterNames",
+    type: "selectQueryGroup1Filters",
+  };
+}
+
+export function selectQueryGroup2Filters(
+  key: keyof QueryGroup,
+  options: { id: string; name: string }[]
+): GetActionTypeOfReducer<typeof REDUCERS["selectQueryGroup2Filters"]> {
+  return {
+    payload: { key, options },
+    type: "selectQueryGroup2Filters",
+  };
+}
+
+export function copyCellGroup1(): GetActionTypeOfReducer<
+  typeof REDUCERS["copyCellGroup1"]
+> {
+  return {
+    payload: null,
+    type: "copyCellGroup1",
+  };
+}
+
+export function clearQueryGroup1Filters(): GetActionTypeOfReducer<
+  typeof REDUCERS["clearQueryGroup1Filters"]
+> {
+  return {
+    payload: null,
+    type: "clearQueryGroup1Filters",
+  };
+}
+
+export function clearQueryGroup2Filters(): GetActionTypeOfReducer<
+  typeof REDUCERS["clearQueryGroup2Filters"]
+> {
+  return {
+    payload: null,
+    type: "clearQueryGroup2Filters",
   };
 }
 
@@ -73,15 +62,6 @@ export function setSnapshotId(
   return {
     payload: snapshotId,
     type: "setSnapshotId",
-  };
-}
-
-export function addQueryGroup(): GetActionTypeOfReducer<
-  typeof REDUCERS["addQueryGroup"]
-> {
-  return {
-    payload: null,
-    type: "addQueryGroup",
   };
 }
 

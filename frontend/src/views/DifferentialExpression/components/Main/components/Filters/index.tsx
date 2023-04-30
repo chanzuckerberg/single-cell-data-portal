@@ -3,7 +3,6 @@ import { createFilterOptions } from "@mui/material";
 import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
-  Icon,
   InputDropdownProps,
 } from "czifui";
 import isEqual from "lodash/isEqual";
@@ -14,14 +13,7 @@ import {
   RawDataset,
   useQueryGroupFilterDimensions,
 } from "src/common/queries/differentialExpression";
-import {
-  DispatchContext,
-  StateContext,
-} from "src/views/DifferentialExpression/common/store";
-import {
-  selectQueryGroupFilters,
-  deleteQueryGroup,
-} from "src/views/DifferentialExpression/common/store/actions";
+import { DispatchContext } from "src/views/DifferentialExpression/common/store";
 import {
   StyledComplexFilter,
   StyledComplexFilterInputDropdown,
@@ -29,15 +21,16 @@ import {
   StyledPopper,
   StyledTagFilter,
   TagWrapper,
-  QueryGroupTitle,
   EmptyRectangle,
-  IconButtonWrapper,
+  ClearButtonWrapper,
 } from "./style";
+import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import {
-  QueryGroup,
-  QueryGroupWithNames,
-} from "src/views/DifferentialExpression/common/store/reducer";
-
+  selectQueryGroup1Filters,
+  selectQueryGroup2Filters,
+  clearQueryGroup1Filters,
+  clearQueryGroup2Filters,
+} from "src/views/DifferentialExpression/common/store/actions";
 const filterOptions = createFilterOptions({
   stringify: (option: RawDataset) =>
     `${option.label} ${option.collection_label}`,
@@ -68,19 +61,22 @@ const mapTermToFilterOption = (term: {
 const EMPTY_OBJECT = {};
 
 interface Props {
-  queryGroupIndex: number;
   queryGroup: QueryGroup;
-  queryGroupWithNames: QueryGroupWithNames;
+  queryGroupWithNames: QueryGroup;
+  isQueryGroup1: boolean;
 }
 export default memo(function Filters({
-  queryGroupIndex,
   queryGroup,
   queryGroupWithNames,
+  isQueryGroup1,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
-  const state = useContext(StateContext);
-  const { selectedFilters } = state;
-
+  const selectQueryGroupFilters = isQueryGroup1
+    ? selectQueryGroup1Filters
+    : selectQueryGroup2Filters;
+  const clearQueryGroupFilters = isQueryGroup1
+    ? clearQueryGroup1Filters
+    : clearQueryGroup2Filters;
   const [availableFilters, setAvailableFilters] =
     useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
@@ -105,7 +101,7 @@ export default memo(function Filters({
       cell_type_terms: rawCellTypes,
     },
     isLoading: rawIsLoading,
-  } = useQueryGroupFilterDimensions(queryGroup, availableFilters);
+  } = useQueryGroupFilterDimensions(queryGroup);
 
   const InputDropdownProps = {
     sdsStyle: "minimal",
@@ -116,35 +112,17 @@ export default memo(function Filters({
   // will temporarily be empty, and thus resetting the selected filter values
   useEffect(() => {
     if (rawIsLoading) return;
-    const newDatasets = rawDatasets
-      .filter((dataset) => {
-        return selectedFilters.datasets.length
-          ? selectedFilters.datasets.includes(dataset.id)
-          : true;
-      })
-      .map((dataset) => ({
-        ...dataset,
-        details: dataset.collection_label,
-        name: dataset.label,
-      }));
+    const newDatasets = rawDatasets.map((dataset) => ({
+      ...dataset,
+      details: dataset.collection_label,
+      name: dataset.label,
+    }));
     newDatasets.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newSexes = rawSexes
-      .filter((sex) => {
-        return selectedFilters.sexes.length
-          ? selectedFilters.sexes.includes(sex.id)
-          : true;
-      })
-      .map(mapTermToFilterOption);
+    const newSexes = rawSexes.map(mapTermToFilterOption);
     newSexes.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newDiseases = rawDiseases
-      .filter((disease) => {
-        return selectedFilters.diseases.length
-          ? selectedFilters.diseases.includes(disease.id)
-          : true;
-      })
-      .map(mapTermToFilterOption);
+    const newDiseases = rawDiseases.map(mapTermToFilterOption);
     newDiseases.sort((a, b) =>
       a.name === "normal"
         ? -1
@@ -153,40 +131,18 @@ export default memo(function Filters({
         : a.name.localeCompare(b.name)
     );
 
-    const newTissues = rawTissues
-      .filter((tissue) => {
-        return selectedFilters.tissues.length
-          ? selectedFilters.tissues.includes(tissue.id)
-          : true;
-      })
-      .map(mapTermToFilterOption);
+    const newTissues = rawTissues.map(mapTermToFilterOption);
     newTissues.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newCellTypes = rawCellTypes
-      .filter((cellType) => {
-        return selectedFilters.cellTypes.length
-          ? selectedFilters.cellTypes.includes(cellType.id)
-          : true;
-      })
-      .map(mapTermToFilterOption);
+    const newCellTypes = rawCellTypes.map(mapTermToFilterOption);
     newCellTypes.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newEthnicities = rawEthnicities
-      .filter((ethnicity) => {
-        return selectedFilters.ethnicities.length
-          ? selectedFilters.ethnicities.includes(ethnicity.id)
-          : true;
-      })
-      .map(mapTermToFilterOption);
+    const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
     newEthnicities.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newDevelopmentStages = rawDevelopmentStages
-      .filter((stage) => {
-        return selectedFilters.developmentStages.length
-          ? selectedFilters.developmentStages.includes(stage.id)
-          : true;
-      })
-      .map(mapTermToFilterOption);
+    const newDevelopmentStages = rawDevelopmentStages.map(
+      mapTermToFilterOption
+    );
     newDevelopmentStages.sort((a, b) => a.name.localeCompare(b.name));
 
     const newAvailableFilters = {
@@ -283,9 +239,7 @@ export default memo(function Filters({
           const { id, name } = typedOption;
           return { id, name };
         });
-        dispatch(
-          selectQueryGroupFilters(key, optionsWithNames, queryGroupIndex)
-        );
+        dispatch(selectQueryGroupFilters(key, optionsWithNames));
       };
     },
     [dispatch]
@@ -330,13 +284,13 @@ export default memo(function Filters({
   const deleteHandlers: (() => void)[] = [];
   for (const key in queryGroupWithNames) {
     for (const [index, value] of queryGroupWithNames[
-      key as keyof QueryGroupWithNames
+      key as keyof QueryGroup
     ].entries()) {
       tagsToShow.push(value);
       deleteHandlers.push(() => {
         if (!dispatch) return;
         const newOptionsWithNames = queryGroupWithNames[
-          key as keyof QueryGroupWithNames
+          key as keyof QueryGroup
         ].filter((_, i) => i !== index);
         const newOptions = queryGroup[key as keyof QueryGroup].filter(
           (_, i) => i !== index
@@ -344,30 +298,22 @@ export default memo(function Filters({
         const options = newOptions.map((option, i) => {
           return { id: option, name: newOptionsWithNames[i] };
         });
-        dispatch(
-          selectQueryGroupFilters(
-            key as keyof QueryGroup,
-            options,
-            queryGroupIndex
-          )
-        );
+        dispatch(selectQueryGroupFilters(key as keyof QueryGroup, options));
       });
     }
   }
 
-  const handleDeleteQueryGroup = () => {
+  const handleClearQueryGroup = () => {
     if (!dispatch) return;
-    dispatch(deleteQueryGroup(queryGroupIndex));
+    dispatch(clearQueryGroupFilters());
   };
+
   const isActive = !!tagsToShow.length;
   return (
-    <Wrapper active={isActive}>
-      <QueryGroupTitle>
-        Query group
-        <IconButtonWrapper onClick={handleDeleteQueryGroup}>
-          <Icon sdsIcon="trashCan" sdsSize="s" sdsType="button" />
-        </IconButtonWrapper>
-      </QueryGroupTitle>
+    <Wrapper>
+      <ClearButtonWrapper onClick={handleClearQueryGroup}>
+        Clear
+      </ClearButtonWrapper>
       <TagWrapper>
         {isActive ? (
           tagsToShow.map((tag, index) => (
@@ -377,7 +323,6 @@ export default memo(function Filters({
           <EmptyRectangle />
         )}
       </TagWrapper>
-
       <StyledComplexFilter
         multiple
         data-testid="de-qg-cell-type-filter"
@@ -397,7 +342,7 @@ export default memo(function Filters({
         multiple
         data-testid="de-qg-tissue-filter"
         search
-        label={"Tissue\u002A"}
+        label={"Tissue"}
         options={tissue_terms as unknown as DefaultMenuSelectOption[]}
         onChange={handleTissuesChange}
         value={selectedTissues as unknown as DefaultMenuSelectOption[]}
@@ -464,7 +409,7 @@ export default memo(function Filters({
         multiple
         data-testid="de-qg-self-reported-ethnicity-filter"
         search
-        label="Self-Reported Ethnicity"
+        label="Ethnicity"
         options={
           self_reported_ethnicity_terms as unknown as DefaultMenuSelectOption[]
         }
