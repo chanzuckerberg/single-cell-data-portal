@@ -232,6 +232,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
     """
     Converts a CollectionVersion object to an object compliant to the API specifications
     """
+    revising_in = None
     if collection.is_unpublished_version():
         # In this case, the collection version is a revision of an already published collection.
         # We should expose version_id as the collection_id
@@ -250,7 +251,15 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
         # The last case is a published collection. We just return the canonical id and set revision_of to None
         revision_of = None
         collection_id = collection.collection_id.id
-        is_in_revision = False
+        is_published = collection.published_at is not None
+
+        _revising_in = None
+        if is_published and access_type == "WRITE":  # can ony be WRITE if authenticated
+            _revising_in = get_business_logic().get_unpublished_collection_version_from_canonical(
+                collection.collection_id
+            )
+        revising_in = _revising_in.version_id.id if _revising_in else None
+        is_in_revision = True if _revising_in else None
 
     is_tombstoned = collection.canonical_collection.tombstoned
 
@@ -278,6 +287,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "published_at": collection.canonical_collection.originally_published_at,
             "publisher_metadata": collection.publisher_metadata,  # TODO: convert
             "revision_of": revision_of,
+            "revising_in": revising_in,
             "updated_at": collection.published_at or collection.created_at,
             "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         }

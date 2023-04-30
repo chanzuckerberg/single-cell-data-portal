@@ -243,6 +243,38 @@ class TestCollection(BaseAPIPortalTest):
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
 
+    def test__get_collection_id_returns_revision_of_published_collection(self):
+        version = self.generate_published_collection()
+        revision = self.generate_revision(version.collection_id)
+        test_url = furl(path=f"/dp/v1/collections/{revision.version_id}")
+        headers = dict(host="localhost")
+        headers["Cookie"] = self.get_cxguser_token()
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(response.status_code, 200)
+
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PRIVATE")
+        self.assertEqual(body["access_type"], "WRITE")
+
+        # check revising_in is set if the collection has a revision and the
+        # user is logged in and has write access.
+        test_url = furl(path=f"/dp/v1/collections/{version.version_id}")
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+        self.assertEqual(body["access_type"], "WRITE")
+        self.assertEqual(body["revising_in"], revision.version_id.id)
+
+        # check revising_in is not set if the collection has a revision and the
+        # user is not logged in.
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(response.status_code, 200)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+        self.assertEqual(body["access_type"], "READ")
+        self.assertNotIn("revising_in", body)
+
     def test__get_collection_id_retrieves_published_version_by_collection_id(self):
         """
         GET /collections/:collection_id retrieves the published version given a canonical collection_id
