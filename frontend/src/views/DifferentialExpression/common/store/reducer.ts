@@ -12,7 +12,6 @@ export interface Filters {
   tissues: string[];
   cellTypes: string[];
 }
-type FilterNames = Filters;
 
 export interface QueryGroup extends Filters {
   cellTypes: string[];
