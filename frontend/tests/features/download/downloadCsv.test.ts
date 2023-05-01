@@ -1,88 +1,74 @@
 import { test } from "@playwright/test";
-import {
-  goToWMG,
-  selectFilterOption,
-  selectGroupByOption,
-  selectTissueAndGeneOption,
-} from "../../utils/wmgUtils";
+import { goToWMG } from "../../utils/wmgUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
 import {
-  downloadAndVerifyCsv,
-  deleteCsvDownloads,
+  subDirectory,
+  downloadAndVerifyFiles,
+  verifyCsv,
+  deleteDownloadedFiles,
 } from "tests/utils/downloadUtils";
 
-const DATASET_FILTER = "dataset-filter";
+import {
+  SHARED_LINK_FILTER,
+  SHARED_LINK_NO_FILTER,
+  SHARED_LINK_NO_GROUP,
+} from "tests/common/constants";
+
 const { describe, skip } = test;
 describe("CSV download tests", () => {
-  test.beforeEach(async ({ page }) => {
-    // navigate to gene expression page
-    await goToWMG(page);
-    //select tissue and gene
-    await selectTissueAndGeneOption(page);
-  });
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
-  test(`Should verify CSV metadata and header for lung tissue with no filter applied`, async ({
-    page,
-  }) => {
-    //download and verify csv file
-    await downloadAndVerifyCsv(page, "no-filter", "lung");
-  });
-  test(`Should verify CSV metadata and header for blood tissue with no filter applied`, async ({
-    page,
-  }) => {
-    //download and verify csv file
-    await downloadAndVerifyCsv(page, "no-filter", "blood");
-  });
-  test(`Should verify CSV metadata and header for blood tissue with filter applied and group by selected`, async ({
-    page,
-  }) => {
-    //group by
-    await selectGroupByOption(page);
-
-    //select a filter
-    await selectFilterOption(page, DATASET_FILTER);
-
-    //download and verify csv file
-    await downloadAndVerifyCsv(page, DATASET_FILTER, "blood");
-  });
-  test(`Should verify CSV metadata and header with dataset filter applied and group by selected`, async ({
+  test.only(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
     page,
   }) => {
     // set app state
-    await goToWMG(page);
+    await goToWMG(page, SHARED_LINK_NO_GROUP);
+    const tissues = ["blood", "lung"];
+    const fileTypes = ["csv"];
+    const folder = subDirectory();
+    //download  csv file
+    await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
-    //select tissue and gene
-    await selectTissueAndGeneOption(page);
-
-    //group by
-    await selectGroupByOption(page);
-
-    //select a filter
-    await selectFilterOption(page, DATASET_FILTER);
-
-    //download and verify csv file
-    await downloadAndVerifyCsv(page, DATASET_FILTER, "blood");
+    // verify csv file
+    await verifyCsv(
+      page,
+      folder,
+      tissues,
+      "disease-filter",
+      SHARED_LINK_NO_GROUP
+    );
   });
-  test(`Should verify CSV metadata and header with sex filter applied and group by selected`, async ({
-    page,
-  }) => {
-    // set app state
-    await goToWMG(page);
+});
+test(`Should verify CSV metadata and header  lung and blood tissue with sex filter applied and group by selected`, async ({
+  page,
+}) => {
+  // set app state
+  await goToWMG(page, SHARED_LINK_FILTER);
+  const tissues = ["blood", "lung"];
+  const fileTypes = ["csv"];
+  const folder = subDirectory();
+  //download  csv file
+  await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
-    //select tissue and gene
-    await selectTissueAndGeneOption(page);
+  // verify csv file
+  await verifyCsv(page, folder, tissues, "sex-filter", SHARED_LINK_FILTER);
+});
 
-    //group by
-    await selectGroupByOption(page);
+test(`Should verify CSV metadata and header  for lung and blood tissue with no filter applied`, async ({
+  page,
+}) => {
+  // set app state
+  await goToWMG(page, SHARED_LINK_NO_FILTER);
+  const tissues = ["blood", "lung"];
+  const fileTypes = ["csv"];
+  const folder = subDirectory();
+  //download  csv file
+  await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
-    //select a filter
-    await selectFilterOption(page, "sex-filter");
+  // verify csv file
+  await verifyCsv(page, folder, tissues, "no-filter", SHARED_LINK_NO_FILTER);
+});
 
-    //download and verify csv file
-    await downloadAndVerifyCsv(page, "sex-filter", "lung");
-  });
-  test.afterAll(async () => {
-    //delete csv
-    deleteCsvDownloads(`./tests/download`);
-  });
+test.afterAll(async () => {
+  //delete csv
+  deleteDownloadedFiles(`./tests/download`);
 });

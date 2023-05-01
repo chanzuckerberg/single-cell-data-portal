@@ -8,7 +8,8 @@ import { tryUntil } from "./helpers";
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
  */
-export async function goToWMG(page: Page) {
+export async function goToWMG(page: Page, url?: string) {
+  const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
   return await tryUntil(
     async () => {
       await Promise.all([
@@ -16,7 +17,7 @@ export async function goToWMG(page: Page) {
           (resp: { url: () => string | string[]; status: () => number }) =>
             resp.url().includes("/wmg/v1/filters") && resp.status() === 200
         ),
-        page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
+        page.goto(targetUrl),
       ]);
     },
     { page }
