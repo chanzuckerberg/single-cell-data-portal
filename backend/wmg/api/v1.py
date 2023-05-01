@@ -8,21 +8,20 @@ from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
+from backend.wmg.data.calculate_markers import _run_ttest
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import (
+    FmgQueryCriteria,
     MarkerGeneQueryCriteria,
     WmgFiltersQueryCriteria,
     WmgQuery,
     WmgQueryCriteria,
-    FmgQueryCriteria,
     retrieve_top_n_markers,
 )
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values, to_dict
-from backend.wmg.data.calculate_markers import _calculate_true_n_cells, _run_ttest
-from backend.wmg.data.rollup import _descendants, _prepare_rollup_array
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
@@ -131,25 +130,27 @@ def markers():
 
 def differentialExpression():
     request = connexion.request.json
-    contextFilters = request["contextFilters"]
-    queryGroupFilters = request["queryGroupFilters"]
+    queryGroup1Filters = request["queryGroup1Filters"]
+    queryGroup2Filters = request["queryGroup2Filters"]
 
     snapshot: WmgSnapshot = load_snapshot()
 
-    criteria = FmgQueryCriteria(**contextFilters)
+    criteria1 = FmgQueryCriteria(**queryGroup1Filters)
+    criteria2 = FmgQueryCriteria(**queryGroup2Filters)
+
     q = WmgQuery(snapshot)
-    expression_summary = q.expression_summary_fmg(criteria)
-    cell_counts = q.cell_counts(criteria)
 
-    all_results = []
-    for filters in queryGroupFilters:
-        all_results.append(
-            run_differential_expression_simple(
-                filters, expression_summary, cell_counts, pval_thr=1e-5
-            )
-        )
+    expression_summary1 = q.expression_summary_fmg(criteria1)
+    cell_counts1 = q.cell_counts(criteria1)
 
-    return jsonify(dict(snapshot_id=snapshot.snapshot_identifier, differentialExpressionResults=all_results))
+    expression_summary2 = q.expression_summary_fmg(criteria2)
+    cell_counts2 = q.cell_counts(criteria2)
+
+    results = run_differential_expression_simple(
+        expression_summary1, cell_counts1, expression_summary2, cell_counts2, pval_thr=1e-5
+    )
+
+    return jsonify(dict(snapshot_id=snapshot.snapshot_identifier, differentialExpressionResults=results))
 
 
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
@@ -472,119 +473,37 @@ def build_ordered_cell_types_by_tissue(
     return structured_result
 
 
-def filter_pandas_dataframe(dataframe, criteria):
-    for key in criteria:
-        attrs = [criteria[key]] if not isinstance(criteria[key], list) else criteria[key]
-        if len(attrs) > 0:
-            depluralized_key = key[:-1] if key[-1] == "s" else key
-            if depluralized_key in dataframe.columns:
-                dataframe = dataframe[dataframe[depluralized_key].isin(attrs)]
-    return dataframe
-
-
-def rollup_target_population(df, gb_terms, filters):
-    gb_terms = gb_terms.copy()
-
-    df_agg = df.groupby(gb_terms).sum(numeric_only=True)
-
-    descendants = [_descendants(cell_type) for cell_type in filters["cell_type_ontology_term_ids"]]
-    descendants = list(set(sum(descendants, [])))
-
-    for name in df_agg.index.names:
-        df_agg[name] = df_agg.index.get_level_values(name)
-
-    array_to_sum, dim_indices, numeric_df, cell_types = _prepare_rollup_array(df_agg)
-    df_agg.drop(columns=df_agg.index.names, inplace=True)
-
-    summed = array_to_sum[np.in1d(cell_types, descendants)].sum(0)
-
-    summed = summed[tuple(dim_indices[1:])]
-
-    dtypes = numeric_df.dtypes
-    for col, array in zip(numeric_df.columns, summed.T):
-        df_agg[col] = array.astype(dtypes[col])
-
-    gb_terms.remove("cell_type_ontology_term_id")
-
-    df_agg_target = df_agg.groupby(gb_terms).first(numeric_only=True)
-    return (
-        filter_pandas_dataframe(df_agg_target.reset_index(), filters)
-        .groupby("gene_ontology_term_id")
-        .sum(numeric_only=True)
-    )
-
-
-def run_differential_expression(
-    filters, expression_summary, cell_counts, dataset_to_gene_ids, do_rollup=False, pval_thr=1e-5
+def run_differential_expression_simple(
+    expression_summary1, cell_counts1, expression_summary2, cell_counts2, pval_thr=1e-5
 ):
-    genes = list(expression_summary["gene_ontology_term_id"].unique())
-    gb_terms = list(filters.keys())
-
-    gb_terms_cc = gb_terms.copy()
-    keep_dataset_ids = "dataset_ids" in gb_terms
-    if not keep_dataset_ids:
-        gb_terms_cc.insert(0, "dataset_ids")
-
-    gb_terms = [k[:-1] if k[-1] == "s" else k for k in gb_terms]
-    gb_terms_cc = [k[:-1] if k[-1] == "s" else k for k in gb_terms_cc]
-
-    n_cells = cell_counts.groupby(gb_terms_cc).sum(numeric_only=True)["n_total_cells"]
-
-    gb_terms_es = ["gene_ontology_term_id"] + gb_terms
-
-    es_agg_total = expression_summary.groupby("gene_ontology_term_id").sum(numeric_only=True)
-
-    n_cells_array, index = _calculate_true_n_cells(
-        n_cells, genes, dataset_to_gene_ids, keep_dataset_ids, do_rollup=False
+    genes = list(
+        set(
+            list(expression_summary1["gene_ontology_term_id"].unique())
+            + list(expression_summary2["gene_ontology_term_id"].unique())
+        )
     )
-    x, y = n_cells_array.nonzero()
-    n_data = n_cells_array[x, y]
 
-    n_cells_df = pd.DataFrame()
-    n_cells_df["n_cells"] = n_data
-    n_cells_df["gene_ontology_term_id"] = np.array(genes)[y]
-    for dim in index.names:
-        n_cells_df[dim] = index.get_level_values(dim)[x]
+    n_cells1 = cell_counts1["n_total_cells"].sum()
+    n_cells2 = cell_counts2["n_total_cells"].sum()
+
+    es_agg1 = expression_summary1.groupby("gene_ontology_term_id").sum(numeric_only=True)
+    es_agg2 = expression_summary2.groupby("gene_ontology_term_id").sum(numeric_only=True)
 
     genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
 
-    total_n_cells = np.zeros(len(genes))
-    total_sums = np.zeros(len(genes))
-    total_sqsums = np.zeros(len(genes))
+    sums1 = np.zeros(len(genes))
+    sqsums1 = np.zeros(len(genes))
 
-    n_cells_agg = n_cells_df.groupby("gene_ontology_term_id").sum(numeric_only=True)
+    sums2 = np.zeros(len(genes))
+    sqsums2 = np.zeros(len(genes))
 
-    total_n_cells[genes_indexer[n_cells_agg.index]] = n_cells_agg["n_cells"].values
-    total_sums[genes_indexer[es_agg_total.index]] = es_agg_total["sum"].values
-    total_sqsums[genes_indexer[es_agg_total.index]] = es_agg_total["sqsum"].values
+    sums1[genes_indexer[es_agg1.index]] = es_agg1["sum"].values
+    sqsums1[genes_indexer[es_agg1.index]] = es_agg1["sqsum"].values
 
-    if "cell_type_ontology_term_ids" in filters and do_rollup:
-        es_agg_target = rollup_target_population(expression_summary, gb_terms_es, filters)
-        cc_agg_target = rollup_target_population(n_cells_df, gb_terms_es, filters)
-    else:
-        es_agg_target = (
-            filter_pandas_dataframe(expression_summary, filters).groupby("gene_ontology_term_id").sum(numeric_only=True)
-        )
-        cc_agg_target = (
-            filter_pandas_dataframe(n_cells_df, filters).groupby("gene_ontology_term_id").sum(numeric_only=True)
-        )
+    sums2[genes_indexer[es_agg2.index]] = es_agg2["sum"].values
+    sqsums2[genes_indexer[es_agg2.index]] = es_agg2["sqsum"].values
 
-    target_sums = np.zeros(len(genes))
-    target_sqsums = np.zeros(len(genes))
-    rest_sums = np.zeros(len(genes))
-    rest_sqsums = np.zeros(len(genes))
-    target_n_cells = np.zeros(len(genes))
-    rest_n_cells = np.zeros(len(genes))
-
-    target_sums[genes_indexer[es_agg_target.index]] = es_agg_target["sum"].values
-    target_sqsums[genes_indexer[es_agg_target.index]] = es_agg_target["sqsum"].values
-    rest_sums = total_sums - target_sums
-    rest_sqsums = total_sqsums - target_sqsums
-
-    target_n_cells[genes_indexer[cc_agg_target.index]] = cc_agg_target["n_cells"].values
-    rest_n_cells = total_n_cells - target_n_cells
-
-    pvals, effects = _run_ttest(target_sums, target_sqsums, target_n_cells, rest_sums, rest_sqsums, rest_n_cells)
+    pvals, effects = _run_ttest(sums1, sqsums1, n_cells1, sums2, sqsums2, n_cells2)
     de_genes = np.array(genes)[np.argsort(-effects)]
     p = pvals[np.argsort(-effects)]
     effects = effects[np.argsort(-effects)]
@@ -594,62 +513,8 @@ def run_differential_expression(
         pi = p[i]
         ei = effects[i]
         if ei is not np.nan and pi is not np.nan and pi < pval_thr:
-            statistics.append({"gene_ontology_term_id": de_genes[i], f"p_value": pi, f"effect_size": ei})
+            statistics.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
             if len(statistics) >= 100:
                 break
 
-    return statistics
-
-def run_differential_expression_simple(filters, expression_summary, cell_counts, pval_thr=1e-5):
-    genes = list(expression_summary["gene_ontology_term_id"].unique())
-    gb_terms = list(filters.keys())
-    gb_terms = [k[:-1] if k[-1] == "s" else k for k in gb_terms]
-
-
-    n_cells = cell_counts.groupby(gb_terms).sum(numeric_only=True)["n_total_cells"]
-
-    total_n_cells = n_cells.sum()
-    target_n_cells = filter_pandas_dataframe(cell_counts,filters).groupby(gb_terms).sum(numeric_only=True)['n_total_cells'].sum()
-    rest_n_cells = total_n_cells - target_n_cells
-
-    es_agg_total = expression_summary.groupby("gene_ontology_term_id").sum(numeric_only=True)
-    genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
-
-    total_sums = np.zeros(len(genes))
-    total_sqsums = np.zeros(len(genes))
-
-    total_sums[genes_indexer[es_agg_total.index]] = es_agg_total["sum"].values
-    total_sqsums[genes_indexer[es_agg_total.index]] = es_agg_total["sqsum"].values
-
-
-    es_agg_target = (
-        filter_pandas_dataframe(expression_summary, filters).groupby("gene_ontology_term_id").sum(numeric_only=True)
-    )
-
-
-    target_sums = np.zeros(len(genes))
-    target_sqsums = np.zeros(len(genes))
-    rest_sums = np.zeros(len(genes))
-    rest_sqsums = np.zeros(len(genes))
-
-    target_sums[genes_indexer[es_agg_target.index]] = es_agg_target["sum"].values
-    target_sqsums[genes_indexer[es_agg_target.index]] = es_agg_target["sqsum"].values
-    rest_sums = total_sums - target_sums
-    rest_sqsums = total_sqsums - target_sqsums
-
-
-    pvals, effects = _run_ttest(target_sums, target_sqsums, target_n_cells, rest_sums, rest_sqsums, rest_n_cells)
-    de_genes = np.array(genes)[np.argsort(-effects)]
-    p = pvals[np.argsort(-effects)]
-    effects = effects[np.argsort(-effects)]
-    statistics = []
-
-    for i in range(len(p)):
-        pi = p[i]
-        ei = effects[i]
-        if ei is not np.nan and pi is not np.nan and pi < pval_thr:
-            statistics.append({"gene_ontology_term_id": de_genes[i], f"p_value": pi, f"effect_size": ei})
-            if len(statistics) >= 100:
-                break
-                
     return statistics
