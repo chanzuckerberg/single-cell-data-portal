@@ -9,8 +9,7 @@ import {
 import { getById } from "tests/utils/selectors";
 import { tryUntil } from "tests/utils/helpers";
 
-const ALERT =
-  "We would appreciate your feedback, please fill out a quick survey";
+const ALERT = "Send us feedback with this quick survey";
 
 const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
 const EXPLORE_GENE_EXPRESSION = "explore-gene-expression";
@@ -34,7 +33,9 @@ test.describe("Tests for Gene Expression page", () => {
     // +Gene button
     await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // survey alert
-    await expect(page.getByTestId("survey-alert-id")).toContainText(ALERT);
+    await expect(
+      page.getByTestId("newsletter-modal-banner-wrapper")
+    ).toContainText(ALERT);
     await expect(page.getByText("quick survey")).toHaveAttribute(
       "href",
       SURVEY_LINK

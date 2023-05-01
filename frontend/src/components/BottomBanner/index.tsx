@@ -263,6 +263,7 @@ export default function BottomBanner({
         asFooter={asFooter}
         id={BOTTOM_BANNER_ID}
         className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+        data-testid="newsletter-modal-banner-wrapper"
       >
         <StyledBanner dismissible={!asFooter} sdsType={"primary"}>
           {/* Hidden form for submitting the data to Hubspot */}
