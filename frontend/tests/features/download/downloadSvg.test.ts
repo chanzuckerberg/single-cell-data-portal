@@ -27,8 +27,8 @@ describe("SVG download tests", () => {
     verifySvg(tissues, folder, fixturePath);
   });
 
-  // test.afterAll(async () => {
-  //   //delete csv
-  //   deleteCsvDownloads(`./tests/downloads`);
-  // });
+  test.afterAll(async () => {
+    //delete csv
+    deleteCsvDownloads(`./tests/downloads`);
+  });
 });

@@ -75,8 +75,6 @@ export async function downloadAndVerifyFiles(
   // verify files are available
   fileTypes.forEach((extension: string) => {
     tissues.forEach((tissue) => {
-      console.log(tissue);
-      console.log(extension);
       expect(
         fs.existsSync(`${downLoadPath}/${subDirectory}/${tissue}.${extension}`)
       ).toBeTruthy();
