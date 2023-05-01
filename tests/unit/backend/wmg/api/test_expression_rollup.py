@@ -5,7 +5,7 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 
 from backend.wmg.api.v1 import add_missing_combinations_to_dot_plot_matrix, rollup
-from backend.wmg.data.rollup import rollup_across_cell_type_descendants
+from backend.wmg.data.rollup import are_cell_types_colinear, rollup_across_cell_type_descendants
 from backend.wmg.data.schemas.cube_schema import expression_summary_logical_attrs
 
 
@@ -44,6 +44,15 @@ class RollupExpressionsAcrossCellTypesTest(unittest.TestCase):
 
         df_rollup = rollup_across_cell_type_descendants(df)
         assert np.all(df == df_rollup)
+
+    def test__cell_types_in_same_lineage_are_colinear(self):
+        # first and second pairs of cell types are in the same lineage
+        # third pair of cell types are not in the same lineage
+        cell_type_pairs = [["CL:0000786", "CL:0000986"], ["CL:0000980", "CL:0001202"], ["CL:0000786", "CL:0000980"]]
+        expected_colinearity = [True, True, False]
+        for cell_types, expected in zip(cell_type_pairs, expected_colinearity):
+            a, b = cell_types
+            assert are_cell_types_colinear(a, b) == expected
 
     def test__missing_combinations_added_to_expression_dataframe_before_rollup(self):
         """

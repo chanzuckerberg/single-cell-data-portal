@@ -20,6 +20,16 @@ expect.extend(matchers);
  */
 const CZI_CHECKER = " czi-checker";
 
+/**
+ * Set this environment variable to enable retry
+ */
+const SHOULD_RETRY = process.env.RETRY !== "false";
+
+const CLIPBOARD_PERMISSIONS = ["clipboard-read", "clipboard-write"];
+if (!SHOULD_RETRY) {
+  console.log('Skipping retry because "RETRY" is set to false');
+}
+
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
 const PLAYWRIGHT_REPORTER = process.env.CI
   ? ([["github"], ["line"], ["allure-playwright"]] as ReporterDescription[])
@@ -45,7 +55,7 @@ const config: PlaywrightTestConfig = {
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 5000,
+    timeout: 10000,
   },
 
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -66,6 +76,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
+        permissions: CLIPBOARD_PERMISSIONS,
       },
     },
     {
@@ -80,6 +91,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
+        permissions: CLIPBOARD_PERMISSIONS,
       },
     },
   ],
@@ -87,15 +99,18 @@ const config: PlaywrightTestConfig = {
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: PLAYWRIGHT_REPORTER,
 
-  retries: 2,
+  //retries: SHOULD_RETRY ? 2 : 0,
 
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: "./__snapshots__",
 
   testDir: "tests",
 
-  /* Maximum time one test can run for. */
-  timeout: 3 * 60 * 1000,
+  /**
+   * Maximum time one test can run for.
+   * (thuang): 5 mins because FF and Edge need extra time to tear down context
+   */
+  timeout: 5 * 60 * 1000,
 
   use: {
     ...COMMON_PLAYWRIGHT_CONTEXT,

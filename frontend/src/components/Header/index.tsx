@@ -17,13 +17,13 @@ import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import {
   Left,
-  LinkWrapper,
   MainWrapper,
-  Nav,
   Right,
   StyledInputDropdown,
   Wrapper,
 } from "./style";
+import Nav from "src/components/Header/components/Nav";
+import { LinkWrapper } from "src/components/Header/components/Nav/style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -56,56 +56,7 @@ const Header: FC = () => {
       <MainWrapper>
         <Left>
           <HomepageLink />
-          <Nav>
-            <LinkWrapper>
-              <Link href={ROUTES.COLLECTIONS} passHref>
-                <AnchorButton
-                  onClick={() => {
-                    track(EVENTS.COLLECTIONS_CLICK_NAV);
-                  }}
-                  active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
-                  href="passHref"
-                  minimal
-                  text="Collections"
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <Link href={ROUTES.DATASETS} passHref>
-                <AnchorButton
-                  onClick={() => {
-                    track(EVENTS.DATASETS_CLICK_NAV);
-                  }}
-                  active={isRouteActive(pathname, ROUTES.DATASETS)}
-                  href="passHref"
-                  minimal
-                  text="Datasets"
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
-                  href="passHref"
-                  minimal
-                  text="Gene Expression"
-                  onClick={handleWMGClick}
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <Link href={ROUTES.DE} passHref>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.DE)}
-                  href="passHref"
-                  minimal
-                  text="Differential Expression"
-                  onClick={handleDEClick}
-                />
-              </Link>
-            </LinkWrapper>
-          </Nav>
+          <Nav pathname={pathname} />
         </Left>
         <Right>
           {isMyCollectionsShown && (
@@ -190,14 +141,6 @@ const Header: FC = () => {
   function handleHelpClose() {
     setDropdownOpen(false);
   }
-
-  function handleWMGClick() {
-    track(EVENTS.WMG_CLICK_NAV);
-  }
-
-  function handleDEClick() {
-    track(EVENTS.DE_CLICK_NAV);
-  }
 };
 
 /**
@@ -206,7 +149,7 @@ const Header: FC = () => {
  * @param route
  * @returns true if the current path is the route
  */
-function isRouteActive(path: string, route: ROUTES): boolean {
+export function isRouteActive(path: string, route: ROUTES): boolean {
   return path === route;
 }
 

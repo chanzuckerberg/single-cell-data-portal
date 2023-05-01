@@ -52,9 +52,9 @@ const LandingPage = (): JSX.Element => {
   });
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
-  const [cellsHeroNum] = useState("39.4M");
-  const [datasetsHeroNum] = useState("758");
-  const [cellTypesHeroNum] = useState("652");
+  const [cellsHeroNum] = useState("40.8M");
+  const [datasetsHeroNum] = useState("778");
+  const [cellTypesHeroNum] = useState("664");
 
   const publications = [
     {
@@ -235,7 +235,10 @@ const LandingPage = (): JSX.Element => {
           }}
         >
           <div className={styles.heroImgContainer}>
-            <div className={styles.laptopImg}>
+            <div
+              className={styles.laptopImg}
+              data-testid="laptop-with-cell-data-on-screen"
+            >
               <Image
                 src={LaptopImg}
                 alt="laptop with cell data on screen"

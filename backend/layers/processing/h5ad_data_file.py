@@ -21,6 +21,7 @@ from backend.common.utils.cxg_generation_utils import (
 )
 from backend.common.utils.matrix_utils import is_matrix_sparse
 from backend.common.utils.semvar_utils import validate_version_str
+from backend.common.utils.tiledb import consolidation_buffer_size
 
 
 class H5ADDataFile:
@@ -60,7 +61,8 @@ class H5ADDataFile:
         logging.info("Beginning writing to CXG.")
         ctx = tiledb.Ctx(
             {
-                "sm.consolidation.buffer_size": 1 * 1024 * 1024 * 1024,
+                "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
+                "py.deduplicate": True,  # May reduce memory requirements at cost of performance
             }
         )
 

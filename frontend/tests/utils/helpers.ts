@@ -5,7 +5,6 @@ import {
 import { ElementHandle, expect, Page } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
-import { getText } from "./selectors";
 
 /**
  * (thuang): From oauth/users.json
@@ -67,7 +66,7 @@ export async function login(page: Page): Promise<void> {
 
   expect(username).toBeDefined();
 
-  await page.click(getText("Log In"));
+  await page.getByText("Log In").click();
 
   await page.fill('[name="Username"], [name="email"]', username);
   await page.fill('[name="Password"], [name="password"]', password);
@@ -90,6 +89,11 @@ export async function login(page: Page): Promise<void> {
   await page.context().storageState({ path: LOGIN_STATE_FILENAME });
 }
 
+export async function scrollToPageBottom(page: Page): Promise<void> {
+  return page.evaluate(() =>
+    window.scrollTo(0, document.documentElement.scrollHeight)
+  );
+}
 interface TryUntilConfigs {
   maxRetry?: number;
   page: Page;
@@ -178,4 +182,16 @@ export async function waitForElementToBeRemoved(page: Page, selector: string) {
     },
     { page }
   );
+}
+
+export async function selectNthOption(page: Page, number: number) {
+  // (thuang): Since the first option is now active, we need to offset by 1
+  const step = number - 1;
+
+  for (let i = 0; i < step; i++) {
+    await page.keyboard.press("ArrowDown");
+  }
+
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Escape");
 }
