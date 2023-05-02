@@ -287,7 +287,11 @@ export async function downloadGeneFile(
 
   // download can be zipped or not depending on number of tissues
   let fileName = `${dirPath}/download.zip`;
-  if (fileTypes.length === 1 && tissues.length === 1) {
+  if (
+    fileTypes.length === 1 &&
+    tissues.length === 1 &&
+    fileTypes[0] !== "csv"
+  ) {
     fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
   }
 

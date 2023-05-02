@@ -17,7 +17,7 @@ import {
 const { describe, skip } = test;
 describe("CSV download tests", () => {
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
-  test.only(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
+  test(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
     page,
   }) => {
     // set app state
@@ -53,7 +53,7 @@ test(`Should verify CSV metadata and header  lung and blood tissue with sex filt
   await verifyCsv(page, folder, tissues, "sex-filter", SHARED_LINK_FILTER);
 });
 
-test(`Should verify CSV metadata and header  for lung and blood tissue with no filter applied`, async ({
+test(`Should verify CSV metadata and header for lung and blood tissue with no filter applied`, async ({
   page,
 }) => {
   // set app state
