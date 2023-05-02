@@ -130,25 +130,18 @@ def markers():
 
 def differentialExpression():
     request = connexion.request.json
+
     queryGroup1Filters = request["queryGroup1Filters"]
     queryGroup2Filters = request["queryGroup2Filters"]
-
-    snapshot: WmgSnapshot = load_snapshot()
 
     criteria1 = FmgQueryCriteria(**queryGroup1Filters)
     criteria2 = FmgQueryCriteria(**queryGroup2Filters)
 
+    snapshot: WmgSnapshot = load_snapshot()
+
     q = WmgQuery(snapshot)
 
-    expression_summary1 = q.expression_summary_fmg(criteria1)
-    cell_counts1 = q.cell_counts(criteria1)
-
-    expression_summary2 = q.expression_summary_fmg(criteria2)
-    cell_counts2 = q.cell_counts(criteria2)
-
-    results1, results2 = run_differential_expression_simple(
-        expression_summary1, cell_counts1, expression_summary2, cell_counts2, pval_thr=1e-5
-    )
+    results1, results2 = run_differential_expression(q, criteria1, criteria2)
 
     return jsonify(
         dict(
@@ -479,21 +472,57 @@ def build_ordered_cell_types_by_tissue(
     return structured_result
 
 
-def run_differential_expression_simple(
-    expression_summary1, cell_counts1, expression_summary2, cell_counts2, pval_thr=1e-5
-):
-    genes = list(
-        set(
-            list(expression_summary1["gene_ontology_term_id"].unique())
-            + list(expression_summary2["gene_ontology_term_id"].unique())
-        )
-    )
+def should_use_default_cube(criteria):
+    default = True
+    for dim in criteria.dict():
+        if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
+            default = False
+            break
+    return default
+
+
+def de_get_expression_summary(q, cell_counts, criteria, chunk_size=200, threshold=1000):
+    all_genes = [
+        list(i.keys())[0]
+        for i in q._snapshot.primary_filter_dimensions["gene_terms"][criteria.organism_ontology_term_id]
+    ]
+    if cell_counts.shape[0] > threshold:
+        if should_use_default_cube(criteria):
+            es_agg = q.expression_summary_default(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
+        else:
+
+            def _thread(i):
+                criteria.gene_ontology_term_ids = all_genes[i * chunk_size : (i + 1) * chunk_size]
+                if len(criteria.gene_ontology_term_ids) > 0:
+                    return q.expression_summary(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
+
+            num_chunks = len(all_genes) // chunk_size + 1
+            results = []
+            for i in range(num_chunks):
+                results.append(_thread(i))
+
+            es_agg = None
+            for res in results:
+                if es_agg is None:
+                    es_agg = res
+                elif res is not None:
+                    es_agg = es_agg.add(res, fill_value=0)
+    else:
+        es_agg = q.expression_summary(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
+    return es_agg
+
+
+def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, chunk_size=200, threshold=1000):
+    cell_counts1 = q.cell_counts(criteria1)
+    cell_counts2 = q.cell_counts(criteria2)
 
     n_cells1 = cell_counts1["n_total_cells"].sum()
     n_cells2 = cell_counts2["n_total_cells"].sum()
 
-    es_agg1 = expression_summary1.groupby("gene_ontology_term_id").sum(numeric_only=True)
-    es_agg2 = expression_summary2.groupby("gene_ontology_term_id").sum(numeric_only=True)
+    es_agg1 = de_get_expression_summary(q, cell_counts1, criteria1, chunk_size=chunk_size, threshold=threshold)
+    es_agg2 = de_get_expression_summary(q, cell_counts2, criteria2, chunk_size=chunk_size, threshold=threshold)
+
+    genes = list(set(list(es_agg1.index) + list(es_agg2.index)))
 
     genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
 
