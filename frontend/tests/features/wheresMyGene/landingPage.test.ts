@@ -7,8 +7,9 @@ import {
   ADD_TISSUE_LBL,
 } from "tests/utils/constants";
 import { getById } from "tests/utils/selectors";
-import { tryUntil } from "tests/utils/helpers";
+import { isDevStagingProd, tryUntil } from "tests/utils/helpers";
 
+const { describe, skip } = test;
 const ALERT = "Send us feedback with this quick survey";
 
 const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
@@ -25,7 +26,9 @@ function goToWMG(page: Page) {
     page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
   ]);
 }
-test.describe("Tests for Gene Expression page", () => {
+describe("Tests for Gene Expression page", () => {
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
     // +Tissue button
