@@ -146,11 +146,17 @@ def differentialExpression():
     expression_summary2 = q.expression_summary_fmg(criteria2)
     cell_counts2 = q.cell_counts(criteria2)
 
-    results = run_differential_expression_simple(
+    results1, results2 = run_differential_expression_simple(
         expression_summary1, cell_counts1, expression_summary2, cell_counts2, pval_thr=1e-5
     )
 
-    return jsonify(dict(snapshot_id=snapshot.snapshot_identifier, differentialExpressionResults=results))
+    return jsonify(
+        dict(
+            snapshot_id=snapshot.snapshot_identifier,
+            differentialExpressionResults1=results1,
+            differentialExpressionResults2=results2,
+        )
+    )
 
 
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
@@ -507,14 +513,23 @@ def run_differential_expression_simple(
     de_genes = np.array(genes)[np.argsort(-effects)]
     p = pvals[np.argsort(-effects)]
     effects = effects[np.argsort(-effects)]
-    statistics = []
 
+    statistics1 = []
     for i in range(len(p)):
         pi = p[i]
         ei = effects[i]
         if ei is not np.nan and pi is not np.nan and pi < pval_thr:
-            statistics.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
-            if len(statistics) >= 100:
+            statistics1.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
+            if len(statistics1) >= 250:
                 break
 
-    return statistics
+    statistics2 = []
+    for i in range(len(p)):
+        pi = p[-(i + 1)]
+        ei = effects[-(i + 1)]
+        if ei is not np.nan and pi is not np.nan and pi < pval_thr:
+            statistics2.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": -ei})
+            if len(statistics2) >= 250:
+                break
+
+    return statistics1, statistics2

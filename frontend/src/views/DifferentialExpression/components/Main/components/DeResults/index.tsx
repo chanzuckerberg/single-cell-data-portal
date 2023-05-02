@@ -28,7 +28,7 @@ export default function DeResults(): JSX.Element {
   const { data: rawDifferentialExpressionResults, isLoading } =
     useDifferentialExpression();
   const [differentialExpressionResults, setDifferentialExpressionResults] =
-    useState<DifferentialExpressionRow[][]>([]);
+    useState<DifferentialExpressionRow[]>([]);
   const { data, isLoading: isLoadingPrimaryFilters } =
     usePrimaryFilterDimensions();
   const { genes: rawGenes } = data || {};
@@ -50,13 +50,11 @@ export default function DeResults(): JSX.Element {
     // map ids to name
     const formattedResults = rawDifferentialExpressionResults.map(
       (diffExpResult) => {
-        return diffExpResult.map((result) => {
-          return {
-            name: genesById.get(result.gene_ontology_term_id)?.name ?? "", // nullish coalescing operator for type safety
-            pValue: result.p_value,
-            effectSize: result.effect_size,
-          };
-        });
+        return {
+          name: genesById.get(diffExpResult.gene_ontology_term_id)?.name ?? "", // nullish coalescing operator for type safety
+          pValue: diffExpResult.p_value,
+          effectSize: diffExpResult.effect_size,
+        };
       }
     );
     setDifferentialExpressionResults(formattedResults);
@@ -67,16 +65,10 @@ export default function DeResults(): JSX.Element {
     rawGenes,
   ]);
 
-  const handleCopyGenes = useCallback(
-    function handleCopyGenes_(index: number): () => void {
-      return () => {
-        const results = differentialExpressionResults[index];
-        const genes = results.map((result) => result.name);
-        navigator.clipboard.writeText(genes.join(", "));
-      };
-    },
-    [differentialExpressionResults]
-  );
+  const handleCopyGenes = () => {
+    const genes = differentialExpressionResults.map((result) => result.name);
+    navigator.clipboard.writeText(genes.join(", "));
+  };
 
   const namesToShow: string[][] = [];
   const { queryGroup1, queryGroup2 } = queryGroupsWithNames;
@@ -95,7 +87,7 @@ export default function DeResults(): JSX.Element {
   return (
     <div>
       {isLoading && <div>Loading...</div>}
-      {differentialExpressionResults.map((results, index) => {
+      {[differentialExpressionResults].map((results, index) => {
         return (
           <div>
             <QueryGroupTitle>Query Group {index + 1}</QueryGroupTitle>
@@ -109,7 +101,7 @@ export default function DeResults(): JSX.Element {
                     <tr>
                       <td>
                         <CopyGenesButton
-                          onClick={handleCopyGenes(index)}
+                          onClick={handleCopyGenes}
                           sdsType="primary"
                           sdsStyle="minimal"
                           isAllCaps={false}

@@ -804,13 +804,38 @@ paths:
               schema:
                 type: object
                 required:
-                  - differentialExpressionResults
+                  - differentialExpressionResults1
+                  - differentialExpressionResults2
                 properties:
                   snapshot_id:
                     $ref: "#/components/schemas/wmg_snapshot_id"
-                  differentialExpressionResults:
+                  differentialExpressionResults1:
                     description: ->
-                      Differential expression results
+                      Differential expression results for cell group 1
+                    type: array
+                    items:
+                      description: ->
+                        Object with gene id, p-value, and effect size.
+                      type: object
+                      properties:
+                        gene_ontology_term_id:
+                          description: gene ontology term id
+                          type: string
+                        p_value:
+                          description: adjusted p-value
+                          type: number
+                          format: float
+                          maxLength: 4
+                          minimum: 0.0
+                          maximum: 1.0
+                        effect_size:
+                          description: effect size
+                          type: number
+                          format: float
+                          maxLength: 4
+                  differentialExpressionResults2:
+                    description: ->
+                      Differential expression results for cell group 2
                     type: array
                     items:
                       description: ->

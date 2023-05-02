@@ -200,7 +200,7 @@ export interface DifferentialExpressionResult {
   effect_size: number;
 }
 interface DifferentialExpressionQueryResponse {
-  differentialExpressionResults: DifferentialExpressionResult[][];
+  differentialExpressionResults: DifferentialExpressionResult[];
   snapshot_id: string;
 }
 
@@ -352,14 +352,14 @@ export interface FilterDimensions {
 }
 
 export function useDifferentialExpression(): {
-  data: DifferentialExpressionResult[][];
+  data: DifferentialExpressionResult[];
   isLoading: boolean;
 } {
   const requestBody = useDEQueryRequestBody();
   const { data, isLoading } = useDEQuery(requestBody);
 
   return useMemo(() => {
-    if (isLoading || !data) return { data: [[]], isLoading };
+    if (isLoading || !data) return { data: [], isLoading };
     return {
       data: data.differentialExpressionResults,
       isLoading: false,
