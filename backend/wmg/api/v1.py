@@ -523,9 +523,11 @@ def run_differential_expression_simple(
             if len(statistics1) >= 250:
                 break
 
-    de_genes = de_genes[::-1]
-    p = p[::-1]
-    effects = effects[::-1]
+    pvals, effects = _run_ttest(sums2, sqsums2, n_cells2, sums1, sqsums1, n_cells1)
+    de_genes = np.array(genes)[np.argsort(-effects)]
+    p = pvals[np.argsort(-effects)]
+    effects = effects[np.argsort(-effects)]
+
     statistics2 = []
     for i in range(len(p)):
         pi = p[i]
@@ -534,5 +536,4 @@ def run_differential_expression_simple(
             statistics2.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
             if len(statistics2) >= 250:
                 break
-
     return statistics1, statistics2
