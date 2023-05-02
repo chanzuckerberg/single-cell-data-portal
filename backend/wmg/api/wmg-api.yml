@@ -747,8 +747,6 @@ paths:
               properties:
                 queryGroup1Filters:
                   type: object
-                  required:
-                    - organism_ontology_term_id
                   properties:
                     organism_ontology_term_id:
                       type: string
@@ -769,10 +767,10 @@ paths:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     cell_type_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                  required:
+                    - organism_ontology_term_id
                 queryGroup2Filters:
                   type: object
-                  required:
-                    - organism_ontology_term_id
                   properties:
                     organism_ontology_term_id:
                       type: string
@@ -793,9 +791,11 @@ paths:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     cell_type_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                required:
-                  - queryGroup1Filters
-                  - queryGroup2Filters
+                  required:
+                    - organism_ontology_term_id
+              required:
+                - queryGroup1Filters
+                - queryGroup2Filters
       responses:
         "200":
           description: OK
