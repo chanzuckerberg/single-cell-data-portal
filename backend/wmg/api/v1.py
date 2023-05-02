@@ -141,7 +141,8 @@ def differentialExpression():
 
     q = WmgQuery(snapshot)
 
-    results1, results2 = run_differential_expression(q, criteria1, criteria2)
+    with ServerTiming.time("run differential expression"):
+        results1, results2 = run_differential_expression(q, criteria1, criteria2)
 
     return jsonify(
         dict(
