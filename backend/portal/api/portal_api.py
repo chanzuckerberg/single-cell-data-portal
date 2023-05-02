@@ -1,6 +1,6 @@
 import itertools
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
@@ -64,19 +64,10 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
     """
 
     all_published_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=True))
-
-    user_info = UserInfo(token_info)  # TODO: ideally, connexion should already return a UserInfo object
-    if user_info.is_none():
-        all_owned_collections = []
-    elif user_info.is_super_curator():
-        all_owned_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=False))
-    else:
-        all_owned_collections = get_business_logic().get_collections(
-            CollectionQueryFilter(is_published=False, owner=user_info.user_id)
-        )
+    user_private_collections = get_user_private_collections(token_info)
 
     collections = []
-    for version in itertools.chain(all_published_collections, all_owned_collections):
+    for version in itertools.chain(all_published_collections, user_private_collections):
         collection = {
             "visibility": "PRIVATE" if version.published_at is None else "PUBLIC",
             "owner": version.owner,
@@ -434,6 +425,72 @@ def get_collection_index():
     return make_response(jsonify(response), 200)
 
 
+def get_user_private_collections(token_info: Optional[dict] = None):
+    user_info = UserInfo(token_info)
+
+    # Get all private collections the user has write access to
+    if user_info.is_none():
+        all_user_private_collections = []
+    elif user_info.is_super_curator():
+        all_user_private_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=False))
+    else:
+        all_user_private_collections = get_business_logic().get_collections(
+            CollectionQueryFilter(is_published=False, owner=user_info.user_id)
+        )
+    return all_user_private_collections
+
+
+def get_user_collection_index(token_info):
+    """
+    Returns a list of collections that are published and active.
+    Also returns a subset of fields and not datasets.
+    """
+
+    user_info = UserInfo(token_info)
+
+    # Get all user collections (public and private)
+    public_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=True))
+    user_private_collections = get_user_private_collections(token_info)
+
+    response = []
+    for collection in itertools.chain(public_collections, user_private_collections):
+        transformed_collection = {
+            "access_type": "WRITE" if user_info.is_user_owner_or_allowed(collection.owner) else "READ",
+            "created_at": collection.created_at,
+            "curator_name": collection.curator_name,
+            "id": collection.collection_id.id,
+            "name": collection.metadata.name,
+            "owner": collection.owner,
+            "visibility": "PRIVATE" if collection.published_at is None else "PUBLIC",
+        }
+
+        if collection.publisher_metadata is not None:
+            transformed_collection["publisher_metadata"] = _publisher_metadata_to_response(
+                collection.publisher_metadata
+            )
+
+        if collection.is_unpublished_version():
+            transformed_collection["id"] = collection.version_id.id
+        else:
+            transformed_collection["id"] = collection.collection_id.id
+
+        if not collection.is_published():
+            transformed_collection["revision_of"] = collection.collection_id.id
+        else:
+            transformed_collection["revision_of"] = None
+
+        if collection.is_published():
+            transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
+            transformed_collection["revised_at"] = collection.published_at
+        else:
+            transformed_collection["published_at"] = None
+            transformed_collection["revised_at"] = None
+
+        response.append(transformed_collection)
+
+    return make_response(jsonify(response), 200)
+
+
 def delete_collection(collection_id: str, token_info: dict):
     """
     Deletes a collection version from the persistence store, or tombstones a canonical collection.
@@ -525,7 +582,6 @@ def publish_post(collection_id: str, body: object, token_info: dict):
 
 
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
-
     version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
@@ -680,8 +736,34 @@ def get_datasets_index():
     Returns a list of all the datasets that currently belong to a published and active collection
     """
 
+    datasets = get_business_logic().get_all_mapped_datasets()
+    response = enrich_dataset_response(datasets)
+
+    return make_response(jsonify(response), 200)
+
+
+def get_user_datasets_index(token_info: dict):
+    """
+    Returns a list of all datasets associated with public or private collections where
+    the user has WRITE access and the collection is not a revision.
+    """
+    public_datasets = get_business_logic().get_all_mapped_datasets()
+
+    private_collections = get_user_private_collections(token_info)
+    # filter out collections that are revisions
+    non_revisions = [c for c in private_collections if c.is_unpublished_version() is False]
+    private_datasets = get_business_logic().get_datasets_for_collections(non_revisions)
+
+    response = enrich_dataset_response(itertools.chain(public_datasets, private_datasets))
+    return make_response(jsonify(response), 200)
+
+
+def enrich_dataset_response(datasets: Iterable[DatasetVersion]) -> List[dict]:
+    """
+    Enriches a list of datasets with ancestors of ontologized fields
+    """
     response = []
-    for dataset in get_business_logic().get_all_mapped_datasets():
+    for dataset in datasets:
         payload = _dataset_to_response(dataset, is_tombstoned=False)
         enrich_dataset_with_ancestors(
             payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
@@ -690,8 +772,7 @@ def get_datasets_index():
         enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
         payload["explorer_url"] = explorer_url.generate(dataset)
         response.append(payload)
-
-    return make_response(jsonify(response), 200)
+    return response
 
 
 def delete_dataset(dataset_id: str, token_info: dict):
