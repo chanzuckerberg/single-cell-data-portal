@@ -813,27 +813,25 @@ paths:
                       Differential expression results
                     type: array
                     items:
-                      type: array
-                      items:
-                        description: ->
-                          Object with gene id, p-value, and effect size.
-                        type: object
-                        properties:
-                          gene_ontology_term_id:
-                            description: gene ontology term id
-                            type: string
-                          p_value:
-                            description: adjusted p-value
-                            type: number
-                            format: float
-                            maxLength: 4
-                            minimum: 0.0
-                            maximum: 1.0
-                          effect_size:
-                            description: effect size
-                            type: number
-                            format: float
-                            maxLength: 4
+                      description: ->
+                        Object with gene id, p-value, and effect size.
+                      type: object
+                      properties:
+                        gene_ontology_term_id:
+                          description: gene ontology term id
+                          type: string
+                        p_value:
+                          description: adjusted p-value
+                          type: number
+                          format: float
+                          maxLength: 4
+                          minimum: 0.0
+                          maximum: 1.0
+                        effect_size:
+                          description: effect size
+                          type: number
+                          format: float
+                          maxLength: 4
 
 components:
   schemas:
