@@ -1,11 +1,12 @@
 import { test } from "@playwright/test";
 import { ADD_TISSUE_BTN } from "tests/utils/constants";
 import { goToWMG, verifyAddedTissue } from "tests/utils/geneUtils";
-import { selectNthOption } from "tests/utils/helpers";
+import { isDevStagingProd, selectNthOption } from "tests/utils/helpers";
 
-const { describe } = test;
+const { describe, skip } = test;
 
 describe("Add tissue tests", () => {
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test("Should select tissue using keyboard arrow key to select", async ({
     page,
   }) => {
