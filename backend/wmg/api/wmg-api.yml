@@ -745,7 +745,7 @@ paths:
             schema:
               type: object
               properties:
-                contextFilters:
+                queryGroup1Filters:
                   type: object
                   required:
                     - organism_ontology_term_id
@@ -768,36 +768,34 @@ paths:
                     self_reported_ethnicity_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     cell_type_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"                      
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                queryGroup2Filters:
+                  type: object
                   required:
-                    - organism_ontology_term_id                      
-                queryGroupFilters:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      organism_ontology_term_id:
+                    - organism_ontology_term_id
+                  properties:
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    dataset_ids:
+                      type: array
+                      items:
                         type: string
-                      tissue_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      dataset_ids:
-                        type: array
-                        items:
-                          type: string
-                          format: uuid
-                      disease_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      sex_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      development_ontology_stage_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      self_reported_ethnicity_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"   
-                      cell_type_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"                        
-              required:
-                - contextFilters
-                - queryGroupFilters
+                        format: uuid
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    development_ontology_stage_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                required:
+                  - queryGroup1Filters
+                  - queryGroup2Filters
       responses:
         "200":
           description: OK

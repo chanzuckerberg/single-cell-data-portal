@@ -91,7 +91,7 @@ export default function DeResults(): JSX.Element {
       }
     }
   }
-
+  console.log(differentialExpressionResults);
   return (
     <div>
       {isLoading && <div>Loading...</div>}
