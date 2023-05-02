@@ -5,7 +5,6 @@ import tiledb
 
 from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus
 from backend.wmg.data.schemas.cube_schema import cell_counts_schema, expression_summary_schema
-from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import expression_summary_fmg_schema
 from backend.wmg.data.utils import create_empty_cube
 
 
@@ -86,35 +85,6 @@ class TestSummaryCubeSchema(unittest.TestCase):
             self.assertTrue(summary_cube_schema.has_attr("sex_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("nnz"))
             self.assertTrue(summary_cube_schema.has_attr("sum"))
-
-
-class TestFmgSummaryCubeSchema(unittest.TestCase):
-    def test_fmg_summary_cube_schema_contains_correct_dimensions(self):
-        with tempfile.TemporaryDirectory() as summary_cube_dir:
-            create_empty_cube(uri=f"{summary_cube_dir}/cube", schema=expression_summary_fmg_schema)
-            summary_cube_schema = tiledb.ArraySchema.load(f"{summary_cube_dir}/cube")
-            self.assertEqual(summary_cube_schema.ndim, 3)
-            self.assertTrue(summary_cube_schema.domain.has_dim("cell_type_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.domain.has_dim("tissue_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.domain.has_dim("organism_ontology_term_id"))
-
-    def test_fmg_summary_cube_schema_contains_correct_attrs(self):
-        with tempfile.TemporaryDirectory() as summary_cube_dir:
-            create_empty_cube(uri=f"{summary_cube_dir}/cube", schema=expression_summary_fmg_schema)
-            summary_cube_schema = tiledb.ArraySchema.load(f"{summary_cube_dir}/cube")
-            self.assertEqual(summary_cube_schema.nattr, 12)
-            self.assertTrue(summary_cube_schema.has_attr("gene_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("tissue_original_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("dataset_id"))
-            self.assertTrue(summary_cube_schema.has_attr("assay_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("development_stage_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("disease_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("self_reported_ethnicity_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("sex_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("nnz"))
-            self.assertTrue(summary_cube_schema.has_attr("sum"))
-            self.assertTrue(summary_cube_schema.has_attr("sqsum"))
-            self.assertTrue(summary_cube_schema.has_attr("nnz_thr"))
 
 
 class TestCellCountCubeSchema(unittest.TestCase):

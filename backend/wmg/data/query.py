@@ -46,6 +46,7 @@ class FmgQueryCriteria(BaseModel):
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
 class MarkerGeneQueryCriteria(BaseModel):
@@ -58,7 +59,7 @@ class WmgQuery:
     def __init__(self, snapshot: WmgSnapshot) -> None:
         self._snapshot = snapshot
 
-    def expression_summary(self, criteria: WmgQueryCriteria) -> DataFrame:
+    def expression_summary(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_cube,
             criteria=criteria,
@@ -69,22 +70,11 @@ class WmgQuery:
             ],
         )
 
-    def expression_summary_default(self, criteria: WmgQueryCriteria) -> DataFrame:
+    def expression_summary_default(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_default_cube,
             criteria=criteria,
             indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "organism_ontology_term_id"],
-        )
-
-    def expression_summary_fmg(self, criteria: FmgQueryCriteria) -> DataFrame:
-        return self._query(
-            cube=self._snapshot.expression_summary_fmg_cube,
-            criteria=criteria,
-            indexed_dims=[
-                "tissue_ontology_term_ids",
-                "organism_ontology_term_id",
-                "cell_type_ontology_term_ids",
-            ],
         )
 
     def marker_genes(self, criteria: MarkerGeneQueryCriteria) -> DataFrame:
@@ -107,10 +97,26 @@ class WmgQuery:
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
 
-    # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
-    #  /chanzuckerberg/single-cell-data-portal/2133
+    def _query(
+        self, cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str]
+    ) -> DataFrame:
+        tiledb_dims_query = []
+        for dim_name in indexed_dims:
+            if criteria.dict()[dim_name]:
+                tiledb_dims_query.append(criteria.dict()[dim_name])
+            # If an "indexed" dimension is not included in the criteria,
+            # then all values will be selected.
+            else:
+                tiledb_dims_query.append([])
+
+        tiledb_dims_query = tuple(tiledb_dims_query)
+
+        query = self._return_query(cube=cube, criteria=criteria, indexed_dims=indexed_dims)
+        query_result_df = query.df[tiledb_dims_query]
+        return query_result_df
+
     @staticmethod
-    def _query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str]) -> DataFrame:
+    def _return_query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str]):
         query_cond = ""
         attrs = {}
         for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
@@ -125,20 +131,7 @@ class WmgQuery:
                 query_cond += f"{attr} in {vals}"
 
         attr_cond = tiledb.QueryCondition(query_cond) if query_cond else None
-
-        tiledb_dims_query = []
-        for dim_name in indexed_dims:
-            if criteria.dict()[dim_name]:
-                tiledb_dims_query.append(criteria.dict()[dim_name])
-            # If an "indexed" dimension is not included in the criteria,
-            # then all values will be selected.
-            else:
-                tiledb_dims_query.append([])
-
-        tiledb_dims_query = tuple(tiledb_dims_query)
-
-        query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
-        return query_result_df
+        return cube.query(attr_cond=attr_cond, use_arrow=True)
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
         return (

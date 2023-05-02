@@ -19,9 +19,6 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_schema as ex
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_schema as expression_summary_default_schema_actual,
 )
-from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import (
-    expression_summary_fmg_schema as expression_summary_fmg_schema_actual,
-)
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema as marker_genes_schema_actual
 from backend.wmg.data.snapshot import (
     CELL_TYPE_ORDERINGS_FILENAME,
@@ -161,16 +158,12 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
         cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts.csv.gz", index_col=0)
         expression_summary = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary.csv.gz", index_col=0)
-        expression_summary_fmg = pd.read_csv(
-            f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_fmg.csv.gz", index_col=0
-        )
         expression_summary_default = pd.read_csv(
             f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default.csv.gz", index_col=0
         )
         marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes.csv.gz", index_col=0)
 
         tiledb.Array.create(f"{cube_dir}/expression_summary", expression_summary_schema_actual, overwrite=True)
-        tiledb.Array.create(f"{cube_dir}/expression_summary_fmg", expression_summary_fmg_schema_actual, overwrite=True)
         tiledb.Array.create(
             f"{cube_dir}/expression_summary_default", expression_summary_default_schema_actual, overwrite=True
         )
@@ -178,7 +171,6 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
         tiledb.Array.create(f"{cube_dir}/marker_genes", marker_genes_schema_actual, overwrite=True)
 
         tiledb.from_pandas(f"{cube_dir}/expression_summary", expression_summary, mode="append")
-        tiledb.from_pandas(f"{cube_dir}/expression_summary_fmg", expression_summary_fmg, mode="append")
         tiledb.from_pandas(f"{cube_dir}/expression_summary_default", expression_summary_default, mode="append")
         tiledb.from_pandas(f"{cube_dir}/cell_counts", cell_counts, mode="append")
         tiledb.from_pandas(f"{cube_dir}/marker_genes", marker_genes, mode="append")
@@ -186,8 +178,6 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
         with tiledb.open(f"{cube_dir}/expression_summary", ctx=create_ctx()) as expression_summary_cube, tiledb.open(
             f"{cube_dir}/expression_summary_default", ctx=create_ctx()
         ) as expression_summary_default_cube, tiledb.open(
-            f"{cube_dir}/expression_summary_fmg", ctx=create_ctx()
-        ) as expression_summary_fmg_cube, tiledb.open(
             f"{cube_dir}/cell_counts", ctx=create_ctx()
         ) as cell_counts_cube, tiledb.open(
             f"{cube_dir}/marker_genes", ctx=create_ctx()
@@ -201,7 +191,6 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
-                expression_summary_fmg_cube=expression_summary_fmg_cube,
                 expression_summary_default_cube=expression_summary_default_cube,
                 marker_genes_cube=marker_genes_cube,
                 cell_counts_cube=cell_counts_cube,
@@ -242,7 +231,6 @@ def create_temp_wmg_snapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
                 expression_summary_default_cube=None,
-                expression_summary_fmg_cube=None,
                 marker_genes_cube=None,
                 cell_counts_cube=cell_counts_cube,
                 cell_type_orderings=cell_type_orderings,

@@ -1,9 +1,8 @@
 import unittest
 from typing import NamedTuple
 
-from backend.wmg.api.v1 import agg_cell_type_counts, agg_tissue_counts, get_dot_plot_data, filter_pandas_dataframe
+from backend.wmg.api.v1 import agg_cell_type_counts, agg_tissue_counts, filter_pandas_dataframe, get_dot_plot_data
 from backend.wmg.data.query import (
-    FmgQueryCriteria,
     MarkerGeneQueryCriteria,
     WmgQuery,
     WmgQueryCriteria,
@@ -91,20 +90,6 @@ class QueryTest(unittest.TestCase):
             marker_genes = retrieve_top_n_markers(result, "ttest", 0)
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 0)
             self.assertEqual(marker_genes, expected)
-
-    def test__query_expression_summary_fmg_cube__returns_correct_results(self):
-        criteria = FmgQueryCriteria(
-            gene_ontology_term_ids=["ENSG00000238042", "ENSG00000168028"],
-            organism_ontology_term_id="NCBITaxon:9606",
-            tissue_ontology_term_ids=["UBERON:0002048"],
-            cell_type_ontology_term_ids=["CL:0000786"],
-        )
-        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            q = WmgQuery(snapshot)
-            query_result = q.expression_summary_fmg(criteria)
-            query_sum = list(query_result[["sum", "sqsum", "nnz", "nnz_thr"]].sum())
-            expected = [93391.875, 264764.40625, 40042.0, 39054.0]
-            [self.assertEqual(round(query_sum[i]), round(expected[i])) for i in range(len(query_sum))]
 
     def test__query_expression_summary_default_cube__returns_correct_results(self):
         criteria = WmgQueryCriteria(

@@ -31,6 +31,7 @@ def _load(
     gene_ontology_term_ids: list,
     cube_index: pd.DataFrame,
     cube_sum: np.ndarray,
+    cube_sqsum: np.ndarray,
     cube_nnz: np.ndarray,
     default: bool = False,
 ) -> (list, dict):
@@ -39,10 +40,14 @@ def _load(
     """
     if default:
         non_indexed_dims = expression_summary_non_indexed_dims_default
-        dims, vals = build_in_mem_cube_default(gene_ontology_term_ids, cube_index, non_indexed_dims, cube_sum, cube_nnz)
+        dims, vals = build_in_mem_cube_default(
+            gene_ontology_term_ids, cube_index, non_indexed_dims, cube_sum, cube_sqsum, cube_nnz
+        )
     else:
         non_indexed_dims = expression_summary_non_indexed_dims
-        dims, vals = build_in_mem_cube(gene_ontology_term_ids, cube_index, non_indexed_dims, cube_sum, cube_nnz)
+        dims, vals = build_in_mem_cube(
+            gene_ontology_term_ids, cube_index, non_indexed_dims, cube_sum, cube_sqsum, cube_nnz
+        )
 
     logger.debug("Saving cube to tiledb")
     with tiledb.open(uri, "w") as cube:
@@ -82,7 +87,7 @@ def create_expression_summary_cube(corpus_path: str, default=False):
         gene_ontology_term_ids = extract_var_data(corpus_path, ctx)
 
         # transform
-        cube_index, cube_sum, cube_nnz = transform(corpus_path, gene_ontology_term_ids, cube_dims)
-        _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_nnz, default=default)
+        cube_index, cube_sum, cube_sqsum, cube_nnz = transform(corpus_path, gene_ontology_term_ids, cube_dims)
+        _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_sqsum, cube_nnz, default=default)
     gene_count = len(gene_ontology_term_ids)
     logger.info(f"create_expression_summary_cube: {gene_count=}")

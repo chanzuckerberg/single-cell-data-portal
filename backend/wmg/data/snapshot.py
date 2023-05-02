@@ -23,7 +23,6 @@ CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
-EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
 DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
@@ -45,10 +44,6 @@ class WmgSnapshot:
     # etc.) aggregated by multiple cell metadata dimensions and genes. See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
     expression_summary_cube: Array
-
-    # TileDB array containing expression summary statistics optimized for marker gene computation.
-    # See the full schema at backend/wmg/data/schemas/expression_summary_fmg_cube_schema.py.
-    expression_summary_fmg_cube: Array
 
     # TileDB array containing expression summary statistics optimized for querying with no
     # secondary filters selected.
@@ -129,7 +124,6 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
         snapshot_identifier=new_snapshot_identifier,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_default_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
-        expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=cell_type_orderings,
