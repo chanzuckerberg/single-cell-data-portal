@@ -2,17 +2,18 @@ import { test } from "@playwright/test";
 import { goToWMG } from "../../utils/wmgUtils";
 import { SIMPLE_SHARED_LINK } from "tests/common/constants";
 import {
-  deleteCsvDownloads,
+  deleteDownloadedFiles,
   downloadAndVerifyFiles,
   subDirectory,
   verifySvg,
 } from "tests/utils/downloadUtils";
+import { isDevStagingProd } from "tests/utils/helpers";
 
-const { describe } = test;
+const { describe, skip } = test;
 describe("SVG download tests", () => {
-  test.only(`Should verify SVG download with single tissue`, async ({
-    page,
-  }) => {
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+
+  test(`Should verify SVG download with single tissue`, async ({ page }) => {
     // set app state
     await goToWMG(page, SIMPLE_SHARED_LINK);
 
@@ -29,6 +30,6 @@ describe("SVG download tests", () => {
 
   test.afterAll(async () => {
     //delete csv
-    deleteCsvDownloads(`./tests/downloads`);
+    deleteDownloadedFiles(`./tests/downloads`);
   });
 });
