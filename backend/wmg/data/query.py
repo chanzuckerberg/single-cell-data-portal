@@ -59,44 +59,23 @@ class WmgQuery:
     def __init__(self, snapshot: WmgSnapshot) -> None:
         self._snapshot = snapshot
 
-    def expression_summary(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], return_query_object_only=False):
-        if return_query_object_only:
-            return self._return_query(
-                cube=self._snapshot.expression_summary_cube,
-                criteria=criteria,
-                indexed_dims=[
-                    "gene_ontology_term_ids",
-                    "tissue_ontology_term_ids",
-                    "organism_ontology_term_id",
-                ],
-            )
-        else:
-            return self._query(
-                cube=self._snapshot.expression_summary_cube,
-                criteria=criteria,
-                indexed_dims=[
-                    "gene_ontology_term_ids",
-                    "tissue_ontology_term_ids",
-                    "organism_ontology_term_id",
-                ],
-            )
+    def expression_summary(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
+        return self._query(
+            cube=self._snapshot.expression_summary_cube,
+            criteria=criteria,
+            indexed_dims=[
+                "gene_ontology_term_ids",
+                "tissue_ontology_term_ids",
+                "organism_ontology_term_id",
+            ],
+        )
 
-    def expression_summary_default(
-        self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], return_query_object_only=False
-    ):
-        if return_query_object_only:
-            return self._return_query(
-                cube=self._snapshot.expression_summary_default_cube,
-                criteria=criteria,
-                indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "organism_ontology_term_id"],
-            )
-
-        else:
-            return self._query(
-                cube=self._snapshot.expression_summary_default_cube,
-                criteria=criteria,
-                indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "organism_ontology_term_id"],
-            )
+    def expression_summary_default(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
+        return self._query(
+            cube=self._snapshot.expression_summary_default_cube,
+            criteria=criteria,
+            indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "organism_ontology_term_id"],
+        )
 
     def marker_genes(self, criteria: MarkerGeneQueryCriteria) -> DataFrame:
         return self._query(
