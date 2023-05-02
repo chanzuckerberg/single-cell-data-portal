@@ -517,18 +517,21 @@ def run_differential_expression_simple(
     statistics1 = []
     for i in range(len(p)):
         pi = p[i]
-        ei = effects[i]
+        ei = abs(effects[i])
         if ei is not np.nan and pi is not np.nan and pi < pval_thr:
             statistics1.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
             if len(statistics1) >= 250:
                 break
 
+    de_genes = de_genes[::-1]
+    p = p[::-1]
+    effects = effects[::-1]
     statistics2 = []
     for i in range(len(p)):
-        pi = p[-(i + 1)]
-        ei = effects[-(i + 1)]
+        pi = p[i]
+        ei = abs(effects[i])
         if ei is not np.nan and pi is not np.nan and pi < pval_thr:
-            statistics2.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": -ei})
+            statistics2.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
             if len(statistics2) >= 250:
                 break
 

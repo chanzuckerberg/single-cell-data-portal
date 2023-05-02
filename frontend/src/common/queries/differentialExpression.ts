@@ -200,8 +200,14 @@ export interface DifferentialExpressionResult {
   effect_size: number;
 }
 interface DifferentialExpressionQueryResponse {
-  differentialExpressionResults: DifferentialExpressionResult[];
+  differentialExpressionResults1: DifferentialExpressionResult[];
+  differentialExpressionResults2: DifferentialExpressionResult[];
   snapshot_id: string;
+}
+
+interface DifferentialExpressionQueryResult {
+  differentialExpressionResults1: DifferentialExpressionResult[];
+  differentialExpressionResults2: DifferentialExpressionResult[];
 }
 
 async function fetchFiltersQuery({
@@ -352,16 +358,26 @@ export interface FilterDimensions {
 }
 
 export function useDifferentialExpression(): {
-  data: DifferentialExpressionResult[];
+  data: DifferentialExpressionQueryResult;
   isLoading: boolean;
 } {
   const requestBody = useDEQueryRequestBody();
   const { data, isLoading } = useDEQuery(requestBody);
 
   return useMemo(() => {
-    if (isLoading || !data) return { data: [], isLoading };
+    if (isLoading || !data)
+      return {
+        data: {
+          differentialExpressionResults1: [],
+          differentialExpressionResults2: [],
+        },
+        isLoading,
+      };
     return {
-      data: data.differentialExpressionResults,
+      data: {
+        differentialExpressionResults1: data.differentialExpressionResults1,
+        differentialExpressionResults2: data.differentialExpressionResults2,
+      },
       isLoading: false,
     };
   }, [data, isLoading]);
