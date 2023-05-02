@@ -5,11 +5,18 @@ import {
   searchAndAddGene,
   verifyAddedGene,
 } from "tests/utils/geneUtils";
+<<<<<<< HEAD
 import { selectNthOption } from "tests/utils/helpers";
 //import uaParser from "ua-parser-js";
 const { describe } = test;
+=======
+import { isDevStagingProd, selectNthOption } from "tests/utils/helpers";
+import uaParser from "ua-parser-js";
+const { describe, skip } = test;
+>>>>>>> main
 
 describe("Manage gene tests", () => {
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test("Should select gene using keyboard arrow key to select", async ({
     page,
   }) => {
