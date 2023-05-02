@@ -1,5 +1,5 @@
 import { Icon } from "czifui";
-import { useState, useEffect, useContext, useCallback } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   OntologyTerm,
   useDifferentialExpression,
