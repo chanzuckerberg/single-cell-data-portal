@@ -1,9 +1,12 @@
-import { Page, expect } from "@playwright/test";
+import { Page, chromium, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
 import { getTestID } from "./selectors";
-
+import { ROUTES } from "src/common/constants/routes";
+import { TEST_URL } from "tests/common/constants";
+import pixelmatch from "pixelmatch";
+import { PNG } from "pngjs";
 const EXPECTED_HEADER = [
   "Tissue",
   "Cell Type",
@@ -15,50 +18,71 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
-export async function downloadAndVerifyCsv(
+const downLoadPath = "./tests/downloads";
+
+export async function verifyCsv(
   page: Page,
+  subDirectory: string,
+  tissues: string[],
   filterName: string,
-  tissue: string
+  url: string
 ): Promise<void> {
-  // generate sub folder
-  const randomNumber: number = Math.floor(Math.random() * 90000) + 10000;
-  const subDirectory: string = randomNumber.toString();
+  tissues.forEach(async (tissue) => {
+    const metadata = await getCsvMetadata(tissue, subDirectory);
+    // extract the headers and data arrays from the metadata object
+    // put all the headers in an array
+    const headers = metadata.headers;
+    const data = metadata.data;
 
-  //download and extract the csv file
-  await downloadCsv(page, subDirectory);
-  const metadata = await getCsvMetadata(tissue, subDirectory);
+    //get number of element in csv
+    const csvElementsCount = metadata.rowCount;
 
-  // extract the headers and data arrays from the metadata object
-  // put all the headers in an array
-  const headers = metadata.headers;
-  const data = metadata.data;
+    //get number of element displayed in ui
+    const uiElementsCount = await page
+      .locator(
+        `[data-testid="cell-type-labels-${tissue}"] [data-testid="cell-type-label-count"]`
+      )
+      .count();
 
-  //get number of element in csv
-  const csvElementsCount = metadata.rowCount;
+    //verify the number of element in the csv this is the Ui displayed multiplied by the number of genes selected
+    expect(csvElementsCount).toEqual(uiElementsCount * 3);
 
-  //get number of element displayed in ui
-  const uiElementsCount = await page
-    .locator(
-      `[data-testid="cell-type-labels-${tissue}"] [data-testid="cell-type-label-count"]`
-    )
-    .count();
+    const options = {
+      filterName: filterName,
+      data: headers,
+    };
 
-  //verify the number of element in the csv
-  expect(csvElementsCount).toEqual(uiElementsCount * 3);
+    //verify meta data
+    await verifyMetadata(page, options, url);
 
-  const options = {
-    filterName: filterName,
-    data: headers,
-  };
-
-  //verify meta data
-  await verifyMetadata(page, options);
-
-  //verify all the headers are present in the csv
-  expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
+    //verify all the headers are present in the csv
+    expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
+  });
 }
 
-export const deleteCsvDownloads = (filePath: string): void => {
+export function subDirectory() {
+  return (Math.floor(Math.random() * 90000) + 10000).toString();
+}
+export async function downloadAndVerifyFiles(
+  page: Page,
+  fileTypes: string[] = ["png"],
+  tissues: string[],
+  subDirectory: string
+): Promise<void> {
+  //download and extract file
+  await downloadGeneFile(page, tissues, subDirectory, fileTypes);
+
+  // verify files are available
+  fileTypes.forEach((extension: string) => {
+    tissues.forEach((tissue) => {
+      expect(
+        fs.existsSync(`${downLoadPath}/${subDirectory}/${tissue}.${extension}`)
+      ).toBeTruthy();
+    });
+  });
+}
+
+export function deleteDownloadedFiles(filePath: string) {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);
@@ -66,8 +90,7 @@ export const deleteCsvDownloads = (filePath: string): void => {
       console.log("Folder deleted successfully");
     }
   });
-};
-
+}
 export interface CsvMetadata {
   rowCount: number;
   data: string[][];
@@ -76,17 +99,17 @@ export interface CsvMetadata {
 
 export const getCsvMetadata = (
   tissue: string,
-  fileFactor: string
+  subDirectory: string
 ): Promise<CsvMetadata> => {
   return new Promise((resolve, reject) => {
     // Open the CSV file for reading
     const fileStream = fs.createReadStream(
-      `./tests/download/${fileFactor}/${tissue}.csv`,
+      `${downLoadPath}/${subDirectory}/${tissue}.csv`,
       { encoding: "utf8" }
     );
 
     // Create a readline interface for the file stream
-    const rl = readline.createInterface({ input: fileStream });
+    const csvFileInterface = readline.createInterface({ input: fileStream });
 
     // Create counters and arrays to store the parsed data
     let rowCount = -1;
@@ -94,7 +117,7 @@ export const getCsvMetadata = (
     const headers: string[] = [];
 
     // Listen for 'line' events emitted by the readline interface
-    rl.on("line", (line) => {
+    csvFileInterface.on("line", (line) => {
       const row = line.split(",");
       if (row.length > 1) {
         data.push(row);
@@ -105,13 +128,13 @@ export const getCsvMetadata = (
     });
 
     // Listen for the 'close' event to know when the parsing is complete
-    rl.on("close", () => {
+    csvFileInterface.on("close", () => {
       const csvMetadata: CsvMetadata = { rowCount, data, headers };
       resolve(csvMetadata);
     });
 
     // Listen for any errors during reading and parsing the file
-    rl.on("error", (err) => {
+    csvFileInterface.on("error", (err) => {
       reject(err);
     });
   });
@@ -125,7 +148,8 @@ interface MetadataVerificationOptions {
 
 export const verifyMetadata = async (
   page: Page,
-  options: MetadataVerificationOptions
+  options: MetadataVerificationOptions,
+  url: string
 ) => {
   //verify the date is valid
   const dateString = options.data[0].substring(14);
@@ -142,7 +166,7 @@ export const verifyMetadata = async (
 
   //check if the 3 column contains the gene expression link
   expect(
-    options.data[2].includes("https://localhost:3000/gene-expression")
+    options.data[2].includes(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`)
   ).toBeTruthy();
 
   // Extract the link using a regular expression
@@ -150,6 +174,7 @@ export const verifyMetadata = async (
   const linkMatch = options.data[2].match(linkRegex);
   let text: string | null = "";
   if (options.filterName !== "no-filter") {
+    //this gets the filter displayed on the ui
     text = await getFilterText(page, options.filterName);
   }
 
@@ -158,7 +183,7 @@ export const verifyMetadata = async (
     const link = linkMatch[0];
     //verify link is valid
 
-    await page.goto(link);
+    expect(link).toEqual(url);
 
     // wait until the new page fully loads
     await page.waitForLoadState();
@@ -220,95 +245,112 @@ const verifyFilterValues = (
   ).toBeTruthy();
 };
 
-export const downloadCsv = async (page: Page, fileFactor: string) => {
-  const zipFilePath = "./tests/download.zip";
-  const extractDirPath = `./tests/download/${fileFactor}`;
-  const CHECK = "Mui-checked";
-
-  //click the download ico
-  await page.getByTestId("download-button").click();
-  const checkboxClassPng = await page
-    .getByTestId("png-checkbox")
-    .getAttribute("class");
- 
-  if (checkboxClassPng && checkboxClassPng.includes(CHECK)) {
-    await page.getByTestId("png-checkbox").click();
-  }
-  const checkboxClassSvg = await page
-    .getByTestId("svg-checkbox")
-    .getAttribute("class");
-
-  if (checkboxClassSvg && checkboxClassSvg.includes(CHECK)) {
-    await page.getByTestId("svg-checkbox").click();
-  }
-
-  const checkboxClassCsv = await page
-    .getByTestId("csv-checkbox")
-    .getAttribute("class");
-
-  if (checkboxClassCsv && !checkboxClassCsv.includes(CHECK)) {
-    await page.getByTestId("csv-checkbox").click();
-  }
-
-  await page.getByTestId("dialog-download-button").click();
+export async function downloadGeneFile(
+  page: Page,
+  tissues: string[],
+  subDirectory: string,
+  fileTypes: string[] = ["png"]
+): Promise<void> {
+  const allFileTypes = ["csv", "png", "svg"];
+  const dirPath = `${downLoadPath}/${subDirectory}`;
 
   //wait for download file
   const downloadPromise = page.waitForEvent("download");
 
-  const download = await downloadPromise;
-
-  // Save downloaded file in a directory
-  await download.saveAs(zipFilePath);
-
-  //extract zip file
-  const zip = new AdmZip(zipFilePath);
-  zip.extractAllTo(extractDirPath);
-};
-export const downloadPng = async (page: Page, fileFactor: string) => {
-  const zipFilePath = "./tests/download.zip";
-  const extractDirPath = `./tests/download/${fileFactor}`;
+  //click the download icon
+  await page.getByTestId("download-button").click();
   const CHECK = "Mui-checked";
 
-  //click the download ico
-  await page.getByTestId("download-button").click();
-  const checkboxClassPng = await page
-    .getByTestId("png-checkbox")
-    .getAttribute("class");
+  for (const ext of allFileTypes) {
+    const checkboxId = `${ext}-checkbox`;
+    // uncheck if file type is checked but not
+    if (
+      (await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
+        CHECK
+      ) &&
+      !fileTypes.includes(ext)
+    ) {
+      await page.getByTestId(checkboxId).locator("input").click();
+    }
 
-  if (checkboxClassPng && !checkboxClassPng.includes(CHECK)) {
-    await page.getByTestId("png-checkbox").click();
+    // ensure wanted file types are checked
+    if (
+      !(await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
+        CHECK
+      ) &&
+      fileTypes.includes(ext)
+    ) {
+      await page.getByTestId(checkboxId).locator("input").click();
+    }
   }
-  const checkboxClassSvg = await page
-    .getByTestId("svg-checkbox")
-    .getAttribute("class");
-
-  if (checkboxClassSvg && checkboxClassSvg.includes(CHECK)) {
-    await page.getByTestId("svg-checkbox").click();
-  }
-
-  const checkboxClassCsv = await page
-    .getByTestId("csv-checkbox")
-    .getAttribute("class");
-
-  if (checkboxClassCsv && checkboxClassCsv.includes(CHECK)) {
-    await page.getByTestId("csv-checkbox").click();
-  }
-
   await page.getByTestId("dialog-download-button").click();
-
-  //wait for download file
-  const downloadPromise = page.waitForEvent("download");
-
   const download = await downloadPromise;
 
-  // Save downloaded file in a directory
-  await download.saveAs(zipFilePath);
+  // download can be zipped or not depending on number of tissues
+  let fileName = `${dirPath}/download.zip`;
+  if (fileTypes.length === 1 && tissues.length === 1 && fileTypes[0] == "svg") {
+    fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
+  }
 
+  await download.saveAs(fileName);
   //extract zip file
-  const zip = new AdmZip(zipFilePath);
-  zip.extractAllTo(extractDirPath);
-};
+  if (fileName.includes("zip")) {
+    const zip = new AdmZip(fileName);
+    zip.extractAllTo(dirPath);
+  }
+}
+
 export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();
 };
+export async function compareSvg(
+  webCellImage: string,
+  webGeneImage: string,
+  svgFile: string
+): Promise<void> {
+  const browser = await chromium.launch();
+  const browserContext = await browser.newContext();
+  const page = await browserContext.newPage();
+  await page.goto(svgFile);
+  expect(page.locator("svg").locator("svg").nth(3)).toMatchSnapshot(
+    webCellImage
+  );
+  expect(page.locator("svg").locator("svg").nth(4)).toMatchSnapshot(
+    webCellImage
+  );
+  expect(await page.screenshot()).toMatchSnapshot(webGeneImage);
+  await browser.close();
+}
+
+export async function verifyPng(
+  dirPath: string,
+  tissues: string[],
+  subDirectory: string
+): Promise<void> {
+  tissues.forEach(async (tissue) => {
+    // Capture the actual screenshot and compare it with the expected screenshot
+    const expectedPng = PNG.sync.read(
+      fs.readFileSync(`./tests/fixtures/download/${subDirectory}/${tissue}.png`)
+      // fs.readFileSync(`./tests/fixtures/download/no-filter/blood.png`)
+    );
+    const actualPng = PNG.sync.read(
+      fs.readFileSync(
+        `${dirPath}/${tissue}.png`
+        //`./tests/downloads/32937/blood.png`
+      )
+    );
+    const { width, height } = expectedPng;
+    const diff = new PNG({ width, height });
+
+    const mismatchedPixels = pixelmatch(
+      expectedPng.data,
+      actualPng.data,
+      diff.data,
+      width,
+      height,
+      { threshold: 0.5 }
+    );
+    expect(mismatchedPixels).toBe(0);
+  });
+}

@@ -1,54 +1,41 @@
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { goToWMG, selectTissueAndGeneOption } from "../../utils/wmgUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
-import { downloadPng, deleteCsvDownloads } from "tests/utils/downloadUtils";
+import {
+  deleteDownloadedFiles,
+  downloadAndVerifyFiles,
+  subDirectory,
+  verifyPng,
+} from "tests/utils/downloadUtils";
 import pixelmatch from "pixelmatch";
 import fs from "fs";
 import { PNG } from "pngjs";
-
+import {
+  SHARED_LINK_NO_FILTER,
+  SHARED_LINK_NO_GROUP,
+} from "tests/common/constants";
+const downLoadPath = "./tests/downloads";
 const { describe, skip } = test;
 describe("CSV download tests", () => {
-  test.beforeEach(async ({ page }) => {
-    // navigate to gene expression page
-    await goToWMG(page);
-    //select tissue and gene
-    await selectTissueAndGeneOption(page);
-  });
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
-  test.only(`Should verify Png for blood tissue with no filter applied`, async ({
+  test.only(`Should verify png for lung and blood tissue with no group set`, async ({
     page,
   }) => {
-    // generate sub folder
-    const randomNumber: number = Math.floor(Math.random() * 90000) + 10000;
-    const subDirectory: string = randomNumber.toString();
-    //download and verify csv file
-    await downloadPng(page, subDirectory);
-    // Capture the actual screenshot and compare it with the expected screenshot
-    const expectedPng = PNG.sync.read(
-      fs.readFileSync(`./tests/fixtures/download/blood.png`)
-    );
-    const actualPng = PNG.sync.read(
-      fs.readFileSync(`./tests/download/${subDirectory}/blood.png`)
-    );
-    const { width, height } = expectedPng;
-    const diff = new PNG({ width, height });
+    // set app state
+    await goToWMG(page, SHARED_LINK_NO_FILTER);
+    const tissues = ["blood"];
+    const fileTypes = ["png"];
+    const folder = subDirectory();
+    const dirPath = `${downLoadPath}/${folder}`;
+    //download  csv file
+    await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
-    const mismatchedPixels = pixelmatch(
-      expectedPng.data,
-      actualPng.data,
-      diff.data,
-      width,
-      height,
-      { threshold: 0.1 }
-    );
-
-    // Log the number of mismatched pixels
-    console.log(`Number of mismatched pixels: ${mismatchedPixels}`);
+    verifyPng(dirPath, tissues, "no-filter");
   });
 
   test.afterAll(async () => {
     //delete csv
-    deleteCsvDownloads(`./tests/download`);
+   // deleteDownloadedFiles(`./tests/downloads`);
   });
 });
