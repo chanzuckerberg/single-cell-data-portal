@@ -47,7 +47,7 @@ describe("SVG download tests", () => {
 
   test.only(`Should verify SVG download with grouping`, async ({ page }) => {
     // set app state
-    await goToWMG(page, SHARED_LINK);
+    await goToWMG(page, SIMPLE_SHARED_LINK);
 
     const tissues = ["blood", "lung"];
     const fileTypes = ["svg"];
