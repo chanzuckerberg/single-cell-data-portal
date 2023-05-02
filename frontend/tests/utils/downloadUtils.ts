@@ -4,8 +4,7 @@ import readline from "readline";
 import AdmZip from "adm-zip";
 import { getTestID } from "./selectors";
 import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL } from "tests/common/constants";
-import stringSimilarity from "string-similarity";
+import { TEST_URL, downLoadPath } from "tests/common/constants";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -18,7 +17,6 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
-const downLoadPath = "./tests/downloads";
 
 export async function verifyCsv(
   page: Page,
@@ -79,20 +77,6 @@ export async function downloadAndVerifyFiles(
         fs.existsSync(`${downLoadPath}/${subDirectory}/${tissue}.${extension}`)
       ).toBeTruthy();
     });
-  });
-}
-
-export function verifySvg(
-  tissues: string[],
-  subFolder: string,
-  fixturePath: string
-) {
-  tissues.forEach((tissue) => {
-    const download = fs
-      .readFileSync(`${downLoadPath}/${subFolder}/${tissue}.svg`)
-      .toString();
-    const fixture = fs.readFileSync(`${fixturePath}/${tissue}.svg`).toString();
-    expect(stringSimilarity.compareTwoStrings(fixture, download)).toBeTruthy();
   });
 }
 

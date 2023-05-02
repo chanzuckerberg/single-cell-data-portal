@@ -44,3 +44,5 @@ export const CELL_TYPE_LABELS_ID = "cell-type-name";
 export const ERROR_NO_TESTID_OR_LOCATOR =
   "Either testId or locator must be defined";
 export const GENE_LABELS_ID = "[data-testid^=gene-label-]";
+
+export const downLoadPath = "./tests/downloads";
