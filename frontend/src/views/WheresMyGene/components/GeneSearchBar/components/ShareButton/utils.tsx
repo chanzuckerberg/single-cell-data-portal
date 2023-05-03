@@ -11,6 +11,8 @@ import {
 
 const HUMAN_ORGANISM_ID = "NCBITaxon:9606";
 
+export const LATEST_SHARE_LINK_VERSION = "2";
+
 export const generateAndCopyShareUrl = ({
   filters,
   organism,
@@ -38,7 +40,7 @@ export const generateAndCopyShareUrl = ({
   });
   url.searchParams.set("tissues", tissues.join(","));
   url.searchParams.set("genes", genes.join(","));
-  url.searchParams.set("ver", "2");
+  url.searchParams.set("ver", LATEST_SHARE_LINK_VERSION);
 
   if (compare) {
     url.searchParams.set("compare", compare);

@@ -7,6 +7,11 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
+
 jobs:
   upgrade:
     runs-on: ubuntu-20.04
@@ -15,20 +20,16 @@ jobs:
         with:
           node-version: 15
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         if: github.event.deployment.environment == 'prod'
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         if: github.event.deployment.environment != 'prod'
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
@@ -64,10 +65,10 @@ jobs:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         run: |
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
-            DOMAIN_NAME=public-frontend.stage.single-cell.czi.technology
+            DOMAIN_NAME=frontend.stage.single-cell.czi.technology
             ALIAS=cellxgene.staging.single-cell.czi.technology
           elif [ "${DEPLOYMENT_STAGE}" == "prod" ]; then
-            DOMAIN_NAME=public-frontend.production.single-cell.czi.technology
+            DOMAIN_NAME=frontend.production.single-cell.czi.technology
             ALIAS=cellxgene.cziscience.com
           else
             DOMAIN_NAME=frontend.${DEPLOYMENT_STAGE}.single-cell.czi.technology
@@ -109,20 +110,16 @@ jobs:
         with:
           ref: ${{ github.event.deployment.sha }}
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         if: github.event.deployment.environment == 'prod'
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         if: github.event.deployment.environment != 'prod'
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
@@ -171,20 +168,16 @@ jobs:
       - upgrade
     steps:
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         if: github.event.deployment.environment == 'prod'
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         if: github.event.deployment.environment != 'prod'
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
@@ -240,20 +233,16 @@ jobs:
       - upgrade
     steps:
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         if: github.event.deployment.environment == 'prod'
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         if: github.event.deployment.environment != 'prod'
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
