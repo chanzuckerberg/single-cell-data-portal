@@ -744,7 +744,7 @@ def get_datasets_index():
 
 def get_user_datasets_index(token_info: dict):
     """
-    Returns a list of all datasets associated with public or private collections where
+    Returns a list of all Datasets associated with public Collections or with private Collections where
     the user has WRITE access and the collection is not a revision.
     """
     public_datasets = get_business_logic().get_all_mapped_datasets()
