@@ -1,4 +1,4 @@
-import { Page, chromium, expect } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
@@ -303,14 +303,13 @@ export const getFilterText = async (page: Page, filterName: string) => {
   return await page.locator(filter_label).textContent();
 };
 export async function compareSvg(
+  page: Page,
   webCellImage: string,
   webGeneImage: string,
   svgFile: string
 ): Promise<void> {
-  const browser = await chromium.launch();
-  const browserContext = await browser.newContext();
-  const page = await browserContext.newPage();
-  await page.goto(svgFile);
+  console.log("===== Been here =====");
+  page.goto(`${downLoadPath}/${svgFile}`);
   expect(page.locator("svg").locator("svg").nth(3)).toMatchSnapshot(
     webCellImage
   );
@@ -318,5 +317,4 @@ export async function compareSvg(
     webCellImage
   );
   expect(await page.screenshot()).toMatchSnapshot(webGeneImage);
-  await browser.close();
 }

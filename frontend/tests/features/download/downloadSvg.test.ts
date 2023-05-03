@@ -41,7 +41,7 @@ describe("SVG download tests", () => {
         .locator(geneCanvasId)
         .nth(0)
         .screenshot({ path: geneSnapshot });
-      await compareSvg(geneSnapshot, geneSnapshot, `${tissues[i]}.svg`);
+      await compareSvg(page, geneSnapshot, geneSnapshot, `${tissues[i]}.svg`);
     }
   });
 
