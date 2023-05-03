@@ -138,15 +138,23 @@ export const checkPlotSize = async (page: Page) => {
   return sumOfHeights;
 };
 
+/**
+ * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
+ */
 export async function goToWMG(page: Page, url?: string) {
   const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
-  return Promise.all([
-    page.waitForResponse(
-      (resp: { url: () => string | string[]; status: () => number }) =>
-        resp.url().includes("/wmg/v1/filters") && resp.status() === 200
-    ),
-    page.goto(targetUrl),
-  ]);
+  return await tryUntil(
+    async () => {
+      await Promise.all([
+        page.waitForResponse(
+          (resp: { url: () => string | string[]; status: () => number }) =>
+            resp.url().includes("/wmg/v1/filters") && resp.status() === 200
+        ),
+        page.goto(targetUrl),
+      ]);
+    },
+    { page }
+  );
 }
 export async function searchAndAddGene(page: Page, geneName: string) {
   // click +Tissue button
