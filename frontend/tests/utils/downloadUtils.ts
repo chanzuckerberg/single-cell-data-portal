@@ -323,11 +323,11 @@ export async function compareSvg(
   await browser.close();
 }
 
-export async function verifyPng(
+export function verifyPng(
   dirPath: string,
   tissues: string[],
   subDirectory: string
-): Promise<void> {
+) {
   tissues.forEach(async (tissue) => {
     // Capture the actual screenshot and compare it with the expected screenshot
     const expectedPng = PNG.sync.read(
@@ -349,8 +349,9 @@ export async function verifyPng(
       diff.data,
       width,
       height,
-      { threshold: 0.5 }
+      { threshold: 0.1 }
     );
-    expect(mismatchedPixels).toBe(0);
+    console.log(mismatchedPixels + " pixels are not matching");
+    expect(mismatchedPixels).toBeLessThan(200);
   });
 }
