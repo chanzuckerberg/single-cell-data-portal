@@ -45,7 +45,7 @@ describe("SVG download tests", () => {
     }
   });
 
-  test.only(`Should verify SVG download with grouping`, async ({ page }) => {
+  test(`Should verify SVG download with grouping`, async ({ page }) => {
     // set app state
     await goToWMG(page, SIMPLE_SHARED_LINK);
 
@@ -68,8 +68,8 @@ describe("SVG download tests", () => {
       await compareSvg(geneSnapshot, geneSnapshot, `${tissues[i]}.svg`);
     }
   });
-  test.afterAll(async () => {
-    //delete csv
-    deleteDownloadedFiles(`./tests/downloads`);
-  });
+  // test.afterAll(async () => {
+  //   //delete csv
+  //   deleteDownloadedFiles(`./tests/downloads`);
+  // });
 });

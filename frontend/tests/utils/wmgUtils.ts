@@ -146,7 +146,7 @@ export const checkPlotSize = async (page: Page) => {
   const n = await page.locator('[data-zr-dom-id*="zr"]').count();
   let sumOfHeights = 0;
   for (let i = 0; i < n; i++) {
-    const row = await page.locator('[data-zr-dom-id*="zr"]').nth(i);
+    const row = page.locator('[data-zr-dom-id*="zr"]').nth(i);
 
     const height = await row.getAttribute("height");
 
