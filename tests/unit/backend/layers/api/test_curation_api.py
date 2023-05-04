@@ -87,9 +87,9 @@ class TestDeleteCollection(BaseAPIPortalTest):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
-                collection_id = self.generate_published_collection().collection_id
-                self.business_logic.tombstone_collection(collection_id)
-                self._test(collection_id, auth, expected_response)
+                collection = self.generate_published_collection()
+                self.business_logic.tombstone_collection(collection.collection_id)
+                self._test(collection.collection_id, auth, expected_response)
 
 
 class TestS3Credentials(BaseAPIPortalTest):
@@ -475,6 +475,7 @@ class TestGetCollections(BaseAPIPortalTest):
         resp_collection = resp[0]
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
         self.assertEqual(public_collection.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
+        self.expected_collection_columns.remove("processing_status")
         self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
         self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
@@ -534,6 +535,15 @@ class TestGetCollections(BaseAPIPortalTest):
 
 
 class TestGetCollectionVersions(BaseAPIPortalTest):
+    def confirm_timestamp_fields_present_then_remove(self, received_body: dict):
+        # Confirm fields are present on Collection version body but ignore equality comparison for timestamps
+        self.assertIn("created_at", received_body)
+        self.assertIn("published_at", received_body)
+        [self.assertIn("published_at", d) for d in received_body["datasets"]]
+        received_body.pop("created_at")
+        received_body.pop("published_at")
+        [d.pop("published_at") for d in received_body["datasets"]]
+
     def test__get_collection_versions__200(self):
         # Create published collection with 2 published revisions and 1 unpublished revision
         published_collection = self.generate_published_collection()
@@ -546,17 +556,27 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
         revision_collection_2 = self.generate_revision(collection_id=published_collection.collection_id)
         expected_version_ids.append(revision_collection_2.version_id.id)
         self.business_logic.publish_collection_version(revision_collection_2.version_id)
+        expected_version_ids.reverse()
 
         with self.subTest("Published versions are returned in reverse chronological order with no revision open"):
             resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
             received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            [self.confirm_timestamp_fields_present_then_remove(c_v) for c_v in resp.json]
             self.assertEqual(expected_version_ids, received_version_ids)
 
         self.generate_revision(collection_id=published_collection.collection_id)
         with self.subTest("Published versions are returned in reverse chronological order with a revision open"):
             resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
             received_version_ids = [c_v["collection_version_id"] for c_v in resp.json]
+            [self.confirm_timestamp_fields_present_then_remove(c_v) for c_v in resp.json]
             self.assertEqual(expected_version_ids, received_version_ids)
+
+    def test__get_collection_versions_tombstoned__410(self):
+        published_collection = self.generate_published_collection()
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+        with self.subTest("Returns 410 when a tombstoned canonical id is requested"):
+            resp = self.app.get(f"/curation/v1/collections/{published_collection.collection_id.id}/versions")
+            self.assertEqual(410, resp.status_code)
 
     def test__get_collection_versions_not_published_canonical__404(self):
         published_collection = self.generate_published_collection()
@@ -587,7 +607,7 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
 
 class TestGetCollectionID(BaseAPIPortalTest):
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test__get_collection_verify_body_is_reshaped_correctly__OK(self, mock_config: Mock):
+    def test__get_published_collection_verify_body_is_reshaped_correctly__OK(self, mock_config: Mock):
         # Setup
         # test fixtures
         dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -650,19 +670,17 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "explorer_url": f"/e/{dataset.dataset_id}.cxg/",
                 "dataset_id": dataset.dataset_id.id,
                 "dataset_version_id": dataset.version_id.id,
-                "processing_status": "INITIALIZED",
                 "tombstone": False,
-                "processing_status_detail": None,
                 "assets": [  # Filter out disallowed file types + properly construct url
                     {
                         "filesize": -1,
                         "filetype": "H5AD",
-                        "url": "http://domain/1234-5678-9.h5ad",
+                        "url": f"http://domain/{dataset.version_id.id}.h5ad",
                     },
                     {
                         "filesize": -1,
                         "filetype": "RDS",
-                        "url": "http://domain/1234-5678-9.rds",
+                        "url": f"http://domain/{dataset.version_id.id}.rds",
                     },
                 ],
                 "is_primary_data": [True, False],
@@ -679,7 +697,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "datasets": [expect_dataset],
                 "doi": None,
                 "links": links,
-                "processing_status": "PENDING",
                 "publisher_metadata": None,
                 "revision_of": None,
                 "revising_in": None,
@@ -757,6 +774,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(unpublished.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertIn("processing_status", resp_collection.keys())
 
         published = self.generate_published_collection(add_datasets=1)
         with self.subTest("get published version"):
@@ -771,6 +790,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
         revision = self.generate_revision(published.collection_id)
         with self.subTest("get published with unpublished version and restricted access"):
@@ -787,6 +808,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
         with self.subTest("get published with unpublished version and privileged access"):
             resp_collection = _test_responses(
@@ -802,6 +825,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
         with self.subTest("get unpublished version (revision) with published version and read access"):
             resp_collection = _test_responses(revision.version_id, revision.version_id, all_headers)
@@ -815,6 +840,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(revision.datasets[0].version_id.id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revision.datasets[0].version_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertIn("processing_status", resp_collection.keys())
 
         revised_dataset = self.generate_dataset(
             collection_version=revision, replace_dataset_version_id=revision.datasets[0].version_id
@@ -831,6 +858,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["dataset_version_id"])
             self.assertIn(revised_dataset.dataset_version_id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertIn("processing_status", resp_collection.keys())
 
         self.business_logic.publish_collection_version(revision.version_id)
         with self.subTest("get updated published version"):
@@ -845,6 +874,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIsNotNone(resp_collection["datasets"][0]["revised_at"])
             self.assertEqual(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["dataset_id"])
             self.assertIn(revision.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
+            self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
+            self.assertNotIn("processing_status", resp_collection.keys())
 
     def test__get_collection_with_dataset_failing_validation(self):
         collection_version = self.generate_collection(
@@ -956,7 +987,77 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             f"/curation/v1/collection_versions/{first_version.version_id}", headers=self.make_owner_header()
         )
         self.assertEqual(200, res.status_code)
-        self.assertEqual(res.json["collection_version_id"], first_version.version_id.id)
+        received_body = res.json
+        expected_body = {
+            "collection_id": f"{first_version.collection_id.id}",
+            "collection_url": f"https://frontend.corporanet.local:3000/collections/{first_version.version_id.id}",
+            "collection_version_id": f"{first_version.version_id.id}",
+            "consortia": ["Consortia 1", "Consortia 2"],
+            "contact_email": "john.doe@email.com",
+            "contact_name": "john doe",
+            "curator_name": "Jane Smith",
+            "datasets": [
+                {
+                    "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
+                    "assets": [
+                        {
+                            "filesize": -1,
+                            "filetype": "H5AD",
+                            "url": f"None/{first_version.datasets[0].version_id.id}.h5ad",
+                        },
+                        {
+                            "filesize": -1,
+                            "filetype": "RDS",
+                            "url": f"None/{first_version.datasets[0].version_id.id}.rds",
+                        },
+                    ],
+                    "batch_condition": ["test_batch_1", "test_batch_2"],
+                    "collection_id": f"{first_version.collection_id.id}",
+                    "collection_version_id": f"{first_version.version_id.id}",
+                    "cell_count": 10,
+                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
+                    "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
+                    "development_stage": [
+                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
+                    ],
+                    "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
+                    "donor_id": ["test_donor_1"],
+                    "explorer_url": f"/e/{first_version.datasets[0].version_id.id}.cxg/",
+                    "is_primary_data": [True, False],
+                    "mean_genes_per_cell": 0.5,
+                    "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
+                    "schema_version": "3.0.0",
+                    "self_reported_ethnicity": [
+                        {
+                            "label": "test_self_reported_ethnicity_label",
+                            "ontology_term_id": "test_self_reported_ethnicity_term_id",
+                        }
+                    ],
+                    "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
+                    "suspension_type": ["test_suspension_type"],
+                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "title": "test_dataset_name",
+                    "tombstone": False,
+                    "x_approximate_distribution": "NORMAL",
+                }
+            ],
+            "description": "described",
+            "doi": None,
+            "links": [],
+            "name": "test_collection",
+            "publisher_metadata": None,
+            "visibility": "PUBLIC",
+        }
+        # Confirm fields are present but ignore equality comparison for timestamps
+        self.assertIn("created_at", received_body)
+        received_body.pop("created_at")
+        self.assertIn("published_at", received_body)
+        received_body.pop("published_at")
+        [self.assertIn("published_at", d) for d in received_body["datasets"]]
+        [d.pop("published_at") for d in received_body["datasets"]]
+
+        self.assertEqual(received_body, expected_body)
         # test correct dataset explorer url is used
         explorer_url = res.json["datasets"][0]["explorer_url"]
         self.assertTrue(explorer_url.endswith(f"{first_version.datasets[0].version_id.id}.cxg/"))
@@ -989,20 +1090,20 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             res = self.app.get(
                 f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
             )
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(410, res.status_code)
         with self.subTest("Collection Version is unpublished collection"):
             collection = self.generate_unpublished_collection()
             res = self.app.get(
                 f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
             )
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(404, res.status_code)
         with self.subTest("Collection Version is unpublished revision"):
             first_version = self.generate_published_collection()
             revision = self.generate_revision(first_version.collection_id)
             res = self.app.get(
                 f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header()
             )
-            self.assertEqual(403, res.status_code)
+            self.assertEqual(404, res.status_code)
 
 
 class TestPatchCollectionID(BaseAPIPortalTest):
@@ -1783,13 +1884,13 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         dataset_id = collection.datasets[0].dataset_id
         dataset_version_id = collection.datasets[0].version_id
         published_revision = self.generate_revision(collection_id)
-        published_dataset_revision_id = self.generate_dataset(
+        published_dataset_revision = self.generate_dataset(
             collection_version=published_revision, replace_dataset_version_id=dataset_version_id, publish=True
-        ).dataset_version_id
+        )
         unpublished_revision = self.generate_revision(collection_id)
         self.generate_dataset(
             collection_version=unpublished_revision,
-            replace_dataset_version_id=DatasetVersionId(published_dataset_revision_id),
+            replace_dataset_version_id=DatasetVersionId(published_dataset_revision.dataset_version_id),
         )
 
         test_url = f"/curation/v1/datasets/{dataset_id}/versions"
@@ -1798,16 +1899,21 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         expected = defaultdict(list)
         for dataset in response.json:
+            self.assertIsNone(dataset.get("revised_at"))
             expected["dataset_version_ids"].append(dataset["dataset_version_id"])
             expected["collection_ids"].append(dataset["collection_id"])
             expected["collection_version_ids"].append(dataset["collection_version_id"])
+            expected["published_at"].append(dataset["published_at"])
         # Check that only published datasets appear
         # Must be returned in reverse chronological order
-        self.assertEqual([published_dataset_revision_id, dataset_version_id.id], expected["dataset_version_ids"])
+        self.assertEqual(
+            [published_dataset_revision.dataset_version_id, dataset_version_id.id], expected["dataset_version_ids"]
+        )
         self.assertEqual([collection_id.id, collection_id.id], expected["collection_ids"])
         self.assertEqual(
             [published_revision.version_id.id, collection.version_id.id], expected["collection_version_ids"]
         )
+        self.assertTrue(expected["published_at"][0] > expected["published_at"][1])
 
     def test_get_dataset_id_version_4xx(self):
         with self.subTest("Input is not a UUID"):
