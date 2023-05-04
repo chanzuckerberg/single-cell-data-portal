@@ -319,7 +319,7 @@ export async function compareSvg(
   const svg = fs.readFileSync(`${downLoadPath}/${svgFile}`, "utf-8");
   await page.setContent(svg);
   const actualCell = `${downLoadPath}/${folder}/tissue.png`;
- // const actualGene= `${downLoadPath}/${folder}/gene.png`;
+  // const actualGene= `${downLoadPath}/${folder}/gene.png`;
   await page
     .locator("svg")
     .locator("svg")
@@ -327,7 +327,7 @@ export async function compareSvg(
     .screenshot({ path: `${downLoadPath}/${folder}/tissue.png` });
   comparePng(actualCell, webCellImage);
 
- //await page.screenshot()).toMatchSnapshot(webGeneImage);
+  //await page.screenshot()).toMatchSnapshot(webGeneImage);
 }
 export function comparePng(actual: string, expected: string) {
   // Capture the actual screenshot and compare it with the expected screenshot

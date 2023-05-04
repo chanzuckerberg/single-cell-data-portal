@@ -1,13 +1,8 @@
 import { test } from "@playwright/test";
 import { goToWMG } from "../../utils/wmgUtils";
-import {
-  SHARED_LINK,
-  SIMPLE_SHARED_LINK,
-  downLoadPath,
-} from "tests/common/constants";
+import { SIMPLE_SHARED_LINK, downLoadPath } from "tests/common/constants";
 import {
   compareSvg,
-  deleteDownloadedFiles,
   downloadAndVerifyFiles,
   subDirectory,
 } from "tests/utils/downloadUtils";
@@ -35,12 +30,9 @@ describe("SVG download tests", () => {
       const cellSnapshot = `${downLoadPath}/${tissues[i]}.png`;
       const geneSnapshot = `${downLoadPath}/gene_${i}.png`;
       // Get the current viewport size
-      const currentViewportSize = await page.viewportSize();
-      // await page.locator(getById(`${tissues[i]}-y-axis`)).screenshot({
-      //   path: cellSnapshot,
-      // });
+      const currentViewportSize = page.viewportSize();
       // Find the element you want to take a screenshot of
-      const element = await page.locator(getById(`${tissues[i]}-y-axis`));
+      const element = page.locator(getById(`${tissues[i]}-y-axis`));
 
       // Get the bounding box of the element
       const box = await element.boundingBox();
@@ -49,6 +41,7 @@ describe("SVG download tests", () => {
         return;
       }
       // Set the viewport size to the size of the element
+      //some of the elements were missing in the screenshot
       await page.setViewportSize({
         width: box.width * 10,
         height: box.height,
@@ -67,6 +60,8 @@ describe("SVG download tests", () => {
       if (currentViewportSize) {
         await page.setViewportSize(currentViewportSize);
       }
+
+      //I need the page to revert to original viewport before  proceeding
       setTimeout(async () => {
         await compareSvg(
           page,
@@ -76,7 +71,6 @@ describe("SVG download tests", () => {
           folder
         );
       }, 3000);
-      console.log("exit");
     }
   });
 
