@@ -99,7 +99,7 @@ const config: PlaywrightTestConfig = {
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: PLAYWRIGHT_REPORTER,
 
-  retries: SHOULD_RETRY ? 2 : 0,
+  //retries: SHOULD_RETRY ? 2 : 0,
 
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: "./__snapshots__",
@@ -110,7 +110,7 @@ const config: PlaywrightTestConfig = {
    * Maximum time one test can run for.
    * (thuang): 5 mins because FF and Edge need extra time to tear down context
    */
-  timeout: 5 * 60 * 1000,
+  timeout: 60 * 1000,
 
   use: {
     ...COMMON_PLAYWRIGHT_CONTEXT,

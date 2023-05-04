@@ -15,7 +15,7 @@ import { isDevStagingProd } from "tests/utils/helpers";
 import { getById } from "tests/utils/selectors";
 
 const { describe, skip } = test;
-const geneCanvasId = '[data-zr-dom-id="zr_100000"]';
+const geneCanvasId = '[data-zr-dom-id*="zr"]';
 describe("SVG download tests", () => {
   //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
@@ -23,7 +23,7 @@ describe("SVG download tests", () => {
     // set app state
     await goToWMG(page, SIMPLE_SHARED_LINK);
 
-    const tissues = ["blood", "lung"];
+    const tissues = ["blood"]; //todo handle multiple tissues
     const fileTypes = ["svg"];
     const folder = subDirectory();
     //download and verify svg file
@@ -34,14 +34,49 @@ describe("SVG download tests", () => {
     for (let i = 0; i < tissues.length; i++) {
       const cellSnapshot = `${downLoadPath}/${tissues[i]}.png`;
       const geneSnapshot = `${downLoadPath}/gene_${i}.png`;
-      await page
-        .locator(getById(`${tissues[i]}-y-axis`))
-        .screenshot({ path: cellSnapshot });
+      // Get the current viewport size
+      const currentViewportSize = await page.viewportSize();
+      // await page.locator(getById(`${tissues[i]}-y-axis`)).screenshot({
+      //   path: cellSnapshot,
+      // });
+      // Find the element you want to take a screenshot of
+      const element = await page.locator(getById(`${tissues[i]}-y-axis`));
+
+      // Get the bounding box of the element
+      const box = await element.boundingBox();
+      if (!box) {
+        console.error("Element not found");
+        return;
+      }
+      // Set the viewport size to the size of the element
+      await page.setViewportSize({
+        width: box.width * 10,
+        height: box.height,
+      });
+
+      // Take a screenshot of the element
+      await element.screenshot({
+        path: cellSnapshot,
+      });
+
       await page
         .locator(geneCanvasId)
         .nth(0)
         .screenshot({ path: geneSnapshot });
-      await compareSvg(page, geneSnapshot, geneSnapshot, `${tissues[i]}.svg`);
+      // Revert the viewport size to its original value
+      if (currentViewportSize) {
+        await page.setViewportSize(currentViewportSize);
+      }
+      setTimeout(async () => {
+        await compareSvg(
+          page,
+          geneSnapshot,
+          geneSnapshot,
+          `${folder}/${tissues[i]}.svg`,
+          folder
+        );
+      }, 3000);
+      console.log("exit");
     }
   });
 

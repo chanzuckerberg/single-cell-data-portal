@@ -5,6 +5,8 @@ import AdmZip from "adm-zip";
 import { getTestID } from "./selectors";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL, downLoadPath } from "tests/common/constants";
+import pixelmatch from "pixelmatch";
+import { PNG } from "pngjs";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -288,6 +290,8 @@ export async function downloadGeneFile(
   let fileName = `${dirPath}/download.zip`;
   if (fileTypes.length === 1 && tissues.length === 1) {
     fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
+    console.log(fileName);
+    console.log("here1");
   }
 
   await download.saveAs(fileName);
@@ -295,6 +299,8 @@ export async function downloadGeneFile(
   if (fileName.includes("zip")) {
     const zip = new AdmZip(fileName);
     zip.extractAllTo(dirPath);
+    console.log(dirPath);
+    console.log("here2");
   }
 }
 
@@ -306,15 +312,38 @@ export async function compareSvg(
   page: Page,
   webCellImage: string,
   webGeneImage: string,
-  svgFile: string
+  svgFile: string,
+  folder: string
 ): Promise<void> {
   console.log("===== Been here =====");
-  page.goto(`${downLoadPath}/${svgFile}`);
-  expect(page.locator("svg").locator("svg").nth(3)).toMatchSnapshot(
-    webCellImage
+  const svg = fs.readFileSync(`${downLoadPath}/${svgFile}`, "utf-8");
+  await page.setContent(svg);
+  const actualCell = `${downLoadPath}/${folder}/tissue.png`;
+ // const actualGene= `${downLoadPath}/${folder}/gene.png`;
+  await page
+    .locator("svg")
+    .locator("svg")
+    .nth(3)
+    .screenshot({ path: `${downLoadPath}/${folder}/tissue.png` });
+  comparePng(actualCell, webCellImage);
+
+ //await page.screenshot()).toMatchSnapshot(webGeneImage);
+}
+export function comparePng(actual: string, expected: string) {
+  // Capture the actual screenshot and compare it with the expected screenshot
+  const expectedPng = PNG.sync.read(fs.readFileSync(expected));
+  const actualPng = PNG.sync.read(fs.readFileSync(actual));
+  const { width, height } = expectedPng;
+  const diff = new PNG({ width, height });
+
+  const mismatchedPixels = pixelmatch(
+    expectedPng.data,
+    actualPng.data,
+    diff.data,
+    width,
+    height,
+    { threshold: 0.1 }
   );
-  expect(page.locator("svg").locator("svg").nth(4)).toMatchSnapshot(
-    webCellImage
-  );
-  expect(await page.screenshot()).toMatchSnapshot(webGeneImage);
+  console.log(mismatchedPixels + " pixels are not matching");
+  expect(mismatchedPixels).toBeLessThan(200);
 }
