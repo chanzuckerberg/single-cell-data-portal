@@ -1,116 +1,80 @@
-import { useState, useRef, useEffect } from "react";
-import { InputSearch } from "czifui";
-import { noop } from "src/common/constants/utils";
-import { SectionItem, SectionTitle, StyledPopper } from "./style";
+import { TextField } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import InputAdornment from "@mui/material/InputAdornment";
+import { SectionItem, StyledAutocomplete } from "./style";
 import { ROUTES } from "src/common/constants/routes";
 import { useCellTypes } from "src/common/queries/cellCards";
 import { useRouter } from "next/router";
 
+interface CellType {
+  id: string;
+  label: string;
+}
+
 export default function CellCardSearchBar(): JSX.Element {
-  const dropdownRef = useRef(null);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(
-    dropdownRef.current
-  );
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-
-  const [value, setValue] = useState("");
-
-  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
-    if (!anchorEl)
-      setAnchorEl(event.currentTarget.parentElement?.parentElement ?? null);
-    setOpen(true);
-  };
-  const handleBlur = () => {
-    setTimeout(() => {
-      setOpen(false);
-    }, 250);
-  };
-
-  const handleEscape = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Escape") {
-      setOpen(false);
-      (event.target as HTMLElement).blur();
-    }
-  };
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value);
-  };
-
-  useEffect(() => {
-    return () => {
-      setValue("");
-      setOpen(false);
-    };
-  }, []);
-
   const cellTypes = useCellTypes();
 
   return (
     <div>
-      <InputSearch
-        sdsStyle="square"
-        placeholder="Search cell type or tissues"
-        variant="outlined"
+      <StyledAutocomplete
+        disablePortal
         id="cell-cards-search-bar"
-        fullWidth
-        label="Cell Cards"
-        onChange={handleSearch}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        onKeyDown={handleEscape}
-        autoComplete="off"
+        options={cellTypes}
+        onChangeCapture={() => console.log("hi")}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            label="Search cell types or tissues"
+          />
+        )}
+        renderOption={(_, option) => {
+          const cellType = option as CellType;
+          return (
+            <SectionItem
+              onClick={() => {
+                router.push(
+                  `${ROUTES.CELL_CARDS}/${cellType.id.replace(":", "_")}`
+                );
+                document.getElementById("cell-cards-search-bar")?.blur();
+              }}
+            >
+              {cellType.label}
+            </SectionItem>
+          );
+        }}
+        autoComplete
+        filterOptions={(options, state) => {
+          return options
+            .filter((option) => {
+              return (option as CellType).label
+                .toLowerCase()
+                .includes(state.inputValue.toLowerCase());
+            })
+            .sort((cellTypeA, cellTypeB) => {
+              const aRaw = (cellTypeA as CellType).label;
+              const bRaw = (cellTypeB as CellType).label;
+              const a = aRaw.toLowerCase();
+              const b = bRaw.toLowerCase();
+              const searchTerm = state.inputValue.toLowerCase();
+              if (a.startsWith(searchTerm) && !b.startsWith(searchTerm)) {
+                return -1;
+              }
+              if (!a.startsWith(searchTerm) && b.startsWith(searchTerm)) {
+                return 1;
+              }
+              return a.localeCompare(b);
+            });
+        }}
       />
-      <StyledPopper
-        disablePortal={true}
-        ref={dropdownRef}
-        open={open}
-        anchorEl={anchorEl}
-        onResize={noop}
-        onResizeCapture={noop}
-        width={anchorEl?.clientWidth || 0}
-        placement="bottom-start"
-        modifiers={[
-          {
-            name: "flip",
-            enabled: false,
-          },
-        ]}
-      >
-        <SectionTitle>Cell Types</SectionTitle>
-        {cellTypes
-          .filter((cellType) => {
-            const [cellTypeName] = Object.values(cellType);
-            return cellTypeName.toLowerCase().includes(value.toLowerCase());
-          })
-          .sort((cellTypeA, cellTypeB) => {
-            const [aRaw] = Object.values(cellTypeA);
-            const [bRaw] = Object.values(cellTypeB);
-            const a = aRaw.toLowerCase();
-            const b = bRaw.toLowerCase();
-            const searchTerm = value.toLowerCase();
-            if (a.startsWith(searchTerm) && !b.startsWith(searchTerm)) {
-              return -1;
-            }
-            if (!a.startsWith(searchTerm) && b.startsWith(searchTerm)) {
-              return 1;
-            }
-            return a.localeCompare(b);
-          })
-          .map((cellType) => {
-            const handleClick = () => {
-              router.push(
-                `${ROUTES.CELL_CARDS}/${cellTypeId.replace(":", "_")}`
-              );
-            };
-
-            const [cellTypeId] = Object.keys(cellType);
-            const [cellTypeName] = Object.values(cellType);
-            return (
-              <SectionItem onClick={handleClick}>{cellTypeName}</SectionItem>
-            );
-          })}
-      </StyledPopper>
     </div>
   );
 }

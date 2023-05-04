@@ -8,9 +8,8 @@ export const useCellTypes = () => {
 export const useCellTypesById = () => {
   const cellTypes = useCellTypes();
   return cellTypes.reduce((acc, curr) => {
-    const [key] = Object.keys(curr);
-    const value = curr[key];
-    acc[key] = value;
+    const { id, label } = curr;
+    acc[id] = label;
     return acc;
   }, {});
 };
