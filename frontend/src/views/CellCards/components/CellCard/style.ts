@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontBodyS, fontHeaderXxl, getColors } from "czifui";
+import {
+  CommonThemeProps,
+  fontBodyS,
+  fontHeaderM,
+  fontHeaderXxl,
+  getColors,
+} from "czifui";
 import { Tag } from "czifui";
 
 export const Wrapper = styled.div`
@@ -47,4 +53,26 @@ export const CellCardDescription = styled.div`
   ${fontBodyS}
   font-wieght: 400;
   white-space: pre-wrap;
+`;
+
+export const TableTitle = styled.div`
+  ${fontHeaderM}
+  font-weight: 600;
+  margin-bottom: 8px;
+`;
+
+export const TableTitleWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 48px;
+`;
+
+export const WmgLink = styled.a`
+  ${fontBodyS}
+  font-weight: 500;
+  ${(props) => {
+    const colors = getColors(props);
+    return `color: ${colors?.primary[400]}`;
+  }}
 `;
