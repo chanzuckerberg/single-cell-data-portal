@@ -37,7 +37,7 @@ import {
   GENE_DELETE_BUTTON,
   HOMO_SAPIENS_TERM_ID,
   DOWNLOAD_BUTTON_ID,
-} from "tests/utils/constants";
+} from "tests/common/constants";
 
 // FMG test IDs
 const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";

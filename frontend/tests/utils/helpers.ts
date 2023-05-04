@@ -9,7 +9,7 @@ import {
   CELL_TYPE_LABELS_ID,
   ERROR_NO_TESTID_OR_LOCATOR,
   GENE_LABELS_ID,
-} from "./constants";
+} from "../common/constants";
 
 /**
  * (thuang): From oauth/users.json
