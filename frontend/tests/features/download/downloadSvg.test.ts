@@ -17,7 +17,7 @@ import { getById } from "tests/utils/selectors";
 const { describe, skip } = test;
 const geneCanvasId = '[data-zr-dom-id*="zr"]';
 describe("SVG download tests", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test.only(`Should verify SVG download without grouping`, async ({ page }) => {
     // set app state
