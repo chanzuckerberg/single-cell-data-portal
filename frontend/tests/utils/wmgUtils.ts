@@ -148,9 +148,29 @@ export const checkPlotSize = async (page: Page) => {
   return sumOfHeights;
 };
 
-export const selectGroupByOption = async (page: Page) => {
-  // click the group by dropdown
-  await page.getByTestId("compare-dropdown").click();
+/**
+ * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
+ */
+export async function goToWMG(page: Page, url?: string) {
+  const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
+  return await tryUntil(
+    async () => {
+      await Promise.all([
+        page.waitForResponse(
+          (resp: { url: () => string | string[]; status: () => number }) =>
+            resp.url().includes("/wmg/v1/filters") && resp.status() === 200
+        ),
+        page.goto(targetUrl),
+      ]);
+    },
+    { page }
+  );
+}
+export async function searchAndAddGene(page: Page, geneName: string) {
+  // click +Tissue button
+  await page.getByTestId(ADD_GENE_BTN).click();
+  await page.getByPlaceholder("Search").type(geneName);
+  await page.getByText(geneName).click();
 
   // select the first option
   await page.locator("[data-option-index='1']").click();

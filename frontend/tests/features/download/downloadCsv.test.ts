@@ -38,7 +38,7 @@ describe("CSV download tests", () => {
     );
   });
 });
-test(`Should verify CSV metadata and header  lung and blood tissue with sex filter applied and group by selected`, async ({
+test(`Should verify CSV metadata and header lung and blood tissue with sex filter applied and group by selected`, async ({
   page,
 }) => {
   // set app state
