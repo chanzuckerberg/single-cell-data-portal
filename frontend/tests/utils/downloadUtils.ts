@@ -294,8 +294,6 @@ export async function downloadGeneFile(
   let fileName = `${dirPath}/download.zip`;
   if (fileTypes.length === 1 && tissues.length === 1) {
     fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
-    console.log(fileName);
-    console.log("here1");
   }
 
   await download.saveAs(fileName);
@@ -304,7 +302,6 @@ export async function downloadGeneFile(
     const zip = new AdmZip(fileName);
     zip.extractAllTo(dirPath);
     console.log(dirPath);
-    console.log("here2");
   }
 }
 
@@ -320,11 +317,12 @@ export async function compareSvg(
   folder: string,
   tissue: string
 ): Promise<void> {
-  console.log("===== Been here =====");
   const svg = fs.readFileSync(`${downLoadPath}/${svgFile}`, "utf-8");
   await page.setContent(svg);
+  // Wait for the page to finish loading
+  await page.waitForLoadState("networkidle");
   const actualCell = `${downLoadPath}/${folder}/${tissue}1.png`;
-   const actualGene= `${downLoadPath}/${folder}/${tissue}gene.png`;
+  //const actualGene = `${downLoadPath}/${folder}/${tissue}gene.png`;
   await page
     .locator("svg")
     .locator("svg")
@@ -349,7 +347,6 @@ export function comparePng(actual: string, expected: string) {
     height,
     { threshold: 0.1 }
   );
-  console.log(mismatchedPixels + " pixels are not matching");
   expect(mismatchedPixels).toBeLessThan(20000);
 }
 
