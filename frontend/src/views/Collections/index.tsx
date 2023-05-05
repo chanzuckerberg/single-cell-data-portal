@@ -301,7 +301,8 @@ export default function Collections(): JSX.Element {
               />
             )}
           </View>
-          <BottomBanner />
+          {/* May be added in the future after sign off */}
+          {/* <BottomBanner /> */}
         </>
       )}
     </>

@@ -374,7 +374,8 @@ export default function Datasets(): JSX.Element {
               />
             )}
           </View>
-          <BottomBanner />
+          {/* May be added in the future after sign off */}
+          {/* <BottomBanner /> */}
         </>
       )}
     </>
