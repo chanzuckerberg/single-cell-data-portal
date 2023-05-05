@@ -16,7 +16,6 @@ import {
 } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
-import BottomBanner from "src/components/BottomBanner";
 import CollectionDescription from "src/components/Collection/components/CollectionDescription";
 import CollectionMetadata from "src/components/Collection/components/CollectionMetadata";
 import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
