@@ -21,13 +21,24 @@ info:
     The CZ CELLxGENE Discover API supports access to all published versions of Collections and Datasets. For example,
     if a Dataset was published and then later updated and published again, then both Dataset Versions can be accessed.
 
-    #### Version identifiers
-    While the *Collection* identifier `collection_id` will always refer to the latest published version of a Collection,
-    and must be used with `Collection` endpoints, the *Collection Version* identifier `collection_version_id`
-    refers to one specific published version of a Collection and must be used with `Collection Version` endpoints.
-    The same is true for *Datasets* and *Dataset Versions*, though it is important to note that if a given Dataset
-    is not updated during the course of a revision of its parent Collection, then its Dataset Version (and identifier
-    `dataset_version_id`) will not change even though a new Collection Version has been published.
+    #### Different types of identifiers
+    The Collection identifier collection_id is set during the creation of a Collection; it does not change, even if the
+    Collection is updated. It always refers to the latest published version of the Collection and is the required
+    identifier to use with Collection endpoints.
+
+    The Collection Version identifier `collection_version_id` refers to one specific published version of a Collection
+    and is required by the Collection Version endpoint.
+
+    The Dataset identifier dataset_id is set during the creation of a Dataset; it does not change, even if the Dataset
+    is updated. It always refers to the latest published version of the Dataset and is the required identifier to use
+    with Dataset endpoints.
+
+    The Dataset Version identifier `dataset_version_id` refers to one specific published version of a Dataset and is
+    required by the Dataset Version endpoint.
+
+    **Important Note:** if a Dataset is NOT updated during a revision of its parent Collection and the revision is
+    published, then its Dataset Version (and identifier `dataset_version_id`) do not change even though there is a new
+    Collection Version (and identifier `collection_version_id`).
 
 servers:
   - description: Production environment
