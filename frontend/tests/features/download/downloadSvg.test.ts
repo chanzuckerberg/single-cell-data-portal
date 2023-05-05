@@ -21,19 +21,20 @@ describe("SVG download tests", () => {
 
   test(`Should verify SVG download without grouping`, async ({ page }) => {
     // set app state
-    await goToWMG(page, SIMPLE_SHARED_LINK);
 
-    const tissues = ["blood"]; // todo: handle multiple tissues
+    const tissues = ["blood", "lung"]; // todo: handle multiple tissues
     const fileTypes = ["svg"];
     const folder = subDirectory();
-    //download and verify svg file
-    await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
     // verify SVG
 
     for (let i = 0; i < tissues.length; i++) {
-      const cellSnapshot = `${downLoadPath}/${tissues[i]}.png`;
-      const geneSnapshot = `${downLoadPath}/gene_${i}.png`;
+      await goToWMG(page, SIMPLE_SHARED_LINK);
+      //download and verify svg file
+
+      await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
+      const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
+      const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
       // Get the current viewport size
       const currentViewportSize = page.viewportSize();
       // Find the y-axis element
@@ -48,8 +49,8 @@ describe("SVG download tests", () => {
       // Set the viewport size to the size of the element
       // some of the elements were missing in the screenshot
       await page.setViewportSize({
-        width: box.width * 10,
-        height: box.height,
+        width: box.width * 20,
+        height: box.height * 3,
       });
 
       // Take a screenshot of the y-axis element
@@ -65,35 +66,34 @@ describe("SVG download tests", () => {
       if (currentViewportSize) {
         await page.setViewportSize(currentViewportSize);
       }
-
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       //I need the page to revert to original viewport before  proceeding
-      setTimeout(async () => {
-        await compareSvg(
-          page,
-          geneSnapshot,
-          geneSnapshot,
-          `${folder}/${tissues[i]}.svg`,
-          folder
-        );
-      }, 3000);
+
+      await compareSvg(
+        page,
+        geneSnapshot,
+        geneSnapshot,
+        `${folder}/${tissues[i]}.svg`,
+        folder,
+        tissues[i]
+      );
     }
   });
 
   test(`Should verify SVG download with grouping`, async ({ page }) => {
-    // set app state
-    await goToWMG(page, SHARED_LINK);
-
     const tissues = ["blood"]; // todo: handle multiple tissues
     const fileTypes = ["svg"];
     const folder = subDirectory();
-    //download and verify svg file
-    await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
     // verify SVG
 
     for (let i = 0; i < tissues.length; i++) {
-      const cellSnapshot = `${downLoadPath}/${tissues[i]}.png`;
-      const geneSnapshot = `${downLoadPath}/gene_${i}.png`;
+      // set app state
+      await goToWMG(page, SHARED_LINK);
+      //download and verify svg file
+      await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
+      const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
+      const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
       // Get the current viewport size
       const currentViewportSize = page.viewportSize();
       // Find the y-axis element
@@ -139,6 +139,6 @@ describe("SVG download tests", () => {
     }
   });
   test.afterAll(async () => {
-    deleteDownloadedFiles(`./tests/downloads`);
+    //deleteDownloadedFiles(`./tests/downloads`);
   });
 });

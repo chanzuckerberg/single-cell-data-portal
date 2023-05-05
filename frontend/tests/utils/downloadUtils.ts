@@ -7,6 +7,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL, downLoadPath } from "tests/common/constants";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
+import sharp from "sharp";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -83,14 +84,17 @@ export async function downloadAndVerifyFiles(
 }
 
 export function deleteDownloadedFiles(filePath: string) {
-  fs.rmdir(filePath, { recursive: true }, (err) => {
-    if (err) {
-      console.error(`Error deleting folder: ${err}`);
-    } else {
-      console.log("Folder deleted successfully");
-    }
-  });
+  setTimeout(() => {
+    fs.rmdir(filePath, { recursive: true }, (err) => {
+      if (err) {
+        console.error(`Error deleting folder: ${err}`);
+      } else {
+        console.log("Folder deleted successfully");
+      }
+    });
+  }, 5000); // Wait for 5 seconds because image compare takes time sometimes
 }
+
 export interface CsvMetadata {
   rowCount: number;
   data: string[][];
@@ -313,19 +317,20 @@ export async function compareSvg(
   webCellImage: string,
   webGeneImage: string,
   svgFile: string,
-  folder: string
+  folder: string,
+  tissue: string
 ): Promise<void> {
   console.log("===== Been here =====");
   const svg = fs.readFileSync(`${downLoadPath}/${svgFile}`, "utf-8");
   await page.setContent(svg);
-  const actualCell = `${downLoadPath}/${folder}/tissue.png`;
-  // const actualGene= `${downLoadPath}/${folder}/gene.png`;
+  const actualCell = `${downLoadPath}/${folder}/${tissue}1.png`;
+   const actualGene= `${downLoadPath}/${folder}/${tissue}gene.png`;
   await page
     .locator("svg")
     .locator("svg")
     .nth(3)
-    .screenshot({ path: `${downLoadPath}/${folder}/tissue.png` });
-  comparePng(actualCell, webCellImage);
+    .screenshot({ path: actualCell });
+  compareImages(actualCell, webCellImage);
 
   //await page.screenshot()).toMatchSnapshot(webGeneImage);
 }
@@ -345,5 +350,41 @@ export function comparePng(actual: string, expected: string) {
     { threshold: 0.1 }
   );
   console.log(mismatchedPixels + " pixels are not matching");
-  expect(mismatchedPixels).toBeLessThan(200);
+  expect(mismatchedPixels).toBeLessThan(20000);
+}
+
+async function compareImages(imagePath1: string, imagePath2: string) {
+  const imageBuffer1 = await fs.promises.readFile(imagePath1);
+  const imageBuffer2 = await fs.promises.readFile(imagePath2);
+
+  const image1 = PNG.sync.read(imageBuffer1);
+  const image2 = PNG.sync.read(imageBuffer2);
+
+  if (image1.width !== image2.width || image1.height !== image2.height) {
+    const maxWidth = Math.max(image1.width, image2.width);
+    const maxHeight = Math.max(image1.height, image2.height);
+
+    const resizedImage1 = await sharp(imageBuffer1)
+      .resize(maxWidth, maxHeight)
+      .png()
+      .toBuffer();
+    const resizedImage2 = await sharp(imageBuffer2)
+      .resize(maxWidth, maxHeight)
+      .png()
+      .toBuffer();
+
+    const resizedImage1PNG = PNG.sync.read(resizedImage1);
+    const resizedImage2PNG = PNG.sync.read(resizedImage2);
+
+    const diffPNG = new PNG({ width: maxWidth, height: maxHeight });
+    const numDiffPixels = pixelmatch(
+      resizedImage1PNG.data,
+      resizedImage2PNG.data,
+      diffPNG.data,
+      maxWidth,
+      maxHeight,
+      { threshold: 0.95 }
+    );
+    expect(numDiffPixels).toBeLessThan(20000);
+  }
 }

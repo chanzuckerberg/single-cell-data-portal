@@ -43,8 +43,7 @@
     "rehype-mathjax": "^4.0.2",
     "rehype-slug": "^5.0.1",
     "remark-math": "^5.1.1",
-    "sass": "^1.54.4",
-    "sharp": "^0.30.6"
+    "sass": "^1.54.4"
   },
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.8.1",
@@ -88,8 +87,10 @@
     "next-mdx-remote": "^4.1.0",
     "pixelmatch": "^5.2.4",
     "playwright": "^1.32.3",
+    "pngjs": "^4.0.0",
     "prettier": "^2.4.1",
     "prettier-plugin-organize-imports": "^2.3.4",
+    "sharp": "^0.32.1",
     "start-server-and-test": "^1.14.0",
     "string-similarity": "^4.0.4",
     "stylelint": "^13.13.1",
