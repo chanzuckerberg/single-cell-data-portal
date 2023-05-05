@@ -7,6 +7,7 @@ export interface State {}
 export const INITIAL_STATE: State = {};
 
 export const REDUCERS = {
+  // while we have no reducers, we need a dummy function to satisfy the type system
   dummyFunction,
 };
 

@@ -17,7 +17,7 @@ import { useCellTypesById } from "src/common/queries/cellCards";
 import {
   allCellTypeDescriptions,
   allCellTypeMarkerGenes,
-} from "../CellCardSearchBar/fixture";
+} from "src/views/CellCards/common/fixtures";
 import Table from "./components/Table";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -79,13 +79,12 @@ export default function CellCard(): JSX.Element {
     }
   }
   useEffect(() => {
-    // const olsUrl = `
-    //   https://www.ebi.ac.uk/ols4/api/v2/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}?lang=en
-    // `;
+    // hardcoding this for now.
     const olsUrl = `
      https://www.ebi.ac.uk/ols/api/ontologies/cl/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}
     `;
     if (cellTypeIdRaw) {
+      // set all descriptions
       setDescriptionGpt(
         allCellTypeDescriptions[
           cellTypeId as keyof typeof allCellTypeDescriptions

@@ -1,4 +1,3 @@
-// Table.js
 import styled from "@emotion/styled";
 import { fontBodyS, getColors } from "czifui";
 

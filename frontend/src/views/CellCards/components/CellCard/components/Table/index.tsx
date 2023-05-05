@@ -12,6 +12,7 @@ interface TableProps<T> {
   rows: T[];
 }
 
+// This is a generic table component that can be used to render any type of data.
 function Table<T extends object>({ columns, rows }: TableProps<T>) {
   return (
     <TableWrapper>

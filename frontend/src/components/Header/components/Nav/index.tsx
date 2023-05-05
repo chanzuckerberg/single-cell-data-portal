@@ -58,7 +58,7 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
           />
         </Link>
       </LinkWrapper>
-      <LinkWrapper>
+      {/* <LinkWrapper>
         <Link href={ROUTES.CELL_CARDS} passHref>
           <AnchorButton
             active={isRouteActive(pathname, ROUTES.CELL_CARDS)}
@@ -70,7 +70,7 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
             text="Cell Cards"
           />
         </Link>
-      </LinkWrapper>
+      </LinkWrapper> */}
       <NavDivider />
       <LinkWrapper>
         <AnchorButton
