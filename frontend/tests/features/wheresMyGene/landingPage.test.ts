@@ -7,10 +7,10 @@ import {
   ADD_TISSUE_LBL,
 } from "tests/utils/constants";
 import { getById } from "tests/utils/selectors";
-import { tryUntil } from "tests/utils/helpers";
+import { isDevStagingProd, tryUntil } from "tests/utils/helpers";
 
-const ALERT =
-  "We would appreciate your feedback, please fill out a quick survey";
+const { describe, skip } = test;
+const ALERT = "Send us feedback with this quick survey";
 
 const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
 const EXPLORE_GENE_EXPRESSION = "explore-gene-expression";
@@ -26,7 +26,9 @@ function goToWMG(page: Page) {
     page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
   ]);
 }
-test.describe("Tests for Gene Expression page", () => {
+describe("Tests for Gene Expression page", () => {
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
     // +Tissue button
@@ -34,7 +36,9 @@ test.describe("Tests for Gene Expression page", () => {
     // +Gene button
     await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // survey alert
-    await expect(page.getByTestId("survey-alert-id")).toContainText(ALERT);
+    await expect(
+      page.getByTestId("newsletter-modal-banner-wrapper")
+    ).toContainText(ALERT);
     await expect(page.getByText("quick survey")).toHaveAttribute(
       "href",
       SURVEY_LINK

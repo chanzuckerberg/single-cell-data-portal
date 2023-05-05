@@ -464,10 +464,10 @@ describe("Where's My Gene", () => {
       await clickDropdownOptionByName({
         page,
         testId: ADD_TISSUE_ID,
-        name: "lung",
+        name: "heart",
       });
 
-      await getCellTypeFmgButtonAndClick(page, "native cell");
+      await getCellTypeFmgButtonAndClick(page, "dendritic cell");
 
       await waitForElement(page, NO_MARKER_GENES_WARNING_TEST_ID);
     });
@@ -789,6 +789,93 @@ describe("Where's My Gene", () => {
       for (const entry of zipEntries) {
         expect(files.includes(entry.name)).toBe(true);
       }
+    });
+  });
+
+  describe("Newsletter", () => {
+    const NEWSLETTER_MODAL_CONTENT = "newsletter-modal-content";
+    const NEWSLETTER_MODAL_OPEN_BUTTON = "newsletter-modal-open-button";
+    const NEWSLETTER_MODAL_CLOSE_BUTTON = "newsletter-modal-close-button";
+    const NEWSLETTER_SUBSCRIBE_BUTTON = "newsletter-subscribe-button";
+    const NEWSLETTER_EMAIL_INPUT = "newsletter-email-input";
+    const NEWSLETTER_VALIDATION_ERROR_MESSAGE =
+      "newsletter-validation-error-message";
+    const FAILED_EMAIL_VALIDATION_STRING =
+      "Please provide a valid email address.";
+
+    test("Newsletter Modal - Open/Close", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Open modal
+      await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
+
+      await waitForElement(page, NEWSLETTER_MODAL_CONTENT);
+
+      const modalContent = page.getByTestId(NEWSLETTER_MODAL_CONTENT);
+
+      // modal content
+      expect(modalContent.getByText("Join Our Newsletter")).toBeTruthy();
+      expect(
+        modalContent.getByText(
+          "Get a quarterly email with the latest CELLxGENE features and data."
+        )
+      ).toBeTruthy();
+      expect(modalContent.getByText("Enter email address")).toBeTruthy();
+      expect(modalContent.getByText("Subscribe")).toBeTruthy();
+      expect(modalContent.getByText("Unsubscribe at any time.")).toBeTruthy();
+
+      // Close modal
+      await getButtonAndClick(page, NEWSLETTER_MODAL_CLOSE_BUTTON);
+
+      await waitForElementToBeRemoved(page, NEWSLETTER_MODAL_CONTENT);
+    });
+
+    test("Newsletter Modal - Validate Email", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Open modal
+      await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
+
+      await waitForElement(page, NEWSLETTER_MODAL_CONTENT);
+
+      const emailInput = page.getByTestId(NEWSLETTER_EMAIL_INPUT);
+      const subscribeButton = page.getByTestId(NEWSLETTER_SUBSCRIBE_BUTTON);
+      const validationMessage = page.getByTestId(
+        NEWSLETTER_VALIDATION_ERROR_MESSAGE
+      );
+
+      // No input
+      expect(subscribeButton.isDisabled());
+
+      // Bad email 1
+      emailInput.fill("test");
+      expect(subscribeButton.isEnabled());
+      await subscribeButton.click();
+      expect(
+        validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
+      ).toBeTruthy();
+
+      emailInput.fill("");
+      expect(subscribeButton.isDisabled());
+
+      // Bad email 2
+      emailInput.fill("test@test");
+      expect(subscribeButton.isEnabled());
+      await subscribeButton.click();
+      expect(
+        validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
+      ).toBeTruthy();
+
+      emailInput.fill("");
+      expect(subscribeButton.isDisabled());
+
+      // Bad email 3
+      emailInput.fill("test@test.chanzuckerberg");
+      expect(subscribeButton.isEnabled());
+      await subscribeButton.click();
+      expect(
+        validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
+      ).toBeTruthy();
     });
   });
 });
