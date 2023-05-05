@@ -1163,6 +1163,7 @@ export async function fetchGeneInfo({
 }: FetchGeneInfoParams): Promise<GeneInfo> {
   const url =
     API_URL + API.WMG_GENE_INFO + `?geneID=${geneID}&gene=${geneSymbol}`;
+  console.log(url);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS, // Required for CORS
     signal,

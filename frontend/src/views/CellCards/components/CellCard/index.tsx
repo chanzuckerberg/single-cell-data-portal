@@ -14,8 +14,13 @@ import {
   WmgLink,
 } from "./style";
 import { useCellTypesById } from "src/common/queries/cellCards";
-import { allCellTypeDescriptions } from "../CellCardSearchBar/fixture";
+import {
+  allCellTypeDescriptions,
+  allCellTypeMarkerGenes,
+} from "../CellCardSearchBar/fixture";
 import Table from "./components/Table";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
 const Link = ({ title, url }: { title: string; url: string }) => {
   return (
@@ -25,77 +30,25 @@ const Link = ({ title, url }: { title: string; url: string }) => {
   );
 };
 
+// enum of available descriptions
+type DescriptionOptions = "GPT3.5" | "Wikipedia" | "OLS v4";
+const availableDescriptions: DescriptionOptions[] = [
+  "GPT3.5",
+  "Wikipedia",
+  "OLS v4",
+];
+
 interface TableRow {
-  symbol: string;
+  symbol: ReactElement;
   name: string;
-  publication: ReactElement;
+  publication: ReactElement | string;
 }
 const tableColumns: Array<keyof TableRow> = ["symbol", "name", "publication"];
-const tableRows: TableRow[] = [
-  {
-    symbol: "JCHAIN",
-    name: "Joining chain Of multimeric IgA and IgM",
-    publication: (
-      <Link
-        title="Gene Card"
-        url="https://www.genecards.org/cgi-bin/carddisp.pl?gene=JCHAIN"
-      />
-    ),
-  },
-  {
-    symbol: "MZB1",
-    name: "Marginal zone B and B1 cell specific protein",
-    publication: (
-      <Link
-        title="Gene Card"
-        url="https://www.genecards.org/cgi-bin/carddisp.pl?gene=MZB1"
-      />
-    ),
-  },
-  {
-    symbol: "IGKC",
-    name: "Immunoglobulin kappa constant",
-    publication: (
-      <Link
-        title="Gene Card"
-        url="https://www.genecards.org/cgi-bin/carddisp.pl?gene=IGKC"
-      />
-    ),
-  },
-  {
-    symbol: "IGHG1",
-    name: "Immunoglobulin heavy constant gamma 1 (G1m marker)",
-    publication: (
-      <Link
-        title="Gene Card"
-        url="https://www.genecards.org/cgi-bin/carddisp.pl?gene=IGHG1"
-      />
-    ),
-  },
-  {
-    symbol: "IGHA1",
-    name: "Immunoglobulin heavy constant alpha 1",
-    publication: (
-      <Link
-        title="Gene Card"
-        url="https://www.genecards.org/cgi-bin/carddisp.pl?gene=IGHA1"
-      />
-    ),
-  },
-  {
-    symbol: "DERL3",
-    name: "Derlin 3",
-    publication: (
-      <Link
-        title="Gene Card"
-        url="https://www.genecards.org/cgi-bin/carddisp.pl?gene=DERL3"
-      />
-    ),
-  },
-];
 
 export default function CellCard(): JSX.Element {
   const router = useRouter();
+  const [selectedDescription, setSelectedDescription] =
+    useState<DescriptionOptions>("GPT3.5");
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
   const [descriptionWiki, setDescriptionWiki] = useState<string>("");
   const [descriptionOls, setDescriptionOls] = useState<string>("");
@@ -104,6 +57,27 @@ export default function CellCard(): JSX.Element {
   const cellTypesById = useCellTypesById();
   const cellTypeName = cellTypesById[cellTypeId] ?? "";
 
+  const tableRows: TableRow[] = [];
+  if (cellTypeId in allCellTypeMarkerGenes) {
+    const genes =
+      allCellTypeMarkerGenes[cellTypeId as keyof typeof allCellTypeMarkerGenes];
+    for (const markerGene of genes) {
+      tableRows.push({
+        symbol: (
+          <Link
+            title={`${markerGene.symbol}`}
+            url={`https://www.genecards.org/cgi-bin/carddisp.pl?gene=${markerGene.symbol}`}
+          />
+        ),
+        name: markerGene.name,
+        publication: markerGene.publication ? (
+          <Link title="Reference" url={`https://${markerGene.publication}`} />
+        ) : (
+          ""
+        ),
+      });
+    }
+  }
   useEffect(() => {
     // const olsUrl = `
     //   https://www.ebi.ac.uk/ols4/api/v2/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}?lang=en
@@ -138,44 +112,20 @@ export default function CellCard(): JSX.Element {
     }
   }, [cellTypeIdRaw]);
 
-  // if (wordsToLink && description) {
-  //   const regex = new RegExp(Object.keys(wordsToLink).join('|'), 'gi');
-
-  //   // Custom split function that includes the matched phrases in the resulting array
-  //   const splitWithMatches = (inputText: string, inputRegex: RegExp) => {
-  //     const result = [];
-  //     let match;
-  //     let lastIndex = 0;
-
-  //     while ((match = inputRegex.exec(inputText)) !== null) {
-  //       result.push(inputText.slice(lastIndex, match.index));
-  //       result.push(match[0]);
-  //       lastIndex = match.index + match[0].length;
-  //     }
-
-  //     result.push(inputText.slice(lastIndex));
-  //     return result;
-  //   };
-
-  //   const parts = splitWithMatches(description, regex);
-
-  //   linkedText = parts.map((part, index) => {
-  //     const url = (wordsToLink[part as keyof typeof wordsToLink] ?? "").replace(":", "_");
-
-  //     return url ? (
-  //       <Link key={index} href={`${ROUTES.CELL_CARDS}/${url}`}>
-  //         {part}
-  //       </Link>
-  //     ) : (
-  //       <React.Fragment key={index}>{part}</React.Fragment>
-  //     );
-  //   });
-  // } else {
-  //   linkedText = "This Cell Card is not available yet. Please check back later."
-  // }
-
   const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
+  const available = availableDescriptions.filter((description) => {
+    if (description === "GPT3.5") {
+      return descriptionGpt !== "";
+    } else if (description === "Wikipedia") {
+      return descriptionWiki !== "";
+    } else if (description === "OLS v4") {
+      return descriptionOls !== "";
+    }
+  });
 
+  const handleChange = (event: SelectChangeEvent) => {
+    setSelectedDescription(event.target.value as DescriptionOptions);
+  };
   return (
     <Wrapper>
       <SearchBarWrapper>
@@ -192,36 +142,51 @@ export default function CellCard(): JSX.Element {
           color="gray"
           hover={false}
         />
+        <Select
+          labelId="dropdown-label"
+          id="dropdown"
+          value={selectedDescription}
+          onChange={handleChange}
+          label="Select description"
+        >
+          {available.map((description) => (
+            <MenuItem value={description}>{description}</MenuItem>
+          ))}
+        </Select>
       </CellCardHeader>
       <Divider />
-      <CellCardDescription>
-        <i>{"Generated by GPT:\n"}</i>
-        {descriptionGpt}
-      </CellCardDescription>
-      <br />
-      {descriptionOls && (
+      {selectedDescription === "GPT3.5" && (
         <CellCardDescription>
-          <i>{"From OLS:\n"}</i>
-          {descriptionOls}
+          <i>
+            {
+              "ChatGPT may produce inaccurate information about people, places, or facts.\n\n"
+            }
+          </i>
+          {descriptionGpt}
         </CellCardDescription>
       )}
-      <br />
-      {descriptionWiki && (
-        <CellCardDescription>
-          <i>{"From Wikipedia:\n"}</i>
-          {descriptionWiki}
-        </CellCardDescription>
+      {descriptionOls && selectedDescription === "OLS v4" && (
+        <CellCardDescription>{descriptionOls}</CellCardDescription>
+      )}
+      {descriptionWiki && selectedDescription === "Wikipedia" && (
+        <CellCardDescription>{descriptionWiki}</CellCardDescription>
       )}
       <TableTitleWrapper>
         <TableTitle>Marker Genes</TableTitle>
-        <WmgLink
-          href={`https://cellxgene.cziscience.com/gene-expression?tissues=lung&genes=${genesForShareUrl}&ver=2`}
-          target="_blank"
-        >
-          Open in Gene Expression
-        </WmgLink>
+        {tableRows.length > 0 && (
+          <WmgLink
+            href={`https://cellxgene.cziscience.com/gene-expression?tissues=lung&genes=${genesForShareUrl}&ver=2`}
+            target="_blank"
+          >
+            Open in Gene Expression
+          </WmgLink>
+        )}
       </TableTitleWrapper>
-      <Table<TableRow> columns={tableColumns} rows={tableRows} />
+      {tableRows.length ? (
+        <Table<TableRow> columns={tableColumns} rows={tableRows} />
+      ) : (
+        <div>Canonical marker genes are not available yet.</div>
+      )}
     </Wrapper>
   );
 }

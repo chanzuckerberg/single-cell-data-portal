@@ -21,7 +21,6 @@ export default function CellCardSearchBar(): JSX.Element {
         disablePortal
         id="cell-cards-search-bar"
         options={cellTypes}
-        onChangeCapture={() => console.log("hi")}
         renderInput={(params) => (
           <TextField
             {...params}

@@ -7,6 +7,11 @@ export const StyledTable = styled.table`
   table-layout: auto;
 `;
 
+export const TableWrapper = styled.div`
+  max-height: 500px;
+  overflow-y: auto;
+`;
+
 export const StyledHead = styled.thead`
   border-top: 0.5px solid #cccccc;
   height: 24px;
