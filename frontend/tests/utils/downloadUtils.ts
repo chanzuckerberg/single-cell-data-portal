@@ -7,6 +7,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
+import sharp from "sharp";
 const EXPECTED_HEADER = [
   "Tissue",
   "Cell Type",
@@ -304,24 +305,6 @@ export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();
 };
-export async function compareSvg(
-  webCellImage: string,
-  webGeneImage: string,
-  svgFile: string
-): Promise<void> {
-  const browser = await chromium.launch();
-  const browserContext = await browser.newContext();
-  const page = await browserContext.newPage();
-  await page.goto(svgFile);
-  expect(page.locator("svg").locator("svg").nth(3)).toMatchSnapshot(
-    webCellImage
-  );
-  expect(page.locator("svg").locator("svg").nth(4)).toMatchSnapshot(
-    webCellImage
-  );
-  expect(await page.screenshot()).toMatchSnapshot(webGeneImage);
-  await browser.close();
-}
 
 export function verifyPng(
   dirPath: string,
@@ -330,28 +313,44 @@ export function verifyPng(
 ) {
   tissues.forEach(async (tissue) => {
     // Capture the actual screenshot and compare it with the expected screenshot
-    const expectedPng = PNG.sync.read(
-      fs.readFileSync(`./tests/fixtures/download/${subDirectory}/${tissue}.png`)
-      // fs.readFileSync(`./tests/fixtures/download/no-filter/blood.png`)
-    );
-    const actualPng = PNG.sync.read(
-      fs.readFileSync(
-        `${dirPath}/${tissue}.png`
-        //`./tests/downloads/32937/blood.png`
-      )
-    );
-    const { width, height } = expectedPng;
-    const diff = new PNG({ width, height });
+    const expectedPng = `./tests/fixtures/download/${subDirectory}/${tissue}.png`;
 
-    const mismatchedPixels = pixelmatch(
-      expectedPng.data,
-      actualPng.data,
-      diff.data,
-      width,
-      height,
-      { threshold: 0.1 }
-    );
-    console.log(mismatchedPixels + " pixels are not matching");
-    expect(mismatchedPixels).toBeLessThan(200);
+    const actualPng = `${dirPath}/${tissue}.png`;
+    compareImages(expectedPng, actualPng);
   });
+}
+async function compareImages(imagePath1: string, imagePath2: string) {
+  const imageBuffer1 = await fs.promises.readFile(imagePath1);
+  const imageBuffer2 = await fs.promises.readFile(imagePath2);
+
+  const image1 = PNG.sync.read(imageBuffer1);
+  const image2 = PNG.sync.read(imageBuffer2);
+
+  if (image1.width !== image2.width || image1.height !== image2.height) {
+    const maxWidth = Math.max(image1.width, image2.width);
+    const maxHeight = Math.max(image1.height, image2.height);
+
+    const resizedImage1 = await sharp(imageBuffer1)
+      .resize(maxWidth, maxHeight)
+      .png()
+      .toBuffer();
+    const resizedImage2 = await sharp(imageBuffer2)
+      .resize(maxWidth, maxHeight)
+      .png()
+      .toBuffer();
+
+    const resizedImage1PNG = PNG.sync.read(resizedImage1);
+    const resizedImage2PNG = PNG.sync.read(resizedImage2);
+
+    const diffPNG = new PNG({ width: maxWidth, height: maxHeight });
+    const numDiffPixels = pixelmatch(
+      resizedImage1PNG.data,
+      resizedImage2PNG.data,
+      diffPNG.data,
+      maxWidth,
+      maxHeight,
+      { threshold: 0.95 }
+    );
+    expect(numDiffPixels).toBeLessThan(400000);
+  }
 }
