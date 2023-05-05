@@ -89,6 +89,12 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   },
                   "ContainerOverrides": {
+                    "ResourceRequirements": [
+                      {
+                        "Type": "VCPU",
+                        "Value": "8"
+                      }
+                    ],
                     "Environment": [
                       {
                         "Name": "DATASET_ID",
@@ -102,7 +108,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                   }
                 },
                 "ResultPath": null,
-                "TimeoutSeconds": 36000
+                "TimeoutSeconds": 252000
               }
             }
           },

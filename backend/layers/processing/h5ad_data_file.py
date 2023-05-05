@@ -98,6 +98,7 @@ class H5ADDataFile:
         convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)
 
         suffixes = ["r", "c"] if is_sparse else [""]
+        logging.info("start consolidating")
         for suffix in suffixes:
             tiledb.consolidate(matrix_container + suffix, ctx=ctx)
             if hasattr(tiledb, "vacuum"):
