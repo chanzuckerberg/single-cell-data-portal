@@ -35,7 +35,6 @@ const defaultSecureHeaders = {
         "https://www.ebi.ac.uk/ols/",
         "http://query.wikidata.org",
         "https://en.wikipedia.org/wiki/",
-        "https://cors-anywhere.herokuapp.com/",
       ],
       defaultSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
