@@ -1,3 +1,4 @@
+import itertools
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Tuple
 
@@ -257,13 +258,63 @@ def get_dot_plot_data(
     return dot_plot_matrix_df, cell_counts_cell_type_agg
 
 
-def add_missing_combinations_to_dot_plot_matrix(dot_plot_matrix_df, cell_counts_cell_type_agg) -> DataFrame:
+def build_universe_dataframe(cell_counts_cell_type_agg) -> DataFrame:
+    """"""
+    cartesian_product = list(
+        itertools.product(
+            *[cell_counts_cell_type_agg.index.levels[i] for i in range(len(cell_counts_cell_type_agg.index.names))]
+        )
+    )
+    cartesian_product_index = pd.Index(cartesian_product)
+    cartesian_product_index.set_names(cell_counts_cell_type_agg.index.names, inplace=True)
+    universe_df = pd.DataFrame(index=cartesian_product_index)
+    for c in cell_counts_cell_type_agg.columns:
+        universe_df[c] = 0
+        universe_df[c][cell_counts_cell_type_agg.index] = cell_counts_cell_type_agg[c]
+    return universe_df
+
+
+def rollup(dot_plot_matrix_df, universe_cell_counts_cell_type_agg) -> Tuple[DataFrame, DataFrame]:
+    # Roll up numeric columns in the input dataframes
+    if universe_cell_counts_cell_type_agg.shape[0] > 0:
+        universe_cell_counts_cell_type_agg = build_universe_dataframe(universe_cell_counts_cell_type_agg)
+
+        # make the cell counts dataframe tidy
+        for col in universe_cell_counts_cell_type_agg.index.names:
+            universe_cell_counts_cell_type_agg[col] = universe_cell_counts_cell_type_agg.index.get_level_values(col)
+
+        universe_cell_counts_cell_type_agg = rollup_across_cell_type_descendants(universe_cell_counts_cell_type_agg)
+
+        universe_cell_counts_cell_type_agg = universe_cell_counts_cell_type_agg[
+            universe_cell_counts_cell_type_agg["n_cells_cell_type"] > 0
+        ]
+        # clean up columns that were added to the dataframe to make it tidy
+        universe_cell_counts_cell_type_agg.drop(columns=universe_cell_counts_cell_type_agg.index.names, inplace=True)
+
+    if dot_plot_matrix_df.shape[0] > 0:
+        # For each gene in the query, add missing combinations (tissue, cell type, compare dimension)
+        # to the expression dataframe
+
+        dot_plot_matrix_df = add_missing_combinations_to_dot_plot_matrix(
+            dot_plot_matrix_df, universe_cell_counts_cell_type_agg
+        )
+
+        # Roll up expression dataframe
+        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df, ignore_cols=["n_cells_tissue"])
+
+        # Filter out the entries that were added to the dataframe that remain zero after roll-up
+        dot_plot_matrix_df = dot_plot_matrix_df[dot_plot_matrix_df["sum"] > 0]
+
+    return dot_plot_matrix_df, universe_cell_counts_cell_type_agg
+
+
+def add_missing_combinations_to_dot_plot_matrix(dot_plot_matrix_df, universe_df) -> DataFrame:
     ### Add missing cell types to the expression dataframe so they can be rolled up ###
 
     # extract group-by terms and queried genes from the input dataframes
     # if a queried gene is not present in the input dot plot dataframe, we can safely
     # ignore it as it need not be rolled up anyway.
-    group_by_terms = list(cell_counts_cell_type_agg.index.names)
+    group_by_terms = list(universe_df.index.names)
     genes = list(set(dot_plot_matrix_df["gene_ontology_term_id"]))
 
     # get the names of the numeric columns
@@ -279,7 +330,7 @@ def add_missing_combinations_to_dot_plot_matrix(dot_plot_matrix_df, cell_counts_
     n_cells_tissue_dict = dot_plot_matrix_df.groupby("tissue_ontology_term_id").first()["n_cells_tissue"].to_dict()
 
     # get the set of available combinations of group-by terms from the aggregated cell counts
-    available_combinations = set(zip(*cell_counts_cell_type_agg.reset_index()[group_by_terms].values.T))
+    available_combinations = set(universe_df.index.values)
 
     # for each gene, get the set of available combinations of group-by terms from the input expression dataframe
     entries_to_add = []
@@ -289,7 +340,7 @@ def add_missing_combinations_to_dot_plot_matrix(dot_plot_matrix_df, cell_counts_
 
         # get the combinations that are missing in the input expression dataframe
         # these combinations have no data but can be rescued by the roll-up operation
-        missing_combinations = available_combinations.symmetric_difference(available_combinations_per_gene)
+        missing_combinations = available_combinations.difference(available_combinations_per_gene)
         for combo in missing_combinations:
             entry = {dim: combo[i] for i, dim in enumerate(group_by_terms)}
             entry.update({col: 0 for col in numeric_columns})
@@ -299,35 +350,8 @@ def add_missing_combinations_to_dot_plot_matrix(dot_plot_matrix_df, cell_counts_
 
     # add the missing entries to the input expression dataframe
     dot_plot_matrix_df = pd.concat((dot_plot_matrix_df, pd.DataFrame(entries_to_add)), axis=0)
+
     return dot_plot_matrix_df
-
-
-def rollup(dot_plot_matrix_df, cell_counts_cell_type_agg) -> Tuple[DataFrame, DataFrame]:
-    # Roll up numeric columns in the input dataframes
-
-    if dot_plot_matrix_df.shape[0] > 0:
-
-        # For each gene in the query, add missing combinations (tissue, cell type, compare dimension)
-        # to the expression dataframe
-        dot_plot_matrix_df = add_missing_combinations_to_dot_plot_matrix(dot_plot_matrix_df, cell_counts_cell_type_agg)
-
-        # Roll up expression dataframe
-        dot_plot_matrix_df = rollup_across_cell_type_descendants(dot_plot_matrix_df, ignore_cols=["n_cells_tissue"])
-
-        # Filter out the entries that were added to the dataframe that remain zero after roll-up
-        dot_plot_matrix_df = dot_plot_matrix_df[dot_plot_matrix_df["sum"] > 0]
-
-    if cell_counts_cell_type_agg.shape[0] > 0:
-        # make the cell counts dataframe tidy
-        for col in cell_counts_cell_type_agg.index.names:
-            cell_counts_cell_type_agg[col] = cell_counts_cell_type_agg.index.get_level_values(col)
-        cell_counts_cell_type_agg = rollup_across_cell_type_descendants(
-            cell_counts_cell_type_agg, ignore_cols=["n_cells_tissue"]
-        )
-
-        # clean up columns that were added to the dataframe to make it tidy
-        cell_counts_cell_type_agg.drop(columns=cell_counts_cell_type_agg.index.names, inplace=True)
-    return dot_plot_matrix_df, cell_counts_cell_type_agg
 
 
 def build_dot_plot_matrix(
