@@ -1,11 +1,11 @@
 import { agnes } from "ml-hclust";
 import { useMemo } from "react";
-import { CellTypeRow } from "src/common/queries/wheresMyGene";
+import { CellTypeRow } from "src/common/queries/wheresMyGeneV2";
 import {
   CellTypeGeneExpressionSummaryData,
   SORT_BY,
   Tissue,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 
 interface Props {
   tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap: Map<

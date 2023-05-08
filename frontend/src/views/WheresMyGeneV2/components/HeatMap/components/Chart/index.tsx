@@ -21,9 +21,9 @@ import {
   CellTypeRow,
   COMPARE_OPTION_ID_FOR_AGGREGATED,
   getOptionIdFromCellTypeViewId,
-} from "src/common/queries/wheresMyGene";
-import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+} from "src/common/queries/wheresMyGeneV2";
+import { getCompareOptionNameById } from "src/views/WheresMyGeneV2/common/constants";
+import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -31,7 +31,7 @@ import {
   GeneExpressionSummary,
   Tissue,
   ViewId,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 import { ChartProps } from "../../hooks/common/types";
 import { useUpdateChart } from "../../hooks/useUpdateChart";
 import {

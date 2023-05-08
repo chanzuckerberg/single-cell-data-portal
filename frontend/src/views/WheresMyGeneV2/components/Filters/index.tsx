@@ -22,7 +22,7 @@ import {
   FilterDimensions,
   RawDataset,
   useFilterDimensions,
-} from "src/common/queries/wheresMyGene";
+} from "src/common/queries/wheresMyGeneV2";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
@@ -102,7 +102,7 @@ export default memo(function Filters({
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
 
-  const { selectedFilters, selectedTissues, selectedGenes } = state;
+  const { selectedFilters, selectedGenes } = state;
 
   const {
     datasets: datasetIds,
@@ -122,7 +122,7 @@ export default memo(function Filters({
     isLoading: rawIsLoading,
   } = useFilterDimensions();
 
-  const isHeatmapShown = !!selectedTissues.length && !!selectedGenes.length;
+  const isHeatmapShown = !!selectedGenes.length;
 
   const InputDropdownProps = {
     sdsStyle: "minimal",

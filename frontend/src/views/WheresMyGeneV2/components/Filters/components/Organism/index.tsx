@@ -6,13 +6,13 @@ import { useContext, useEffect, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { useAvailableOrganisms } from "src/common/queries/wheresMyGene";
+import { useAvailableOrganisms } from "src/common/queries/wheresMyGeneV2";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
-import { selectOrganism } from "src/views/WheresMyGene/common/store/actions";
-import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/store";
+import { selectOrganism } from "src/views/WheresMyGeneV2/common/store/actions";
+import { Organism as IOrganism } from "src/views/WheresMyGeneV2/common/types";
 import { StyledDropdown, Wrapper, Label } from "../common/style";
 
 const InputDropdownProps: Partial<RawInputDropdownProps> = {

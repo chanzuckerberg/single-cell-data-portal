@@ -2,12 +2,12 @@ import {
   FilterDimensions,
   OntologyTerm,
   COMPARE_OPTION_ID_FOR_AGGREGATED,
-} from "src/common/queries/wheresMyGene";
+} from "src/common/queries/wheresMyGeneV2";
 import {
   CompareId,
   getCompareOptionNameById,
-} from "src/views/WheresMyGene/common/constants";
-import { State } from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/constants";
+import { State } from "src/views/WheresMyGeneV2/common/store";
 import { Props } from ".";
 import { ChartProps } from "../../../HeatMap/hooks/common/types";
 import {
@@ -35,7 +35,6 @@ export function csvHeaders({
   selectedFilters,
   selectedGenes,
   selectedOrganismId,
-  selectedTissues,
 }: {
   compare: CompareId | undefined;
   availableFilters: Partial<FilterDimensions>;
@@ -43,7 +42,6 @@ export function csvHeaders({
   selectedFilters: State["selectedFilters"];
   selectedGenes: Props["selectedGenes"];
   selectedOrganismId: string | null;
-  selectedTissues: Props["selectedTissues"];
 }) {
   const { datasets, disease_terms, self_reported_ethnicity_terms, sex_terms } =
     availableFilters;
@@ -62,7 +60,6 @@ export function csvHeaders({
       compare,
       filters: selectedFilters,
       organism: selectedOrganismId,
-      tissues: selectedTissues,
       genes: selectedGenes,
       copyToClipboard: false,
     })}`,

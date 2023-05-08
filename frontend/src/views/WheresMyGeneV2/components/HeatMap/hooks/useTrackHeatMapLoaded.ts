@@ -3,14 +3,10 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 
 interface Props {
-  selectedTissues: string[];
   selectedGenes: string[];
 }
 
-export function useTrackHeatMapLoaded({
-  selectedTissues,
-  selectedGenes,
-}: Props): void {
+export function useTrackHeatMapLoaded({ selectedGenes }: Props): void {
   const isHeatMapEventFired = useRef(false);
 
   /**
@@ -32,21 +28,16 @@ export function useTrackHeatMapLoaded({
    * Total: 3 heat map events
    */
   useEffect(() => {
-    const hasSelectedTissues = selectedTissues.length > 0;
     const hasSelectedGenes = selectedGenes.length > 0;
 
-    if (!hasSelectedTissues || !hasSelectedGenes) {
+    if (!hasSelectedGenes) {
       isHeatMapEventFired.current = false;
       return;
     }
 
-    if (
-      !isHeatMapEventFired.current &&
-      hasSelectedTissues &&
-      hasSelectedGenes
-    ) {
+    if (!isHeatMapEventFired.current && hasSelectedGenes) {
       track(EVENTS.WMG_HEATMAP_LOADED);
       isHeatMapEventFired.current = true;
     }
-  }, [selectedTissues, selectedGenes]);
+  }, [selectedGenes]);
 }

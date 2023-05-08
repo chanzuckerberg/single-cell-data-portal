@@ -5,8 +5,8 @@ import { EVENTS } from "src/common/analytics/events";
 import {
   aggregateCollectionsFromDatasets,
   useFilterDimensions,
-} from "src/common/queries/wheresMyGene";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+} from "src/common/queries/wheresMyGeneV2";
+import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 import { Content, ListSubheader, Wrapper } from "./style";
 
 interface Collection {

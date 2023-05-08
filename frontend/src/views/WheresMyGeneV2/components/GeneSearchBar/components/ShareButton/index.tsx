@@ -3,13 +3,13 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
-import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
+import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGeneV2";
 import { isSSR } from "src/common/utils/isSSR";
-import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
+import { getCompareOptionNameById } from "src/views/WheresMyGeneV2/common/constants";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import { StyledButtonIcon } from "../QuickSelect/style";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
 import {
@@ -130,7 +130,7 @@ export default function ShareButton(): JSX.Element {
           sdsSize="medium"
           sdsType="primary"
           sdsIcon="share"
-          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
+          disabled={selectedGenes.length === 0}
         />
       </StyledButtonDiv>
     </>

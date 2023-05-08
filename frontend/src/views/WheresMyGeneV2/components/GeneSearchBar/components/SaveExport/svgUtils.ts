@@ -1,4 +1,4 @@
-import { Tissue } from "src/views/WheresMyGene/common/types";
+import { Tissue } from "src/views/WheresMyGeneV2/common/types";
 import {
   ECHART_AXIS_LABEL_COLOR_HEX,
   ECHART_AXIS_LABEL_FONT_SIZE_PX,

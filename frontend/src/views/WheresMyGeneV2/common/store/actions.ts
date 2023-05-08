@@ -64,15 +64,6 @@ export function addSelectedGenes(
   };
 }
 
-export function selectTissues(
-  tissues: State["selectedTissues"]
-): GetActionTypeOfReducer<typeof REDUCERS["selectTissues"]> {
-  return {
-    payload: tissues,
-    type: "selectTissues",
-  };
-}
-
 export function selectSortBy(
   sortBy: Partial<State["sortBy"]>
 ): GetActionTypeOfReducer<typeof REDUCERS["selectSortBy"]> {

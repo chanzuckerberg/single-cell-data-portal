@@ -8,7 +8,7 @@ import {
   GeneUrl,
   StyledCallout,
 } from "./style";
-import { useGeneInfo } from "src/common/queries/wheresMyGene";
+import { useGeneInfo } from "src/common/queries/wheresMyGeneV2";
 import { RightSidebarProperties } from "../RightSideBar";
 import { GeneInfo } from "../../common/types";
 

@@ -10,7 +10,6 @@ export interface State {
   genesToDelete: string[];
   selectedGenes: string[];
   selectedOrganismId: string | null;
-  selectedTissues: string[];
   selectedFilters: {
     datasets: string[];
     developmentStages: string[];
@@ -50,7 +49,6 @@ export const INITIAL_STATE: State = {
   selectedFilters: EMPTY_FILTERS,
   selectedGenes: [],
   selectedOrganismId: null,
-  selectedTissues: [],
   snapshotId: null,
   sortBy: {
     cellTypes: SORT_BY.CELL_ONTOLOGY,
@@ -76,7 +74,6 @@ export const REDUCERS = {
   selectGeneInfoFromXAxis,
   selectOrganism,
   selectSortBy,
-  selectTissues,
   setSnapshotId,
   toggleGeneToDelete,
 };
@@ -160,7 +157,6 @@ function selectOrganism(
     ...state,
     selectedGenes: [],
     selectedOrganismId: action.payload,
-    selectedTissues: [],
     cellInfoCellType: null,
   };
 }
@@ -173,16 +169,6 @@ function selectGenes(
     ...state,
     genesToDelete: [],
     selectedGenes: action.payload,
-  };
-}
-
-function selectTissues(
-  state: State,
-  action: PayloadAction<State["selectedTissues"]>
-): State {
-  return {
-    ...state,
-    selectedTissues: action.payload,
   };
 }
 
@@ -351,7 +337,6 @@ export interface LoadStateFromURLPayload {
   compare: State["compare"];
   filters: Partial<State["selectedFilters"]>;
   organism: State["selectedOrganismId"];
-  tissues: State["selectedTissues"];
   genes: State["selectedGenes"];
 }
 
@@ -361,14 +346,13 @@ function loadStateFromURL(
 ): State {
   const { payload } = action;
 
-  const { compare, filters, genes, tissues } = payload;
+  const { compare, filters, genes } = payload;
 
   return {
     ...state,
     compare,
     selectedFilters: { ...state.selectedFilters, ...filters },
     selectedGenes: genes,
-    selectedTissues: tissues,
     selectedOrganismId: payload.organism,
   };
 }

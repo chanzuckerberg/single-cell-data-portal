@@ -14,7 +14,7 @@ import {
   generateTermsByKey,
   OntologyTerm,
   usePrimaryFilterDimensions,
-} from "src/common/queries/wheresMyGene";
+} from "src/common/queries/wheresMyGeneV2";
 import { HEATMAP_CONTAINER_ID } from "../../common/constants";
 import { DispatchContext, State } from "../../common/store";
 import { addCellInfoCellType } from "../../common/store/actions";
@@ -48,7 +48,6 @@ import {
 
 interface Props {
   className?: string;
-  selectedTissues: string[];
   cellTypes: { [tissue: Tissue]: CellTypeRow[] };
   genes: State["selectedGenes"];
   selectedGeneExpressionSummariesByTissueName: {
@@ -72,7 +71,6 @@ interface Props {
 
 export default memo(function HeatMap({
   className,
-  selectedTissues,
   cellTypes,
   genes,
   selectedGeneExpressionSummariesByTissueName,
@@ -87,7 +85,7 @@ export default memo(function HeatMap({
   allChartProps,
   setAllChartProps,
 }: Props): JSX.Element {
-  useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
+  useTrackHeatMapLoaded({ selectedGenes: genes });
 
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
@@ -174,18 +172,18 @@ export default memo(function HeatMap({
           <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
         <YAxisWrapper>
-          {selectedTissues.map((tissue) => {
+          {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
             const tissueCellTypes = getTissueCellTypes({
               cellTypeSortBy,
               cellTypes,
               sortedCellTypesByTissueName,
-              tissue,
+              tissue: tissue.name,
             });
             return tissueCellTypes.length ? (
               <YAxisChart
-                key={tissue}
-                tissue={tissue}
-                tissueID={tissuesByName[tissue].id}
+                key={tissue.name}
+                tissue={tissue.name}
+                tissueID={tissue.id}
                 cellTypes={tissueCellTypes}
                 generateMarkerGenes={generateMarkerGenes}
                 selectedOrganismId={selectedOrganismId}
@@ -194,16 +192,16 @@ export default memo(function HeatMap({
           })}
         </YAxisWrapper>
         <ChartWrapper ref={chartWrapperRef}>
-          {selectedTissues.map((tissue) => {
+          {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
             const tissueCellTypes = getTissueCellTypes({
               cellTypeSortBy,
               cellTypes,
               sortedCellTypesByTissueName,
-              tissue,
+              tissue: tissue.name,
             });
 
             const selectedGeneData =
-              orderedSelectedGeneExpressionSummariesByTissueName[tissue];
+              orderedSelectedGeneExpressionSummariesByTissueName[tissue.name];
 
             /**
              * (thuang): If there is no selected gene data, we don't want to render
@@ -220,17 +218,19 @@ export default memo(function HeatMap({
                  * when the renderer mode changes, so echarts can create new instances
                  */
                 key={`${tissue}-${echartsRendererMode}`}
-                tissue={tissue}
+                tissue={tissue.name}
                 cellTypes={tissueCellTypes}
                 selectedGeneData={
-                  orderedSelectedGeneExpressionSummariesByTissueName[tissue]
+                  orderedSelectedGeneExpressionSummariesByTissueName[
+                    tissue.name
+                  ]
                 }
                 setIsLoading={setIsLoading}
                 scaledMeanExpressionMax={scaledMeanExpressionMax}
                 scaledMeanExpressionMin={scaledMeanExpressionMin}
                 echartsRendererMode={echartsRendererMode}
                 setAllChartProps={setAllChartProps}
-                chartProps={allChartProps[tissue]}
+                chartProps={allChartProps[tissue.name]}
               />
             );
           })}

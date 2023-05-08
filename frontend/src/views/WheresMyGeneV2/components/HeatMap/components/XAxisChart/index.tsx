@@ -2,11 +2,11 @@ import { Icon } from "czifui";
 import React, { useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { DispatchContext } from "src/views/WheresMyGene/common/store";
+import { DispatchContext } from "src/views/WheresMyGeneV2/common/store";
 import {
   deleteSingleGene,
   selectGeneInfoFromXAxis,
-} from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store/actions";
 import { useDeleteGenes } from "../../hooks/useDeleteGenes";
 import { CHART_PADDING_PX, SELECTED_STYLE } from "../../style";
 import {

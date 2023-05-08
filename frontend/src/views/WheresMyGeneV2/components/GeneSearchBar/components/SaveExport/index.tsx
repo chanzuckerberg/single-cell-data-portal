@@ -15,7 +15,7 @@ import {
   getCompareOptionNameById,
   HEATMAP_CONTAINER_ID,
 } from "src/views/WheresMyGene/common/constants";
-import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
+import { CellType } from "src/views/WheresMyGene/common/types";
 import { ChartProps } from "../../../HeatMap/hooks/common/types";
 
 import {
@@ -80,26 +80,14 @@ const MUTATION_OBSERVER_TIMEOUT = 3 * 1000;
 const CLONED_CLASS = "CLONED";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
-const screenshotFilter =
-  (tissue: string) =>
-  (domNode: HTMLElement): boolean => {
-    const isScreenshotJank = domNode.classList?.contains(
-      EXCLUDE_IN_SCREENSHOT_CLASS_NAME
-    );
-    const isNoScript = domNode.tagName === "NOSCRIPT";
+const screenshotFilter = (domNode: HTMLElement): boolean => {
+  const isScreenshotJank = domNode.classList?.contains(
+    EXCLUDE_IN_SCREENSHOT_CLASS_NAME
+  );
+  const isNoScript = domNode.tagName === "NOSCRIPT";
 
-    const isNonTissueChart =
-      domNode.id &&
-      domNode.id.includes("chart") &&
-      !domNode.id.includes(tissue);
-    const isNonTissueYAxis =
-      domNode.id &&
-      domNode.id.includes("y-axis") &&
-      !domNode.id.includes(tissue);
-    return (
-      !isScreenshotJank && !isNoScript && !isNonTissueChart && !isNonTissueYAxis
-    );
-  };
+  return !isScreenshotJank && !isNoScript;
+};
 
 function base64URLToArrayBuffer(url: string) {
   // parse dataURL to base64 string
@@ -114,7 +102,6 @@ function base64URLToArrayBuffer(url: string) {
 }
 
 export interface Props {
-  selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
   setDownloadStatus: Dispatch<
@@ -134,7 +121,6 @@ interface ExportData {
 }
 
 export default function SaveExport({
-  selectedTissues,
   selectedGenes,
   selectedCellTypes,
   setDownloadStatus,
@@ -211,7 +197,6 @@ export default function SaveExport({
         selectedFilters,
         selectedGenes,
         selectedOrganismId,
-        selectedTissues,
         setEchartsRendererMode,
         setDownloadStatus,
       }),
@@ -241,7 +226,6 @@ export default function SaveExport({
     selectedFilters,
     selectedGenes,
     selectedOrganismId,
-    selectedTissues,
     setEchartsRendererMode,
   ]);
 
@@ -252,7 +236,7 @@ export default function SaveExport({
         <StyledButtonIcon
           data-testid="download-button"
           onClick={handleButtonClick}
-          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
+          disabled={selectedGenes.length === 0}
           sdsSize="medium"
           sdsType="primary"
           sdsIcon="download"
@@ -334,14 +318,14 @@ export default function SaveExport({
 
 function generateSvg({
   svg,
-  tissueName,
-  heatmapHeight,
   heatmapWidth,
+  tissues,
+  selectedCellTypes,
 }: {
   svg: string;
-  tissueName: Tissue;
-  heatmapHeight: number;
   heatmapWidth: number;
+  tissues: string[];
+  selectedCellTypes: Props["selectedCellTypes"];
 }) {
   const heatmapNode = new DOMParser().parseFromString(svg, "image/svg+xml");
   const heatmapContainer = heatmapNode
@@ -359,25 +343,34 @@ function generateSvg({
   const paddedBannerWidth =
     DATA_MESSAGE_BANNER_WIDTH_PX + CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
 
-  // Render elements to SVG
-  const xAxisSvg = renderXAxis({
-    heatmapContainer,
-    yOffset: paddedBannerHeight,
-  });
-  const yAxisSvg = renderYAxis({
-    heatmapContainer,
-    heatmapHeight,
-    tissueName,
-    yOffset: paddedBannerHeight,
-  });
-  const dotsSvg = renderDots({
-    heatmapContainer,
-    tissueName,
-    yOffset: paddedBannerHeight,
-  });
-  const legendSvg = renderLegend({
-    heatmapContainer,
-    yOffset: paddedBannerHeight,
+  let yOffset = paddedBannerHeight;
+
+  const tissueSVGs = tissues.map((tissueName) => {
+    const heatmapHeight = getHeatmapHeight(selectedCellTypes[tissueName]);
+
+    // Render elements to SVG
+    const xAxisSvg = renderXAxis({
+      heatmapContainer,
+      yOffset,
+    });
+    const yAxisSvg = renderYAxis({
+      heatmapContainer,
+      heatmapHeight,
+      tissueName,
+      yOffset,
+    });
+    const dotsSvg = renderDots({
+      heatmapContainer,
+      tissueName,
+      yOffset,
+    });
+    const legendSvg = renderLegend({
+      heatmapContainer,
+      yOffset,
+    });
+
+    yOffset += heatmapHeight;
+    return { xAxisSvg, yAxisSvg, dotsSvg, legendSvg };
   });
 
   const svgWidth =
@@ -389,8 +382,7 @@ function generateSvg({
   applyAttributes(finalSvg, {
     width: svgWidth < paddedBannerWidth ? paddedBannerWidth : svgWidth, // Use the banner width as the minimum final svg width
     height:
-      heatmapHeight +
-      paddedBannerHeight +
+      yOffset +
       X_AXIS_CHART_HEIGHT_PX +
       CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
   });
@@ -413,10 +405,12 @@ function generateSvg({
 
   // Append elements to final SVG
   finalSvg.append(banner.cloneNode(true) || ""); // We need to clone this or else the element itself will be moved and not be accessible for subsequent tissues
-  finalSvg.append(legendSvg || "");
-  finalSvg.append(xAxisSvg || "");
-  finalSvg.append(yAxisSvg || "");
-  finalSvg.append(dotsSvg || "");
+  tissueSVGs.forEach(({ xAxisSvg, yAxisSvg, dotsSvg, legendSvg }) => {
+    finalSvg.append(legendSvg || "");
+    finalSvg.append(xAxisSvg || "");
+    finalSvg.append(yAxisSvg || "");
+    finalSvg.append(dotsSvg || "");
+  });
 
   return finalSvg.outerHTML;
 }
@@ -431,22 +425,18 @@ function generateCsv({
   allChartProps,
   compare,
   selectedGenes,
-  tissueName,
   availableFilters,
   selectedFilters,
   selectedOrganismId,
   availableOrganisms,
-  selectedTissues,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
   selectedGenes: Props["selectedGenes"];
-  tissueName: string;
   availableFilters: Partial<FilterDimensions>;
   selectedFilters: State["selectedFilters"];
   selectedOrganismId: string | null;
   availableOrganisms: OntologyTerm[] | null | undefined;
-  selectedTissues: Props["selectedTissues"];
 }) {
   const output: (string | number | undefined)[][] = [];
 
@@ -459,30 +449,33 @@ function generateCsv({
       selectedFilters,
       selectedGenes,
       selectedOrganismId,
-      selectedTissues,
     })
   );
 
-  // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
-  const cellTypeIdToMetadataMapping = Object.values(
-    buildCellTypeIdToMetadataMapping(tissueName, allChartProps)
-  );
+  const tissues = availableFilters.tissue_terms?.map((term) => term.name);
 
-  for (const metadataForCellType of cellTypeIdToMetadataMapping) {
-    for (const geneName of selectedGenes) {
-      for (const metadata of metadataForCellType) {
-        output.push(
-          csvGeneExpressionRow({
-            metadata,
-            tissueName,
-            allChartProps,
-            geneName,
-            compare,
-          })
-        );
+  tissues?.forEach((tissueName) => {
+    // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
+    const cellTypeIdToMetadataMapping = Object.values(
+      buildCellTypeIdToMetadataMapping(tissueName, allChartProps)
+    );
+
+    for (const metadataForCellType of cellTypeIdToMetadataMapping) {
+      for (const geneName of selectedGenes) {
+        for (const metadata of metadataForCellType) {
+          output.push(
+            csvGeneExpressionRow({
+              metadata,
+              tissueName,
+              allChartProps,
+              geneName,
+              compare,
+            })
+          );
+        }
       }
     }
-  }
+  });
 
   return csvStringify(output);
 }
@@ -490,26 +483,30 @@ function generateCsv({
 async function generateImage({
   fileType,
   heatmapNode,
-  heatmapHeight,
   heatmapWidth,
-  tissueName,
-  isMultipleTissues = false,
+  isMultipleFormatDownload,
+  tissues,
+  selectedCellTypes,
 }: {
   fileType: string;
   heatmapNode: HTMLDivElement;
-  heatmapHeight: number;
   heatmapWidth: number;
-  tissueName: string;
-  isMultipleTissues: boolean;
+  isMultipleFormatDownload: boolean;
+  tissues: string[];
+  selectedCellTypes: Props["selectedCellTypes"];
 }): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
+  const allHeatmapsHeight = tissues.reduce((acc, tissueName) => {
+    return acc + getHeatmapHeight(selectedCellTypes[tissueName]);
+  }, 0);
+
   const imageURL = await convertHTMLtoImage(heatmapNode, {
     backgroundColor: "white",
-    filter: screenshotFilter(tissueName),
+    filter: screenshotFilter,
     height:
-      heatmapHeight +
-      X_AXIS_CHART_HEIGHT_PX +
+      allHeatmapsHeight +
+      X_AXIS_CHART_HEIGHT_PX * tissues.length +
       DATA_MESSAGE_BANNER_HEIGHT_PX +
       LEGEND_HEIGHT_PX +
       LEGEND_MARGIN_BOTTOM_PX +
@@ -522,12 +519,12 @@ async function generateImage({
 
   if (fileType === "svg") {
     input = generateSvg({
-      heatmapHeight,
       heatmapWidth,
       svg: decodeURIComponent(imageURL.split(",")[1]),
-      tissueName,
+      tissues,
+      selectedCellTypes,
     });
-  } else if (fileType === "png" && isMultipleTissues) {
+  } else if (fileType === "png" && isMultipleFormatDownload) {
     input = base64URLToArrayBuffer(imageURL);
   }
 
@@ -579,7 +576,6 @@ function download_({
   allChartProps,
   compare,
   heatmapNode,
-  selectedTissues,
   selectedGenes,
   selectedCellTypes,
   selectedFileTypes,
@@ -594,7 +590,6 @@ function download_({
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
   heatmapNode: HTMLDivElement;
-  selectedTissues: Props["selectedTissues"];
   selectedGenes: Props["selectedGenes"];
   selectedCellTypes: Props["selectedCellTypes"];
   selectedFileTypes: ("png" | "svg" | "csv")[];
@@ -639,55 +634,44 @@ function download_({
         }px`;
       }
 
-      const exports: ExportData[] = (
-        await Promise.all(
-          selectedTissues.map(async (tissueName) => {
-            // Handles if whitespace is in the tissue name for the element ID
-            const formattedTissueName = tissueName.replace(/\s+/g, "-");
+      const tissues =
+        availableFilters.tissue_terms?.map((term) => term.name) || [];
 
-            // Generate exports for each filetype for the tissue
-            return await Promise.all(
-              selectedFileTypes.map(async (fileType) => {
-                let input;
+      const exports: ExportData[] =
+        // Generate exports for each filetype
+        (
+          await Promise.all(
+            selectedFileTypes.map(async (fileType) => {
+              let input;
 
-                if (fileType === "csv") {
-                  input = generateCsv({
-                    allChartProps,
-                    compare,
-                    selectedGenes,
-                    tissueName,
-                    availableFilters,
-                    selectedFilters,
-                    selectedOrganismId,
-                    availableOrganisms,
-                    selectedTissues,
-                  });
-                } else {
-                  const heatmapHeight = getHeatmapHeight(
-                    selectedCellTypes[tissueName]
-                  );
+              if (fileType === "csv") {
+                input = generateCsv({
+                  allChartProps,
+                  compare,
+                  selectedGenes,
+                  availableFilters,
+                  selectedFilters,
+                  selectedOrganismId,
+                  availableOrganisms,
+                });
+              } else {
+                input = await generateImage({
+                  fileType,
+                  heatmapNode,
+                  heatmapWidth,
+                  isMultipleFormatDownload: selectedFileTypes.length > 1,
+                  tissues,
+                  selectedCellTypes,
+                });
+              }
 
-                  input = await generateImage({
-                    fileType,
-                    heatmapNode,
-                    heatmapHeight,
-                    heatmapWidth,
-                    tissueName: formattedTissueName,
-                    isMultipleTissues:
-                      selectedTissues.length > 1 ||
-                      selectedFileTypes.length > 1,
-                  });
-                }
-
-                return {
-                  input,
-                  name: `${formattedTissueName}.${fileType}`,
-                };
-              })
-            );
-          })
-        )
-      ).flat();
+              return {
+                input,
+                name: `CELLxGENE_EXPRESSION_DOWNLOAD.${fileType}`,
+              };
+            })
+          )
+        ).flat();
 
       if (isPng) {
         // Remove classes that were required for styling PNG
@@ -717,7 +701,6 @@ function download_({
         group_by_option: getCompareOptionNameById(compare),
 
         genes: selectedGenes,
-        tissues: selectedTissues,
       });
     } catch (error) {
       console.error(error);

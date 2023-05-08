@@ -3,7 +3,10 @@ import React, { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
-import { OntologyTerm, useMarkerGenes } from "src/common/queries/wheresMyGene";
+import {
+  OntologyTerm,
+  useMarkerGenes,
+} from "src/common/queries/wheresMyGeneV2";
 import { BetaChip } from "src/components/Header/style";
 import { DispatchContext, State } from "../../common/store";
 import { addSelectedGenes } from "../../common/store/actions";

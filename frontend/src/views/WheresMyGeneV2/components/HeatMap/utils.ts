@@ -10,7 +10,7 @@ import {
   getOntologyTermIdFromCellTypeViewId,
   getOptionIdFromCellTypeViewId,
   OptionId,
-} from "src/common/queries/wheresMyGene";
+} from "src/common/queries/wheresMyGeneV2";
 import {
   CellType,
   CellTypeSummary,

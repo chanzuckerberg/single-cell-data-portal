@@ -17,7 +17,7 @@ import {
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
   usePrimaryFilterDimensions,
-} from "src/common/queries/wheresMyGene";
+} from "src/common/queries/wheresMyGeneV2";
 import SideBar from "src/components/common/SideBar";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
@@ -34,7 +34,6 @@ import GeneInfoBar from "../GeneInfoSideBar";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
-import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import { ChartProps } from "../HeatMap/hooks/common/types";
 import InfoPanel from "../InfoPanel";
@@ -56,21 +55,15 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const {
-    selectedGenes,
-    selectedTissues,
-    sortBy,
-    geneInfoGene,
-    cellInfoCellType,
-  } = state;
+  const { selectedGenes, sortBy, geneInfoGene, cellInfoCellType } = state;
 
   const selectedOrganismId = state.selectedOrganismId || "";
 
-  const { data: { tissues: allTissues } = {} } = usePrimaryFilterDimensions();
+  const { data: { tissues } = {} } = usePrimaryFilterDimensions();
 
   let tissuesByID;
-  if (allTissues) {
-    tissuesByID = generateTermsByKey(allTissues, "id");
+  if (tissues) {
+    tissuesByID = generateTermsByKey(tissues, "id");
   }
 
   const [allChartProps, setAllChartProps] = useState<{
@@ -221,13 +214,6 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [dispatch]);
 
-  const hasSelectedTissues = selectedTissues.length > 0;
-  const hasSelectedGenes = selectedGenes.length > 0;
-
-  const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedTissues || hasSelectedGenes;
-  }, [hasSelectedTissues, hasSelectedGenes]);
-
   const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
     useState(false);
   const handleSourceDatasetButtonClick = useCallback(() => {
@@ -335,7 +321,7 @@ export default function WheresMyGene(): JSX.Element {
 
       <View id="view" overflow="hidden">
         <Wrapper>
-          {isLoading && !shouldShowHeatMap && <Loader />}
+          {isLoading && <Loader />}
 
           {/* Used for PNG and SVG exports to render message banner to render in output */}
           {downloadStatus.isLoading && (
@@ -349,7 +335,6 @@ export default function WheresMyGene(): JSX.Element {
             <Legend
               selectedCellTypes={cellTypesByTissueName}
               selectedGenes={selectedGenes}
-              selectedTissues={selectedTissues}
               isScaled={isScaled}
               handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
               setDownloadStatus={setDownloadStatus}
@@ -358,12 +343,6 @@ export default function WheresMyGene(): JSX.Element {
               availableFilters={availableFilters}
             />
           </Top>
-
-          <GetStarted
-            tissueSelected={hasSelectedTissues}
-            isLoading={isLoading}
-            geneSelected={hasSelectedGenes}
-          />
 
           <StyledSidebarDrawer
             position="right"
@@ -379,26 +358,23 @@ export default function WheresMyGene(): JSX.Element {
 
           <ScreenTint isDownloading={downloadStatus} />
 
-          {shouldShowHeatMap ? (
-            <HeatMap
-              echartsRendererMode={echartsRendererMode}
-              cellTypeSortBy={sortBy.cellTypes}
-              geneSortBy={sortBy.genes}
-              selectedTissues={selectedTissues}
-              isScaled={isScaled}
-              isLoadingAPI={isLoading}
-              cellTypes={cellTypesByTissueName}
-              genes={selectedGenes}
-              selectedGeneExpressionSummariesByTissueName={
-                selectedGeneExpressionSummariesByTissueName
-              }
-              scaledMeanExpressionMax={scaledMeanExpressionMax}
-              scaledMeanExpressionMin={scaledMeanExpressionMin}
-              selectedOrganismId={selectedOrganismId}
-              allChartProps={allChartProps}
-              setAllChartProps={setAllChartProps}
-            />
-          ) : null}
+          <HeatMap
+            echartsRendererMode={echartsRendererMode}
+            cellTypeSortBy={sortBy.cellTypes}
+            geneSortBy={sortBy.genes}
+            isScaled={isScaled}
+            isLoadingAPI={isLoading}
+            cellTypes={cellTypesByTissueName}
+            genes={selectedGenes}
+            selectedGeneExpressionSummariesByTissueName={
+              selectedGeneExpressionSummariesByTissueName
+            }
+            scaledMeanExpressionMax={scaledMeanExpressionMax}
+            scaledMeanExpressionMin={scaledMeanExpressionMin}
+            selectedOrganismId={selectedOrganismId}
+            allChartProps={allChartProps}
+            setAllChartProps={setAllChartProps}
+          />
         </Wrapper>
       </View>
 

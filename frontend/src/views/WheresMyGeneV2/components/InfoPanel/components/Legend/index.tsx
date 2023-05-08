@@ -1,6 +1,6 @@
 import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
-import { FilterDimensions } from "src/common/queries/wheresMyGene";
-import { CellType } from "src/views/WheresMyGene/common/types";
+import { FilterDimensions } from "src/common/queries/wheresMyGeneV2";
+import { CellType } from "src/views/WheresMyGeneV2/common/types";
 import SaveExport from "../../../GeneSearchBar/components/SaveExport";
 import ShareButton from "../../../GeneSearchBar/components/ShareButton";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
@@ -12,7 +12,6 @@ import { LegendWrapper } from "./style";
 interface Props {
   isScaled: boolean;
   handleRightSidebarButtonClick: MouseEventHandler<HTMLButtonElement>;
-  selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
   setDownloadStatus: Dispatch<
@@ -28,7 +27,6 @@ interface Props {
 export default memo(function Legend({
   isScaled,
   handleRightSidebarButtonClick,
-  selectedTissues,
   selectedGenes,
   selectedCellTypes,
   setDownloadStatus,
@@ -39,7 +37,7 @@ export default memo(function Legend({
   return (
     <LegendWrapper data-testid="legend-wrapper">
       <SaveExport
-        selectedTissues={selectedTissues}
+        selectedTissues={[]}
         selectedGenes={selectedGenes}
         selectedCellTypes={selectedCellTypes}
         setDownloadStatus={setDownloadStatus}
