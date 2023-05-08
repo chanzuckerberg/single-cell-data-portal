@@ -89,7 +89,7 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps
-          npm playwright-merge-html-reports install --dev
+          npx playwright-merge-html-reports install
           cp src/configs/local.js src/configs/configs.js
           npm run dev&
 
