@@ -1686,8 +1686,7 @@ class TestDataset(BaseAPIPortalTest):
 
         private_dataset = self.generate_dataset()
         public_dataset = self.generate_dataset(publish=True)
-        # how can I add a dataset to a revision?
-        revision = self.business_logic.create_collection_version(CollectionId(public_dataset.collection_id))
+        self.business_logic.create_collection_version(CollectionId(public_dataset.collection_id))
 
         test_url = furl(path="/dp/v1/user-datasets/index")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
