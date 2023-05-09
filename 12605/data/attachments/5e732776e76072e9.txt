@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0m  locator resolved to <div data-testid="cell-type-name">alpha-beta T cell</div> [38;5;45m+8ms[0m
