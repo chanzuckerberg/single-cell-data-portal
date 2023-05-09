@@ -1715,6 +1715,13 @@ class TestDataset(BaseAPIPortalTest):
         self.assertIn(public_dataset.dataset_version_id, dataset_ids)
         self.assertIn(private_dataset.dataset_version_id, dataset_ids)
 
+    def test__get_all_user_datasets_for_index_requires_auth(self):
+        # test that non logged user returns 401
+        test_url = furl(path="/dp/v1/user-datasets/index")
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(response.status_code, 401)
+
     # ✅
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
         import copy

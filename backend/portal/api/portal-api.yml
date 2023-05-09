@@ -423,7 +423,10 @@ paths:
       tags:
         - collections
       summary: >-
-        Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
+        Returns all public collections and any private collections that the user can update.
+      description: >-
+        Returns all public, non tombstoned collections and any private collections or revisions the user
+        has WRITE access to. This endpoint is meant to be used for displaying collections
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
       security:
         - cxguserCookie: []
@@ -755,14 +758,13 @@ paths:
       tags:
         - datasets
       summary: >-
-        Returns all public and private, non tombstoned datasets where the user has WRITE access. This endpoint is meant to be used for displaying datasets
-        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+        Returns datasets related to all public non-tombstoned collections and all private non-revision collections the user can update.
       security:
-        - cxguserCookieLenient: []
-        - {}
+        - cxguserCookie: []
       description: >-
-        Returns all datasets that belong to public and private, non tombstoned collections where the user has WRITE access. This endpoint is meant to be used 
-        for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+        Returns datasets related to all public non-tombstoned collections and all private non-revision collections
+        where the user has WRITE access. This endpoint is meant to be used for displaying datasets in a compact view.
+        It doesn't return all the fields, so it is not suitable for general usage.
       operationId: backend.portal.api.portal_api.get_user_datasets_index
       responses:
         "200":
@@ -832,6 +834,8 @@ paths:
                       type: number
         "400":
           $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
   /v1/login:
     get:
       tags:
