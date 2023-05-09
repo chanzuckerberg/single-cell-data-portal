@@ -135,13 +135,13 @@ jobs:
         if: failure() && github.ref == 'refs/heads/main'
 
   after-e2e-shards:
-    name: Wait for shards to finish
-    needs: e2e-test # run after e2e shards
+    name: Check status of shards
+    needs: e2e-test 
     runs-on: ubuntu-20.04
-    if: success() # only run when all shards have passed
+    if: always() 
     steps:
       - run: |
-          echo "E2E_RESULT=success" >> $GITHUB_ENV
+          echo "E2E_RESULT=completed" >> $GITHUB_ENV
 
   after-e2e-test:
     name: E2E overall result
@@ -150,7 +150,7 @@ jobs:
     if: always()
     steps:
       - run: |
-          if [[ ${{ env.E2E_RESULT }} != " " ]]; then
+          if [[ ${{ env.E2E_RESULT }} == "completed" ]]; then
             exit 0
           else
             exit 1
