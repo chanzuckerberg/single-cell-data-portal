@@ -61,6 +61,11 @@ export const TableTitle = styled.div`
   margin-bottom: 8px;
 `;
 
+export const PublicationLinkWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
 export const TableTitleWrapper = styled.div`
   display: flex;
   flex-direction: row;
