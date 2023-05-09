@@ -134,30 +134,37 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-  after-e2e-shards:
-    name: Check status of shards
-    needs: e2e-test 
+  # https://brunoscheufler.com/blog/2022-04-09-the-required-github-status-check-that-wasnt#conditional-success-output
+  after-shards:
+    name: Wait for shards
+    needs: e2e-test # run after shards
     runs-on: ubuntu-20.04
-    if: always() 
+    if: success() # only run when all shards have passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
     steps:
-      - run: |
-          echo "E2E_RESULT='completed'" >> $GITHUB_ENV
+      - id: setoutput
+        run: echo "{success}={true}" >> $GITHUB_OUTPUT
 
   after-e2e-test:
-    name: E2E overall result
-    needs: e2e-test
+    name: E2E completion
+    needs: [e2e-test, after-shards]
     runs-on: ubuntu-20.04
     if: always()
     steps:
-      - run: |
-          if [[ ${{ E2E_RESULT }} == "completed" ]]; then
-            exit 0
-          else
-            exit 1
-          fi
-        env:
-            E2E_RESULT: ${{ env.E2E_RESULT }}
-
+    # pass step only when output of previous after-shards job is set
+    # in case at least one of the shard fails, after-shards is skipped
+    # and the output will not be set, which will then cause the ci job to fail
+    - run: |
+        passed="${{ needs.after-shards.outputs.success }}"
+        if [[ $passed == "true" ]]; then
+          echo "Shards passed"
+          exit 0
+        else
+          echo "Shards failed"
+          exit 1
+        fi
   backend-unit-test:
     runs-on: ubuntu-20.04
     steps:
