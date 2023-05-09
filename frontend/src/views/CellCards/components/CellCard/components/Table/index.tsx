@@ -38,19 +38,9 @@ function Table<T extends object>({ columns, rows }: TableProps<T>) {
   let sortedRows = [...rows];
   if (sortOrder !== "none" && sortColumn !== null) {
     sortedRows.sort((a, b) => {
-      let aValue = a[sortColumn];
-      let bValue = b[sortColumn];
-
-      // if the values are React elements, try to compare their text
-      if (React.isValidElement(aValue)) {
-        aValue = (aValue as unknown as ReactElement).props.children;
-      }
-      if (React.isValidElement(bValue)) {
-        bValue = (bValue as unknown as ReactElement).props.children;
-      }
-
-      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      if (sortColumn === null) return 0;
+      if (a[sortColumn] < b[sortColumn]) return sortOrder === "asc" ? -1 : 1;
+      if (a[sortColumn] > b[sortColumn]) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
   }

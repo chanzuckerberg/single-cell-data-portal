@@ -90,7 +90,6 @@ export default function CellCard(): JSX.Element {
           })}
         </PublicationLinkWrapper>
       );
-      console.log("hi");
 
       tableRows.push({
         symbol: (
