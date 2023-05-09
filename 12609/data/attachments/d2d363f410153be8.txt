@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0m  locator resolved to <button tabindex="0" type="button" data-testid="InputDro…>…</button> [38;5;45m+292ms[0m
