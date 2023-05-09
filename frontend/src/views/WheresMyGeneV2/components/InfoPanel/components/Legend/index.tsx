@@ -37,7 +37,6 @@ export default memo(function Legend({
   return (
     <LegendWrapper data-testid="legend-wrapper">
       <SaveExport
-        selectedTissues={[]}
         selectedGenes={selectedGenes}
         selectedCellTypes={selectedCellTypes}
         setDownloadStatus={setDownloadStatus}

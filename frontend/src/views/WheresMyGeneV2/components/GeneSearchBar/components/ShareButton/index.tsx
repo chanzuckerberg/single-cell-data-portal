@@ -25,13 +25,7 @@ import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
 export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
 
-  const {
-    selectedFilters,
-    selectedTissues,
-    selectedGenes,
-    selectedOrganismId,
-    compare,
-  } = state;
+  const { selectedFilters, selectedGenes, selectedOrganismId, compare } = state;
 
   const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions();
   const dispatch = useContext(DispatchContext);
@@ -44,7 +38,6 @@ export default function ShareButton(): JSX.Element {
       compare,
       filters: selectedFilters,
       organism: selectedOrganismId,
-      tissues: selectedTissues,
       genes: selectedGenes,
     });
 
@@ -56,18 +49,10 @@ export default function ShareButton(): JSX.Element {
       group_by_option: getCompareOptionNameById(compare),
       self_reported_ethnicity_filter: selectedFilters.ethnicities,
       sex_filter: selectedFilters.sexes,
-      tissues: selectedTissues,
     });
 
     setShowURLCopyNotification((prev) => prev + 1);
-  }, [
-    selectedFilters,
-    selectedTissues,
-    selectedGenes,
-    selectedOrganismId,
-    dispatch,
-    compare,
-  ]);
+  }, [selectedFilters, selectedGenes, selectedOrganismId, dispatch, compare]);
 
   useEffect(() => {
     if (isSSR() || isLoadingFilterDims || !dispatch) return;
@@ -83,7 +68,6 @@ export default function ShareButton(): JSX.Element {
 
       if (loadedState) {
         track(EVENTS.WMG_SHARE_LOADED, {
-          tissues: loadedState.tissues,
           genes: loadedState.genes,
           organism: loadedState.organism,
           dataset_filter: loadedState.filters.datasets,
