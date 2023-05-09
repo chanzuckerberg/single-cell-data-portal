@@ -189,11 +189,13 @@ export default function CellCard(): JSX.Element {
       <Divider />
       {selectedDescription === "GPT3.5" && (
         <CellCardDescription>
-          <i>
-            {
-              "ChatGPT may produce inaccurate information about people, places, or facts.\n\n"
-            }
-          </i>
+          <b>
+            <i>
+              {
+                "These summaries are produced by ChatGPT. ChatGPT may produce inaccurate information about people, places, or facts. Alternate sources can be selected above.\n\n"
+              }
+            </i>
+          </b>
           {descriptionGpt}
         </CellCardDescription>
       )}
