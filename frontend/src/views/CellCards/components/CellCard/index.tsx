@@ -12,6 +12,7 @@ import {
   TableTitle,
   TableTitleWrapper,
   WmgLink,
+  PublicationLinkWrapper,
 } from "./style";
 import { useCellTypesById } from "src/common/queries/cellCards";
 import {
@@ -41,17 +42,28 @@ const availableDescriptions: DescriptionOptions[] = [
 interface TableRow {
   symbol: ReactElement;
   name: string;
-  publication: ReactElement | string;
+  publications: ReactElement | string;
+  organ: string;
+  tissue: string;
 }
-const tableColumns: Array<keyof TableRow> = ["symbol", "name", "publication"];
+const tableColumns: Array<keyof TableRow> = [
+  "symbol",
+  "name",
+  "organ",
+  "tissue",
+  "publications",
+];
 
 export default function CellCard(): JSX.Element {
   const router = useRouter();
   const [selectedDescription, setSelectedDescription] =
     useState<DescriptionOptions>("GPT3.5");
+
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
   const [descriptionWiki, setDescriptionWiki] = useState<string>("");
   const [descriptionOls, setDescriptionOls] = useState<string>("");
+  const [descriptionOlsReference, setDescriptionOlsReference] =
+    useState<string>("");
   const { cellTypeId: cellTypeIdRaw } = router.query;
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
   const cellTypesById = useCellTypesById();
@@ -62,6 +74,24 @@ export default function CellCard(): JSX.Element {
     const genes =
       allCellTypeMarkerGenes[cellTypeId as keyof typeof allCellTypeMarkerGenes];
     for (const markerGene of genes) {
+      const publications = markerGene.publication.split(";;");
+      const publicationTitles = markerGene.publication_titles.split(";;");
+      const publicationLinks = (
+        <PublicationLinkWrapper>
+          {publications.map((publication, index) => {
+            if (publication && publicationTitles[index]) {
+              return (
+                <Link
+                  title={publicationTitles[index]}
+                  url={`https://doi.org/${publication}`}
+                />
+              );
+            }
+          })}
+        </PublicationLinkWrapper>
+      );
+      console.log("hi");
+
       tableRows.push({
         symbol: (
           <Link
@@ -70,18 +100,16 @@ export default function CellCard(): JSX.Element {
           />
         ),
         name: markerGene.name,
-        publication: markerGene.publication ? (
-          <Link title="Reference" url={`https://${markerGene.publication}`} />
-        ) : (
-          ""
-        ),
+        publications: publicationLinks,
+        organ: markerGene.tissue_general,
+        tissue: markerGene.tissue_specific,
       });
     }
   }
   useEffect(() => {
     // hardcoding this for now.
     const olsUrl = `
-     https://www.ebi.ac.uk/ols/api/ontologies/cl/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}
+      https://www.ebi.ac.uk/ols4/api/ontologies/hcao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}
     `;
     if (cellTypeIdRaw) {
       // set all descriptions
@@ -101,10 +129,16 @@ export default function CellCard(): JSX.Element {
       fetch(olsUrl).then(async (res) => {
         const data = await res.json();
         if (data) {
-          if (data?.annotation?.definition) {
-            setDescriptionOls(data.annotation.definition);
+          if (data?.obo_definition_citation) {
+            const descriptionData = data.obo_definition_citation[0];
+            const description = descriptionData.definition;
+            const reference = descriptionData.oboXrefs[0].url;
+            if (reference) setDescriptionOlsReference(reference);
+            else setDescriptionOlsReference("");
+            setDescriptionOls(description);
           } else {
             setDescriptionOls("");
+            setDescriptionOlsReference("");
           }
         }
       });
@@ -165,7 +199,14 @@ export default function CellCard(): JSX.Element {
         </CellCardDescription>
       )}
       {descriptionOls && selectedDescription === "OLS v4" && (
-        <CellCardDescription>{descriptionOls}</CellCardDescription>
+        <CellCardDescription>
+          {descriptionOls}{" "}
+          {descriptionOlsReference && (
+            <a href={descriptionOlsReference} target="_blank">
+              {" (Reference)"}{" "}
+            </a>
+          )}
+        </CellCardDescription>
       )}
       {descriptionWiki && selectedDescription === "Wikipedia" && (
         <CellCardDescription>{descriptionWiki}</CellCardDescription>
