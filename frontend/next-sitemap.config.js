@@ -8,7 +8,7 @@ module.exports = {
       {
         userAgent: "*",
         allow: "/",
-        disallow: "https://api.cellxgene.cziscience.com/curation/ui/",
+        disallow: "https://api.cellxgene.cziscience.com/*",
       },
     ],
     additionalSitemaps: [
