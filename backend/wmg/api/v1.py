@@ -72,11 +72,9 @@ def query():
                     term_id_labels=dict(
                         genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                         cell_types=build_ordered_cell_types_by_tissue(
-                            cell_counts,
-                            cell_counts_cell_type_agg.T,
+                            cell_counts_cell_type_agg,
                             snapshot.cell_type_orderings,
                             compare,
-                            group_by_terms,
                         ),
                     ),
                 )
@@ -385,18 +383,14 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
 
 # getting only cell type metadata, no genes
 def build_ordered_cell_types_by_tissue(
-    cell_counts: DataFrame,
-    cell_counts_cell_type_agg_T: DataFrame,
+    cell_counts_cell_type_agg: DataFrame,
     cell_type_orderings: DataFrame,
     compare: str,
-    group_by_terms: List[str] = None,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
-    if group_by_terms is None:
-        group_by_terms = DEFAULT_GROUP_BY_TERMS
 
-    distinct_tissues_cell_types: DataFrame = cell_counts.groupby(group_by_terms, as_index=False).first()[
-        group_by_terms + ["n_total_cells"]
-    ]
+    distinct_tissues_cell_types = cell_counts_cell_type_agg.reset_index().rename(
+        columns={"n_cells_cell_type": "n_total_cells"}
+    )
 
     # building order for cell types for FE to use
     cell_type_orderings["order"] = range(cell_type_orderings.shape[0])
@@ -433,7 +427,7 @@ def build_ordered_cell_types_by_tissue(
         {"n_total_cells": "sum", "depth": "first", "order": "first"}
     )
 
-    agg = cell_counts_cell_type_agg_T.T.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).sum().T
+    agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).sum().T
 
     for i in range(joined_agg.shape[0]):
         row = joined_agg.iloc[i]
@@ -445,6 +439,7 @@ def build_ordered_cell_types_by_tissue(
         }
 
     # Populate compare filter gene expressions
+    cell_counts_cell_type_agg_T = cell_counts_cell_type_agg.T
     if compare:
         for i in range(joined.shape[0]):
             row = joined.iloc[i]
