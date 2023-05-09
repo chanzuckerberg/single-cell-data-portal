@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0m  locator resolved to visible <button disabled tabindex="-1" type="button" data-testid…>…</button> [38;5;45m+81ms[0m
