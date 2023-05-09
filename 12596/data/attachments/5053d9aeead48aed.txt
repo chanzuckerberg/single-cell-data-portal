@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0mwaiting for getByTestId('cell-type-label-count').nth(63).getByTestId('cell-count') [38;5;45m+12ms[0m
