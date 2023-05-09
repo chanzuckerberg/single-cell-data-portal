@@ -102,6 +102,10 @@ jobs:
 
       # - name: Run Report Merge
       #   run: npx playwright test tests/merged-reports
+      - name: show me directory local-unit-test-processing
+        run: |
+          ls -la
+          ls -la tests
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
