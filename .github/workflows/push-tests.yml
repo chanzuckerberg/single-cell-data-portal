@@ -89,7 +89,7 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps
-          npx playwright-merge-html-reports install
+          # npx playwright-merge-html-reports install
           cp src/configs/local.js src/configs/configs.js
           npm run dev&
 
@@ -100,15 +100,15 @@ jobs:
           PROJECT: ${{ matrix.project }}
         run: DEBUG=pw:api npx playwright test --project ${{ matrix.project }} --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
 
-      - name: Run Report Merge
-        run: npx playwright test tests/merged-reports
+      # - name: Run Report Merge
+      #   run: npx playwright test tests/merged-reports
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: test-results
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/merged-reports
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
       # Upload Allure results as an artifact
       - uses: actions/upload-artifact@v3
