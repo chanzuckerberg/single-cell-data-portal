@@ -24,7 +24,9 @@ const AsyncCTA = loadable(
 );
 
 const CreateCollectionButton = (props: Partial<IButtonProps>) => (
-  <StyledButton {...props}>Create Collection</StyledButton>
+  <StyledButton sdsStyle="square" sdsType="primary" {...props}>
+    Create Collection
+  </StyledButton>
 );
 
 const CreateCollection: FC<{

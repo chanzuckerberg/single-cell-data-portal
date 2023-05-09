@@ -8,6 +8,11 @@ variable cellxgene_bucket {
   description = "Cellxgene bucket name"
 }
 
+variable datasets_bucket {
+  type        = string
+  description = "Datasets public-access bucket name"
+}
+
 variable image {
   type        = string
   description = "Image name"

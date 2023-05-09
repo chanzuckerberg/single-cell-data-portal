@@ -21,6 +21,7 @@ from backend.common.utils.cxg_generation_utils import (
 )
 from backend.common.utils.matrix_utils import is_matrix_sparse
 from backend.common.utils.semvar_utils import validate_version_str
+from backend.common.utils.tiledb import consolidation_buffer_size
 
 
 class H5ADDataFile:
@@ -60,9 +61,8 @@ class H5ADDataFile:
         logging.info("Beginning writing to CXG.")
         ctx = tiledb.Ctx(
             {
-                "sm.num_reader_threads": 32,
-                "sm.num_writer_threads": 32,
-                "sm.consolidation.buffer_size": 1 * 1024 * 1024 * 1024,
+                "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
+                "py.deduplicate": True,  # May reduce memory requirements at cost of performance
             }
         )
 
@@ -98,6 +98,7 @@ class H5ADDataFile:
         convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)
 
         suffixes = ["r", "c"] if is_sparse else [""]
+        logging.info("start consolidating")
         for suffix in suffixes:
             tiledb.consolidate(matrix_container + suffix, ctx=ctx)
             if hasattr(tiledb, "vacuum"):

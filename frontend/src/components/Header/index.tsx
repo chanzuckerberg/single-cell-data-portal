@@ -1,7 +1,7 @@
 import { AnchorButton } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import { Popper } from "@mui/material";
-import { DefaultMenuSelectOption, InputDropdown, MenuSelect } from "czifui";
+import { DefaultMenuSelectOption, MenuSelect } from "czifui";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC, useRef, useState } from "react";
@@ -15,7 +15,15 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
-import { Left, LinkWrapper, MainWrapper, Nav, Right, Wrapper } from "./style";
+import {
+  Left,
+  MainWrapper,
+  Right,
+  StyledInputDropdown,
+  Wrapper,
+} from "./style";
+import Nav from "src/components/Header/components/Nav";
+import { LinkWrapper } from "src/components/Header/components/Nav/style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -40,6 +48,7 @@ const Header: FC = () => {
   const StyledPopper = styled(Popper)`
     height: 300px;
     z-index: 99;
+    margin-top: -26px !important;
   `;
 
   return (
@@ -47,45 +56,7 @@ const Header: FC = () => {
       <MainWrapper>
         <Left>
           <HomepageLink />
-          <Nav>
-            <LinkWrapper>
-              <Link href={ROUTES.COLLECTIONS} passHref>
-                <AnchorButton
-                  onClick={() => {
-                    track(EVENTS.COLLECTIONS_CLICK_NAV);
-                  }}
-                  active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
-                  href="passHref"
-                  minimal
-                  text="Collections"
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <Link href={ROUTES.DATASETS} passHref>
-                <AnchorButton
-                  onClick={() => {
-                    track(EVENTS.DATASETS_CLICK_NAV);
-                  }}
-                  active={isRouteActive(pathname, ROUTES.DATASETS)}
-                  href="passHref"
-                  minimal
-                  text="Datasets"
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
-                  href="passHref"
-                  minimal
-                  text="Gene Expression"
-                  onClick={handleWMGClick}
-                />
-              </Link>
-            </LinkWrapper>
-          </Nav>
+          <Nav pathname={pathname} />
         </Left>
         <Right>
           {isMyCollectionsShown && (
@@ -101,7 +72,7 @@ const Header: FC = () => {
             </LinkWrapper>
           )}
 
-          <InputDropdown
+          <StyledInputDropdown
             disabled={false}
             label="Help & Documentation"
             sdsStage="default"
@@ -170,10 +141,6 @@ const Header: FC = () => {
   function handleHelpClose() {
     setDropdownOpen(false);
   }
-
-  function handleWMGClick() {
-    track(EVENTS.WMG_CLICK_NAV);
-  }
 };
 
 /**
@@ -182,7 +149,7 @@ const Header: FC = () => {
  * @param route
  * @returns true if the current path is the route
  */
-function isRouteActive(path: string, route: ROUTES): boolean {
+export function isRouteActive(path: string, route: ROUTES): boolean {
   return path === route;
 }
 

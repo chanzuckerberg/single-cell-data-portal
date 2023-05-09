@@ -27,8 +27,8 @@ locals {
   backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "61", "--log-level", "info"]
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_2023.sql"
 
-  vpc_id                          = local.secret["vpc_id"]
-  subnets                         = local.secret["private_subnets"]
+  vpc_id                          = local.secret["cloud_env"]["vpc_id"]
+  subnets                         = local.secret["cloud_env"]["private_subnets"]
   security_groups                 = local.secret["security_groups"]
   zone                            = local.secret["zone_id"]
   cluster                         = local.secret["cluster_arn"]
@@ -56,6 +56,7 @@ locals {
 
   artifact_bucket            = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket           = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
+  datasets_bucket            = try(local.secret["s3_buckets"]["datasets"]["name"], "")
   dataset_submissions_bucket = try(local.secret["s3_buckets"]["dataset_submissions"]["name"], "")
   wmg_bucket                 = try(local.secret["s3_buckets"]["wmg"]["name"], "")
 
@@ -140,6 +141,7 @@ module backend_service {
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
+  datasets_bucket            = local.datasets_bucket
   execution_role             = local.ecs_execution_role
 
   wait_for_steady_state = local.wait_for_steady_state
@@ -179,6 +181,7 @@ module upload_batch {
   deployment_stage  = local.deployment_stage
   artifact_bucket   = local.artifact_bucket
   cellxgene_bucket  = local.cellxgene_bucket
+  datasets_bucket   = local.datasets_bucket
   frontend_url      = local.frontend_url
   batch_container_memory_limit = local.batch_container_memory_limit
 }

@@ -1,14 +1,6 @@
 import Head from "next/head";
 import { useEffect, useMemo } from "react";
-import {
-  Column,
-  Filters,
-  HeaderProps,
-  Renderer,
-  useFilters,
-  useSortBy,
-  useTable,
-} from "react-table";
+import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter/useCategoryFilter";
@@ -22,47 +14,41 @@ import {
   CATEGORY_FILTER_ID,
   CellPropsValue,
   CollectionRow,
-  HeaderPropsValue,
   MultiPanelSelectedUIState,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
 import { buildTableCountSummary } from "src/components/common/Grid/common/utils";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
-import HeaderCell from "src/components/common/Grid/components/HeaderCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { Title } from "src/components/common/Grid/components/Title";
 import SideBar from "src/components/common/SideBar";
-import { View } from "src/views/globalStyle";
-
-/**
- * Collection ID object key.
- */
-const COLLECTION_ID = "id";
-
-/**
- * Collection name object key.
- */
-const COLLECTION_NAME = "name";
-
-/**
- * Collection summary citation object key.
- */
-const COLLECTION_SUMMARY_CITATION = "summaryCitation";
-
-/**
- * Key identifying recency sort by column.
- */
-const COLUMN_ID_RECENCY = "recency";
-
-/**
- * Recency object key.
- */
-const RECENCY = "recency";
+import CreateCollection from "src/components/CreateCollectionModal";
+import { CollectionsView as View } from "./style";
+import { FEATURES } from "src/common/featureFlags/features";
+import { useUserInfo } from "src/common/queries/auth";
+import {
+  COLLECTION_ID,
+  COLLECTION_NAME,
+  COLLECTION_RECENCY,
+  COLLECTION_SUMMARY_CITATION,
+  COLLECTIONS_MODE,
+  COLUMN_ID_RECENCY,
+} from "src/views/Collections/common/constants";
+import { get } from "src/common/featureFlags";
+import { BOOLEAN } from "src/common/localStorage/set";
 
 export default function Collections(): JSX.Element {
+  const isCuratorEnabled = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
+  const { status } = useUserInfo(isCuratorEnabled);
+  const mode = useMemo((): COLLECTIONS_MODE => {
+    return status === "success"
+      ? COLLECTIONS_MODE.MY_COLLECTIONS
+      : COLLECTIONS_MODE.COLLECTIONS;
+  }, [status]);
+
   // Pop toast if user has been redirected from a tombstoned collection.
   useExplainTombstoned();
 
@@ -84,15 +70,9 @@ export default function Collections(): JSX.Element {
             </Title>
           );
         },
-        Header: (({ tableCountSummary }: HeaderPropsValue) => {
-          return (
-            <HeaderCell
-              label={"Collections"}
-              tableCountSummary={tableCountSummary}
-            />
-          );
-        }) as Renderer<HeaderProps<CollectionRow>>,
+        Header: "Collections",
         accessor: COLLECTION_NAME,
+        showCountAndTotal: true,
       },
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
@@ -132,7 +112,7 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for sorting
       {
-        accessor: RECENCY,
+        accessor: COLLECTION_RECENCY,
         id: COLUMN_ID_RECENCY,
       },
       // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.
@@ -303,6 +283,7 @@ export default function Collections(): JSX.Element {
             <Filter {...filterInstance} />
           </SideBar>
           <View>
+            {mode === COLLECTIONS_MODE.MY_COLLECTIONS && <CreateCollection />}
             {!rows || rows.length === 0 ? (
               <GridHero>
                 <h3>No Results</h3>
@@ -319,6 +300,8 @@ export default function Collections(): JSX.Element {
               />
             )}
           </View>
+          {/* May be added in the future after sign off */}
+          {/* <BottomBanner /> */}
         </>
       )}
     </>

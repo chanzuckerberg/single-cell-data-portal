@@ -104,13 +104,15 @@ export default function ShareButton(): JSX.Element {
             key={showURLCopyNotification}
             autoDismiss={5000}
             onClose={noop}
-            dismissDirection={"left"}
+            slideDirection={"left"}
             intent={"info"}
             icon={
               <StyledIcon sdsIcon={"link"} sdsSize={"s"} sdsType={"static"} />
             }
           >
-            <StyledNotificationLabel>Share link copied</StyledNotificationLabel>
+            <StyledNotificationLabel data-testid="share-link-notification">
+              Share link copied
+            </StyledNotificationLabel>
             <StyledNotificationDetails>
               We regularly expand our single cell data corpus to improve
               results. Downloaded data and figures may differ in the future.

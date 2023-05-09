@@ -38,7 +38,7 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "DATASET_ID",
-                "Value.$": "$.dataset_id"
+                 "Value.$": "$.dataset_id"
               },
               {
                 "Name": "STEP_NAME",
@@ -102,7 +102,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                   }
                 },
                 "ResultPath": null,
-                "TimeoutSeconds": 36000
+                "TimeoutSeconds": 360000
               }
             }
           },
