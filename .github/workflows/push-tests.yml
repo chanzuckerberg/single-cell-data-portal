@@ -141,7 +141,7 @@ jobs:
     if: always() 
     steps:
       - run: |
-          echo "E2E_RESULT=completed" >> $GITHUB_ENV
+          echo "E2E_RESULT='completed'" >> $GITHUB_ENV
 
   after-e2e-test:
     name: E2E overall result
