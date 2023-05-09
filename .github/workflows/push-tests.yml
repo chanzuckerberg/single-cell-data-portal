@@ -153,14 +153,12 @@ jobs:
     runs-on: ubuntu-20.04
     if: always()
     steps:
-      - env:
-          E2E_RESULT: ${{ needs.after-shards.outputs.success }}
-    # pass step only when output of previous after-shards job is set
-    # in case at least one of the shard fails, after-shards is skipped
-    # and the output will not be set, which will then cause the ci job to fail
+      # pass step only when output of previous after-shards job is set
+      # in case at least one of the shard fails, after-shards is skipped
+      # and the output will not be set, which will then cause the ci job to fail
       - run: |
           passed="${{ needs.after-shards.outputs.success }}"
-          if [[ $E2E_RESULT == "true" ]]; then
+          if [[ $passed == "true" ]]; then
             echo "Shards passed"
             exit 0
           else
