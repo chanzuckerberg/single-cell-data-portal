@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { noop } from "src/common/constants/utils";
 import { isSSR } from "src/common/utils/isSSR";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { SearchBarWrapper, TOP_PADDING_PX } from "../CellCard/style";
