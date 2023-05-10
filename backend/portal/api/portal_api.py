@@ -259,7 +259,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
                 collection.collection_id
             )
         revising_in = _revising_in.version_id.id if _revising_in else None
-        is_in_revision = True if _revising_in else None
+        is_in_revision = False
 
     is_tombstoned = collection.canonical_collection.tombstoned
 
