@@ -1,10 +1,10 @@
 import React, { ReactElement } from "react";
+import { WmgLink } from "./style";
 import {
   TableTitle,
   TableTitleWrapper,
-  WmgLink,
   PublicationLinkWrapper,
-} from "./style";
+} from "../common/style";
 import { allCellTypeMarkerGenes } from "src/views/CellCards/common/fixtures";
 import Table from "../Table";
 

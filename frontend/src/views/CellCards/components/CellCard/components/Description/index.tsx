@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import { CellCardDescription } from "./style";
 import { allCellTypeDescriptions } from "src/views/CellCards/common/fixtures";
