@@ -1,0 +1,1 @@
+  [38;5;45;1mpw:api [0mwaiting for locator('[id="heatmap-container-id"]') to be visible [38;5;45m+20ms[0m

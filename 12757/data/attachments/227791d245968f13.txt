@@ -1,0 +1,1 @@
+  [38;5;45;1mpw:api [0mwaiting for locator('[data-testid=\'gene-label-TSPAN6\']') to be visible [38;5;45m+23ms[0m
