@@ -11,7 +11,7 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_logical_attr
 
 class RollupExpressionsAcrossCellTypesTest(unittest.TestCase):
     # test that the rollup function works as expected
-    def test__expression_rollup(self):
+    def test__expression_rollup_across_cell_type_descendants(self):
         # second cell type is descendant of first cell type
         # fourth cell type is descendant of third cell type
         cell_types = ["CL:0000786", "CL:0000986", "CL:0000980", "CL:0001202"]
@@ -169,3 +169,120 @@ class RollupExpressionsAcrossCellTypesTest(unittest.TestCase):
         # assert that the added rows that could not be rescued via rollup are properly filtered out
         # these rows will still have 0 for all numeric columns, excluding n_cells_tissue
         assert (dot_plot_matrix_df["sum"] > 0).all()
+
+    def test__gene_expression_rollup(self):
+        """
+        Test that the `rollup` function sums up relevant numeric values for gene expression for
+        each cell type from its descendant cell types for every (tissue, gene) combination
+        in the input expression dataframe.
+
+        The input:
+
+        1. A cell type ontology subgraph consisting of 4 cell types.
+        2. 2 tissues.
+        3. 2 genes.
+        4. A gene expression dataframe consisting of expression numeric values for each
+           (gene_ontology_term_id, tissue_ontology_term_id, cell_type_ontology_term_id) tuple.
+        5. The gene expression datafram also holds total cell counts per tissue_ontology_term_id.
+           This value is held in a column called `n_cells_tissue`.
+        6. A cell counts dataframe that consists of cell counts for each
+           (tissue_ontology_term_id, cell_type_ontology_term_id) tuple.
+        7. We set the `n_cells_tissue` column values to 10_000_000 for all rows
+           in the gene expression dataframe.
+        8. We set all other numeric column values to `1` in the gene expression dataframe.
+
+        The expected output:
+
+        1. A rolled up gene expression dataframe.
+        2. A rolled up cell counts dataframe.
+        3. Assert that `n_cells_tissue` column value in the rolled up gene expression dataframe
+           does not change for all rows because it should not be rolled up the cell type ontology
+           ancestor path.
+        4. Assert that other numeric column values (i.e the columns that are not `n_cells_tissue`)
+           in the rolled up gene expression dataframe sum up to the correct value for each cell type
+           for every (tissue, gene) combination.
+        5. Assert that the cell counts in the rolled up cell counts dataframe sum up to the correct
+           value for each cell type for every (tissue, cell_type) combination.
+        """
+        # Arrange
+
+        # Cell Type Ontology Subgraph
+        #    CL:0000127
+        #    ├── CL:0000644
+        #    ├── CL:0002605
+        #    └── CL:0002627
+        cell_counts_col_names = ["tissue_ontology_term_id", "cell_type_ontology_term_id", "n_cells_cell_type"]
+
+        input_cell_counts_rows = [
+            ["UBERON:0000955", "CL:0000127", 100000],
+            ["UBERON:0000955", "CL:0000644", 8034],
+            ["UBERON:0000955", "CL:0002605", 70009],
+            ["UBERON:0000955", "CL:0002627", 9871],
+            ["UBERON:0002113", "CL:0000127", 100000],
+            ["UBERON:0002113", "CL:0000644", 8034],
+            ["UBERON:0002113", "CL:0002605", 70009],
+            ["UBERON:0002113", "CL:0002627", 9871],
+        ]
+        cell_counts_df = pd.DataFrame(input_cell_counts_rows, columns=cell_counts_col_names)
+        cell_counts_df = cell_counts_df.set_index(["tissue_ontology_term_id", "cell_type_ontology_term_id"])
+
+        gene_expr_col_names = [
+            "gene_ontology_term_id",
+            "tissue_ontology_term_id",
+            "cell_type_ontology_term_id",
+            "nnz",
+            "sum",
+            "n_cells_cell_type",
+            "n_cells_tissue",
+        ]
+
+        input_gene_expr_rows = [
+            ["ENSG00000085265", "UBERON:0000955", "CL:0000644", 1, 1, 8034, 10000000],
+            ["ENSG00000085265", "UBERON:0000955", "CL:0002605", 1, 1, 70009, 10000000],
+            ["ENSG00000169429", "UBERON:0000955", "CL:0002627", 1, 1, 9871, 10000000],
+            ["ENSG00000085265", "UBERON:0002113", "CL:0000644", 1, 1, 8034, 10000000],
+            ["ENSG00000085265", "UBERON:0002113", "CL:0002605", 1, 1, 70009, 10000000],
+            ["ENSG00000169429", "UBERON:0002113", "CL:0002627", 1, 1, 9871, 10000000],
+        ]
+
+        gene_expr_df = pd.DataFrame(input_gene_expr_rows, columns=gene_expr_col_names)
+
+        # Act
+        rolled_up_gene_expr_df, rolled_up_cell_counts_df = rollup(gene_expr_df.copy(), cell_counts_df.copy())
+
+        # Assert
+        expected_cell_counts_rows = [
+            ["UBERON:0000955", "CL:0000127", 187914],
+            ["UBERON:0000955", "CL:0000644", 8034],
+            ["UBERON:0000955", "CL:0002605", 70009],
+            ["UBERON:0000955", "CL:0002627", 9871],
+            ["UBERON:0002113", "CL:0000127", 187914],
+            ["UBERON:0002113", "CL:0000644", 8034],
+            ["UBERON:0002113", "CL:0002605", 70009],
+            ["UBERON:0002113", "CL:0002627", 9871],
+        ]
+
+        rolled_up_cell_counts_df.reset_index(inplace=True)
+        rolled_up_cell_counts_df_list = rolled_up_cell_counts_df.values.tolist()
+
+        assert rolled_up_cell_counts_df_list == expected_cell_counts_rows
+
+        expected_gene_expr_rows = [
+            ["ENSG00000085265", "UBERON:0000955", "CL:0000127", 2, 2, 78043, 10000000],
+            ["ENSG00000169429", "UBERON:0000955", "CL:0000127", 1, 1, 9871, 10000000],
+            ["ENSG00000085265", "UBERON:0000955", "CL:0000644", 1, 1, 8034, 10000000],
+            ["ENSG00000085265", "UBERON:0000955", "CL:0002605", 1, 1, 70009, 10000000],
+            ["ENSG00000169429", "UBERON:0000955", "CL:0002627", 1, 1, 9871, 10000000],
+            ["ENSG00000085265", "UBERON:0002113", "CL:0000127", 2, 2, 78043, 10000000],
+            ["ENSG00000169429", "UBERON:0002113", "CL:0000127", 1, 1, 9871, 10000000],
+            ["ENSG00000085265", "UBERON:0002113", "CL:0000644", 1, 1, 8034, 10000000],
+            ["ENSG00000085265", "UBERON:0002113", "CL:0002605", 1, 1, 70009, 10000000],
+            ["ENSG00000169429", "UBERON:0002113", "CL:0002627", 1, 1, 9871, 10000000],
+        ]
+
+        rolled_up_gene_expr_df.sort_values(
+            ["tissue_ontology_term_id", "cell_type_ontology_term_id", "gene_ontology_term_id"], inplace=True
+        )
+        rolled_up_gene_expr_list = rolled_up_gene_expr_df.values.tolist()
+
+        assert rolled_up_gene_expr_list == expected_gene_expr_rows
