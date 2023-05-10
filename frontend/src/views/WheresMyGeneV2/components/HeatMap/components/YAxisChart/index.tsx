@@ -64,9 +64,6 @@ export default memo(function YAxisChart({
 
   return (
     <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
-      <TissueWrapper height={heatmapHeight}>
-        <TissueName>{capitalize(tissue)}</TissueName>
-      </TissueWrapper>
       <Container
         data-testid={`cell-type-labels-${tissueKey}`}
         height={heatmapHeight}

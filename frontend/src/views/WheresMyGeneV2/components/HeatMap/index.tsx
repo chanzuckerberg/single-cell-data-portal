@@ -1,9 +1,11 @@
+import { Button } from "czifui";
 import cloneDeep from "lodash/cloneDeep";
 import {
   Dispatch,
   memo,
   SetStateAction,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -160,83 +162,121 @@ export default memo(function HeatMap({
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
+  // would this be more performant as a bitmap of booleans?
+  const initialBitMap = useMemo(() => {
+    return Object.entries(sortedCellTypesByTissueName).reduce(
+      (acc, [tissue, cellTypes]) => {
+        acc[tissue] = {};
+        cellTypes.forEach((cellType) => {
+          acc[tissue][cellType.id] = false;
+        });
+        acc[tissue]["HEADER_ROW"] = true;
+        return acc;
+      },
+      {} as { [tissue: string]: { [cellType: string]: boolean } }
+    );
+  }, [sortedCellTypesByTissueName]);
+  // (seve): This state should be moved to the store
+  // This is a 2 dimensional array of booleans that represents which rows belonging to each tissue displayed
+  const [displayedRowBitMap, setDisplayedRowBitMap] = useState(initialBitMap);
+
+  useEffect(() => {
+    setDisplayedRowBitMap(initialBitMap);
+  }, [initialBitMap]);
+
+  const handleExpand = () => {
+    //expand the first tissue
+    displayedRowBitMap["lung"] = Object.fromEntries(
+      Object.entries(displayedRowBitMap["lung"]).map(([key]) => {
+        return [key, true];
+      })
+    );
+    setDisplayedRowBitMap(displayedRowBitMap);
+  };
+
   return (
-    <ContainerWrapper>
-      <TopLeftCornerMask>
-        <CellCountLabel>Cell Count</CellCountLabel>
-      </TopLeftCornerMask>
-      <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
-        {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
-        <XAxisWrapper id="x-axis-wrapper">
-          <XAxisMask data-testid="x-axis-mask" />
-          <XAxisChart geneNames={sortedGeneNames} />
-        </XAxisWrapper>
-        <YAxisWrapper>
-          {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
-            const tissueCellTypes = getTissueCellTypes({
-              cellTypeSortBy,
-              cellTypes,
-              sortedCellTypesByTissueName,
-              tissue: tissue.name,
-            });
-            return tissueCellTypes.length ? (
-              <YAxisChart
-                key={tissue.name}
-                tissue={tissue.name}
-                tissueID={tissue.id}
-                cellTypes={tissueCellTypes}
-                generateMarkerGenes={generateMarkerGenes}
-                selectedOrganismId={selectedOrganismId}
-              />
-            ) : null;
-          })}
-        </YAxisWrapper>
-        <ChartWrapper ref={chartWrapperRef}>
-          {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
-            const tissueCellTypes = getTissueCellTypes({
-              cellTypeSortBy,
-              cellTypes,
-              sortedCellTypesByTissueName,
-              tissue: tissue.name,
-            });
+    <>
+      <Button onClick={handleExpand}>EXPAND</Button>
 
-            const selectedGeneData =
-              orderedSelectedGeneExpressionSummariesByTissueName[tissue.name];
+      <ContainerWrapper>
+        <TopLeftCornerMask>
+          <CellCountLabel>Cell Count</CellCountLabel>
+        </TopLeftCornerMask>
+        <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
+          {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
+          <XAxisWrapper id="x-axis-wrapper">
+            <XAxisMask data-testid="x-axis-mask" />
+            <XAxisChart geneNames={sortedGeneNames} />
+          </XAxisWrapper>
+          <YAxisWrapper>
+            {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
+              const tissueCellTypes = getTissueCellTypes({
+                cellTypeSortBy,
+                cellTypes,
+                sortedCellTypesByTissueName,
+                tissue: tissue.name,
+                displayedRowBitMap,
+              });
+              return (
+                <YAxisChart
+                  key={tissue.name}
+                  tissue={tissue.name}
+                  tissueID={tissue.id}
+                  cellTypes={tissueCellTypes}
+                  generateMarkerGenes={generateMarkerGenes}
+                  selectedOrganismId={selectedOrganismId}
+                />
+              );
+            })}
+          </YAxisWrapper>
+          <ChartWrapper ref={chartWrapperRef}>
+            {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
+              const tissueCellTypes = getTissueCellTypes({
+                cellTypeSortBy,
+                cellTypes,
+                sortedCellTypesByTissueName,
+                tissue: tissue.name,
+                displayedRowBitMap,
+              });
 
-            /**
-             * (thuang): If there is no selected gene data, we don't want to render
-             * the chart, because it will cause the chart to render with 0 width,
-             * which is an error for echarts
-             */
-            if (!selectedGeneData?.length) return null;
+              const selectedGeneData =
+                orderedSelectedGeneExpressionSummariesByTissueName[tissue.name];
 
-            return (
-              <Chart
-                isScaled={isScaled}
-                /**
-                 * (thuang): We use `key` to force re-render the HeatMap component
-                 * when the renderer mode changes, so echarts can create new instances
-                 */
-                key={`${tissue}-${echartsRendererMode}`}
-                tissue={tissue.name}
-                cellTypes={tissueCellTypes}
-                selectedGeneData={
-                  orderedSelectedGeneExpressionSummariesByTissueName[
-                    tissue.name
-                  ]
-                }
-                setIsLoading={setIsLoading}
-                scaledMeanExpressionMax={scaledMeanExpressionMax}
-                scaledMeanExpressionMin={scaledMeanExpressionMin}
-                echartsRendererMode={echartsRendererMode}
-                setAllChartProps={setAllChartProps}
-                chartProps={allChartProps[tissue.name]}
-              />
-            );
-          })}
-        </ChartWrapper>
-      </Container>
-    </ContainerWrapper>
+              /**
+               * (thuang): If there is no selected gene data, we don't want to render
+               * the chart, because it will cause the chart to render with 0 width,
+               * which is an error for echarts
+               */
+              if (!selectedGeneData?.length) return null;
+
+              return (
+                <Chart
+                  isScaled={isScaled}
+                  /**
+                   * (thuang): We use `key` to force re-render the HeatMap component
+                   * when the renderer mode changes, so echarts can create new instances
+                   */
+                  key={`${tissue.name}-${echartsRendererMode}`}
+                  tissue={tissue.name}
+                  cellTypes={tissueCellTypes}
+                  selectedGeneData={
+                    orderedSelectedGeneExpressionSummariesByTissueName[
+                      tissue.name
+                    ]
+                  }
+                  setIsLoading={setIsLoading}
+                  scaledMeanExpressionMax={scaledMeanExpressionMax}
+                  scaledMeanExpressionMin={scaledMeanExpressionMin}
+                  echartsRendererMode={echartsRendererMode}
+                  setAllChartProps={setAllChartProps}
+                  chartProps={allChartProps[tissue.name]}
+                />
+              );
+            })}
+          </ChartWrapper>
+        </Container>
+      </ContainerWrapper>
+    </>
   );
 });
 
@@ -245,19 +285,24 @@ function getTissueCellTypes({
   sortedCellTypesByTissueName,
   tissue,
   cellTypeSortBy,
+  displayedRowBitMap,
 }: {
   cellTypes: { [tissue: Tissue]: CellTypeRow[] };
   sortedCellTypesByTissueName: { [tissue: string]: CellTypeRow[] };
   tissue: Tissue;
   cellTypeSortBy: SORT_BY;
+  displayedRowBitMap: { [tissue: string]: { [cellType: string]: boolean } };
 }) {
   const tissueCellTypes = cellTypes[tissue];
   const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
-  return (
+  const ret =
     (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY
       ? tissueCellTypes
-      : sortedTissueCellTypes) || EMPTY_ARRAY
-  );
+      : sortedTissueCellTypes) || EMPTY_ARRAY;
+  if (ret[0]?.id !== "HEADER_ROW")
+    ret.unshift({ ...ret[0], id: "HEADER_ROW", name: tissue });
+
+  return ret.filter((cellType) => displayedRowBitMap[tissue]?.[cellType.id]);
 }
 
 function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {

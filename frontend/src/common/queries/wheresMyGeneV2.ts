@@ -468,7 +468,6 @@ export function useCellTypesByTissueName(): {
     useTermIdLabels();
 
   return useMemo(() => {
-    console.log("INSIDE USE MEMO BEFORE EXIT");
     if (
       isLoading ||
       isLoadingPrimaryFilterDimensions ||
@@ -476,13 +475,10 @@ export function useCellTypesByTissueName(): {
       isLoadingTermIdLabels ||
       !Object.keys(termIdLabels.cell_types).length
     ) {
-      console.log("EXITING TERM LABLES CELL TYPES:", termIdLabels.cell_types);
       return { data: EMPTY_OBJECT, isLoading };
     }
 
     const { tissues } = primaryFilterDimensions;
-
-    console.log("INSIDE USEMEMO", tissues);
 
     const tissuesById = generateTermsByKey(tissues, "id");
 
@@ -506,8 +502,6 @@ export function useCellTypesByTissueName(): {
 
       cellTypesByTissueName[tissueName] = tissueCellTypes;
     }
-
-    console.log(cellTypesByTissueName);
 
     return {
       data: cellTypesByTissueName,
@@ -681,8 +675,6 @@ export function useTermIdLabels(): {
 
   return useMemo(() => {
     if (isLoading || !data) {
-      console.log(isLoading ? "loading" : "no data");
-
       return {
         data: { cell_types: EMPTY_OBJECT, genes: EMPTY_OBJECT },
         isLoading,
@@ -720,8 +712,6 @@ export function useTermIdLabels(): {
         returnCellTypes[tissueID] = result;
       }
     );
-
-    console.log("returnCellTypes", returnCellTypes);
 
     return {
       data: {

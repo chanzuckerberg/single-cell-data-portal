@@ -17,6 +17,7 @@ import {
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY, EMPTY_OBJECT, noop } from "src/common/constants/utils";
+import useEffectDebugger from "src/common/hooks/useEffectDebugger";
 import {
   CellTypeRow,
   COMPARE_OPTION_ID_FOR_AGGREGATED,
