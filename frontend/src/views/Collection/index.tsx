@@ -225,6 +225,8 @@ const Collection: FC = () => {
           visibility={collection.visibility}
         />
       </ViewCollection>
+      {/* May be added in the future after sign off */}
+      {/* <BottomBanner /> */}
     </>
   );
 };
