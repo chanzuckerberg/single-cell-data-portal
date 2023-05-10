@@ -75,12 +75,10 @@ export default function CellCardSidebar({
           </SearchBarWrapper>
 
           <nav>
-            {/* <h2>Table of Contents</h2> */}
             <TableOfContents>
               {headings.map((heading) => (
                 <StyledJumpLink
                   key={heading.id}
-                  // href={`#${heading.id}`}
                   onClick={() => {
                     setActiveSection(heading.id);
                     // Jump to section with keeping in mind header and padding widths
