@@ -95,7 +95,7 @@ export default function CellCard(): JSX.Element {
       </style>
       <CellCardsView>
         <Wrapper>
-          <CellCardHeader>
+          <CellCardHeader id={"intro"}>
             <CellCardName>
               {cellTypeName.charAt(0).toUpperCase() + cellTypeName.slice(1)}
             </CellCardName>
