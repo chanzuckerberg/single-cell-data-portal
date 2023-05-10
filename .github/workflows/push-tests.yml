@@ -134,8 +134,15 @@ jobs:
       needs: e2e-test
       steps:
         - name: Check result
-          if: ${{ needs.e2e-test.result != 'success' }}
-          run: exit 1
+          run: |
+            passed="${{ needs.e2e-test.result }}"
+            if [[ $passed == "success" ]]; then
+              echo "Shards passed"
+              exit 0
+            else
+              echo "Shards failed"
+              exit 1
+            fi
 
   backend-unit-test:
     runs-on: ubuntu-20.04
