@@ -31,7 +31,6 @@ export default function CellCardSidebar({
           [id: string]: number;
         }>((agg, heading) => {
           const target = document.getElementById(heading.id);
-          console.log(`${heading.title}: ${target?.offsetTop}`);
           return {
             ...agg,
             [heading.id]: target?.offsetTop || 0,
@@ -40,7 +39,6 @@ export default function CellCardSidebar({
       );
 
       let currentScrollPosition = globalLayoutWrapper?.scrollTop || 0;
-      console.log(`Current scroll position: ${currentScrollPosition}`);
       currentScrollPosition += HEADER_HEIGHT_PX + TOP_PADDING_PX;
 
       const sectionOffsetsArray = Object.keys(sectionOffsets);
