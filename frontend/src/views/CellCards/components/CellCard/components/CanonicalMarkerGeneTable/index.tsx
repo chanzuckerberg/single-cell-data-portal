@@ -33,9 +33,10 @@ const tableColumns: Array<keyof TableRow> = [
 
 interface Props {
   cellTypeId: string;
+  id: string;
 }
 
-const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
+const CanonicalMarkerGeneTable = ({ cellTypeId, id }: Props) => {
   const tableRows: TableRow[] = [];
   if (cellTypeId in allCellTypeMarkerGenes) {
     const genes =
@@ -49,6 +50,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
             if (publication && publicationTitles[index]) {
               return (
                 <Link
+                  key={publication}
                   title={publicationTitles[index]}
                   url={`https://doi.org/${publication}`}
                 />
@@ -76,7 +78,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
   const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
 
   return (
-    <>
+    <div id={id}>
       <TableTitleWrapper>
         <TableTitle>Marker Genes</TableTitle>
         {tableRows.length > 0 && (
@@ -93,7 +95,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
       ) : (
         <div>Canonical marker genes are not available yet.</div>
       )}
-    </>
+    </div>
   );
 };
 export default CanonicalMarkerGeneTable;

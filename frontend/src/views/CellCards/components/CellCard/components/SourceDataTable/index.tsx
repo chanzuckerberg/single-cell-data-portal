@@ -41,6 +41,7 @@ interface Collection {
 
 interface Props {
   cellTypeId: string;
+  id: string;
 }
 
 // interface Collection {
@@ -77,7 +78,7 @@ async function fetchData(
   }
 }
 
-const SourceDataTable = ({ cellTypeId }: Props) => {
+const SourceDataTable = ({ cellTypeId, id }: Props) => {
   const [collections, setCollections] = useState<Collection[]>([]);
   // const { data } = useSourceData(cellTypeId);
   // const { datasets = [] } = data;
@@ -139,7 +140,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
 
   return (
     <>
-      <TableTitleWrapper>
+      <TableTitleWrapper id={id}>
         <TableTitle>Data</TableTitle>
       </TableTitleWrapper>
       {tableRows.length && (

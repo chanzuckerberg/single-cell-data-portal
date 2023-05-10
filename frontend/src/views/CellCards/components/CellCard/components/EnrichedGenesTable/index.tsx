@@ -29,9 +29,10 @@ const tableColumnNames: Record<keyof TableRow, string> = {
 
 interface Props {
   cellTypeId: string;
+  id: string;
 }
 
-const EnrichedGenesTable = ({ cellTypeId }: Props) => {
+const EnrichedGenesTable = ({ cellTypeId, id }: Props) => {
   const tableRows: TableRow[] = [];
   if (cellTypeId in allEnrichedGenes) {
     const genes = allEnrichedGenes[cellTypeId as keyof typeof allEnrichedGenes];
@@ -56,7 +57,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
 
   return (
     <>
-      <TableTitleWrapper>
+      <TableTitleWrapper id={id}>
         <TableTitle>Highly Expressed Genes</TableTitle>
         {tableRows.length > 0 && (
           <WmgLink

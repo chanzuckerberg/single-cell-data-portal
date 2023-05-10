@@ -2,10 +2,17 @@ import styled from "@emotion/styled";
 import { CommonThemeProps, fontBodyS, fontHeaderXxl, getColors } from "czifui";
 import { Tag } from "czifui";
 
+export const TOP_PADDING_PX = 32;
+
+export const CellCardsView = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 32px 0px 32px 40px;
+  padding: ${TOP_PADDING_PX}px 0px 32px 40px;
   width: 1079px;
 `;
 

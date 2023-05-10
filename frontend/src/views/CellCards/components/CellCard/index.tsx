@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import CellCardSearchBar from "../CellCardSearchBar";
 import {
   Wrapper,
-  SearchBarWrapper,
   CellCardName,
   CellCardHeader,
   StyledTag,
   Divider,
+  CellCardsView,
 } from "./style";
 import { useCellTypesById } from "src/common/queries/cellCards";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
@@ -16,6 +15,7 @@ import Description from "./components/Description";
 import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
 import EnrichedGenesTable from "./components/EnrichedGenesTable";
 import SourceDataTable from "./components/SourceDataTable";
+import CellCardSidebar from "../CellCardSidebar";
 
 // enum of available descriptions
 type DescriptionOptions = "GPT3.5" | "Wikipedia" | "OLS v4";
@@ -71,43 +71,73 @@ export default function CellCard(): JSX.Element {
     setDescriptionOls,
     setDescriptionOlsReference,
   };
+
+  const headings = [
+    { id: "intro", title: "Intro" },
+    { id: "marker-genes", title: "Marker Genes" },
+    { id: "highly-expressed-genes", title: "Highly Expressed Genes" },
+    { id: "source-data", title: "Source Data" },
+  ];
+
   return (
-    <Wrapper>
-      <SearchBarWrapper>
-        <CellCardSearchBar />
-      </SearchBarWrapper>
-      <CellCardHeader>
-        <CellCardName>
-          {cellTypeName.charAt(0).toUpperCase() + cellTypeName.slice(1)}
-        </CellCardName>
-        <StyledTag
-          label={cellTypeId}
-          sdsType="secondary"
-          sdsStyle="square"
-          color="gray"
-          hover={false}
-        />
-        <Select
-          labelId="dropdown-label"
-          id="dropdown"
-          value={selectedDescription}
-          onChange={handleChange}
-          label="Select description"
-        >
-          {available.map((description) => (
-            <MenuItem value={description}>{description}</MenuItem>
-          ))}
-        </Select>
-      </CellCardHeader>
-      <Divider />
-      <Description
-        selectedDescription={selectedDescription}
-        descriptions={descriptions}
-        setDescriptions={setDescriptions}
-      />
-      <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
-      <EnrichedGenesTable cellTypeId={cellTypeId} />
-      <SourceDataTable cellTypeId={cellTypeId} />
-    </Wrapper>
+    <>
+      <style>
+        {`
+          /* Hack because main has a global overflow CSS prop which interferes with sticky sidebar and scroll listener */
+          main {
+            overflow: unset !important;
+          }
+          html {
+            height: unset !important;
+            overflow: unset !important;
+          }
+        `}
+      </style>
+      <CellCardsView>
+        <Wrapper>
+          <CellCardHeader>
+            <CellCardName>
+              {cellTypeName.charAt(0).toUpperCase() + cellTypeName.slice(1)}
+            </CellCardName>
+            <StyledTag
+              label={cellTypeId}
+              sdsType="secondary"
+              sdsStyle="square"
+              color="gray"
+              hover={false}
+            />
+            <Select
+              labelId="dropdown-label"
+              id="dropdown"
+              value={selectedDescription}
+              onChange={handleChange}
+              label="Select description"
+            >
+              {available.map((description) => (
+                <MenuItem key={description} value={description}>
+                  {description}
+                </MenuItem>
+              ))}
+            </Select>
+          </CellCardHeader>
+          <Divider />
+          <Description
+            selectedDescription={selectedDescription}
+            descriptions={descriptions}
+            setDescriptions={setDescriptions}
+          />
+          <CanonicalMarkerGeneTable
+            id={"marker-genes"}
+            cellTypeId={cellTypeId}
+          />
+          <EnrichedGenesTable
+            cellTypeId={cellTypeId}
+            id={"highly-expressed-genes"}
+          />
+          <SourceDataTable cellTypeId={cellTypeId} id={"source-data"} />
+        </Wrapper>
+        <CellCardSidebar headings={headings} />
+      </CellCardsView>
+    </>
   );
 }
