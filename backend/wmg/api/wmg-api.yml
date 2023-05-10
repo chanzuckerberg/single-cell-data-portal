@@ -586,6 +586,8 @@ paths:
                       type: string
                     tissue_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     dataset_ids:
                       type: array
                       items:
