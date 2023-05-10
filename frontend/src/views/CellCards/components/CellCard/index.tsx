@@ -14,6 +14,8 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Description from "./components/Description";
 import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
+import EnrichedGenesTable from "./components/EnrichedGenesTable";
+import SourceDataTable from "./components/SourceDataTable";
 
 // enum of available descriptions
 type DescriptionOptions = "GPT3.5" | "Wikipedia" | "OLS v4";
@@ -104,6 +106,8 @@ export default function CellCard(): JSX.Element {
         setDescriptions={setDescriptions}
       />
       <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
+      <EnrichedGenesTable cellTypeId={cellTypeId} />
+      <SourceDataTable cellTypeId={cellTypeId} />
     </Wrapper>
   );
 }

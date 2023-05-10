@@ -1,7 +1,7 @@
 import { allCellTypes } from "src/views/CellCards/common/fixtures";
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API_URL } from "src/configs/configs";
+import { API_URL } from "src/configs/dev";
 import {
   DispatchContext,
   StateContext,
@@ -145,7 +145,6 @@ export function useSourceData(cellTypeId: string): {
 
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
-
     const { filter_dims } = data;
 
     const {

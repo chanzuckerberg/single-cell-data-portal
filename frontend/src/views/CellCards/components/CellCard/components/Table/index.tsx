@@ -11,12 +11,17 @@ import {
 interface TableProps<T> {
   columns: Array<Extract<keyof T, string>>;
   rows: T[];
+  columnIdToName?: Record<Extract<keyof T, string>, string>;
 }
 
 type SortOrder = "asc" | "desc" | "none";
 
 // This is a generic table component that can be used to render any type of data.
-function Table<T extends object>({ columns, rows }: TableProps<T>) {
+function Table<T extends object>({
+  columns,
+  rows,
+  columnIdToName,
+}: TableProps<T>) {
   const [sortColumn, setSortColumn] = useState<Extract<keyof T, string> | null>(
     null
   );
@@ -52,7 +57,9 @@ function Table<T extends object>({ columns, rows }: TableProps<T>) {
           <tr>
             {columns.map((column, index) => (
               <StyledHeadCell key={index} onClick={() => handleSort(column)}>
-                {column.charAt(0).toUpperCase() + column.slice(1)}
+                {columnIdToName
+                  ? columnIdToName[column]
+                  : column.charAt(0).toUpperCase() + column.slice(1)}
               </StyledHeadCell>
             ))}
           </tr>

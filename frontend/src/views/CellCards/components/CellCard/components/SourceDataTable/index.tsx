@@ -1,8 +1,18 @@
-import React, { ReactElement } from "react";
+import React, { ReactElement, useMemo } from "react";
 import { TableTitle, TableTitleWrapper } from "../common/style";
 import Table from "../Table";
-import { useSourceData } from "src/common/queries/cellCards";
+import {
+  aggregateCollectionsFromDatasets,
+  useSourceData,
+} from "src/common/queries/cellCards";
 
+const Link = ({ title, url }: { title: string; url: string }) => {
+  return (
+    <a href={url} target="_blank">
+      {title}
+    </a>
+  );
+};
 interface TableRow {
   collection: ReactElement;
   publication: string;
@@ -22,11 +32,39 @@ interface Props {
   cellTypeId: string;
 }
 
-const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
-  const tableRows: TableRow[] = [];
-  const { data, isLoading: _ } = useSourceData(cellTypeId);
+interface Collection {
+  name: string;
+  url: string;
+  datasets: { id: string; label: string }[];
+}
 
-  console.log(data);
+interface Collections {
+  [name: string]: Collection;
+}
+
+const SourceDataTable = ({ cellTypeId }: Props) => {
+  const { data } = useSourceData(cellTypeId);
+  const { datasets = [] } = data;
+
+  const collections: Collections = useMemo(() => {
+    return aggregateCollectionsFromDatasets(datasets);
+  }, [datasets]);
+
+  const tableRows: TableRow[] = [];
+  for (const collection of Object.keys(collections)) {
+    tableRows.push({
+      collection: (
+        <Link
+          title={collections[collection].name}
+          url={collections[collection].url}
+        />
+      ),
+      publication: "",
+      tissue: "",
+      disease: "",
+      organism: "",
+    });
+  }
 
   return (
     <>
@@ -39,4 +77,4 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
     </>
   );
 };
-export default CanonicalMarkerGeneTable;
+export default SourceDataTable;
