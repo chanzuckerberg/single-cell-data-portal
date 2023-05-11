@@ -28,7 +28,7 @@ function goToWMG(page: Page) {
   ]);
 }
 describe("Tests for Gene Expression page", () => {
-  // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
