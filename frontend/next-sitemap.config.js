@@ -5,7 +5,11 @@ module.exports = {
   robotsTxtOptions: {
     policies: [
       // {userAgent: "*", disallow: "/folderToExclude/fileToExclude"} <-- use this option if you wish to exclude certain pages or folders from robots.txt
-      { userAgent: "*", allow: "/" },
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: "https://api.cellxgene.cziscience.com/*",
+      },
     ],
     additionalSitemaps: [
       "https://cellxgene.cziscience.com/collections-sitemap.xml",
