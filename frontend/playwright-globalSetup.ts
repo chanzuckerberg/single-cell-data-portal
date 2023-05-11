@@ -8,7 +8,7 @@ module.exports = async () => {
   try {
     // Skip login for tests that don't require it
     if (SKIP_LOGIN) {
-      console.log("SKIP_LOGIN was set to true. Skipping log in.");
+      console.log("Skipping log in...");
     } else {
       // One time auth
       const browser = await chromium.launch();

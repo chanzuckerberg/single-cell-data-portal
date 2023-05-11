@@ -23,7 +23,8 @@ export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];
 
 export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };
 
-export const SKIP_LOGIN = process.env.SKIP_LOGIN === "true" || false;
+export const SKIP_LOGIN =
+  process.env.SKIP_LOGIN === "true" || process.env.LOGIN === "false" || false;
 
 export const LOGIN_STATE_FILENAME = "loginState.json";
 

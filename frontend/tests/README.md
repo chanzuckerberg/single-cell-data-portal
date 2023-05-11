@@ -14,7 +14,7 @@ NOTE. It is advised to run the default `npm run e2e` once PR is ready to ensure 
 
 ## Flags
 
-1. `SKIP_LOGIN`: Add `SKIP_LOGIN=true` to your test command if you don't need Playwright to log into Data Portal
+1. `LOGIN` and `SKIP_LOGIN`: Add `LOGIN=false` or `SKIP_LOGIN=true` to your test command if you don't need Playwright to log into Data Portal
 1. `HEADLESS` and `HEADFUL`: Add `HEADLESS=false` or `HEADFUL=true` to your test command to launch browser
 1. `RETRY`: Add `RETRY=false` if you don't want to retry your test. This is good for failing fast when you're writing tests
 
