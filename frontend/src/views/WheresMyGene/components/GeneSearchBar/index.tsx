@@ -14,10 +14,19 @@ import {
 } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
-import { selectGenes, selectTissues } from "../../common/store/actions";
+import {
+  deleteAllGenes,
+  selectGenes,
+  selectTissues,
+} from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import QuickSelect from "./components/QuickSelect";
-import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
+import {
+  ActionWrapper,
+  Container,
+  LoadingIndicatorWrapper,
+  StyledClearButton,
+} from "./style";
 
 interface Tissue {
   name: string;
@@ -139,6 +148,19 @@ export default function GeneSearchBar({
           isLoading={isLoadingPrimaryFilters}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
+
+        {/* Clear Genes button */}
+        {!selectedGenes.length || (
+          <div
+            onClick={() => {
+              if (dispatch) {
+                dispatch(deleteAllGenes());
+              }
+            }}
+          >
+            <StyledClearButton>Clear Genes</StyledClearButton>
+          </div>
+        )}
 
         {isLoadingPrimaryFilters && (
           <LoadingIndicatorWrapper>

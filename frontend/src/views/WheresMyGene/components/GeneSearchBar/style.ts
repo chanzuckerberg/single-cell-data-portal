@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyXxs, getColors } from "czifui";
+import { Button, fontBodyXxs, getColors } from "czifui";
 
 export const Container = styled.div`
   width: 80vw;
@@ -25,4 +25,8 @@ export const Label = styled.label`
 export const LoadingIndicatorWrapper = styled.div`
   display: flex;
   align-items: center;
+`;
+
+export const StyledClearButton = styled(Button)`
+  white-space: nowrap;
 `;
