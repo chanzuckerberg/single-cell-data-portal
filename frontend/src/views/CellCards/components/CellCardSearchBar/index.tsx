@@ -13,14 +13,14 @@ interface CellType {
 
 export default function CellCardSearchBar(): JSX.Element {
   const router = useRouter();
-  const cellTypes = useCellTypes();
+  const { data: cellTypes } = useCellTypes();
 
   return (
     <div>
       <StyledAutocomplete
         disablePortal
         id="cell-cards-search-bar"
-        options={cellTypes}
+        options={cellTypes ?? []}
         renderInput={(params) => (
           <TextField
             {...params}

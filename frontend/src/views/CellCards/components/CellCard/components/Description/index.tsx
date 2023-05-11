@@ -1,7 +1,10 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import { CellCardDescription } from "./style";
-import { allCellTypeDescriptions } from "src/views/CellCards/common/fixtures";
+import {
+  useDescription,
+  useWikipediaDescription,
+} from "src/common/queries/cellCards";
 
 // enum of available descriptions
 type DescriptionOptions = "GPT3.5" | "Wikipedia" | "OLS v4";
@@ -44,26 +47,22 @@ export default function Description({
   const { cellTypeId: cellTypeIdRaw } = router.query;
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
 
+  const { data: rawDescriptionGpt } = useDescription(cellTypeId);
+  const { data: rawDescriptionWiki } = useWikipediaDescription(cellTypeId);
+
   useEffect(() => {
-    // hardcoding this for now.
+    if (rawDescriptionGpt) setDescriptionGpt(rawDescriptionGpt);
+    if (rawDescriptionWiki) {
+      if (rawDescriptionWiki.content !== "Try OLS")
+        setDescriptionWiki(rawDescriptionWiki.content);
+      else setDescriptionWiki("");
+    }
+
+    // hardcoding this for now
     const olsUrl = `
       https://www.ebi.ac.uk/ols4/api/ontologies/hcao/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}
     `;
     if (cellTypeIdRaw) {
-      // set all descriptions
-      setDescriptionGpt(
-        allCellTypeDescriptions[
-          cellTypeId as keyof typeof allCellTypeDescriptions
-        ]
-      );
-      fetch(`/api/scrape?cellTypeId=${cellTypeIdRaw}`).then(async (res) => {
-        const data = await res.json();
-        if (data.content !== "Try OLS") {
-          setDescriptionWiki(data.content);
-        } else {
-          setDescriptionWiki("");
-        }
-      });
       fetch(olsUrl).then(async (res) => {
         const data = await res.json();
         if (data) {
@@ -81,7 +80,7 @@ export default function Description({
         }
       });
     }
-  }, [cellTypeIdRaw]);
+  }, [cellTypeIdRaw, rawDescriptionGpt, rawDescriptionWiki]);
 
   return (
     <>

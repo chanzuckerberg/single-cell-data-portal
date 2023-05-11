@@ -1,73 +1,29 @@
-import { allCellTypes } from "src/views/CellCards/common/fixtures";
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API_URL } from "src/configs/configs";
-import {
-  DispatchContext,
-  StateContext,
-} from "src/views/WheresMyGene/common/store";
-import { setSnapshotId } from "src/views/WheresMyGene/common/store/actions";
-import { API } from "../API";
-import { ROUTES } from "../constants/routes";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
-interface RawOntologyTerm {
-  [id: string]: string;
+// source_data
+interface WikipediaDescriptionQueryResponse {
+  content: string;
 }
 
-interface FilterSecondary {
-  organism_ontology_term_id: string;
-  tissue_ontology_term_ids: string[];
-  dataset_ids: string[];
-  disease_ontology_term_ids: string[];
-  sex_ontology_term_ids: string[];
-  development_stage_ontology_term_ids: string[];
-  self_reported_ethnicity_ontology_term_ids: string[];
-  cell_type_ontology_term_ids: string[];
-}
-
-export interface FiltersQuery {
-  filter: FilterSecondary;
-}
-
-interface FiltersQueryResponse {
-  filter_dims: {
-    datasets: {
-      collection_id: string;
-      collection_label: string;
-      id: string;
-      label: string;
-    }[];
-    disease_terms: { [id: string]: string }[];
-    sex_terms: { [id: string]: string }[];
-    development_stage_terms: { [id: string]: string }[];
-    self_reported_ethnicity_terms: { [id: string]: string }[];
-    tissue_terms: { [id: string]: string }[];
-    cell_type_terms: { [id: string]: string }[];
-  };
-  snapshot_id: string;
-}
-
-async function fetchFiltersQuery({
-  query,
+async function fetchWikipediaDescriptionQuery({
+  cellTypeId,
   signal,
 }: {
-  query: FiltersQuery | null;
+  cellTypeId: string;
   signal?: AbortSignal;
-}): Promise<FiltersQueryResponse | undefined> {
-  if (!query) return;
-
-  const url = API_URL + API.WMG_FILTERS_QUERY;
-
+}): Promise<WikipediaDescriptionQueryResponse | undefined> {
+  const url = `/api/scrape?cellTypeId=${cellTypeId}`;
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
-    body: JSON.stringify(query),
-    method: "POST",
+    method: "GET",
     signal,
   });
-  const json: FiltersQueryResponse = await response.json();
+  if (response.status === 404) return undefined;
+  const json: WikipediaDescriptionQueryResponse = await response.json();
 
   if (!response.ok) {
     throw json;
@@ -76,195 +32,279 @@ async function fetchFiltersQuery({
   return json;
 }
 
-export const USE_FILTERS_QUERY = {
-  entities: [ENTITIES.WMG_FILTERS_QUERY],
-  id: "wmg-filters-query",
+export const USE_WIKIPEDIA_DESCRIPTION_QUERY = {
+  entities: [ENTITIES.CELL_EXPLORER_WIKIPEDIA_DESCRIPTION],
+  id: "cell-explorer-wikipedia-description-query",
 };
 
-export function useWMGFiltersQuery(
-  query: FiltersQuery | null
-): UseQueryResult<FiltersQueryResponse> {
-  const dispatch = useContext(DispatchContext);
-
-  // (thuang): Refresh query when the snapshotId changes
-  const currentSnapshotId = useSnapshotId();
-
+export function useWikipediaDescription(
+  cellTypeId: string
+): UseQueryResult<WikipediaDescriptionQueryResponse> {
   return useQuery(
-    [USE_FILTERS_QUERY, query, currentSnapshotId],
-    ({ signal }) => fetchFiltersQuery({ query, signal }),
+    [USE_WIKIPEDIA_DESCRIPTION_QUERY, cellTypeId],
+    ({ signal }) => fetchWikipediaDescriptionQuery({ cellTypeId, signal }),
     {
-      enabled: Boolean(query),
-      onSuccess(response) {
-        if (!response || !dispatch) return;
-
-        const { snapshot_id } = response;
-
-        if (currentSnapshotId !== snapshot_id) {
-          dispatch(setSnapshotId(snapshot_id));
-        }
-      },
-      // (thuang): We don't need to refetch during the session
+      enabled: true,
       staleTime: Infinity,
     }
   );
 }
 
-const EMPTY_FILTER_DIMENSIONS = {
-  datasets: [],
-  development_stage_terms: [],
-  disease_terms: [],
-  self_reported_ethnicity_terms: [],
-  sex_terms: [],
-  tissue_terms: [],
-  cell_type_terms: [],
+// source_data
+interface SourceDataQueryResponseEntry {
+  collection_name: string;
+  collection_url: string;
+  publication_url: string;
+  publication_title: string;
+  tissue: { label: string; ontology_term_id: string }[];
+  disease: { label: string; ontology_term_id: string }[];
+  organism: { label: string; ontology_term_id: string }[];
+}
+
+type SourceDataQueryResponse = SourceDataQueryResponseEntry[];
+
+async function fetchSourceDataQuery({
+  cellTypeId,
+  signal,
+}: {
+  cellTypeId: string;
+  signal?: AbortSignal;
+}): Promise<SourceDataQueryResponse | undefined> {
+  const url = `/api/source_data?cellTypeId=${cellTypeId}`;
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    method: "GET",
+    signal,
+  });
+  if (response.status === 404) return undefined;
+  const json: SourceDataQueryResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+
+export const USE_SOURCE_DATA_QUERY = {
+  entities: [ENTITIES.CELL_EXPLORER_SOURCE_DATA],
+  id: "cell-explorer-source-data-query",
 };
 
-export interface RawDataset {
-  collection_id: string;
-  collection_label: string;
+export function useSourceData(
+  cellTypeId: string
+): UseQueryResult<SourceDataQueryResponse> {
+  return useQuery(
+    [USE_SOURCE_DATA_QUERY, cellTypeId],
+    ({ signal }) => fetchSourceDataQuery({ cellTypeId, signal }),
+    {
+      enabled: true,
+      staleTime: Infinity,
+    }
+  );
+}
+
+// enriched_genes
+interface EnrichedGenesQueryResponseEntry {
+  me: number;
+  pc: number;
+  symbol: string;
+  name: string;
+}
+
+type EnrichedGenesQueryResponse = EnrichedGenesQueryResponseEntry[];
+
+async function fetchEnrichedGenesQuery({
+  cellTypeId,
+  signal,
+}: {
+  cellTypeId: string;
+  signal?: AbortSignal;
+}): Promise<EnrichedGenesQueryResponse | undefined> {
+  const url = `/api/enriched_genes?cellTypeId=${cellTypeId}`;
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    method: "GET",
+    signal,
+  });
+  if (response.status === 404) return undefined;
+  const json: EnrichedGenesQueryResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+
+export const USE_ENRICHED_GENES_QUERY = {
+  entities: [ENTITIES.CELL_EXPLORER_ENRICHED_GENES],
+  id: "cell-explorer-enriched-genes-query",
+};
+
+export function useEnrichedGenes(
+  cellTypeId: string
+): UseQueryResult<EnrichedGenesQueryResponse> {
+  return useQuery(
+    [USE_ENRICHED_GENES_QUERY, cellTypeId],
+    ({ signal }) => fetchEnrichedGenesQuery({ cellTypeId, signal }),
+    {
+      enabled: true,
+      staleTime: Infinity,
+    }
+  );
+}
+
+// canonical_markers
+interface CanonicalMarkersQueryResponseEntry {
+  tissue_general: string;
+  tissue_specific: string;
+  symbol: string;
+  name: string;
+  publication: string;
+  publication_titles: string;
+}
+
+type CanonicalMarkersQueryResponse = CanonicalMarkersQueryResponseEntry[];
+
+async function fetchCanonicalMarkersQuery({
+  cellTypeId,
+  signal,
+}: {
+  cellTypeId: string;
+  signal?: AbortSignal;
+}): Promise<CanonicalMarkersQueryResponse | undefined> {
+  const url = `/api/canonical_markers?cellTypeId=${cellTypeId}`;
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    method: "GET",
+    signal,
+  });
+  if (response.status === 404) return undefined;
+  const json: CanonicalMarkersQueryResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+
+export const USE_CANONICAL_MARKERS_QUERY = {
+  entities: [ENTITIES.CELL_EXPLORER_CANONICAL_MARKERS],
+  id: "cell-explorer-canonical-markersquery",
+};
+
+export function useCanonicalMarkers(
+  cellTypeId: string
+): UseQueryResult<CanonicalMarkersQueryResponse> {
+  return useQuery(
+    [USE_CANONICAL_MARKERS_QUERY, cellTypeId],
+    ({ signal }) => fetchCanonicalMarkersQuery({ cellTypeId, signal }),
+    {
+      enabled: true,
+      staleTime: Infinity,
+    }
+  );
+}
+
+// description
+async function fetchDescription({
+  cellTypeId,
+  signal,
+}: {
+  cellTypeId: string;
+  signal?: AbortSignal;
+}): Promise<string | undefined> {
+  const url = `/api/description?cellTypeId=${cellTypeId}`;
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    method: "GET",
+    signal,
+  });
+  if (response.status === 404) return undefined;
+  const json: string = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+  return json;
+}
+
+export const USE_DESCRIPTION_QUERY = {
+  entities: [ENTITIES.CELL_EXPLORER_DESCRIPTION],
+  id: "cell-explorer-description-query",
+};
+
+export function useDescription(cellTypeId: string): UseQueryResult<string> {
+  return useQuery(
+    [USE_DESCRIPTION_QUERY, cellTypeId],
+    ({ signal }) => fetchDescription({ cellTypeId, signal }),
+    {
+      enabled: true,
+      staleTime: Infinity,
+    }
+  );
+}
+
+// cell_cards
+interface CellCardsQueryResponseEntry {
   id: string;
   label: string;
 }
 
-export interface FilterDimensions {
-  datasets: RawDataset[];
-  development_stage_terms: { id: string; name: string }[];
-  disease_terms: { id: string; name: string }[];
-  self_reported_ethnicity_terms: { id: string; name: string }[];
-  sex_terms: { id: string; name: string }[];
-  tissue_terms: { id: string; name: string }[];
-  cell_type_terms: { id: string; name: string }[];
+type CellCardsQueryResponse = CellCardsQueryResponseEntry[];
+
+async function fetchCellCardsQuery(
+  signal?: AbortSignal
+): Promise<CellCardsQueryResponse | undefined> {
+  const url = "/api/cell_cards";
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    method: "GET",
+    signal,
+  });
+  if (response.status === 404) return undefined;
+  const json: CellCardsQueryResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
 }
 
-export function useSourceData(cellTypeId: string): {
-  data: FilterDimensions;
-  isLoading: boolean;
-} {
-  const requestBody = useWMGFiltersQueryRequestBody(cellTypeId);
-  const { data, isLoading } = useWMGFiltersQuery(requestBody);
+export const USE_CELL_CARDS_QUERY = {
+  entities: [ENTITIES.CELL_EXPLORER_CELL_CARDS],
+  id: "cell-cards-query",
+};
+
+export function useCellTypes(): UseQueryResult<CellCardsQueryResponse> {
+  return useQuery(
+    [USE_CELL_CARDS_QUERY],
+    ({ signal }) => fetchCellCardsQuery(signal),
+    {
+      enabled: true,
+      staleTime: Infinity,
+    }
+  );
+}
+
+export function useCellTypesById() {
+  const { data, isLoading } = useCellTypes();
 
   return useMemo(() => {
-    if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
-    const { filter_dims } = data;
-
-    const {
-      datasets,
-      development_stage_terms,
-      disease_terms,
-      self_reported_ethnicity_terms,
-      sex_terms,
-      tissue_terms,
-      cell_type_terms,
-    } = filter_dims;
-
-    const sortedDatasets = Object.values(
-      aggregateCollectionsFromDatasets(datasets)
-    ).flatMap(({ datasets }) => datasets);
-
-    return {
-      data: {
-        datasets: sortedDatasets.map((dataset) => ({
-          ...dataset,
-          name: dataset.label,
-        })),
-        development_stage_terms: development_stage_terms.map(toEntity),
-        disease_terms: disease_terms.map(toEntity),
-        self_reported_ethnicity_terms:
-          self_reported_ethnicity_terms.map(toEntity),
-        sex_terms: sex_terms.map(toEntity),
-        tissue_terms: tissue_terms.map(toEntity),
-        cell_type_terms: cell_type_terms.map(toEntity),
-      },
-      isLoading: false,
-    };
+    if (!data || isLoading) return;
+    const accumulator: { [id: string]: string } = {};
+    return data.reduce((acc, curr) => {
+      const { id, label } = curr;
+      acc[id] = label;
+      return acc;
+    }, accumulator);
   }, [data, isLoading]);
 }
-
-function useWMGFiltersQueryRequestBody(cellTypeId: string) {
-  const selectedOrganismId = "NCBITaxon:9606";
-  return useMemo(() => {
-    return {
-      filter: {
-        dataset_ids: [],
-        development_stage_ontology_term_ids: [],
-        disease_ontology_term_ids: [],
-        organism_ontology_term_id: selectedOrganismId,
-        self_reported_ethnicity_ontology_term_ids: [],
-        sex_ontology_term_ids: [],
-        tissue_ontology_term_ids: [],
-        cell_type_ontology_term_ids: [cellTypeId],
-      },
-    };
-  }, [cellTypeId, selectedOrganismId]);
-}
-
-function toEntity(item: RawOntologyTerm) {
-  const [id, name] = Object.entries(item)[0];
-
-  return { id, name: name || id || "" };
-}
-
-function useSnapshotId(): string | null {
-  const state = useContext(StateContext);
-
-  const { snapshotId } = state;
-
-  return snapshotId || null;
-}
-
-interface Dataset extends RawDataset {
-  id: string;
-  label: string;
-}
-
-export interface CollectionFromDatasets {
-  name: string;
-  url: string;
-  datasets: Dataset[];
-}
-
-export interface CollectionsFromDatasets {
-  [name: string]: CollectionFromDatasets;
-}
-
-export function aggregateCollectionsFromDatasets(
-  datasets: FilterDimensions["datasets"]
-): CollectionsFromDatasets {
-  const collections: CollectionsFromDatasets = {};
-
-  for (const dataset of datasets) {
-    const { collection_label, collection_id, id, label } = dataset;
-
-    if (!collections[collection_label]) {
-      collections[collection_label] = {
-        datasets: [],
-        name: collection_label,
-        url: ROUTES.COLLECTION.replace(":id", collection_id),
-      };
-    }
-
-    collections[collection_label].datasets.push({ ...dataset, id, label });
-  }
-
-  for (const collection of Object.values(collections)) {
-    collection.datasets.sort((a, b) => {
-      return a.label.localeCompare(b.label);
-    });
-  }
-
-  return collections;
-}
-
-// This will eventually be replaced by a query to the backend
-export const useCellTypes = () => {
-  return allCellTypes;
-};
-
-export const useCellTypesById = () => {
-  const cellTypes = useCellTypes();
-  return cellTypes.reduce((acc, curr) => {
-    const { id, label } = curr;
-    acc[id] = label;
-    return acc;
-  }, {});
-};

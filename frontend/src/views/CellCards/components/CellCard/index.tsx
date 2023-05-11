@@ -40,7 +40,7 @@ export default function CellCard(): JSX.Element {
   // cell type id
   const { cellTypeId: cellTypeIdRaw } = router.query;
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
-  const cellTypesById = useCellTypesById();
+  const cellTypesById = useCellTypesById() ?? {};
   const cellTypeName = cellTypesById[cellTypeId] ?? "";
 
   const available = availableDescriptions.filter((description) => {

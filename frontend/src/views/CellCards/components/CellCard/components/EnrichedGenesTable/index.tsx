@@ -1,16 +1,8 @@
-import React, { ReactElement } from "react";
-import { TableTitle, TableTitleWrapper } from "../common/style";
-import { WmgLink } from "../CanonicalMarkerGeneTable/style";
+import React, { ReactElement, useMemo } from "react";
+import { TableTitle, TableTitleWrapper, WmgLink } from "../common/style";
 import Table from "../Table";
-import { allEnrichedGenes } from "src/views/CellCards/common/fixtures";
-
-const Link = ({ title, url }: { title: string; url: string }) => {
-  return (
-    <a href={url} target="_blank">
-      {title}
-    </a>
-  );
-};
+import Link from "../common/Link";
+import { useEnrichedGenes } from "src/common/queries/cellCards";
 
 interface TableRow {
   symbol: ReactElement;
@@ -32,13 +24,14 @@ interface Props {
 }
 
 const EnrichedGenesTable = ({ cellTypeId }: Props) => {
-  const tableRows: TableRow[] = [];
-  if (cellTypeId in allEnrichedGenes) {
-    const genes = allEnrichedGenes[cellTypeId as keyof typeof allEnrichedGenes];
+  const { data: genes } = useEnrichedGenes(cellTypeId);
+
+  const tableRows: TableRow[] = useMemo(() => {
+    if (!genes) return [];
+    const rows = [];
     for (const markerGene of genes) {
       const { pc, me, name, symbol } = markerGene;
-
-      tableRows.push({
+      rows.push({
         symbol: (
           <Link
             title={`${symbol}`}
@@ -50,7 +43,8 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
         pc: (pc * 100).toFixed(1),
       });
     }
-  }
+    return rows;
+  }, [genes]);
 
   const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
 
