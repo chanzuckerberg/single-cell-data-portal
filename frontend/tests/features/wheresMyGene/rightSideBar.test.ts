@@ -68,10 +68,6 @@ describe("Right side bar", () => {
     await goToWMG(page);
     //click the source data icon
     await page.getByTestId("source-data-button").click();
-
-    //close notification popup
-    await page.getByTestId("notificationCloseButton").click();
-
     const [newPage] = await Promise.all([
       context.waitForEvent("page"),
       //click our documentation link
@@ -99,6 +95,9 @@ describe("Right side bar", () => {
     //verify the correct values are displayed on the color scale
     await expect(page.locator(COLOR_SCALE)).toContainText("0.0");
     await expect(page.locator(COLOR_SCALE)).toContainText("1.0");
+
+    //close quick survey box
+    await page.locator('[aria-label="Close"]').click();
 
     //click the color scale drop-down
     await page.getByTestId("color-scale-dropdown").click();
