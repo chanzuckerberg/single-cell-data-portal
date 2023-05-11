@@ -425,6 +425,16 @@ class BusinessLogic(BusinessLogicInterface):
         datasets, _ = self.database_provider.get_all_mapped_datasets_and_collections()
         return datasets
 
+    def get_datasets_for_collections(self, collections: Iterable[CollectionVersion]) -> Iterable[DatasetVersion]:
+        datasets = []
+        for collection in collections:
+            datasest_ids = [d.id for d in collection.datasets]
+            collection_datasets: List[DatasetVersion] = [
+                self.database_provider.get_dataset_version(DatasetVersionId(id)) for id in datasest_ids
+            ]
+            datasets.extend(collection_datasets)
+        return datasets
+
     def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithPublishedDatasets]:
         """
         Retrieves all the datasets from the database that belong to a published collection
