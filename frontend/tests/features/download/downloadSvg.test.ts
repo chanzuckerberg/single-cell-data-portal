@@ -17,9 +17,9 @@ import { getById } from "tests/utils/selectors";
 const { describe, skip } = test;
 const geneCanvasId = '[data-zr-dom-id*="zr"]';
 describe("SVG download tests", () => {
-  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
-  test.only(`Should verify SVG download without grouping`, async ({ page }) => {
+  test(`Should verify SVG download without grouping`, async ({ page }) => {
     const tissues = ["blood", "lung"];
     const fileTypes = ["svg"];
     const folder = subDirectory();
@@ -67,10 +67,11 @@ describe("SVG download tests", () => {
         folder,
         tissues[i]
       );
+      await deleteDownloadedFiles(`./tests/downloads/${folder}`, page);
     }
   });
 
-  test.only(`Should verify SVG download with grouping`, async ({ page }) => {
+  test(`Should verify SVG download with grouping`, async ({ page }) => {
     const tissues = ["blood"]; // this filter resolves to one tissue
     const fileTypes = ["svg"];
     const folder = subDirectory();
@@ -118,9 +119,7 @@ describe("SVG download tests", () => {
         folder,
         tissues[i]
       );
+      await deleteDownloadedFiles(`./tests/downloads/${folder}`, page);
     }
-  });
-  test.afterAll(async ({ page }) => {
-    await deleteDownloadedFiles(`./tests/downloads`, page);
   });
 });
