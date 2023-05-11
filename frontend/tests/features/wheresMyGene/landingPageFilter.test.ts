@@ -7,12 +7,13 @@ import {
   selectFilterOption,
   selectTissueAndGeneOption,
 } from "../../utils/wmgUtils";
-import { tryUntil } from "tests/utils/helpers";
+import { isDevStagingProd, tryUntil } from "tests/utils/helpers";
 const CHEVRON_LEFT = '[data-icon="chevron-left"]';
 
-const { describe } = test;
+const { describe, skip } = test;
 
 describe("Left side bar", () => {
+  // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test("Left side bar collapse and expand", async ({ page }) => {
     // navigate to gene expression page
     await goToWMG(page);

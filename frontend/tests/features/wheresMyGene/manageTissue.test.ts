@@ -6,7 +6,7 @@ import { isDevStagingProd, selectNthOption } from "tests/utils/helpers";
 const { describe, skip } = test;
 
 describe("Add tissue tests", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test("Should select tissue using keyboard arrow key to select", async ({
     page,
   }) => {

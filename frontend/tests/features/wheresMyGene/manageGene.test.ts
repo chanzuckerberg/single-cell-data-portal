@@ -10,7 +10,7 @@ import uaParser from "ua-parser-js";
 const { describe, skip } = test;
 
 describe("Manage gene tests", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
   test("Should select gene using keyboard arrow key to select", async ({
     page,
   }) => {
