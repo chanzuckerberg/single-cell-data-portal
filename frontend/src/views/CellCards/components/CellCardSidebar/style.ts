@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { fontBodyS, CommonThemeProps } from "czifui";
 
 export const CellCardsSidebarWrapper = styled.div`
   padding: 32px 0px 32px 40px;
@@ -15,32 +16,30 @@ export const TableOfContents = styled.div`
   flex-direction: column;
 `;
 
-export const StyledJumpLink = styled.a`
-  ${isActive}
+interface StyledJumpLinkProps extends CommonThemeProps {
+  isActive: boolean;
+}
 
-  font-family: Inter;
-  letter-spacing: -0.006em;
-  line-height: 20px;
-  margin: 0;
+export const StyledJumpLink = styled.a<StyledJumpLinkProps>`
+  ${fontBodyS}
+  ${(props) => {
+    const isActive = props.isActive;
+    if (isActive) {
+      return `
+        color: black;
+        font-weight: 600;
+        border-left: 2px solid #0073ff;
+      `;
+    } else {
+      return `
+        color: #767676;
+        font-weight: 500;
+        border-left: 2px solid #EAEAEA;
+      `;
+    }
+  }}
   padding: 6px 0 6px 16px;
-  font-size: 16px;
 
   /* animation */
   transition: border-color 0.1s ease-in-out;
 `;
-
-function isActive({ isActive }: { isActive: boolean }) {
-  if (isActive) {
-    return `
-      color: black;
-      font-weight: 600;
-      border-left: 2px solid #0073ff;
-    `;
-  } else {
-    return `
-      color: #767676;
-      font-weight: 500;
-      border-left: 2px solid #EAEAEA;
-    `;
-  }
-}
