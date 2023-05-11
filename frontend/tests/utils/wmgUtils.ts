@@ -1,14 +1,33 @@
 import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL } from "../common/constants";
-import { expect, Page } from "@playwright/test";
-import { getTestID, getText } from "tests/utils/selectors";
-import { tryUntil } from "./helpers";
 import {
   ADD_GENE_BTN,
   ADD_TISSUE_BTN,
+  TEST_URL,
   TWO_DECIMAL_NUMBER_REGEX,
-} from "./constants";
+} from "../common/constants";
+import { expect, Page } from "@playwright/test";
+import { getTestID, getText } from "tests/utils/selectors";
 
+import { tryUntil } from "./helpers";
+
+/**
+ * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
+ */
+export async function goToWMG(page: Page, url?: string) {
+  const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
+  return await tryUntil(
+    async () => {
+      await Promise.all([
+        page.waitForResponse(
+          (resp: { url: () => string | string[]; status: () => number }) =>
+            resp.url().includes("/wmg/v1/filters") && resp.status() === 200
+        ),
+        page.goto(targetUrl),
+      ]);
+    },
+    { page }
+  );
+}
 const FMG_EXCLUDE_TISSUES = ["blood"];
 const CELL_COUNT_ID = "cell-count";
 const CELL_TYPE_NAME_ID = "cell-type-name";
@@ -127,7 +146,7 @@ export const checkPlotSize = async (page: Page) => {
   const n = await page.locator('[data-zr-dom-id*="zr"]').count();
   let sumOfHeights = 0;
   for (let i = 0; i < n; i++) {
-    const row = await page.locator('[data-zr-dom-id*="zr"]').nth(i);
+    const row = page.locator('[data-zr-dom-id*="zr"]').nth(i);
 
     const height = await row.getAttribute("height");
 
@@ -138,24 +157,6 @@ export const checkPlotSize = async (page: Page) => {
   return sumOfHeights;
 };
 
-/**
- * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
- */
-export async function goToWMG(page: Page, url?: string) {
-  const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
-  return await tryUntil(
-    async () => {
-      await Promise.all([
-        page.waitForResponse(
-          (resp: { url: () => string | string[]; status: () => number }) =>
-            resp.url().includes("/wmg/v1/filters") && resp.status() === 200
-        ),
-        page.goto(targetUrl),
-      ]);
-    },
-    { page }
-  );
-}
 export async function searchAndAddGene(page: Page, geneName: string) {
   // click +Tissue button
   await page.getByTestId(ADD_GENE_BTN).click();
