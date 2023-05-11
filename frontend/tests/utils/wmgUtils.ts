@@ -4,6 +4,7 @@ import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 
 import { tryUntil } from "./helpers";
+import { ADD_GENE_BTN, ADD_TISSUE_BTN } from "./constants";
 
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
@@ -22,6 +23,28 @@ export async function goToWMG(page: Page, url?: string) {
     },
     { page }
   );
+}
+export async function searchAndAddTissue(page: Page, tissueName: string) {
+  // click +Tissue button
+  await page.getByTestId(ADD_TISSUE_BTN).click();
+  await page.getByPlaceholder("Search").type(tissueName);
+  await page.getByText(tissueName).click();
+
+  // close dropdown
+  await page.keyboard.press("Escape");
+}
+
+export async function addTissuesAndGenes(
+  page: Page,
+  tissues: string[],
+  genes: string[]
+) {
+  for await (const tissue of tissues) {
+    await searchAndAddTissue(page, tissue);
+  }
+  for await (const gene of genes) {
+    await searchAndAddGene(page, gene);
+  }
 }
 export const selectFilterOption = async (page: Page, filterName: string) => {
   // click the filter at the corner this is done due to the fact that the default click is being intercepted by another element
@@ -151,21 +174,7 @@ export const checkPlotSize = async (page: Page) => {
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
  */
-export async function goToWMG(page: Page, url?: string) {
-  const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
-  return await tryUntil(
-    async () => {
-      await Promise.all([
-        page.waitForResponse(
-          (resp: { url: () => string | string[]; status: () => number }) =>
-            resp.url().includes("/wmg/v1/filters") && resp.status() === 200
-        ),
-        page.goto(targetUrl),
-      ]);
-    },
-    { page }
-  );
-}
+
 export async function searchAndAddGene(page: Page, geneName: string) {
   // click +Tissue button
   await page.getByTestId(ADD_GENE_BTN).click();
@@ -177,4 +186,4 @@ export async function searchAndAddGene(page: Page, geneName: string) {
 
   //wait till loading is complete
   await page.locator(getText("Loading")).waitFor({ state: "hidden" });
-};
+}

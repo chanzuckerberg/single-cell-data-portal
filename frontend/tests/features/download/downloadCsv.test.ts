@@ -68,7 +68,7 @@ test(`Should verify CSV metadata and header for lung and blood tissue with no fi
   await verifyCsv(page, folder, tissues, "no-filter", SHARED_LINK_NO_FILTER);
 });
 
-test.afterAll(async () => {
+test.afterAll(async ({ page }) => {
   //delete csv
-  deleteDownloadedFiles(`./tests/download`);
+  await deleteDownloadedFiles(`./tests/downloads`, page);
 });
