@@ -7,6 +7,7 @@ import {
 } from "../common/style";
 import { allCellTypeMarkerGenes } from "src/views/CellCards/common/fixtures";
 import Table from "../Table";
+import { MARKER_GENES_SECTION_ID } from "../../../CellCardSidebar";
 
 const Link = ({ title, url }: { title: string; url: string }) => {
   return (
@@ -33,10 +34,9 @@ const tableColumns: Array<keyof TableRow> = [
 
 interface Props {
   cellTypeId: string;
-  id: string;
 }
 
-const CanonicalMarkerGeneTable = ({ cellTypeId, id }: Props) => {
+const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
   const tableRows: TableRow[] = [];
   if (cellTypeId in allCellTypeMarkerGenes) {
     const genes =
@@ -78,9 +78,9 @@ const CanonicalMarkerGeneTable = ({ cellTypeId, id }: Props) => {
   const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
 
   return (
-    <div id={id}>
+    <div>
       <TableTitleWrapper>
-        <TableTitle>Marker Genes</TableTitle>
+        <TableTitle id={MARKER_GENES_SECTION_ID}>Marker Genes</TableTitle>
         {tableRows.length > 0 && (
           <WmgLink
             href={`https://cellxgene.cziscience.com/gene-expression?tissues=lung&genes=${genesForShareUrl}&ver=2`}

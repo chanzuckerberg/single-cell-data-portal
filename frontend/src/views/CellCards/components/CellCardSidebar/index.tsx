@@ -10,54 +10,71 @@ import {
   TableOfContents,
 } from "./style";
 
-export default function CellCardSidebar({
-  headings,
-}: {
-  headings: { id: string; title: string }[];
-}): JSX.Element {
-  const [activeSection, setActiveSection] = useState("intro");
-  const [sectionOffsets, setSectionOffsets] = useState<{
-    [id: string]: number;
-  }>({});
+interface SectionOffset {
+  [id: string]: number;
+}
+
+interface Section {
+  id: string;
+  title: string;
+}
+
+export const INTRO_SECTION_ID = "intro-section";
+export const MARKER_GENES_SECTION_ID = "marker-genes-section";
+export const HIGHLY_EXPRESSED_GENES_SECTION_ID =
+  "highly-expressed-genes-section";
+export const SOURCE_DATA_SECTION_ID = "source-data-section";
+
+const SECTIONS: Section[] = [
+  { id: INTRO_SECTION_ID, title: "Intro" },
+  { id: MARKER_GENES_SECTION_ID, title: "Marker Genes" },
+  { id: HIGHLY_EXPRESSED_GENES_SECTION_ID, title: "Highly Expressed Genes" },
+  { id: SOURCE_DATA_SECTION_ID, title: "Source Data" },
+];
+
+export default function CellCardSidebar(): JSX.Element {
+  const [activeSectionId, setActiveSection] = useState(INTRO_SECTION_ID);
 
   const globalLayoutWrapper = !isSSR()
     ? document.getElementById("global-layout-wrapper")
     : null;
 
-  useEffect(() => {
-    // map header id => section's scroll offset on page
-    const sectionOffsets = headings.reduce<{
-      [id: string]: number;
-    }>((agg, heading) => {
-      const target = document.getElementById(heading.id);
+  // map header id => section's scroll offset on page
+  function calculateSectionOffsets(sections: Section[]) {
+    return sections.reduce<SectionOffset>((agg, section) => {
+      const target = document.getElementById(section.id);
       return {
         ...agg,
-        [heading.id]: target?.offsetTop || 0,
+        [section.id]: target?.offsetTop || 0,
       };
     }, {});
+  }
 
-    setSectionOffsets(sectionOffsets);
-
+  useEffect(() => {
     const handleScroll = () => {
-      console.log("triggered");
+      const sectionOffsets = calculateSectionOffsets(SECTIONS);
+
       let currentScrollPosition = globalLayoutWrapper?.scrollTop || 0;
+
+      // Computes the offset taking into account the header and padding height
       currentScrollPosition += HEADER_HEIGHT_PX + TOP_PADDING_PX;
 
+      // Calculate what section we're currently on
       const sectionOffsetsArray = Object.keys(sectionOffsets);
+      const newActiveSectionId =
+        sectionOffsetsArray.find((id, i) => {
+          const sectionOffset = sectionOffsets[id];
+          const nextSectionOffset = sectionOffsets[sectionOffsetsArray[i + 1]]; // Get the offset of the next section
 
-      sectionOffsetsArray.forEach((id, i) => {
-        const sectionOffset = sectionOffsets[id];
-        const nextSectionOffset = sectionOffsets[sectionOffsetsArray[i + 1]];
+          return (
+            (currentScrollPosition >= sectionOffset &&
+              nextSectionOffset &&
+              currentScrollPosition < nextSectionOffset) ||
+            !nextSectionOffset
+          );
+        }) || "";
 
-        // Check if current scroll position is within a section but not before the next section
-        if (
-          currentScrollPosition >= sectionOffset &&
-          nextSectionOffset &&
-          currentScrollPosition < nextSectionOffset
-        ) {
-          setActiveSection(id);
-        }
-      });
+      setActiveSection(newActiveSectionId);
     };
 
     window.addEventListener("scroll", handleScroll, true);
@@ -66,7 +83,7 @@ export default function CellCardSidebar({
     return () => {
       window.removeEventListener("scroll", handleScroll, true);
     };
-  }, [globalLayoutWrapper?.scrollTop, headings]);
+  }, [globalLayoutWrapper]);
 
   return (
     <>
@@ -78,44 +95,34 @@ export default function CellCardSidebar({
 
           <nav>
             <TableOfContents>
-              {headings.map((heading) => (
+              {SECTIONS.map((section) => (
                 <StyledJumpLink
-                  key={heading.id}
+                  isActive={section.id === activeSectionId}
+                  key={section.id}
                   onClick={() => {
-                    // Jump to section with keeping in mind header and padding widths
-                    // Jumping like this will also trigger the scroll listener
+                    const sectionOffsets = calculateSectionOffsets(SECTIONS);
+
                     if (globalLayoutWrapper) {
-                      if (heading.id === "intro") {
+                      // Jumping like this will also trigger the scroll listener
+                      if (section.id === INTRO_SECTION_ID) {
                         // If scrolling to intro just scroll to top
                         globalLayoutWrapper.scrollTop = 0;
                       } else {
+                        // Jump to section but add some top padding
                         globalLayoutWrapper.scrollTop =
-                          sectionOffsets[heading.id] - TOP_PADDING_PX;
+                          sectionOffsets[section.id] -
+                          TOP_PADDING_PX -
+                          HEADER_HEIGHT_PX;
                       }
                     }
 
-                    // Prevents race condition from scroll listener being triggered on section jump
+                    // HACK: Prevents race condition from scroll listener being triggered first from section jump
                     setTimeout(() => {
-                      setActiveSection(heading.id);
+                      setActiveSection(section.id);
                     }, 50);
                   }}
-                  style={{
-                    scrollMarginTop: TOP_PADDING_PX + HEADER_HEIGHT_PX,
-                    fontFamily: "Inter",
-                    letterSpacing: "-0.006em",
-                    lineHeight: "20px",
-                    color: `${
-                      heading.id === activeSection ? "black" : "#767676"
-                    }`,
-                    fontWeight: `${
-                      heading.id === activeSection ? "600" : "500"
-                    }`,
-                    borderLeft: `2px solid ${
-                      heading.id === activeSection ? "#0073ff" : "#EAEAEA"
-                    }`,
-                  }}
                 >
-                  {heading.title}
+                  {section.title}
                 </StyledJumpLink>
               ))}
             </TableOfContents>

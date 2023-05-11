@@ -1,4 +1,5 @@
 import React, { ReactElement, useState, useEffect } from "react";
+import { SOURCE_DATA_SECTION_ID } from "../../../CellCardSidebar";
 import { TableTitle, TableTitleWrapper } from "../common/style";
 import Table from "../Table";
 
@@ -41,7 +42,6 @@ interface Collection {
 
 interface Props {
   cellTypeId: string;
-  id: string;
 }
 
 // interface Collection {
@@ -78,7 +78,7 @@ async function fetchData(
   }
 }
 
-const SourceDataTable = ({ cellTypeId, id }: Props) => {
+const SourceDataTable = ({ cellTypeId }: Props) => {
   const [collections, setCollections] = useState<Collection[]>([]);
   // const { data } = useSourceData(cellTypeId);
   // const { datasets = [] } = data;
@@ -140,7 +140,7 @@ const SourceDataTable = ({ cellTypeId, id }: Props) => {
 
   return (
     <>
-      <TableTitleWrapper id={id}>
+      <TableTitleWrapper id={SOURCE_DATA_SECTION_ID}>
         <TableTitle>Data</TableTitle>
       </TableTitleWrapper>
       {tableRows.length && (

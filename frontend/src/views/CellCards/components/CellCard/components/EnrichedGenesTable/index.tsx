@@ -3,6 +3,7 @@ import { TableTitle, TableTitleWrapper } from "../common/style";
 import { WmgLink } from "../CanonicalMarkerGeneTable/style";
 import Table from "../Table";
 import { allEnrichedGenes } from "src/views/CellCards/common/fixtures";
+import { HIGHLY_EXPRESSED_GENES_SECTION_ID } from "../../../CellCardSidebar";
 
 const Link = ({ title, url }: { title: string; url: string }) => {
   return (
@@ -29,10 +30,9 @@ const tableColumnNames: Record<keyof TableRow, string> = {
 
 interface Props {
   cellTypeId: string;
-  id: string;
 }
 
-const EnrichedGenesTable = ({ cellTypeId, id }: Props) => {
+const EnrichedGenesTable = ({ cellTypeId }: Props) => {
   const tableRows: TableRow[] = [];
   if (cellTypeId in allEnrichedGenes) {
     const genes = allEnrichedGenes[cellTypeId as keyof typeof allEnrichedGenes];
@@ -57,7 +57,7 @@ const EnrichedGenesTable = ({ cellTypeId, id }: Props) => {
 
   return (
     <>
-      <TableTitleWrapper id={id}>
+      <TableTitleWrapper id={HIGHLY_EXPRESSED_GENES_SECTION_ID}>
         <TableTitle>Highly Expressed Genes</TableTitle>
         {tableRows.length > 0 && (
           <WmgLink

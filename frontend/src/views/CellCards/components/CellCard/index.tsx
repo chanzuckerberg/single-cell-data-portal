@@ -15,7 +15,7 @@ import Description from "./components/Description";
 import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
 import EnrichedGenesTable from "./components/EnrichedGenesTable";
 import SourceDataTable from "./components/SourceDataTable";
-import CellCardSidebar from "../CellCardSidebar";
+import CellCardSidebar, { INTRO_SECTION_ID } from "../CellCardSidebar";
 
 // enum of available descriptions
 type DescriptionOptions = "GPT3.5" | "Wikipedia" | "OLS v4";
@@ -72,13 +72,6 @@ export default function CellCard(): JSX.Element {
     setDescriptionOlsReference,
   };
 
-  const headings = [
-    { id: "intro", title: "Intro" },
-    { id: "marker-genes", title: "Marker Genes" },
-    { id: "highly-expressed-genes", title: "Highly Expressed Genes" },
-    { id: "source-data", title: "Source Data" },
-  ];
-
   return (
     <>
       <style>
@@ -89,13 +82,13 @@ export default function CellCard(): JSX.Element {
           }
           html {
             height: unset !important;
-            overflow: unset !important;
           }
         `}
       </style>
       <CellCardsView>
+        {/* Flex item left */}
         <Wrapper>
-          <CellCardHeader id={"intro"}>
+          <CellCardHeader id={INTRO_SECTION_ID}>
             <CellCardName>
               {cellTypeName.charAt(0).toUpperCase() + cellTypeName.slice(1)}
             </CellCardName>
@@ -126,17 +119,13 @@ export default function CellCard(): JSX.Element {
             descriptions={descriptions}
             setDescriptions={setDescriptions}
           />
-          <CanonicalMarkerGeneTable
-            id={"marker-genes"}
-            cellTypeId={cellTypeId}
-          />
-          <EnrichedGenesTable
-            cellTypeId={cellTypeId}
-            id={"highly-expressed-genes"}
-          />
-          <SourceDataTable cellTypeId={cellTypeId} id={"source-data"} />
+          <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
+          <EnrichedGenesTable cellTypeId={cellTypeId} />
+          <SourceDataTable cellTypeId={cellTypeId} />
         </Wrapper>
-        <CellCardSidebar headings={headings} />
+
+        {/* Flex item right */}
+        <CellCardSidebar />
       </CellCardsView>
     </>
   );
