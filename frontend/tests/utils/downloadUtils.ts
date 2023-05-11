@@ -83,16 +83,15 @@ export async function downloadAndVerifyFiles(
   });
 }
 
-export function deleteDownloadedFiles(filePath: string) {
-  setTimeout(() => {
-    fs.rmdir(filePath, { recursive: true }, (err) => {
-      if (err) {
-        console.error(`Error deleting folder: ${err}`);
-      } else {
-        console.log("Folder deleted successfully");
-      }
-    });
-  }, 5000); // Wait for 5 seconds because image compare takes time sometimes
+export async function deleteDownloadedFiles(filePath: string, page: Page) {
+  await page.waitForTimeout(5000);
+  fs.rmdir(filePath, { recursive: true }, (err) => {
+    if (err) {
+      console.error(`Error deleting folder: ${err}`);
+    } else {
+      console.log("Folder deleted successfully");
+    }
+  });
 }
 
 export interface CsvMetadata {
@@ -301,7 +300,6 @@ export async function downloadGeneFile(
   if (fileName.includes("zip")) {
     const zip = new AdmZip(fileName);
     zip.extractAllTo(dirPath);
-    console.log(dirPath);
   }
 }
 
@@ -319,35 +317,21 @@ export async function compareSvg(
 ): Promise<void> {
   const svg = fs.readFileSync(`${downLoadPath}/${svgFile}`, "utf-8");
   await page.setContent(svg);
-  // Wait for the page to finish loading
-  await page.waitForLoadState("networkidle");
   const actualCell = `${downLoadPath}/${folder}/${tissue}1.png`;
-  //const actualGene = `${downLoadPath}/${folder}/${tissue}gene.png`;
   await page
     .locator("svg")
     .locator("svg")
     .nth(3)
     .screenshot({ path: actualCell });
+  const actualGene = `${downLoadPath}/${folder}/${tissue}gene.png`;
+
+  // take a picture of dot plot on svg
+  await page.locator('[id="0"]').screenshot({
+    path: actualGene,
+  });
+  compareImages(actualGene, webGeneImage);
+
   compareImages(actualCell, webCellImage);
-
-  //await page.screenshot()).toMatchSnapshot(webGeneImage);
-}
-export function comparePng(actual: string, expected: string) {
-  // Capture the actual screenshot and compare it with the expected screenshot
-  const expectedPng = PNG.sync.read(fs.readFileSync(expected));
-  const actualPng = PNG.sync.read(fs.readFileSync(actual));
-  const { width, height } = expectedPng;
-  const diff = new PNG({ width, height });
-
-  const mismatchedPixels = pixelmatch(
-    expectedPng.data,
-    actualPng.data,
-    diff.data,
-    width,
-    height,
-    { threshold: 0.1 }
-  );
-  expect(mismatchedPixels).toBeLessThan(20000);
 }
 
 async function compareImages(imagePath1: string, imagePath2: string) {

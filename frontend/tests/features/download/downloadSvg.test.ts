@@ -17,9 +17,9 @@ import { getById } from "tests/utils/selectors";
 const { describe, skip } = test;
 const geneCanvasId = '[data-zr-dom-id*="zr"]';
 describe("SVG download tests", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
-  test(`Should verify SVG download without grouping`, async ({ page }) => {
+  test.only(`Should verify SVG download without grouping`, async ({ page }) => {
     const tissues = ["blood", "lung"];
     const fileTypes = ["svg"];
     const folder = subDirectory();
@@ -33,8 +33,7 @@ describe("SVG download tests", () => {
       await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
       const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
       const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
-      // Get the current viewport size
-      const currentViewportSize = page.viewportSize();
+
       // Find the y-axis element
       const yAxisElement = page.locator(getById(`${tissues[i]}-y-axis`));
 
@@ -60,13 +59,6 @@ describe("SVG download tests", () => {
         .locator(geneCanvasId)
         .nth(0)
         .screenshot({ path: geneSnapshot });
-      // Revert the viewport size to its original value
-      if (currentViewportSize) {
-        await page.setViewportSize(currentViewportSize);
-      }
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      //I need the page to revert to original viewport before  proceeding
-
       await compareSvg(
         page,
         geneSnapshot,
@@ -78,7 +70,7 @@ describe("SVG download tests", () => {
     }
   });
 
-  test(`Should verify SVG download with grouping`, async ({ page }) => {
+  test.only(`Should verify SVG download with grouping`, async ({ page }) => {
     const tissues = ["blood"]; // this filter resolves to one tissue
     const fileTypes = ["svg"];
     const folder = subDirectory();
@@ -92,8 +84,6 @@ describe("SVG download tests", () => {
       await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
       const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
       const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
-      // Get the current viewport size
-      const currentViewportSize = page.viewportSize();
       // Find the y-axis element
       const yAxisElement = page.locator(getById(`${tissues[i]}-y-axis`));
 
@@ -120,13 +110,6 @@ describe("SVG download tests", () => {
         .nth(0)
         .screenshot({ path: geneSnapshot });
 
-      // Revert the viewport size to its original value
-      if (currentViewportSize) {
-        await page.setViewportSize(currentViewportSize);
-      }
-
-      //the page to revert to original viewport before  proceeding
-      await new Promise((resolve) => setTimeout(resolve, 5000));
       await compareSvg(
         page,
         geneSnapshot,
@@ -137,7 +120,7 @@ describe("SVG download tests", () => {
       );
     }
   });
-  test.afterAll(async () => {
-    deleteDownloadedFiles(`./tests/downloads`);
+  test.afterAll(async ({ page }) => {
+    await deleteDownloadedFiles(`./tests/downloads`, page);
   });
 });
