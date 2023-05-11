@@ -1,14 +1,16 @@
 import styled from "@emotion/styled";
-import { fontBodyS, CommonThemeProps } from "czifui";
+import { fontBodyS, CommonThemeProps, getColors } from "czifui";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+import { TOP_PADDING_PX } from "../CellCard/style";
 
 export const CellCardsSidebarWrapper = styled.div`
-  padding: 32px 0px 32px 40px;
+  padding: ${TOP_PADDING_PX}px 0px 32px 40px;
 `;
 
 export const StickyWrapper = styled.div`
   display: block;
   position: sticky;
-  top: 80px;
+  top: ${HEADER_HEIGHT_PX + TOP_PADDING_PX}px;
 `;
 
 export const TableOfContents = styled.div`
@@ -24,17 +26,18 @@ export const StyledJumpLink = styled.a<StyledJumpLinkProps>`
   ${fontBodyS}
   ${(props) => {
     const isActive = props.isActive;
+    const colors = getColors(props);
     if (isActive) {
       return `
         color: black;
         font-weight: 600;
-        border-left: 2px solid #0073ff;
+        border-left: 2px solid #0073ff; // Unsure what color this blue is in SDS
       `;
     } else {
       return `
-        color: #767676;
+        color: ${colors?.gray[500]};
         font-weight: 500;
-        border-left: 2px solid #EAEAEA;
+        border-left: 2px solid ${colors?.gray[200]};
       `;
     }
   }}
