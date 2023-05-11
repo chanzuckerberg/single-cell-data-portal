@@ -1,6 +1,7 @@
 import React, { ReactElement, useMemo } from "react";
 import { TableTitle, TableTitleWrapper, WmgLink } from "../common/style";
 import Table from "../Table";
+import { HIGHLY_EXPRESSED_GENES_SECTION_ID } from "../../../CellCardSidebar";
 import Link from "../common/Link";
 import { useEnrichedGenes } from "src/common/queries/cellCards";
 
@@ -50,7 +51,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
 
   return (
     <>
-      <TableTitleWrapper>
+      <TableTitleWrapper id={HIGHLY_EXPRESSED_GENES_SECTION_ID}>
         <TableTitle>Highly Expressed Genes</TableTitle>
         {tableRows.length > 0 && (
           <WmgLink

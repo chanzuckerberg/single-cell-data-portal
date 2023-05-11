@@ -6,6 +6,7 @@ import {
   WmgLink,
 } from "../common/style";
 import Table from "../Table";
+import { MARKER_GENES_SECTION_ID } from "../../../CellCardSidebar";
 import Link from "../common/Link";
 import { useCanonicalMarkers } from "src/common/queries/cellCards";
 
@@ -42,6 +43,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
             if (publication && publicationTitles[index]) {
               return (
                 <Link
+                  key={publication}
                   title={publicationTitles[index]}
                   url={`https://doi.org/${publication}`}
                 />
@@ -70,9 +72,9 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
   const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
 
   return (
-    <>
+    <div>
       <TableTitleWrapper>
-        <TableTitle>Marker Genes</TableTitle>
+        <TableTitle id={MARKER_GENES_SECTION_ID}>Marker Genes</TableTitle>
         {tableRows.length > 0 && (
           <WmgLink
             href={`https://cellxgene.cziscience.com/gene-expression?tissues=lung&genes=${genesForShareUrl}&ver=2`}
@@ -87,7 +89,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
       ) : (
         <div>Canonical marker genes are not available yet.</div>
       )}
-    </>
+    </div>
   );
 };
 export default CanonicalMarkerGeneTable;

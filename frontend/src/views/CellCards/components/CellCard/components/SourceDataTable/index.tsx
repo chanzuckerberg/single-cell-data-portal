@@ -3,6 +3,7 @@ import { TableTitle, TableTitleWrapper } from "../common/style";
 import Table from "../Table";
 import Link from "../common/Link";
 import { useSourceData } from "src/common/queries/cellCards";
+import { SOURCE_DATA_SECTION_ID } from "../../../CellCardSidebar";
 
 interface TableRow {
   collection: ReactElement;
@@ -80,7 +81,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
 
   return (
     <>
-      <TableTitleWrapper>
+      <TableTitleWrapper id={SOURCE_DATA_SECTION_ID}>
         <TableTitle>Data</TableTitle>
       </TableTitleWrapper>
       {tableRows.length && (
