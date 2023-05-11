@@ -1,21 +1,14 @@
-import React, { ReactElement } from "react";
-import { WmgLink } from "./style";
+import React, { ReactElement, useMemo } from "react";
 import {
   TableTitle,
   TableTitleWrapper,
   PublicationLinkWrapper,
+  WmgLink,
 } from "../common/style";
-import { allCellTypeMarkerGenes } from "src/views/CellCards/common/fixtures";
 import Table from "../Table";
 import { MARKER_GENES_SECTION_ID } from "../../../CellCardSidebar";
-
-const Link = ({ title, url }: { title: string; url: string }) => {
-  return (
-    <a href={url} target="_blank">
-      {title}
-    </a>
-  );
-};
+import Link from "../common/Link";
+import { useCanonicalMarkers } from "src/common/queries/cellCards";
 
 interface TableRow {
   symbol: ReactElement;
@@ -37,10 +30,10 @@ interface Props {
 }
 
 const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
-  const tableRows: TableRow[] = [];
-  if (cellTypeId in allCellTypeMarkerGenes) {
-    const genes =
-      allCellTypeMarkerGenes[cellTypeId as keyof typeof allCellTypeMarkerGenes];
+  const { data: genes } = useCanonicalMarkers(cellTypeId);
+  const tableRows: TableRow[] = useMemo(() => {
+    if (!genes) return [];
+    const rows = [];
     for (const markerGene of genes) {
       const publications = markerGene.publication.split(";;");
       const publicationTitles = markerGene.publication_titles.split(";;");
@@ -60,7 +53,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
         </PublicationLinkWrapper>
       );
 
-      tableRows.push({
+      rows.push({
         symbol: (
           <Link
             title={`${markerGene.symbol}`}
@@ -73,7 +66,8 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
         tissue: markerGene.tissue_specific,
       });
     }
-  }
+    return rows;
+  }, [genes]);
 
   const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
 
