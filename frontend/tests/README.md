@@ -313,11 +313,5 @@ Where tests are skipped vs. run in different environments.
       end-to-end tests** and **Best practices for
       maintaining end-to-end tests**
 
-1. [Avoid nesting when you're testing](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing)
+1. [Avoid nesting when you're testing](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing
 
-git checkout victor/png-download/gene-expression -- package.json
-git checkout victor/png-download/gene-expression -- tests/common/constants.ts
-git checkout victor/png-download/gene-expression -- tests/features/download/downloadPng.test.ts
-git checkout victor/png-download/gene-expression -- tests/features/wheresMyGene/landingPageFilter.test.ts
-git checkout victor/png-download/gene-expression -- tests/utils/downloadUtils.ts
-git checkout victor/png-download/gene-expression -- tests/utils/wmgUtils.ts
