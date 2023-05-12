@@ -1,7 +1,7 @@
 import getHandler from "src/common/utils/api/handler";
 
 const handler = getHandler(
-  "src/views/CellCards/common/fixtures/enrichedGenes.json"
+  "src/views/CellCards/common/fixtures/allEnrichedGenes.json"
 );
 
 export default handler;
