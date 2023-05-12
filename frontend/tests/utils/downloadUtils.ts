@@ -321,8 +321,8 @@ export async function compareSvg(
   await page.setContent(svg);
   // Wait for the page to finish loading
   await page.waitForLoadState("networkidle");
-  const actualCell = `${downLoadPath}/${folder}/${tissue}1.png`;
-  //const actualGene = `${downLoadPath}/${folder}/${tissue}gene.png`;
+  const actualCell = `${downLoadPath}/${folder}/${tissue}_1.png`;
+  //const actualGene = `${downLoadPath}/${folder}/${tissue}_gene.png`;
   await page
     .locator("svg")
     .locator("svg")

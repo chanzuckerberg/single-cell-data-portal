@@ -60,12 +60,6 @@ describe("SVG download tests", () => {
         .locator(geneCanvasId)
         .nth(0)
         .screenshot({ path: geneSnapshot });
-      // Revert the viewport size to its original value
-      if (currentViewportSize) {
-        await page.setViewportSize(currentViewportSize);
-      }
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      //I need the page to revert to original viewport before  proceeding
 
       await compareSvg(
         page,
