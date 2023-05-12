@@ -2,6 +2,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
+
 import { tryUntil } from "./helpers";
 import {
   ADD_GENE_BTN,
@@ -31,6 +32,7 @@ export const selectFilterOption = async (page: Page, filterName: string) => {
   //wait till loading is complete
   await page.locator(getText("Loading")).waitFor({ state: "hidden" });
 };
+
 export const pickOptions = async (page: Page, n: number) => {
   for (let i = 0; i < n; i++) {
     // select the nth option
