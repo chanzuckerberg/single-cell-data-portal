@@ -50,10 +50,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         cellTypeToWikipediaUrl[cellTypeId] = wikiUrl;
       });
     }
-    const cellTypeId = req.query.cellTypeId as string;
+    const cellTypeId = (req.query.cellTypeId as string).replace(":", "_");
     const wikipediaUrl = cellTypeToWikipediaUrl[cellTypeId];
+
     if (!wikipediaUrl) {
-      res.status(200).json({ content: "Try OLS" });
+      res.status(404).json({
+        error: `Cell type ${cellTypeId} not found in requested resource`,
+      });
     } else {
       const response = await fetch(wikipediaUrl);
       if (!response.ok) {

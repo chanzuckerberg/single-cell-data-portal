@@ -52,11 +52,7 @@ export default function Description({
 
   useEffect(() => {
     if (rawDescriptionGpt) setDescriptionGpt(rawDescriptionGpt);
-    if (rawDescriptionWiki) {
-      if (rawDescriptionWiki.content !== "Try OLS")
-        setDescriptionWiki(rawDescriptionWiki.content);
-      else setDescriptionWiki("");
-    }
+    if (rawDescriptionWiki) setDescriptionWiki(rawDescriptionWiki.content);
 
     // hardcoding this for now
     const olsUrl = `

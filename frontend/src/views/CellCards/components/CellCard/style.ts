@@ -13,7 +13,7 @@ export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${TOP_PADDING_PX}px 0px 32px 40px;
-  width: 1079px;
+  width: 1080px;
 `;
 
 export const SearchBarWrapper = styled.div`
