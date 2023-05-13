@@ -6,10 +6,13 @@ import { LinkHorizontal } from "@visx/shape";
 import { LinearGradient } from "@visx/gradient";
 import { TableTitleWrapper, TableTitle } from "../common/style";
 import { ONTOLOGY_SECTION_ID } from "../CellCardSidebar";
-import {
-  CellOntologyTree as TreeNode,
-  useCellOntologyTree,
-} from "src/common/queries/cellCards";
+import { Zoom } from "@visx/zoom";
+import { localPoint } from "@visx/event";
+import { RectClipPath } from "@visx/clip-path";
+// import {
+//   CellOntologyTree as TreeNode,
+//   useCellOntologyTree,
+// } from "src/common/queries/cellCards";
 
 const peach = "#fd9b93";
 const pink = "#fe6e9e";
@@ -19,6 +22,20 @@ const plum = "#71248e";
 const lightpurple = "#374469";
 const white = "#ffffff";
 export const background = "#272b4d";
+
+const initialTransform = {
+  scaleX: 1.27,
+  scaleY: 1.27,
+  translateX: -211.62,
+  translateY: 162.59,
+  skewX: 0,
+  skewY: 0,
+};
+
+interface TreeNode {
+  name: string;
+  children?: this[];
+}
 
 type HierarchyNode = HierarchyPointNode<TreeNode>;
 
@@ -130,8 +147,47 @@ export default function Example({
   height,
   margin = defaultMargin,
 }: TreeProps) {
-  const { data: rawTree } = useCellOntologyTree();
-
+  //const { data: rawTree } = useCellOntologyTree();
+  const rawTree: TreeNode = {
+    name: "T",
+    children: [
+      {
+        name: "A",
+        children: [
+          { name: "A1" },
+          { name: "A2" },
+          { name: "A3" },
+          {
+            name: "C",
+            children: [
+              {
+                name: "C1",
+              },
+              {
+                name: "D",
+                children: [
+                  {
+                    name: "D1",
+                  },
+                  {
+                    name: "D2",
+                  },
+                  {
+                    name: "D3",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      { name: "Z" },
+      {
+        name: "B",
+        children: [{ name: "B1" }, { name: "B2" }, { name: "B3" }],
+      },
+    ],
+  };
   const data = useMemo(() => {
     if (!rawTree) return null;
     return hierarchy(rawTree);
@@ -145,28 +201,72 @@ export default function Example({
       <TableTitleWrapper id={ONTOLOGY_SECTION_ID}>
         <TableTitle>Cell Ontology</TableTitle>
       </TableTitleWrapper>
-      <svg width={width} height={height}>
-        <LinearGradient id="lg" from={peach} to={pink} />
-        <rect width={width} height={height} rx={14} fill={background} />
-        <Tree<TreeNode> root={data} size={[yMax, xMax]}>
-          {(tree) => (
-            <Group top={margin.top} left={margin.left}>
-              {tree.links().map((link, i) => (
-                <LinkHorizontal
-                  key={`link-${i}`}
-                  data={link}
-                  stroke={lightpurple}
-                  strokeWidth="1"
-                  fill="none"
-                />
-              ))}
-              {tree.descendants().map((node, i) => (
-                <Node key={`node-${i}`} node={node} />
-              ))}
-            </Group>
-          )}
-        </Tree>
-      </svg>
+      <Zoom<SVGSVGElement>
+        width={width}
+        height={height}
+        scaleXMin={1 / 2}
+        scaleXMax={4}
+        scaleYMin={1 / 2}
+        scaleYMax={4}
+        initialTransformMatrix={initialTransform}
+      >
+        {(zoom) => (
+          <div className="relative">
+            <svg
+              width={width}
+              height={height}
+              style={{
+                cursor: zoom.isDragging ? "grabbing" : "grab",
+                touchAction: "none",
+              }}
+              ref={zoom.containerRef}
+            >
+              <RectClipPath id="zoom-clip" width={width} height={height} />
+              <rect width={width} height={height} rx={14} fill={background} />
+              <g transform={zoom.toString()}>
+                <LinearGradient id="lg" from={peach} to={pink} />
+                <Tree<TreeNode> root={data} size={[yMax, xMax]}>
+                  {(tree) => (
+                    <Group top={margin.top} left={margin.left}>
+                      {tree.links().map((link, i) => (
+                        <LinkHorizontal
+                          key={`link-${i}`}
+                          data={link}
+                          stroke={lightpurple}
+                          strokeWidth="1"
+                          fill="none"
+                        />
+                      ))}
+                      {tree.descendants().map((node, i) => (
+                        <Node key={`node-${i}`} node={node} />
+                      ))}
+                    </Group>
+                  )}
+                </Tree>
+              </g>
+              <rect
+                width={width}
+                height={height}
+                rx={14}
+                fill="transparent"
+                onTouchStart={zoom.dragStart}
+                onTouchMove={zoom.dragMove}
+                onTouchEnd={zoom.dragEnd}
+                onMouseDown={zoom.dragStart}
+                onMouseMove={zoom.dragMove}
+                onMouseUp={zoom.dragEnd}
+                onMouseLeave={() => {
+                  if (zoom.isDragging) zoom.dragEnd();
+                }}
+                onDoubleClick={(event) => {
+                  const point = localPoint(event) || { x: 0, y: 0 };
+                  zoom.scale({ scaleX: 1.1, scaleY: 1.1, point });
+                }}
+              />
+            </svg>
+          </div>
+        )}
+      </Zoom>
     </>
   ) : null;
 }
