@@ -52,7 +52,9 @@ export default function Description({
 
   useEffect(() => {
     if (rawDescriptionGpt) setDescriptionGpt(rawDescriptionGpt);
+    else setDescriptionGpt("");
     if (rawDescriptionWiki) setDescriptionWiki(rawDescriptionWiki.content);
+    else setDescriptionWiki("");
 
     // hardcoding this for now
     const olsUrl = `

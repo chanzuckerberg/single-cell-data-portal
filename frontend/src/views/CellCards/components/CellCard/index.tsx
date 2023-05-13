@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
   Wrapper,
@@ -9,13 +9,13 @@ import {
   CellCardsView,
 } from "./style";
 import { useCellTypesById } from "src/common/queries/cellCards";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
+import { SelectChangeEvent } from "@mui/material/Select";
 import Description from "./components/Description";
 import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
 import EnrichedGenesTable from "./components/EnrichedGenesTable";
 import SourceDataTable from "./components/SourceDataTable";
 import CellCardSidebar, { INTRO_SECTION_ID } from "../CellCardSidebar";
+import DropdownSelect from "./components/common/DropdownSelect";
 
 // enum of available descriptions
 type DescriptionOptions = "GPT3.5" | "Wikipedia" | "OLS v4";
@@ -56,6 +56,14 @@ export default function CellCard(): JSX.Element {
   const handleChange = (event: SelectChangeEvent) => {
     setSelectedDescription(event.target.value as DescriptionOptions);
   };
+
+  useEffect(() => {
+    if (
+      (selectedDescription === "OLS v4" && descriptionOls === "") ||
+      (selectedDescription === "Wikipedia" && descriptionWiki === "")
+    )
+      setSelectedDescription("GPT3.5");
+  }, [cellTypeId, selectedDescription, descriptionWiki, descriptionOls]);
 
   // For testing purposes in the prototype, we will have multiple kinds of descriptions
   // This codepath will be simplified once we settle on a particular description.
@@ -99,19 +107,12 @@ export default function CellCard(): JSX.Element {
               color="gray"
               hover={false}
             />
-            <Select
-              labelId="dropdown-label"
-              id="dropdown"
-              value={selectedDescription}
-              onChange={handleChange}
-              label="Select description"
-            >
-              {available.map((description) => (
-                <MenuItem key={description} value={description}>
-                  {description}
-                </MenuItem>
-              ))}
-            </Select>
+
+            <DropdownSelect
+              handleChange={handleChange}
+              options={available}
+              selectedOption={selectedDescription}
+            />
           </CellCardHeader>
           <Divider />
           <Description

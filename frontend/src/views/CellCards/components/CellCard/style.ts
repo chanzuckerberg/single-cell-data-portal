@@ -1,6 +1,11 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontBodyS, fontHeaderXxl, getColors } from "czifui";
-import { Tag } from "czifui";
+import {
+  CommonThemeProps,
+  fontBodyS,
+  fontHeaderXxl,
+  getColors,
+  Tag,
+} from "czifui";
 
 export const TOP_PADDING_PX = 32;
 

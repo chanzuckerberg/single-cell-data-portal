@@ -4,6 +4,9 @@ import {
   TableTitleWrapper,
   PublicationLinkWrapper,
   WmgLink,
+  TableUnavailableContainer,
+  TableUnavailableHeader,
+  TableUnavailableDescription,
 } from "../common/style";
 import Table from "../Table";
 import { MARKER_GENES_SECTION_ID } from "../../../CellCardSidebar";
@@ -87,7 +90,15 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
       {tableRows.length ? (
         <Table<TableRow> columns={tableColumns} rows={tableRows} />
       ) : (
-        <div>Canonical marker genes are not available yet.</div>
+        <TableUnavailableContainer>
+          <TableUnavailableHeader>
+            No canonical marker genes
+          </TableUnavailableHeader>
+          <TableUnavailableDescription>
+            Canonical marker genes genes for this cell type are unavailable at
+            this time.
+          </TableUnavailableDescription>
+        </TableUnavailableContainer>
       )}
     </div>
   );

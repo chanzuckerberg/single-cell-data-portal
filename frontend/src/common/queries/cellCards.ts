@@ -111,6 +111,7 @@ interface EnrichedGenesQueryResponseEntry {
   pc: number;
   symbol: string;
   name: string;
+  organism: string;
 }
 
 type EnrichedGenesQueryResponse = EnrichedGenesQueryResponseEntry[];

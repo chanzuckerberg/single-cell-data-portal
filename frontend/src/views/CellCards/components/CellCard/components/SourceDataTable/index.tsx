@@ -1,5 +1,11 @@
 import React, { ReactElement, useMemo } from "react";
-import { TableTitle, TableTitleWrapper } from "../common/style";
+import {
+  TableTitle,
+  TableTitleWrapper,
+  TableUnavailableContainer,
+  TableUnavailableHeader,
+  TableUnavailableDescription,
+} from "../common/style";
 import Table from "../Table";
 import Link from "../common/Link";
 import { useSourceData } from "src/common/queries/cellCards";
@@ -84,8 +90,18 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
       <TableTitleWrapper id={SOURCE_DATA_SECTION_ID}>
         <TableTitle>Data</TableTitle>
       </TableTitleWrapper>
-      {tableRows.length && (
+      {tableRows.length > 0 ? (
         <Table<TableRow> columns={tableColumns} rows={tableRows} />
+      ) : (
+        <TableUnavailableContainer>
+          <TableUnavailableHeader>
+            Source data unavailable
+          </TableUnavailableHeader>
+          <TableUnavailableDescription>
+            Neither this cell type nor its ancestors and descendants are
+            available in any collections.
+          </TableUnavailableDescription>
+        </TableUnavailableContainer>
       )}
     </>
   );

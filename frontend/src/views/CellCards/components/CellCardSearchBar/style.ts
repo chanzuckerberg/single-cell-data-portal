@@ -3,9 +3,24 @@ import { Autocomplete } from "@mui/material";
 import { fontBodyXs, fontCapsXxxs, getColors } from "czifui";
 
 export const StyledAutocomplete = styled(Autocomplete)`
-  border-radius: 4px;
+  height: 32px;
+
   .MuiInputBase-root {
     padding-right: 8px !important;
+  }
+  & .MuiAutocomplete-inputRoot[class*="MuiInput-root"] {
+    padding: 0px;
+  }
+  &
+    .MuiAutocomplete-inputRoot[class*="MuiOutlinedInput-root"]
+    .MuiAutocomplete-input {
+    padding: 0px;
+  }
+  & .MuiInputLabel-root {
+    margin-top: -8px;
+  }
+  & .MuiInputLabel-root.MuiInputLabel-shrink {
+    margin-top: 0px;
   }
 `;
 
