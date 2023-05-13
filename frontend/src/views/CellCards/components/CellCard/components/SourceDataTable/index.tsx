@@ -10,7 +10,7 @@ import Table from "../Table";
 import Link from "../common/Link";
 import { StyledTag } from "./style";
 import { useSourceData } from "src/common/queries/cellCards";
-import { SOURCE_DATA_SECTION_ID } from "../../../CellCardSidebar";
+import { SOURCE_DATA_SECTION_ID } from "../CellCardSidebar";
 
 interface TableRow {
   collection: ReactElement;

@@ -9,7 +9,7 @@ import {
   TableUnavailableDescription,
 } from "../common/style";
 import Table from "../Table";
-import { MARKER_GENES_SECTION_ID } from "../../../CellCardSidebar";
+import { MARKER_GENES_SECTION_ID } from "../CellCardSidebar";
 import Link from "../common/Link";
 import { useCanonicalMarkers } from "src/common/queries/cellCards";
 

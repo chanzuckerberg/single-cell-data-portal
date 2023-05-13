@@ -14,8 +14,11 @@ import Description from "./components/Description";
 import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
 import EnrichedGenesTable from "./components/EnrichedGenesTable";
 import SourceDataTable from "./components/SourceDataTable";
-import CellCardSidebar, { INTRO_SECTION_ID } from "../CellCardSidebar";
+import CellCardSidebar, {
+  INTRO_SECTION_ID,
+} from "./components/CellCardSidebar";
 import DropdownSelect from "./components/common/DropdownSelect";
+import OntologyDagView from "./components/OntologyDagView";
 
 // enum of available descriptions
 type DescriptionOptions = "GPT3.5" | "Wikipedia" | "OLS v4";
@@ -120,6 +123,7 @@ export default function CellCard(): JSX.Element {
             descriptions={descriptions}
             setDescriptions={setDescriptions}
           />
+          <OntologyDagView width={1000} height={250} />
           <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
           <EnrichedGenesTable cellTypeId={cellTypeId} />
           <SourceDataTable cellTypeId={cellTypeId} />

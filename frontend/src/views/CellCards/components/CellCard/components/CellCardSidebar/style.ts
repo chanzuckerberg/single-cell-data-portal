@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { fontBodyS, CommonThemeProps, getColors } from "czifui";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { TOP_PADDING_PX } from "../CellCard/style";
+import { TOP_PADDING_PX } from "../../style";
 
 export const CellCardsSidebarWrapper = styled.div`
   padding: ${TOP_PADDING_PX}px 0px 32px 40px;

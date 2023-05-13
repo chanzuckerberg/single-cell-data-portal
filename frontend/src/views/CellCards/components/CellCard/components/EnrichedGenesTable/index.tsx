@@ -9,7 +9,7 @@ import {
 } from "../common/style";
 import { TableTitleInnerWrapper, TableTitleOuterWrapper } from "./style";
 import Table from "../Table";
-import { HIGHLY_EXPRESSED_GENES_SECTION_ID } from "../../../CellCardSidebar";
+import { HIGHLY_EXPRESSED_GENES_SECTION_ID } from "../CellCardSidebar";
 import Link from "../common/Link";
 import DropdownSelect from "../common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material/Select";

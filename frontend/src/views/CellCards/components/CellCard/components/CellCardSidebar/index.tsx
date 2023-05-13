@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { isSSR } from "src/common/utils/isSSR";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { SearchBarWrapper, TOP_PADDING_PX } from "../CellCard/style";
-import CellCardSearchBar from "../CellCardSearchBar";
+import { SearchBarWrapper, TOP_PADDING_PX } from "../../style";
+import CellCardSearchBar from "../../../CellCardSearchBar";
 import {
   CellCardsSidebarWrapper,
   StickyWrapper,
@@ -20,6 +20,7 @@ interface Section {
 }
 
 export const INTRO_SECTION_ID = "intro-section";
+export const ONTOLOGY_SECTION_ID = "ontology-view-section";
 export const MARKER_GENES_SECTION_ID = "marker-genes-section";
 export const HIGHLY_EXPRESSED_GENES_SECTION_ID =
   "highly-expressed-genes-section";
@@ -27,6 +28,7 @@ export const SOURCE_DATA_SECTION_ID = "source-data-section";
 
 const SECTIONS: Section[] = [
   { id: INTRO_SECTION_ID, title: "Intro" },
+  { id: ONTOLOGY_SECTION_ID, title: "Cell Ontology" },
   { id: MARKER_GENES_SECTION_ID, title: "Marker Genes" },
   { id: HIGHLY_EXPRESSED_GENES_SECTION_ID, title: "Highly Expressed Genes" },
   { id: SOURCE_DATA_SECTION_ID, title: "Source Data" },
