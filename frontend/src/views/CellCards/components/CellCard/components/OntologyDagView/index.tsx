@@ -9,10 +9,11 @@ import { ONTOLOGY_SECTION_ID } from "../CellCardSidebar";
 import { Zoom } from "@visx/zoom";
 import { localPoint } from "@visx/event";
 import { RectClipPath } from "@visx/clip-path";
-// import {
-//   CellOntologyTree as TreeNode,
-//   useCellOntologyTree,
-// } from "src/common/queries/cellCards";
+import {
+  CellOntologyTree as TreeNode,
+  useCellOntologyTree,
+  useNodeExpanded,
+} from "src/common/queries/cellCards";
 
 const peach = "#fd9b93";
 const pink = "#fe6e9e";
@@ -31,11 +32,6 @@ const initialTransform = {
   skewX: 0,
   skewY: 0,
 };
-
-interface TreeNode {
-  name: string;
-  children?: this[];
-}
 
 type HierarchyNode = HierarchyPointNode<TreeNode>;
 
@@ -137,57 +133,23 @@ function Node({ node }: { node: HierarchyNode }) {
 const defaultMargin = { top: 10, left: 80, right: 80, bottom: 10 };
 
 export type TreeProps = {
+  cellTypeId: string;
   width: number;
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
 };
 
 export default function Example({
+  cellTypeId,
   width,
   height,
   margin = defaultMargin,
 }: TreeProps) {
-  //const { data: rawTree } = useCellOntologyTree();
-  const rawTree: TreeNode = {
-    name: "T",
-    children: [
-      {
-        name: "A",
-        children: [
-          { name: "A1" },
-          { name: "A2" },
-          { name: "A3" },
-          {
-            name: "C",
-            children: [
-              {
-                name: "C1",
-              },
-              {
-                name: "D",
-                children: [
-                  {
-                    name: "D1",
-                  },
-                  {
-                    name: "D2",
-                  },
-                  {
-                    name: "D3",
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      { name: "Z" },
-      {
-        name: "B",
-        children: [{ name: "B1" }, { name: "B2" }, { name: "B3" }],
-      },
-    ],
-  };
+  const { data: rawTree } = useCellOntologyTree();
+  const { data: initialExpandedNodes } = useNodeExpanded(cellTypeId);
+  console.log(cellTypeId);
+  console.log(initialExpandedNodes);
+
   const data = useMemo(() => {
     if (!rawTree) return null;
     return hierarchy(rawTree);
