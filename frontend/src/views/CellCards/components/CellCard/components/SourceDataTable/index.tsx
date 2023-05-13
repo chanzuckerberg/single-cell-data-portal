@@ -8,6 +8,7 @@ import {
 } from "../common/style";
 import Table from "../Table";
 import Link from "../common/Link";
+import { StyledTag } from "./style";
 import { useSourceData } from "src/common/queries/cellCards";
 import { SOURCE_DATA_SECTION_ID } from "../../../CellCardSidebar";
 
@@ -60,16 +61,24 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
           tissueNames.length <= 7 ? (
             <div>
               {tissueNames.map((tissue) => {
-                return <div>{tissue}</div>;
+                return (
+                  <div>{tissue.charAt(0).toUpperCase() + tissue.slice(1)}</div>
+                );
               })}
             </div>
           ) : (
-            <div>{tissueNames.length} tissues</div>
+            <StyledTag
+              color="gray"
+              sdsType="secondary"
+              label={`${tissueNames.length} tissues`}
+            />
           ),
         disease: (
           <div>
             {diseaseNames.map((disease) => {
-              return <div>{disease}</div>;
+              return (
+                <div>{disease.charAt(0).toUpperCase() + disease.slice(1)}</div>
+              );
             })}
           </div>
         ),

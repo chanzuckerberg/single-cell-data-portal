@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -15,15 +16,28 @@ export default function CellCardSearchBar(): JSX.Element {
   const router = useRouter();
   const { data: cellTypes } = useCellTypes();
 
+  const [open, setOpen] = useState(false);
+
+  const handleFocus = () => {
+    setOpen(true);
+  };
+
+  const handleBlur = () => {
+    setOpen(false);
+  };
+
   return (
     <div>
       <StyledAutocomplete
+        open={open}
         disablePortal
         id="cell-cards-search-bar"
         options={cellTypes ?? []}
         renderInput={(params) => (
           <TextField
             {...params}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             InputProps={{
               ...params.InputProps,
               endAdornment: (
@@ -44,6 +58,7 @@ export default function CellCardSearchBar(): JSX.Element {
                   `${ROUTES.CELL_CARDS}/${cellType.id.replace(":", "_")}`
                 );
                 document.getElementById("cell-cards-search-bar")?.blur();
+                setOpen(false);
               }}
             >
               {cellType.label}

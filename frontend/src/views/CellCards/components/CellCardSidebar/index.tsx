@@ -58,8 +58,10 @@ export default function CellCardSidebar(): JSX.Element {
     const handleScroll = () => {
       if (globalLayoutWrapper) {
         const isScrollAtBottom =
-          (globalLayoutWrapper.scrollTop + globalLayoutWrapper.clientHeight ??
-            0) >= globalLayoutWrapper.scrollHeight;
+          (globalLayoutWrapper.scrollTop +
+            globalLayoutWrapper.clientHeight +
+            10 ?? 0) >= globalLayoutWrapper.scrollHeight;
+
         if (scrollTimeout !== null) {
           window.clearTimeout(scrollTimeout);
         }
