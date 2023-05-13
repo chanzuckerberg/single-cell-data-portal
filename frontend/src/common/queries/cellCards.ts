@@ -3,51 +3,6 @@ import { useQuery, UseQueryResult } from "react-query";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
-// source_data
-type NodeExpandedStateQueryResponse = string[];
-
-async function fetchNodeExpandedStateQuery({
-  cellTypeId,
-  signal,
-}: {
-  cellTypeId: string;
-  signal?: AbortSignal;
-}): Promise<NodeExpandedStateQueryResponse | undefined> {
-  const url = `/api/expanded_nodes?cellTypeId=${cellTypeId}`;
-  const response = await fetch(url, {
-    ...DEFAULT_FETCH_OPTIONS,
-    ...JSON_BODY_FETCH_OPTIONS,
-    method: "GET",
-    signal,
-  });
-  if (response.status === 404) return undefined;
-  const json: NodeExpandedStateQueryResponse = await response.json();
-
-  if (!response.ok) {
-    throw json;
-  }
-
-  return json;
-}
-
-export const USE_NODE_EXPANDED_QUERY = {
-  entities: [ENTITIES.CELL_EXPLORER_NODE_EXPANDED],
-  id: "cell-explorer-node-expanded-query",
-};
-
-export function useNodeExpanded(
-  cellTypeId: string
-): UseQueryResult<NodeExpandedStateQueryResponse> {
-  return useQuery(
-    [USE_NODE_EXPANDED_QUERY, cellTypeId],
-    ({ signal }) => fetchNodeExpandedStateQuery({ cellTypeId, signal }),
-    {
-      enabled: true,
-      staleTime: Infinity,
-    }
-  );
-}
-
 // ontology
 export interface CellOntologyTree {
   name: string;
@@ -59,10 +14,14 @@ export interface CellOntologyTree {
   children?: this[];
 }
 
-async function fetchOntologyTreeQuery(
-  signal?: AbortSignal
-): Promise<CellOntologyTree | undefined> {
-  const url = "/api/cell_ontology_tree";
+async function fetchOntologyTreeQuery({
+  cellTypeId,
+  signal,
+}: {
+  cellTypeId: string;
+  signal?: AbortSignal;
+}): Promise<CellOntologyTree | undefined> {
+  const url = `/api/ontology_tree?cellTypeId=${cellTypeId}`;
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -84,10 +43,12 @@ export const USE_CELL_ONTOLOGY_TREE_QUERY = {
   id: "cell-explorer-cell-ontology-tree-query",
 };
 
-export function useCellOntologyTree(): UseQueryResult<CellOntologyTree> {
+export function useCellOntologyTree(
+  cellTypeId: string
+): UseQueryResult<CellOntologyTree> {
   return useQuery(
-    [USE_CELL_ONTOLOGY_TREE_QUERY],
-    ({ signal }) => fetchOntologyTreeQuery(signal),
+    [USE_CELL_ONTOLOGY_TREE_QUERY, cellTypeId],
+    ({ signal }) => fetchOntologyTreeQuery({ cellTypeId, signal }),
     {
       enabled: true,
       staleTime: Infinity,

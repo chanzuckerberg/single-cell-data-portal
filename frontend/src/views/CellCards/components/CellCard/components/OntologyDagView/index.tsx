@@ -12,7 +12,6 @@ import { RectClipPath } from "@visx/clip-path";
 import {
   CellOntologyTree as TreeNode,
   useCellOntologyTree,
-  useNodeExpanded,
 } from "src/common/queries/cellCards";
 
 const peach = "#fd9b93";
@@ -23,15 +22,6 @@ const plum = "#71248e";
 const lightpurple = "#374469";
 const white = "#ffffff";
 export const background = "#272b4d";
-
-const initialTransform = {
-  scaleX: 1.27,
-  scaleY: 1.27,
-  translateX: -211.62,
-  translateY: 162.59,
-  skewX: 0,
-  skewY: 0,
-};
 
 type HierarchyNode = HierarchyPointNode<TreeNode>;
 
@@ -145,10 +135,7 @@ export default function Example({
   height,
   margin = defaultMargin,
 }: TreeProps) {
-  const { data: rawTree } = useCellOntologyTree();
-  const { data: initialExpandedNodes } = useNodeExpanded(cellTypeId);
-  console.log(cellTypeId);
-  console.log(initialExpandedNodes);
+  const { data: rawTree } = useCellOntologyTree(cellTypeId);
 
   const data = useMemo(() => {
     if (!rawTree) return null;
@@ -158,77 +145,85 @@ export default function Example({
   const yMax = height - margin.top - margin.bottom;
   const xMax = width - margin.left - margin.right;
 
-  return data ? (
+  // Customize nodeSize and separation
+  const nodeSize = [15, 200]; // Increase width and height for more spacing
+
+  return (
     <>
       <TableTitleWrapper id={ONTOLOGY_SECTION_ID}>
         <TableTitle>Cell Ontology</TableTitle>
       </TableTitleWrapper>
-      <Zoom<SVGSVGElement>
-        width={width}
-        height={height}
-        scaleXMin={1 / 2}
-        scaleXMax={4}
-        scaleYMin={1 / 2}
-        scaleYMax={4}
-        initialTransformMatrix={initialTransform}
-      >
-        {(zoom) => (
-          <div className="relative">
-            <svg
-              width={width}
-              height={height}
-              style={{
-                cursor: zoom.isDragging ? "grabbing" : "grab",
-                touchAction: "none",
-              }}
-              ref={zoom.containerRef}
-            >
-              <RectClipPath id="zoom-clip" width={width} height={height} />
-              <rect width={width} height={height} rx={14} fill={background} />
-              <g transform={zoom.toString()}>
-                <LinearGradient id="lg" from={peach} to={pink} />
-                <Tree<TreeNode> root={data} size={[yMax, xMax]}>
-                  {(tree) => (
-                    <Group top={margin.top} left={margin.left}>
-                      {tree.links().map((link, i) => (
-                        <LinkHorizontal
-                          key={`link-${i}`}
-                          data={link}
-                          stroke={lightpurple}
-                          strokeWidth="1"
-                          fill="none"
-                        />
-                      ))}
-                      {tree.descendants().map((node, i) => (
-                        <Node key={`node-${i}`} node={node} />
-                      ))}
-                    </Group>
-                  )}
-                </Tree>
-              </g>
-              <rect
+      {data ? (
+        <Zoom<SVGSVGElement>
+          width={width}
+          height={height}
+          scaleXMin={0.1}
+          scaleXMax={4}
+          scaleYMin={0.1}
+          scaleYMax={4}
+        >
+          {(zoom) => (
+            <div className="relative">
+              <svg
                 width={width}
                 height={height}
-                rx={14}
-                fill="transparent"
-                onTouchStart={zoom.dragStart}
-                onTouchMove={zoom.dragMove}
-                onTouchEnd={zoom.dragEnd}
-                onMouseDown={zoom.dragStart}
-                onMouseMove={zoom.dragMove}
-                onMouseUp={zoom.dragEnd}
-                onMouseLeave={() => {
-                  if (zoom.isDragging) zoom.dragEnd();
+                style={{
+                  cursor: zoom.isDragging ? "grabbing" : "grab",
+                  touchAction: "none",
                 }}
-                onDoubleClick={(event) => {
-                  const point = localPoint(event) || { x: 0, y: 0 };
-                  zoom.scale({ scaleX: 1.1, scaleY: 1.1, point });
-                }}
-              />
-            </svg>
-          </div>
-        )}
-      </Zoom>
+                ref={zoom.containerRef}
+              >
+                <RectClipPath id="zoom-clip" width={width} height={height} />
+                <rect width={width} height={height} rx={14} fill={background} />
+                <g transform={zoom.toString()}>
+                  <LinearGradient id="lg" from={peach} to={pink} />
+                  <Tree<TreeNode>
+                    root={data}
+                    size={[yMax, xMax]}
+                    nodeSize={nodeSize as [number, number]}
+                  >
+                    {(tree) => (
+                      <Group top={margin.top} left={margin.left}>
+                        {tree.links().map((link, i) => (
+                          <LinkHorizontal
+                            key={`link-${i}`}
+                            data={link}
+                            stroke={lightpurple}
+                            strokeWidth="1"
+                            fill="none"
+                          />
+                        ))}
+                        {tree.descendants().map((node, i) => (
+                          <Node key={`node-${i}`} node={node} />
+                        ))}
+                      </Group>
+                    )}
+                  </Tree>
+                </g>
+                <rect
+                  width={width}
+                  height={height}
+                  rx={14}
+                  fill="transparent"
+                  onTouchStart={zoom.dragStart}
+                  onTouchMove={zoom.dragMove}
+                  onTouchEnd={zoom.dragEnd}
+                  onMouseDown={zoom.dragStart}
+                  onMouseMove={zoom.dragMove}
+                  onMouseUp={zoom.dragEnd}
+                  onMouseLeave={() => {
+                    if (zoom.isDragging) zoom.dragEnd();
+                  }}
+                  onDoubleClick={(event) => {
+                    const point = localPoint(event) || { x: 0, y: 0 };
+                    zoom.scale({ scaleX: 1.1, scaleY: 1.1, point });
+                  }}
+                />
+              </svg>
+            </div>
+          )}
+        </Zoom>
+      ) : null}
     </>
-  ) : null;
+  );
 }
