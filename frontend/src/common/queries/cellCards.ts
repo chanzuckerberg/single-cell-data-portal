@@ -3,7 +3,54 @@ import { useQuery, UseQueryResult } from "react-query";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
-// source_data
+// ontology
+export interface CellOntologyTree {
+  name: string;
+  id: string;
+  n_cells_rollup: number;
+  n_cells_rollup_normalized: number;
+  n_cells: number;
+  n_cells_normalized: number;
+  children?: this[];
+}
+
+async function fetchOntologyTreeQuery(
+  signal?: AbortSignal
+): Promise<CellOntologyTree | undefined> {
+  const url = "/api/cell_ontology_tree";
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    method: "GET",
+    signal,
+  });
+  if (response.status === 404) return undefined;
+  const json: CellOntologyTree = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+
+export const USE_CELL_ONTOLOGY_TREE_QUERY = {
+  entities: [ENTITIES.CELL_EXPLORER_CELL_ONTOLOGY_TREE],
+  id: "cell-explorer-cell-ontology-tree-query",
+};
+
+export function useCellOntologyTree(): UseQueryResult<CellOntologyTree> {
+  return useQuery(
+    [USE_CELL_ONTOLOGY_TREE_QUERY],
+    ({ signal }) => fetchOntologyTreeQuery(signal),
+    {
+      enabled: true,
+      staleTime: Infinity,
+    }
+  );
+}
+
+// scrape
 interface WikipediaDescriptionQueryResponse {
   content: string;
 }

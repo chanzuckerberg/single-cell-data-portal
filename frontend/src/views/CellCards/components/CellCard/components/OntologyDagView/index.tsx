@@ -6,6 +6,10 @@ import { LinkHorizontal } from "@visx/shape";
 import { LinearGradient } from "@visx/gradient";
 import { TableTitleWrapper, TableTitle } from "../common/style";
 import { ONTOLOGY_SECTION_ID } from "../CellCardSidebar";
+import {
+  CellOntologyTree as TreeNode,
+  useCellOntologyTree,
+} from "src/common/queries/cellCards";
 
 const peach = "#fd9b93";
 const pink = "#fe6e9e";
@@ -16,53 +20,7 @@ const lightpurple = "#374469";
 const white = "#ffffff";
 export const background = "#272b4d";
 
-interface TreeNode {
-  name: string;
-  children?: this[];
-}
-
 type HierarchyNode = HierarchyPointNode<TreeNode>;
-
-const rawTree: TreeNode = {
-  name: "T",
-  children: [
-    {
-      name: "A",
-      children: [
-        { name: "A1" },
-        { name: "A2" },
-        { name: "A3" },
-        {
-          name: "C",
-          children: [
-            {
-              name: "C1",
-            },
-            {
-              name: "D",
-              children: [
-                {
-                  name: "D1",
-                },
-                {
-                  name: "D2",
-                },
-                {
-                  name: "D3",
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    { name: "Z" },
-    {
-      name: "B",
-      children: [{ name: "B1" }, { name: "B2" }, { name: "B3" }],
-    },
-  ],
-};
 
 function RootNode({ node }: { node: HierarchyNode }) {
   return (
@@ -172,11 +130,17 @@ export default function Example({
   height,
   margin = defaultMargin,
 }: TreeProps) {
-  const data = useMemo(() => hierarchy(rawTree), []);
+  const { data: rawTree } = useCellOntologyTree();
+
+  const data = useMemo(() => {
+    if (!rawTree) return null;
+    return hierarchy(rawTree);
+  }, [rawTree]);
+
   const yMax = height - margin.top - margin.bottom;
   const xMax = width - margin.left - margin.right;
 
-  return (
+  return data ? (
     <>
       <TableTitleWrapper id={ONTOLOGY_SECTION_ID}>
         <TableTitle>Cell Ontology</TableTitle>
@@ -204,5 +168,5 @@ export default function Example({
         </Tree>
       </svg>
     </>
-  );
+  ) : null;
 }
