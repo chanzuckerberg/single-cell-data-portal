@@ -47,7 +47,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
             if (publication && publicationTitles[index]) {
               return (
                 <Link
-                  key={publication}
+                  key={`${publication}-${index}`}
                   title={publicationTitles[index]}
                   url={`https://doi.org/${publication}`}
                 />

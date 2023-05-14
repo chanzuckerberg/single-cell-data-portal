@@ -6,6 +6,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import { Group } from "@visx/group";
+import { localPoint } from "@visx/event";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
 import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
@@ -41,6 +42,11 @@ interface NodeProps {
   node: HierarchyNode;
   handleClick: MouseEventHandler<SVGGElement>;
   isTargetNode: boolean;
+  handleMouseOver: (
+    event: React.MouseEvent<SVGElement>,
+    datum: TreeNode
+  ) => void;
+  handleMouseOut: () => void;
 }
 
 interface TreeNodeWithCoords extends TreeNode {
@@ -48,7 +54,13 @@ interface TreeNodeWithCoords extends TreeNode {
   y: number;
 }
 
-function RootNode({ node, handleClick, isTargetNode }: NodeProps) {
+function RootNode({
+  node,
+  handleClick,
+  isTargetNode,
+  handleMouseOver,
+  handleMouseOut,
+}: NodeProps) {
   return (
     <Group
       top={node.x}
@@ -60,19 +72,29 @@ function RootNode({ node, handleClick, isTargetNode }: NodeProps) {
         node={node.data}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
+        handleMouseOver={handleMouseOver}
+        handleMouseOut={handleMouseOut}
       />
       <Text name={node.data.name} />
     </Group>
   );
 }
 
-function ParentNode({ node, handleClick, isTargetNode }: NodeProps) {
+function ParentNode({
+  node,
+  handleClick,
+  isTargetNode,
+  handleMouseOver,
+  handleMouseOut,
+}: NodeProps) {
   return (
     <Group top={node.x} left={node.y}>
       <RectOrCircle
         node={node.data}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
+        handleMouseOver={handleMouseOver}
+        handleMouseOut={handleMouseOut}
       />
       <Text name={node.data.name} />
     </Group>
@@ -82,12 +104,23 @@ interface RectOrCircleProps {
   handleClick: MouseEventHandler<SVGGElement>;
   isTargetNode: boolean;
   node: TreeNode;
+  handleMouseOver: (
+    event: React.MouseEvent<SVGElement>,
+    datum: TreeNode
+  ) => void;
+  handleMouseOut: () => void;
 }
 
 const smallSize = 4;
 const largeSize = 8;
 
-function RectOrCircle({ node, handleClick, isTargetNode }: RectOrCircleProps) {
+function RectOrCircle({
+  node,
+  handleClick,
+  isTargetNode,
+  handleMouseOver,
+  handleMouseOut,
+}: RectOrCircleProps) {
   let color = tertiaryColor;
   if (node.n_cells > 0) {
     color = primaryColor;
@@ -107,94 +140,40 @@ function RectOrCircle({ node, handleClick, isTargetNode }: RectOrCircleProps) {
   const cursor = node.id !== "" ? "pointer" : "default";
   const clickHandler = node.id !== "" ? handleClick : undefined;
 
-  const {
-    tooltipData,
-    tooltipLeft,
-    tooltipTop,
-    tooltipOpen,
-    showTooltip,
-    hideTooltip,
-  } = useTooltip<{ n_cells: number; n_cells_rollup: number }>();
-
-  const { containerRef, TooltipInPortal } = useTooltipInPortal({
-    detectBounds: true,
-    scroll: true,
-  });
-  const handleMouseOver = (
-    event: React.MouseEvent<SVGElement>,
-    datum: TreeNode
-  ) => {
-    if (event.target instanceof SVGElement) {
-      if (event.target.ownerSVGElement !== null) {
-        const x = event.target.ownerSVGElement.x.baseVal.value;
-        const y = event.target.ownerSVGElement.y.baseVal.value;
-        const coords = { x, y };
-        if (coords) {
-          showTooltip({
-            tooltipLeft: coords.x + 10,
-            tooltipTop: coords.y + 10,
-            tooltipData: {
-              n_cells: datum.n_cells,
-              n_cells_rollup: datum.n_cells_rollup,
-            },
-          });
-        }
-      }
-    }
-  };
-
   const onMouseOver =
     node.id === ""
       ? undefined
       : (event: React.MouseEvent<SVGElement>) => {
           handleMouseOver(event, node);
         };
-  const onMouseOut = node.id === "" ? undefined : hideTooltip;
-  return (
-    <g ref={containerRef}>
-      {tooltipOpen && (
-        <TooltipInPortal
-          // set this to random so it correctly updates with parent bounds
-          key={Math.random()}
-          top={tooltipTop}
-          left={tooltipLeft}
-        >
-          <div>
-            <b>{tooltipData?.n_cells}</b> cells
-            <br />
-            <b>{tooltipData?.n_cells_rollup}</b> descendant cells
-          </div>
-        </TooltipInPortal>
-      )}
-      {node.hasChildren ? (
-        <circle
-          r={size}
-          fill={color}
-          onClick={clickHandler}
-          style={{ cursor: cursor }}
-          stroke={stroke}
-          strokeWidth={0.5}
-          strokeDasharray={strokeDasharray}
-          onMouseOver={onMouseOver}
-          onMouseOut={onMouseOut}
-        />
-      ) : (
-        <rect
-          height={size * 2}
-          width={size * 2}
-          y={-size}
-          x={-size}
-          fill={color}
-          onClick={clickHandler}
-          style={{ cursor: cursor }}
-          stroke={stroke}
-          strokeWidth={0.5}
-          strokeDasharray={strokeDasharray}
-          onMouseOver={onMouseOver}
-          onMouseOut={onMouseOut}
-        />
-      )}
-    </g>
+  const onMouseOut = node.id === "" ? undefined : handleMouseOut;
+  return node.hasChildren ? (
+    <circle
+      r={size}
+      fill={color}
+      onClick={clickHandler}
+      style={{ cursor: cursor }}
+      stroke={stroke}
+      strokeWidth={0.5}
+      strokeDasharray={strokeDasharray}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
+    />
+  ) : (
+    <rect
+      height={size * 2}
+      width={size * 2}
+      y={-size}
+      x={-size}
+      fill={color}
+      onClick={clickHandler}
+      style={{ cursor: cursor }}
+      stroke={stroke}
+      strokeWidth={0.5}
+      strokeDasharray={strokeDasharray}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
+    />
   );
 }
 
@@ -217,7 +196,13 @@ function Text({ name }: TextProps) {
   );
 }
 /** Handles rendering Root, Parent, and other Nodes. */
-function Node({ node, handleClick, isTargetNode }: NodeProps) {
+function Node({
+  node,
+  handleClick,
+  isTargetNode,
+  handleMouseOver,
+  handleMouseOut,
+}: NodeProps) {
   const isRoot = node.depth === 0;
   const isParent = !!node.children;
 
@@ -227,6 +212,8 @@ function Node({ node, handleClick, isTargetNode }: NodeProps) {
         node={node}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
+        handleMouseOver={handleMouseOver}
+        handleMouseOut={handleMouseOut}
       />
     );
   if (isParent)
@@ -235,6 +222,8 @@ function Node({ node, handleClick, isTargetNode }: NodeProps) {
         node={node}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
+        handleMouseOver={handleMouseOver}
+        handleMouseOut={handleMouseOut}
       />
     );
 
@@ -245,6 +234,8 @@ function Node({ node, handleClick, isTargetNode }: NodeProps) {
         node={node.data}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
+        handleMouseOver={handleMouseOver}
+        handleMouseOut={handleMouseOut}
       />
     </Group>
   );
@@ -389,14 +380,12 @@ export default function OntologyDagView({
   const nodeSize = [15, 1000 / (data?.height ?? 1)]; // Increase width and height for more spacing
 
   useEffect(() => {
+    setCenterNodeCoords(null);
     return () => {
       setCenterNodeCoords(null);
       setInitialTransformMatrix(initialTransformMatrixDefault);
+      hideTooltip();
     };
-  }, []);
-
-  useEffect(() => {
-    setCenterNodeCoords(null);
   }, [cellTypeId]);
 
   // This effect is used to center the node corresponding to the cell type id
@@ -431,6 +420,40 @@ export default function OntologyDagView({
     }
   }, [data, cellTypeId, width, height]);
 
+  const {
+    tooltipData,
+    tooltipLeft,
+    tooltipTop,
+    tooltipOpen,
+    showTooltip,
+    hideTooltip,
+  } = useTooltip<{ n_cells: number; n_cells_rollup: number }>();
+
+  const { TooltipInPortal, containerRef } = useTooltipInPortal({
+    detectBounds: true,
+    scroll: true,
+  });
+  const handleMouseOver = (
+    event: React.MouseEvent<SVGElement>,
+    datum: TreeNode
+  ) => {
+    if (event.target instanceof SVGElement) {
+      if (event.target.ownerSVGElement !== null) {
+        const coords = localPoint(event.target.ownerSVGElement, event);
+        if (coords) {
+          showTooltip({
+            tooltipLeft: coords.x,
+            tooltipTop: coords.y,
+            tooltipData: {
+              n_cells: datum.n_cells,
+              n_cells_rollup: datum.n_cells_rollup,
+            },
+          });
+        }
+      }
+    }
+  };
+
   return (
     <>
       <TableTitleWrapper id={ONTOLOGY_SECTION_ID}>
@@ -449,7 +472,27 @@ export default function OntologyDagView({
           initialTransformMatrix={initialTransformMatrix}
         >
           {(zoom) => (
-            <div className="relative">
+            <div
+              ref={containerRef}
+              className="relative"
+              onMouseDown={() => {
+                hideTooltip();
+              }}
+            >
+              {tooltipOpen && (
+                <TooltipInPortal
+                  // set this to random so it correctly updates with parent bounds
+                  key={Math.random()}
+                  top={tooltipTop}
+                  left={tooltipLeft}
+                >
+                  <div>
+                    <b>{tooltipData?.n_cells}</b> cells
+                    <br />
+                    <b>{tooltipData?.n_cells_rollup}</b> descendant cells
+                  </div>
+                </TooltipInPortal>
+              )}
               <svg width={width} height={height} ref={zoom.containerRef}>
                 <RectClipPath id="zoom-clip" width={width} height={height} />
                 <rect width={width} height={height} rx={14} fill={white} />
@@ -475,6 +518,8 @@ export default function OntologyDagView({
                             key={`node-${i}`}
                             node={node}
                             isTargetNode={node.data.id === cellTypeId}
+                            handleMouseOver={handleMouseOver}
+                            handleMouseOut={hideTooltip}
                             handleClick={() => {
                               router.push(
                                 `${ROUTES.CELL_CARDS}/${node.data.id.replace(
