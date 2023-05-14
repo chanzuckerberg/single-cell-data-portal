@@ -24,6 +24,7 @@
     "@visx/hierarchy": "^3.0.0",
     "@visx/responsive": "^3.0.0",
     "@visx/shape": "^3.0.0",
+    "@visx/tooltip": "^3.1.2",
     "@visx/zoom": "^3.1.1",
     "cheerio": "^1.0.0-rc.12",
     "client-zip": "^2.2.2",
@@ -52,7 +53,8 @@
     "rehype-slug": "^5.0.1",
     "remark-math": "^5.1.1",
     "sass": "^1.54.4",
-    "sharp": "^0.30.6"
+    "sharp": "^0.30.6",
+    "tippy.js": "^6.3.7"
   },
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.8.1",
