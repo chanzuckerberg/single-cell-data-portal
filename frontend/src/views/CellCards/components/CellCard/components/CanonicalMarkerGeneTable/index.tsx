@@ -37,6 +37,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
   const tableRows: TableRow[] = useMemo(() => {
     if (!genes) return [];
     const rows = [];
+
     for (const markerGene of genes) {
       const publications = markerGene.publication.split(";;");
       const publicationTitles = markerGene.publication_titles.split(";;");

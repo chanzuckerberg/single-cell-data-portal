@@ -183,7 +183,7 @@ function Node({ node, handleClick, isTargetNode }: NodeProps) {
   );
 }
 
-const defaultMargin = { top: 0, left: 0, right: 0, bottom: 0 };
+const defaultMargin = { top: 50, left: 0, right: 0, bottom: 0 };
 
 interface LegendProps {
   xPos: number;
@@ -220,13 +220,23 @@ const InCorpusLegend = ({ xPos, yPos }: LegendProps) => {
 const DescendantsLegend = ({ xPos, yPos }: LegendProps) => {
   return (
     <g>
+      <defs>
+        <pattern
+          id="crosshatch"
+          width="5"
+          height="5"
+          patternUnits="userSpaceOnUse"
+        >
+          <path d="M 5 0 L 0 5" stroke="#999999" strokeWidth="0.5" />
+        </pattern>
+      </defs>
       <StyledLegendText x={xPos + 2.5} y={yPos + 30}>
         Yes
       </StyledLegendText>
       <circle
         cx={xPos + 12.5}
         cy={yPos + 15}
-        fill={white}
+        fill="url(#crosshatch)"
         stroke="#999999"
         strokeWidth={1}
         r={largeSize}
@@ -240,7 +250,7 @@ const DescendantsLegend = ({ xPos, yPos }: LegendProps) => {
       <rect
         x={xPos + 40 - largeSize + 2}
         y={yPos + 15 - largeSize + 1}
-        fill={white}
+        fill="url(#crosshatch)"
         stroke="#999999"
         strokeWidth={1}
         width={largeSize * 2 - 2}
@@ -393,105 +403,8 @@ export default function OntologyDagView({
                     )}
                   </Tree>
                 </g>
-                <InCorpusLegend xPos={width - 200} yPos={15} />
-                <DescendantsLegend xPos={width - 100} yPos={15} />
-                {/* // circles
-      
-        .enter()
-        .append("text")
-          .attr("class", "legendText")
-          .attr('x', function(d) { return d.xValue - 20})
-          .attr('y', -8)
-          .text(function(d) { return d.title})
-          .attr('alignment-baseline', 'middle')
-
-      legend
-        .selectAll("svg")
-        .data(data)
-        .enter()
-        .append("text")
-          .attr("class", "legendText")
-          .attr('x', function(d) { return d.xValue + 32})
-          .attr('y', function(d) { return d.yValue})
-          .text(function(d) { return d.label})
-          .attr('alignment-baseline', 'middle')
-    
-    // add color legend
-    legend
-        .selectAll("svg")
-        .data([
-          {"xValue": left_margin + separation,  "yValue": 8,  "size": 12,  "label": '0 cells'}
-        ])
-        .enter()
-        .append("circle")
-          .attr("r", function(d)  { return d.size})
-          .attr("cx", 24)
-          .attr("cy", 12)
-          .style("fill", `${primaryColor}`)
-
-    legend.append('text')
-      .attr("class", "legendText") 
-      .attr('x', 12)
-      .attr('y', -8)
-      .text("Cells in corpus")
-
-    legend
-        .selectAll("svg")
-        .data([
-          {"xValue": left_margin + separation,  "yValue": 8,  "size": 12,  "label": '0 cells'}
-        ])
-        .enter()
-        .append("circle")
-        .attr("r", function(d)  { return d.size})
-        .attr("cx", 24)
-        .attr("cy", 60)
-        .style("fill", `${tertiaryColor}`)
-
-    legend.append('text')
-      .attr("class", "legendText")
-      .attr('x', 12)
-      .attr('y', 40)
-      .text("No cells in corpus")
-
-    // add shape legend
-    legend
-        .selectAll("svg")
-        .data([
-          {"xValue": left_margin + separation,  "yValue": 8,  "size": 12,  "label": '0 cells'}
-        ])
-        .enter()
-        .append("circle")
-          .attr("r", function(d)  { return d.size})
-          .attr("cx", 160)
-          .attr("cy", 12)
-          .style("fill", "none")
-          .attr("stroke", "black")
-
-    legend.append('text')
-      .attr("class", "legendText") 
-      .attr('x', 148)
-      .attr('y', -8)
-      .text("Has descendent cell types")
-
-    legend
-        .selectAll("svg")
-        .data([
-          {"xValue": left_margin + separation,  "yValue": 8,  "size": 12,  "label": '0 cells'}
-        ])
-        .enter()
-        .append("rect")
-        .attr("width", 20)
-        .attr("height", 20)
-        .attr("x", 152)
-        .attr("y", 48)
-        .style("fill", "none")
-        .attr("stroke", "black")
-
-    legend.append('text')
-      .attr("class", "legendText") 
-      .attr('x', 148)
-      .attr('y', 40)
-      .text("No descendent cell types")                 */}
+                <InCorpusLegend xPos={width - 200} yPos={10} />
+                <DescendantsLegend xPos={width - 120} yPos={10} />
               </svg>
             </div>
           )}

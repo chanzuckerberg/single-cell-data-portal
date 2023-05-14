@@ -10,7 +10,7 @@ const getHandler = (path: string) => {
       if (data[cellTypeId as keyof typeof data])
         res.status(200).json(data[cellTypeId as keyof typeof data]);
       else
-        res.status(200).json({
+        res.status(404).json({
           error: `Cell type ${cellTypeId} not found in requested resource`,
         });
     } catch (error) {
