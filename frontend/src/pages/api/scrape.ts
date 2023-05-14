@@ -54,9 +54,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const wikipediaUrl = cellTypeToWikipediaUrl[cellTypeId];
 
     if (!wikipediaUrl) {
-      res.status(404).json({
-        error: `Cell type ${cellTypeId} not found in requested resource`,
-      });
+      res.status(204);
     } else {
       const response = await fetch(wikipediaUrl);
       if (!response.ok) {
