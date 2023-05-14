@@ -6,6 +6,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import { Group } from "@visx/group";
+import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
 import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { LinkHorizontal } from "@visx/shape";
@@ -105,29 +106,95 @@ function RectOrCircle({ node, handleClick, isTargetNode }: RectOrCircleProps) {
 
   const cursor = node.id !== "" ? "pointer" : "default";
   const clickHandler = node.id !== "" ? handleClick : undefined;
-  return node.hasChildren ? (
-    <circle
-      r={size}
-      fill={color}
-      onClick={clickHandler}
-      style={{ cursor: cursor }}
-      stroke={stroke}
-      strokeWidth={0.5}
-      strokeDasharray={strokeDasharray}
-    />
-  ) : (
-    <rect
-      height={size * 2}
-      width={size * 2}
-      y={-size}
-      x={-size}
-      fill={color}
-      onClick={clickHandler}
-      style={{ cursor: cursor }}
-      stroke={stroke}
-      strokeWidth={0.5}
-      strokeDasharray={strokeDasharray}
-    />
+
+  const {
+    tooltipData,
+    tooltipLeft,
+    tooltipTop,
+    tooltipOpen,
+    showTooltip,
+    hideTooltip,
+  } = useTooltip<{ n_cells: number; n_cells_rollup: number }>();
+
+  const { containerRef, TooltipInPortal } = useTooltipInPortal({
+    detectBounds: true,
+    scroll: true,
+  });
+  const handleMouseOver = (
+    event: React.MouseEvent<SVGElement>,
+    datum: TreeNode
+  ) => {
+    if (event.target instanceof SVGElement) {
+      if (event.target.ownerSVGElement !== null) {
+        const x = event.target.ownerSVGElement.x.baseVal.value;
+        const y = event.target.ownerSVGElement.y.baseVal.value;
+        const coords = { x, y };
+        if (coords) {
+          showTooltip({
+            tooltipLeft: coords.x + 10,
+            tooltipTop: coords.y + 10,
+            tooltipData: {
+              n_cells: datum.n_cells,
+              n_cells_rollup: datum.n_cells_rollup,
+            },
+          });
+        }
+      }
+    }
+  };
+
+  const onMouseOver =
+    node.id === ""
+      ? undefined
+      : (event: React.MouseEvent<SVGElement>) => {
+          handleMouseOver(event, node);
+        };
+  const onMouseOut = node.id === "" ? undefined : hideTooltip;
+  return (
+    <g ref={containerRef}>
+      {tooltipOpen && (
+        <TooltipInPortal
+          // set this to random so it correctly updates with parent bounds
+          key={Math.random()}
+          top={tooltipTop}
+          left={tooltipLeft}
+        >
+          <div>
+            <b>{tooltipData?.n_cells}</b> cells
+            <br />
+            <b>{tooltipData?.n_cells_rollup}</b> descendant cells
+          </div>
+        </TooltipInPortal>
+      )}
+      {node.hasChildren ? (
+        <circle
+          r={size}
+          fill={color}
+          onClick={clickHandler}
+          style={{ cursor: cursor }}
+          stroke={stroke}
+          strokeWidth={0.5}
+          strokeDasharray={strokeDasharray}
+          onMouseOver={onMouseOver}
+          onMouseOut={onMouseOut}
+        />
+      ) : (
+        <rect
+          height={size * 2}
+          width={size * 2}
+          y={-size}
+          x={-size}
+          fill={color}
+          onClick={clickHandler}
+          style={{ cursor: cursor }}
+          stroke={stroke}
+          strokeWidth={0.5}
+          strokeDasharray={strokeDasharray}
+          onMouseOver={onMouseOver}
+          onMouseOut={onMouseOut}
+        />
+      )}
+    </g>
   );
 }
 
@@ -173,12 +240,12 @@ function Node({ node, handleClick, isTargetNode }: NodeProps) {
 
   return (
     <Group top={node.x} left={node.y}>
+      <Text name={node.data.name} />
       <RectOrCircle
         node={node.data}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
       />
-      <Text name={node.data.name} />
     </Group>
   );
 }
@@ -256,6 +323,25 @@ const DescendantsLegend = ({ xPos, yPos }: LegendProps) => {
         width={largeSize * 2 - 2}
         height={largeSize * 2 - 2}
       />
+    </g>
+  );
+};
+
+const CollapsedNodesLegend = ({ xPos, yPos }: LegendProps) => {
+  return (
+    <g>
+      <rect
+        x={xPos + 30 - largeSize + 2}
+        y={yPos + 15 - largeSize + 1}
+        fill={white}
+        stroke="#999999"
+        strokeWidth={1}
+        width={largeSize * 2 - 2}
+        height={largeSize * 2 - 2}
+      />
+      <StyledLegendText x={xPos - 5} y={yPos}>
+        Hidden terms
+      </StyledLegendText>
     </g>
   );
 };
@@ -403,8 +489,20 @@ export default function OntologyDagView({
                     )}
                   </Tree>
                 </g>
-                <InCorpusLegend xPos={width - 200} yPos={10} />
-                <DescendantsLegend xPos={width - 120} yPos={10} />
+                <g>
+                  <rect
+                    x={width - 250}
+                    y={0}
+                    width={240}
+                    height={50}
+                    fill="white"
+                    stroke="black"
+                    strokeWidth={1}
+                  />
+                  <InCorpusLegend xPos={width - 240} yPos={10} />
+                  <DescendantsLegend xPos={width - 160} yPos={10} />
+                  <CollapsedNodesLegend xPos={width - 80} yPos={10} />
+                </g>
               </svg>
             </div>
           )}

@@ -29,7 +29,7 @@ async function fetchOntologyTreeQuery({
     method: "GET",
     signal,
   });
-  if (response.status === 404) return undefined;
+  if (response.status === 204) return undefined;
   const json: CellOntologyTree = await response.json();
 
   if (!response.ok) {
@@ -76,7 +76,7 @@ async function fetchWikipediaDescriptionQuery({
     method: "GET",
     signal,
   });
-  if (response.status === 404) return undefined;
+  if (response.status === 204) return undefined;
   const json: WikipediaDescriptionQueryResponse = await response.json();
 
   if (!response.ok) {
@@ -131,7 +131,7 @@ async function fetchSourceDataQuery({
     method: "GET",
     signal,
   });
-  if (response.status === 404) return undefined;
+  if (response.status === 204) return undefined;
   const json: SourceDataQueryResponse = await response.json();
 
   if (!response.ok) {
@@ -184,7 +184,7 @@ async function fetchEnrichedGenesQuery({
     method: "GET",
     signal,
   });
-  if (response.status === 404) return undefined;
+  if (response.status === 204) return undefined;
   const json: EnrichedGenesQueryResponse = await response.json();
 
   if (!response.ok) {
@@ -238,7 +238,7 @@ async function fetchCanonicalMarkersQuery({
     method: "GET",
     signal,
   });
-  if (response.status === 404) return undefined;
+  if (response.status === 204) return undefined;
   const json: CanonicalMarkersQueryResponse = await response.json();
 
   if (!response.ok) {
@@ -281,7 +281,7 @@ async function fetchDescription({
     method: "GET",
     signal,
   });
-  if (response.status === 404) return undefined;
+  if (response.status === 204) return undefined;
   const json: string = await response.json();
 
   if (!response.ok) {
@@ -324,7 +324,7 @@ async function fetchCellCardsQuery(
     method: "GET",
     signal,
   });
-  if (response.status === 404) return undefined;
+  if (response.status === 204) return undefined;
   const json: CellCardsQueryResponse = await response.json();
 
   if (!response.ok) {

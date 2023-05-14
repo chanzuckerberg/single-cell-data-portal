@@ -9,10 +9,7 @@ const getHandler = (path: string) => {
       const cellTypeId = req.query.cellTypeId;
       if (data[cellTypeId as keyof typeof data])
         res.status(200).json(data[cellTypeId as keyof typeof data]);
-      else
-        res.status(404).json({
-          error: `Cell type ${cellTypeId} not found in requested resource`,
-        });
+      else res.status(204);
     } catch (error) {
       console.error(`Error fetching data: ${error}`);
       res.status(500).json({ error: "Error fetching data" });

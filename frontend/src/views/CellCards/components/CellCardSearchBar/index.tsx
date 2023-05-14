@@ -53,6 +53,7 @@ export default function CellCardSearchBar(): JSX.Element {
           const cellType = option as CellType;
           return (
             <SectionItem
+              key={cellType.id}
               onClick={() => {
                 router.push(
                   `${ROUTES.CELL_CARDS}/${cellType.id.replace(":", "_")}`

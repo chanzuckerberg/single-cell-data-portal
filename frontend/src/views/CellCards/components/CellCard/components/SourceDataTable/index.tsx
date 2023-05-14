@@ -37,6 +37,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
   const tableRows: TableRow[] = useMemo(() => {
     if (!collections) return [];
     const rows = [];
+    let index = 0;
     for (const collection of collections) {
       const tissueNames = collection.tissue.map((tissue) => tissue.label);
       const diseaseNames = collection.disease.map((disease) => disease.label);
@@ -47,12 +48,14 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
       rows.push({
         collection: (
           <Link
+            key={`collection-name-${collection.collection_name}-${index}`}
             title={collection.collection_name}
             url={collection.collection_url}
           />
         ),
         publication: (
           <Link
+            key={`publication-url-${collection.publication_title}-${index}`}
             title={collection.publication_title}
             url={`https://doi.org/${collection.publication_url}`}
           />
@@ -62,7 +65,9 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
             <div>
               {tissueNames.map((tissue) => {
                 return (
-                  <div>{tissue.charAt(0).toUpperCase() + tissue.slice(1)}</div>
+                  <div key={`tissue-${tissue}-${index}`}>
+                    {tissue.charAt(0).toUpperCase() + tissue.slice(1)}
+                  </div>
                 );
               })}
             </div>
@@ -77,7 +82,9 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
           <div>
             {diseaseNames.map((disease) => {
               return (
-                <div>{disease.charAt(0).toUpperCase() + disease.slice(1)}</div>
+                <div key={`disease-${disease}-${index}`}>
+                  {disease.charAt(0).toUpperCase() + disease.slice(1)}
+                </div>
               );
             })}
           </div>
@@ -85,11 +92,14 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
         organism: (
           <div>
             {organismNames.map((organism) => {
-              return <div>{organism}</div>;
+              return (
+                <div key={`organism-${organism}-${index}`}>{organism}</div>
+              );
             })}
           </div>
         ),
       });
+      index = index + 1;
     }
     return rows;
   }, [collections]);
