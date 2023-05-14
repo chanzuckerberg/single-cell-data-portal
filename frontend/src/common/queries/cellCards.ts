@@ -11,6 +11,7 @@ export interface CellOntologyTree {
   n_cells_rollup_normalized: number;
   n_cells: number;
   n_cells_normalized: number;
+  hasChildren: boolean;
   children?: this[];
 }
 

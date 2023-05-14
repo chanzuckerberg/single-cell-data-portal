@@ -14,20 +14,22 @@ import {
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
 
-const plum = "#71248e";
-const lightpurple = "#374469";
+const primaryColor = "#0073FF";
+const secondaryColor = "#999999";
+const tertiaryColor = "#CCCCCC";
+const highlightColor = "#3CB371";
 const white = "#ffffff";
 const black = "#000000";
-export const background = white;
 
 type HierarchyNode = HierarchyPointNode<TreeNode>;
 
 interface NodeProps {
   node: HierarchyNode;
   handleClick: MouseEventHandler<SVGGElement>;
+  isTargetNode: boolean;
 }
 
-function RootNode({ node, handleClick }: NodeProps) {
+function RootNode({ node, handleClick, isTargetNode }: NodeProps) {
   return (
     <Group
       top={node.x}
@@ -35,92 +37,111 @@ function RootNode({ node, handleClick }: NodeProps) {
       onClick={handleClick}
       style={{ cursor: "pointer" }}
     >
-      <circle r={12} fill={plum} />
-      <text
-        dy=".33em"
-        fontSize={9}
-        fontFamily="Arial"
-        textAnchor="middle"
-        style={{ pointerEvents: "none" }}
-        fill={black}
-      >
-        {node.data.name}
-      </text>
+      <RectOrCircle
+        node={node.data}
+        handleClick={handleClick}
+        isTargetNode={isTargetNode}
+      />
+      <Text name={node.data.name} />
     </Group>
   );
 }
 
-function ParentNode({ node, handleClick }: NodeProps) {
-  const width = 40;
-  const height = 20;
-  const centerX = -width / 2;
-  const centerY = -height / 2;
-
+function ParentNode({ node, handleClick, isTargetNode }: NodeProps) {
   return (
     <Group top={node.x} left={node.y}>
-      <rect
-        height={height}
-        width={width}
-        y={centerY}
-        x={centerX}
-        fill={background}
-        stroke={black}
-        strokeWidth={1}
-        onClick={handleClick}
-        style={{ cursor: "pointer" }}
+      <RectOrCircle
+        node={node.data}
+        handleClick={handleClick}
+        isTargetNode={isTargetNode}
       />
-      <text
-        dy=".33em"
-        fontSize={9}
-        fontFamily="Arial"
-        textAnchor="middle"
-        style={{ pointerEvents: "none" }}
-        fill={black}
-      >
-        {node.data.name}
-      </text>
+      <Text name={node.data.name} />
     </Group>
   );
 }
+interface RectOrCircleProps {
+  handleClick: MouseEventHandler<SVGGElement>;
+  isTargetNode: boolean;
+  node: TreeNode;
+}
 
+function RectOrCircle({ node, handleClick, isTargetNode }: RectOrCircleProps) {
+  let color = tertiaryColor;
+  if (node.n_cells > 0) {
+    color = primaryColor;
+  }
+  if (isTargetNode) {
+    color = highlightColor;
+  }
+  const size = node.n_cells === 0 ? 4 : 8;
+  return node.hasChildren ? (
+    <circle
+      r={size}
+      fill={color}
+      onClick={handleClick}
+      style={{ cursor: "pointer" }}
+    />
+  ) : (
+    <rect
+      height={size * 2}
+      width={size * 2}
+      y={-size}
+      x={-size}
+      fill={color}
+      onClick={handleClick}
+      style={{ cursor: "pointer" }}
+    />
+  );
+}
+
+interface TextProps {
+  name: string;
+}
+function Text({ name }: TextProps) {
+  return (
+    <text
+      dy=".33em"
+      fontSize={9}
+      fontFamily="Arial"
+      textAnchor="left"
+      fill={black}
+      dx={15}
+      style={{ pointerEvents: "none" }}
+    >
+      {name}
+    </text>
+  );
+}
 /** Handles rendering Root, Parent, and other Nodes. */
-function Node({ node, handleClick }: NodeProps) {
-  const width = 40;
-  const height = 20;
-  const centerX = -width / 2;
-  const centerY = -height / 2;
+function Node({ node, handleClick, isTargetNode }: NodeProps) {
   const isRoot = node.depth === 0;
   const isParent = !!node.children;
 
-  if (isRoot) return <RootNode node={node} handleClick={handleClick} />;
-  if (isParent) return <ParentNode node={node} handleClick={handleClick} />;
+  if (isRoot)
+    return (
+      <RootNode
+        node={node}
+        handleClick={handleClick}
+        isTargetNode={isTargetNode}
+      />
+    );
+  if (isParent)
+    return (
+      <ParentNode
+        node={node}
+        handleClick={handleClick}
+        isTargetNode={isTargetNode}
+      />
+    );
 
   return (
     <Group top={node.x} left={node.y}>
-      <rect
-        height={height}
-        width={width}
-        y={centerY}
-        x={centerX}
-        fill={background}
-        stroke={black}
-        strokeWidth={1}
-        strokeDasharray="2,2"
-        strokeOpacity={0.6}
-        rx={10}
-        onClick={handleClick}
-        style={{ cursor: "pointer" }}
+      <RectOrCircle
+        node={node.data}
+        handleClick={handleClick}
+        isTargetNode={isTargetNode}
       />
-      <text
-        dy=".33em"
-        fontSize={9}
-        fontFamily="Arial"
-        textAnchor="middle"
-        fill={black}
-        style={{ pointerEvents: "none" }}
-      >
-        {node.data.name}
-      </text>
+      <Text name={node.data.name} />
     </Group>
   );
 }
@@ -182,7 +203,7 @@ export default function OntologyDagView({
             <div className="relative">
               <svg width={width} height={height} ref={zoom.containerRef}>
                 <RectClipPath id="zoom-clip" width={width} height={height} />
-                <rect width={width} height={height} rx={14} fill={background} />
+                <rect width={width} height={height} rx={14} fill={white} />
                 <g transform={zoom.toString()}>
                   <Tree<TreeNode>
                     root={data}
@@ -195,7 +216,7 @@ export default function OntologyDagView({
                           <LinkHorizontal
                             key={`link-${i}`}
                             data={link}
-                            stroke={lightpurple}
+                            stroke={secondaryColor}
                             strokeWidth="1"
                             fill="none"
                           />
@@ -204,6 +225,9 @@ export default function OntologyDagView({
                           <Node
                             key={`node-${i}`}
                             node={node}
+                            isTargetNode={
+                              node.data.id.replace("_", ":") === cellTypeId
+                            }
                             handleClick={() => {
                               router.push(
                                 `${ROUTES.CELL_CARDS}/${node.data.id.replace(
