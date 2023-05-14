@@ -146,7 +146,7 @@ function Node({ node, handleClick, isTargetNode }: NodeProps) {
   );
 }
 
-const defaultMargin = { top: 10, left: 80, right: 80, bottom: 10 };
+const defaultMargin = { top: 10, left: 0, right: 0, bottom: 10 };
 
 export type TreeProps = {
   cellTypeId: string;
@@ -173,12 +173,12 @@ export default function OntologyDagView({
   const xMax = width - margin.left - margin.right;
 
   // Customize nodeSize and separation
-  const nodeSize = [15, 200]; // Increase width and height for more spacing
+  const nodeSize = [15, 1000 / (data?.height ?? 1)]; // Increase width and height for more spacing
 
   const initialTransform = {
     scaleX: 1,
     scaleY: 1,
-    translateX: 80,
+    translateX: 10,
     translateY: height / 2,
     skewX: 0,
     skewY: 0,
