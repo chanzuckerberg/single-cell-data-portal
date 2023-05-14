@@ -52,9 +52,7 @@
     "rehype-mathjax": "^4.0.2",
     "rehype-slug": "^5.0.1",
     "remark-math": "^5.1.1",
-    "sass": "^1.54.4",
-    "sharp": "^0.30.6",
-    "tippy.js": "^6.3.7"
+    "sass": "^1.54.4"
   },
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.8.1",
