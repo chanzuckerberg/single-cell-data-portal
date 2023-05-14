@@ -123,13 +123,7 @@ export default function CellCard(): JSX.Element {
             descriptions={descriptions}
             setDescriptions={setDescriptions}
           />
-          <OntologyDagView
-            cellTypeId={cellTypeId}
-            width={1000}
-            height={400}
-            svgWidth={5000}
-            svgHeight={800}
-          />
+          <OntologyDagView cellTypeId={cellTypeId} width={1000} height={500} />
           <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
           <EnrichedGenesTable cellTypeId={cellTypeId} />
           <SourceDataTable cellTypeId={cellTypeId} />

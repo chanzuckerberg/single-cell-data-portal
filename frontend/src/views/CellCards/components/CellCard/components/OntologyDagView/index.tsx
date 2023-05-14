@@ -1,41 +1,48 @@
-import React, { useMemo } from "react";
+import React, { useMemo, MouseEventHandler } from "react";
 import { Group } from "@visx/group";
 import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { LinkHorizontal } from "@visx/shape";
-import { LinearGradient } from "@visx/gradient";
 import { TableTitleWrapper, TableTitle } from "../common/style";
 import { ONTOLOGY_SECTION_ID } from "../CellCardSidebar";
 import { Zoom } from "@visx/zoom";
-import { localPoint } from "@visx/event";
 import { RectClipPath } from "@visx/clip-path";
 import {
   CellOntologyTree as TreeNode,
   useCellOntologyTree,
 } from "src/common/queries/cellCards";
+import { useRouter } from "next/router";
+import { ROUTES } from "src/common/constants/routes";
 
-const peach = "#fd9b93";
-const pink = "#fe6e9e";
-const blue = "#03c0dc";
-const green = "#26deb0";
 const plum = "#71248e";
 const lightpurple = "#374469";
 const white = "#ffffff";
-export const background = "#272b4d";
+const black = "#000000";
+export const background = white;
 
 type HierarchyNode = HierarchyPointNode<TreeNode>;
 
-function RootNode({ node }: { node: HierarchyNode }) {
+interface NodeProps {
+  node: HierarchyNode;
+  handleClick: MouseEventHandler<SVGGElement>;
+}
+
+function RootNode({ node, handleClick }: NodeProps) {
   return (
-    <Group top={node.x} left={node.y}>
-      <circle r={12} fill="url('#lg')" />
+    <Group
+      top={node.x}
+      left={node.y}
+      onClick={handleClick}
+      style={{ cursor: "pointer" }}
+    >
+      <circle r={12} fill={plum} />
       <text
         dy=".33em"
         fontSize={9}
         fontFamily="Arial"
         textAnchor="middle"
         style={{ pointerEvents: "none" }}
-        fill={plum}
+        fill={black}
       >
         {node.data.name}
       </text>
@@ -43,7 +50,7 @@ function RootNode({ node }: { node: HierarchyNode }) {
   );
 }
 
-function ParentNode({ node }: { node: HierarchyNode }) {
+function ParentNode({ node, handleClick }: NodeProps) {
   const width = 40;
   const height = 20;
   const centerX = -width / 2;
@@ -57,11 +64,10 @@ function ParentNode({ node }: { node: HierarchyNode }) {
         y={centerY}
         x={centerX}
         fill={background}
-        stroke={blue}
+        stroke={black}
         strokeWidth={1}
-        onClick={() => {
-          alert(`clicked: ${JSON.stringify(node.data.name)}`);
-        }}
+        onClick={handleClick}
+        style={{ cursor: "pointer" }}
       />
       <text
         dy=".33em"
@@ -69,7 +75,7 @@ function ParentNode({ node }: { node: HierarchyNode }) {
         fontFamily="Arial"
         textAnchor="middle"
         style={{ pointerEvents: "none" }}
-        fill={white}
+        fill={black}
       >
         {node.data.name}
       </text>
@@ -78,7 +84,7 @@ function ParentNode({ node }: { node: HierarchyNode }) {
 }
 
 /** Handles rendering Root, Parent, and other Nodes. */
-function Node({ node }: { node: HierarchyNode }) {
+function Node({ node, handleClick }: NodeProps) {
   const width = 40;
   const height = 20;
   const centerX = -width / 2;
@@ -86,8 +92,8 @@ function Node({ node }: { node: HierarchyNode }) {
   const isRoot = node.depth === 0;
   const isParent = !!node.children;
 
-  if (isRoot) return <RootNode node={node} />;
-  if (isParent) return <ParentNode node={node} />;
+  if (isRoot) return <RootNode node={node} handleClick={handleClick} />;
+  if (isParent) return <ParentNode node={node} handleClick={handleClick} />;
 
   return (
     <Group top={node.x} left={node.y}>
@@ -97,21 +103,20 @@ function Node({ node }: { node: HierarchyNode }) {
         y={centerY}
         x={centerX}
         fill={background}
-        stroke={green}
+        stroke={black}
         strokeWidth={1}
         strokeDasharray="2,2"
         strokeOpacity={0.6}
         rx={10}
-        onClick={() => {
-          alert(`clicked: ${JSON.stringify(node.data.name)}`);
-        }}
+        onClick={handleClick}
+        style={{ cursor: "pointer" }}
       />
       <text
         dy=".33em"
         fontSize={9}
         fontFamily="Arial"
         textAnchor="middle"
-        fill={green}
+        fill={black}
         style={{ pointerEvents: "none" }}
       >
         {node.data.name}
@@ -129,7 +134,7 @@ export type TreeProps = {
   margin?: { top: number; right: number; bottom: number; left: number };
 };
 
-export default function Example({
+export default function OntologyDagView({
   cellTypeId,
   width,
   height,
@@ -137,6 +142,7 @@ export default function Example({
 }: TreeProps) {
   const { data: rawTree } = useCellOntologyTree(cellTypeId);
 
+  const router = useRouter();
   const data = useMemo(() => {
     if (!rawTree) return null;
     return hierarchy(rawTree);
@@ -147,6 +153,15 @@ export default function Example({
 
   // Customize nodeSize and separation
   const nodeSize = [15, 200]; // Increase width and height for more spacing
+
+  const initialTransform = {
+    scaleX: 1,
+    scaleY: 1,
+    translateX: 80,
+    translateY: height / 2,
+    skewX: 0,
+    skewY: 0,
+  };
 
   return (
     <>
@@ -161,22 +176,14 @@ export default function Example({
           scaleXMax={4}
           scaleYMin={0.1}
           scaleYMax={4}
+          initialTransformMatrix={initialTransform}
         >
           {(zoom) => (
             <div className="relative">
-              <svg
-                width={width}
-                height={height}
-                style={{
-                  cursor: zoom.isDragging ? "grabbing" : "grab",
-                  touchAction: "none",
-                }}
-                ref={zoom.containerRef}
-              >
+              <svg width={width} height={height} ref={zoom.containerRef}>
                 <RectClipPath id="zoom-clip" width={width} height={height} />
                 <rect width={width} height={height} rx={14} fill={background} />
                 <g transform={zoom.toString()}>
-                  <LinearGradient id="lg" from={peach} to={pink} />
                   <Tree<TreeNode>
                     root={data}
                     size={[yMax, xMax]}
@@ -194,31 +201,23 @@ export default function Example({
                           />
                         ))}
                         {tree.descendants().map((node, i) => (
-                          <Node key={`node-${i}`} node={node} />
+                          <Node
+                            key={`node-${i}`}
+                            node={node}
+                            handleClick={() => {
+                              router.push(
+                                `${ROUTES.CELL_CARDS}/${node.data.id.replace(
+                                  ":",
+                                  "_"
+                                )}`
+                              );
+                            }}
+                          />
                         ))}
                       </Group>
                     )}
                   </Tree>
                 </g>
-                <rect
-                  width={width}
-                  height={height}
-                  rx={14}
-                  fill="transparent"
-                  onTouchStart={zoom.dragStart}
-                  onTouchMove={zoom.dragMove}
-                  onTouchEnd={zoom.dragEnd}
-                  onMouseDown={zoom.dragStart}
-                  onMouseMove={zoom.dragMove}
-                  onMouseUp={zoom.dragEnd}
-                  onMouseLeave={() => {
-                    if (zoom.isDragging) zoom.dragEnd();
-                  }}
-                  onDoubleClick={(event) => {
-                    const point = localPoint(event) || { x: 0, y: 0 };
-                    zoom.scale({ scaleX: 1.1, scaleY: 1.1, point });
-                  }}
-                />
               </svg>
             </div>
           )}
