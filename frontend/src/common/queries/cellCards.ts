@@ -3,7 +3,7 @@ import { useQuery, UseQueryResult } from "react-query";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
-// ontology
+// ontology_tree
 export interface CellOntologyTree {
   name: string;
   id: string;

@@ -1,4 +1,10 @@
-import React, { useMemo, MouseEventHandler } from "react";
+import React, {
+  useMemo,
+  MouseEventHandler,
+  useEffect,
+  useState,
+  useLayoutEffect,
+} from "react";
 import { Group } from "@visx/group";
 import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
@@ -27,6 +33,11 @@ interface NodeProps {
   node: HierarchyNode;
   handleClick: MouseEventHandler<SVGGElement>;
   isTargetNode: boolean;
+}
+
+interface TreeNodeWithCoords extends TreeNode {
+  x: number;
+  y: number;
 }
 
 function RootNode({ node, handleClick, isTargetNode }: NodeProps) {
@@ -74,12 +85,21 @@ function RectOrCircle({ node, handleClick, isTargetNode }: RectOrCircleProps) {
     color = highlightColor;
   }
   const size = node.n_cells === 0 ? 4 : 8;
+  let stroke = "none";
+  if (node.id === "") {
+    color = white;
+    stroke = black;
+  }
+  const cursor = node.id !== "" ? "pointer" : "default";
+  const clickHandler = node.id !== "" ? handleClick : undefined;
   return node.hasChildren ? (
     <circle
       r={size}
       fill={color}
-      onClick={handleClick}
-      style={{ cursor: "pointer" }}
+      onClick={clickHandler}
+      style={{ cursor: cursor }}
+      stroke={stroke}
+      strokeWidth={1}
     />
   ) : (
     <rect
@@ -88,8 +108,10 @@ function RectOrCircle({ node, handleClick, isTargetNode }: RectOrCircleProps) {
       y={-size}
       x={-size}
       fill={color}
-      onClick={handleClick}
-      style={{ cursor: "pointer" }}
+      onClick={clickHandler}
+      style={{ cursor: cursor }}
+      stroke={stroke}
+      strokeWidth={1}
     />
   );
 }
@@ -146,7 +168,7 @@ function Node({ node, handleClick, isTargetNode }: NodeProps) {
   );
 }
 
-const defaultMargin = { top: 10, left: 0, right: 0, bottom: 10 };
+const defaultMargin = { top: 0, left: 0, right: 0, bottom: 0 };
 
 export type TreeProps = {
   cellTypeId: string;
@@ -161,7 +183,22 @@ export default function OntologyDagView({
   height,
   margin = defaultMargin,
 }: TreeProps) {
+  const initialTransformMatrixDefault = {
+    scaleX: 1,
+    scaleY: 1,
+    translateX: 10,
+    translateY: height / 2,
+    skewX: 0,
+    skewY: 0,
+  };
+
   const { data: rawTree } = useCellOntologyTree(cellTypeId);
+  const [initialTransformMatrix, setInitialTransformMatrix] = useState<
+    typeof initialTransformMatrixDefault
+  >(initialTransformMatrixDefault);
+  const [centerNodeCoords, setCenterNodeCoords] = useState<
+    [number, number] | null
+  >(null);
 
   const router = useRouter();
   const data = useMemo(() => {
@@ -175,14 +212,48 @@ export default function OntologyDagView({
   // Customize nodeSize and separation
   const nodeSize = [15, 1000 / (data?.height ?? 1)]; // Increase width and height for more spacing
 
-  const initialTransform = {
-    scaleX: 1,
-    scaleY: 1,
-    translateX: 10,
-    translateY: height / 2,
-    skewX: 0,
-    skewY: 0,
-  };
+  useEffect(() => {
+    return () => {
+      setCenterNodeCoords(null);
+      setInitialTransformMatrix(initialTransformMatrixDefault);
+    };
+  }, []);
+
+  useEffect(() => {
+    setCenterNodeCoords(null);
+  }, [cellTypeId]);
+
+  // This effect is used to center the node corresponding to the cell type id
+  // useLayoutEffect is used to ensure that node coordinates have been populated by the renderer prior to painting
+  const useIsomorphicLayoutEffect =
+    typeof window !== "undefined" ? useLayoutEffect : useEffect;
+  useIsomorphicLayoutEffect(() => {
+    if (data) {
+      let targetNode = data
+        .descendants()
+        .find((node) => node.data.id === cellTypeId && node.data.children) as
+        | TreeNodeWithCoords
+        | undefined;
+      if (!targetNode) {
+        targetNode = data
+          .descendants()
+          .find((node) => node.data.id === cellTypeId) as
+          | TreeNodeWithCoords
+          | undefined;
+      }
+      if (targetNode) {
+        setCenterNodeCoords([targetNode.x, targetNode.y]);
+        setInitialTransformMatrix({
+          scaleX: 1,
+          scaleY: 1,
+          translateX: width / 2 - targetNode.y,
+          translateY: height / 2 - targetNode.x,
+          skewX: 0,
+          skewY: 0,
+        });
+      }
+    }
+  }, [data, cellTypeId, width, height]);
 
   return (
     <>
@@ -191,13 +262,14 @@ export default function OntologyDagView({
       </TableTitleWrapper>
       {data ? (
         <Zoom<SVGSVGElement>
+          key={centerNodeCoords ? "centered" : "initial"}
           width={width}
           height={height}
           scaleXMin={0.1}
           scaleXMax={4}
           scaleYMin={0.1}
           scaleYMax={4}
-          initialTransformMatrix={initialTransform}
+          initialTransformMatrix={initialTransformMatrix}
         >
           {(zoom) => (
             <div className="relative">
@@ -225,9 +297,7 @@ export default function OntologyDagView({
                           <Node
                             key={`node-${i}`}
                             node={node}
-                            isTargetNode={
-                              node.data.id.replace("_", ":") === cellTypeId
-                            }
+                            isTargetNode={node.data.id === cellTypeId}
                             handleClick={() => {
                               router.push(
                                 `${ROUTES.CELL_CARDS}/${node.data.id.replace(
