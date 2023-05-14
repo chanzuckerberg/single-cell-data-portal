@@ -67,7 +67,7 @@ describe("SVG download tests", () => {
         folder,
         tissues[i]
       );
-      await deleteDownloadedFiles(`./tests/downloads/${folder}`, page);
+      await deleteDownloadedFiles(`./tests/downloads/${folder}`);
     }
   });
 
@@ -119,7 +119,7 @@ describe("SVG download tests", () => {
         folder,
         tissues[i]
       );
-      await deleteDownloadedFiles(`./tests/downloads/${folder}`, page);
+      await deleteDownloadedFiles(`./tests/downloads/${folder}`);
     }
   });
 });
