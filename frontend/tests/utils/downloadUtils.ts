@@ -2,7 +2,7 @@ import { Page, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
-import { getTestID } from "./selectors";
+import { getById, getTestID } from "./selectors";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL, downLoadPath } from "tests/common/constants";
 import pixelmatch from "pixelmatch";
@@ -367,4 +367,34 @@ async function compareImages(imagePath1: string, imagePath2: string) {
     );
     expect(numDiffPixels).toBeLessThan(20000);
   }
+}
+export async function captureTissueSnapshot(
+  page: Page,
+  downLoadPath: string,
+  folder: string,
+  tissues: string[],
+
+  i: number
+): Promise<void> {
+  const geneCanvasId = '[data-zr-dom-id*="zr"]';
+  const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
+  const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
+
+  const yAxisElement = page.locator(getById(`${tissues[i]}-y-axis`));
+  const box = await yAxisElement.boundingBox();
+  if (!box) {
+    console.error("Element not found");
+    return;
+  }
+
+  await page.setViewportSize({
+    width: box.width * 10,
+    height: box.height * 3,
+  });
+
+  await yAxisElement.screenshot({
+    path: cellSnapshot,
+  });
+
+  await page.locator(geneCanvasId).nth(0).screenshot({ path: geneSnapshot });
 }
