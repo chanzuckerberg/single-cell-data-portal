@@ -13,7 +13,7 @@ const CHEVRON_LEFT = '[data-icon="chevron-left"]';
 const { describe, skip } = test;
 
 describe("Left side bar", () => {
-  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test("Left side bar collapse and expand", async ({ page }) => {
     // navigate to gene expression page
