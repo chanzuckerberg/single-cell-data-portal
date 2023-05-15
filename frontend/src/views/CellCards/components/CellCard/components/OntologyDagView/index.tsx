@@ -21,7 +21,6 @@ import {
 } from "src/common/queries/cellCards";
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
-import { Divider } from "../../style";
 import {
   TableUnavailableContainer,
   TableUnavailableHeader,
