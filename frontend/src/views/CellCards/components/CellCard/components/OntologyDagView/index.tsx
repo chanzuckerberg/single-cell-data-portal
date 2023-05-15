@@ -459,7 +459,6 @@ export default function OntologyDagView({
       <TableTitleWrapper id={ONTOLOGY_SECTION_ID}>
         <TableTitle>Cell Ontology</TableTitle>
       </TableTitleWrapper>
-      <Divider />
       {data ? (
         <Zoom<SVGSVGElement>
           key={centerNodeCoords ? "centered" : "initial"}
