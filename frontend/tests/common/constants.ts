@@ -23,16 +23,18 @@ export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];
 
 export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };
 
-export const SKIP_LOGIN =
-  process.env.SKIP_LOGIN === "true" || process.env.LOGIN === "false" || false;
+export const SKIP_LOGIN = process.env.SKIP_LOGIN === "true" || false;
 
 export const LOGIN_STATE_FILENAME = "loginState.json";
 
-export const SHARED_LINK = `{TEST_URL}/gene-expression?compare=disease&datasets=c874f155-9bf9-4928-b821-f52c876b3e48%2Cdb59611b-42de-4035-93aa-1ed39f38b467%2Ceeacb0c1-2217-4cf6-b8ce-1f0fedf1b569%2C881fe679-c6e0-45a3-9427-c4e81be6921f%2Cea786a06-5855-48b7-80d7-0313a21a2044%2C456e8b9b-f872-488b-871d-94534090a865&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6%2CMALAT1&ver=2`;
+export const SHARED_LINK =
+  "https://localhost:3000/gene-expression?compare=disease&datasets=c874f155-9bf9-4928-b821-f52c876b3e48%2Cdb59611b-42de-4035-93aa-1ed39f38b467%2Ceeacb0c1-2217-4cf6-b8ce-1f0fedf1b569%2C881fe679-c6e0-45a3-9427-c4e81be6921f%2Cea786a06-5855-48b7-80d7-0313a21a2044%2C456e8b9b-f872-488b-871d-94534090a865&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6%2CMALAT1&ver=2";
 
-export const SHARED_LINK_WITHOUT_COMPARE = `{TEST_URL}/gene-expression?datasets=c874f155-9bf9-4928-b821-f52c876b3e48%2Cdb59611b-42de-4035-93aa-1ed39f38b467%2Ceeacb0c1-2217-4cf6-b8ce-1f0fedf1b569%2C881fe679-c6e0-45a3-9427-c4e81be6921f%2Cea786a06-5855-48b7-80d7-0313a21a2044%2C456e8b9b-f872-488b-871d-94534090a865&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6%2CMALAT1&ver=2`;
+export const SHARED_LINK_WITHOUT_COMPARE =
+  "https://localhost:3000/gene-expression?datasets=c874f155-9bf9-4928-b821-f52c876b3e48%2Cdb59611b-42de-4035-93aa-1ed39f38b467%2Ceeacb0c1-2217-4cf6-b8ce-1f0fedf1b569%2C881fe679-c6e0-45a3-9427-c4e81be6921f%2Cea786a06-5855-48b7-80d7-0313a21a2044%2C456e8b9b-f872-488b-871d-94534090a865&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6%2CMALAT1&ver=2";
 
-export const SIMPLE_SHARED_LINK = `{TEST_URL}/gene-expression?tissues=blood%2Clung&genes=DPM1%2CMALAT1%2CTNMD%2CTSPAN6&ver=2`;
+export const SIMPLE_SHARED_LINK =
+  "https://localhost:3000/gene-expression?tissues=blood%2Clung&genes=DPM1%2CMALAT1%2CTNMD%2CTSPAN6&ver=2";
 
 export const ADD_TISSUE_BTN = "add-tissue-btn";
 export const ADD_TISSUE_LBL = "get-started-step-1";

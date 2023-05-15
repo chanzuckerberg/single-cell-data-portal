@@ -2,7 +2,7 @@ import { Page, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
-import { getTestID } from "./selectors";
+import { getById, getTestID } from "./selectors";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL, downLoadPath } from "tests/common/constants";
 import pixelmatch from "pixelmatch";
@@ -83,16 +83,14 @@ export async function downloadAndVerifyFiles(
   });
 }
 
-export function deleteDownloadedFiles(filePath: string) {
-  setTimeout(() => {
-    fs.rmdir(filePath, { recursive: true }, (err) => {
-      if (err) {
-        console.error(`Error deleting folder: ${err}`);
-      } else {
-        console.log("Folder deleted successfully");
-      }
-    });
-  }, 5000); // Wait for 5 seconds because image compare takes time sometimes
+export async function deleteDownloadedFiles(filePath: string) {
+  fs.rmdir(filePath, { recursive: true }, (err) => {
+    if (err) {
+      console.error(`Error deleting folder: ${err}`);
+    } else {
+      console.log("Folder deleted successfully");
+    }
+  });
 }
 
 export interface CsvMetadata {
@@ -301,7 +299,6 @@ export async function downloadGeneFile(
   if (fileName.includes("zip")) {
     const zip = new AdmZip(fileName);
     zip.extractAllTo(dirPath);
-    console.log(dirPath);
   }
 }
 
@@ -319,35 +316,21 @@ export async function compareSvg(
 ): Promise<void> {
   const svg = fs.readFileSync(`${downLoadPath}/${svgFile}`, "utf-8");
   await page.setContent(svg);
-  // Wait for the page to finish loading
-  await page.waitForLoadState("networkidle");
-  const actualCell = `${downLoadPath}/${folder}/${tissue}_1.png`;
-  //const actualGene = `${downLoadPath}/${folder}/${tissue}_gene.png`;
+  const actualCell = `${downLoadPath}/${folder}/${tissue}1.png`;
   await page
     .locator("svg")
     .locator("svg")
     .nth(3)
     .screenshot({ path: actualCell });
+  const actualGene = `${downLoadPath}/${folder}/${tissue}gene.png`;
+
+  // take a picture of dot plot on svg
+  await page.locator('[id="0"]').screenshot({
+    path: actualGene,
+  });
+  compareImages(actualGene, webGeneImage);
+
   compareImages(actualCell, webCellImage);
-
-  //await page.screenshot()).toMatchSnapshot(webGeneImage);
-}
-export function comparePng(actual: string, expected: string) {
-  // Capture the actual screenshot and compare it with the expected screenshot
-  const expectedPng = PNG.sync.read(fs.readFileSync(expected));
-  const actualPng = PNG.sync.read(fs.readFileSync(actual));
-  const { width, height } = expectedPng;
-  const diff = new PNG({ width, height });
-
-  const mismatchedPixels = pixelmatch(
-    expectedPng.data,
-    actualPng.data,
-    diff.data,
-    width,
-    height,
-    { threshold: 0.1 }
-  );
-  expect(mismatchedPixels).toBeLessThan(20000);
 }
 
 async function compareImages(imagePath1: string, imagePath2: string) {
@@ -384,4 +367,34 @@ async function compareImages(imagePath1: string, imagePath2: string) {
     );
     expect(numDiffPixels).toBeLessThan(20000);
   }
+}
+export async function captureTissueSnapshot(
+  page: Page,
+  downLoadPath: string,
+  folder: string,
+  tissues: string[],
+
+  i: number
+): Promise<void> {
+  const geneCanvasId = '[data-zr-dom-id*="zr"]';
+  const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
+  const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
+
+  const yAxisElement = page.locator(getById(`${tissues[i]}-y-axis`));
+  const box = await yAxisElement.boundingBox();
+  if (!box) {
+    console.error("Element not found");
+    return;
+  }
+
+  await page.setViewportSize({
+    width: box.width * 10,
+    height: box.height * 3,
+  });
+
+  await yAxisElement.screenshot({
+    path: cellSnapshot,
+  });
+
+  await page.locator(geneCanvasId).nth(0).screenshot({ path: geneSnapshot });
 }
