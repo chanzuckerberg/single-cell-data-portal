@@ -974,7 +974,6 @@ components:
           $ref: "#/components/schemas/donor_id"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
-          required: true
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
