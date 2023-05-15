@@ -52,7 +52,6 @@ describe("SVG download tests", () => {
     for (let i = 0; i < tissues.length; i++) {
       const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
       const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
-
       // set app state
       await goToWMG(page, SHARED_LINK);
       //download and verify svg file
