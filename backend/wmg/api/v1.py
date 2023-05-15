@@ -364,56 +364,6 @@ def _add_missing_combinations_to_gene_expression_df_for_rollup(
     return gene_expression_with_missing_combos_df
 
 
-def _aggregated_cell_counts_by_tissue_cell_type_with_metadata(
-    cell_counts_grouped_df, compare_col
-) -> Dict[str, Dict[str, Dict[str, Any]]]:
-    """ """
-    tissue_col = "tissue_ontology_term_id"
-    cell_type_col = "cell_type_ontology_term_id"
-    cell_type_name_col = "cell_type_name"
-
-    result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
-
-    df = cell_counts_grouped_df.reset_index()
-    df[cell_type_name_col] = df[cell_type_col].map(lambda x: ontology_term_label(x).lower())
-
-    sort_columns = [tissue_col, cell_type_name_col]
-    if compare_col:
-        sort_columns.append(compare_col)
-    df.sort_values(sort_columns, inplace=True)
-
-    df["n_cell_agg_tissue_cell_type"] = df.groupby([tissue_col, cell_type_name_col], as_index=False)[
-        "n_cells_cell_type"
-    ].transform("sum")
-
-    previous_tissue = previous_cell_type = None
-    order_number = -1
-
-    for _, row in df.iterrows():
-        if (previous_tissue is None) or row[tissue_col] != previous_tissue or row[cell_type_col] != previous_cell_type:
-            order_number += 1
-
-        result[row[tissue_col]][row[cell_type_col]]["aggregated"] = {
-            "cell_type_ontology_term_id": row[cell_type_col],
-            "name": row[cell_type_name_col],
-            "total_count": row["n_cell_agg_tissue_cell_type"],
-            "order": order_number,
-        }
-
-        if compare_col:
-            result[row[tissue_col]][row[cell_type_col]][row[compare_col]] = {
-                "cell_type_ontology_term_id": row[cell_type_col],
-                "name": ontology_term_label(row[compare_col]),
-                "total_count": row["n_cells_cell_type"],
-                "order": order_number,
-            }
-
-        previous_tissue = row[tissue_col]
-        previous_cell_type = row[cell_type_col]
-
-    return result
-
-
 def _build_cell_count_groups_universal_set(cell_counts_grouped_df) -> DataFrame:
     """
     Constructs a dataframe that contains all valid combination of
