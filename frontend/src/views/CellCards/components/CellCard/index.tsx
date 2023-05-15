@@ -125,8 +125,8 @@ export default function CellCard(): JSX.Element {
           />
           <OntologyDagView
             cellTypeId={cellTypeId.replace(":", "_")}
-            width={1000}
-            height={400}
+            width={1040}
+            height={500}
           />
           <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
           <EnrichedGenesTable cellTypeId={cellTypeId} />

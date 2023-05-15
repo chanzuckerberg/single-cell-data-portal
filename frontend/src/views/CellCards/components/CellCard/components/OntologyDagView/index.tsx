@@ -33,7 +33,7 @@ const primaryColor = "#0073FF";
 const secondaryColor = "#999999";
 const tertiaryColor = "#CCCCCC";
 const highlightColor = "#3CB371";
-const white = "#ffffff";
+const white = "#F8F8F8";
 const black = "#000000";
 
 type HierarchyNode = HierarchyPointNode<TreeNode>;
@@ -536,14 +536,23 @@ export default function OntologyDagView({
                 </g>
                 <g>
                   <rect
-                    x={width - 250}
-                    y={0}
+                    x={width - 260}
+                    y={-10}
                     width={240}
-                    height={50}
-                    fill="white"
-                    stroke="black"
-                    strokeWidth={1}
+                    height={60}
+                    fill={white}
+                    //stroke={"none"}
+                    //rx={4}
+                    //strokeWidth={0.5}
                   />
+                  <path
+                    d={`M ${width - 260} ${-10} L ${width - 260} ${45} Q ${
+                      width - 260
+                    } ${50} ${width - 255} ${50} L ${width} ${50}`}
+                    stroke="black"
+                    fill="transparent"
+                  />
+
                   <InCorpusLegend xPos={width - 240} yPos={10} />
                   <DescendantsLegend xPos={width - 160} yPos={10} />
                   <CollapsedNodesLegend xPos={width - 80} yPos={10} />
