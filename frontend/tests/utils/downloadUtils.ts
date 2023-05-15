@@ -81,8 +81,7 @@ export async function downloadAndVerifyFiles(
   });
 }
 
-export async function deleteDownloadedFiles(filePath: string, page: Page) {
-  await page.waitForTimeout(5000);
+export async function deleteDownloadedFiles(filePath: string) {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);

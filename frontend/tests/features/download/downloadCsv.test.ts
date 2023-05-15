@@ -27,7 +27,6 @@ describe("CSV download tests", () => {
     const folder = subDirectory();
     //download  csv file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
-
     // verify csv file
     await verifyCsv(
       page,
@@ -36,6 +35,7 @@ describe("CSV download tests", () => {
       "disease-filter",
       SHARED_LINK_NO_GROUP
     );
+    await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 });
 test(`Should verify CSV metadata and header lung and blood tissue with sex filter applied and group by selected`, async ({
@@ -51,6 +51,7 @@ test(`Should verify CSV metadata and header lung and blood tissue with sex filte
 
   // verify csv file
   await verifyCsv(page, folder, tissues, "sex-filter", SHARED_LINK_FILTER);
+  await deleteDownloadedFiles(`./tests/downloads/${folder}`);
 });
 
 test(`Should verify CSV metadata and header for lung and blood tissue with no filter applied`, async ({
@@ -66,9 +67,5 @@ test(`Should verify CSV metadata and header for lung and blood tissue with no fi
 
   // verify csv file
   await verifyCsv(page, folder, tissues, "no-filter", SHARED_LINK_NO_FILTER);
-});
-
-test.afterAll(async ({ page }) => {
-  //delete csv
-  await deleteDownloadedFiles(`./tests/downloads`, page);
+  await deleteDownloadedFiles(`./tests/downloads/${folder}`);
 });
