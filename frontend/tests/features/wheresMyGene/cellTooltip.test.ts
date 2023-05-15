@@ -7,7 +7,7 @@ const { describe, skip } = test;
 describe("cell tool tip", () => {
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
-  test.only(`Should verify cell tool tip hover`, async ({ page }) => {
+  test(`Should verify cell tool tip hover`, async ({ page }) => {
     // set app state
     const cellName = "cell-type-name";
     await goToWMG(page, SHARED_LINK_FILTER);
