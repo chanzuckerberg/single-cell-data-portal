@@ -463,16 +463,19 @@ export default function OntologyDagView({
           key={centerNodeCoords ? "centered" : "initial"}
           width={width}
           height={height}
-          scaleXMin={0.1}
+          scaleXMin={0.25}
           scaleXMax={4}
-          scaleYMin={0.1}
+          scaleYMin={0.25}
           scaleYMax={4}
           initialTransformMatrix={initialTransformMatrix}
+          wheelDelta={(event: WheelEvent | React.WheelEvent<Element>) => {
+            const newScale = event.deltaY > 0 ? 0.95 : 1.05;
+            return { scaleX: newScale, scaleY: newScale };
+          }}
         >
           {(zoom) => (
             <div
               ref={containerRef}
-              className="relative"
               onMouseDown={() => {
                 hideTooltip();
               }}
@@ -491,7 +494,12 @@ export default function OntologyDagView({
                   </div>
                 </TooltipInPortal>
               )}
-              <svg width={width} height={height} ref={zoom.containerRef}>
+              <svg
+                width={width}
+                height={height}
+                ref={zoom.containerRef}
+                style={{ cursor: zoom.isDragging ? "grabbing" : "grab" }}
+              >
                 <RectClipPath id="zoom-clip" width={width} height={height} />
                 <rect width={width} height={height} rx={14} fill={white} />
                 <g transform={zoom.toString()}>
