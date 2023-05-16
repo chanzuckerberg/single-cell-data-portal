@@ -8,21 +8,17 @@ export interface CellOntologyTree {
   name: string;
   id: string;
   n_cells_rollup: number;
-  n_cells_rollup_normalized: number;
   n_cells: number;
-  n_cells_normalized: number;
-  hasChildren: boolean;
   children?: this[];
+  _children?: this[];
 }
 
 async function fetchOntologyTreeQuery({
-  cellTypeId,
   signal,
 }: {
-  cellTypeId: string;
   signal?: AbortSignal;
 }): Promise<CellOntologyTree | undefined> {
-  const url = `/api/ontology_tree?cellTypeId=${cellTypeId}`;
+  const url = `/api/ontology_tree`;
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -44,12 +40,60 @@ export const USE_CELL_ONTOLOGY_TREE_QUERY = {
   id: "cell-explorer-cell-ontology-tree-query",
 };
 
-export function useCellOntologyTree(
-  cellTypeId: string
-): UseQueryResult<CellOntologyTree> {
+export function useCellOntologyTree(): UseQueryResult<CellOntologyTree> {
   return useQuery(
-    [USE_CELL_ONTOLOGY_TREE_QUERY, cellTypeId],
-    ({ signal }) => fetchOntologyTreeQuery({ cellTypeId, signal }),
+    [USE_CELL_ONTOLOGY_TREE_QUERY],
+    ({ signal }) => fetchOntologyTreeQuery({ signal }),
+    {
+      enabled: true,
+      staleTime: Infinity,
+    }
+  );
+}
+
+// ontology_tree_state
+export interface InitialCellOntologyTreeState {
+  isExpandedNodes: string[];
+  notShownWhenExpandedNodes: {
+    [key: string]: string[];
+  };
+}
+
+async function fetchOntologyTreeStateQuery({
+  cellTypeId,
+  signal,
+}: {
+  cellTypeId: string;
+  signal?: AbortSignal;
+}): Promise<InitialCellOntologyTreeState | undefined> {
+  const url = `/api/ontology_tree_state?cellTypeId=${cellTypeId}`;
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    method: "GET",
+    signal,
+  });
+  if (response.status === 204) return undefined;
+  const json: InitialCellOntologyTreeState = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+
+export const USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY = {
+  entities: [ENTITIES.CELL_EXPLORER_INITIAL_CELL_ONTOLOGY_TREE_STATE],
+  id: "cell-explorer-cell-ontology-tree-query",
+};
+
+export function useCellOntologyTreeState(
+  cellTypeId: string
+): UseQueryResult<InitialCellOntologyTreeState> {
+  return useQuery(
+    [USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY, cellTypeId],
+    ({ signal }) => fetchOntologyTreeStateQuery({ cellTypeId, signal }),
     {
       enabled: true,
       staleTime: Infinity,

@@ -11,6 +11,8 @@ import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
 import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { LinkHorizontal } from "@visx/shape";
+import NodeGroup from "react-move/NodeGroup";
+
 import { TableTitleWrapper, TableTitle } from "../common/style";
 import { ONTOLOGY_SECTION_ID } from "../CellCardSidebar";
 import { Zoom } from "@visx/zoom";
@@ -18,6 +20,7 @@ import { RectClipPath } from "@visx/clip-path";
 import {
   CellOntologyTree as TreeNode,
   useCellOntologyTree,
+  useCellOntologyTreeState,
 } from "src/common/queries/cellCards";
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
@@ -35,46 +38,67 @@ const highlightColor = "#3CB371";
 const white = "#F8F8F8";
 const black = "#000000";
 
-type HierarchyNode = HierarchyPointNode<TreeNode>;
+interface TreeNodeWithState extends TreeNode {
+  isExpanded?: boolean;
+  showAllChildren?: boolean;
+  x0?: number;
+  y0?: number;
+  x?: number;
+  y?: number;
+}
+
+type HierarchyNode = HierarchyPointNode<TreeNodeWithState>;
 
 interface NodeProps {
   node: HierarchyNode;
-  handleClick: MouseEventHandler<SVGGElement>;
+  handleClick?: MouseEventHandler<SVGGElement>;
   isTargetNode: boolean;
   handleMouseOver: (
     event: React.MouseEvent<SVGElement>,
-    datum: TreeNode
+    datum: TreeNodeWithState
   ) => void;
   handleMouseOut: () => void;
-}
-
-interface TreeNodeWithCoords extends TreeNode {
-  x: number;
-  y: number;
+  left: number;
+  top: number;
+  opacity: number;
+  key: string;
 }
 
 function RootNode({
   node,
-  handleClick,
   isTargetNode,
   handleMouseOver,
   handleMouseOut,
+  left,
+  top,
+  key,
+  opacity,
 }: NodeProps) {
+  const router = useRouter();
   return (
     <Group
-      top={node.x}
-      left={node.y}
-      onClick={handleClick}
+      top={top}
+      left={left}
       style={{ cursor: "pointer" }}
+      key={key}
+      opacity={opacity}
     >
       <RectOrCircle
+        key={key}
         node={node.data}
-        handleClick={handleClick}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
       />
-      <Text name={node.data.name} />
+      <g
+        onClick={() => {
+          router.push(`${ROUTES.CELL_CARDS}/${node.data.id.replace(":", "_")}`);
+        }}
+      >
+        <a>
+          <Text name={node.data.name} />
+        </a>
+      </g>
     </Group>
   );
 }
@@ -85,27 +109,41 @@ function ParentNode({
   isTargetNode,
   handleMouseOver,
   handleMouseOut,
+  left,
+  top,
+  key,
+  opacity,
 }: NodeProps) {
+  const router = useRouter();
   return (
-    <Group top={node.x} left={node.y}>
+    <Group top={top} left={left} key={key} opacity={opacity}>
       <RectOrCircle
         node={node.data}
+        key={key}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
       />
-      <Text name={node.data.name} />
+      <g
+        onClick={() => {
+          router.push(`${ROUTES.CELL_CARDS}/${node.data.id.replace(":", "_")}`);
+        }}
+      >
+        <a>
+          <Text name={node.data.name} />
+        </a>
+      </g>
     </Group>
   );
 }
 interface RectOrCircleProps {
-  handleClick: MouseEventHandler<SVGGElement>;
+  handleClick?: MouseEventHandler<SVGGElement>;
   isTargetNode: boolean;
-  node: TreeNode;
+  node: TreeNodeWithState;
   handleMouseOver: (
     event: React.MouseEvent<SVGElement>,
-    datum: TreeNode
+    datum: TreeNodeWithState
   ) => void;
   handleMouseOut: () => void;
 }
@@ -130,27 +168,26 @@ function RectOrCircle({
   const size = node.n_cells === 0 ? smallSize : largeSize;
   let stroke = "none";
   let strokeDasharray;
-  if (node.id === "") {
+  if (node.name === "") {
     color = white;
     stroke = black;
     //strokeDasharray = "1.5";
   }
 
-  const cursor = node.id !== "" ? "pointer" : "default";
-  const clickHandler = node.id !== "" ? handleClick : undefined;
+  const cursor = "pointer";
 
   const onMouseOver =
-    node.id === ""
+    node.name === ""
       ? undefined
       : (event: React.MouseEvent<SVGElement>) => {
           handleMouseOver(event, node);
         };
-  const onMouseOut = node.id === "" ? undefined : handleMouseOut;
-  return node.hasChildren ? (
+  const onMouseOut = node.name === "" ? undefined : handleMouseOut;
+  return node?.children?.length ? (
     <circle
       r={size}
       fill={color}
-      onClick={clickHandler}
+      onClick={handleClick}
       style={{ cursor: cursor }}
       stroke={stroke}
       strokeWidth={0.5}
@@ -165,7 +202,7 @@ function RectOrCircle({
       y={-size}
       x={-size}
       fill={color}
-      onClick={clickHandler}
+      onClick={handleClick}
       style={{ cursor: cursor }}
       stroke={stroke}
       strokeWidth={0.5}
@@ -188,7 +225,6 @@ function Text({ name }: TextProps) {
       textAnchor="left"
       fill={black}
       dx={15}
-      style={{ pointerEvents: "none" }}
     >
       {name}
     </text>
@@ -201,6 +237,10 @@ function Node({
   isTargetNode,
   handleMouseOver,
   handleMouseOut,
+  left,
+  top,
+  key,
+  opacity,
 }: NodeProps) {
   const isRoot = node.depth === 0;
   const isParent = !!node.children;
@@ -209,7 +249,10 @@ function Node({
     return (
       <RootNode
         node={node}
-        handleClick={handleClick}
+        left={left}
+        top={top}
+        key={key}
+        opacity={opacity}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
@@ -219,6 +262,10 @@ function Node({
     return (
       <ParentNode
         node={node}
+        left={left}
+        top={top}
+        opacity={opacity}
+        key={key}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
@@ -226,10 +273,21 @@ function Node({
       />
     );
 
+  const router = useRouter();
+
   return (
-    <Group top={node.x} left={node.y}>
-      <Text name={node.data.name} />
+    <Group top={top} left={left} key={key} opacity={opacity}>
+      <g
+        onClick={() => {
+          router.push(`${ROUTES.CELL_CARDS}/${node.data.id.replace(":", "_")}`);
+        }}
+      >
+        <a>
+          <Text name={node.data.name} />
+        </a>
+      </g>
       <RectOrCircle
+        key={key}
         node={node.data}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
@@ -357,8 +415,21 @@ export default function OntologyDagView({
     skewX: 0,
     skewY: 0,
   };
+  const [triggerRender, setTriggerRender] = useState(false);
+  const { data: rawTree } = useCellOntologyTree();
+  const { data: initialTreeState } = useCellOntologyTreeState(cellTypeId);
+  const expandedNodes = initialTreeState?.isExpandedNodes ?? [];
+  const notShownWhenExpandedNodes =
+    initialTreeState?.notShownWhenExpandedNodes ?? {};
 
-  const { data: rawTree } = useCellOntologyTree(cellTypeId);
+  const treeData: TreeNodeWithState | null = useMemo(() => {
+    const newTree = rawTree ? JSON.parse(JSON.stringify(rawTree)) : null;
+    if (newTree) {
+      setNodesStateInRawTree(newTree, expandedNodes);
+    }
+    return newTree;
+  }, [rawTree, expandedNodes, notShownWhenExpandedNodes]);
+
   const [initialTransformMatrix, setInitialTransformMatrix] = useState<
     typeof initialTransformMatrixDefault
   >(initialTransformMatrixDefault);
@@ -366,17 +437,42 @@ export default function OntologyDagView({
     [number, number] | null
   >(null);
 
-  const router = useRouter();
   const data = useMemo(() => {
-    if (!rawTree) return null;
-    return hierarchy(rawTree);
-  }, [rawTree]);
+    if (!treeData) return null;
+    return hierarchy(treeData, (d) => {
+      const isExpanded = d.isExpanded;
+
+      const newChildren: TreeNodeWithState[] = [];
+      if (isExpanded) {
+        const appendDummy = d.id in notShownWhenExpandedNodes;
+        for (const child of d?.children ?? []) {
+          if (
+            d.showAllChildren ||
+            !appendDummy ||
+            (appendDummy && !notShownWhenExpandedNodes[d.id].includes(child.id))
+          ) {
+            newChildren.push(child);
+          }
+        }
+        if (appendDummy && !d.showAllChildren) {
+          newChildren.push({
+            id: `${d.id}-dummy-child`,
+            name: "",
+            n_cells: 0,
+            n_cells_rollup: 0,
+            isExpanded: false,
+          });
+        }
+      }
+      return newChildren.length ? newChildren : null;
+    });
+  }, [treeData, triggerRender]);
 
   const yMax = height - margin.top - margin.bottom;
   const xMax = width - margin.left - margin.right;
 
   // Customize nodeSize and separation
-  const nodeSize = [15, 1000 / (data?.height ?? 1)]; // Increase width and height for more spacing
+  const nodeSize = [15, 200]; // Increase width and height for more spacing
 
   useEffect(() => {
     setCenterNodeCoords(null);
@@ -396,25 +492,27 @@ export default function OntologyDagView({
       let targetNode = data
         .descendants()
         .find((node) => node.data.id === cellTypeId && node.data.children) as
-        | TreeNodeWithCoords
+        | TreeNodeWithState
         | undefined;
       if (!targetNode) {
         targetNode = data
           .descendants()
           .find((node) => node.data.id === cellTypeId) as
-          | TreeNodeWithCoords
+          | TreeNodeWithState
           | undefined;
       }
       if (targetNode) {
-        setCenterNodeCoords([targetNode.x, targetNode.y]);
-        setInitialTransformMatrix({
-          scaleX: 1,
-          scaleY: 1,
-          translateX: width / 2 - targetNode.y,
-          translateY: height / 2 - targetNode.x,
-          skewX: 0,
-          skewY: 0,
-        });
+        if (targetNode.x && targetNode.y) {
+          setCenterNodeCoords([targetNode.x, targetNode.y]);
+          setInitialTransformMatrix({
+            scaleX: 1,
+            scaleY: 1,
+            translateX: width / 2 - targetNode.y,
+            translateY: height / 2 - targetNode.x,
+            skewX: 0,
+            skewY: 0,
+          });
+        }
       }
     }
   }, [data, cellTypeId, width, height]);
@@ -434,7 +532,7 @@ export default function OntologyDagView({
   });
   const handleMouseOver = (
     event: React.MouseEvent<SVGElement>,
-    datum: TreeNode
+    datum: TreeNodeWithState
   ) => {
     if (event.target instanceof SVGElement) {
       if (event.target.ownerSVGElement !== null) {
@@ -503,39 +601,197 @@ export default function OntologyDagView({
                 <RectClipPath id="zoom-clip" width={width} height={height} />
                 <rect width={width} height={height} rx={14} fill={white} />
                 <g transform={zoom.toString()}>
-                  <Tree<TreeNode>
+                  <Tree<TreeNodeWithState>
                     root={data}
                     size={[yMax, xMax]}
                     nodeSize={nodeSize as [number, number]}
                   >
                     {(tree) => (
                       <Group top={margin.top} left={margin.left}>
-                        {tree.links().map((link, i) => (
-                          <LinkHorizontal
-                            key={`link-${i}`}
-                            data={link}
-                            stroke={secondaryColor}
-                            strokeWidth="1"
-                            fill="none"
-                          />
-                        ))}
-                        {tree.descendants().map((node, i) => (
-                          <Node
-                            key={`node-${i}`}
-                            node={node}
-                            isTargetNode={node.data.id === cellTypeId}
-                            handleMouseOver={handleMouseOver}
-                            handleMouseOut={hideTooltip}
-                            handleClick={() => {
-                              router.push(
-                                `${ROUTES.CELL_CARDS}/${node.data.id.replace(
-                                  ":",
-                                  "_"
-                                )}`
-                              );
-                            }}
-                          />
-                        ))}
+                        <NodeGroup
+                          data={tree.links()}
+                          keyAccessor={(d) =>
+                            `${d.source.data.id}_${d.target.data.id}`
+                          }
+                          start={({ source }) => {
+                            return {
+                              source: {
+                                x: source.data.x0 ?? source.x,
+                                y: source.data.y0 ?? source.y,
+                              },
+                              target: {
+                                x: source.data.x0 ?? source.x,
+                                y: source.data.y0 ?? source.y,
+                              },
+                            };
+                          }}
+                          enter={({ source, target }) => {
+                            return {
+                              source: {
+                                x: [source.x],
+                                y: [source.y],
+                              },
+                              target: {
+                                x: [target.x],
+                                y: [target.y],
+                              },
+                            };
+                          }}
+                          update={({ source, target }) => {
+                            return {
+                              source: {
+                                x: [source.x],
+                                y: [source.y],
+                              },
+                              target: {
+                                x: [target.x],
+                                y: [target.y],
+                              },
+                            };
+                          }}
+                          leave={({ source, target }) => {
+                            const collapsedParent = findCollapsedParent(source);
+                            return collapsedParent
+                              ? {
+                                  source: {
+                                    x: [collapsedParent.data.x0],
+                                    y: [collapsedParent.data.y0],
+                                  },
+                                  target: {
+                                    x: [collapsedParent.data.x0],
+                                    y: [collapsedParent.data.y0],
+                                  },
+                                }
+                              : {
+                                  source: {
+                                    x: [source.x],
+                                    y: [source.y],
+                                  },
+                                  target: {
+                                    x: [target.x],
+                                    y: [target.y],
+                                  },
+                                };
+                          }}
+                        >
+                          {(nodes) => {
+                            return (
+                              <Group>
+                                {nodes.map(({ key, state }) => {
+                                  return (
+                                    <LinkHorizontal
+                                      key={key}
+                                      data={state}
+                                      stroke={secondaryColor}
+                                      strokeWidth="1"
+                                      fill="none"
+                                    />
+                                  );
+                                })}
+                              </Group>
+                            );
+                          }}
+                        </NodeGroup>
+                        <NodeGroup
+                          data={tree.descendants()}
+                          keyAccessor={(
+                            d: HierarchyPointNode<TreeNodeWithState>
+                          ) => d.data.id}
+                          start={(
+                            node: HierarchyPointNode<TreeNodeWithState>
+                          ) => {
+                            return node.parent
+                              ? {
+                                  top: node.parent.x,
+                                  left: node.parent.y,
+                                  opacity: 0,
+                                }
+                              : {
+                                  top: 0,
+                                  left: 0,
+                                  opacity: 0,
+                                };
+                          }}
+                          enter={(
+                            node: HierarchyPointNode<TreeNodeWithState>
+                          ) => {
+                            return {
+                              top: [node.x],
+                              left: [node.y],
+                              opacity: [1],
+                            };
+                          }}
+                          update={(
+                            node: HierarchyPointNode<TreeNodeWithState>
+                          ) => {
+                            return {
+                              top: [node.x],
+                              left: [node.y],
+                              opacity: [1],
+                            };
+                          }}
+                          leave={(
+                            node: HierarchyPointNode<TreeNodeWithState>
+                          ) => {
+                            const collapsedParent = node.parent
+                              ? findCollapsedParent(node.parent)
+                              : null;
+                            const collapsedParentPrevPos = collapsedParent
+                              ? {
+                                  x: collapsedParent.data.x0,
+                                  y: collapsedParent.data.y0,
+                                }
+                              : {
+                                  x: 0,
+                                  y: 0,
+                                };
+                            return {
+                              top: [collapsedParentPrevPos.x],
+                              left: [collapsedParentPrevPos.y],
+                              opacity: [0],
+                            };
+                          }}
+                        >
+                          {(nodes) => {
+                            return (
+                              <Group>
+                                {nodes.map(({ key, data: node, state }) => (
+                                  <Node
+                                    key={key}
+                                    node={node}
+                                    isTargetNode={
+                                      node.data.id.split("__").at(0) ===
+                                      cellTypeId
+                                    }
+                                    handleMouseOver={handleMouseOver}
+                                    handleMouseOut={hideTooltip}
+                                    left={state.left}
+                                    top={state.top}
+                                    opacity={state.opacity}
+                                    handleClick={() => {
+                                      if (!node.data.isExpanded) {
+                                        node.data.x0 = node.x;
+                                        node.data.y0 = node.y;
+                                      }
+                                      if (node.data.name === "") {
+                                        if (node.parent) {
+                                          node.parent.data.showAllChildren =
+                                            true;
+                                        }
+                                      }
+                                      node.data.isExpanded =
+                                        !node.data.isExpanded;
+                                      if (!node.data.isExpanded) {
+                                        node.data.showAllChildren = false;
+                                      }
+                                      setTriggerRender(!triggerRender);
+                                    }}
+                                  />
+                                ))}
+                              </Group>
+                            );
+                          }}
+                        </NodeGroup>
                       </Group>
                     )}
                   </Tree>
@@ -547,9 +803,6 @@ export default function OntologyDagView({
                     width={240}
                     height={60}
                     fill={white}
-                    //stroke={"none"}
-                    //rx={4}
-                    //strokeWidth={0.5}
                   />
                   <path
                     d={`M ${width - 260} ${-10} L ${width - 260} ${45} Q ${
@@ -580,4 +833,28 @@ export default function OntologyDagView({
       )}
     </>
   );
+}
+
+function setNodesStateInRawTree(
+  graph: TreeNodeWithState,
+  isExpandedNodes: string[]
+) {
+  graph.isExpanded = isExpandedNodes.includes(graph.id);
+  if (graph.children) {
+    for (const child of graph.children) {
+      setNodesStateInRawTree(child, isExpandedNodes);
+    }
+  }
+}
+
+export function findCollapsedParent(
+  node: HierarchyPointNode<TreeNodeWithState>
+): HierarchyPointNode<TreeNodeWithState> | null {
+  if (!node.data.isExpanded) {
+    return node;
+  } else if (node.parent) {
+    return findCollapsedParent(node.parent);
+  } else {
+    return null;
+  }
 }

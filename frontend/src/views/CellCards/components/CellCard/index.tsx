@@ -61,6 +61,12 @@ export default function CellCard(): JSX.Element {
   };
 
   useEffect(() => {
+    const element = document.getElementById("global-layout-wrapper");
+    if (element) {
+      element.scrollTo(0, 0);
+    }
+  }, [cellTypeId]);
+  useEffect(() => {
     if (
       (selectedDescription === "OLS v4" && descriptionOls === "") ||
       (selectedDescription === "Wikipedia" && descriptionWiki === "")
