@@ -555,7 +555,7 @@ export default function OntologyDagView({
           | undefined;
       }
       if (targetNode) {
-        if (targetNode.x && targetNode.y) {
+        if (targetNode.x !== undefined && targetNode.y !== undefined) {
           setCenterNodeCoords([targetNode.x, targetNode.y]);
           setInitialTransformMatrix({
             scaleX: 1,
@@ -569,7 +569,6 @@ export default function OntologyDagView({
       }
     }
   }, [data, cellTypeId, width, height]);
-
   const {
     tooltipData,
     tooltipLeft,
