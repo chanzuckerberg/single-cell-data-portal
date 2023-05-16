@@ -158,7 +158,9 @@ export default function GeneSearchBar({
               }
             }}
           >
-            <StyledClearButton>Clear Genes</StyledClearButton>
+            <StyledClearButton data-testid="clear-genes-button">
+              Clear Genes
+            </StyledClearButton>
           </div>
         )}
 
