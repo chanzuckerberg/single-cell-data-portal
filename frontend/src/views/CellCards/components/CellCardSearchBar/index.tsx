@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -18,6 +18,10 @@ export default function CellCardSearchBar(): JSX.Element {
 
   const [open, setOpen] = useState(false);
 
+  // Used for keyboard navigation for cell type search
+  const [highlightedCellType, setHighlightedCellType] =
+    useState<CellType | null>(null);
+
   const handleFocus = () => {
     setOpen(true);
   };
@@ -26,10 +30,26 @@ export default function CellCardSearchBar(): JSX.Element {
     setOpen(false);
   };
 
+  function changeCellType(cellTypeId: string) {
+    if (cellTypeId) {
+      router.push(`${ROUTES.CELL_CARDS}/${cellTypeId.replace(":", "_")}`);
+      document.getElementById("cell-cards-search-bar")?.blur();
+    }
+  }
+
   return (
     <div>
       <StyledAutocomplete
         open={open}
+        onKeyDown={(event) => {
+          if (highlightedCellType && event.key === "Enter") {
+            changeCellType(highlightedCellType.id);
+          }
+        }}
+        onHighlightChange={(_, value) => {
+          const cellType = value as CellType;
+          setHighlightedCellType(cellType);
+        }}
         disablePortal
         id="cell-cards-search-bar"
         options={cellTypes ?? []}
@@ -49,17 +69,14 @@ export default function CellCardSearchBar(): JSX.Element {
             label="Search cell types or tissues"
           />
         )}
-        renderOption={(_, option) => {
+        renderOption={(props, option) => {
           const cellType = option as CellType;
           return (
             <SectionItem
+              {...props}
               key={cellType.id}
               onClick={() => {
-                router.push(
-                  `${ROUTES.CELL_CARDS}/${cellType.id.replace(":", "_")}`
-                );
-                document.getElementById("cell-cards-search-bar")?.blur();
-                setOpen(false);
+                changeCellType(cellType.id);
               }}
             >
               {cellType.label}
@@ -70,9 +87,13 @@ export default function CellCardSearchBar(): JSX.Element {
         filterOptions={(options, state) => {
           return options
             .filter((option) => {
-              return (option as CellType).label
-                .toLowerCase()
-                .includes(state.inputValue.toLowerCase());
+              const cellType = option as CellType;
+              return (
+                cellType.label &&
+                cellType.label
+                  .toLowerCase()
+                  .includes(state.inputValue.toLowerCase())
+              );
             })
             .sort((cellTypeA, cellTypeB) => {
               const aRaw = (cellTypeA as CellType).label;

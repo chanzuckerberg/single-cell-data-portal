@@ -37,7 +37,7 @@ export const SectionTitle = styled.div`
   }}
 `;
 
-export const SectionItem = styled.div`
+export const SectionItem = styled.li`
   ${fontBodyXs}
   font-weight: 400;
   margin-bottom: 12px;
