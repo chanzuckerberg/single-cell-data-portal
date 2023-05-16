@@ -350,7 +350,7 @@ export function useDescription(cellTypeId: string): UseQueryResult<string> {
   );
 }
 
-// cell_cards
+// cell_guides
 interface CellCardsQueryResponseEntry {
   id: string;
   label: string;
@@ -361,7 +361,7 @@ type CellCardsQueryResponse = CellCardsQueryResponseEntry[];
 async function fetchCellCardsQuery(
   signal?: AbortSignal
 ): Promise<CellCardsQueryResponse | undefined> {
-  const url = "/api/cell_cards";
+  const url = "/api/cell_guides";
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,

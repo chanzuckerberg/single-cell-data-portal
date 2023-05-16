@@ -9,7 +9,6 @@ import {
   CellCardsView,
 } from "./style";
 import { useCellTypesById } from "src/common/queries/cellCards";
-import { SelectChangeEvent } from "@mui/material/Select";
 import Description from "./components/Description";
 import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
 import EnrichedGenesTable from "./components/EnrichedGenesTable";
@@ -17,28 +16,12 @@ import SourceDataTable from "./components/SourceDataTable";
 import CellCardSidebar, {
   INTRO_SECTION_ID,
 } from "./components/CellCardSidebar";
-import DropdownSelect from "./components/common/DropdownSelect";
 import OntologyDagView from "./components/OntologyDagView";
 
 // enum of available descriptions
-type DescriptionOptions = "GPT3.5" | "Wikipedia" | "OLS v4";
-const availableDescriptions: DescriptionOptions[] = [
-  "GPT3.5",
-  "Wikipedia",
-  "OLS v4",
-];
 
 export default function CellCard(): JSX.Element {
   const router = useRouter();
-
-  // descriptions
-  const [selectedDescription, setSelectedDescription] =
-    useState<DescriptionOptions>("GPT3.5");
-  const [descriptionGpt, setDescriptionGpt] = useState<string>("");
-  const [descriptionWiki, setDescriptionWiki] = useState<string>("");
-  const [descriptionOls, setDescriptionOls] = useState<string>("");
-  const [descriptionOlsReference, setDescriptionOlsReference] =
-    useState<string>("");
 
   // cell type id
   const { cellTypeId: cellTypeIdRaw } = router.query;
@@ -46,48 +29,12 @@ export default function CellCard(): JSX.Element {
   const cellTypesById = useCellTypesById() ?? {};
   const cellTypeName = cellTypesById[cellTypeId] ?? "";
 
-  const available = availableDescriptions.filter((description) => {
-    if (description === "GPT3.5") {
-      return descriptionGpt !== "";
-    } else if (description === "Wikipedia") {
-      return descriptionWiki !== "";
-    } else if (description === "OLS v4") {
-      return descriptionOls !== "";
-    }
-  });
-
-  const handleChange = (event: SelectChangeEvent) => {
-    setSelectedDescription(event.target.value as DescriptionOptions);
-  };
-
   useEffect(() => {
     const element = document.getElementById("global-layout-wrapper");
     if (element) {
       element.scrollTo(0, 0);
     }
   }, [cellTypeId]);
-  useEffect(() => {
-    if (
-      (selectedDescription === "OLS v4" && descriptionOls === "") ||
-      (selectedDescription === "Wikipedia" && descriptionWiki === "")
-    )
-      setSelectedDescription("GPT3.5");
-  }, [cellTypeId, selectedDescription, descriptionWiki, descriptionOls]);
-
-  // For testing purposes in the prototype, we will have multiple kinds of descriptions
-  // This codepath will be simplified once we settle on a particular description.
-  const descriptions = {
-    descriptionGpt,
-    descriptionWiki,
-    descriptionOls,
-    descriptionOlsReference,
-  };
-  const setDescriptions = {
-    setDescriptionGpt,
-    setDescriptionWiki,
-    setDescriptionOls,
-    setDescriptionOlsReference,
-  };
 
   return (
     <>
@@ -116,19 +63,9 @@ export default function CellCard(): JSX.Element {
               color="gray"
               hover={false}
             />
-
-            <DropdownSelect
-              handleChange={handleChange}
-              options={available}
-              selectedOption={selectedDescription}
-            />
           </CellCardHeader>
           <Divider />
-          <Description
-            selectedDescription={selectedDescription}
-            descriptions={descriptions}
-            setDescriptions={setDescriptions}
-          />
+          <Description />
           <OntologyDagView
             cellTypeId={cellTypeId.replace(":", "_")}
             width={1040}

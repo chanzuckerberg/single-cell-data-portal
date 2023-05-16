@@ -5,7 +5,7 @@ export default function LandingPage(): JSX.Element {
   return (
     <Wrapper>
       <StyledHeader>
-        CellCards is a comprehensive resource for knowledge about cell types
+        CellGuide is a comprehensive resource for knowledge about cell types
       </StyledHeader>
       <CellCardSearchBar />
     </Wrapper>

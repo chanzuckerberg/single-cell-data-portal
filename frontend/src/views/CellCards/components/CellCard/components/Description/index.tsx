@@ -1,60 +1,23 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { CellCardDescription } from "./style";
-import {
-  useDescription,
-  useWikipediaDescription,
-} from "src/common/queries/cellCards";
+import { useDescription } from "src/common/queries/cellCards";
 
-// enum of available descriptions
-type DescriptionOptions = "GPT3.5" | "Wikipedia" | "OLS v4";
+export default function Description(): JSX.Element {
+  const [descriptionGpt, setDescriptionGpt] = useState<string>("");
+  const [descriptionOls, setDescriptionOls] = useState<string>("");
+  const [descriptionOlsReference, setDescriptionOlsReference] =
+    useState<string>("");
 
-interface Props {
-  selectedDescription: DescriptionOptions;
-  descriptions: {
-    descriptionGpt: string;
-    descriptionWiki: string;
-    descriptionOls: string;
-    descriptionOlsReference: string;
-  };
-  setDescriptions: {
-    setDescriptionGpt: (descriptionGpt: string) => void;
-    setDescriptionWiki: (descriptionWiki: string) => void;
-    setDescriptionOls: (descriptionOls: string) => void;
-    setDescriptionOlsReference: (descriptionOlsReference: string) => void;
-  };
-}
-
-export default function Description({
-  selectedDescription,
-  descriptions,
-  setDescriptions,
-}: Props): JSX.Element {
   const router = useRouter();
-  const {
-    descriptionGpt,
-    descriptionWiki,
-    descriptionOls,
-    descriptionOlsReference,
-  } = descriptions;
-  const {
-    setDescriptionGpt,
-    setDescriptionWiki,
-    setDescriptionOls,
-    setDescriptionOlsReference,
-  } = setDescriptions;
-
   const { cellTypeId: cellTypeIdRaw } = router.query;
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
 
   const { data: rawDescriptionGpt } = useDescription(cellTypeId);
-  const { data: rawDescriptionWiki } = useWikipediaDescription(cellTypeId);
 
   useEffect(() => {
     if (rawDescriptionGpt) setDescriptionGpt(rawDescriptionGpt);
     else setDescriptionGpt("");
-    if (rawDescriptionWiki) setDescriptionWiki(rawDescriptionWiki.content);
-    else setDescriptionWiki("");
 
     // hardcoding this for now
     const olsUrl = `
@@ -78,35 +41,42 @@ export default function Description({
         }
       });
     }
-  }, [cellTypeIdRaw, rawDescriptionGpt, rawDescriptionWiki]);
+  }, [cellTypeIdRaw, rawDescriptionGpt]);
 
   return (
     <>
-      {selectedDescription === "GPT3.5" && (
+      {descriptionOls && (
         <CellCardDescription>
           <b>
             <i>
-              {
-                "These summaries are produced by ChatGPT. ChatGPT may produce inaccurate information about people, places, or facts. Alternate sources can be selected above.\n\n"
-              }
+              The below summary is sourced from the{" "}
+              <a href="https://www.ebi.ac.uk/ols/ontologies/cl" target="_blank">
+                Ontology Lookup Service
+              </a>{" "}
+              (OLS v4).{"\n\n"}
             </i>
           </b>
-          {descriptionGpt}
-        </CellCardDescription>
-      )}
-      {descriptionOls && selectedDescription === "OLS v4" && (
-        <CellCardDescription>
-          {descriptionOls}{" "}
+          {descriptionOls}
+          {" ("}
           {descriptionOlsReference && (
             <a href={descriptionOlsReference} target="_blank">
-              {" (Reference)"}{" "}
+              {"Reference"}
             </a>
           )}
+          {")"}
         </CellCardDescription>
       )}
-      {descriptionWiki && selectedDescription === "Wikipedia" && (
-        <CellCardDescription>{descriptionWiki}</CellCardDescription>
-      )}
+      <br />
+      <CellCardDescription>
+        <b>
+          <i>
+            {
+              "The below summary is produced by ChatGPT. ChatGPT may produce inaccurate information about people, places, or facts. Alternate sources can be selected above.\n\n"
+            }
+          </i>
+        </b>
+        {descriptionGpt}
+      </CellCardDescription>
     </>
   );
 }
