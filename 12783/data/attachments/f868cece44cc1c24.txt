@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0mnavigating to "https://localhost:3000/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" [38;5;45m+100ms[0m
