@@ -16,7 +16,6 @@ import SourceDataTable from "./components/SourceDataTable";
 import CellCardSidebar, {
   INTRO_SECTION_ID,
 } from "./components/CellCardSidebar";
-import OntologyDagView from "./components/OntologyDagView";
 
 // enum of available descriptions
 
@@ -66,11 +65,6 @@ export default function CellCard(): JSX.Element {
           </CellCardHeader>
           <Divider />
           <Description />
-          <OntologyDagView
-            cellTypeId={cellTypeId.replace(":", "_")}
-            width={1040}
-            height={500}
-          />
           <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
           <EnrichedGenesTable cellTypeId={cellTypeId} />
           <SourceDataTable cellTypeId={cellTypeId} />
