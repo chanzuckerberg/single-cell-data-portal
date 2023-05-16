@@ -17,6 +17,7 @@ export default function CellCardSearchBar(): JSX.Element {
   const { data: cellTypes } = useCellTypes();
 
   const [open, setOpen] = useState(false);
+  const [inputValue, setValue] = useState("");
 
   // Used for keyboard navigation for cell type search
   const [highlightedCellType, setHighlightedCellType] =
@@ -34,6 +35,7 @@ export default function CellCardSearchBar(): JSX.Element {
     if (cellTypeId) {
       router.push(`${ROUTES.CELL_CARDS}/${cellTypeId.replace(":", "_")}`);
       document.getElementById("cell-cards-search-bar")?.blur();
+      setOpen(false);
     }
   }
 
@@ -41,6 +43,11 @@ export default function CellCardSearchBar(): JSX.Element {
     <div>
       <StyledAutocomplete
         open={open}
+        value={inputValue}
+        onChange={() => {
+          // Clears the input after selection
+          setValue("");
+        }}
         onKeyDown={(event) => {
           if (highlightedCellType && event.key === "Enter") {
             changeCellType(highlightedCellType.id);
