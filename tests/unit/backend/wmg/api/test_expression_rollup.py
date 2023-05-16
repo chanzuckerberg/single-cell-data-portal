@@ -59,7 +59,7 @@ class TestLowLevelRollupFunctionsTraversingCellTypeLineage(unittest.TestCase):
 
 def _create_cell_counts_df_helper(cell_counts_rows: list[list], columns: list[str], index_cols: list[str]) -> DataFrame:
     cell_counts_df = pd.DataFrame(cell_counts_rows, columns=columns)
-    cell_counts_df = cell_counts_df.set_index(index_cols)
+    cell_counts_df = cell_counts_df.set_index(index_cols, verify_integrity=True)
     return cell_counts_df
 
 
