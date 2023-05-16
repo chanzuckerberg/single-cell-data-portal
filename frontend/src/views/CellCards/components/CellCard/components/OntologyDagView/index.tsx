@@ -417,6 +417,7 @@ export default function OntologyDagView({
     skewY: 0,
   };
   const [triggerRender, setTriggerRender] = useState(false);
+  const [initialHeight, setInitialHeight] = useState(1);
   const { data: rawTree } = useCellOntologyTree();
   const { data: initialTreeState } = useCellOntologyTreeState(cellTypeId);
   const expandedNodes = initialTreeState?.isExpandedNodes ?? [];
@@ -472,9 +473,6 @@ export default function OntologyDagView({
   const yMax = height - margin.top - margin.bottom;
   const xMax = width - margin.left - margin.right;
 
-  // Customize nodeSize and separation
-  const nodeSize = [15, 200]; // Increase width and height for more spacing
-
   useEffect(() => {
     setCenterNodeCoords(null);
     return () => {
@@ -483,6 +481,15 @@ export default function OntologyDagView({
       hideTooltip();
     };
   }, [cellTypeId]);
+
+  useEffect(() => {
+    if (initialHeight === 1 && data) {
+      setInitialHeight(data.height);
+    }
+  }, [initialHeight, data]);
+
+  // Customize nodeSize and separation
+  const nodeSize = [15, 1000 / initialHeight]; // Increase width and height for more spacing
 
   // This effect is used to center the node corresponding to the cell type id
   // useLayoutEffect is used to ensure that node coordinates have been populated by the renderer prior to painting
@@ -786,6 +793,7 @@ export default function OntologyDagView({
                                         !node.data.isExpanded;
                                       if (!node.data.isExpanded) {
                                         node.data.showAllChildren = false;
+                                        collapseAllDescendants(node);
                                       }
                                       setTriggerRender(!triggerRender);
                                     }}
@@ -859,5 +867,14 @@ export function findCollapsedParent(
     return findCollapsedParent(node.parent);
   } else {
     return null;
+  }
+}
+
+function collapseAllDescendants(node: HierarchyPointNode<TreeNodeWithState>) {
+  if (node.children) {
+    for (const child of node.children) {
+      child.data.isExpanded = false;
+      collapseAllDescendants(child);
+    }
   }
 }
