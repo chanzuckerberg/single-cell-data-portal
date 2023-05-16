@@ -13,4 +13,5 @@ export enum ROUTES {
   WMG_DOCS = "/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_1__Get%20Started",
   FMG_DOCS = "/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_5__Find%20Marker%20Genes",
   SITEMAP = "/sitemap",
+  CELL_CARDS = "/cell-cards",
 }
