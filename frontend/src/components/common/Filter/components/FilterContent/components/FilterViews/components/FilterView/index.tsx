@@ -1,3 +1,4 @@
+import { ListSubheader } from "czifui";
 import React, { useEffect, useRef, useState } from "react";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
@@ -7,7 +8,6 @@ import {
 } from "src/components/common/Filter/common/entities";
 import {
   ViewDivider,
-  ViewHeader,
   ViewPanel,
   ViewPanelScroll,
 } from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView/style";
@@ -15,7 +15,7 @@ import FilterViewList from "src/components/common/Filter/components/FilterConten
 import FilterSearch from "src/components/common/Filter/components/FilterSearch";
 import { useFilterSearch } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 
-const ADDITIONAL_PANEL_WIDTH = 8;
+const ADDITIONAL_PANEL_WIDTH = 24;
 
 export const MAX_DISPLAYABLE_LIST_ITEMS = {
   NON_SINGLETON: 15,
@@ -88,7 +88,9 @@ export default function FilterView({
             isZerosVisible={isZerosVisible}
             onFilter={onFilter}
             values={filteredValues}
-            ViewHeader={label ? <ViewHeader>{label}</ViewHeader> : undefined}
+            ViewHeader={
+              label ? <ListSubheader>{label}</ListSubheader> : undefined
+            }
           />
         </ViewPanelScroll>
       </ViewPanel>

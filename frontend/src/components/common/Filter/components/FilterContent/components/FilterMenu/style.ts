@@ -1,9 +1,6 @@
-import { Classes, MenuItem } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import Divider from "@mui/material/Divider";
-import { CommonThemeProps } from "czifui";
-import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-import { scrollbar } from "../../../../common/style";
+import { CommonThemeProps, getSpaces } from "czifui";
+import { scrollbar } from "src/components/common/Filter/components/FilterContent/components/common/style";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
 const DIVIDER_HEIGHT_PX = 9;
@@ -14,58 +11,27 @@ const MAX_MENU_HEIGHT_PX =
 const MAX_DIVIDED_MENU_HEIGHT_PX =
   MAX_MENU_HEIGHT_PX +
   DIVIDER_HEIGHT_PX; /* Divided menu - max undivided menu height, plus divider height. */
+const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
 
-interface Props {
+interface Props extends CommonThemeProps {
+  isMenuDivided: boolean;
   menuWidth: number;
+  scrollable: boolean;
 }
 
-interface MenuListProps extends CommonThemeProps {
-  isMenuDivided?: boolean;
-}
+export const FilterMenu = styled.span<Props>`
+  min-width: ${(props) =>
+    `${props.menuWidth}px`}; /* maintains menu width when filtering menu items */
+  padding: ${spacesXs}px;
 
-export const MenuWrapper = styled.span<Props>`
-  .${Classes.MENU} {
-    min-width: ${(props) =>
-      `${props.menuWidth}px`}; /* overrides BP menu min-width specification; maintains menu width when filtering menu items */
-    padding: 6px;
-
-    li {
-      margin: 0; /* overrides margin from layout.css */
-
-      &:focus {
-        outline: none;
-      }
-    }
-  }
-`;
-
-export const MenuItemsWrapper = styled.div<MenuListProps>`
-  max-height: ${({ isMenuDivided = false }) =>
-    isMenuDivided
-      ? `${MAX_DIVIDED_MENU_HEIGHT_PX}px`
-      : `${MAX_MENU_HEIGHT_PX}px`};
-  overflow-y: auto;
-  padding-right: 6px;
-  ${scrollbar}
-`;
-
-export const MenuDivider = styled(Divider)`
-  background-color: ${PT_TEXT_COLOR};
-  opacity: 0.15;
-  margin: 4px 0;
-`;
-
-export const NoMatches = styled(MenuItem)`
-  && {
-    color: ${GRAY.A};
-    letter-spacing: -0.1px;
-    line-height: 18px;
-    padding: 7px 8px;
-
-    &:hover {
-      background-color: transparent;
-      color: ${GRAY.A};
-      cursor: default;
-    }
+  .MuiList-root {
+    max-height: ${({ isMenuDivided }) =>
+      isMenuDivided
+        ? `${MAX_DIVIDED_MENU_HEIGHT_PX}px`
+        : `${MAX_MENU_HEIGHT_PX}px`};
+    overflow-y: auto;
+    padding-right: ${(props) =>
+      props.scrollable ? `${spacesXs(props)}px` : undefined};
+    ${scrollbar}
   }
 `;
