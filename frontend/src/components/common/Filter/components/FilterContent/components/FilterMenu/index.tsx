@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Divider } from "@mui/material";
+import { List } from "czifui";
 import {
   CATEGORY_FILTER_ID,
   OnFilterFn,
@@ -8,10 +9,7 @@ import {
 import FilterMenuItems from "src/components/common/Filter/components/FilterContent/components/FilterMenu/components/FilterMenuItems";
 import FilterSearch from "src/components/common/Filter/components/FilterSearch";
 import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
-import {
-  List,
-  NoMatches,
-} from "src/components/common/Filter/components/FilterContent/components/common/style";
+import { NoMatches } from "src/components/common/Filter/components/FilterContent/components/common/style";
 import { FilterMenu as Menu, MAX_DISPLAYABLE_MENU_ITEMS } from "./style";
 
 interface Props {

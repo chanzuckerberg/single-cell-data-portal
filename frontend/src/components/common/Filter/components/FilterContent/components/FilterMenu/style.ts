@@ -1,6 +1,14 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, getSpaces } from "czifui";
-import { scrollbar } from "src/components/common/Filter/components/FilterContent/components/common/style";
+import {
+  listCss,
+  listItemButtonCss,
+  listItemCss,
+  listItemDividerCss,
+  listItemIconCss,
+  listItemTextCss,
+  scrollbar,
+} from "src/components/common/Filter/components/FilterContent/components/common/style";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
 const DIVIDER_HEIGHT_PX = 9;
@@ -25,6 +33,8 @@ export const FilterMenu = styled.span<Props>`
   padding: ${spacesXs}px;
 
   .MuiList-root {
+    ${listCss}
+    ${scrollbar}
     max-height: ${({ isMenuDivided }) =>
       isMenuDivided
         ? `${MAX_DIVIDED_MENU_HEIGHT_PX}px`
@@ -32,6 +42,34 @@ export const FilterMenu = styled.span<Props>`
     overflow-y: auto;
     padding-right: ${(props) =>
       props.scrollable ? `${spacesXs(props)}px` : undefined};
-    ${scrollbar}
+
+    li {
+      ${listItemCss}
+      ${listItemButtonCss}
+      display: flex;
+      cursor: pointer;
+
+      /* "No Matches" menu item */
+
+      &.MuiListItem-root {
+        cursor: default;
+
+        &:hover {
+          background-color: transparent;
+        }
+      }
+
+      .MuiListItemIcon-root {
+        ${listItemIconCss}
+      }
+
+      .MuiListItemText-root {
+        ${listItemTextCss}
+      }
+    }
+
+    .MuiDivider-root {
+      ${listItemDividerCss}
+    }
   }
 `;

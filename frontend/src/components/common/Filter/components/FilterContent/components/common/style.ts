@@ -60,6 +60,14 @@ export const listItemButtonCss = (props: CommonThemeProps) => {
   return css`
     padding: ${spacesXs(props)}px ${spacesS(props)}px;
 
+    &:hover {
+      background-color: ${grey100(props)};
+    }
+  `;
+};
+
+export const listItemButtonSelectedCss = (props: CommonThemeProps) => {
+  return css`
     &.Mui-selected {
       background-color: transparent;
 
@@ -68,10 +76,6 @@ export const listItemButtonCss = (props: CommonThemeProps) => {
           font-weight: ${semibold(props)};
         }
       }
-    }
-
-    &:hover {
-      background-color: ${grey100(props)};
     }
   `;
 };
@@ -153,6 +157,7 @@ export const List = styled(SDSList)`
       ${listItemCss}
       .MuiButtonBase-root {
         ${listItemButtonCss}
+        ${listItemButtonSelectedCss}
         .MuiListItemIcon-root {
           ${listItemIconCss}
         }
