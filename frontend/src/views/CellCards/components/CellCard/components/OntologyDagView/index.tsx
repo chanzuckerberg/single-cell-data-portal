@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useState,
   useLayoutEffect,
+  useRef,
 } from "react";
 import { Group } from "@visx/group";
 import { localPoint } from "@visx/event";
@@ -61,7 +62,8 @@ interface NodeProps {
   left: number;
   top: number;
   opacity: number;
-  key: string;
+  animationKey: string;
+  maxWidth: number;
 }
 
 function RootNode({
@@ -71,8 +73,9 @@ function RootNode({
   handleMouseOut,
   left,
   top,
-  key,
+  animationKey,
   opacity,
+  maxWidth,
 }: NodeProps) {
   const router = useRouter();
   return (
@@ -80,11 +83,11 @@ function RootNode({
       top={top}
       left={left}
       style={{ cursor: "pointer" }}
-      key={key}
+      key={animationKey}
       opacity={opacity}
     >
       <RectOrCircle
-        key={key}
+        animationKey={animationKey}
         node={node.data}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
@@ -92,11 +95,16 @@ function RootNode({
       />
       <g
         onClick={() => {
-          router.push(`${ROUTES.CELL_CARDS}/${node.data.id.replace(":", "_")}`);
+          router.push(
+            `${ROUTES.CELL_CARDS}/${node.data.id
+              .replace(":", "_")
+              .split("__")
+              .at(0)}`
+          );
         }}
       >
         <a>
-          <Text name={node.data.name} />
+          <Text name={node.data.name} maxWidth={maxWidth} />
         </a>
       </g>
     </Group>
@@ -111,15 +119,16 @@ function ParentNode({
   handleMouseOut,
   left,
   top,
-  key,
+  animationKey,
   opacity,
+  maxWidth,
 }: NodeProps) {
   const router = useRouter();
   return (
-    <Group top={top} left={left} key={key} opacity={opacity}>
+    <Group top={top} left={left} key={animationKey} opacity={opacity}>
       <RectOrCircle
         node={node.data}
-        key={key}
+        animationKey={animationKey}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
@@ -127,11 +136,16 @@ function ParentNode({
       />
       <g
         onClick={() => {
-          router.push(`${ROUTES.CELL_CARDS}/${node.data.id.replace(":", "_")}`);
+          router.push(
+            `${ROUTES.CELL_CARDS}/${node.data.id
+              .replace(":", "_")
+              .split("__")
+              .at(0)}`
+          );
         }}
       >
         <a>
-          <Text name={node.data.name} />
+          <Text name={node.data.name} maxWidth={maxWidth} />
         </a>
       </g>
     </Group>
@@ -146,6 +160,7 @@ interface RectOrCircleProps {
     datum: TreeNodeWithState
   ) => void;
   handleMouseOut: () => void;
+  animationKey: string;
 }
 
 const smallSize = 4;
@@ -157,6 +172,7 @@ function RectOrCircle({
   isTargetNode,
   handleMouseOver,
   handleMouseOut,
+  animationKey,
 }: RectOrCircleProps) {
   let color = tertiaryColor;
   if (node.n_cells > 0) {
@@ -166,15 +182,9 @@ function RectOrCircle({
     color = highlightColor;
   }
   const size = node.n_cells === 0 ? smallSize : largeSize;
-  let stroke = "none";
-  let strokeDasharray;
   if (node.id.startsWith("dummy-child")) {
-    color = white;
-    stroke = black;
-    //strokeDasharray = "1.5";
+    color = primaryColor;
   }
-
-  const cursor = "pointer";
 
   const onMouseOver = node.id.startsWith("dummy-child")
     ? undefined
@@ -184,15 +194,14 @@ function RectOrCircle({
   const onMouseOut = node.name.startsWith("dummy-child")
     ? undefined
     : handleMouseOut;
-  return node?.children?.length ? (
+  return node?.children?.length || node.id.startsWith("dummy-child") ? (
     <circle
       r={size}
       fill={color}
+      key={animationKey}
       onClick={handleClick}
-      style={{ cursor: cursor }}
-      stroke={stroke}
+      style={{ cursor: "pointer" }}
       strokeWidth={0.5}
-      strokeDasharray={strokeDasharray}
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
     />
@@ -202,12 +211,11 @@ function RectOrCircle({
       width={size * 2}
       y={-size}
       x={-size}
+      key={animationKey}
       fill={color}
       onClick={handleClick}
-      style={{ cursor: cursor }}
-      stroke={stroke}
+      style={{ cursor: "pointer" }}
       strokeWidth={0.5}
-      strokeDasharray={strokeDasharray}
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
     />
@@ -216,16 +224,31 @@ function RectOrCircle({
 
 interface TextProps {
   name: string;
+  maxWidth: number;
 }
-function Text({ name }: TextProps) {
+function Text({ name, maxWidth }: TextProps) {
+  const textRef = useRef<SVGTextElement>(null);
+
+  useEffect(() => {
+    const textElement = textRef.current;
+    let textContent = name;
+    if (textElement) {
+      while (textElement.getComputedTextLength() > maxWidth) {
+        textContent = textContent.slice(0, -1);
+        textElement.textContent = textContent + "...";
+      }
+    }
+  }, [name]);
+
   return (
     <text
+      ref={textRef}
       dy=".33em"
       fontSize={9}
       fontFamily="Arial"
       textAnchor="left"
       fill={black}
-      dx={15}
+      dx={10}
     >
       {name}
     </text>
@@ -240,8 +263,9 @@ function Node({
   handleMouseOut,
   left,
   top,
-  key,
+  animationKey,
   opacity,
+  maxWidth,
 }: NodeProps) {
   const isRoot = node.depth === 0;
   const isParent = !!node.children;
@@ -252,11 +276,12 @@ function Node({
         node={node}
         left={left}
         top={top}
-        key={key}
+        animationKey={animationKey}
         opacity={opacity}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
+        maxWidth={maxWidth}
       />
     );
   if (isParent)
@@ -266,29 +291,35 @@ function Node({
         left={left}
         top={top}
         opacity={opacity}
-        key={key}
+        animationKey={animationKey}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
+        maxWidth={maxWidth}
       />
     );
 
   const router = useRouter();
 
   return (
-    <Group top={top} left={left} key={key} opacity={opacity}>
+    <Group top={top} left={left} key={animationKey} opacity={opacity}>
       <g
         onClick={() => {
-          router.push(`${ROUTES.CELL_CARDS}/${node.data.id.replace(":", "_")}`);
+          router.push(
+            `${ROUTES.CELL_CARDS}/${node.data.id
+              .replace(":", "_")
+              .split("__")
+              .at(0)}`
+          );
         }}
       >
         <a>
-          <Text name={node.data.name} />
+          <Text name={node.data.name} maxWidth={maxWidth} />
         </a>
       </g>
       <RectOrCircle
-        key={key}
+        animationKey={`${animationKey}-rect-or-circle`}
         node={node.data}
         handleClick={handleClick}
         isTargetNode={isTargetNode}
@@ -417,7 +448,7 @@ export default function OntologyDagView({
     skewY: 0,
   };
   const [triggerRender, setTriggerRender] = useState(false);
-  const [initialHeight, setInitialHeight] = useState(1);
+  const [duration, setDuration] = useState(0);
   const { data: rawTree } = useCellOntologyTree();
   const { data: initialTreeState } = useCellOntologyTreeState(cellTypeId);
   const expandedNodes = initialTreeState?.isExpandedNodes ?? [];
@@ -456,14 +487,26 @@ export default function OntologyDagView({
             newChildren.push(child);
           }
         }
+
         if (appendDummy && !d.showAllChildren) {
+          const numHiddenChildren =
+            (d.children?.length ?? 0) - newChildren.length;
           newChildren.push({
             id: `dummy-child-${d.id}`,
-            name: "Show siblings",
+            name: `${numHiddenChildren} cell types`,
             n_cells: 0,
             n_cells_rollup: 0,
             isExpanded: false,
           });
+        } else if (d.showAllChildren) {
+          if (d.children) {
+            const firstId = d.children[0].id;
+            newChildren.sort((a, b) => {
+              if (a.id === firstId) return -1;
+              if (b.id === firstId) return 1;
+              return a.id.localeCompare(b.id);
+            });
+          }
         }
       }
       return newChildren.length ? newChildren : null;
@@ -472,6 +515,9 @@ export default function OntologyDagView({
 
   const yMax = height - margin.top - margin.bottom;
   const xMax = width - margin.left - margin.right;
+
+  // Customize nodeSize and separation
+  const nodeSize = [15, 200]; // Increase width and height for more spacing
 
   useEffect(() => {
     setCenterNodeCoords(null);
@@ -482,31 +528,30 @@ export default function OntologyDagView({
     };
   }, [cellTypeId]);
 
-  useEffect(() => {
-    if (initialHeight === 1 && data) {
-      setInitialHeight(data.height);
-    }
-  }, [initialHeight, data]);
-
-  // Customize nodeSize and separation
-  const nodeSize = [15, 1000 / initialHeight]; // Increase width and height for more spacing
-
   // This effect is used to center the node corresponding to the cell type id
   // useLayoutEffect is used to ensure that node coordinates have been populated by the renderer prior to painting
   const useIsomorphicLayoutEffect =
     typeof window !== "undefined" ? useLayoutEffect : useEffect;
   useIsomorphicLayoutEffect(() => {
     if (data) {
+      data.each((node) => {
+        const pointNode = node as HierarchyPointNode<TreeNodeWithState>;
+        if (pointNode.x && pointNode.y) {
+          node.data.x0 = pointNode.x;
+          node.data.y0 = pointNode.y;
+        }
+      });
       let targetNode = data
         .descendants()
-        .find((node) => node.data.id === cellTypeId && node.data.children) as
-        | TreeNodeWithState
-        | undefined;
+        .find(
+          (node) =>
+            node.data.id.split("__").at(0) === cellTypeId && node.data.children
+        ) as HierarchyPointNode<TreeNodeWithState> | undefined;
       if (!targetNode) {
         targetNode = data
           .descendants()
-          .find((node) => node.data.id === cellTypeId) as
-          | TreeNodeWithState
+          .find((node) => node.data.id.split("__").at(0) === cellTypeId) as
+          | HierarchyPointNode<TreeNodeWithState>
           | undefined;
       }
       if (targetNode) {
@@ -631,6 +676,8 @@ export default function OntologyDagView({
                                 x: source.data.x0 ?? source.x,
                                 y: source.data.y0 ?? source.y,
                               },
+                              opacity: 0,
+                              timing: { duration },
                             };
                           }}
                           enter={({ source, target }) => {
@@ -643,32 +690,24 @@ export default function OntologyDagView({
                                 x: [target.x],
                                 y: [target.y],
                               },
+                              opacity: [1],
+                              timing: { duration },
                             };
                           }}
                           update={({ source, target }) => {
-                            return {
-                              source: {
-                                x: [source.x],
-                                y: [source.y],
-                              },
-                              target: {
-                                x: [target.x],
-                                y: [target.y],
-                              },
-                            };
-                          }}
-                          leave={({ source, target }) => {
                             const collapsedParent = findCollapsedParent(source);
                             return collapsedParent
                               ? {
                                   source: {
-                                    x: [collapsedParent.data.x0],
-                                    y: [collapsedParent.data.y0],
+                                    x: [collapsedParent.x],
+                                    y: [collapsedParent.y],
                                   },
                                   target: {
-                                    x: [collapsedParent.data.x0],
-                                    y: [collapsedParent.data.y0],
+                                    x: [collapsedParent.x],
+                                    y: [collapsedParent.y],
                                   },
+                                  opacity: [1],
+                                  timing: { duration },
                                 }
                               : {
                                   source: {
@@ -679,7 +718,12 @@ export default function OntologyDagView({
                                     x: [target.x],
                                     y: [target.y],
                                   },
+                                  opacity: [1],
+                                  timing: { duration },
                                 };
+                          }}
+                          leave={() => {
+                            return { opacity: [0], timing: { duration: 0 } };
                           }}
                         >
                           {(nodes) => {
@@ -687,13 +731,15 @@ export default function OntologyDagView({
                               <Group>
                                 {nodes.map(({ key, state }) => {
                                   return (
-                                    <LinkHorizontal
-                                      key={key}
-                                      data={state}
-                                      stroke={secondaryColor}
-                                      strokeWidth="1"
-                                      fill="none"
-                                    />
+                                    <Group key={key} opacity={state.opacity}>
+                                      <LinkHorizontal
+                                        key={key}
+                                        data={state}
+                                        stroke={secondaryColor}
+                                        strokeWidth="1"
+                                        fill="none"
+                                      />
+                                    </Group>
                                   );
                                 })}
                               </Group>
@@ -710,14 +756,16 @@ export default function OntologyDagView({
                           ) => {
                             return node.parent
                               ? {
-                                  top: node.parent.x,
-                                  left: node.parent.y,
+                                  top: node.parent.data.x0 ?? node.parent.x,
+                                  left: node.parent.data.y0 ?? node.parent.y,
                                   opacity: 0,
+                                  timing: { duration },
                                 }
                               : {
-                                  top: 0,
-                                  left: 0,
+                                  top: node.x,
+                                  left: node.y,
                                   opacity: 0,
+                                  timing: { duration },
                                 };
                           }}
                           enter={(
@@ -727,6 +775,7 @@ export default function OntologyDagView({
                               top: [node.x],
                               left: [node.y],
                               opacity: [1],
+                              timing: { duration },
                             };
                           }}
                           update={(
@@ -736,28 +785,11 @@ export default function OntologyDagView({
                               top: [node.x],
                               left: [node.y],
                               opacity: [1],
+                              timing: { duration },
                             };
                           }}
-                          leave={(
-                            node: HierarchyPointNode<TreeNodeWithState>
-                          ) => {
-                            const collapsedParent = node.parent
-                              ? findCollapsedParent(node.parent)
-                              : null;
-                            const collapsedParentPrevPos = collapsedParent
-                              ? {
-                                  x: collapsedParent.data.x0,
-                                  y: collapsedParent.data.y0,
-                                }
-                              : {
-                                  x: 0,
-                                  y: 0,
-                                };
-                            return {
-                              top: [collapsedParentPrevPos.x],
-                              left: [collapsedParentPrevPos.y],
-                              opacity: [0],
-                            };
+                          leave={() => {
+                            return { opacity: [0], timing: { duration: 0 } };
                           }}
                         >
                           {(nodes) => {
@@ -765,7 +797,8 @@ export default function OntologyDagView({
                               <Group>
                                 {nodes.map(({ key, data: node, state }) => (
                                   <Node
-                                    key={key}
+                                    key={`${key}-node`}
+                                    animationKey={key}
                                     node={node}
                                     isTargetNode={
                                       node.data.id.split("__").at(0) ===
@@ -773,13 +806,13 @@ export default function OntologyDagView({
                                     }
                                     handleMouseOver={handleMouseOver}
                                     handleMouseOut={hideTooltip}
+                                    maxWidth={180}
                                     left={state.left}
                                     top={state.top}
                                     opacity={state.opacity}
                                     handleClick={() => {
-                                      if (!node.data.isExpanded) {
-                                        node.data.x0 = node.x;
-                                        node.data.y0 = node.y;
+                                      if (duration === 0) {
+                                        setDuration(250);
                                       }
                                       if (
                                         node.data.id.startsWith("dummy-child")
