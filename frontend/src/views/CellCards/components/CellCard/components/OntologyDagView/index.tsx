@@ -168,7 +168,7 @@ function RectOrCircle({
   const size = node.n_cells === 0 ? smallSize : largeSize;
   let stroke = "none";
   let strokeDasharray;
-  if (node.name === "") {
+  if (node.id.startsWith("dummy-child")) {
     color = white;
     stroke = black;
     //strokeDasharray = "1.5";
@@ -176,13 +176,14 @@ function RectOrCircle({
 
   const cursor = "pointer";
 
-  const onMouseOver =
-    node.name === ""
-      ? undefined
-      : (event: React.MouseEvent<SVGElement>) => {
-          handleMouseOver(event, node);
-        };
-  const onMouseOut = node.name === "" ? undefined : handleMouseOut;
+  const onMouseOver = node.id.startsWith("dummy-child")
+    ? undefined
+    : (event: React.MouseEvent<SVGElement>) => {
+        handleMouseOver(event, node);
+      };
+  const onMouseOut = node.name.startsWith("dummy-child")
+    ? undefined
+    : handleMouseOut;
   return node?.children?.length ? (
     <circle
       r={size}
@@ -456,8 +457,8 @@ export default function OntologyDagView({
         }
         if (appendDummy && !d.showAllChildren) {
           newChildren.push({
-            id: `${d.id}-dummy-child`,
-            name: "",
+            id: `dummy-child-${d.id}`,
+            name: "Show siblings",
             n_cells: 0,
             n_cells_rollup: 0,
             isExpanded: false,
@@ -773,7 +774,9 @@ export default function OntologyDagView({
                                         node.data.x0 = node.x;
                                         node.data.y0 = node.y;
                                       }
-                                      if (node.data.name === "") {
+                                      if (
+                                        node.data.id.startsWith("dummy-child")
+                                      ) {
                                         if (node.parent) {
                                           node.parent.data.showAllChildren =
                                             true;
