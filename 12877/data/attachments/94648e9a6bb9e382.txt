@@ -1,0 +1,1 @@
+  [38;5;45;1mpw:api [0m  locator resolved to <div id="chart" width="500" height="500" data-testid=…>…</div> [38;5;45m+40ms[0m
