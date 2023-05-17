@@ -155,7 +155,7 @@ export default function GeneSearchBar({
           <div
             onClick={() => {
               if (dispatch) {
-                track(EVENTS.CLEAR_GENES_BUTTON_CLICKED);
+                track(EVENTS.WMG_CLEAR_GENES_CLICKED);
 
                 dispatch(deleteAllGenes());
               }
