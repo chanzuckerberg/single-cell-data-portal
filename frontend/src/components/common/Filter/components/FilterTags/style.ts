@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontBodyXs, getColors, getSpaces } from "czifui";
+import { CommonThemeProps, fontBodyXs, getSpaces } from "czifui";
 
-const primary400 = (props: CommonThemeProps) => getColors(props)?.primary[400];
 const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
 
 export const SelectedTags = styled.span`
@@ -13,18 +12,8 @@ export const SelectedTags = styled.span`
   .MuiChip-root {
     margin: 0;
 
-    &:hover,
-    &:active {
-      background-color: ${primary400};
-    }
-
     &:active {
       box-shadow: none;
-    }
-
-    &:focus:hover,
-    &:focus:active {
-      background-color: ${primary400};
     }
 
     .MuiChip-label {

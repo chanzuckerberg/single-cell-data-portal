@@ -33,9 +33,9 @@ import { RightAlignCell } from "src/components/common/Grid/components/RightAlign
 import DatasetsActionsCell from "src/components/Datasets/components/Grid/components/DatasetActionsCell";
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
+import SideBar from "src/components/common/SideBar";
 import { View } from "../globalStyle";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
-import { ListViewSideBar as SideBar } from "src/components/common/SideBar/common/style";
 
 /**
  * Collection ID object key.

@@ -25,6 +25,7 @@ import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { Title } from "src/components/common/Grid/components/Title";
 import CreateCollection from "src/components/CreateCollectionModal";
+import SideBar from "src/components/common/SideBar";
 import { CollectionsView as View } from "./style";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useUserInfo } from "src/common/queries/auth";
@@ -38,7 +39,6 @@ import {
 } from "src/views/Collections/common/constants";
 import { get } from "src/common/featureFlags";
 import { BOOLEAN } from "src/common/localStorage/set";
-import { ListViewSideBar as SideBar } from "src/components/common/SideBar/common/style";
 
 export default function Collections(): JSX.Element {
   const isCuratorEnabled = get(FEATURES.CURATOR) === BOOLEAN.TRUE;

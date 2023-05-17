@@ -23,18 +23,17 @@ interface PositionerProps extends CommonThemeProps {
   isExpanded: boolean;
 }
 
+const grey300 = (props: CommonThemeProps) => getColors(props)?.gray[300];
 const grey500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
-const semibold = (props: CommonThemeProps) => getFontWeights(props)?.semibold; // font-weight 600.
-// This color will be used as a separator line for the split right sidebar, top and bottom views
-export const SIDEBAR_BOX_SHADOW_COLOR = "rgba(16, 22, 26, 0.15)";
+const semibold = (props: CommonThemeProps) => getFontWeights(props)?.semibold;
 const spacesL = (props: CommonThemeProps) => getSpaces(props)?.l;
 const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
 const spacesXl = (props: CommonThemeProps) => getSpaces(props)?.xl;
 
 const generateBoxShadow = (props: Props) =>
-  `inset ${
-    props.position === Position.LEFT ? -1 : 1
-  }px 0px 0px ${SIDEBAR_BOX_SHADOW_COLOR}`;
+  `inset ${props.position === Position.LEFT ? -0.5 : 0.5}px 0 ${grey300(
+    props
+  )}`;
 
 export const SideBar = styled.div<Props>`
   box-sizing: border-box;
