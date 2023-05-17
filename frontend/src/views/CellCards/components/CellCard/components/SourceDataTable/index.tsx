@@ -1,4 +1,5 @@
 import React, { ReactElement, useMemo } from "react";
+import { Tooltip } from "czifui";
 import {
   TableTitle,
   TableTitleWrapper,
@@ -61,7 +62,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
           />
         ),
         tissue:
-          tissueNames.length <= 7 ? (
+          tissueNames.length <= 2 ? (
             <div>
               {tissueNames.map((tissue) => {
                 return (
@@ -72,11 +73,31 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
               })}
             </div>
           ) : (
-            <StyledTag
-              color="gray"
-              sdsType="secondary"
-              label={`${tissueNames.length} tissues`}
-            />
+            <Tooltip
+              sdsStyle="dark"
+              placement="right"
+              width="default"
+              arrow
+              title={
+                <div>
+                  {tissueNames.map((tissue) => {
+                    return (
+                      <div key={`tissue-${tissue}-${index}`}>
+                        {tissue.charAt(0).toUpperCase() + tissue.slice(1)}
+                      </div>
+                    );
+                  })}
+                </div>
+              }
+            >
+              <span>
+                <StyledTag
+                  color="gray"
+                  sdsType="secondary"
+                  label={`${tissueNames.length} tissues`}
+                />
+              </span>
+            </Tooltip>
           ),
         disease: (
           <div>

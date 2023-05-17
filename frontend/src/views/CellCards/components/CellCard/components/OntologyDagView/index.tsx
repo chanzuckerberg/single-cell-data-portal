@@ -13,7 +13,8 @@ import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { LinkHorizontal } from "@visx/shape";
 import NodeGroup from "react-move/NodeGroup";
-
+import FullscreenIcon from "@material-ui/icons/Fullscreen";
+import FullscreenExitIcon from "@material-ui/icons/FullscreenExit";
 import { TableTitleWrapper, TableTitle } from "../common/style";
 import { ONTOLOGY_SECTION_ID } from "../CellCardSidebar";
 import { Zoom } from "@visx/zoom";
@@ -30,7 +31,8 @@ import {
   TableUnavailableHeader,
   TableUnavailableDescription,
 } from "../common/style";
-import { StyledLegendText } from "./style";
+import { FullscreenButton, HoverContainer, StyledLegendText } from "./style";
+import { useFullScreen } from "../FullScreenProvider";
 
 const primaryColor = "#0073FF";
 const secondaryColor = "#999999";
@@ -71,6 +73,7 @@ function RootNode({
   isTargetNode,
   handleMouseOver,
   handleMouseOut,
+  handleClick,
   left,
   top,
   animationKey,
@@ -90,6 +93,7 @@ function RootNode({
         animationKey={animationKey}
         node={node.data}
         isTargetNode={isTargetNode}
+        handleClick={handleClick}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
       />
@@ -281,6 +285,7 @@ function Node({
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
+        handleClick={handleClick}
         maxWidth={maxWidth}
       />
     );
@@ -428,17 +433,30 @@ const CollapsedNodesLegend = ({ xPos, yPos }: LegendProps) => {
 
 export type TreeProps = {
   cellTypeId: string;
-  width: number;
-  height: number;
-  margin?: { top: number; right: number; bottom: number; left: number };
 };
 
-export default function OntologyDagView({
-  cellTypeId,
-  width,
-  height,
-  margin = defaultMargin,
-}: TreeProps) {
+export default function OntologyDagView({ cellTypeId }: TreeProps) {
+  const margin = defaultMargin;
+
+  const {
+    isFullScreen,
+    screenDimensions,
+    enableFullScreen,
+    disableFullScreen,
+  } = useFullScreen();
+
+  const [width, height] = useMemo(() => {
+    let newWidth = 1040;
+    let newHeight = 500;
+    if (screenDimensions.width > 0 && isFullScreen) {
+      newWidth = screenDimensions.width;
+    }
+    if (screenDimensions.height > 0 && isFullScreen) {
+      newHeight = screenDimensions.height;
+    }
+    return [newWidth, newHeight];
+  }, [screenDimensions, isFullScreen]);
+
   const initialTransformMatrixDefault = {
     scaleX: 1,
     scaleY: 1,
@@ -624,12 +642,20 @@ export default function OntologyDagView({
           }}
         >
           {(zoom) => (
-            <div
+            <HoverContainer
+              height={height}
+              width={width}
               ref={containerRef}
               onMouseDown={() => {
                 hideTooltip();
               }}
+              isFullScreen={isFullScreen}
             >
+              <FullscreenButton
+                onClick={isFullScreen ? disableFullScreen : enableFullScreen}
+              >
+                {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+              </FullscreenButton>
               {tooltipOpen && (
                 <TooltipInPortal
                   // set this to random so it correctly updates with parent bounds
@@ -648,7 +674,12 @@ export default function OntologyDagView({
                 width={width}
                 height={height}
                 ref={zoom.containerRef}
-                style={{ cursor: zoom.isDragging ? "grabbing" : "grab" }}
+                style={{
+                  cursor: zoom.isDragging ? "grabbing" : "grab",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                }}
               >
                 <RectClipPath id="zoom-clip" width={width} height={height} />
                 <rect width={width} height={height} rx={14} fill={white} />
@@ -860,7 +891,7 @@ export default function OntologyDagView({
                   <CollapsedNodesLegend xPos={width - 80} yPos={10} />
                 </g>
               </svg>
-            </div>
+            </HoverContainer>
           )}
         </Zoom>
       ) : (

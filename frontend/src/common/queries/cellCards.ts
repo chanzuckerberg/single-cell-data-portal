@@ -310,6 +310,46 @@ export function useCanonicalMarkers(
   );
 }
 
+// CL description
+async function fetchClDescription({
+  cellTypeId,
+  signal,
+}: {
+  cellTypeId: string;
+  signal?: AbortSignal;
+}): Promise<string | undefined> {
+  const url = `/api/cl_description?cellTypeId=${cellTypeId}`;
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    method: "GET",
+    signal,
+  });
+  if (response.status === 204) return undefined;
+  const json: string = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+  return json;
+}
+
+export const USE_CL_DESCRIPTION_QUERY = {
+  entities: [ENTITIES.CELL_EXPLORER_CL_DESCRIPTION],
+  id: "cell-explorer-cl-description-query",
+};
+
+export function useClDescription(cellTypeId: string): UseQueryResult<string> {
+  return useQuery(
+    [USE_CL_DESCRIPTION_QUERY, cellTypeId],
+    ({ signal }) => fetchClDescription({ cellTypeId, signal }),
+    {
+      enabled: true,
+      staleTime: Infinity,
+    }
+  );
+}
+
 // description
 async function fetchDescription({
   cellTypeId,

@@ -17,12 +17,10 @@ import CellCardSidebar, {
   INTRO_SECTION_ID,
 } from "./components/CellCardSidebar";
 import OntologyDagView from "./components/OntologyDagView";
-
-// enum of available descriptions
+import FullScreenProvider from "./components/FullScreenProvider";
 
 export default function CellCard(): JSX.Element {
   const router = useRouter();
-
   // cell type id
   const { cellTypeId: cellTypeIdRaw } = router.query;
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
@@ -65,12 +63,10 @@ export default function CellCard(): JSX.Element {
             />
           </CellCardHeader>
           <Divider />
-          <Description />
-          <OntologyDagView
-            cellTypeId={cellTypeId.replace(":", "_")}
-            width={1040}
-            height={500}
-          />
+          <Description cellTypeName={cellTypeName} />
+          <FullScreenProvider>
+            <OntologyDagView cellTypeId={cellTypeId.replace(":", "_")} />
+          </FullScreenProvider>
           <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
           <EnrichedGenesTable cellTypeId={cellTypeId} />
           <SourceDataTable cellTypeId={cellTypeId} />
