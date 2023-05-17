@@ -26,4 +26,5 @@ export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };
 export const SKIP_LOGIN = process.env.SKIP_LOGIN === "true" || false;
 
 export const LOGIN_STATE_FILENAME = "loginState.json";
+
 export const SHARED_LINK_FILTER = `${TEST_URL}/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
