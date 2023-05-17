@@ -62,7 +62,7 @@ const ERROR_NO_TESTID_OR_LOCATOR = "Either testId or locator must be defined";
 
 const { describe, skip } = test;
 
-describe.only("Where's My Gene", () => {
+describe("Where's My Gene", () => {
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test("renders the getting started UI", async ({ page }) => {
