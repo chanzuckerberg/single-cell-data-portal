@@ -26,6 +26,7 @@ import {
   ActionWrapper,
   Container,
   LoadingIndicatorWrapper,
+  StyledButtonWrapper,
   StyledClearButton,
 } from "./style";
 
@@ -152,7 +153,7 @@ export default function GeneSearchBar({
 
         {/* Clear Genes button */}
         {!selectedGenes.length || (
-          <div
+          <StyledButtonWrapper
             onClick={() => {
               if (dispatch) {
                 track(EVENTS.WMG_CLEAR_GENES_CLICKED);
@@ -161,10 +162,15 @@ export default function GeneSearchBar({
               }
             }}
           >
-            <StyledClearButton data-testid="clear-genes-button">
+            <StyledClearButton
+              data-testid="clear-genes-button"
+              sdsType="primary"
+              sdsStyle="minimal"
+              isAllCaps={false}
+            >
               Clear Genes
             </StyledClearButton>
-          </div>
+          </StyledButtonWrapper>
         )}
 
         {isLoadingPrimaryFilters && (
