@@ -14,7 +14,7 @@ import Link from "../common/Link";
 import { useCanonicalMarkers } from "src/common/queries/cellCards";
 
 interface TableRow {
-  symbol: ReactElement;
+  symbol: string;
   name: string;
   publications: ReactElement | string;
   organ: string;
@@ -58,12 +58,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
       );
 
       rows.push({
-        symbol: (
-          <Link
-            title={`${markerGene.symbol}`}
-            url={`https://www.genecards.org/cgi-bin/carddisp.pl?gene=${markerGene.symbol}`}
-          />
-        ),
+        symbol: markerGene.symbol,
         name: markerGene.name,
         publications: publicationLinks,
         organ: markerGene.tissue_general,

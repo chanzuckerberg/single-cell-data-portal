@@ -1,4 +1,4 @@
-import React, { ReactElement, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   TableTitle,
   TableTitleWrapper,
@@ -10,13 +10,12 @@ import {
 import { TableTitleInnerWrapper, TableTitleOuterWrapper } from "./style";
 import Table from "../Table";
 import { HIGHLY_EXPRESSED_GENES_SECTION_ID } from "../CellCardSidebar";
-import Link from "../common/Link";
 import DropdownSelect from "../common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { useEnrichedGenes } from "src/common/queries/cellCards";
 
 interface TableRow {
-  symbol: ReactElement;
+  symbol: string;
   name: string;
   me: string;
   pc: string;
@@ -55,12 +54,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
       const { pc, me, name, symbol, organism } = markerGene;
       if (organism !== selectedOrganism) continue;
       rows.push({
-        symbol: (
-          <Link
-            title={`${symbol}`}
-            url={`https://www.genecards.org/cgi-bin/carddisp.pl?gene=${markerGene.symbol}`}
-          />
-        ),
+        symbol: symbol,
         name,
         me: me.toFixed(2),
         pc: (pc * 100).toFixed(1),
