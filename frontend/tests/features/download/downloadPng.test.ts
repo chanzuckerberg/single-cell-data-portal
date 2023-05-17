@@ -43,7 +43,6 @@ describe("CSV download tests", () => {
     const dirPath = `${downLoadPath}/${folder}`;
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
-
     verifyPng(dirPath, tissues, "filter");
     deleteDownloadedFiles(dirPath, page);
   });
