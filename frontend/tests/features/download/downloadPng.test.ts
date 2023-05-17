@@ -26,10 +26,10 @@ describe("CSV download tests", () => {
     const fileTypes = ["png"];
     const folder = subDirectory();
     const dirPath = `${downLoadPath}/${folder}`;
-    //download  csv file
+    //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
-
     verifyPng(dirPath, tissues, "no-filter");
+    deleteDownloadedFiles(dirPath, page);
   });
 
   test(`Should verify png data for lung and blood tissue with sex filter applied and group by selected`, async ({
@@ -41,10 +41,11 @@ describe("CSV download tests", () => {
     const fileTypes = ["png"];
     const folder = subDirectory();
     const dirPath = `${downLoadPath}/${folder}`;
-    //download  csv file
+    //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
     verifyPng(dirPath, tissues, "filter");
+    deleteDownloadedFiles(dirPath, page);
   });
   test(`Should verify png for lung and blood tissue with no group set`, async ({
     page,
@@ -55,13 +56,9 @@ describe("CSV download tests", () => {
     const fileTypes = ["png"];
     const folder = subDirectory();
     const dirPath = `${downLoadPath}/${folder}`;
-    //download  csv file
+    //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
     verifyPng(dirPath, tissues, "no-group");
-  });
-
-  test.afterAll(async () => {
-    //delete downloaded file
-   // deleteDownloadedFiles(downLoadPath);
+    deleteDownloadedFiles(dirPath, page);
   });
 });

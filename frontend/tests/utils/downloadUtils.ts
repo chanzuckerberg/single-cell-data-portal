@@ -1,4 +1,4 @@
-import { Page, chromium, expect } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
@@ -83,7 +83,8 @@ export async function downloadAndVerifyFiles(
   });
 }
 
-export function deleteDownloadedFiles(filePath: string) {
+export async function deleteDownloadedFiles(filePath: string, page: Page) {
+  await page.waitForTimeout(3000);
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);
