@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { goToWMG, selectTissueAndGeneOption } from "../../utils/wmgUtils";
+import { goToWMG } from "../../utils/wmgUtils";
 import { isDevStagingProd } from "tests/utils/helpers";
 import {
   deleteDownloadedFiles,
@@ -15,7 +15,7 @@ import {
 const downLoadPath = "./tests/downloads";
 const { describe, skip } = test;
 describe("CSV download tests", () => {
-  //skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test(`Should verify png for lung and blood tissue with no filter set`, async ({
     page,
