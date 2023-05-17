@@ -1,4 +1,4 @@
-import { Mark } from "@mui/base/useSlider";
+import { Mark } from "@mui/base/SliderUnstyled";
 import Slider from "@mui/material/Slider";
 import React, { SyntheticEvent, useState } from "react";
 import {
