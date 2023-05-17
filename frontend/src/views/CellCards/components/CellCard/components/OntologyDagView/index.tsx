@@ -23,6 +23,7 @@ import {
   CellOntologyTree as TreeNode,
   useCellOntologyTree,
   useCellOntologyTreeState,
+  useCellTypesById,
 } from "src/common/queries/cellCards";
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
@@ -66,6 +67,7 @@ interface NodeProps {
   opacity: number;
   animationKey: string;
   maxWidth: number;
+  isInCorpus: boolean;
 }
 
 function RootNode({
@@ -79,6 +81,7 @@ function RootNode({
   animationKey,
   opacity,
   maxWidth,
+  isInCorpus,
 }: NodeProps) {
   const router = useRouter();
   return (
@@ -97,20 +100,32 @@ function RootNode({
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
       />
-      <g
-        onClick={() => {
-          router.push(
-            `${ROUTES.CELL_CARDS}/${node.data.id
-              .replace(":", "_")
-              .split("__")
-              .at(0)}`
-          );
-        }}
-      >
-        <a>
-          <Text name={node.data.name} maxWidth={maxWidth} />
-        </a>
-      </g>
+      {isInCorpus ? (
+        <g
+          onClick={() => {
+            router.push(
+              `${ROUTES.CELL_CARDS}/${node.data.id
+                .replace(":", "_")
+                .split("__")
+                .at(0)}`
+            );
+          }}
+        >
+          <a>
+            <Text
+              isInCorpus={isInCorpus}
+              name={node.data.name}
+              maxWidth={maxWidth}
+            />
+          </a>
+        </g>
+      ) : (
+        <Text
+          isInCorpus={isInCorpus}
+          name={node.data.name}
+          maxWidth={maxWidth}
+        />
+      )}
     </Group>
   );
 }
@@ -126,6 +141,7 @@ function ParentNode({
   animationKey,
   opacity,
   maxWidth,
+  isInCorpus,
 }: NodeProps) {
   const router = useRouter();
   return (
@@ -138,20 +154,32 @@ function ParentNode({
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
       />
-      <g
-        onClick={() => {
-          router.push(
-            `${ROUTES.CELL_CARDS}/${node.data.id
-              .replace(":", "_")
-              .split("__")
-              .at(0)}`
-          );
-        }}
-      >
-        <a>
-          <Text name={node.data.name} maxWidth={maxWidth} />
-        </a>
-      </g>
+      {isInCorpus ? (
+        <g
+          onClick={() => {
+            router.push(
+              `${ROUTES.CELL_CARDS}/${node.data.id
+                .replace(":", "_")
+                .split("__")
+                .at(0)}`
+            );
+          }}
+        >
+          <a>
+            <Text
+              isInCorpus={isInCorpus}
+              name={node.data.name}
+              maxWidth={maxWidth}
+            />
+          </a>
+        </g>
+      ) : (
+        <Text
+          isInCorpus={isInCorpus}
+          name={node.data.name}
+          maxWidth={maxWidth}
+        />
+      )}
     </Group>
   );
 }
@@ -229,8 +257,9 @@ function RectOrCircle({
 interface TextProps {
   name: string;
   maxWidth: number;
+  isInCorpus: boolean;
 }
-function Text({ name, maxWidth }: TextProps) {
+function Text({ isInCorpus, name, maxWidth }: TextProps) {
   const textRef = useRef<SVGTextElement>(null);
 
   useEffect(() => {
@@ -251,6 +280,10 @@ function Text({ name, maxWidth }: TextProps) {
       fontSize={9}
       fontFamily="Arial"
       textAnchor="left"
+      fontStyle={
+        isInCorpus || name.endsWith("cell types") ? "normal" : "italic"
+      }
+      fontWeight={isInCorpus ? "bold" : "normal"}
       fill={black}
       dx={10}
     >
@@ -270,6 +303,7 @@ function Node({
   animationKey,
   opacity,
   maxWidth,
+  isInCorpus,
 }: NodeProps) {
   const isRoot = node.depth === 0;
   const isParent = !!node.children;
@@ -287,6 +321,7 @@ function Node({
         handleMouseOut={handleMouseOut}
         handleClick={handleClick}
         maxWidth={maxWidth}
+        isInCorpus={isInCorpus}
       />
     );
   if (isParent)
@@ -302,6 +337,7 @@ function Node({
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
         maxWidth={maxWidth}
+        isInCorpus={isInCorpus}
       />
     );
 
@@ -309,20 +345,32 @@ function Node({
 
   return (
     <Group top={top} left={left} key={animationKey} opacity={opacity}>
-      <g
-        onClick={() => {
-          router.push(
-            `${ROUTES.CELL_CARDS}/${node.data.id
-              .replace(":", "_")
-              .split("__")
-              .at(0)}`
-          );
-        }}
-      >
-        <a>
-          <Text name={node.data.name} maxWidth={maxWidth} />
-        </a>
-      </g>
+      {isInCorpus ? (
+        <g
+          onClick={() => {
+            router.push(
+              `${ROUTES.CELL_CARDS}/${node.data.id
+                .replace(":", "_")
+                .split("__")
+                .at(0)}`
+            );
+          }}
+        >
+          <a>
+            <Text
+              isInCorpus={isInCorpus}
+              name={node.data.name}
+              maxWidth={maxWidth}
+            />
+          </a>
+        </g>
+      ) : (
+        <Text
+          isInCorpus={isInCorpus}
+          name={node.data.name}
+          maxWidth={maxWidth}
+        />
+      )}
       <RectOrCircle
         animationKey={`${animationKey}-rect-or-circle`}
         node={node.data}
@@ -621,6 +669,8 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
     }
   };
 
+  const cellTypesById = useCellTypesById() || {};
+
   return (
     <>
       <TableTitleWrapper id={ONTOLOGY_SECTION_ID}>
@@ -825,43 +875,53 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
                           {(nodes) => {
                             return (
                               <Group>
-                                {nodes.map(({ key, data: node, state }) => (
-                                  <Node
-                                    key={`${key}-node`}
-                                    animationKey={key}
-                                    node={node}
-                                    isTargetNode={
-                                      node.data.id.split("__").at(0) ===
-                                      cellTypeId
-                                    }
-                                    handleMouseOver={handleMouseOver}
-                                    handleMouseOut={hideTooltip}
-                                    maxWidth={180}
-                                    left={state.left}
-                                    top={state.top}
-                                    opacity={state.opacity}
-                                    handleClick={() => {
-                                      if (duration === 0) {
-                                        setDuration(250);
+                                {nodes.map(({ key, data: node, state }) => {
+                                  const isInCorpus =
+                                    (node.data.id
+                                      .replace(":", "_")
+                                      .split("__")
+                                      .at(0)
+                                      ?.replace("_", ":") ?? "") in
+                                    cellTypesById;
+                                  return (
+                                    <Node
+                                      key={`${key}-node`}
+                                      isInCorpus={isInCorpus}
+                                      animationKey={key}
+                                      node={node}
+                                      isTargetNode={
+                                        node.data.id.split("__").at(0) ===
+                                        cellTypeId
                                       }
-                                      if (
-                                        node.data.id.startsWith("dummy-child")
-                                      ) {
-                                        if (node.parent) {
-                                          node.parent.data.showAllChildren =
-                                            true;
+                                      handleMouseOver={handleMouseOver}
+                                      handleMouseOut={hideTooltip}
+                                      maxWidth={180}
+                                      left={state.left}
+                                      top={state.top}
+                                      opacity={state.opacity}
+                                      handleClick={() => {
+                                        if (duration === 0) {
+                                          setDuration(250);
                                         }
-                                      }
-                                      node.data.isExpanded =
-                                        !node.data.isExpanded;
-                                      if (!node.data.isExpanded) {
-                                        node.data.showAllChildren = false;
-                                        collapseAllDescendants(node);
-                                      }
-                                      setTriggerRender(!triggerRender);
-                                    }}
-                                  />
-                                ))}
+                                        if (
+                                          node.data.id.startsWith("dummy-child")
+                                        ) {
+                                          if (node.parent) {
+                                            node.parent.data.showAllChildren =
+                                              true;
+                                          }
+                                        }
+                                        node.data.isExpanded =
+                                          !node.data.isExpanded;
+                                        if (!node.data.isExpanded) {
+                                          node.data.showAllChildren = false;
+                                          collapseAllDescendants(node);
+                                        }
+                                        setTriggerRender(!triggerRender);
+                                      }}
+                                    />
+                                  );
+                                })}
                               </Group>
                             );
                           }}
