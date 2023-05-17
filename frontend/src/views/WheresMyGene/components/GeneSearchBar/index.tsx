@@ -7,6 +7,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
+import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import {
   usePrimaryFilterDimensions,
@@ -154,6 +155,8 @@ export default function GeneSearchBar({
           <div
             onClick={() => {
               if (dispatch) {
+                track(EVENTS.CLEAR_GENES_BUTTON_CLICKED);
+
                 dispatch(deleteAllGenes());
               }
             }}
