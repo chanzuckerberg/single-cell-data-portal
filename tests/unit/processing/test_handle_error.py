@@ -188,7 +188,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"TEST: Dataset processing job failed! @sc-oncall-eng\n"
+                    "text": f"Dataset processing job failed! @sc-oncall-eng\n"
                     "*Owner*: \n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"

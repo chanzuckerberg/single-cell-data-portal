@@ -25,9 +25,9 @@ def notify_slack(data: dict):
     """
     msg = json.dumps(data, indent=2)
     logger.info(f"Slack notification function called with message: {msg}")
-    # if os.getenv("DEPLOYMENT_STAGE") == "prod": # TODO: set for testing
-    slack_webhook = CorporaConfig().slack_webhook
-    requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=msg)
+    if os.getenv("DEPLOYMENT_STAGE") == "prod":
+        slack_webhook = CorporaConfig().slack_webhook
+        requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=msg)
 
 
 def format_failed_batch_issue_slack_alert(data: dict) -> dict:
