@@ -434,7 +434,7 @@ export function useCellTypes(): UseQueryResult<CellCardsQueryResponse> {
   );
 }
 
-export function useCellTypesById() {
+export function useCellTypesById(): { [id: string]: string } | undefined {
   const { data, isLoading } = useCellTypes();
 
   return useMemo(() => {
