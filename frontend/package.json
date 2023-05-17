@@ -12,6 +12,7 @@
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@loadable/component": "^5.15.0",
+    "@material-ui/icons": "^4.11.3",
     "@mui/icons-material": "^5.10.14",
     "@mui/lab": "^5.0.0-alpha.108",
     "@mui/material": "^5.10.14",
