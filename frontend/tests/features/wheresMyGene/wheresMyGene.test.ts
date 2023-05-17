@@ -899,14 +899,12 @@ describe.only("Where's My Gene", () => {
       // Genes before clear
       const beforeGeneNames = await getGeneNames(page);
       expect(beforeGeneNames.length).toBe(GENE_COUNT);
-      console.log(beforeGeneNames);
 
       // Click clear all button
       await page.getByTestId(CLEAR_GENES_BUTTON_ID).click();
 
       // Count genes after clear
       const afterGeneNames = await getGeneNames(page);
-      console.log(afterGeneNames);
 
       await tryUntil(
         async () => {
