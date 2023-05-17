@@ -16,8 +16,6 @@ import SourceDataTable from "./components/SourceDataTable";
 import CellCardSidebar, {
   INTRO_SECTION_ID,
 } from "./components/CellCardSidebar";
-import OntologyDagView from "./components/OntologyDagView";
-import FullScreenProvider from "./components/FullScreenProvider";
 
 export default function CellCard(): JSX.Element {
   const router = useRouter();
@@ -64,9 +62,6 @@ export default function CellCard(): JSX.Element {
           </CellCardHeader>
           <Divider />
           <Description cellTypeName={cellTypeName} />
-          <FullScreenProvider>
-            <OntologyDagView cellTypeId={cellTypeId.replace(":", "_")} />
-          </FullScreenProvider>
           <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
           <EnrichedGenesTable cellTypeId={cellTypeId} />
           <SourceDataTable cellTypeId={cellTypeId} />
