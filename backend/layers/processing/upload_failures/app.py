@@ -119,7 +119,7 @@ def get_failure_slack_notification_message(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"TEST: Dataset processing job failed! @sc-oncall-eng\n"  # TODO: undo, set for testing
+                    "text": f"Dataset processing job failed! @sc-oncall-eng\n"
                     f"*Owner*: {collection_owner}\n"
                     f"*Collection Version URL*: {collection_version_url}\n"
                     f"*Batch Job ID*: <{batch_url}|{job_id}>\n"
