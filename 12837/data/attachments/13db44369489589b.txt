@@ -1,1 +1,0 @@
-Error deleting folder: Error: ENOENT: no such file or directory, stat './tests/downloads'
