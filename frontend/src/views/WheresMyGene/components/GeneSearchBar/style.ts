@@ -27,6 +27,11 @@ export const LoadingIndicatorWrapper = styled.div`
   align-items: center;
 `;
 
+export const StyledButtonWrapper = styled.div`
+  align-self: center;
+`;
+
 export const StyledClearButton = styled(Button)`
   white-space: nowrap;
+  font-weight: 500;
 `;
