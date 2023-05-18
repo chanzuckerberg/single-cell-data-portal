@@ -213,7 +213,6 @@ def reshape_dataset_for_curation_api(
     if not preview:
         ds["assets"] = extract_dataset_assets(dataset_version)
         ds["title"] = ds.pop("name", None)
-        ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
         if dataset_version.metadata is not None:
             ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
@@ -235,6 +234,7 @@ def reshape_dataset_for_curation_api(
         if as_canonical:
             ds["published_at"] = dataset_version.canonical_dataset.published_at
             ds["revised_at"] = dataset_version.canonical_dataset.revised_at
+            ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
     return ds
 
 
