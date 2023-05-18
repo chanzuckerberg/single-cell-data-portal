@@ -1,9 +1,8 @@
-import React, { ReactElement, useMemo } from "react";
+import React, { ReactElement, useState, useMemo, useEffect } from "react";
 import {
   TableTitle,
   TableTitleWrapper,
   PublicationLinkWrapper,
-  WmgLink,
   TableUnavailableContainer,
   TableUnavailableHeader,
   TableUnavailableDescription,
@@ -12,21 +11,16 @@ import Table from "../Table";
 import { MARKER_GENES_SECTION_ID } from "../CellCardSidebar";
 import Link from "../common/Link";
 import { useCanonicalMarkers } from "src/common/queries/cellCards";
+import { TableTitleInnerWrapper } from "../EnrichedGenesTable/style";
+import DropdownSelect from "../common/DropdownSelect";
+import { SelectChangeEvent } from "@mui/material";
 
 interface TableRow {
   symbol: string;
   name: string;
   publications: ReactElement | string;
-  organ: string;
-  tissue: string;
 }
-const tableColumns: Array<keyof TableRow> = [
-  "symbol",
-  "name",
-  "organ",
-  "tissue",
-  "publications",
-];
+const tableColumns: Array<keyof TableRow> = ["symbol", "name", "publications"];
 
 interface Props {
   cellTypeId: string;
@@ -34,11 +28,24 @@ interface Props {
 
 const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
   const { data: genes } = useCanonicalMarkers(cellTypeId);
+  const [selectedOrgan, setSelectedOrgan] = useState("");
+
+  const uniqueOrgans = useMemo(() => {
+    if (!genes) return [];
+    const organs = new Set<string>();
+    for (const markerGene of genes) {
+      organs.add(markerGene.tissue_general);
+      if (!selectedOrgan) setSelectedOrgan(markerGene.tissue_general);
+    }
+    return Array.from(organs);
+  }, [genes, cellTypeId]);
+
   const tableRows: TableRow[] = useMemo(() => {
     if (!genes) return [];
     const rows = [];
 
     for (const markerGene of genes) {
+      if (markerGene.tissue_general !== selectedOrgan) continue;
       const publications = markerGene.publication.split(";;");
       const publicationTitles = markerGene.publication_titles.split(";;");
       const publicationLinks = (
@@ -61,26 +68,40 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
         symbol: markerGene.symbol,
         name: markerGene.name,
         publications: publicationLinks,
-        organ: markerGene.tissue_general,
-        tissue: markerGene.tissue_specific,
       });
     }
     return rows;
-  }, [genes]);
+  }, [genes, selectedOrgan, cellTypeId]);
 
-  const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
+  const handleChange = (event: SelectChangeEvent) => {
+    setSelectedOrgan(event.target.value as string);
+  };
+
+  useEffect(() => {
+    return () => {
+      setSelectedOrgan("");
+    };
+  }, []);
+  // const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
 
   return (
     <div>
       <TableTitleWrapper>
-        <TableTitle id={MARKER_GENES_SECTION_ID}>Marker Genes</TableTitle>
+        <TableTitleInnerWrapper>
+          <TableTitle id={MARKER_GENES_SECTION_ID}>Marker Genes</TableTitle>
+          {tableRows.length > 0 && (
+            <DropdownSelect
+              handleChange={handleChange}
+              options={uniqueOrgans}
+              selectedOption={selectedOrgan}
+            />
+          )}
+        </TableTitleInnerWrapper>
         {tableRows.length > 0 && (
-          <WmgLink
-            href={`https://cellxgene.cziscience.com/gene-expression?tissues=lung&genes=${genesForShareUrl}&ver=2`}
-            target="_blank"
-          >
-            Open in Gene Expression
-          </WmgLink>
+          <Link
+            url={`https://cellxgene.cziscience.com/gene-expression`}
+            title={"Open in Gene Expression"}
+          />
         )}
       </TableTitleWrapper>
       {tableRows.length ? (

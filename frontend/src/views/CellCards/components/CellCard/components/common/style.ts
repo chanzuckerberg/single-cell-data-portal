@@ -18,15 +18,6 @@ export const TableTitleWrapper = styled.div`
   margin-bottom: 8px;
 `;
 
-export const WmgLink = styled.a`
-  ${fontBodyS}
-  font-weight: 500;
-  ${(props) => {
-    const colors = getColors(props);
-    return `color: ${colors?.primary[400]}`;
-  }}
-`;
-
 export const TableUnavailableContainer = styled("div")`
   margin-top: 16px;
   background: #f8f8f8;
@@ -40,6 +31,7 @@ export const TableUnavailableContainer = styled("div")`
 
   justify-content: center;
   text-align: center;
+  border-radius: 8px;
 `;
 
 export const TableUnavailableHeader = styled("span")`

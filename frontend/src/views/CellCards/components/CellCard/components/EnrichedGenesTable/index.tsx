@@ -1,12 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   TableTitle,
   TableTitleWrapper,
-  WmgLink,
   TableUnavailableContainer,
   TableUnavailableHeader,
   TableUnavailableDescription,
 } from "../common/style";
+import Link from "../common/Link";
 import { TableTitleInnerWrapper, TableTitleOuterWrapper } from "./style";
 import Table from "../Table";
 import { HIGHLY_EXPRESSED_GENES_SECTION_ID } from "../CellCardSidebar";
@@ -45,7 +45,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
       if (!selectedOrganism) setSelectedOrganism(markerGene.organism);
     }
     return Array.from(organisms);
-  }, [genes]);
+  }, [genes, cellTypeId]);
 
   const tableRows: TableRow[] = useMemo(() => {
     if (!genes) return [];
@@ -61,9 +61,15 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
       });
     }
     return rows;
-  }, [genes, selectedOrganism]);
+  }, [genes, selectedOrganism, cellTypeId]);
 
-  const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
+  useEffect(() => {
+    return () => {
+      setSelectedOrganism("");
+    };
+  }, []);
+
+  // const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
 
   const handleChange = (event: SelectChangeEvent) => {
     setSelectedOrganism(event.target.value as string);
@@ -84,12 +90,10 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
             )}
           </TableTitleInnerWrapper>
           {tableRows.length > 0 && (
-            <WmgLink
-              href={`https://cellxgene.cziscience.com/gene-expression?tissues=lung&genes=${genesForShareUrl}&ver=2`}
-              target="_blank"
-            >
-              Open in Gene Expression
-            </WmgLink>
+            <Link
+              url={`https://cellxgene.cziscience.com/gene-expression`}
+              title="Open in Gene Expression"
+            />
           )}
         </TableTitleOuterWrapper>
       </TableTitleWrapper>

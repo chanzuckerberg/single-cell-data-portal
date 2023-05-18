@@ -934,17 +934,19 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
                   <rect
                     x={width - 260}
                     y={-10}
-                    width={240}
+                    width={260}
                     height={60}
                     fill={white}
+                    rx={4}
                   />
-                  <path
+                  {/* <path
                     d={`M ${width - 260} ${-10} L ${width - 260} ${45} Q ${
                       width - 260
                     } ${50} ${width - 255} ${50} L ${width} ${50}`}
                     stroke="black"
+                    strokeWidth={0.25}
                     fill="transparent"
-                  />
+                  /> */}
 
                   <InCorpusLegend xPos={width - 240} yPos={10} />
                   <DescendantsLegend xPos={width - 160} yPos={10} />

@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getColors } from "czifui";
+import { fontBodyS, getColors, getSpacings } from "czifui";
 
 export const StyledTable = styled.table`
   width: 100%;
-  table-layout: auto;
+  table-layout: auto; ;
 `;
 
 export const TableWrapper = styled.div`
@@ -36,10 +36,15 @@ export const StyledRow = styled.tr<StyledRowProps>`
 export const StyledCell = styled.td`
   ${fontBodyS}
   font-weight: 400;
-  padding: 4px 0px 4px 0px;
+  ${(props) => {
+    const spacings = getSpacings(props);
+    return `  padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;
+    `;
+  }}
   min-width: 120px;
   word-break: break-word;
   overflow-wrap: break-word;
+  vertical-align: top;
 
   a {
     display: inline-block;
