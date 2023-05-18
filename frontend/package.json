@@ -17,7 +17,6 @@
     "@mui/lab": "^5.0.0-alpha.108",
     "@mui/material": "^5.10.14",
     "@mui/styles": "^5.10.14",
-    "@react-spring/web": "^9.7.2",
     "@types/d3-scale-chromatic": "^3.0.0",
     "@vgrid/sass-inline-svg": "^1.0.1",
     "@visx/clip-path": "^3.0.0",
@@ -28,7 +27,6 @@
     "@visx/shape": "^3.0.0",
     "@visx/tooltip": "^3.1.2",
     "@visx/zoom": "^3.1.1",
-    "cheerio": "^1.0.0-rc.12",
     "client-zip": "^2.2.2",
     "clipboard-copy": "^4.0.1",
     "csv": "^6.2.8",
@@ -55,7 +53,8 @@
     "rehype-mathjax": "^4.0.2",
     "rehype-slug": "^5.0.1",
     "remark-math": "^5.1.1",
-    "sass": "^1.54.4"
+    "sass": "^1.54.4",
+    "sharp": "^0.30.6"
   },
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.8.1",
