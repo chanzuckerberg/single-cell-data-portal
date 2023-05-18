@@ -65,13 +65,27 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertNotIn("name_0", self.sample_anndata.var.columns)
         self.assertIn("name_0", h5ad_file.var.columns)
 
-    def test__create_h5ad_data_file__no_copy_if_var_index_name_specified(self):
+    def test__create_h5ad_data_file__no_copy_if_var_index_name_already_in_columns(self):
         h5ad_file = H5ADDataFile(
             self.sample_h5ad_filename,
             var_index_column_name="int_category",
         )
-
         self.assertNotIn("name_0", h5ad_file.var.columns)
+        self.assertIn("int_category", h5ad_file.var.columns)
+
+    def test__create_h5ad_data_file__copy_if_var_index_name_not_in_columns(self):
+        h5ad_file = H5ADDataFile(
+            self.sample_h5ad_filename,
+            var_index_column_name="int_category",
+        )
+        # set index that is not already in columns
+        anndata_object = anndata.read_h5ad(self.sample_h5ad_filename)
+        anndata_object.var.reset_index(drop=True, inplace=True)
+
+        var_with_index_col = h5ad_file.transform_dataframe_index_into_column(anndata_object.var, "var", "int_category")
+
+        self.assertIn("name_0", var_with_index_col.columns)
+        self.assertIn("int_category", var_with_index_col.columns)
 
     def test__create_h5ad_data_file__var_index_name_specified_not_unique_raises_exception(self):
 
@@ -124,6 +138,15 @@ class TestH5ADDataFile(unittest.TestCase):
         self._validate_cxg_var_index_column_match(
             self.sample_output_directory,
             "feature_name",
+        )
+
+    def test__to_cxg__simple_anndata_with_different_var_index_than_h5ad(self):
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename, var_index_column_name="int_category")
+        h5ad_file.to_cxg(self.sample_output_directory, 0)
+
+        self._validate_cxg_var_index_column_match(
+            self.sample_output_directory,
+            "int_category",
         )
 
     def test__to_cxg__with_sparse_column_encoding(self):
@@ -302,6 +325,7 @@ class TestH5ADDataFile(unittest.TestCase):
             },
             index=feature_name,
         )
+        var_dataframe.index.name = "feature_name"
         var = var_dataframe
 
         # Create embeddings
