@@ -92,7 +92,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
           {tableRows.length > 0 && (
             <Link
               url={`https://cellxgene.cziscience.com/gene-expression`}
-              title="Open in Gene Expression"
+              label="Open in Gene Expression"
             />
           )}
         </TableTitleOuterWrapper>
