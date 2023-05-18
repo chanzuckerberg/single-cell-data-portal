@@ -14,8 +14,7 @@ import {
 import FilterViewList from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList";
 import FilterSearch from "src/components/common/Filter/components/FilterSearch";
 import { useFilterSearch } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
-
-const ADDITIONAL_PANEL_WIDTH = 24;
+import { ADDITIONAL_MENU_WIDTH } from "src/components/common/Filter/components/FilterContent/components/FilterMenu";
 
 export const MAX_DISPLAYABLE_LIST_ITEMS = {
   NON_SINGLETON: 15,
@@ -56,7 +55,7 @@ export default function FilterView({
   // (derived from a change in list item selected state font weight).
   useEffect(() => {
     if (panelRef.current) {
-      setPanelWidth(panelRef.current?.clientWidth + ADDITIONAL_PANEL_WIDTH);
+      setPanelWidth(panelRef.current?.clientWidth + ADDITIONAL_MENU_WIDTH);
     }
   }, []);
 
