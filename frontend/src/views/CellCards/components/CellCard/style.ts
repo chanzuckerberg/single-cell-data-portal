@@ -12,18 +12,24 @@ export const TOP_PADDING_PX = 32;
 export const CellCardsView = styled.div`
   display: flex;
   flex-direction: row;
+  column-gap: 120px;
+  margin: auto;
+  max-width: 1440px;
+  // padding 40px left and right
+  padding: ${TOP_PADDING_PX}px 40px 0px 40px;
 `;
 
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: ${TOP_PADDING_PX}px 0px 32px 40px;
-  width: 1080px;
+  align-self: stretch;
+  min-width: 640px;
 `;
 
-export const SearchBarWrapper = styled.div`
-  width: 320px;
-  margin-bottom: 20px;
+export const CellCardHeaderInnerWrapper = styled.div`
+  display: flex;
+  column-gap: 8px;
+  align-items: center;
 `;
 
 export const CellCardHeader = styled.div`
@@ -31,6 +37,7 @@ export const CellCardHeader = styled.div`
   column-gap: 8px;
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
 `;
 
 export const CellCardName = styled.div`

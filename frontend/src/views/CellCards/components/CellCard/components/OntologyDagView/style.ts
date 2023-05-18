@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { fontBodyXxxs, getColors } from "czifui";
-import IconButton from "@material-ui/core/IconButton";
+import { IconButton } from "@mui/material";
 
 export const StyledLegendText = styled.text`
   ${fontBodyXxxs}
@@ -15,9 +15,6 @@ export const StyledLegendText = styled.text`
 `;
 
 export const FullscreenButton = styled(IconButton)`
-  position: absolute;
-  top: 0;
-  right: 0;
   visibility: hidden;
   transition: visibility 0.2s;
   z-index: 1;

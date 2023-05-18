@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { isSSR } from "src/common/utils/isSSR";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { SearchBarWrapper, TOP_PADDING_PX } from "../../style";
+import { TOP_PADDING_PX } from "../../style";
+import { SearchBarWrapper, StyledNav } from "./style";
 import CellCardSearchBar from "../../../CellCardSearchBar";
 import {
   CellCardsSidebarWrapper,
@@ -133,7 +134,7 @@ export default function CellCardSidebar(): JSX.Element {
             <CellCardSearchBar />
           </SearchBarWrapper>
 
-          <nav>
+          <StyledNav>
             <TableOfContents>
               {SECTIONS.map((section) => (
                 <StyledJumpLink
@@ -167,7 +168,7 @@ export default function CellCardSidebar(): JSX.Element {
                 </StyledJumpLink>
               ))}
             </TableOfContents>
-          </nav>
+          </StyledNav>
         </StickyWrapper>
       </CellCardsSidebarWrapper>
     </>

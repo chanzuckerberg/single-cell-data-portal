@@ -4,7 +4,7 @@ import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { TOP_PADDING_PX } from "../../style";
 
 export const CellCardsSidebarWrapper = styled.div`
-  padding: ${TOP_PADDING_PX}px 0px 32px 40px;
+  width: 240px;
 `;
 
 export const StickyWrapper = styled.div`
@@ -16,6 +16,15 @@ export const StickyWrapper = styled.div`
 export const TableOfContents = styled.div`
   display: flex;
   flex-direction: column;
+`;
+
+export const SearchBarWrapper = styled.div`
+  margin-bottom: 20px;
+  width: 240px;
+`;
+
+export const StyledNav = styled.nav`
+  width: 240px;
 `;
 
 interface StyledJumpLinkProps extends CommonThemeProps {

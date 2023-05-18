@@ -6,3 +6,7 @@ export const CellCardDescription = styled.div`
   font-wieght: 400;
   white-space: pre-wrap;
 `;
+
+export const Wrapper = styled.div`
+  margin-top: 8px;
+`;

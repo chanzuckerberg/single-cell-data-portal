@@ -50,14 +50,14 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
         collection: (
           <Link
             key={`collection-name-${collection.collection_name}-${index}`}
-            title={collection.collection_name}
+            label={collection.collection_name}
             url={collection.collection_url}
           />
         ),
         publication: (
           <Link
             key={`publication-url-${collection.publication_title}-${index}`}
-            title={collection.publication_title}
+            label={collection.publication_title}
             url={`https://doi.org/${collection.publication_url}`}
           />
         ),

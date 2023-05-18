@@ -7,7 +7,7 @@ export const TableTitle = styled.div`
 
 export const PublicationLinkWrapper = styled.div`
   display: flex;
-  flex-direction: column;
+  column-gap: 2px;
 `;
 
 export const TableTitleWrapper = styled.div`

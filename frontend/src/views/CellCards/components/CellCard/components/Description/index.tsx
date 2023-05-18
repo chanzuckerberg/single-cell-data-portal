@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { CellCardDescription } from "./style";
+import { CellCardDescription, Wrapper } from "./style";
 import { useDescription, useClDescription } from "src/common/queries/cellCards";
 import { Tooltip } from "czifui";
 
@@ -28,7 +28,7 @@ export default function Description({
   }, [cellTypeIdRaw, rawDescriptionGpt, rawDescriptionCl]);
 
   return (
-    <>
+    <Wrapper>
       {descriptionCl && (
         <CellCardDescription>
           <b>
@@ -82,6 +82,6 @@ export default function Description({
         {"\n\n"}
         {descriptionGpt}
       </CellCardDescription>
-    </>
+    </Wrapper>
   );
 }

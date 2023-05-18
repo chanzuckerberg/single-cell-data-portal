@@ -14,6 +14,7 @@ import { useCanonicalMarkers } from "src/common/queries/cellCards";
 import { TableTitleInnerWrapper } from "../EnrichedGenesTable/style";
 import DropdownSelect from "../common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material";
+import { Tooltip } from "czifui";
 
 interface TableRow {
   symbol: string;
@@ -35,9 +36,15 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
     const organs = new Set<string>();
     for (const markerGene of genes) {
       organs.add(markerGene.tissue_general);
-      if (!selectedOrgan) setSelectedOrgan(markerGene.tissue_general);
     }
-    return Array.from(organs);
+    if (!selectedOrgan) setSelectedOrgan("All Tissues");
+    const uniqueOrgans = Array.from(organs);
+    // put "All Tissues" first in the array
+    return uniqueOrgans.sort((a, b) => {
+      if (a === "All Tissues") return -1;
+      if (b === "All Tissues") return 1;
+      return a.localeCompare(b);
+    });
   }, [genes, cellTypeId]);
 
   const tableRows: TableRow[] = useMemo(() => {
@@ -53,11 +60,22 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
           {publications.map((publication, index) => {
             if (publication && publicationTitles[index]) {
               return (
-                <Link
-                  key={`${publication}-${index}`}
+                <Tooltip
+                  key={`${publication}-${index}-tooltip`}
+                  placement="right"
+                  width="default"
+                  arrow={false}
                   title={publicationTitles[index]}
-                  url={`https://doi.org/${publication}`}
-                />
+                  leaveDelay={0}
+                >
+                  <span key={`${publication}-${index}-span`}>
+                    <Link
+                      key={`${publication}-${index}`}
+                      label={`[${index + 1}]`}
+                      url={`https://doi.org/${publication}`}
+                    />
+                  </span>
+                </Tooltip>
               );
             }
           })}
@@ -79,7 +97,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
 
   useEffect(() => {
     return () => {
-      setSelectedOrgan("");
+      setSelectedOrgan("All Tissues");
     };
   }, []);
   // const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
@@ -100,7 +118,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
         {tableRows.length > 0 && (
           <Link
             url={`https://cellxgene.cziscience.com/gene-expression`}
-            title={"Open in Gene Expression"}
+            label={"Open in Gene Expression"}
           />
         )}
       </TableTitleWrapper>

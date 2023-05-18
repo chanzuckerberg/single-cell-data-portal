@@ -481,10 +481,15 @@ const CollapsedNodesLegend = ({ xPos, yPos }: LegendProps) => {
 
 export type TreeProps = {
   cellTypeId: string;
+  skinnyMode: boolean;
 };
 
-export default function OntologyDagView({ cellTypeId }: TreeProps) {
+export default function OntologyDagView({ skinnyMode, cellTypeId }: TreeProps) {
   const margin = defaultMargin;
+  const [width, setWidth] = useState(1000);
+  const [height, setHeight] = useState(500);
+
+  const [resizeWidth, setResizeWidth] = useState(1000);
 
   const {
     isFullScreen,
@@ -493,8 +498,30 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
     disableFullScreen,
   } = useFullScreen();
 
-  const [width, height] = useMemo(() => {
-    let newWidth = 1040;
+  useEffect(() => {
+    const skinnyAdjustment = skinnyMode ? 0 : 120 + 240;
+    const width = Math.min(
+      1000,
+      window.innerWidth - 40 - 40 - skinnyAdjustment
+    );
+    setResizeWidth(width);
+    if (!isFullScreen) setWidth(width);
+
+    const handleResize = () => {
+      const skinnyAdjustment = skinnyMode ? 0 : 120 + 240;
+      const width = Math.min(
+        1000,
+        window.innerWidth - 40 - 40 - skinnyAdjustment
+      );
+      setResizeWidth(width);
+      if (!isFullScreen) setWidth(width);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isFullScreen, skinnyMode]);
+
+  useEffect(() => {
+    let newWidth = resizeWidth;
     let newHeight = 500;
     if (screenDimensions.width > 0 && isFullScreen) {
       newWidth = screenDimensions.width;
@@ -502,8 +529,9 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
     if (screenDimensions.height > 0 && isFullScreen) {
       newHeight = screenDimensions.height;
     }
-    return [newWidth, newHeight];
-  }, [screenDimensions, isFullScreen]);
+    setWidth(newWidth);
+    setHeight(newHeight);
+  }, [screenDimensions, isFullScreen, resizeWidth]);
 
   const initialTransformMatrixDefault = {
     scaleX: 1,
@@ -635,6 +663,11 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
       }
     }
   }, [data, cellTypeId, width, height]);
+
+  useEffect(() => {
+    setTriggerRender(!triggerRender);
+  }, [isFullScreen]);
+
   const {
     tooltipData,
     tooltipLeft,
