@@ -23,6 +23,8 @@ interface Props {
   values: SelectCategoryValueView[];
 }
 
+// Additional menu width facilitates the rendering of selected menu items (where font-weight is "semibold")
+// without any wrapping.
 const ADDITIONAL_MENU_WIDTH = 24;
 
 export default function FilterMenu({
