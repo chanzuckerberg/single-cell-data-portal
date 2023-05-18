@@ -201,16 +201,19 @@ class H5ADDataFile:
         use that column as the index instead.
         """
 
-        if index_column_name is None:
-            # Create a unique column name for the index.
-            suffix = 0
-            while f"name_{suffix}" in dataframe.columns:
-                suffix += 1
-            index_column_name = f"name_{suffix}"
-
-            # Turn the index into a normal column
-            dataframe.rename_axis(index_column_name, inplace=True)
+        def convert_index_to_column(index_name=None):
+            if index_name is None or index_name in dataframe.columns:
+                # Create a unique column name for the index.
+                suffix = 0
+                while f"name_{suffix}" in dataframe.columns:
+                    suffix += 1
+                index_name = f"name_{suffix}"
+                dataframe.rename_axis(index_name, inplace=True)
             dataframe.reset_index(inplace=True)
+
+        if index_column_name is None:
+            # if no index_column_name is passed, do not try to keep existing index name
+            convert_index_to_column()
 
         elif index_column_name in dataframe.columns:
             # User has specified alternative column for unique names, and it exists
@@ -219,6 +222,8 @@ class H5ADDataFile:
                     f"Values in {dataframe_name}.{index_column_name} must be unique. Please prepare data to contain "
                     f"unique values."
                 )
+            # save the current h5ad index as a column, and keep the name if possible
+            convert_index_to_column(index_name=dataframe.index.name)
         else:
             raise KeyError(f"Column {index_column_name} does not exist.")
 
