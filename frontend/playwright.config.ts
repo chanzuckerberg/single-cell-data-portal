@@ -181,7 +181,27 @@ function getStorageState(): {
     );
 
     // Merge loginState with featureFlags
-    storageState.cookies = storageState.cookies.concat(loginState.cookies);
+    // Comment this out if you want to supply auth cookie manually
+    // storageState.cookies = storageState.cookies.concat(loginState.cookies);
+
+    /**
+     * Uncomment this if you want to supply auth cookie manually
+     * Replace `value` string with your own auth cookie. NOTE:: the string
+     * typically starts with "ey" and ends with "="
+     */
+    storageState.cookies = [
+      {
+        name: "cxguser",
+        value: "ey...=",
+        domain: "api.cellxgene.dev.single-cell.czi.technology",
+        path: "/",
+        expires: 1965216850,
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+      },
+    ];
+
     storageState.origins = storageState.origins.concat(loginState.origins);
   }
 
