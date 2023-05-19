@@ -22,7 +22,7 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
         <Link href={ROUTES.COLLECTIONS} passHref>
           <AnchorButton
             active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
-            data-testid="collection-link"
+            data-testid="collections-link"
             href="passHref"
             minimal
             onClick={() => {

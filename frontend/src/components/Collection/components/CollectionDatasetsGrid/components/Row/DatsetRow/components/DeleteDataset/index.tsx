@@ -2,8 +2,9 @@ import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import * as React from "react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useDeleteDataset } from "src/common/queries/datasets";
+import { Collection } from "src/common/entities";
 
 const AsyncAlert = loadable(
   () =>
@@ -11,32 +12,46 @@ const AsyncAlert = loadable(
 );
 
 interface Props {
-  id?: string;
-  collectionId?: string;
   Button?: React.ElementType;
+  collectionId: Collection["id"];
+  datasetId?: string;
 }
 
 const DeleteDataset: FC<Props> = ({
-  id,
-  collectionId,
   Button = DefaultButton,
+  collectionId,
+  datasetId,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutateAsync: deleteDataset, isLoading } = useDeleteDataset();
 
-  const { mutateAsync: deleteDataset } = useDeleteDataset(collectionId);
-
-  const toggleAlert = () => {
-    setIsOpen(!isOpen);
-  };
+  // Closes delete dataset dialog when component unmounts.
+  // In the event of a successful dataset deletion, the cache invalidation of the collection triggers the
+  // unmounting of both the DatasetRow and DeleteDataset components resulting in the closing of the delete dataset
+  // dialog via the useEffect cleanup function.
+  useEffect(() => {
+    return () => {
+      setIsOpen(false);
+    };
+  }, []);
 
   const handleHover = () => {
     AsyncAlert.preload();
   };
 
+  // Deletes dataset.
+  const handleDeleteDataset = async (): Promise<void> => {
+    if (!datasetId) return;
+    await deleteDataset({ collectionId, datasetId });
+  };
+
   return (
     <>
-      <Button onMouseEnter={handleHover} disabled={!id} onClick={toggleAlert} />
+      <Button
+        onMouseEnter={handleHover}
+        disabled={!datasetId}
+        onClick={() => setIsOpen(true)}
+      />
       {isOpen && (
         <AsyncAlert
           loading={isLoading}
@@ -44,12 +59,8 @@ const DeleteDataset: FC<Props> = ({
           confirmButtonText="Delete Dataset"
           intent={Intent.DANGER}
           isOpen={isOpen}
-          onCancel={toggleAlert}
-          onConfirm={async () => {
-            setIsLoading(true);
-            await deleteDataset(id);
-            toggleAlert();
-          }}
+          onCancel={() => setIsOpen(false)}
+          onConfirm={handleDeleteDataset}
         >
           <H6>Are you sure you want to delete this dataset?</H6>
           <p>You cannot undo this action</p>

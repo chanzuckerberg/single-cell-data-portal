@@ -1,13 +1,12 @@
 import styled from "@emotion/styled";
-import { textClippingCSS } from "src/components/Collections/components/Grid/common/style";
 import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 import { CommonThemeProps, fontBodyXs, getColors, Tag as SDSTag } from "czifui";
 
 const gray100 = (props: CommonThemeProps) => getColors(props)?.gray[100];
 
 export const FieldValues = styled.div`
-  ${textClippingCSS}
   color: ${GRAY.A};
+  white-space: nowrap;
 `;
 
 export const ContentWrapper = styled.div`

@@ -172,7 +172,7 @@ async function createCollection({
  * Display the collection form modal.
  */
 async function showCreateForm(page: Page) {
-  await goToPage(`${TEST_URL}${ROUTES.MY_COLLECTIONS}`, page);
+  await goToPage(`${TEST_URL}${ROUTES.COLLECTIONS}`, page);
   await page.getByText("Create Collection").click();
 }
 
