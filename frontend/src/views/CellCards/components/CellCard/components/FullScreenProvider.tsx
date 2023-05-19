@@ -47,8 +47,6 @@ const FullScreenProvider: React.FC = ({ children }) => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         disableFullScreen();
-      } else if (event.key === "f") {
-        enableFullScreen();
       }
     };
 

@@ -19,10 +19,13 @@ export const StyledHead = styled.thead`
 export const StyledHeadCell = styled.th`
   ${fontBodyS}
   font-weight: 500;
-  padding: 8px 0px 0px 0px;
   ${(props) => {
     const colors = getColors(props);
-    return `color: ${colors?.gray[500]}`;
+    const spacings = getSpacings(props);
+
+    return `
+    color: ${colors?.gray[500]};
+    padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;`;
   }}
 `;
 
@@ -38,7 +41,7 @@ export const StyledCell = styled.td`
   font-weight: 400;
   ${(props) => {
     const spacings = getSpacings(props);
-    return `  padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;
+    return `padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;
     `;
   }}
   min-width: 120px;

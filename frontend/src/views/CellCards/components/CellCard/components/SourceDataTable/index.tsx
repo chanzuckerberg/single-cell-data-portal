@@ -39,7 +39,17 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
     if (!collections) return [];
     const rows = [];
     let index = 0;
-    for (const collection of collections) {
+    const sortedCollections = collections.sort((a, b) => {
+      const aOrganisms = a.organism.map((organism) => organism.label);
+      const bOrganisms = b.organism.map((organism) => organism.label);
+      if (aOrganisms.length === 0 && bOrganisms.length === 0) return 0;
+      if (aOrganisms.includes("Homo sapiens")) return -1;
+      if (bOrganisms.includes("Homo sapiens")) return 1;
+      const aFirstOrganism = aOrganisms.at(0) ?? "";
+      const bFirstOrganism = bOrganisms.at(0) ?? "";
+      return aFirstOrganism.localeCompare(bFirstOrganism);
+    });
+    for (const collection of sortedCollections) {
       const tissueNames = collection.tissue.map((tissue) => tissue.label);
       const diseaseNames = collection.disease.map((disease) => disease.label);
       const organismNames = collection.organism.map(

@@ -37,7 +37,7 @@ export const HoverContainer = styled.div<HoverContainerProps>`
           width: 100%;
           height: 100%;
           overflow: auto;
-          z-index: 9999;
+          z-index: 1;
         `
       : css`
           height: ${height}px;
@@ -48,5 +48,11 @@ export const HoverContainer = styled.div<HoverContainerProps>`
     ${FullscreenButton} {
       visibility: visible;
     }
+  }
+`;
+
+export const TooltipInPortalStyle = css`
+  .visx-tooltip {
+    z-index: 1;
   }
 `;

@@ -79,13 +79,18 @@ export default function CellCard(): JSX.Element {
               <CellCardName>
                 {cellTypeName.charAt(0).toUpperCase() + cellTypeName.slice(1)}
               </CellCardName>
-              <StyledTag
-                label={cellTypeId}
-                sdsType="secondary"
-                sdsStyle="square"
-                color="gray"
-                hover={false}
-              />
+              <a
+                href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
+                target="_blank"
+              >
+                <StyledTag
+                  label={cellTypeId}
+                  sdsType="secondary"
+                  sdsStyle="square"
+                  color="gray"
+                  hover
+                />
+              </a>
             </CellCardHeaderInnerWrapper>
             {skinnyMode && (
               <SearchBarWrapper>

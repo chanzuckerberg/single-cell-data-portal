@@ -3,10 +3,10 @@ import React, {
   MouseEventHandler,
   useEffect,
   useState,
-  useLayoutEffect,
   useRef,
 } from "react";
 import { Group } from "@visx/group";
+import { Global } from "@emotion/react";
 import { localPoint } from "@visx/event";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
 import { Tree, hierarchy } from "@visx/hierarchy";
@@ -32,7 +32,12 @@ import {
   TableUnavailableHeader,
   TableUnavailableDescription,
 } from "../common/style";
-import { FullscreenButton, HoverContainer, StyledLegendText } from "./style";
+import {
+  FullscreenButton,
+  HoverContainer,
+  StyledLegendText,
+  TooltipInPortalStyle,
+} from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 
 const primaryColor = "#0073FF";
@@ -622,11 +627,7 @@ export default function OntologyDagView({ skinnyMode, cellTypeId }: TreeProps) {
     };
   }, [cellTypeId]);
 
-  // This effect is used to center the node corresponding to the cell type id
-  // useLayoutEffect is used to ensure that node coordinates have been populated by the renderer prior to painting
-  const useIsomorphicLayoutEffect =
-    typeof window !== "undefined" ? useLayoutEffect : useEffect;
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     if (data) {
       data.each((node) => {
         const pointNode = node as HierarchyPointNode<TreeNodeWithState>;
@@ -701,11 +702,11 @@ export default function OntologyDagView({ skinnyMode, cellTypeId }: TreeProps) {
       }
     }
   };
-
   const cellTypesById = useCellTypesById() || {};
 
   return (
     <>
+      <Global styles={TooltipInPortalStyle} />
       <TableTitleWrapper id={ONTOLOGY_SECTION_ID}>
         <TableTitle>Cell Ontology</TableTitle>
       </TableTitleWrapper>

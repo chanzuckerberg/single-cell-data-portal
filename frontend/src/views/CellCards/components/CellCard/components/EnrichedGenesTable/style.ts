@@ -1,9 +1,18 @@
 import styled from "@emotion/styled";
 
-export const TableTitleInnerWrapper = styled.div`
+interface TableTitleInnerWrapperProps {
+  columnGap?: number;
+}
+
+export const TableTitleInnerWrapper = styled.div<TableTitleInnerWrapperProps>`
   display: flex;
-  column-gap: 8px;
   align-items: center;
+  ${(props) => {
+    const columnGap = props.columnGap ?? 8;
+    return `
+      column-gap: ${columnGap}px;
+    `;
+  }}
 `;
 
 export const TableTitleOuterWrapper = styled.div`

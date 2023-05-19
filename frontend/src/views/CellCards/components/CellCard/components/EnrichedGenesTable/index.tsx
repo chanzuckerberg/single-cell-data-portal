@@ -13,6 +13,8 @@ import { HIGHLY_EXPRESSED_GENES_SECTION_ID } from "../CellCardSidebar";
 import DropdownSelect from "../common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { useEnrichedGenes } from "src/common/queries/cellCards";
+import HelpTooltip from "../common/HelpTooltip";
+import { ROUTES } from "src/common/constants/routes";
 
 interface TableRow {
   symbol: string;
@@ -42,9 +44,18 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
     const organisms = new Set<string>();
     for (const markerGene of genes) {
       organisms.add(markerGene.organism);
-      if (!selectedOrganism) setSelectedOrganism(markerGene.organism);
     }
-    return Array.from(organisms);
+    if (!selectedOrganism && Array.from(organisms).includes("Homo sapiens"))
+      setSelectedOrganism("Homo sapiens");
+    else if (!selectedOrganism)
+      setSelectedOrganism(Array.from(organisms).at(0) ?? "");
+
+    const organismsArray = Array.from(organisms).sort((a, b) => {
+      if (a === "Homo sapiens") return -1;
+      if (b === "Homo sapiens") return 1;
+      return a.localeCompare(b);
+    });
+    return organismsArray;
   }, [genes, cellTypeId]);
 
   const tableRows: TableRow[] = useMemo(() => {
@@ -79,21 +90,41 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
     <>
       <TableTitleWrapper id={HIGHLY_EXPRESSED_GENES_SECTION_ID}>
         <TableTitleOuterWrapper>
-          <TableTitleInnerWrapper>
+          <TableTitleInnerWrapper columnGap={4}>
             <TableTitle>Highly Expressed Genes</TableTitle>
-            {tableRows.length > 0 && (
+            <HelpTooltip
+              text={
+                <>
+                  {
+                    "The marker genes listed below are computationally derived from the "
+                  }
+                  <Link label={"CELLxGENE corpus"} url={ROUTES.DATASETS} />
+                  {
+                    ". They are computed utilizing the same methodology as featured in our "
+                  }
+                  <Link
+                    label={
+                      "Find Marker Genes feature from the Gene Expression application"
+                    }
+                    url={ROUTES.FMG_DOCS}
+                  />
+                  {"."}
+                </>
+              }
+            />
+          </TableTitleInnerWrapper>
+          {tableRows.length > 0 && (
+            <TableTitleInnerWrapper>
               <DropdownSelect
                 handleChange={handleChange}
                 options={uniqueOrganisms}
                 selectedOption={selectedOrganism}
               />
-            )}
-          </TableTitleInnerWrapper>
-          {tableRows.length > 0 && (
-            <Link
-              url={`https://cellxgene.cziscience.com/gene-expression`}
-              label="Open in Gene Expression"
-            />
+              <Link
+                url={`https://cellxgene.cziscience.com/gene-expression`}
+                label="Open in Gene Expression"
+              />
+            </TableTitleInnerWrapper>
           )}
         </TableTitleOuterWrapper>
       </TableTitleWrapper>

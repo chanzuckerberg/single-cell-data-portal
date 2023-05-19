@@ -15,6 +15,7 @@ import { TableTitleInnerWrapper } from "../EnrichedGenesTable/style";
 import DropdownSelect from "../common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material";
 import { Tooltip } from "czifui";
+import HelpTooltip from "../common/HelpTooltip";
 
 interface TableRow {
   symbol: string;
@@ -105,21 +106,42 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
   return (
     <div>
       <TableTitleWrapper>
-        <TableTitleInnerWrapper>
+        <TableTitleInnerWrapper columnGap={4}>
           <TableTitle id={MARKER_GENES_SECTION_ID}>Marker Genes</TableTitle>
-          {tableRows.length > 0 && (
+          <HelpTooltip
+            text={
+              <>
+                {
+                  "The below marker genes and associated publications were derived from the "
+                }
+                <Link
+                  label={
+                    "Anatomical Structures, Cell Types and Biomarkers (ASCT+B)"
+                  }
+                  url={
+                    "https://hubmapconsortium.github.io/ccf/pages/ccf-anatomical-structures.html"
+                  }
+                />
+                {
+                  " tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+                }
+              </>
+            }
+          />
+        </TableTitleInnerWrapper>
+        {tableRows.length > 0 && (
+          <TableTitleInnerWrapper>
             <DropdownSelect
               handleChange={handleChange}
               options={uniqueOrgans}
               selectedOption={selectedOrgan}
             />
-          )}
-        </TableTitleInnerWrapper>
-        {tableRows.length > 0 && (
-          <Link
-            url={`https://cellxgene.cziscience.com/gene-expression`}
-            label={"Open in Gene Expression"}
-          />
+
+            <Link
+              url={`https://cellxgene.cziscience.com/gene-expression`}
+              label={"Open in Gene Expression"}
+            />
+          </TableTitleInnerWrapper>
         )}
       </TableTitleWrapper>
       {tableRows.length ? (
