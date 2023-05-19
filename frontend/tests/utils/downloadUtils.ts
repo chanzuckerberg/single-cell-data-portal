@@ -8,6 +8,7 @@ import { TEST_URL, downLoadPath } from "tests/common/constants";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 import sharp from "sharp";
+import { goToWMG } from "./wmgUtils";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -265,7 +266,7 @@ export async function downloadGeneFile(
 
   for (const ext of allFileTypes) {
     const checkboxId = `${ext}-checkbox`;
-    // uncheck if file type is checked but not
+    // UI has some file types selected by default. This ensures we unselect file types that don't exist in `fileTypes`
     if (
       (await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
         CHECK
@@ -397,4 +398,29 @@ export async function captureTissueSnapshot(
   });
 
   await page.locator(geneCanvasId).nth(0).screenshot({ path: geneSnapshot });
+}
+
+export async function verifySvgDownload(
+  page: Page,
+  sharedLink: string,
+  tissues: string[],
+  folder: string
+): Promise<void> {
+  for (let i = 0; i < tissues.length; i++) {
+    const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
+    const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
+
+    await goToWMG(page, sharedLink);
+    await downloadAndVerifyFiles(page, ["svg"], tissues, folder);
+    await captureTissueSnapshot(page, downLoadPath, folder, tissues, i);
+    await compareSvg(
+      page,
+      cellSnapshot,
+      geneSnapshot,
+      `${folder}/${tissues[i]}.svg`,
+      folder,
+      tissues[i]
+    );
+    await deleteDownloadedFiles(`./tests/downloads/${folder}`);
+  }
 }
