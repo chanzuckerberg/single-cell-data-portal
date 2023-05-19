@@ -138,7 +138,9 @@ const CellTypeButton = ({
             title={
               // Set tooltip content only if name is truncated
               isTruncated ? (
-                <CellTypeLabelTooltipStyle>{name}</CellTypeLabelTooltipStyle>
+                <CellTypeLabelTooltipStyle data-testid="cell-type-name-tooltip">
+                  {name}
+                </CellTypeLabelTooltipStyle>
               ) : null
             }
             sdsStyle="light"
