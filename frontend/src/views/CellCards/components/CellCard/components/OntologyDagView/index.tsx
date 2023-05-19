@@ -710,7 +710,7 @@ export default function OntologyDagView({ skinnyMode, cellTypeId }: TreeProps) {
       <TableTitleWrapper id={ONTOLOGY_SECTION_ID}>
         <TableTitle>Cell Ontology</TableTitle>
       </TableTitleWrapper>
-      {data ? (
+      {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
           key={centerNodeCoords ? "centered" : "initial"}
           width={width}
@@ -997,7 +997,7 @@ export default function OntologyDagView({ skinnyMode, cellTypeId }: TreeProps) {
           </TableUnavailableHeader>
           <TableUnavailableDescription>
             The cell ontology visualization for this cell type is currently not
-            available. Please check again later.
+            available as it is not a descendant of "animal cell".
           </TableUnavailableDescription>
         </TableUnavailableContainer>
       )}
