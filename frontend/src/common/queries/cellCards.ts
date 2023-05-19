@@ -92,17 +92,6 @@ export const USE_CELL_ONTOLOGY_TREE_QUERY = {
   id: "cell-explorer-cell-ontology-tree-query",
 };
 
-// export function useCellOntologyTree(): UseQueryResult<CellOntologyTreeResponse> {
-//   return useQuery(
-//     [USE_CELL_ONTOLOGY_TREE_QUERY],
-//     ({ signal }) => fetchOntologyTreeQuery({ signal }),
-//     {
-//       enabled: true,
-//       staleTime: Infinity,
-//     }
-//   );
-// }
-
 // ontology_tree_state
 export interface InitialCellOntologyTreeStateResponse {
   isExpandedNodes: string[];
@@ -139,19 +128,6 @@ export const USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY = {
   entities: [ENTITIES.CELL_CARDS_INITIAL_CELL_ONTOLOGY_TREE_STATE],
   id: "cell-explorer-cell-ontology-tree-query",
 };
-
-// export function useCellOntologyTreeState(
-//   cellTypeId: string
-// ): UseQueryResult<InitialCellOntologyTreeStateResponse> {
-//   return useQuery(
-//     [USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY, cellTypeId],
-//     ({ signal }) => fetchOntologyTreeStateQuery({ cellTypeId, signal }),
-//     {
-//       enabled: true,
-//       staleTime: Infinity,
-//     }
-//   );
-// }
 
 // source_data
 interface SourceDataQueryResponseEntry {
@@ -195,19 +171,6 @@ export const USE_SOURCE_DATA_QUERY = {
   id: "cell-explorer-source-data-query",
 };
 
-// export function useSourceData(
-//   cellTypeId: string
-// ): UseQueryResult<SourceDataQueryResponse> {
-//   return useQuery(
-//     [USE_SOURCE_DATA_QUERY, cellTypeId],
-//     ({ signal }) => fetchSourceDataQuery({ cellTypeId, signal }),
-//     {
-//       enabled: true,
-//       staleTime: Infinity,
-//     }
-//   );
-// }
-
 // enriched_genes
 interface EnrichedGenesQueryResponseEntry {
   me: number;
@@ -247,19 +210,6 @@ export const USE_ENRICHED_GENES_QUERY = {
   entities: [ENTITIES.CELL_CARDS_ENRICHED_GENES],
   id: "cell-explorer-enriched-genes-query",
 };
-
-// export function useEnrichedGenes(
-//   cellTypeId: string
-// ): UseQueryResult<EnrichedGenesQueryResponse> {
-//   return useQuery(
-//     [USE_ENRICHED_GENES_QUERY, cellTypeId],
-//     ({ signal }) => fetchEnrichedGenesQuery({ cellTypeId, signal }),
-//     {
-//       enabled: true,
-//       staleTime: Infinity,
-//     }
-//   );
-// }
 
 // canonical_markers
 interface CanonicalMarkersQueryResponseEntry {
@@ -302,19 +252,6 @@ export const USE_CANONICAL_MARKERS_QUERY = {
   id: "cell-explorer-canonical-markersquery",
 };
 
-// export function useCanonicalMarkers(
-//   cellTypeId: string
-// ): UseQueryResult<CanonicalMarkersQueryResponse> {
-//   return useQuery(
-//     [USE_CANONICAL_MARKERS_QUERY, cellTypeId],
-//     ({ signal }) => fetchCanonicalMarkersQuery({ cellTypeId, signal }),
-//     {
-//       enabled: true,
-//       staleTime: Infinity,
-//     }
-//   );
-// }
-
 // CL description
 async function fetchClDescription({
   cellTypeId,
@@ -346,19 +283,6 @@ export const USE_CL_DESCRIPTION_QUERY = {
 
 type ClDescriptionQueryResponse = string;
 
-// export function useClDescription(
-//   cellTypeId: string
-// ): UseQueryResult<ClDescriptionQueryResponse> {
-//   return useQuery(
-//     [USE_CL_DESCRIPTION_QUERY, cellTypeId],
-//     ({ signal }) => fetchClDescription({ cellTypeId, signal }),
-//     {
-//       enabled: true,
-//       staleTime: Infinity,
-//     }
-//   );
-// }
-
 // description
 async function fetchDescription({
   cellTypeId,
@@ -389,19 +313,6 @@ export const USE_DESCRIPTION_QUERY = {
 };
 
 type DescriptionQueryResponse = string;
-
-// export function useDescription(
-//   cellTypeId: string
-// ): UseQueryResult<DescriptionQueryResponse> {
-//   return useQuery(
-//     [USE_DESCRIPTION_QUERY, cellTypeId],
-//     ({ signal }) => fetchDescription({ cellTypeId, signal }),
-//     {
-//       enabled: true,
-//       staleTime: Infinity,
-//     }
-//   );
-// }
 
 // cell_guides
 interface CellCardsQueryResponseEntry {
@@ -438,17 +349,6 @@ export const USE_CELL_CARDS_QUERY = {
   entities: [ENTITIES.CELL_CARDS_CELL_CARDS],
   id: "cell-cards-query",
 };
-
-// export function useCellTypes(): UseQueryResult<CellCardsQueryResponse> {
-//   return useQuery(
-//     [USE_CELL_CARDS_QUERY],
-//     ({ signal }) => fetchCellCardsQuery({ signal }),
-//     {
-//       enabled: true,
-//       staleTime: Infinity,
-//     }
-//   );
-// }
 
 export function useCellTypesById(): { [id: string]: string } | undefined {
   const { data, isLoading } = useCellCardQuery(
