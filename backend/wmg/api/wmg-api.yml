@@ -809,6 +809,10 @@ paths:
                 properties:
                   snapshot_id:
                     $ref: "#/components/schemas/wmg_snapshot_id"
+                  tooManyCells:
+                    description: ->
+                      Boolean indicating whether the query returned too many cells to compute differential expression.
+                    type: boolean
                   differentialExpressionResults1:
                     description: ->
                       Differential expression results for cell group 1

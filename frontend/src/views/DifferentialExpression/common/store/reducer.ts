@@ -27,6 +27,8 @@ export interface State {
   organismId: string | null;
   queryGroups: QueryGroups;
   queryGroupsWithNames: QueryGroupsWithNames;
+  submittedQueryGroups: QueryGroups | null;
+  submittedQueryGroupsWithNames: QueryGroupsWithNames | null;
   snapshotId: string | null;
 }
 
@@ -48,6 +50,8 @@ export const INITIAL_STATE: State = {
     queryGroup1: EMPTY_FILTERS,
     queryGroup2: EMPTY_FILTERS,
   },
+  submittedQueryGroups: null,
+  submittedQueryGroupsWithNames: null,
 };
 
 export const REDUCERS = {
@@ -58,6 +62,8 @@ export const REDUCERS = {
   clearQueryGroup1Filters,
   clearQueryGroup2Filters,
   copyCellGroup1,
+  submitQueryGroups,
+  clearSubmittedQueryGroups,
 };
 
 function setSnapshotId(
@@ -145,6 +151,27 @@ function selectQueryGroup2Filters(
       ...queryGroupsWithNames,
       queryGroup2: newQueryGroupWithNames,
     },
+  };
+}
+
+function submitQueryGroups(state: State, _: PayloadAction<null>): State {
+  const { queryGroups, queryGroupsWithNames } = state;
+
+  return {
+    ...state,
+    submittedQueryGroups: queryGroups,
+    submittedQueryGroupsWithNames: queryGroupsWithNames,
+  };
+}
+
+function clearSubmittedQueryGroups(
+  state: State,
+  _: PayloadAction<null>
+): State {
+  return {
+    ...state,
+    submittedQueryGroups: null,
+    submittedQueryGroupsWithNames: null,
   };
 }
 

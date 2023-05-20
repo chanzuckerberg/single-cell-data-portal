@@ -11,7 +11,7 @@ import {
 
 export const Wrapper = styled.div`
   height: 100%;
-  width: 655px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   margin-left: 120px;

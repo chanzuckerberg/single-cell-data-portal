@@ -5,7 +5,10 @@ import {
   useDifferentialExpression,
   usePrimaryFilterDimensions,
 } from "src/common/queries/differentialExpression";
-import { StateContext } from "src/views/DifferentialExpression/common/store";
+import {
+  DispatchContext,
+  StateContext,
+} from "src/views/DifferentialExpression/common/store";
 import {
   CopyGenesButton,
   QueryGroupSubTitle,
@@ -17,7 +20,7 @@ import {
   NoDeGenesHeader,
 } from "./style";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
-
+import { clearSubmittedQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
 interface DifferentialExpressionRow {
   name: string;
   pValue: number;
@@ -25,6 +28,7 @@ interface DifferentialExpressionRow {
 }
 
 export default function DeResults(): JSX.Element {
+  const dispatch = useContext(DispatchContext);
   const { data: rawDifferentialExpressionResults, isLoading } =
     useDifferentialExpression();
   const {
@@ -40,11 +44,17 @@ export default function DeResults(): JSX.Element {
   const { data, isLoading: isLoadingPrimaryFilters } =
     usePrimaryFilterDimensions();
   const { genes: rawGenes } = data || {};
-  const { organismId, queryGroupsWithNames } = useContext(StateContext);
+  const {
+    organismId,
+    submittedQueryGroups,
+    queryGroups,
+    submittedQueryGroupsWithNames: queryGroupsWithNames,
+  } = useContext(StateContext);
 
   useEffect(() => {
-    if (!rawGenes || isLoadingPrimaryFilters || isLoading) return;
-    const genes = rawGenes[organismId || ""];
+    if (!rawGenes || isLoadingPrimaryFilters || !organismId || isLoading)
+      return;
+    const genes = rawGenes[organismId];
     const genesById = genes.reduce((acc, gene) => {
       return acc.set(gene.id, gene);
     }, new Map<OntologyTerm["id"], OntologyTerm>());
@@ -89,7 +99,7 @@ export default function DeResults(): JSX.Element {
   const copyGenesHandlers = [handleCopyGenes1, handleCopyGenes2];
 
   const namesToShow: string[][] = [];
-  const { queryGroup1, queryGroup2 } = queryGroupsWithNames;
+  const { queryGroup1, queryGroup2 } = queryGroupsWithNames ?? {};
   for (const [index, queryGroupWithNames] of [
     queryGroup1,
     queryGroup2,
@@ -101,9 +111,14 @@ export default function DeResults(): JSX.Element {
       }
     }
   }
+
+  useEffect(() => {
+    if (!submittedQueryGroups || !dispatch) return;
+    if (JSON.stringify(queryGroups) !== JSON.stringify(submittedQueryGroups))
+      dispatch(clearSubmittedQueryGroups());
+  }, [queryGroups, submittedQueryGroups]);
   return (
     <div>
-      {isLoading && <div>Loading...</div>}
       {[differentialExpressionResults1, differentialExpressionResults2].map(
         (results, index) => {
           return (
@@ -154,6 +169,8 @@ export default function DeResults(): JSX.Element {
                       })}
                     </tbody>
                   </StyledHTMLTable>
+                ) : isLoading ? (
+                  <div />
                 ) : (
                   <NoDeGenesContainer>
                     <NoDeGenesHeader>

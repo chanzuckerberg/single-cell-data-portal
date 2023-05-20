@@ -1,5 +1,4 @@
-import { useContext, useState } from "react";
-import { DrawerSize } from "@blueprintjs/core";
+import { useContext } from "react";
 import {
   DispatchContext,
   StateContext,
@@ -13,16 +12,17 @@ import {
   CopyButtonWrapper,
   RunButton,
   RunButtonWrapper,
-  StyledSidebarDrawer,
 } from "./style";
 import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
-import { copyCellGroup1 } from "src/views/DifferentialExpression/common/store/actions";
+import {
+  copyCellGroup1,
+  submitQueryGroups,
+} from "src/views/DifferentialExpression/common/store/actions";
 import DeResults from "./components/DeResults";
 
 export default function DifferentialExpression(): JSX.Element {
   const dispatch = useContext(DispatchContext);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { queryGroups, queryGroupsWithNames } = useContext(StateContext);
   const { queryGroup1, queryGroup2 } = queryGroups;
   const {
@@ -38,65 +38,64 @@ export default function DifferentialExpression(): JSX.Element {
   const canRunDifferentialExpression = true;
 
   const handleRunDifferentialExpression = () => {
-    setIsSidebarOpen(true);
-  };
-  const handleCloseSidebar = () => {
-    setIsSidebarOpen(false);
+    if (!dispatch) return;
+    dispatch(submitQueryGroups());
   };
 
   return (
     <Wrapper>
-      <StepHeader>
-        <WordPop>Differential</WordPop> Expression
-      </StepHeader>
-      <StepSubHeader>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat.
-      </StepSubHeader>
-      <Organism />
-      <CellGroupTitle>Cell Group 1</CellGroupTitle>
-      <QueryGroupFilters
-        key={`query-group-1`}
-        queryGroup={queryGroup1}
-        queryGroupWithNames={queryGroupWithNames1}
-        isQueryGroup1={true}
-      />
-      <CellGroupTitle>
-        Cell Group 2
-        <CopyButtonWrapper onClick={handleCopyCellGroup1}>
-          Copy Cell Group 1
-        </CopyButtonWrapper>
-      </CellGroupTitle>
-      <QueryGroupFilters
-        key={`query-group-2`}
-        queryGroup={queryGroup2}
-        queryGroupWithNames={queryGroupWithNames2}
-        isQueryGroup1={false}
-      />
-      <RunButtonWrapper>
-        <RunButton
-          color="primary"
-          size="large"
-          variant="contained"
-          onClick={handleRunDifferentialExpression}
-          disabled={!canRunDifferentialExpression}
-        >
-          Run differential expression
-        </RunButton>
-      </RunButtonWrapper>
-      <StyledSidebarDrawer
-        position="right"
-        isOpen={isSidebarOpen}
-        title="Source Data"
-        canEscapeKeyClose={true}
-        canOutsideClickClose={true}
-        onClose={handleCloseSidebar}
-        size={DrawerSize.SMALL}
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "row",
+          columnGap: "120px",
+        }}
       >
+        <div style={{ width: "655px" }}>
+          <StepHeader>
+            <WordPop>Differential</WordPop> Expression
+          </StepHeader>
+          <StepSubHeader>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat.
+          </StepSubHeader>
+          <Organism />
+          <CellGroupTitle>Cell Group 1</CellGroupTitle>
+          <QueryGroupFilters
+            key={`query-group-1`}
+            queryGroup={queryGroup1}
+            queryGroupWithNames={queryGroupWithNames1}
+            isQueryGroup1={true}
+          />
+          <CellGroupTitle>
+            Cell Group 2
+            <CopyButtonWrapper onClick={handleCopyCellGroup1}>
+              Copy Cell Group 1
+            </CopyButtonWrapper>
+          </CellGroupTitle>
+          <QueryGroupFilters
+            key={`query-group-2`}
+            queryGroup={queryGroup2}
+            queryGroupWithNames={queryGroupWithNames2}
+            isQueryGroup1={false}
+          />
+          <RunButtonWrapper>
+            <RunButton
+              color="primary"
+              size="large"
+              variant="contained"
+              onClick={handleRunDifferentialExpression}
+              disabled={!canRunDifferentialExpression}
+            >
+              Run differential expression
+            </RunButton>
+          </RunButtonWrapper>
+        </div>
         <DeResults />
-      </StyledSidebarDrawer>
+      </div>
     </Wrapper>
   );
 }
