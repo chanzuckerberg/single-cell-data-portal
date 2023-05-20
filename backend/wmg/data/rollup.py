@@ -145,9 +145,10 @@ def rollup_across_cell_type_descendants(
         Tidy dataframe with the same dimensions as the input dataframe, but with the numeric
         columns aggregated across the cell type's descendants.
     """
-    array_to_sum, dim_indices, numeric_df, cell_types = _prepare_rollup_array(df, cell_type_col)
-    summed = rollup_across_cell_type_descendants_array(array_to_sum, cell_types)
 
+    array_to_sum, dim_indices, numeric_df, cell_types = _prepare_rollup_array(df, cell_type_col)
+
+    summed = rollup_across_cell_type_descendants_array(array_to_sum, cell_types)
     # extract numeric data and write back into the dataframe
     summed = summed[tuple(dim_indices)]
     dtypes = numeric_df.dtypes

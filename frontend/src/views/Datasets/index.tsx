@@ -30,10 +30,10 @@ import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
-import SideBar from "src/components/common/SideBar";
 import DatasetsActionsCell from "src/components/Datasets/components/Grid/components/DatasetActionsCell";
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
+import SideBar from "src/components/common/SideBar";
 import { View } from "../globalStyle";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
 
@@ -373,6 +373,8 @@ export default function Datasets(): JSX.Element {
               />
             )}
           </View>
+          {/* May be added in the future after sign off */}
+          {/* <BottomBanner /> */}
         </>
       )}
     </>
