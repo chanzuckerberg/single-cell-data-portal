@@ -384,7 +384,8 @@ export function useDifferentialExpression(): {
 }
 
 function useDEQueryRequestBody() {
-  const { organismId, queryGroups } = useContext(StateContext);
+  const { organismId, submittedQueryGroups: queryGroups } =
+    useContext(StateContext);
 
   return useMemo(() => {
     if (!organismId || !queryGroups) {

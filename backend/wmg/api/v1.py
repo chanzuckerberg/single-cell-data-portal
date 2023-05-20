@@ -142,13 +142,14 @@ def differentialExpression():
     q = WmgQuery(snapshot)
 
     with ServerTiming.time("run differential expression"):
-        results1, results2 = run_differential_expression(q, criteria1, criteria2)
+        results1, results2, success = run_differential_expression(q, criteria1, criteria2)
 
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
             differentialExpressionResults1=results1,
             differentialExpressionResults2=results2,
+            tooManyCells=not success,
         )
     )
 
@@ -482,34 +483,19 @@ def should_use_default_cube(criteria):
     return default
 
 
-def de_get_expression_summary(q, cell_counts, criteria, chunk_size=200, threshold=1000):
-    all_genes = [
-        list(i.keys())[0]
-        for i in q._snapshot.primary_filter_dimensions["gene_terms"][criteria.organism_ontology_term_id]
-    ]
-    if cell_counts.shape[0] > threshold:
-        if should_use_default_cube(criteria):
-            es_agg = q.expression_summary_default(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
-        else:
+def de_get_expression_summary(q, cell_counts, criteria, threshold=2000):
+    # all_genes = [
+    #     list(i.keys())[0]
+    #     for i in q._snapshot.primary_filter_dimensions["gene_terms"][criteria.organism_ontology_term_id]
+    # ]
 
-            def _thread(i):
-                criteria.gene_ontology_term_ids = all_genes[i * chunk_size : (i + 1) * chunk_size]
-                if len(criteria.gene_ontology_term_ids) > 0:
-                    return q.expression_summary(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
-
-            num_chunks = len(all_genes) // chunk_size + 1
-            results = []
-            for i in range(num_chunks):
-                results.append(_thread(i))
-
-            es_agg = None
-            for res in results:
-                if es_agg is None:
-                    es_agg = res
-                elif res is not None:
-                    es_agg = es_agg.add(res, fill_value=0)
+    if should_use_default_cube(criteria):
+        es_agg = q.expression_summary_default(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
+    elif cell_counts.shape[0] > threshold:
+        return None
     else:
         es_agg = q.expression_summary(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
+
     return es_agg
 
 
@@ -522,6 +508,8 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, chunk_si
 
     es_agg1 = de_get_expression_summary(q, cell_counts1, criteria1, chunk_size=chunk_size, threshold=threshold)
     es_agg2 = de_get_expression_summary(q, cell_counts2, criteria2, chunk_size=chunk_size, threshold=threshold)
+    if es_agg1 is None or es_agg2 is None:
+        return [], [], False
 
     genes = list(set(list(es_agg1.index) + list(es_agg2.index)))
 
@@ -566,4 +554,4 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, chunk_si
             statistics2.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
             if len(statistics2) >= 250:
                 break
-    return statistics1, statistics2
+    return statistics1, statistics2, True
