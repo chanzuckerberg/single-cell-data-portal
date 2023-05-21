@@ -29,7 +29,7 @@ class DeQuery:
         discriminatory_power = {
             depluralize(dim): len(criteria_dict[dim]) / cardinality_per_dimension[depluralize(dim)]
             for dim in criteria_dict
-            if len(criteria_dict[dim]) > 0 and dim not in base_expression_summary_indexed_dims
+            if len(criteria_dict[dim]) > 0 and depluralize(dim) not in base_expression_summary_indexed_dims
         }
         use_default = len(discriminatory_power) == 0
 
