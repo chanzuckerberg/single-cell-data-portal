@@ -76,6 +76,20 @@ export const NoDeGenesContainer = styled("div")`
   text-align: center;
 `;
 
+export const NoDeGenesContainerError = styled("div")`
+  margin-top: 16px;
+  background: #dc132c;
+
+  width: 100%;
+  height: 120px;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  text-align: center;
+`;
+
 export const NoDeGenesHeader = styled("span")`
   ${fontBodyS}
   color: black;

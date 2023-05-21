@@ -372,7 +372,7 @@ def _add_missing_combinations_to_gene_expression_df_for_rollup(
     # get the set of available combinations of group-by terms from the aggregated cell counts
     available_combinations = set(universal_set_cell_counts_df.index.values)
 
-    index = dot_plot_matrix_df.groupby(["gene_ontology_term_id"] + group_by_terms).first().index
+    index = gene_expression_df.groupby(["gene_ontology_term_id"] + group_by_terms).first().index
     genes = index.get_level_values(0)
     combos = index.droplevel(0).values
     combinations_per_gene = to_dict(genes, combos)
@@ -381,7 +381,7 @@ def _add_missing_combinations_to_gene_expression_df_for_rollup(
     entries_to_add = []
     for gene in genes:
         available_combinations_per_gene = combinations_per_gene[gene]
-        
+
         # get the combinations that are missing in the input expression dataframe
         # these combinations have no data but can be rescued by the roll-up operation
         missing_combinations = available_combinations.difference(available_combinations_per_gene)
@@ -676,15 +676,15 @@ def de_get_expression_summary(q, cell_counts, criteria, threshold=2000):
     return es_agg
 
 
-def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, chunk_size=200, threshold=1000):
+def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, threshold=2000):
     cell_counts1 = q.cell_counts(criteria1)
     cell_counts2 = q.cell_counts(criteria2)
 
     n_cells1 = cell_counts1["n_total_cells"].sum()
     n_cells2 = cell_counts2["n_total_cells"].sum()
 
-    es_agg1 = de_get_expression_summary(q, cell_counts1, criteria1, chunk_size=chunk_size, threshold=threshold)
-    es_agg2 = de_get_expression_summary(q, cell_counts2, criteria2, chunk_size=chunk_size, threshold=threshold)
+    es_agg1 = de_get_expression_summary(q, cell_counts1, criteria1, threshold=threshold)
+    es_agg2 = de_get_expression_summary(q, cell_counts2, criteria2, threshold=threshold)
     if es_agg1 is None or es_agg2 is None:
         return [], [], False
 

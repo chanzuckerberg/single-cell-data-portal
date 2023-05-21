@@ -18,6 +18,7 @@ import {
   NoDeGenesContainer,
   NoDeGenesDescription,
   NoDeGenesHeader,
+  NoDeGenesContainerError,
 } from "./style";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import { clearSubmittedQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
@@ -34,6 +35,7 @@ export default function DeResults(): JSX.Element {
   const {
     differentialExpressionResults1: rawDifferentialExpressionResults1,
     differentialExpressionResults2: rawDifferentialExpressionResults2,
+    tooManyCells,
   } = rawDifferentialExpressionResults;
 
   const [differentialExpressionResults1, setDifferentialExpressionResults1] =
@@ -117,6 +119,14 @@ export default function DeResults(): JSX.Element {
     if (JSON.stringify(queryGroups) !== JSON.stringify(submittedQueryGroups))
       dispatch(clearSubmittedQueryGroups());
   }, [queryGroups, submittedQueryGroups]);
+
+  const showEmpty = !submittedQueryGroups;
+  const showTooManyCells = tooManyCells;
+
+  if (showEmpty) {
+    return <div />;
+  }
+
   return (
     <div>
       {[differentialExpressionResults1, differentialExpressionResults2].map(
@@ -170,7 +180,15 @@ export default function DeResults(): JSX.Element {
                     </tbody>
                   </StyledHTMLTable>
                 ) : isLoading ? (
-                  <div />
+                  <div>Loading...</div>
+                ) : tooManyCells ? (
+                  <NoDeGenesContainerError>
+                    <NoDeGenesHeader>ERROR</NoDeGenesHeader>
+                    <NoDeGenesDescription>
+                      This query group is too large. Please select a different
+                      query group.
+                    </NoDeGenesDescription>
+                  </NoDeGenesContainerError>
                 ) : (
                   <NoDeGenesContainer>
                     <NoDeGenesHeader>
