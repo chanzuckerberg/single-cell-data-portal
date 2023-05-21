@@ -139,14 +139,14 @@ def differentialExpression():
     q = WmgQuery(snapshot)
 
     with ServerTiming.time("run differential expression"):
-        results1, results2, success = run_differential_expression(q, criteria1, criteria2)
+        results1, results2, success_code = run_differential_expression(q, criteria1, criteria2)
 
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
             differentialExpressionResults1=results1,
             differentialExpressionResults2=results2,
-            tooManyCells=not success,
+            successCode=success_code,
         )
     )
 
@@ -676,12 +676,21 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, threshol
     n_cells1 = cell_counts1["n_total_cells"].sum()
     n_cells2 = cell_counts2["n_total_cells"].sum()
 
-    skip = (not should_use_default_cube(criteria1) and cell_counts1.shape[0] > threshold) or (
-        not should_use_default_cube(criteria2) and cell_counts2.shape[0] > threshold
-    )
+    skip1 = not should_use_default_cube(criteria1) and cell_counts1.shape[0] > threshold
+    skip2 = not should_use_default_cube(criteria2) and cell_counts2.shape[0] > threshold
+
+    skip = skip1 or skip2
+
+    success_code = 0
+    if skip1 and skip2:
+        success_code = 3
+    elif skip1:
+        success_code = 1
+    elif skip2:
+        success_code = 2
 
     if skip:
-        return [], [], False
+        return [], [], success_code
 
     es_agg1 = de_get_expression_summary(q, criteria1)
     es_agg2 = de_get_expression_summary(q, criteria2)
@@ -729,4 +738,4 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, threshol
             statistics2.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
             if len(statistics2) >= 250:
                 break
-    return statistics1, statistics2, True
+    return statistics1, statistics2, success_code
