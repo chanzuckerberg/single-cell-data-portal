@@ -1,0 +1,25 @@
+diff a/backend/corpus_asset_pipelines/summary_cubes/expression_summary/job.py b/backend/corpus_asset_pipelines/summary_cubes/expression_summary/job.py	(rejected hunks)
+@@ -18,12 +19,12 @@ logging.basicConfig(level=logging.INFO)
+ 
+ 
+ def _load(
+-    uri: str, gene_ontology_term_ids: list, cube_index: pd.DataFrame, cube_sum: np.ndarray, cube_nnz: np.ndarray
+-) -> (list, dict):
++    uri: str, gene_ontology_term_ids: list, cube_index: pd.DataFrame, cube_sum: np.ndarray, cube_sq_sum: np.ndarray, cube_nnz: np.ndarray
++) -> Tuple[list, dict]:
+     """
+     Build expression summary cube in memory and write to disk
+     """
+-    dims, vals = build_in_mem_cube(gene_ontology_term_ids, cube_index, cube_non_indexed_dims, cube_sum, cube_nnz)
++    dims, vals = build_in_mem_cube(gene_ontology_term_ids, cube_index, cube_non_indexed_dims, cube_sum, cube_sq_sum, cube_nnz)
+ 
+     logger.debug("Saving cube to tiledb")
+     with tiledb.open(uri, "w") as cube:
+@@ -53,5 +54,5 @@ def create_expression_summary_cube(corpus_path: str):
+         gene_ontology_term_ids = extract_var_data(corpus_path, ctx)
+ 
+         # transform
+-        cube_index, cube_sum, cube_nnz = transform(corpus_path, gene_ontology_term_ids, cube_dims)
+-        _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_nnz)
++        cube_index, cube_sum, cube_sq_sum, cube_nnz = transform(corpus_path, gene_ontology_term_ids, cube_dims)
++        _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_sq_sum, cube_nnz)

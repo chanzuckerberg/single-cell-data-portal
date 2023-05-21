@@ -1,0 +1,10 @@
+diff a/backend/wmg/data/schemas/cube_schema.py b/backend/wmg/data/schemas/cube_schema.py	(rejected hunks)
+@@ -60,7 +61,7 @@ cube_physical_attrs = [
+ 
+ expression_summary_schema = tiledb.ArraySchema(
+     domain=domain,
+-    sparse=True,
++    sparse=True, # TODO: (atarashansky) Why sparse? What are the fraction of non-zero values?
+     allows_duplicates=True,
+     attrs=cube_physical_attrs,
+     cell_order="row-major",

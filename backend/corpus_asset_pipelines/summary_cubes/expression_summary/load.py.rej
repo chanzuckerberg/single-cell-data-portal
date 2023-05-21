@@ -1,0 +1,9 @@
+diff a/backend/corpus_asset_pipelines/summary_cubes/expression_summary/load.py b/backend/corpus_asset_pipelines/summary_cubes/expression_summary/load.py	(rejected hunks)
+@@ -60,6 +61,7 @@ def build_in_mem_cube(
+         dims[3][idx : idx + n_vals] = organism_ontology_term_id
+ 
+         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
++        vals["sq_sum"][idx : idx + n_vals] = cube_sq_sum[cube_idx, mask]
+         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
+         vals["n_cells"][idx : idx + n_vals] = n  # wasteful
+ 
