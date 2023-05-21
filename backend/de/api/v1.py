@@ -7,7 +7,7 @@ from flask import jsonify
 from scipy import stats
 from server_timing import Timing as ServerTiming
 
-from backend.de.data.ontology_labels import ontology_term_label
+from backend.de.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.de.data.query import (
     DeQuery,
     DeQueryCriteria,
@@ -166,7 +166,14 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5):
         pi = p[i]
         ei = abs(effects[i])
         if ei is not np.nan and pi is not np.nan and pi < pval_thr:
-            statistics2.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
+            statistics2.append(
+                {
+                    "gene_ontology_term_id": de_genes[i],
+                    "gene_symbol": gene_term_label(de_genes[i]),
+                    "p_value": pi,
+                    "effect_size": ei,
+                }
+            )
             if len(statistics2) >= 250:
                 break
     return statistics1, statistics2

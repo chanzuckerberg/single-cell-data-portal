@@ -192,6 +192,9 @@ paths:
                         gene_ontology_term_id:
                           description: gene ontology term id
                           type: string
+                        gene_symbol:
+                          description: gene symbol
+                          type: string
                         p_value:
                           description: adjusted p-value
                           type: number
@@ -215,6 +218,9 @@ paths:
                       properties:
                         gene_ontology_term_id:
                           description: gene ontology term id
+                          type: string
+                        gene_symbol:
+                          description: gene symbol
                           type: string
                         p_value:
                           description: adjusted p-value

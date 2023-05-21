@@ -6,12 +6,14 @@ import {
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
 import { setSnapshotId } from "src/views/DifferentialExpression/common/store/actions";
-import { Organism as IOrganism } from "src/views/DifferentialExpression/common/types";
 import { API } from "../API";
 import { ROUTES } from "../constants/routes";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
-import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
+import {
+  EMPTY_FILTERS,
+  QueryGroup,
+} from "src/views/DifferentialExpression/common/store/reducer";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -25,117 +27,6 @@ export interface RawPrimaryFilterDimensionsResponse {
   organism_terms: Array<RawOntologyTerm>;
   snapshot_id: string;
   tissue_terms: RawOntologyTermsByOrganism;
-}
-
-export interface OntologyTerm {
-  id: string;
-  name: string;
-}
-interface OntologyTermsByOrganism {
-  [organismID: string]: Array<OntologyTerm>;
-}
-
-export interface PrimaryFilterDimensionsResponse {
-  genes: OntologyTermsByOrganism;
-  organisms: Array<OntologyTerm>;
-  snapshotId: string;
-  tissues: OntologyTermsByOrganism;
-}
-
-export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
-  const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
-
-  const response: RawPrimaryFilterDimensionsResponse = await (
-    await fetch(url, DEFAULT_FETCH_OPTIONS)
-  ).json();
-
-  return transformPrimaryFilterDimensions(response);
-}
-
-function flattenOntologyTermsByOrganism(
-  termsObject: RawOntologyTermsByOrganism
-): OntologyTermsByOrganism {
-  return Object.entries(termsObject).reduce((memo, [organismId, genes]) => {
-    memo[organismId] = genes.map(toEntity);
-    return memo;
-  }, {} as OntologyTermsByOrganism);
-}
-
-export function generateTermsByKey(
-  flattenedTerms: OntologyTermsByOrganism,
-  key: keyof OntologyTerm
-): {
-  [key: string]: OntologyTerm;
-} {
-  const termsByKey: { [key: string]: OntologyTerm } = {};
-
-  Object.values(flattenedTerms).forEach((terms) => {
-    for (const term of terms) {
-      termsByKey[term[key]] = term;
-    }
-  });
-
-  return termsByKey;
-}
-
-function transformPrimaryFilterDimensions(
-  response: RawPrimaryFilterDimensionsResponse
-): PrimaryFilterDimensionsResponse {
-  const { gene_terms, organism_terms, snapshot_id, tissue_terms } = response;
-
-  return {
-    genes: flattenOntologyTermsByOrganism(gene_terms),
-    organisms: organism_terms.map(toEntity),
-    snapshotId: snapshot_id,
-    tissues: flattenOntologyTermsByOrganism(tissue_terms),
-  };
-}
-
-export const USE_PRIMARY_FILTER_DIMENSIONS = {
-  entities: [ENTITIES.WMG_PRIMARY_FILTER_DIMENSIONS],
-  id: "wmg-primaryFilterDimensions",
-};
-
-export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimensionsResponse> {
-  const dispatch = useContext(DispatchContext);
-
-  // (thuang): Refresh query when the snapshotId changes
-  const currentSnapshotId = useSnapshotId();
-
-  return useQuery<PrimaryFilterDimensionsResponse>(
-    [USE_PRIMARY_FILTER_DIMENSIONS, currentSnapshotId],
-    fetchPrimaryFilterDimensions,
-    {
-      onSuccess(response) {
-        if (!response || !dispatch) return;
-
-        const { snapshotId } = response;
-
-        if (currentSnapshotId !== snapshotId) {
-          dispatch(setSnapshotId(snapshotId));
-        }
-      },
-      // (thuang): We don't need to refetch during the session
-      staleTime: Infinity,
-    }
-  );
-}
-
-const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
-
-export function useAvailableOrganisms() {
-  const { data, isLoading } = usePrimaryFilterDimensions();
-
-  if (isLoading) {
-    return { isLoading, data: null };
-  }
-
-  return {
-    isLoading,
-    data: data?.organisms.filter((organism: IOrganism) =>
-      TEMP_ALLOW_NAME_LIST.includes(organism.name)
-    ),
-  };
 }
 
 interface FilterSecondary {
@@ -190,12 +81,14 @@ interface FiltersQueryResponse {
     self_reported_ethnicity_terms: { [id: string]: string }[];
     tissue_terms: { [id: string]: string }[];
     cell_type_terms: { [id: string]: string }[];
+    organism_terms: { [id: string]: string }[];
   };
   snapshot_id: string;
 }
 
 export interface DifferentialExpressionResult {
   gene_ontology_term_id: string;
+  gene_symbol: string;
   p_value: number;
   effect_size: number;
 }
@@ -221,7 +114,7 @@ async function fetchFiltersQuery({
 }): Promise<FiltersQueryResponse | undefined> {
   if (!query) return;
 
-  const url = API_URL + API.WMG_FILTERS_QUERY;
+  const url = API_URL + API.DE_FILTERS_QUERY;
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -240,7 +133,7 @@ async function fetchFiltersQuery({
 }
 
 export const USE_FILTERS_QUERY = {
-  entities: [ENTITIES.WMG_FILTERS_QUERY],
+  entities: [ENTITIES.DE_FILTERS_QUERY],
   id: "de-filters-query",
 };
 
@@ -340,6 +233,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   sex_terms: [],
   tissue_terms: [],
   cell_type_terms: [],
+  organism_terms: [],
 };
 
 export interface RawDataset {
@@ -357,6 +251,26 @@ export interface FilterDimensions {
   sex_terms: { id: string; name: string }[];
   tissue_terms: { id: string; name: string }[];
   cell_type_terms: { id: string; name: string }[];
+  organism_terms: { id: string; name: string }[];
+}
+
+const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
+
+export function useAvailableOrganisms() {
+  const { data, isLoading } = useQueryGroupFilterDimensions(EMPTY_FILTERS);
+
+  return useMemo(() => {
+    if (isLoading || !data) return { data: [], isLoading };
+
+    const { organism_terms } = data;
+
+    return {
+      isLoading,
+      data: organism_terms.filter((organism) =>
+        TEMP_ALLOW_NAME_LIST.includes(organism.name)
+      ),
+    };
+  }, [data, isLoading]);
 }
 
 export function useDifferentialExpression(): {
@@ -429,17 +343,9 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
   const { organismId } = useContext(StateContext);
   const requestBody = useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
-  const { data: primaryFilterDimensions } = usePrimaryFilterDimensions();
 
   return useMemo(() => {
-    if (isLoading || !data || !primaryFilterDimensions || !organismId)
-      return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
-
-    const {
-      tissues: { [organismId]: allOrganismTissues },
-    } = primaryFilterDimensions;
-
-    if (!allOrganismTissues)
+    if (isLoading || !data || !organismId)
       return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
 
     const { filter_dims } = data;
@@ -452,16 +358,12 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
       sex_terms,
       tissue_terms,
       cell_type_terms,
+      organism_terms,
     } = filter_dims;
 
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
-
-    const allOrganismTissueIds = allOrganismTissues.map((tissue) => tissue.id);
-    const filtered_tissue_terms = tissue_terms.filter((tissue) =>
-      allOrganismTissueIds.includes(Object.keys(tissue)[0])
-    );
 
     return {
       data: {
@@ -474,12 +376,13 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
-        tissue_terms: filtered_tissue_terms.map(toEntity),
+        tissue_terms: tissue_terms.map(toEntity),
         cell_type_terms: cell_type_terms.map(toEntity),
+        organism_terms: organism_terms.map(toEntity),
       },
       isLoading: false,
     };
-  }, [data, isLoading, primaryFilterDimensions, organismId]);
+  }, [data, isLoading, organismId]);
 }
 
 function useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {

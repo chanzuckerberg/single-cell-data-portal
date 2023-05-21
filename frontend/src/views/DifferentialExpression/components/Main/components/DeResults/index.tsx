@@ -1,10 +1,6 @@
 import { Icon } from "czifui";
 import { useState, useEffect, useContext } from "react";
-import {
-  OntologyTerm,
-  useDifferentialExpression,
-  usePrimaryFilterDimensions,
-} from "src/common/queries/differentialExpression";
+import { useDifferentialExpression } from "src/common/queries/differentialExpression";
 import {
   DispatchContext,
   StateContext,
@@ -45,9 +41,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
 
   const [differentialExpressionResults2, setDifferentialExpressionResults2] =
     useState<DifferentialExpressionRow[]>([]);
-  const { data, isLoading: isLoadingPrimaryFilters } =
-    usePrimaryFilterDimensions();
-  const { genes: rawGenes } = data || {};
+
   const {
     organismId,
     submittedQueryGroups,
@@ -56,18 +50,13 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
   } = useContext(StateContext);
 
   useEffect(() => {
-    if (!rawGenes || isLoadingPrimaryFilters || !organismId || isLoading)
-      return;
-    const genes = rawGenes[organismId];
-    const genesById = genes.reduce((acc, gene) => {
-      return acc.set(gene.id, gene);
-    }, new Map<OntologyTerm["id"], OntologyTerm>());
+    if (!organismId || isLoading) return;
 
     // map ids to name
     const formattedResults1 = rawDifferentialExpressionResults1.map(
       (diffExpResult) => {
         return {
-          name: genesById.get(diffExpResult.gene_ontology_term_id)?.name ?? "", // nullish coalescing operator for type safety
+          name: diffExpResult.gene_symbol,
           pValue: diffExpResult.p_value,
           effectSize: diffExpResult.effect_size,
         };
@@ -77,7 +66,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
     const formattedResults2 = rawDifferentialExpressionResults2.map(
       (diffExpResult) => {
         return {
-          name: genesById.get(diffExpResult.gene_ontology_term_id)?.name ?? "", // nullish coalescing operator for type safety
+          name: diffExpResult.gene_symbol,
           pValue: diffExpResult.p_value,
           effectSize: diffExpResult.effect_size,
         };
@@ -85,12 +74,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
     );
     setDifferentialExpressionResults1(formattedResults1);
     setDifferentialExpressionResults2(formattedResults2);
-  }, [
-    rawDifferentialExpressionResults,
-    isLoading,
-    isLoadingPrimaryFilters,
-    rawGenes,
-  ]);
+  }, [rawDifferentialExpressionResults, isLoading]);
 
   const handleCopyGenes1 = () => {
     const genes = differentialExpressionResults1.map((result) => result.name);

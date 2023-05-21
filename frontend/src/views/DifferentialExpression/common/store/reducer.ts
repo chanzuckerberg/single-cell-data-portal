@@ -32,7 +32,7 @@ export interface State {
   snapshotId: string | null;
 }
 
-const EMPTY_FILTERS = {
+export const EMPTY_FILTERS = {
   datasets: [],
   developmentStages: [],
   diseases: [],
