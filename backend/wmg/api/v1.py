@@ -660,16 +660,9 @@ def should_use_default_cube(criteria):
     return default
 
 
-def de_get_expression_summary(q, cell_counts, criteria, threshold=2000):
-    # all_genes = [
-    #     list(i.keys())[0]
-    #     for i in q._snapshot.primary_filter_dimensions["gene_terms"][criteria.organism_ontology_term_id]
-    # ]
-
+def de_get_expression_summary(q, criteria):
     if should_use_default_cube(criteria):
         es_agg = q.expression_summary_default(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
-    elif cell_counts.shape[0] > threshold:
-        return None
     else:
         es_agg = q.expression_summary(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
 
@@ -683,10 +676,15 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, threshol
     n_cells1 = cell_counts1["n_total_cells"].sum()
     n_cells2 = cell_counts2["n_total_cells"].sum()
 
-    es_agg1 = de_get_expression_summary(q, cell_counts1, criteria1, threshold=threshold)
-    es_agg2 = de_get_expression_summary(q, cell_counts2, criteria2, threshold=threshold)
-    if es_agg1 is None or es_agg2 is None:
+    skip = (not should_use_default_cube(criteria1) and cell_counts1.shape[0] > threshold) or (
+        not should_use_default_cube(criteria2) and cell_counts2.shape[0] > threshold
+    )
+
+    if skip:
         return [], [], False
+
+    es_agg1 = de_get_expression_summary(q, criteria1)
+    es_agg2 = de_get_expression_summary(q, criteria2)
 
     genes = list(set(list(es_agg1.index) + list(es_agg2.index)))
 
