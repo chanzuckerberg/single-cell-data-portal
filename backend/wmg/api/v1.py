@@ -669,7 +669,7 @@ def de_get_expression_summary(q, criteria):
     return es_agg
 
 
-def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, threshold=2000):
+def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, threshold=500):
     cell_counts1 = q.cell_counts(criteria1)
     cell_counts2 = q.cell_counts(criteria2)
 

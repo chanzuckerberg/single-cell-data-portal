@@ -1,6 +1,13 @@
 import { HTMLTable } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { Button, fontBodyL, fontBodyS, fontBodyXs, getColors } from "czifui";
+import {
+  Button,
+  CommonThemeProps,
+  fontBodyL,
+  fontBodyS,
+  fontBodyXs,
+  getColors,
+} from "czifui";
 import { fontBodyXxs } from "czifui";
 
 export const CopyGenesButton = styled(Button)`
@@ -62,6 +69,10 @@ export const BackButton = styled(Button)`
   margin-bottom: 30px;
 `;
 
+interface Props extends CommonThemeProps {
+  isError?: boolean;
+}
+
 export const NoDeGenesContainer = styled("div")`
   margin-top: 16px;
   background: #f8f8f8;
@@ -76,32 +87,18 @@ export const NoDeGenesContainer = styled("div")`
   text-align: center;
 `;
 
-export const NoDeGenesContainerError = styled("div")`
-  margin-top: 16px;
-  background: #dc132c;
-
-  width: 100%;
-  height: 120px;
-
-  display: flex;
-  flex-direction: column;
-
-  justify-content: center;
-  text-align: center;
-`;
-
 export const NoDeGenesHeader = styled("span")`
   ${fontBodyS}
-  color: black;
   font-weight: 500;
 `;
 
-export const NoDeGenesDescription = styled("span")`
+export const NoDeGenesDescription = styled("span")<Props>`
   ${fontBodyXxs}
   ${(props) => {
     const colors = getColors(props);
     return `
-      color: ${colors?.gray[500]};
+    color: ${props.isError ? colors?.error[400] : colors?.gray[500]};
+    font-weight: ${props.isError ? 600 : "unset"};
     `;
   }}
 `;

@@ -1,11 +1,11 @@
-from typing import Dict, List, Union
+from typing import List
 
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 
-from backend.wmg.data.snapshot import WmgSnapshot
-
+from backend.de.data.schemas.expression_summary_cube_schemas import base_expression_summary_indexed_dims
+from backend.de.data.snapshot import DeSnapshot
 
 
 class DeQueryCriteria(BaseModel):
@@ -19,50 +19,43 @@ class DeQueryCriteria(BaseModel):
 
 
 class WmgQuery:
-    def __init__(self, snapshot: WmgSnapshot) -> None:
+    def __init__(self, snapshot: DeSnapshot) -> None:
         self._snapshot = snapshot
 
-    def expression_summary(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
+    def expression_summary(self, criteria: DeQueryCriteria) -> DataFrame:
+        cardinality_per_dimension = self._snapshot.cardinality_per_dimension
+        criteria_dict = criteria.dict()
+        discriminatory_power = {
+            dim: len(criteria_dict[dim]) / cardinality_per_dimension[dim]
+            for dim in criteria_dict
+            if len(criteria_dict[dim]) > 0 and dim not in base_expression_summary_indexed_dims
+        }
+        use_default = len(discriminatory_power) == 0
+
+        cube_key = "default" if use_default else min(discriminatory_power, key=discriminatory_power.get)
+        cube = self._snapshot.expression_summary_cubes[cube_key]
+
+        indexed_dims = [dim.name for dim in list(cube.schema.domain)]
+
         return self._query(
-            cube=self._snapshot.expression_summary_cube,
+            cube=cube,
             criteria=criteria,
-            indexed_dims=[
-                "gene_ontology_term_ids",
-                "tissue_ontology_term_ids",
-                "organism_ontology_term_id",
-            ],
+            indexed_dims=indexed_dims,
         )
 
-    def expression_summary_default(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
-        return self._query(
-            cube=self._snapshot.expression_summary_default_cube,
-            criteria=criteria,
-            indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "organism_ontology_term_id"],
-        )
+    def cell_counts(self, criteria: DeQueryCriteria) -> DataFrame:
+        cube = self._snapshot.cell_counts_cube
+        indexed_dims = [dim.name for dim in list(cube.schema.domain)]
 
-    def marker_genes(self, criteria: MarkerGeneQueryCriteria) -> DataFrame:
-        return self._query(
-            cube=self._snapshot.marker_genes_cube,
-            criteria=criteria,
-            indexed_dims=[
-                "tissue_ontology_term_id",
-                "organism_ontology_term_id",
-                "cell_type_ontology_term_id",
-            ],
-        )
-
-    def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
         cell_counts = self._query(
-            cube=self._snapshot.cell_counts_cube,
+            cube=cube,
             criteria=criteria.copy(exclude={"gene_ontology_term_ids"}),
-            indexed_dims=["tissue_ontology_term_ids", "organism_ontology_term_id"],
+            indexed_dims=indexed_dims,
         )
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
 
-    def _query(
-        self, cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str]
-    ) -> DataFrame:
+    def _query(self, cube: Array, criteria: DeQueryCriteria, indexed_dims: List[str]) -> DataFrame:
         tiledb_dims_query = []
         for dim_name in indexed_dims:
             if criteria.dict()[dim_name]:
@@ -79,7 +72,7 @@ class WmgQuery:
         return query_result_df
 
     @staticmethod
-    def _return_query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str]):
+    def _return_query(cube: Array, criteria: DeQueryCriteria, indexed_dims: List[str]):
         query_cond = ""
         attrs = {}
         for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
@@ -96,55 +89,6 @@ class WmgQuery:
         attr_cond = query_cond if query_cond else None
         return cube.query(cond=attr_cond, use_arrow=True)
 
-    def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
-        return (
-            self._snapshot.cell_counts_cube.query(attrs=[], dims=[primary_dim_name])
-            .df[:]
-            .groupby([primary_dim_name])
-            .first()
-            .index.tolist()
-        )
-
-    def list_grouped_primary_filter_dimensions_term_ids(
-        self, primary_dim_name: str, group_by_dim: str
-    ) -> Dict[str, List[str]]:
-        return (
-            self._snapshot.cell_counts_cube.query(attrs=[], dims=[primary_dim_name, group_by_dim])
-            .df[:]
-            .drop_duplicates()
-            .groupby(group_by_dim)
-            .agg(list)
-            .to_dict()[primary_dim_name]
-        )
-
 
 def depluralize(attr_name):
     return attr_name[:-1]
-
-
-def retrieve_top_n_markers(query_result, test, n_markers):
-    """
-    Retrieve the top n markers for a given cell type and test
-
-    Arguments
-    ---------
-    query_result: DataFrame
-        The result of a marker genes query
-
-    test: str
-        The test used to determine the top n markers
-
-    n_markers: int
-        The number of top markers to retrieve. If n_markers is 0,
-        all markers are retrieved.
-    """
-    attrs = [f"p_value_{test}", f"effect_size_{test}"]
-    col_names = ["p_value", "effect_size"]
-    markers = query_result[["gene_ontology_term_id"] + attrs].rename(columns=dict(zip(attrs, col_names)))
-    markers = markers[markers["effect_size"].notna()]
-    if n_markers > 0:
-        markers = markers.nlargest(n_markers, "effect_size")
-    else:
-        markers = markers.sort_values("effect_size", ascending=False)
-    records = markers[["gene_ontology_term_id"] + col_names].to_dict(orient="records")
-    return records

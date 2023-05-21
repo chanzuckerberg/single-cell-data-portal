@@ -202,14 +202,14 @@ export interface DifferentialExpressionResult {
 interface DifferentialExpressionQueryResponse {
   differentialExpressionResults1: DifferentialExpressionResult[];
   differentialExpressionResults2: DifferentialExpressionResult[];
-  tooManyCells: boolean;
+  successCode: number;
   snapshot_id: string;
 }
 
 interface DifferentialExpressionQueryResult {
   differentialExpressionResults1: DifferentialExpressionResult[];
   differentialExpressionResults2: DifferentialExpressionResult[];
-  tooManyCells?: boolean;
+  successCode?: number;
 }
 
 async function fetchFiltersQuery({
@@ -367,12 +367,12 @@ export function useDifferentialExpression(): {
   const { data, isLoading } = useDEQuery(requestBody);
 
   return useMemo(() => {
-    if (isLoading || !data || data.tooManyCells)
+    if (isLoading || !data || (data?.successCode ?? 0) > 0)
       return {
         data: {
           differentialExpressionResults1: [],
           differentialExpressionResults2: [],
-          tooManyCells: data?.tooManyCells,
+          successCode: data?.successCode ?? 0,
         },
         isLoading,
       };
@@ -380,7 +380,7 @@ export function useDifferentialExpression(): {
       data: {
         differentialExpressionResults1: data.differentialExpressionResults1,
         differentialExpressionResults2: data.differentialExpressionResults2,
-        tooManyCells: false,
+        successCode: 0,
       },
       isLoading: false,
     };

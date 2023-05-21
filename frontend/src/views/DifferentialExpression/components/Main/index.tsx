@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import {
   DispatchContext,
   StateContext,
@@ -20,8 +20,11 @@ import {
   submitQueryGroups,
 } from "src/views/DifferentialExpression/common/store/actions";
 import DeResults from "./components/DeResults";
+import Loader from "./components/Loader";
 
 export default function DifferentialExpression(): JSX.Element {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const dispatch = useContext(DispatchContext);
   const { queryGroups, queryGroupsWithNames } = useContext(StateContext);
   const { queryGroup1, queryGroup2 } = queryGroups;
@@ -37,7 +40,8 @@ export default function DifferentialExpression(): JSX.Element {
 
   const canRunDifferentialExpression =
     queryGroups.queryGroup1.tissues.length > 0 &&
-    queryGroups.queryGroup2.tissues.length > 0;
+    queryGroups.queryGroup2.tissues.length > 0 &&
+    !isLoading;
 
   const handleRunDifferentialExpression = () => {
     if (!dispatch) return;
@@ -54,6 +58,7 @@ export default function DifferentialExpression(): JSX.Element {
           columnGap: "120px",
         }}
       >
+        {isLoading && <Loader />}
         <div style={{ width: "655px" }}>
           <StepHeader>
             <WordPop>Differential</WordPop> Expression
@@ -96,7 +101,7 @@ export default function DifferentialExpression(): JSX.Element {
             </RunButton>
           </RunButtonWrapper>
         </div>
-        <DeResults />
+        <DeResults setIsLoading={setIsLoading} />
       </div>
     </Wrapper>
   );

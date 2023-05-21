@@ -18,7 +18,6 @@ import {
   NoDeGenesContainer,
   NoDeGenesDescription,
   NoDeGenesHeader,
-  NoDeGenesContainerError,
 } from "./style";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import { clearSubmittedQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
@@ -28,14 +27,17 @@ interface DifferentialExpressionRow {
   effectSize: number;
 }
 
-export default function DeResults(): JSX.Element {
+interface Props {
+  setIsLoading: (isLoading: boolean) => void;
+}
+export default function DeResults({ setIsLoading }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { data: rawDifferentialExpressionResults, isLoading } =
     useDifferentialExpression();
   const {
     differentialExpressionResults1: rawDifferentialExpressionResults1,
     differentialExpressionResults2: rawDifferentialExpressionResults2,
-    tooManyCells,
+    successCode,
   } = rawDifferentialExpressionResults;
 
   const [differentialExpressionResults1, setDifferentialExpressionResults1] =
@@ -121,8 +123,15 @@ export default function DeResults(): JSX.Element {
   }, [queryGroups, submittedQueryGroups]);
 
   const showEmpty = !submittedQueryGroups;
+  const tooManyCells1 = successCode === 1 || successCode === 3;
+  const tooManyCells2 = successCode === 2 || successCode === 3;
+  const tooManyCells = [tooManyCells1, tooManyCells2];
 
-  if (showEmpty) {
+  useEffect(() => {
+    setIsLoading(isLoading);
+  }, [isLoading]);
+
+  if (showEmpty || isLoading) {
     return <div />;
   }
 
@@ -178,16 +187,13 @@ export default function DeResults(): JSX.Element {
                       })}
                     </tbody>
                   </StyledHTMLTable>
-                ) : isLoading ? (
-                  <div>Loading...</div>
-                ) : tooManyCells ? (
-                  <NoDeGenesContainerError>
-                    <NoDeGenesHeader>ERROR</NoDeGenesHeader>
-                    <NoDeGenesDescription>
+                ) : tooManyCells[index] ? (
+                  <NoDeGenesContainer>
+                    <NoDeGenesDescription isError>
                       This query group is too large. Please select a different
                       query group.
                     </NoDeGenesDescription>
-                  </NoDeGenesContainerError>
+                  </NoDeGenesContainer>
                 ) : (
                   <NoDeGenesContainer>
                     <NoDeGenesHeader>
