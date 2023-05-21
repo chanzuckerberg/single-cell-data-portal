@@ -121,7 +121,6 @@ export default function DeResults(): JSX.Element {
   }, [queryGroups, submittedQueryGroups]);
 
   const showEmpty = !submittedQueryGroups;
-  const showTooManyCells = tooManyCells;
 
   if (showEmpty) {
     return <div />;
