@@ -12,9 +12,8 @@ from backend.de.data.query import (
     DeQuery,
     DeQueryCriteria,
 )
-from backend.de.data.schemas.expression_summary_cube_schemas import base_expression_summary_indexed_dims
 from backend.de.data.snapshot import DeSnapshot, load_snapshot
-from backend.de.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
+from backend.de.data.utils import find_all_dim_option_values, find_dim_option_values
 
 
 def filters():
@@ -47,14 +46,14 @@ def differentialExpression():
     q = DeQuery(snapshot)
 
     with ServerTiming.time("run differential expression"):
-        results1, results2, success_code = run_differential_expression(q, criteria1, criteria2)
+        results1, results2 = run_differential_expression(q, criteria1, criteria2)
 
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
             differentialExpressionResults1=results1,
             differentialExpressionResults2=results2,
-            successCode=success_code,
+            successCode=0,
         )
     )
 
@@ -117,49 +116,15 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
     return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
 
-def should_use_default_cube(criteria):
-    default = True
-    for dim in criteria.dict():
-        if len(criteria.dict()[dim]) > 0 and depluralize(dim) not in base_expression_summary_indexed_dims:
-            default = False
-            break
-    return default
-
-
-def de_get_expression_summary(q, criteria):
-    if should_use_default_cube(criteria):
-        es_agg = q.expression_summary_default(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
-    else:
-        es_agg = q.expression_summary(criteria).groupby("gene_ontology_term_id").sum(numeric_only=True)
-
-    return es_agg
-
-
-def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, threshold=2000):
+def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5):
     cell_counts1 = q.cell_counts(criteria1)
     cell_counts2 = q.cell_counts(criteria2)
 
     n_cells1 = cell_counts1["n_total_cells"].sum()
     n_cells2 = cell_counts2["n_total_cells"].sum()
 
-    skip1 = not should_use_default_cube(criteria1) and cell_counts1.shape[0] > threshold
-    skip2 = not should_use_default_cube(criteria2) and cell_counts2.shape[0] > threshold
-
-    skip = skip1 or skip2
-
-    success_code = 0
-    if skip1 and skip2:
-        success_code = 3
-    elif skip1:
-        success_code = 1
-    elif skip2:
-        success_code = 2
-
-    if skip:
-        return [], [], success_code
-
-    es_agg1 = de_get_expression_summary(q, criteria1)
-    es_agg2 = de_get_expression_summary(q, criteria2)
+    es_agg1 = q.expression_summary(criteria1).groupby("gene_ontology_term_id").sum(numeric_only=True)
+    es_agg2 = q.expression_summary(criteria2).groupby("gene_ontology_term_id").sum(numeric_only=True)
 
     genes = list(set(list(es_agg1.index) + list(es_agg2.index)))
 
@@ -204,7 +169,7 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, threshol
             statistics2.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
             if len(statistics2) >= 250:
                 break
-    return statistics1, statistics2, success_code
+    return statistics1, statistics2
 
 
 def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
