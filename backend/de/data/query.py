@@ -36,7 +36,10 @@ class DeQuery:
         cube_key = "default" if use_default else min(discriminatory_power, key=discriminatory_power.get)
         cube = self._snapshot.expression_summary_cubes[cube_key]
 
-        indexed_dims = [pluralize(dim.name) for dim in list(cube.schema.domain)]
+        indexed_dims = [
+            pluralize(dim.name) if dim.name != "organism_ontology_term_id" else dim.name
+            for dim in list(cube.schema.domain)
+        ]
 
         return self._query(
             cube=cube,
@@ -46,7 +49,10 @@ class DeQuery:
 
     def cell_counts(self, criteria: DeQueryCriteria) -> DataFrame:
         cube = self._snapshot.cell_counts_cube
-        indexed_dims = [pluralize(dim.name) for dim in list(cube.schema.domain)]
+        indexed_dims = [
+            pluralize(dim.name) if dim.name != "organism_ontology_term_id" else dim.name
+            for dim in list(cube.schema.domain)
+        ]
 
         cell_counts = self._query(
             cube=cube,
