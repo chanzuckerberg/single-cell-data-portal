@@ -88,6 +88,7 @@ def build_filter_dims_values(criteria: DeQueryCriteria, snapshot: DeSnapshot) ->
         "self_reported_ethnicity_ontology_term_id": "",
         "tissue_ontology_term_id": "",
         "cell_type_ontology_term_id": "",
+        "organism_ontology_term_id": "",
     }
     for dim in dims:
         dims[dim] = (
@@ -106,6 +107,7 @@ def build_filter_dims_values(criteria: DeQueryCriteria, snapshot: DeSnapshot) ->
         ),
         tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
         cell_type_terms=build_ontology_term_id_label_mapping(dims["cell_type_ontology_term_id"]),
+        organism_terms=build_ontology_term_id_label_mapping(dims["organism_ontology_term_id"]),
     )
 
     return response_filter_dims_values

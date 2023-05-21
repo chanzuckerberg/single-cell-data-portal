@@ -96,6 +96,8 @@ paths:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
                       cell_type_terms:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      organism_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
 
   /v1/differentialExpression:
     post:

@@ -6,6 +6,7 @@ from tiledb import Array
 
 from backend.de.data.schemas.expression_summary_cube_schemas import base_expression_summary_indexed_dims
 from backend.de.data.snapshot import DeSnapshot
+from backend.de.data.utils import depluralize, pluralize
 
 
 class DeQueryCriteria(BaseModel):
@@ -35,7 +36,7 @@ class DeQuery:
         cube_key = "default" if use_default else min(discriminatory_power, key=discriminatory_power.get)
         cube = self._snapshot.expression_summary_cubes[cube_key]
 
-        indexed_dims = [dim.name for dim in list(cube.schema.domain)]
+        indexed_dims = [pluralize(dim.name) for dim in list(cube.schema.domain)]
 
         return self._query(
             cube=cube,
@@ -45,7 +46,7 @@ class DeQuery:
 
     def cell_counts(self, criteria: DeQueryCriteria) -> DataFrame:
         cube = self._snapshot.cell_counts_cube
-        indexed_dims = [dim.name for dim in list(cube.schema.domain)]
+        indexed_dims = [pluralize(dim.name) for dim in list(cube.schema.domain)]
 
         cell_counts = self._query(
             cube=cube,
@@ -88,7 +89,3 @@ class DeQuery:
 
         attr_cond = query_cond if query_cond else None
         return cube.query(cond=attr_cond, use_arrow=True)
-
-
-def depluralize(attr_name):
-    return attr_name[:-1]
