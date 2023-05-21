@@ -18,7 +18,7 @@ class DeQueryCriteria(BaseModel):
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
-class WmgQuery:
+class DeQuery:
     def __init__(self, snapshot: DeSnapshot) -> None:
         self._snapshot = snapshot
 

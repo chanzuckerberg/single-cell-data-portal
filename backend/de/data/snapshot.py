@@ -10,6 +10,7 @@ from tiledb import Array
 from backend.common.utils.s3_buckets import buckets
 from backend.de.config import DeConfig
 from backend.de.data.tiledb import create_ctx
+from backend.de.data.utils import get_collections_from_curation_api, get_datasets_from_curation_api
 
 # Snapshot data artifact file/dir names
 EXPRESSION_SUMMARY_CUBE_NAMES = [
@@ -20,8 +21,8 @@ EXPRESSION_SUMMARY_CUBE_NAMES = [
     "expression_summary__self_reported_ethnicity_ontology_term_id",
 ]
 CELL_COUNTS_CUBE_NAME = "cell_counts"
-FILTER_RELATIONSHIPS_FILENAME = f"filter_relationships.json"
-CARDINALITY_PER_DIMENSION_FILENAME = f"cardinality_per_dimension.json"
+FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
+CARDINALITY_PER_DIMENSION_FILENAME = "cardinality_per_dimension.json"
 
 logger = logging.getLogger("de")
 
@@ -35,7 +36,7 @@ class DeSnapshot:
 
     snapshot_identifier: str
 
-    expression_summary_cubes: Dict[str,Array]
+    expression_summary_cubes: Dict[str, Array]
 
     cell_counts_cube: Array
 
@@ -46,6 +47,22 @@ class DeSnapshot:
 
     def __hash__(self):
         return hash(None)  # hash is not used for DeSnapshot
+
+    def build_dataset_metadata_dict(self):
+        datasets = get_datasets_from_curation_api()
+        collections = get_collections_from_curation_api()
+        collections_dict = {collection["collection_id"]: collection for collection in collections}
+        dataset_dict = {}
+        for dataset in datasets:
+            dataset_id = dataset["dataset_id"]
+            dataset_dict[dataset_id] = dict(
+                id=dataset_id,
+                label=dataset["title"],
+                collection_id=dataset["collection_id"],
+                collection_label=collections_dict[dataset["collection_id"]]["name"],
+            )
+        self.dataset_dict = dataset_dict
+
 
 # Cached data
 cached_snapshot: Optional[DeSnapshot] = None
@@ -90,12 +107,14 @@ def _load_filter_graph_data(snapshot_identifier: str):
     except Exception:
         return None
 
+
 def _load_cardinality_per_dimension_data(snapshot_identifier: str):
     try:
         return json.loads(_read_s3obj(f"{snapshot_identifier}/{CARDINALITY_PER_DIMENSION_FILENAME}"))
     except Exception:
         return None
-    
+
+
 def _read_s3obj(relative_path: str) -> str:
     s3 = buckets.portal_resource
     de_config = DeConfig()
@@ -103,6 +122,7 @@ def _read_s3obj(relative_path: str) -> str:
     prefixed_relative_path = os.path.join(_build_data_path_prefix(), relative_path or "")
     s3obj = s3.Object(DeConfig().bucket, prefixed_relative_path)
     return s3obj.get()["Body"].read().decode("utf-8").strip()
+
 
 def _update_latest_snapshot_identifier() -> Optional[str]:
     global cached_snapshot

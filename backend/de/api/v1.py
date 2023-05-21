@@ -4,26 +4,25 @@ import connexion
 import numpy as np
 import pandas as pd
 from flask import jsonify
+from scipy import stats
 from server_timing import Timing as ServerTiming
 
-from backend.wmg.data.calculate_markers import _run_ttest
-from backend.wmg.data.ontology_labels import ontology_term_label
-from backend.wmg.data.query import (
-    FmgQueryCriteria,
-    WmgFiltersQueryCriteria,
-    WmgQuery
+from backend.de.data.ontology_labels import ontology_term_label
+from backend.de.data.query import (
+    DeQuery,
+    DeQueryCriteria,
 )
-from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
-from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
-from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values, to_dict
+from backend.de.data.schemas.expression_summary_cube_schemas import base_expression_summary_indexed_dims
+from backend.de.data.snapshot import DeSnapshot, load_snapshot
+from backend.de.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
 
 
 def filters():
     request = connexion.request.json
-    criteria = WmgFiltersQueryCriteria(**request["filter"])
+    criteria = DeQueryCriteria(**request["filter"])
 
     with ServerTiming.time("calculate filters and build response"):
-        snapshot: WmgSnapshot = load_snapshot()
+        snapshot: DeSnapshot = load_snapshot()
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
         response = jsonify(
             dict(
@@ -33,18 +32,19 @@ def filters():
         )
     return response
 
+
 def differentialExpression():
     request = connexion.request.json
 
     queryGroup1Filters = request["queryGroup1Filters"]
     queryGroup2Filters = request["queryGroup2Filters"]
 
-    criteria1 = FmgQueryCriteria(**queryGroup1Filters)
-    criteria2 = FmgQueryCriteria(**queryGroup2Filters)
+    criteria1 = DeQueryCriteria(**queryGroup1Filters)
+    criteria2 = DeQueryCriteria(**queryGroup2Filters)
 
-    snapshot: WmgSnapshot = load_snapshot()
+    snapshot: DeSnapshot = load_snapshot()
 
-    q = WmgQuery(snapshot)
+    q = DeQuery(snapshot)
 
     with ServerTiming.time("run differential expression"):
         results1, results2, success_code = run_differential_expression(q, criteria1, criteria2)
@@ -59,13 +59,14 @@ def differentialExpression():
     )
 
 
-def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
+def fetch_datasets_metadata(snapshot: DeSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
     return [
         snapshot.dataset_dict.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
         for dataset_id in dataset_ids
     ]
 
-def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
+
+def is_criteria_empty(criteria: DeQueryCriteria) -> bool:
     criteria = criteria.dict()
     for key in criteria:
         if key != "organism_ontology_term_id":
@@ -78,7 +79,7 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
     return True
 
 
-def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
+def build_filter_dims_values(criteria: DeQueryCriteria, snapshot: DeSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
@@ -113,10 +114,11 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
 def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
     return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
+
 def should_use_default_cube(criteria):
     default = True
     for dim in criteria.dict():
-        if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
+        if len(criteria.dict()[dim]) > 0 and depluralize(dim) not in base_expression_summary_indexed_dims:
             default = False
             break
     return default
@@ -201,3 +203,52 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, threshol
             if len(statistics2) >= 250:
                 break
     return statistics1, statistics2, success_code
+
+
+def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
+    """
+    Calculate t-test statistics.
+
+    Arguments
+    ---------
+    sum1 - np.ndarray (1 x M)
+        Array of sum expression in target pop for each gene
+    sumsq1 - np.ndarray (1 x M)
+        Array of sum of squared expressions in target pop for each gene
+    n1 - np.ndarray (1 x M)
+        Number of cells in target pop for each gene
+    sum2 - np.ndarray (N x M)
+        Array of sum expression in context pops for each gene
+    sumsq2 - np.ndarray (N x M)
+        Array of sum of squared expressions in context pops for each gene
+    n2 - np.ndarray (N x M)
+        Number of cells in context pops for each gene
+
+    Returns
+    -------
+    pvals_adj - np.ndarray
+        adjusted p-values for each comparison for each gene
+    effects - np.ndarray
+        effect sizes for each comparison for each gene
+    """
+    with np.errstate(divide="ignore", invalid="ignore"):
+        mean1 = sum1 / n1
+        meansq1 = sumsq1 / n1
+
+        mean2 = sum2 / n2
+        meansq2 = sumsq2 / n2
+
+        var1 = meansq1 - mean1**2
+        var1[var1 < 0] = 0
+        var2 = meansq2 - mean2**2
+        var2[var2 < 0] = 0
+
+        var1_n = var1 / n1
+        var2_n = var2 / n2
+        sum_var_n = var1_n + var2_n
+        dof = sum_var_n**2 / (var1_n**2 / (n1 - 1) + var2_n**2 / (n2 - 1))
+        tscores = (mean1 - mean2) / np.sqrt(sum_var_n)
+        effects = (mean1 - mean2) / np.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 1))
+
+    pvals = stats.t.sf(tscores, dof)
+    return pvals, effects
