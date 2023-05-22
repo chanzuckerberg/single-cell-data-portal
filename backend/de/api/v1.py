@@ -152,7 +152,14 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5):
         pi = p[i]
         ei = abs(effects[i])
         if ei is not np.nan and pi is not np.nan and pi < pval_thr:
-            statistics1.append({"gene_ontology_term_id": de_genes[i], "p_value": pi, "effect_size": ei})
+            statistics1.append(
+                {
+                    "gene_ontology_term_id": de_genes[i],
+                    "gene_symbol": gene_term_label(de_genes[i]),
+                    "p_value": pi,
+                    "effect_size": ei,
+                }
+            )
             if len(statistics1) >= 250:
                 break
 

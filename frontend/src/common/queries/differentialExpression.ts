@@ -341,13 +341,11 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const { organismId } = useContext(StateContext);
   const requestBody = useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
   return useMemo(() => {
-    if (isLoading || !data || !organismId)
-      return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
+    if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
 
     const { filter_dims } = data;
 
@@ -383,7 +381,7 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
       },
       isLoading: false,
     };
-  }, [data, isLoading, organismId]);
+  }, [data, isLoading]);
 }
 
 function useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {
