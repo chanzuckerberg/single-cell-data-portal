@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import { CellCardDescription, Source, Wrapper } from "./style";
 import { useDescription, useClDescription } from "src/common/queries/cellCards";
 import { Tooltip } from "czifui";
@@ -12,16 +11,14 @@ export const CELL_CARD_GPT_TOOLTIP_LINK = "cell-card-gpt-tooltip-link";
 
 interface DescriptionProps {
   cellTypeName: string;
+  cellTypeId: string;
 }
 export default function Description({
+  cellTypeId,
   cellTypeName,
 }: DescriptionProps): JSX.Element {
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
   const [descriptionCl, setDescriptionCl] = useState<string>("");
-
-  const router = useRouter();
-  const { cellTypeId: cellTypeIdRaw } = router.query;
-  const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
 
   const { data: rawDescriptionGpt } = useDescription(cellTypeId);
   const { data: rawDescriptionCl } = useClDescription(cellTypeId);
@@ -31,7 +28,7 @@ export default function Description({
     else setDescriptionGpt("");
     if (rawDescriptionCl) setDescriptionCl(rawDescriptionCl);
     else setDescriptionCl("");
-  }, [cellTypeIdRaw, rawDescriptionGpt, rawDescriptionCl]);
+  }, [rawDescriptionGpt, rawDescriptionCl]);
 
   return (
     <Wrapper>

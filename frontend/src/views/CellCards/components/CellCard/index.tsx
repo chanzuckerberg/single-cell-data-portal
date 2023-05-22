@@ -51,7 +51,7 @@ export default function CellCard(): JSX.Element {
             <CellCardSearchBar />
           </SearchBarWrapper>
         </CellCardHeader>
-        <Description cellTypeName={cellTypeName} />
+        <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
       </Wrapper>
     </CellCardsView>
   );
