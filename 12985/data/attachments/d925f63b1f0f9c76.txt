@@ -1,0 +1,1 @@
+  [38;5;45;1mpw:api [0m  checking visibility of getByTestId('landing-page-header') [38;5;45m+22ms[0m
