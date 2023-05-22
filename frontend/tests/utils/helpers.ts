@@ -57,7 +57,6 @@ export async function goToPage(
   page: Page
 ): Promise<void> {
   await page.goto(url);
-  await page.waitForURL(url);
 }
 
 export async function login(page: Page): Promise<void> {

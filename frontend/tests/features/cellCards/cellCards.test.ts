@@ -88,6 +88,7 @@ describe("Cell Cards", () => {
       await page.getByTestId(CELL_CARD_GPT_TOOLTIP_LINK).hover();
       // check role tooltip is visible
       const tooltipLocator = page.getByRole("tooltip");
+      await tooltipLocator.waitFor({ timeout: 5000 });
       const tooltipLocatorVisible = await tooltipLocator.isVisible();
       expect(tooltipLocatorVisible).toBe(true);
       // check that tooltip contains disclaimer
@@ -127,6 +128,7 @@ async function isElementVisible(page: Page, testId: string) {
   await tryUntil(
     async () => {
       const element = page.getByTestId(testId);
+      await element.waitFor({ timeout: 5000 });
       const isVisible = await element.isVisible();
       expect(isVisible).toBe(true);
     },
