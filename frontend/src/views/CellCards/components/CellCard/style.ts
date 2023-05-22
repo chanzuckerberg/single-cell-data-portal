@@ -44,12 +44,6 @@ export const StyledTag = styled(Tag)`
   margin: 0;
 `;
 
-export const CellCardDescription = styled.div`
-  ${fontBodyS}
-  font-weight: 400;
-  white-space: pre-wrap;
-`;
-
 export const SearchBarWrapper = styled.div`
   margin-bottom: 20px;
   width: 240px;
