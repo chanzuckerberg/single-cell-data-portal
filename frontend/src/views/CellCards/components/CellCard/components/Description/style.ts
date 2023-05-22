@@ -3,7 +3,7 @@ import { fontBodyS, getColors } from "czifui";
 
 export const CellCardDescription = styled.div`
   ${fontBodyS}
-  font-wieght: 400;
+  font-weight: 400;
   white-space: pre-wrap;
   ${(props) => {
     const colors = getColors(props);
