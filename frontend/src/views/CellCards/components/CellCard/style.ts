@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontHeaderXxl, Tag } from "czifui";
+import { fontHeaderXxl, Tag } from "czifui";
 
 export const TOP_PADDING_PX = 32;
 
