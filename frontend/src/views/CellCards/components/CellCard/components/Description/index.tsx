@@ -6,6 +6,10 @@ import { Tooltip } from "czifui";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 
+export const CELL_CARD_CL_DESCRIPTION = "cell-card-cl-description";
+export const CELL_CARD_GPT_DESCRIPTION = "cell-card-gpt-description";
+export const CELL_CARD_GPT_TOOLTIP_LINK = "cell-card-gpt-tooltip-link";
+
 interface DescriptionProps {
   cellTypeName: string;
 }
@@ -32,7 +36,7 @@ export default function Description({
   return (
     <Wrapper>
       {descriptionCl && (
-        <CellCardDescription>
+        <CellCardDescription data-testid={CELL_CARD_CL_DESCRIPTION}>
           {descriptionCl}
           <Source>
             {"Source: "}
@@ -44,7 +48,7 @@ export default function Description({
         </CellCardDescription>
       )}
       <br />
-      <CellCardDescription>
+      <CellCardDescription data-testid={CELL_CARD_GPT_DESCRIPTION}>
         {descriptionGpt}
         <Source>
           {"Source: "}
@@ -74,7 +78,9 @@ export default function Description({
               </div>
             }
           >
-            <StyledLink>ChatGPT</StyledLink>
+            <StyledLink data-testid={CELL_CARD_GPT_TOOLTIP_LINK}>
+              ChatGPT
+            </StyledLink>
           </Tooltip>
         </Source>
       </CellCardDescription>

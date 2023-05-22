@@ -13,6 +13,9 @@ import { useCellTypesById } from "src/common/queries/cellCards";
 import Description from "./components/Description";
 import CellCardSearchBar from "../CellCardSearchBar";
 
+export const CELL_CARD_HEADER_NAME = "cell-card-header-name";
+export const CELL_CARD_HEADER_TAG = "cell-card-header-tag";
+
 export default function CellCard(): JSX.Element {
   const router = useRouter();
 
@@ -27,7 +30,7 @@ export default function CellCard(): JSX.Element {
       <Wrapper>
         <CellCardHeader>
           <CellCardHeaderInnerWrapper>
-            <CellCardName>
+            <CellCardName data-testid={CELL_CARD_HEADER_NAME}>
               {cellTypeName.charAt(0).toUpperCase() + cellTypeName.slice(1)}
             </CellCardName>
             <a
@@ -35,6 +38,7 @@ export default function CellCard(): JSX.Element {
               target="_blank"
             >
               <StyledTag
+                data-testid={CELL_CARD_HEADER_TAG}
                 label={cellTypeId}
                 sdsType="secondary"
                 sdsStyle="square"

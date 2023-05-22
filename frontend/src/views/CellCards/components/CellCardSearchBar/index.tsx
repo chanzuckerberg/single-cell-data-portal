@@ -7,6 +7,10 @@ import { ROUTES } from "src/common/constants/routes";
 import { useCellTypes } from "src/common/queries/cellCards";
 import { useRouter } from "next/router";
 
+export const CELL_CARD_SEARCH_BAR_TEXT_INPUT =
+  "cell-card-search-bar-text-input";
+export const CELL_CARD_SEARCH_BAR = "cell-card-search-bar";
+
 interface CellType {
   id: string;
   label: string;
@@ -34,13 +38,13 @@ export default function CellCardSearchBar(): JSX.Element {
   function changeCellType(cellTypeId: string) {
     if (cellTypeId) {
       router.push(`${ROUTES.CELL_CARDS}/${cellTypeId.replace(":", "_")}`);
-      document.getElementById("cell-cards-search-bar")?.blur();
+      document.getElementById(CELL_CARD_SEARCH_BAR)?.blur();
       setOpen(false);
     }
   }
 
   return (
-    <div data-testid="cell-card-search-bar">
+    <div data-testid={CELL_CARD_SEARCH_BAR}>
       <StyledAutocomplete
         open={open}
         value={inputValue}
@@ -58,7 +62,7 @@ export default function CellCardSearchBar(): JSX.Element {
           setHighlightedCellType(cellType);
         }}
         disablePortal
-        id="cell-cards-search-bar"
+        id={CELL_CARD_SEARCH_BAR}
         options={cellTypes ?? []}
         groupBy={(option) => {
           const cellType = option as CellType;
@@ -75,7 +79,7 @@ export default function CellCardSearchBar(): JSX.Element {
         renderInput={(params) => (
           <TextField
             {...params}
-            data-testid="cell-card-search-bar-text-input"
+            data-testid={CELL_CARD_SEARCH_BAR_TEXT_INPUT}
             onFocus={handleFocus}
             onBlur={handleBlur}
             InputProps={{
