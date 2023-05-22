@@ -53,6 +53,7 @@ def create_flask_app():
     curation_api.blueprint.json_encoder = CurationJSONEncoder
     add_api(base_path="/wmg", spec_file="wmg/api/wmg-api.yml")
     add_api(base_path="/gene_info", spec_file="gene_info/api/gene-info-api.yml")
+    add_api(base_path="/de", spec_file="de/api/de-api.yml")
 
     # Initialize gene checker to go ahead and create a dictionary of all
     # gene ensembl ID to gene name mappings for the gene_info API endpoint.

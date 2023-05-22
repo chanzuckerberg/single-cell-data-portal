@@ -306,9 +306,10 @@ function useDEQueryRequestBody() {
     useContext(StateContext);
 
   return useMemo(() => {
-    if (!organismId || !queryGroups) {
+    if (!queryGroups || !organismId) {
       return null;
     }
+
     const { queryGroup1, queryGroup2 } = queryGroups;
 
     return {
@@ -399,9 +400,19 @@ function useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {
 
   return useMemo(() => {
     if (!organismId) {
-      return null;
+      return {
+        filter: {
+          dataset_ids: [],
+          development_stage_ontology_term_ids: [],
+          disease_ontology_term_ids: [],
+          organism_ontology_term_id: TEMP_ALLOW_NAME_LIST[0],
+          self_reported_ethnicity_ontology_term_ids: [],
+          sex_ontology_term_ids: [],
+          tissue_ontology_term_ids: [],
+          cell_type_ontology_term_ids: [],
+        },
+      };
     }
-
     return {
       filter: {
         dataset_ids: datasets,
