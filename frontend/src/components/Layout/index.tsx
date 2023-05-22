@@ -23,7 +23,7 @@ const Layout = ({ children }: Props) => {
     );
   } else {
     return (
-      <Wrapper data-testid="global-layout-wrapper" id="global-layout-wrapper">
+      <Wrapper data-testid="global-layout-wrapper">
         <Header />
         {children}
         {/* <Footer /> */}
