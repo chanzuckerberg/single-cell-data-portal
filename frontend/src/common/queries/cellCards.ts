@@ -61,10 +61,10 @@ async function fetchQuery({
 /**
  * Generic cell cards hook
  */
-export function useCellCardQuery(
+export function useCellCardQuery<T = CellCardResponse>(
   dataType: TYPES,
   cellTypeId = "" // Empty string if cell type is not needed for fetch function
-): UseQueryResult<CellCardResponse> {
+): UseQueryResult<T> {
   const { queryKey, url: rawUrl } = QUERY_MAPPING[dataType];
 
   return useQuery(
@@ -96,6 +96,11 @@ export interface CellOntologyTreeResponse {
   _children?: this[];
 }
 
+export const useCellOntologyTree =
+  (): UseQueryResult<CellOntologyTreeResponse> => {
+    return useCellCardQuery<CellOntologyTreeResponse>(TYPES.CELL_ONTOLOGY_TREE);
+  };
+
 /* ========== ontology_tree_state ========== */
 export const USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY = {
   entities: [ENTITIES.CELL_CARDS_INITIAL_CELL_ONTOLOGY_TREE_STATE],
@@ -108,6 +113,15 @@ export interface InitialCellOntologyTreeStateResponse {
     [key: string]: string[];
   };
 }
+
+export const useCellOntologyTreeState = (
+  cellTypeId: string
+): UseQueryResult<InitialCellOntologyTreeStateResponse> => {
+  return useCellCardQuery<InitialCellOntologyTreeStateResponse>(
+    TYPES.INITIAL_CELL_ONTOLOGY_TREE,
+    cellTypeId
+  );
+};
 
 /* ========== source_data ========== */
 export const USE_SOURCE_DATA_QUERY = {
@@ -127,6 +141,15 @@ interface SourceDataQueryResponseEntry {
 
 export type SourceDataQueryResponse = SourceDataQueryResponseEntry[];
 
+export const useSourceData = (
+  cellTypeId: string
+): UseQueryResult<SourceDataQueryResponse> => {
+  return useCellCardQuery<SourceDataQueryResponse>(
+    TYPES.SOURCE_DATA,
+    cellTypeId
+  );
+};
+
 /* ========== enriched_genes ========== */
 export const USE_ENRICHED_GENES_QUERY = {
   entities: [ENTITIES.CELL_CARDS_ENRICHED_GENES],
@@ -142,6 +165,15 @@ interface EnrichedGenesQueryResponseEntry {
 }
 
 export type EnrichedGenesQueryResponse = EnrichedGenesQueryResponseEntry[];
+
+export const useEnrichedGenes = (
+  cellTypeId: string
+): UseQueryResult<EnrichedGenesQueryResponse> => {
+  return useCellCardQuery<EnrichedGenesQueryResponse>(
+    TYPES.ENRICHED_GENES,
+    cellTypeId
+  );
+};
 
 /* ========== canonical_markers ========== */
 export const USE_CANONICAL_MARKERS_QUERY = {
@@ -161,6 +193,15 @@ interface CanonicalMarkersQueryResponseEntry {
 export type CanonicalMarkersQueryResponse =
   CanonicalMarkersQueryResponseEntry[];
 
+export const useCanonicalMarkers = (
+  cellTypeId: string
+): UseQueryResult<CanonicalMarkersQueryResponse> => {
+  return useCellCardQuery<CanonicalMarkersQueryResponse>(
+    TYPES.CANONICAL_MARKERS,
+    cellTypeId
+  );
+};
+
 /* ========== CL description ========== */
 export const USE_CL_DESCRIPTION_QUERY = {
   entities: [ENTITIES.CELL_CARDS_CL_DESCRIPTION],
@@ -168,6 +209,12 @@ export const USE_CL_DESCRIPTION_QUERY = {
 };
 
 export type ClDescriptionQueryResponse = string;
+
+export const useClDescription = (
+  cellTypeId: string
+): UseQueryResult<string> => {
+  return useCellCardQuery<string>(TYPES.CL_DESCRIPTION, cellTypeId);
+};
 
 /* ========== description ========== */
 export const USE_DESCRIPTION_QUERY = {
@@ -177,7 +224,11 @@ export const USE_DESCRIPTION_QUERY = {
 
 export type DescriptionQueryResponse = string;
 
-/* ========== cell_guides ========== */
+export const useDescription = (cellTypeId: string): UseQueryResult<string> => {
+  return useCellCardQuery<string>(TYPES.DESCRIPTION, cellTypeId);
+};
+
+/* ========== cell_cards ========== */
 export const USE_CELL_CARDS_QUERY = {
   entities: [ENTITIES.CELL_CARDS_CELL_CARDS],
   id: "cell-cards-query",
@@ -190,11 +241,14 @@ interface CellCardsQueryResponseEntry {
 
 export type CellCardsQueryResponse = CellCardsQueryResponseEntry[];
 
+export const useCellTypes = (): UseQueryResult<CellCardsQueryResponse> => {
+  return useCellCardQuery<CellCardsQueryResponse>(TYPES.CELL_CARDS);
+};
+
 /* ========== cell types by Id ========== */
+
 export function useCellTypesById(): { [id: string]: string } | undefined {
-  const { data, isLoading } = useCellCardQuery(
-    TYPES.CELL_CARDS
-  ) as UseQueryResult<CellCardsQueryResponse>; //useCellTypes();
+  const { data, isLoading } = useCellTypes();
 
   return useMemo(() => {
     if (!data || isLoading) return;
