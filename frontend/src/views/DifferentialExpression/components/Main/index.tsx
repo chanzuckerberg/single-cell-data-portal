@@ -38,10 +38,7 @@ export default function DifferentialExpression(): JSX.Element {
     dispatch(copyCellGroup1());
   };
 
-  const canRunDifferentialExpression =
-    queryGroups.queryGroup1.tissues.length > 0 &&
-    queryGroups.queryGroup2.tissues.length > 0 &&
-    !isLoading;
+  const canRunDifferentialExpression = !isLoading;
 
   const handleRunDifferentialExpression = () => {
     if (!dispatch) return;
