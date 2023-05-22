@@ -1,6 +1,6 @@
-import { expect, Page, test } from "@playwright/test";
+import { test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
-import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
+import { goToPage, isDevStagingProd } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 
 const { describe, skip } = test;
@@ -31,20 +31,20 @@ describe("Cell Cards", () => {
   });
 });
 
-async function waitForElement(page: Page, testId: string) {
-  await tryUntil(
-    async () => {
-      await expect(page.getByTestId(testId)).not.toHaveCount(0);
-    },
-    { page }
-  );
-}
+// async function waitForElement(page: Page, testId: string) {
+//   await tryUntil(
+//     async () => {
+//       await expect(page.getByTestId(testId)).not.toHaveCount(0);
+//     },
+//     { page }
+//   );
+// }
 
-async function getElementAndClick(page: Page, testID: string) {
-  await tryUntil(
-    async () => {
-      await page.getByTestId(testID).click();
-    },
-    { page }
-  );
-}
+// async function getElementAndClick(page: Page, testID: string) {
+//   await tryUntil(
+//     async () => {
+//       await page.getByTestId(testID).click();
+//     },
+//     { page }
+//   );
+// }
