@@ -43,7 +43,6 @@ export const SectionItem = styled.li`
   ${fontBodyXs}
   font-weight: 400;
   cursor: pointer;
-  height: 32px;
   padding-left: 20px !important;
-  margin-bottom: 0px !important;
+  margin-bottom: 8px !important;
 `;
