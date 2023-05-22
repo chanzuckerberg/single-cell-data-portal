@@ -46,7 +46,7 @@ export const StyledTag = styled(Tag)`
 
 export const CellCardDescription = styled.div`
   ${fontBodyS}
-  font-wieght: 400;
+  font-weight: 400;
   white-space: pre-wrap;
 `;
 
