@@ -75,7 +75,11 @@ export default function Description({
               </div>
             }
           >
-            <StyledLink data-testid={CELL_CARD_GPT_TOOLTIP_LINK}>
+            <StyledLink
+              href={"https://platform.openai.com/docs/models/gpt-3-5"}
+              target="_blank"
+              data-testid={CELL_CARD_GPT_TOOLTIP_LINK}
+            >
               ChatGPT
             </StyledLink>
           </Tooltip>
