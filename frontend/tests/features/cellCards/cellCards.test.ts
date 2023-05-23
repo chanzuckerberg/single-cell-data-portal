@@ -20,6 +20,10 @@ import {
   CELL_CARD_CANONICAL_MARKER_GENES_TABLE,
   CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN,
 } from "src/views/CellCards/components/CellCard/components/CanonicalMarkerGeneTable";
+import {
+  CELL_CARD_ENRICHED_GENES_TABLE,
+  CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN,
+} from "src/views/CellCards/components/CellCard/components/EnrichedGenesTable";
 
 const { describe } = test;
 
@@ -127,7 +131,7 @@ describe("Cell Cards", () => {
       await page.waitForURL(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000622`); // Acinar cell
     });
   });
-  test("Canonical marker gene is displayed with columns and at least one entry displayed", async ({
+  test("Canonical marker gene table is displayed with columns and at least one entry displayed", async ({
     page,
   }) => {
     await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
@@ -174,6 +178,60 @@ describe("Cell Cards", () => {
     const rowCountAfter = rowElementsAfter.length;
     expect(rowCountAfter).toBeGreaterThan(1);
     expect(rowCountAfter).not.toBe(rowCountBefore);
+  });
+
+  test("Enriched gene table is displayed with columns and at least one entry displayed", async ({
+    page,
+  }) => {
+    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // Neuron
+    const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+
+    const columnHeaderElements = await page
+      .locator(`${tableSelector} thead th`)
+      .elementHandles();
+    // get text content of each column header
+    const columnHeaders = await Promise.all(
+      columnHeaderElements.map(async (element) => {
+        return await element.textContent();
+      })
+    );
+    expect(columnHeaders).toEqual([
+      "Symbol",
+      "Name",
+      "Expression Score",
+      "% of Cells",
+    ]);
+    const rowElements = await page
+      .locator(`${tableSelector} tbody tr`)
+      .elementHandles();
+    const rowCount = rowElements.length;
+    expect(rowCount).toBeGreaterThan(1);
+  });
+  test.only("Enriched marker gene table is updated by the organism dropdown", async ({
+    page,
+  }) => {
+    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+    const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+    const rowElementsBefore = await page
+      .locator(`${tableSelector} tbody tr`)
+      .elementHandles();
+    const rowCountBefore = rowElementsBefore.length;
+    expect(rowCountBefore).toBeGreaterThan(1);
+    const firstRowContentBefore = await rowElementsBefore[0].textContent();
+
+    const dropdown = page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN);
+    await dropdown.waitFor({ timeout: 5000 });
+    await dropdown.click();
+    await dropdown.press("ArrowDown");
+    await dropdown.press("Enter");
+
+    const rowElementsAfter = await page
+      .locator(`${tableSelector} tbody tr`)
+      .elementHandles();
+    const rowCountAfter = rowElementsAfter.length;
+    expect(rowCountAfter).toBeGreaterThan(1);
+    const firstRowContentAfter = await rowElementsAfter[0].textContent();
+    expect(firstRowContentBefore).not.toBe(firstRowContentAfter);
   });
 });
 
