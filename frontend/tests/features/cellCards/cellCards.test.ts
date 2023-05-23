@@ -207,7 +207,7 @@ describe("Cell Cards", () => {
     const rowCount = rowElements.length;
     expect(rowCount).toBeGreaterThan(1);
   });
-  test.only("Enriched marker gene table is updated by the organism dropdown", async ({
+  test("Enriched marker gene table is updated by the organism dropdown", async ({
     page,
   }) => {
     await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
