@@ -393,15 +393,15 @@ export interface CollectionRow
   extends Categories,
     PublisherMetadataCategories,
     Testable {
-  curator_name?: string; // My collections view.
+  curator_name?: string; // Curator view.
   id: string;
   name: string;
   published_at: number;
   publisher_metadata?: PublisherMetadata; // Collection publication metadata
   recency: number; // Used by sort
   revised_at?: number;
-  revisedBy?: string; // My collections view.
-  status?: COLLECTION_STATUS[]; // My collections view.
+  revisedBy?: string; // Curator view.
+  status?: COLLECTION_STATUS[]; // Curator view.
   summaryCitation: string;
   testId: string; // Test ID for e2e tests, facilitates easy look-ups of rows.
 }

@@ -59,7 +59,7 @@ export default function Collections(): JSX.Element {
   // Pop toast if user has been redirected from a tombstoned collection.
   useExplainTombstoned();
 
-  // Filterable collection datasets joined from datasets index and collections (or my-collections) index responses.
+  // Filterable collection datasets joined from datasets index and collections (or user-collections) index responses.
   const {
     isError,
     isLoading,
@@ -86,7 +86,7 @@ export default function Collections(): JSX.Element {
         disableSortBy: true,
         showCountAndTotal: true,
       },
-      // Viewable only in my-collections mode, required for filter.
+      // Viewable only in curator mode, required for filter.
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
           return (
@@ -103,7 +103,7 @@ export default function Collections(): JSX.Element {
         id: CATEGORY_FILTER_ID.STATUS,
         sortType: arraySortingFn,
       },
-      // Viewable only in my-collections mode, required for filter.
+      // Viewable only in curator mode, required for filter.
       {
         Header: "Curator",
         accessor: COLLECTION_CURATOR_NAME,
@@ -112,7 +112,7 @@ export default function Collections(): JSX.Element {
         id: CATEGORY_FILTER_ID.CURATOR_NAME,
         sortType: "alphanumeric",
       },
-      // Viewable in collections mode, hidden in my-collections mode.
+      // Viewable in collections mode, hidden in curator mode.
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
           return <div>{row.values.summaryCitation || "No publication"}</div>;
@@ -143,7 +143,7 @@ export default function Collections(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.DISEASE,
       },
-      // Viewable only in my-collections mode, required for filter.
+      // Viewable only in curator mode, required for filter.
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.ASSAY} values={value} />
@@ -164,7 +164,7 @@ export default function Collections(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ORGANISM,
       },
-      // Viewable only in my-collections mode.
+      // Viewable only in curator mode.
       {
         Cell: ({ value }: CellPropsValue<number | null>) => (
           <RightAlignCell>
@@ -375,7 +375,7 @@ export default function Collections(): JSX.Element {
 }
 
 /**
- * Partitions the category views for collections and my-collections mode filtering.
+ * Partitions the category views for collections and curator mode filtering.
  * @param categoryViews - View models of categories to display.
  * @param mode - View mode.
  * @returns partitioned category views.

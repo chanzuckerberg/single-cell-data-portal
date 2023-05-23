@@ -63,8 +63,8 @@ export interface FetchCategoriesRows<T extends Categories> {
  * Model of collection IDs in revision keyed by corresponding published collection ID.
  */
 type CollectionRevisionIdByCollectionId = Map<
-  MyCollectionResponse["revision_of"],
-  MyCollectionResponse["id"]
+  UserCollectionResponse["revision_of"],
+  UserCollectionResponse["id"]
 >;
 
 /**
@@ -79,9 +79,9 @@ export interface CollectionResponse {
 }
 
 /**
- * Model of /my-collections/index JSON response.
+ * Model of /user-collections/index JSON response.
  */
-export interface MyCollectionResponse extends CollectionResponse {
+export interface UserCollectionResponse extends CollectionResponse {
   access_type: ACCESS_TYPE;
   curator_name: string;
   owner: Collection["owner"];
@@ -90,12 +90,12 @@ export interface MyCollectionResponse extends CollectionResponse {
 }
 
 /**
- * Model of /collections/index or /my-collections/index JSON response that has been modified to include calculated fields that facilitate filter
- * functionality.
+ * Model of /collections/index or /user-collections/index JSON response that has been modified to include calculated
+ * fields that facilitate filter functionality.
  */
 export type ProcessedCollectionResponse = (
   | CollectionResponse
-  | MyCollectionResponse
+  | UserCollectionResponse
 ) & {
   publicationAuthors: string[];
   publicationDateValues: number[];
@@ -207,7 +207,7 @@ export function useFetchCollections(
 ): UseQueryResult<Map<string, ProcessedCollectionResponse>> {
   return useQuery<Map<string, ProcessedCollectionResponse>>(
     [USE_COLLECTIONS_INDEX],
-    mode === VIEW_MODE.DEFAULT ? fetchCollections : fetchMyCollections,
+    mode === VIEW_MODE.DEFAULT ? fetchCollections : fetchUserCollections,
     {
       ...DEFAULT_QUERY_OPTIONS,
       enabled: status === "success" || status === "error",
@@ -273,7 +273,7 @@ export function useFetchDatasets(
 ): UseQueryResult<ProcessedDatasetResponse[]> {
   return useQuery<ProcessedDatasetResponse[]>(
     [USE_DATASETS_INDEX],
-    mode === VIEW_MODE.DEFAULT ? fetchDatasets : fetchMyDatasets,
+    mode === VIEW_MODE.DEFAULT ? fetchDatasets : fetchUserDatasets,
     {
       ...DEFAULT_QUERY_OPTIONS,
       enabled: status === "success" || status === "error",
@@ -665,7 +665,7 @@ function fetchAndProcessCollectionResponse(
 ): Promise<ProcessedCollectionResponse[]> {
   return fetch(url, DEFAULT_FETCH_OPTIONS)
     .then((response) => response.json())
-    .then((collections: CollectionResponse[] | MyCollectionResponse[]) => {
+    .then((collections: CollectionResponse[] | UserCollectionResponse[]) => {
       // Calculate the number of months since publication for each collection.
       const [todayMonth, todayYear] = getMonthYear(new Date());
       return collections.map((collection: CollectionResponse) =>
@@ -692,16 +692,16 @@ async function fetchCollections(): Promise<
 }
 
 /**
- * Fetch collections from /my-collections/index endpoint. My collections are partial in that they do not contain all
+ * Fetch collections from /user-collections/index endpoint. User collections are partial in that they do not contain all
  * fields; only fields required for filtering and sorting are returned.
- * @returns Promise that resolves to a map of my collections keyed by collection ID - possible cached from previous
+ * @returns Promise that resolves to a map of user collections keyed by collection ID - possible cached from previous
  * request.
  */
-async function fetchMyCollections(): Promise<
+async function fetchUserCollections(): Promise<
   Map<string, ProcessedCollectionResponse>
 > {
   const processedCollections = await fetchAndProcessCollectionResponse(
-    API_URL + API.MY_COLLECTIONS_INDEX
+    API_URL + API.USER_COLLECTIONS_INDEX
   );
 
   // Map collection IDs in revision keyed by corresponding published collection ID.
@@ -710,17 +710,20 @@ async function fetchMyCollections(): Promise<
 
   // Published collection in revision are filtered out from the processed response, and the revision ID is mapped to
   // the corresponding published ID.
-  // Process my collections response to add additional fields required for filtering and sorting .e.g "status".
-  const processedMyCollections = processedCollections
+  // Process user collections response to add additional fields required for filtering and sorting .e.g "status".
+  const processedUserCollections = processedCollections
     .filter((processedCollection) =>
       filterCollectionInRevision(processedCollection, collectionRevisionIdById)
     )
     .map((processedCollection) =>
-      processMyCollectionResponse(processedCollection, collectionRevisionIdById)
+      processUserCollectionResponse(
+        processedCollection,
+        collectionRevisionIdById
+      )
     );
 
-  // Create "collections lookup" to facilitate join between my collections and datasets.
-  return keyCollectionsById(processedMyCollections);
+  // Create "collections lookup" to facilitate join between user collections and datasets.
+  return keyCollectionsById(processedUserCollections);
 }
 
 /**
@@ -763,8 +766,10 @@ async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
  * @returns Promise resolving to an array of datasets - possible cached from previous request - containing
  * filterable and sortable dataset fields.
  */
-async function fetchMyDatasets(): Promise<ProcessedDatasetResponse[]> {
-  return await fetchAndProcessDatasetResponse(API_URL + API.MY_DATASETS_INDEX);
+async function fetchUserDatasets(): Promise<ProcessedDatasetResponse[]> {
+  return await fetchAndProcessDatasetResponse(
+    API_URL + API.USER_DATASETS_INDEX
+  );
 }
 
 /**
@@ -896,12 +901,12 @@ function keyCollectionsById(
 
 /**
  * Add calculated fields to collection response.
- * @param collection - Collection response returned from collections or my-collections endpoint.
+ * @param collection - Collection response returned from collections or user-collections endpoint.
  * @param todayMonth - Number indicating the month of today's date (1-indexed).
  * @param todayYear - Number indicating the year of today's date.
  */
 function processCollectionResponse(
-  collection: CollectionResponse | MyCollectionResponse,
+  collection: CollectionResponse | UserCollectionResponse,
   todayMonth: number,
   todayYear: number
 ): ProcessedCollectionResponse {
@@ -955,11 +960,11 @@ function processDatasetResponse(
 }
 
 /**
- * Add calculated fields to my collections response.
+ * Add calculated fields to user collections response.
  * @param processedCollection - Processed collection response.
  * @param collectionRevisionIdById - Map of collection IDs in revision keyed by corresponding published collection ID.
  */
-function processMyCollectionResponse(
+function processUserCollectionResponse(
   processedCollection: ProcessedCollectionResponse,
   collectionRevisionIdById: CollectionRevisionIdByCollectionId
 ): ProcessedCollectionResponse {
