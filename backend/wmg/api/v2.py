@@ -14,7 +14,7 @@ from backend.wmg.data.query import (
     MarkerGeneQueryCriteria,
     WmgFiltersQueryCriteria,
     WmgQuery,
-    WmgQueryCriteria,
+    WmgQueryCriteriaV2,
     retrieve_top_n_markers,
 )
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
@@ -42,7 +42,7 @@ def query():
     if compare:
         compare = find_dimension_id_from_compare(compare)
 
-    criteria = WmgQueryCriteria(**request["filter"])
+    criteria = WmgQueryCriteriaV2(**request["filter"])
 
     with ServerTiming.time("query and build response"):
         snapshot: WmgSnapshot = load_snapshot()
