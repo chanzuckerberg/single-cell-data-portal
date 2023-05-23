@@ -3,7 +3,7 @@ import { fontBodyS, getColors, getSpacings } from "czifui";
 
 export const StyledTable = styled.table`
   width: 100%;
-  table-layout: auto; ;
+  table-layout: auto;
 `;
 
 export const TableWrapper = styled.div`
