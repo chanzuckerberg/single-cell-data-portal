@@ -40,7 +40,8 @@ export default function CollectionDescription({
   };
 
   /**
-   * Ellipsis mode state is initialized to "NONE".
+   * Ellipsis mode state is initialized to "NONE" only when the component mounts,
+   * so we guarantee that `descriptionRef` gets the element handle for resize observer hook.
    */
   useEffect(() => {
     setEllipsisMode(EllipsisMode.NONE);
