@@ -355,13 +355,12 @@ def _add_missing_combinations_to_gene_expression_df_for_rollup(
         missing_combinations = available_combinations.difference(available_combinations_per_gene)
         for combo in missing_combinations:
             entry = {dim: combo[i] for i, dim in enumerate(group_by_terms)}
-            tissue_has_gene_expression = n_cells_tissue_dict.get(entry["tissue_ontology_term_id"], False)
 
             # If a tissue, T1, DOES NOT have ANY of the QUERIED GENES expressed, then entirely
             # omit all combos that contain tissue T1 from the candidate list of combos
             # that should be considered for rollup. Otherwise, include combos containing T1
             # in the candidate list of combos for rollup.
-            if tissue_has_gene_expression:
+            if entry["tissue_ontology_term_id"] in n_cells_tissue_dict:
                 entry.update({col: 0 for col in numeric_columns})
                 entry["n_cells_tissue"] = n_cells_tissue_dict[entry["tissue_ontology_term_id"]]
                 entry["gene_ontology_term_id"] = gene
