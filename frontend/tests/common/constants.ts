@@ -33,6 +33,10 @@ export const SHARED_LINK_WITHOUT_COMPARE = `${TEST_URL}/gene-expression?datasets
 
 export const SIMPLE_SHARED_LINK = `${TEST_URL}/gene-expression?tissues=blood%2Clung&genes=DPM1%2CMALAT1%2CTNMD%2CTSPAN6&ver=2`;
 
+export const SHARED_LINK_NO_FILTER = `${TEST_URL}/gene-expression?tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
+
+export const SHARED_LINK_FILTER = `${TEST_URL}/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
+export const SHARED_LINK_NO_GROUP = `${TEST_URL}/gene-expression?compare=disease&diseases=PATO%3A0000461&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
 export const ADD_TISSUE_BTN = "add-tissue-btn";
 export const ADD_TISSUE_LBL = "get-started-step-1";
 export const ADD_GENE_BTN = "add-gene-btn";
@@ -44,3 +48,10 @@ export const ERROR_NO_TESTID_OR_LOCATOR =
 export const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 
 export const downLoadPath = "./tests/downloads";
+export const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
+export const ADD_TISSUE_ID = "add-tissue-btn";
+export const ADD_GENE_ID = "add-gene-btn";
+export const GENE_DELETE_BUTTON = "gene-delete-button";
+export const SOURCE_DATA_BUTTON_ID = "source-data-button";
+export const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
+export const DOWNLOAD_BUTTON_ID = "download-button";

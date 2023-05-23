@@ -21,6 +21,7 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
+const downLoadPath = "./tests/downloads";
 
 export async function verifyCsv(
   page: Page,
@@ -93,7 +94,6 @@ export async function deleteDownloadedFiles(filePath: string) {
     }
   });
 }
-
 export interface CsvMetadata {
   rowCount: number;
   data: string[][];
