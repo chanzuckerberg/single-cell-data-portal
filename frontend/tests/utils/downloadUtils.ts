@@ -21,7 +21,6 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
-const downLoadPath = "./tests/downloads";
 
 export async function verifyCsv(
   page: Page,
@@ -89,8 +88,6 @@ export async function deleteDownloadedFiles(filePath: string) {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);
-    } else {
-      console.log("Folder deleted successfully");
     }
   });
 }
