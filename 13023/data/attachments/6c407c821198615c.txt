@@ -1,0 +1,1 @@
+  [38;5;45;1mpw:api [0m  locator resolved to <div data-testid="cell-card-search-bar-text-input" cl…>…</div> [38;5;45m+29ms[0m
