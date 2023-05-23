@@ -1023,7 +1023,6 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     ],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
-                    "explorer_url": f"/e/{first_version.datasets[0].version_id.id}.cxg/",
                     "is_primary_data": [True, False],
                     "mean_genes_per_cell": 0.5,
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
@@ -1058,16 +1057,10 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
         [d.pop("published_at") for d in received_body["datasets"]]
 
         self.assertEqual(received_body, expected_body)
-        # test correct dataset explorer url is used
-        explorer_url = res.json["datasets"][0]["explorer_url"]
-        self.assertTrue(explorer_url.endswith(f"{first_version.datasets[0].version_id.id}.cxg/"))
 
         res = self.app.get(f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertEqual(res.json["collection_version_id"], revision.version_id.id)
-        # test correct dataset explorer url is used
-        explorer_url = res.json["datasets"][0]["explorer_url"]
-        self.assertTrue(explorer_url.endswith(f"{revision.datasets[0].version_id.id}.cxg/"))
 
     def test_get_collection_version_4xx(self):
         with self.subTest("Query endpoint with incorrect ID"):
@@ -1809,7 +1802,6 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         self.assertEqual(initial_published_dataset_version_id.id, response.json["dataset_version_id"])
         self.assertEqual(initial_published_dataset.dataset_id.id, response.json["dataset_id"])
         self.assertEqual(collection_id.id, response.json["collection_id"])
-        self.assertTrue(response.json["explorer_url"].endswith(f"/e/{initial_published_dataset_version_id}.cxg/"))
         expected_assets = [  # Filter out disallowed file types + properly construct url
             {
                 "filesize": -1,
@@ -1831,9 +1823,6 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         self.assertEqual(published_dataset_revision.dataset_version_id, response.json["dataset_version_id"])
         self.assertEqual(published_dataset_revision.dataset_id, response.json["dataset_id"])
         self.assertEqual(collection_id.id, response.json["collection_id"])
-        self.assertTrue(
-            response.json["explorer_url"].endswith(f"/e/{published_dataset_revision.dataset_version_id}.cxg/")
-        )
         expected_assets = [  # Filter out disallowed file types + properly construct url
             {
                 "filesize": -1,

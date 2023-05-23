@@ -12,7 +12,6 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import {
   useCollection,
   useCollectionUploadLinks,
-  useDeleteCollection,
 } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
@@ -22,7 +21,6 @@ import CollectionRevisionStatusCallout from "src/components/Collection/component
 import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
 import ActionButtons from "./components/ActionButtons";
-import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
 import Toast from "./components/Toast";
 import {
   CollectionConsortia,
@@ -39,8 +37,6 @@ import {
 const Collection: FC = () => {
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
-
-  const [userWithdrawn, setUserWithdrawn] = useState(false);
 
   let id = "";
 
@@ -61,13 +57,6 @@ const Collection: FC = () => {
   const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
 
   const { data: collection, isError, isFetching } = collectionState;
-
-  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id,
-    collection && "visibility" in collection
-      ? collection.visibility
-      : VISIBILITY_TYPE.PRIVATE
-  );
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
@@ -91,11 +80,11 @@ const Collection: FC = () => {
   }, [tombstoned_dataset_id, collection, hasShownWithdrawToast]);
 
   useEffect(() => {
-    if (!userWithdrawn && isTombstonedCollection(collection)) {
+    if (isTombstonedCollection(collection)) {
       const redirectUrl = ROUTES.HOMEPAGE;
       router.push(redirectUrl + "?tombstoned_collection_id=" + id);
     }
-  }, [collection, id, router, userWithdrawn]);
+  }, [collection, id, router]);
 
   /* Pop toast if user has come from Explorer with work in progress */
   useExplainNewTab(
@@ -149,7 +138,6 @@ const Collection: FC = () => {
 
   const hasWriteAccess = collection.access_type === ACCESS_TYPE.WRITE;
   const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
-  const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
   const shouldShowCollectionRevisionCallout =
     collection.revision_of && isPrivate;
   const collectionConsortia = collection.consortia;
@@ -159,16 +147,6 @@ const Collection: FC = () => {
     collection.contact_email,
     collection.summaryCitation
   );
-
-  const handleDeleteCollection = async () => {
-    setUserWithdrawn(true);
-
-    await deleteMutation({
-      collectionID: id,
-    });
-
-    router.push(ROUTES.MY_COLLECTIONS);
-  };
 
   return (
     <>
@@ -192,13 +170,6 @@ const Collection: FC = () => {
               isPublishable={isPublishable}
               revisionOf={collection.revision_of}
               visibility={collection.visibility}
-            />
-          )}
-          {shouldShowPublicWriteAction && (
-            <DeleteCollectionButton
-              collectionName={collection.name}
-              handleConfirm={handleDeleteCollection}
-              loading={isLoading}
             />
           )}
         </CollectionHero>
