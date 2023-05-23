@@ -45,6 +45,7 @@ import {
   XAxisWrapper,
   YAxisWrapper,
 } from "./style";
+import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
   className?: string;
@@ -182,14 +183,16 @@ export default memo(function HeatMap({
               tissue,
             });
             return tissueCellTypes.length ? (
-              <YAxisChart
-                key={tissue}
-                tissue={tissue}
-                tissueID={tissuesByName[tissue].id}
-                cellTypes={tissueCellTypes}
-                generateMarkerGenes={generateMarkerGenes}
-                selectedOrganismId={selectedOrganismId}
-              />
+              <div id={`y-axis-${tissue}`}>
+                <YAxisChart
+                  key={tissue}
+                  tissue={tissue}
+                  tissueID={tissuesByName[tissue].id}
+                  cellTypes={tissueCellTypes}
+                  generateMarkerGenes={generateMarkerGenes}
+                  selectedOrganismId={selectedOrganismId}
+                />
+              </div>
             ) : null;
           })}
         </YAxisWrapper>
@@ -210,7 +213,16 @@ export default memo(function HeatMap({
              * the chart, because it will cause the chart to render with 0 width,
              * which is an error for echarts
              */
-            if (!selectedGeneData?.length) return null;
+
+            if (!selectedGeneData?.length) {
+              const height =
+                document.getElementById(`y-axis-${tissue}`)?.clientHeight ?? 0;
+              return (
+                <div
+                  style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
+                />
+              );
+            }
 
             return (
               <Chart

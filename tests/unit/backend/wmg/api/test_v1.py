@@ -591,6 +591,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 ],
                 "sex_terms": [],
                 "tissue_terms": [{"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],
+                "cell_type_terms": [{"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}],
             }
             self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
 
