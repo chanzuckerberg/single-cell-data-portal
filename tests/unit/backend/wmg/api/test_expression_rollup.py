@@ -266,6 +266,86 @@ class TestHighLevelRollupFunction(unittest.TestCase):
         }
 
         test_3 = {
+            "name": "no_compare_dim_gene_expressed_in_one_tissue_but_not_other",
+            "input_cell_counts": [
+                ["UBERON:0000955", "CL:0000127", 300],
+                ["UBERON:0000955", "CL:0000644", 70],
+                ["UBERON:0000955", "CL:0002605", 80],
+                ["UBERON:0000955", "CL:0002627", 90],
+                ["UBERON:0002113", "CL:0000127", 300],
+                ["UBERON:0002113", "CL:0000644", 70],
+                ["UBERON:0002113", "CL:0002605", 80],
+                ["UBERON:0002113", "CL:0002627", 90],
+            ],
+            "expected_rolled_up_cell_counts": [
+                ["UBERON:0000955", "CL:0000127", 540],
+                ["UBERON:0000955", "CL:0000644", 70],
+                ["UBERON:0000955", "CL:0002605", 80],
+                ["UBERON:0000955", "CL:0002627", 90],
+                ["UBERON:0002113", "CL:0000127", 540],
+                ["UBERON:0002113", "CL:0000644", 70],
+                ["UBERON:0002113", "CL:0002605", 80],
+                ["UBERON:0002113", "CL:0002627", 90],
+            ],
+            # Gene "ENSG00000169429" expressed in Tissue "UBERON:0000955" but not expressed
+            # in Tissue "UBERON:0002113"
+            "input_gene_expression": [
+                ["ENSG00000085265", "UBERON:0000955", "CL:0000644", 1, 1, 70, 1000],
+                ["ENSG00000085265", "UBERON:0000955", "CL:0002605", 1, 1, 80, 1000],
+                ["ENSG00000169429", "UBERON:0000955", "CL:0002627", 1, 1, 90, 1000],
+                ["ENSG00000085265", "UBERON:0002113", "CL:0000644", 1, 1, 70, 1000],
+                ["ENSG00000085265", "UBERON:0002113", "CL:0002605", 1, 1, 80, 1000],
+            ],
+            "expected_rolled_up_gene_expression": [
+                ["ENSG00000085265", "UBERON:0000955", "CL:0000127", 2, 2, 150, 1000],
+                ["ENSG00000169429", "UBERON:0000955", "CL:0000127", 1, 1, 90, 1000],
+                ["ENSG00000085265", "UBERON:0000955", "CL:0000644", 1, 1, 70, 1000],
+                ["ENSG00000085265", "UBERON:0000955", "CL:0002605", 1, 1, 80, 1000],
+                ["ENSG00000169429", "UBERON:0000955", "CL:0002627", 1, 1, 90, 1000],
+                ["ENSG00000085265", "UBERON:0002113", "CL:0000127", 2, 2, 150, 1000],
+                ["ENSG00000085265", "UBERON:0002113", "CL:0000644", 1, 1, 70, 1000],
+                ["ENSG00000085265", "UBERON:0002113", "CL:0002605", 1, 1, 80, 1000],
+            ],
+        }
+
+        test_4 = {
+            "name": "no_compare_dim_one_of_the_tissues_has_no_gene_expressions_at_all",
+            "input_cell_counts": [
+                ["UBERON:0000955", "CL:0000127", 300],
+                ["UBERON:0000955", "CL:0000644", 70],
+                ["UBERON:0000955", "CL:0002605", 80],
+                ["UBERON:0000955", "CL:0002627", 90],
+                ["UBERON:0002113", "CL:0000127", 300],
+                ["UBERON:0002113", "CL:0000644", 70],
+                ["UBERON:0002113", "CL:0002605", 80],
+                ["UBERON:0002113", "CL:0002627", 90],
+            ],
+            "expected_rolled_up_cell_counts": [
+                ["UBERON:0000955", "CL:0000127", 540],
+                ["UBERON:0000955", "CL:0000644", 70],
+                ["UBERON:0000955", "CL:0002605", 80],
+                ["UBERON:0000955", "CL:0002627", 90],
+                ["UBERON:0002113", "CL:0000127", 540],
+                ["UBERON:0002113", "CL:0000644", 70],
+                ["UBERON:0002113", "CL:0002605", 80],
+                ["UBERON:0002113", "CL:0002627", 90],
+            ],
+            # Tissue issue "UBERON:0002113" has no gene expressions
+            "input_gene_expression": [
+                ["ENSG00000085265", "UBERON:0000955", "CL:0000644", 1, 1, 70, 1000],
+                ["ENSG00000085265", "UBERON:0000955", "CL:0002605", 1, 1, 80, 1000],
+                ["ENSG00000169429", "UBERON:0000955", "CL:0002627", 1, 1, 90, 1000],
+            ],
+            "expected_rolled_up_gene_expression": [
+                ["ENSG00000085265", "UBERON:0000955", "CL:0000127", 2, 2, 150, 1000],
+                ["ENSG00000169429", "UBERON:0000955", "CL:0000127", 1, 1, 90, 1000],
+                ["ENSG00000085265", "UBERON:0000955", "CL:0000644", 1, 1, 70, 1000],
+                ["ENSG00000085265", "UBERON:0000955", "CL:0002605", 1, 1, 80, 1000],
+                ["ENSG00000169429", "UBERON:0000955", "CL:0002627", 1, 1, 90, 1000],
+            ],
+        }
+
+        test_5 = {
             "name": "with_ethnicity_compare_dim_on_single_tissue",
             "input_cell_counts": [
                 ["UBERON:0000955", "CL:0000127", "unknown", 300],
@@ -330,10 +410,24 @@ class TestHighLevelRollupFunction(unittest.TestCase):
             ),
             (
                 test_3["name"],
-                _cell_counts_df_with_ethnicity_compare_dim(test_3["input_cell_counts"]),
-                _cell_counts_df_with_ethnicity_compare_dim(test_3["expected_rolled_up_cell_counts"]),
-                _gene_expression_df_with_ethnicity_compare_dim(test_3["input_gene_expression"]),
-                _gene_expression_df_with_ethnicity_compare_dim(test_3["expected_rolled_up_gene_expression"]),
+                _cell_counts_df_without_compare_dim(test_3["input_cell_counts"]),
+                _cell_counts_df_without_compare_dim(test_3["expected_rolled_up_cell_counts"]),
+                _gene_expression_df_without_compare_dim(test_3["input_gene_expression"]),
+                _gene_expression_df_without_compare_dim(test_3["expected_rolled_up_gene_expression"]),
+            ),
+            (
+                test_4["name"],
+                _cell_counts_df_without_compare_dim(test_4["input_cell_counts"]),
+                _cell_counts_df_without_compare_dim(test_4["expected_rolled_up_cell_counts"]),
+                _gene_expression_df_without_compare_dim(test_4["input_gene_expression"]),
+                _gene_expression_df_without_compare_dim(test_4["expected_rolled_up_gene_expression"]),
+            ),
+            (
+                test_5["name"],
+                _cell_counts_df_with_ethnicity_compare_dim(test_5["input_cell_counts"]),
+                _cell_counts_df_with_ethnicity_compare_dim(test_5["expected_rolled_up_cell_counts"]),
+                _gene_expression_df_with_ethnicity_compare_dim(test_5["input_gene_expression"]),
+                _gene_expression_df_with_ethnicity_compare_dim(test_5["expected_rolled_up_gene_expression"]),
             ),
         ]
 

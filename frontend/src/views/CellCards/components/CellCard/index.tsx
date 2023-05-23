@@ -12,6 +12,8 @@ import {
 import { useCellTypesById } from "src/common/queries/cellCards";
 import Description from "./components/Description";
 import CellCardSearchBar from "../CellCardSearchBar";
+import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
+import EnrichedGenesTable from "./components/EnrichedGenesTable";
 
 export const CELL_CARD_HEADER_NAME = "cell-card-header-name";
 export const CELL_CARD_HEADER_TAG = "cell-card-header-tag";
@@ -52,6 +54,8 @@ export default function CellCard(): JSX.Element {
           </SearchBarWrapper>
         </CellCardHeader>
         <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
+        <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
+        <EnrichedGenesTable cellTypeId={cellTypeId} />
       </Wrapper>
     </CellCardsView>
   );
