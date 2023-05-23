@@ -80,6 +80,9 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
 
   useEffect(() => {
     return () => {
+      // (alec) when the component unmounts, reset the organism to its initial state.
+      // not all cell types may have homo sapiens as a valid option so we need to invoke the conditional
+      // logic above for setting the initial organism.
       setSelectedOrganism("");
     };
   }, []);
