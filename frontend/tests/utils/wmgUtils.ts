@@ -2,12 +2,12 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-import { tryUntil } from "./helpers";
+import { selectFirstOption, tryUntil } from "./helpers";
 import {
   ADD_GENE_BTN,
   ADD_TISSUE_BTN,
   TWO_DECIMAL_NUMBER_REGEX,
-} from "./constants";
+} from "../common/constants";
 
 const FMG_EXCLUDE_TISSUES = ["blood"];
 const CELL_COUNT_ID = "cell-count";
@@ -16,13 +16,13 @@ const MARKER_GENE_BUTTON_ID = "marker-gene-button";
 
 export const selectFilterOption = async (page: Page, filterName: string) => {
   // click the filter at the corner this is done due to the fact that the default click is being intercepted by another element
-  await page.getByTestId(filterName).getByRole("button").click();
+  await page.getByTestId(filterName).click({ position: { x: 0, y: 0 } });
 
   // select the first option
-  await page.locator("[data-option-index='0']").click();
+  await selectFirstOption(page);
 
   // close the pop-up
-  await page.getByTestId("dataset-filter").click();
+  await page.getByTestId(filterName).click({ position: { x: 0, y: 0 } });
 
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   // expect the selected filter to be visible
@@ -51,14 +51,9 @@ export const deSelectFilterOption = async (page: Page, filterName: string) => {
   expect(visibility).toBeFalsy();
 };
 
-export const selectOption = async (page: Page, filterName: string) => {
-  // click the filter
-  await page.getByTestId(filterName).click();
-};
-
 export const selectTissueAndGeneOption = async (page: Page) => {
   // click Tissue button
-  await selectOption(page, "add-tissue-btn");
+  await selectFilterOption(page, "add-tissue-btn");
 
   //pick the first 2 elements in tissue
   await pickOptions(page, 2);
@@ -70,7 +65,7 @@ export const selectTissueAndGeneOption = async (page: Page) => {
   await page.locator('[id="heatmap-container-id"]').waitFor();
 
   // click Gene button
-  await selectOption(page, "add-gene-btn");
+  await selectFilterOption(page, "add-gene-btn");
 
   //pick the first n elements in tissue
   await pickOptions(page, 3);
