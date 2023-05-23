@@ -124,7 +124,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
-  
+
   wait-for-shards:
     name: Wait for shards
     needs: e2e-test # run after shards
@@ -136,7 +136,7 @@ jobs:
     steps:
       - id: setoutput
         run: echo "{success}={true}" >> $GITHUB_OUTPUT
-  
+
   # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
   e2e-result:
     name: e2e-result
