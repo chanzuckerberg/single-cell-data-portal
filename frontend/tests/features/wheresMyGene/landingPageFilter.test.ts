@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 import {
   checkPlotSize,
   checkSourceData,
-  deSelectFilterOption,
+  deSelectSecondaryFilterOption,
   goToWMG,
-  selectFilterOption,
+  selectSecondaryFilterOption,
   selectTissueAndGeneOption,
 } from "../../utils/wmgUtils";
 import { isDevStagingProd, tryUntil } from "tests/utils/helpers";
@@ -54,7 +54,7 @@ describe("Left side bar", () => {
           const plotSizeBeforeFilter = await checkPlotSize(page);
 
           //select a filter
-          await selectFilterOption(page, filterOption);
+          await selectSecondaryFilterOption(page, filterOption);
 
           // check the count of source data displayed after adding a filter
           const countAfterFilter = await checkSourceData(page);
@@ -75,7 +75,7 @@ describe("Left side bar", () => {
           expect(plotSizeBeforeFilter === plotSizeAfterFilter).toBeFalsy();
 
           //uncheck filter
-          await deSelectFilterOption(page, filterOption);
+          await deSelectSecondaryFilterOption(page, filterOption);
         },
         { page }
       );

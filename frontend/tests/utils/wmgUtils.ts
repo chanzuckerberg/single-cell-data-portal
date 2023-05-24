@@ -45,18 +45,31 @@ export async function addTissuesAndGenes(
     await searchAndAddGene(page, gene);
   }
 }
-export const selectFilterOption = async (page: Page, filterName: string) => {
-  // click the filter at the corner this is done due to the fact that the default click is being intercepted by another element
-  await page.getByTestId(filterName).click({ position: { x: 0, y: 0 } });
+export const selectSecondaryFilterOption = async (
+  page: Page,
+  filterName: string
+) => {
+  const selector = `${getTestID(filterName)} button`;
+
+  const filterButton = await page.$(selector);
+
+  if (!filterButton) {
+    throw Error(
+      "Cannot find secondary filter button with selector: " + selector
+    );
+  }
+
+  // open secondary filter
+  await filterButton.click();
 
   // select the first option
   await selectFirstOption(page);
 
-  // close the pop-up
-  await page.getByTestId(filterName).click({ position: { x: 0, y: 0 } });
+  // close the secondary filter pop-up
+  await page.keyboard.press("Escape");
 
   const filter_label = `${getTestID(filterName)} [role="button"]`;
-  // expect the selected filter to be visible
+  // expect the selected filter chip to be visible under the dropdown button
   await expect(page.locator(filter_label)).toBeVisible();
 
   //wait till loading is complete
@@ -70,7 +83,10 @@ export const pickOptions = async (page: Page, n: number) => {
   }
 };
 
-export const deSelectFilterOption = async (page: Page, filterName: string) => {
+export const deSelectSecondaryFilterOption = async (
+  page: Page,
+  filterName: string
+) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   // expect the selected filter to be visible
   await expect(page.locator(filter_label)).toBeVisible();
@@ -85,7 +101,7 @@ export const deSelectFilterOption = async (page: Page, filterName: string) => {
 
 export const selectTissueAndGeneOption = async (page: Page) => {
   // click Tissue button
-  await selectFilterOption(page, "add-tissue-btn");
+  await page.getByTestId(ADD_TISSUE_BTN).click();
 
   //pick the first 2 elements in tissue
   await pickOptions(page, 2);
@@ -97,7 +113,7 @@ export const selectTissueAndGeneOption = async (page: Page) => {
   await page.locator('[id="heatmap-container-id"]').waitFor();
 
   // click Gene button
-  await selectFilterOption(page, "add-gene-btn");
+  await page.getByTestId(ADD_GENE_BTN).click();
 
   //pick the first n elements in tissue
   await pickOptions(page, 3);
@@ -175,9 +191,6 @@ export async function searchAndAddGene(page: Page, geneName: string) {
   await page.getByPlaceholder("Search").type(geneName);
   await page.getByText(geneName).click();
 
-  // select the first option
-  await page.locator("[data-option-index='1']").click();
-
-  //wait till loading is complete
-  await page.locator(getText("Loading")).waitFor({ state: "hidden" });
+  // close dropdown
+  await page.keyboard.press("Escape");
 }
