@@ -14,7 +14,7 @@ import {
 } from "tests/common/constants";
 const downLoadPath = "./tests/downloads";
 const { describe, skip } = test;
-describe("CSV download tests", () => {
+describe("PNG download tests", () => {
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test(`Should verify png for lung and blood tissue with no filter set`, async ({
