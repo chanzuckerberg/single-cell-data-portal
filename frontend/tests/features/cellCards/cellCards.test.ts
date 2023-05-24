@@ -32,6 +32,7 @@ import {
 } from "src/views/CellCards/components/CellCard/components/OntologyDagView";
 import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node";
 import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node/components/RectOrCircle";
+import { CELL_CARD_SOURCE_DATA_TABLE } from "src/views/CellCards/components/CellCard/components/SourceDataTable";
 
 const { describe } = test;
 
@@ -142,7 +143,6 @@ describe("Cell Cards", () => {
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
         const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
-
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
           .elementHandles();
@@ -343,6 +343,35 @@ describe("Cell Cards", () => {
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
       });
     });
+  });
+  
+  test("Source data table is displayed with columns and at least one entry displayed", async ({
+    page,
+  }) => {
+    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+    const tableSelector = `[data-testid='${CELL_CARD_SOURCE_DATA_TABLE}']`;
+
+    const columnHeaderElements = await page
+      .locator(`${tableSelector} thead th`)
+      .elementHandles();
+    // get text content of each column header
+    const columnHeaders = await Promise.all(
+      columnHeaderElements.map(async (element) => {
+        return await element.textContent();
+      })
+    );
+    expect(columnHeaders).toEqual([
+      "Collection",
+      "Publication",
+      "Tissue",
+      "Disease",
+      "Organism",
+    ]);
+    const rowElements = await page
+      .locator(`${tableSelector} tbody tr`)
+      .elementHandles();
+    const rowCount = rowElements.length;
+    expect(rowCount).toBeGreaterThan(1);
   });
 });
 

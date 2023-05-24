@@ -16,6 +16,7 @@ import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
 import EnrichedGenesTable from "./components/EnrichedGenesTable";
 import OntologyDagView from "./components/OntologyDagView";
 import FullScreenProvider from "./components/FullScreenProvider";
+import SourceDataTable from "./components/SourceDataTable";
 
 export const CELL_CARD_HEADER_NAME = "cell-card-header-name";
 export const CELL_CARD_HEADER_TAG = "cell-card-header-tag";
@@ -61,6 +62,7 @@ export default function CellCard(): JSX.Element {
         </FullScreenProvider>
         <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
         <EnrichedGenesTable cellTypeId={cellTypeId} />
+        <SourceDataTable cellTypeId={cellTypeId} />
       </Wrapper>
     </CellCardsView>
   );
