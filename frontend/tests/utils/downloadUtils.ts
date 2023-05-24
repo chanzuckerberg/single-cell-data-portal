@@ -352,6 +352,6 @@ async function compareImages(imagePath1: string, imagePath2: string) {
       maxHeight,
       { threshold: 0.95 }
     );
-    expect(numDiffPixels).toBeLessThan(400000);
+    expect(numDiffPixels).toBeLessThan(400_000);
   }
 }
