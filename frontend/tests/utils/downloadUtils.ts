@@ -47,7 +47,7 @@ export async function verifyCsv(
       .count();
 
     //verify the number of element in the csv this is the Ui displayed multiplied by the number of genes selected
-    expect(csvElementsCount).toEqual(uiElementsCount * 4);
+    expect(csvElementsCount).toEqual(uiElementsCount * 3);
 
     const options = {
       filterName: filterName,
@@ -104,7 +104,7 @@ export const getCsvMetadata = (
   return new Promise((resolve, reject) => {
     // Open the CSV file for reading
     const fileStream = fs.createReadStream(
-      `${downLoadPath}${subDirectory}/${tissue}.csv`,
+      `${downLoadPath}/${subDirectory}/${tissue}.csv`,
       { encoding: "utf8" }
     );
 
@@ -139,12 +139,6 @@ export const getCsvMetadata = (
     });
   });
 };
-
-interface MetadataVerificationOptions {
-  filterName: string;
-  data: string[];
-  noSelectionText?: string;
-}
 
 export const verifyMetadata = async (
   page: Page,
@@ -244,60 +238,10 @@ const verifyFilterValues = (
     data[6].includes(`# Sex Filter Values: ${sexFilterValue}`)
   ).toBeTruthy();
 };
-
-export async function downloadGeneFile(
-  page: Page,
-  tissues: string[],
-  subDirectory: string,
-  fileTypes: string[] = ["png"]
-): Promise<void> {
-  const allFileTypes = ["csv", "png", "svg"];
-  const dirPath = `${downLoadPath}/${subDirectory}`;
-
-  //wait for download file
-  const downloadPromise = page.waitForEvent("download");
-
-  //click the download icon
-  await page.getByTestId("download-button").click();
-  const CHECK = "Mui-checked";
-
-  for (const ext of allFileTypes) {
-    const checkboxId = `${ext}-checkbox`;
-    // UI has some file types selected by default. This ensures we unselect file types that don't exist in `fileTypes`
-    if (
-      (await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
-        CHECK
-      ) &&
-      !fileTypes.includes(ext)
-    ) {
-      await page.getByTestId(checkboxId).locator("input").click();
-    }
-
-    // ensure wanted file types are checked
-    if (
-      !(await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
-        CHECK
-      ) &&
-      fileTypes.includes(ext)
-    ) {
-      await page.getByTestId(checkboxId).locator("input").click();
-    }
-  }
-  await page.getByTestId("dialog-download-button").click();
-  const download = await downloadPromise;
-
-  // download can be zipped or not depending on number of tissues
-  let fileName = `${dirPath}/download.zip`;
-  if (fileTypes.length === 1 && tissues.length === 1) {
-    fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
-  }
-
-  await download.saveAs(fileName);
-  //extract zip file
-  if (fileName.includes("zip")) {
-    const zip = new AdmZip(fileName);
-    zip.extractAllTo(dirPath);
-  }
+interface MetadataVerificationOptions {
+  filterName: string;
+  data: string[];
+  noSelectionText?: string;
 }
 
 export const getFilterText = async (page: Page, filterName: string) => {
@@ -419,5 +363,64 @@ export async function verifySvgDownload(
       tissues[i]
     );
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
+  }
+}
+
+export async function downloadGeneFile(
+  page: Page,
+  tissues: string[],
+  subDirectory: string,
+  fileTypes: string[] = ["png"]
+): Promise<void> {
+  const allFileTypes = ["csv", "png", "svg"];
+  const dirPath = `${downLoadPath}/${subDirectory}`;
+
+  //wait for download file
+  const downloadPromise = page.waitForEvent("download");
+
+  //click the download icon
+  await page.getByTestId("download-button").click();
+  const CHECK = "Mui-checked";
+
+  for (const ext of allFileTypes) {
+    const checkboxId = `${ext}-checkbox`;
+    // uncheck if file type is checked but not
+    if (
+      (await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
+        CHECK
+      ) &&
+      !fileTypes.includes(ext)
+    ) {
+      await page.getByTestId(checkboxId).locator("input").click();
+    }
+
+    // ensure wanted file types are checked
+    if (
+      !(await page.getByTestId(checkboxId).getAttribute("class"))?.includes(
+        CHECK
+      ) &&
+      fileTypes.includes(ext)
+    ) {
+      await page.getByTestId(checkboxId).locator("input").click();
+    }
+  }
+  await page.getByTestId("dialog-download-button").click();
+  const download = await downloadPromise;
+
+  // download can be zipped or not depending on number of tissues
+  let fileName = `${dirPath}/download.zip`;
+  if (
+    fileTypes.length === 1 &&
+    tissues.length === 1 &&
+    fileTypes[0] !== "csv"
+  ) {
+    fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
+  }
+
+  await download.saveAs(fileName);
+  //extract zip file
+  if (fileName.includes("zip")) {
+    const zip = new AdmZip(fileName);
+    zip.extractAllTo(dirPath);
   }
 }
