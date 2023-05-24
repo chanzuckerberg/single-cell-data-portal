@@ -24,6 +24,7 @@ import {
   CELL_CARD_ENRICHED_GENES_TABLE,
   CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN,
 } from "src/views/CellCards/components/CellCard/components/EnrichedGenesTable";
+import { CELL_CARD_SOURCE_DATA_TABLE } from "src/views/CellCards/components/CellCard/components/SourceDataTable";
 
 const { describe } = test;
 
@@ -183,7 +184,7 @@ describe("Cell Cards", () => {
   test("Enriched gene table is displayed with columns and at least one entry displayed", async ({
     page,
   }) => {
-    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // Neuron
+    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
     const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
 
     const columnHeaderElements = await page
@@ -207,6 +208,7 @@ describe("Cell Cards", () => {
     const rowCount = rowElements.length;
     expect(rowCount).toBeGreaterThan(1);
   });
+
   test("Enriched marker gene table is updated by the organism dropdown", async ({
     page,
   }) => {
@@ -232,6 +234,35 @@ describe("Cell Cards", () => {
     expect(rowCountAfter).toBeGreaterThan(1);
     const firstRowContentAfter = await rowElementsAfter[0].textContent();
     expect(firstRowContentBefore).not.toBe(firstRowContentAfter);
+  });
+
+  test("Source data table is displayed with columns and at least one entry displayed", async ({
+    page,
+  }) => {
+    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+    const tableSelector = `[data-testid='${CELL_CARD_SOURCE_DATA_TABLE}']`;
+
+    const columnHeaderElements = await page
+      .locator(`${tableSelector} thead th`)
+      .elementHandles();
+    // get text content of each column header
+    const columnHeaders = await Promise.all(
+      columnHeaderElements.map(async (element) => {
+        return await element.textContent();
+      })
+    );
+    expect(columnHeaders).toEqual([
+      "Collection",
+      "Publication",
+      "Tissue",
+      "Disease",
+      "Organism",
+    ]);
+    const rowElements = await page
+      .locator(`${tableSelector} tbody tr`)
+      .elementHandles();
+    const rowCount = rowElements.length;
+    expect(rowCount).toBeGreaterThan(1);
   });
 });
 
