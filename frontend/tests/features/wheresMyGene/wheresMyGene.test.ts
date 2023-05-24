@@ -268,6 +268,9 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstNOptions(GENE_COUNT, page);
 
+    // Waits in case API is slow, fixes flakey tests
+    await waitForHeatmapToRender(page);
+
     const beforeGeneNames = await getGeneNames(page);
     const beforeCellTypeNames = await getCellTypeNames(page);
 
