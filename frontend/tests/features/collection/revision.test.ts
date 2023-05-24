@@ -13,6 +13,7 @@ const { describe, skip } = test;
 
 const COLLECTION_ACTIONS_ID = "collection-actions";
 const COLLECTION_NAME_ID = "collection-link";
+const COLLECTION_STATUS_BANNER_ID = "revision-status";
 const COLLECTION_VIEW_REVISION = "view-collection-revision";
 const COLLECTION_ROW_WRITE_PUBLISHED_ID = "collection-row-write-published";
 const COLLECTION_ROW_WRITE_REVISION_ID =
@@ -218,19 +219,28 @@ async function startRevision(page: Page): Promise<string> {
     "This is a private revision of a published collection. Open Published Collection";
 
   await tryUntil(
-    async () => await expect(page).toHaveSelector(getTestID("revision-status")),
+    async () =>
+      await expect(page).toHaveSelector(getTestID(COLLECTION_STATUS_BANNER_ID)),
     { page }
   );
 
-  const revisionStatusElement = await page.$(getTestID("revision-status"));
+  const collectionStatusBanner = await page.getByTestId(
+    COLLECTION_STATUS_BANNER_ID
+  );
 
-  await expect(revisionStatusElement).toMatchText(PRIVATE_REVISION_TEXT);
+  await expect(collectionStatusBanner).toMatchText(PRIVATE_REVISION_TEXT);
 
   return collectionName;
 }
 
 async function deleteRevision(page: Page) {
   const DROPDOWN_CANCEL_ID = "dropdown-cancel-revision";
+
+  // Grab the published collection route from the collection status banner.
+  const collectionRoute = await page
+    .getByTestId(COLLECTION_STATUS_BANNER_ID)
+    .locator("a")
+    .getAttribute("href");
 
   /**
    * (thuang): Sometimes the dropdown is already open, so we need to check if it's
@@ -254,8 +264,8 @@ async function deleteRevision(page: Page) {
     .filter({ hasText: "Cancel Revision" })
     .click();
 
-  // (clevercanary): Wait for delete to complete; matching on partial URL here rather than full collection detail URL.
-  await page.waitForURL(TEST_URL + ROUTES.COLLECTIONS);
+  // The page routes to published collection when the revision is successfully deleted.
+  await page.waitForURL(`${TEST_URL}${collectionRoute}`);
 }
 
 function getCollectionMoreButtonLocator(page: Page) {
