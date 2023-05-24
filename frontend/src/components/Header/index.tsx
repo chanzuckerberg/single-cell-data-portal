@@ -8,7 +8,7 @@ import { FC, useRef, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
-import { noop } from "src/common/constants/utils";
+//import { noop } from "src/common/constants/utils";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
