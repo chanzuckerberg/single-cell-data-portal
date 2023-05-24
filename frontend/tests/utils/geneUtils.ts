@@ -1,7 +1,6 @@
 import { Page, expect } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL } from "tests/common/constants";
-import { ADD_GENE_BTN } from "./constants";
+import { TEST_URL, ADD_GENE_BTN } from "tests/common/constants";
 
 const FMG_EXCLUDE_TISSUES = ["blood"];
 const CELL_COUNT_ID = "cell-count";

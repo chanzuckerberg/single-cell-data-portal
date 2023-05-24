@@ -28,6 +28,15 @@ export function deleteSelectedGenes(): GetActionTypeOfReducer<
   };
 }
 
+export function deleteAllGenes(): GetActionTypeOfReducer<
+  typeof REDUCERS["deleteAllGenes"]
+> {
+  return {
+    payload: null,
+    type: "deleteAllGenes",
+  };
+}
+
 export function toggleGeneToDelete(
   geneToDelete: string
 ): GetActionTypeOfReducer<typeof REDUCERS["toggleGeneToDelete"]> {

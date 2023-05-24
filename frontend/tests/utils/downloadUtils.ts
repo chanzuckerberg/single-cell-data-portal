@@ -1,4 +1,4 @@
-import { Page, expect } from "@playwright/test";
+import { Page, chromium, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
@@ -288,7 +288,11 @@ export async function downloadGeneFile(
 
   // download can be zipped or not depending on number of tissues
   let fileName = `${dirPath}/download.zip`;
-  if (fileTypes.length === 1 && tissues.length === 1 && fileTypes[0] == "svg") {
+  if (
+    fileTypes.length === 1 &&
+    tissues.length === 1 &&
+    fileTypes[0] !== "csv"
+  ) {
     fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
   }
 
@@ -352,4 +356,22 @@ async function compareImages(imagePath1: string, imagePath2: string) {
     );
     expect(numDiffPixels).toBeLessThan(400_000);
   }
+}
+export async function compareSvg(
+  webCellImage: string,
+  webGeneImage: string,
+  svgFile: string
+): Promise<void> {
+  const browser = await chromium.launch();
+  const browserContext = await browser.newContext();
+  const page = await browserContext.newPage();
+  await page.goto(svgFile);
+  expect(page.locator("svg").locator("svg").nth(3)).toMatchSnapshot(
+    webCellImage
+  );
+  expect(page.locator("svg").locator("svg").nth(4)).toMatchSnapshot(
+    webCellImage
+  );
+  expect(await page.screenshot()).toMatchSnapshot(webGeneImage);
+  await browser.close();
 }

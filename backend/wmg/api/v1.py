@@ -162,6 +162,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
         "development_stage_ontology_term_id": "",
         "self_reported_ethnicity_ontology_term_id": "",
         "tissue_ontology_term_id": "",
+        "cell_type_ontology_term_id": "",
     }
     for dim in dims:
         dims[dim] = (
@@ -178,6 +179,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
         self_reported_ethnicity_terms=build_ontology_term_id_label_mapping(
             dims["self_reported_ethnicity_ontology_term_id"]
         ),
+        cell_type_terms=build_ontology_term_id_label_mapping(dims["cell_type_ontology_term_id"]),
         tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
     )
 
@@ -353,10 +355,16 @@ def _add_missing_combinations_to_gene_expression_df_for_rollup(
         missing_combinations = available_combinations.difference(available_combinations_per_gene)
         for combo in missing_combinations:
             entry = {dim: combo[i] for i, dim in enumerate(group_by_terms)}
-            entry.update({col: 0 for col in numeric_columns})
-            entry["n_cells_tissue"] = n_cells_tissue_dict[entry["tissue_ontology_term_id"]]
-            entry["gene_ontology_term_id"] = gene
-            entries_to_add.append(entry)
+
+            # If a tissue, T1, DOES NOT have ANY of the QUERIED GENES expressed, then entirely
+            # omit all combos that contain tissue T1 from the candidate list of combos
+            # that should be considered for rollup. Otherwise, include combos containing T1
+            # in the candidate list of combos for rollup.
+            if entry["tissue_ontology_term_id"] in n_cells_tissue_dict:
+                entry.update({col: 0 for col in numeric_columns})
+                entry["n_cells_tissue"] = n_cells_tissue_dict[entry["tissue_ontology_term_id"]]
+                entry["gene_ontology_term_id"] = gene
+                entries_to_add.append(entry)
 
     # add the missing entries to the input expression dataframe
     gene_expression_with_missing_combos_df = pd.concat((gene_expression_df, pd.DataFrame(entries_to_add)), axis=0)

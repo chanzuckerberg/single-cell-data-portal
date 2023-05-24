@@ -97,7 +97,7 @@ def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
                     # get the set of filters for the specified dimension that are linked to `attr`
                     linked_filter_set = set()
                     for attr in prefixed_attributes:
-                        if dimension in snapshot.filter_relationships[attr]:
+                        if dimension in snapshot.filter_relationships.get(attr, {}):
                             linked_filter_set = linked_filter_set.union(
                                 set(snapshot.filter_relationships[attr][dimension])
                             )
@@ -107,7 +107,7 @@ def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
                 if attrs != "":
                     prefixed_attribute = key + "__" + attrs
                     all_criteria_attributes.add(prefixed_attribute)
-                    if dimension in snapshot.filter_relationships[prefixed_attribute]:
+                    if dimension in snapshot.filter_relationships.get(prefixed_attribute, {}):
                         linked_filter_sets.append(set(snapshot.filter_relationships[prefixed_attribute][dimension]))
 
     # the candidate options are the intersection of the sets of linked filters for each criteria key
@@ -121,7 +121,7 @@ def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
     # the intersection will be null.
     valid_options = []
     for v in candidate_options:
-        loop_back_options = snapshot.filter_relationships[v]
+        loop_back_options = snapshot.filter_relationships.get(v, {})
         all_loop_back_options = []
         for dim in loop_back_options:
             all_loop_back_options.extend(loop_back_options[dim])
