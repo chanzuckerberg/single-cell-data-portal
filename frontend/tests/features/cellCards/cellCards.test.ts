@@ -241,6 +241,38 @@ describe("Cell Cards", () => {
         expect(firstRowContentBefore).not.toBe(firstRowContentAfter);
       });
     });
+
+    describe("Source Data Table", () => {
+      test("Source data table is displayed with columns and at least one entry displayed", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        const tableSelector = `[data-testid='${CELL_CARD_SOURCE_DATA_TABLE}']`;
+
+        const columnHeaderElements = await page
+          .locator(`${tableSelector} thead th`)
+          .elementHandles();
+        // get text content of each column header
+        const columnHeaders = await Promise.all(
+          columnHeaderElements.map(async (element) => {
+            return await element.textContent();
+          })
+        );
+        expect(columnHeaders).toEqual([
+          "Collection",
+          "Publication",
+          "Tissue",
+          "Disease",
+          "Organism",
+        ]);
+        const rowElements = await page
+          .locator(`${tableSelector} tbody tr`)
+          .elementHandles();
+        const rowCount = rowElements.length;
+        expect(rowCount).toBeGreaterThan(1);
+      });
+    });
+
     describe("Ontology Viewer", () => {
       test("Clicking on a parent node expands and collapses its children", async ({
         page,
@@ -343,35 +375,6 @@ describe("Cell Cards", () => {
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
       });
     });
-  });
-  
-  test("Source data table is displayed with columns and at least one entry displayed", async ({
-    page,
-  }) => {
-    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
-    const tableSelector = `[data-testid='${CELL_CARD_SOURCE_DATA_TABLE}']`;
-
-    const columnHeaderElements = await page
-      .locator(`${tableSelector} thead th`)
-      .elementHandles();
-    // get text content of each column header
-    const columnHeaders = await Promise.all(
-      columnHeaderElements.map(async (element) => {
-        return await element.textContent();
-      })
-    );
-    expect(columnHeaders).toEqual([
-      "Collection",
-      "Publication",
-      "Tissue",
-      "Disease",
-      "Organism",
-    ]);
-    const rowElements = await page
-      .locator(`${tableSelector} tbody tr`)
-      .elementHandles();
-    const rowCount = rowElements.length;
-    expect(rowCount).toBeGreaterThan(1);
   });
 });
 
