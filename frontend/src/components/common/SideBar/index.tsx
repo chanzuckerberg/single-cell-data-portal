@@ -81,6 +81,7 @@ export default function SideBar({
       <SideBarPositionerComponent isExpanded={isExpanded}>
         <SideBarToggleButtonWrapper>
           <Button
+            data-testid="side-bar-toggle-button"
             disabled={disabled}
             endIcon={
               <Icon
