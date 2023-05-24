@@ -49,18 +49,7 @@ export const selectSecondaryFilterOption = async (
   page: Page,
   filterName: string
 ) => {
-  const selector = `${getTestID(filterName)} button`;
-
-  const filterButton = await page.$(selector);
-
-  if (!filterButton) {
-    throw Error(
-      "Cannot find secondary filter button with selector: " + selector
-    );
-  }
-
-  // open secondary filter
-  await filterButton.click();
+  await page.getByTestId(filterName).getByRole("button").click();
 
   // select the first option
   await selectFirstOption(page);
