@@ -9,6 +9,9 @@ import {
 } from "../../../../common/constants";
 import { StyledRect, StyledCircle } from "./style";
 
+export const CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID =
+  "cell-card-rect-or-circle";
+
 interface RectOrCircleProps {
   handleClick?: MouseEventHandler<SVGGElement>;
   isTargetNode: boolean;
@@ -51,6 +54,7 @@ export default function RectOrCircle({
     : handleMouseOut;
   return node?.children?.length || node.id.startsWith("dummy-child") ? (
     <StyledCircle
+      data-testid={`${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-${node.id}-has-children-isTargetNode=${isTargetNode}`}
       r={size}
       fill={color}
       key={animationKey}
@@ -61,6 +65,7 @@ export default function RectOrCircle({
     />
   ) : (
     <StyledRect
+      data-testid={`${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-${node.id}-no-children-isTargetNode=${isTargetNode}`}
       height={size * 2}
       width={size * 2}
       y={-size}

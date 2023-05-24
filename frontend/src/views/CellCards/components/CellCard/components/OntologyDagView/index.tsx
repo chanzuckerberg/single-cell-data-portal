@@ -38,10 +38,18 @@ import AnimatedNodes from "./components/AnimatedNodes";
 import AnimatedLinks from "./components/AnimatedLinks";
 import { LEFT_RIGHT_PADDING_PX } from "../../style";
 
-export type TreeProps = {
+export const CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP =
+  "cell-card-ontology-dag-view-tooltip";
+export const CELL_CARD_ONTOLOGY_DAG_VIEW = "cell-card-ontology-dag-view";
+export const CELL_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON =
+  "cell-card-ontology-dag-view-fullscreen-button";
+export const CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER =
+  "cell-card-ontology-dag-view-hover-container";
+
+interface TreeProps {
   cellTypeId: string;
   // skinnyMode: boolean;
-};
+}
 
 export default function OntologyDagView({ cellTypeId }: TreeProps) {
   // Adjusts the cell type id to match the format used in the ontology tree
@@ -267,7 +275,7 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
   const xMax = width - defaultMargin.left - defaultMargin.right;
 
   return (
-    <>
+    <div data-testid={CELL_CARD_ONTOLOGY_DAG_VIEW}>
       <Global styles={TooltipInPortalStyle} />
       <TableTitleWrapper>
         <TableTitle>Cell Ontology</TableTitle>
@@ -296,8 +304,10 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
                 hideTooltip();
               }}
               isFullScreen={isFullScreen}
+              data-testid={CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER}
             >
               <FullscreenButton
+                data-testid={CELL_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON}
                 onClick={isFullScreen ? disableFullScreen : enableFullScreen}
               >
                 {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
@@ -309,7 +319,7 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
                   top={tooltipTop}
                   left={tooltipLeft}
                 >
-                  <div>
+                  <div data-testid={CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP}>
                     <b>{tooltipData?.n_cells}</b> cells
                     <br />
                     <b>{tooltipData?.n_cells_rollup}</b> descendant cells
@@ -367,7 +377,7 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
           </TableUnavailableDescription>
         </TableUnavailableContainer>
       )}
-    </>
+    </div>
   );
 }
 
