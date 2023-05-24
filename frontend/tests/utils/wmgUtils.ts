@@ -7,7 +7,7 @@ import {
   ADD_GENE_BTN,
   ADD_TISSUE_BTN,
   TWO_DECIMAL_NUMBER_REGEX,
-} from "./constants";
+} from "../common/constants";
 
 const FMG_EXCLUDE_TISSUES = ["blood"];
 const CELL_COUNT_ID = "cell-count";

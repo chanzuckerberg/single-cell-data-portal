@@ -33,3 +33,9 @@ export const SHARED_LINK_NO_FILTER = `${TEST_URL}/gene-expression?tissues=blood%
 export const SHARED_LINK_FILTER = `${TEST_URL}/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
 
 export const SHARED_LINK_NO_GROUP = `${TEST_URL}/gene-expression?compare=disease&diseases=PATO%3A0000461&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
+
+export const ADD_TISSUE_BTN = "add-tissue-btn";
+export const ADD_TISSUE_LBL = "get-started-step-1";
+export const ADD_GENE_BTN = "add-gene-btn";
+export const ADD_GENE_LBL = "get-started-step-2";
+export const TWO_DECIMAL_NUMBER_REGEX = /^\d+\.?\d{0,2}$/;
