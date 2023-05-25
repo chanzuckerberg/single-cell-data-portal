@@ -1,0 +1,1 @@
+  [38;5;45;1mpw:api [0m  checking visibility of getByTestId('cell-card-gpt-tooltip-link') [38;5;45m+21ms[0m
