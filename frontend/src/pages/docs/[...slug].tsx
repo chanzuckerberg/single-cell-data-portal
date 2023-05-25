@@ -15,7 +15,7 @@ import Head from "next/head";
 import Image, { ImageProps } from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
-import { Fragment, memo, useState } from "react";
+import { Fragment, memo, useState, useMemo } from "react";
 import rehypeSlug from "rehype-slug";
 import { noop } from "src/common/constants/utils";
 import { OFF_WHITE, PINK } from "src/common/theme";
@@ -179,8 +179,13 @@ const DirectoryListItem = ({
   directory: Directory;
   activeFile: string;
 }) => {
+  const initialState = useMemo(() => {
+    return directory.files.includes(activeFile) ? 1 : 0;
+  }, [directory.files, activeFile]);
+
   // 0 = default collapse, 1 = default expand, 2 = user collapse, 3 = user expand
-  const [isExpanded, setIsExpanded] = useState<0 | 1 | 2 | 3>(0);
+  const [isExpanded, setIsExpanded] = useState<0 | 1 | 2 | 3>(initialState);
+
   return (
     <Fragment>
       <li onClick={() => setIsExpanded(isExpanded % 2 == 0 ? 3 : 2)}>
