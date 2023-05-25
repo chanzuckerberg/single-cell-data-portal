@@ -2831,7 +2831,7 @@ class TestCollectionPutUploadLink(BaseAPIPortalTest):
         self.assert_datasets_are_updated(dataset, new_dataset)
 
     # ✅
-    @patch("backend.common.upload.start_upload_sfn")
+    @patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
     def test__reupload_unpublished_dataset__202(self, mock_upload_sfn):
         """
         Reuploads an unpublished dataset
