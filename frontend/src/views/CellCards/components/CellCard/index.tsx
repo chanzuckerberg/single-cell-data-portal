@@ -63,6 +63,7 @@ export default function CellCard(): JSX.Element {
     <CellCardsView>
       {/* Flex item left */}
       <Wrapper>
+        {/* Intro section */}
         <div ref={sectionRef0} id="section-0">
           <CellCardHeader>
             <CellCardHeaderInnerWrapper>
@@ -92,17 +93,24 @@ export default function CellCard(): JSX.Element {
           <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
         </div>
 
+        {/* Cell Ontology section */}
         <div ref={sectionRef1} id="section-1">
           <FullScreenProvider>
             <OntologyDagView cellTypeId={cellTypeId} skinnyMode={skinnyMode} />
           </FullScreenProvider>
         </div>
+
+        {/* Marker Genes section */}
         <div ref={sectionRef2} id="section-2">
           <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
         </div>
+
+        {/* Highly Expressed Genes section */}
         <div ref={sectionRef3} id="section-3">
           <EnrichedGenesTable cellTypeId={cellTypeId} />
         </div>
+
+        {/* Source Data section */}
         <div ref={sectionRef4} id="section-4">
           <SourceDataTable cellTypeId={cellTypeId} />
         </div>
