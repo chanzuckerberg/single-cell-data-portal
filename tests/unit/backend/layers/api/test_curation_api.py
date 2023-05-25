@@ -2053,7 +2053,7 @@ class TestPostRevision(BaseAPIPortalTest):
     "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
     return_value={"size": 1, "name": "file.h5ad"},
 )
-@patch("backend.common.upload.start_upload_sfn")
+@patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
 class TestPutLink(BaseAPIPortalTest):
     @classmethod
     def setUpClass(cls):
