@@ -1,27 +1,25 @@
-import React from "react";
-import { TableCountSummary } from "src/components/common/Filter/common/entities";
+import React, { ReactNode } from "react";
 import {
-  CountAndTotal,
+  Header,
   HeaderCell as Cell,
 } from "src/components/common/Grid/components/HeaderCell/style";
+import { ALIGNMENT } from "src/components/common/Grid/common/entities";
 
 interface Props {
-  label: string;
-  tableCountSummary?: TableCountSummary;
+  alignment?: ALIGNMENT;
+  label: ReactNode;
+  tag?: ReactNode;
 }
 
 export default function HeaderCell({
+  alignment = ALIGNMENT.LEFT,
   label,
-  tableCountSummary,
+  tag,
 }: Props): JSX.Element {
-  const rowCount = tableCountSummary?.row;
-  const totalCount = tableCountSummary?.total;
-  const countAndTotal =
-    rowCount && totalCount ? `${rowCount} of ${totalCount}` : "";
   return (
-    <Cell>
-      <span>{label}</span>
-      {countAndTotal && <CountAndTotal>{countAndTotal}</CountAndTotal>}
+    <Cell alignment={alignment}>
+      <Header>{label}</Header>
+      {tag}
     </Cell>
   );
 }

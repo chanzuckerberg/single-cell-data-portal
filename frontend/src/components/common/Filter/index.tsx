@@ -1,16 +1,15 @@
 import {
-  CategoryView,
   CATEGORY_FILTER_ID,
+  CategoryView,
   MultiPanelOntologyCategoryView,
+  ON_FILTER_SOURCE,
   OnFilterFn,
   OntologyCategoryView,
-  ON_FILTER_SOURCE,
   RangeCategoryView,
   SelectCategoryView,
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
 import BasicFilter from "src/components/common/Filter/components/BasicFilter";
-import FilterLabel from "src/components/common/Filter/components/FilterLabel";
 import FilterContent from "./components/FilterContent";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
@@ -29,19 +28,14 @@ export default function Filter({
         const { isDisabled = false, label, tooltip } = categoryView;
         return (
           <BasicFilter
+            key={categoryView.label}
             content={
               <FilterContent categoryView={categoryView} onFilter={onFilter} />
             }
             isDisabled={isDisabled}
-            key={categoryView.label}
+            label={label}
             tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
-            target={
-              <FilterLabel
-                isDisabled={isDisabled}
-                label={label}
-                tooltip={tooltip}
-              />
-            }
+            tooltip={tooltip}
           />
         );
       })}

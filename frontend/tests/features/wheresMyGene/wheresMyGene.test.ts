@@ -2,7 +2,12 @@ import { expect, Page, test, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
+import {
+  goToPage,
+  isDevStagingProd,
+  selectNthOption,
+  tryUntil,
+} from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
@@ -15,7 +20,6 @@ const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
 const ADD_TISSUE_ID = "add-tissue-btn";
 const ADD_GENE_ID = "add-gene-btn";
-const GENE_DELETE_BUTTON = "gene-delete-button";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
 const DOWNLOAD_BUTTON_ID = "download-button";
@@ -264,6 +268,9 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstNOptions(GENE_COUNT, page);
 
+    // Waits in case API is slow, fixes flakey tests
+    await waitForHeatmapToRender(page);
+
     const beforeGeneNames = await getGeneNames(page);
     const beforeCellTypeNames = await getCellTypeNames(page);
 
@@ -276,10 +283,10 @@ describe("Where's My Gene", () => {
     );
 
     await page.getByTestId("cell-type-sort-dropdown").click();
-    await selectNthOption(2, page);
+    await selectNthOption(page, 2);
 
     await page.getByTestId("gene-sort-dropdown").click();
-    await selectNthOption(2, page);
+    await selectNthOption(page, 2);
 
     const afterGeneNames = await getGeneNames(page);
 
@@ -292,36 +299,6 @@ describe("Where's My Gene", () => {
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
-      },
-      { page }
-    );
-  });
-
-  test("delete genes", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    await selectFirstNOptions(1, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-    await selectFirstNOptions(3, page);
-
-    await waitForHeatmapToRender(page);
-
-    const beforeGeneNames = await getGeneNames(page);
-
-    await tryUntil(
-      async () => {
-        await page.keyboard.press("Backspace");
-
-        // Testing single gene delete
-        await page.hover(".gene-label-container");
-        await getFirstButtonAndClick(page, GENE_DELETE_BUTTON);
-
-        const afterGeneNames = await getGeneNames(page);
-
-        expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
-        expect(afterGeneNames).not.toEqual(beforeGeneNames);
       },
       { page }
     );
@@ -490,10 +467,10 @@ describe("Where's My Gene", () => {
       await clickDropdownOptionByName({
         page,
         testId: ADD_TISSUE_ID,
-        name: "lung",
+        name: "heart",
       });
 
-      await getCellTypeFmgButtonAndClick(page, "native cell");
+      await getCellTypeFmgButtonAndClick(page, "dendritic cell");
 
       await waitForElement(page, NO_MARKER_GENES_WARNING_TEST_ID);
     });
@@ -766,7 +743,7 @@ describe("Where's My Gene", () => {
 
       // Select second tissue
       await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectNthOption(2, page);
+      await selectNthOption(page, 2);
 
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstOption(page);
@@ -817,6 +794,130 @@ describe("Where's My Gene", () => {
       }
     });
   });
+
+  describe("Newsletter", () => {
+    const NEWSLETTER_MODAL_CONTENT = "newsletter-modal-content";
+    const NEWSLETTER_MODAL_OPEN_BUTTON = "newsletter-modal-open-button";
+    const NEWSLETTER_MODAL_CLOSE_BUTTON = "newsletter-modal-close-button";
+    const NEWSLETTER_SUBSCRIBE_BUTTON = "newsletter-subscribe-button";
+    const NEWSLETTER_EMAIL_INPUT = "newsletter-email-input";
+    const NEWSLETTER_VALIDATION_ERROR_MESSAGE =
+      "newsletter-validation-error-message";
+    const FAILED_EMAIL_VALIDATION_STRING =
+      "Please provide a valid email address.";
+
+    test("Newsletter Modal - Open/Close", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Open modal
+      await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
+
+      await waitForElement(page, NEWSLETTER_MODAL_CONTENT);
+
+      const modalContent = page.getByTestId(NEWSLETTER_MODAL_CONTENT);
+
+      // modal content
+      expect(modalContent.getByText("Join Our Newsletter")).toBeTruthy();
+      expect(
+        modalContent.getByText(
+          "Get a quarterly email with the latest CELLxGENE features and data."
+        )
+      ).toBeTruthy();
+      expect(modalContent.getByText("Enter email address")).toBeTruthy();
+      expect(modalContent.getByText("Subscribe")).toBeTruthy();
+      expect(modalContent.getByText("Unsubscribe at any time.")).toBeTruthy();
+
+      // Close modal
+      await getButtonAndClick(page, NEWSLETTER_MODAL_CLOSE_BUTTON);
+
+      await waitForElementToBeRemoved(page, NEWSLETTER_MODAL_CONTENT);
+    });
+
+    test("Newsletter Modal - Validate Email", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Open modal
+      await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
+
+      await waitForElement(page, NEWSLETTER_MODAL_CONTENT);
+
+      const emailInput = page.getByTestId(NEWSLETTER_EMAIL_INPUT);
+      const subscribeButton = page.getByTestId(NEWSLETTER_SUBSCRIBE_BUTTON);
+      const validationMessage = page.getByTestId(
+        NEWSLETTER_VALIDATION_ERROR_MESSAGE
+      );
+
+      // No input
+      expect(subscribeButton.isDisabled());
+
+      // Bad email 1
+      emailInput.fill("test");
+      expect(subscribeButton.isEnabled());
+      await subscribeButton.click();
+      expect(
+        validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
+      ).toBeTruthy();
+
+      emailInput.fill("");
+      expect(subscribeButton.isDisabled());
+
+      // Bad email 2
+      emailInput.fill("test@test");
+      expect(subscribeButton.isEnabled());
+      await subscribeButton.click();
+      expect(
+        validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
+      ).toBeTruthy();
+
+      emailInput.fill("");
+      expect(subscribeButton.isDisabled());
+
+      // Bad email 3
+      emailInput.fill("test@test.chanzuckerberg");
+      expect(subscribeButton.isEnabled());
+      await subscribeButton.click();
+      expect(
+        validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
+      ).toBeTruthy();
+    });
+  });
+
+  describe("Clear All Genes Button", () => {
+    const CLEAR_GENES_BUTTON_ID = "clear-genes-button";
+
+    test("Clear three genes", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      const TISSUE_COUNT = 1;
+      const GENE_COUNT = 3;
+
+      // Select tissue
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
+      await selectFirstNOptions(TISSUE_COUNT, page);
+
+      // Select genes
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
+      await selectFirstNOptions(GENE_COUNT, page);
+
+      // Genes before clear
+      const beforeGeneNames = await getGeneNames(page);
+      expect(beforeGeneNames.length).toBe(GENE_COUNT);
+
+      // Click clear all button
+      await page.getByTestId(CLEAR_GENES_BUTTON_ID).click();
+
+      // Count genes after clear
+      const afterGeneNames = await getGeneNames(page);
+
+      await tryUntil(
+        async () => {
+          expect(afterGeneNames.length).toBe(0);
+          expect(afterGeneNames).not.toEqual(beforeGeneNames);
+        },
+        { page }
+      );
+    });
+  });
 });
 
 async function getNames({
@@ -839,7 +940,9 @@ async function getNames({
   await tryUntil(
     async () => {
       const names = await labelsLocator.allTextContents();
-      expect(typeof names[0]).toBe("string");
+      if (names.length) {
+        expect(typeof names[0]).toBe("string");
+      }
     },
     { page }
   );
@@ -932,18 +1035,6 @@ async function selectFirstNOptions(count: number, page: Page) {
     await page.keyboard.press("Enter");
   }
 
-  await page.keyboard.press("Escape");
-}
-
-async function selectNthOption(number: number, page: Page) {
-  // (thuang): Since the first option is now active, we need to offset by 1
-  const step = number - 1;
-
-  for (let i = 0; i < step; i++) {
-    await page.keyboard.press("ArrowDown");
-  }
-
-  await page.keyboard.press("Enter");
   await page.keyboard.press("Escape");
 }
 

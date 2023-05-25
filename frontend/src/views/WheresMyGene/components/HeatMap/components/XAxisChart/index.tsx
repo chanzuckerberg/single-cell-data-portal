@@ -56,7 +56,7 @@ function GeneButton({
     <GeneButtonStyle data-testid={`gene-label-${geneName}`}>
       <XAxisLabel className={"gene-label-container"}>
         <div
-          data-testid={"gene-delete-button"}
+          data-testid={`gene-delete-icon-${geneName}`}
           className="gene-delete-icon"
           onClick={() => {
             track(EVENTS.WMG_DELETE_GENE, { gene: geneName });
@@ -71,6 +71,7 @@ function GeneButton({
         <XAxisGeneName
           active={genesToDelete.includes(geneName)}
           font={currentFont}
+          data-testid={`gene-name-${geneName}`}
         >
           <InfoButtonWrapper
             data-testid="gene-info-button-x-axis"
@@ -91,6 +92,7 @@ function GeneButton({
               width="10"
               height="10"
               alt={`display gene info for ${geneName}`}
+              data-testid={`gene-info-icon-${geneName}`}
             />
           </InfoButtonWrapper>
 

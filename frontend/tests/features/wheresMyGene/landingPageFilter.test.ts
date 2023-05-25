@@ -2,13 +2,14 @@ import { expect, test } from "@playwright/test";
 import {
   checkPlotSize,
   checkSourceData,
-  deSelectFilterOption,
+  deSelectSecondaryFilterOption,
   goToWMG,
-  selectFilterOption,
+  selectSecondaryFilterOption,
   selectTissueAndGeneOption,
 } from "../../utils/wmgUtils";
 import { isDevStagingProd, tryUntil } from "tests/utils/helpers";
-const CHEVRON_LEFT = '[data-icon="chevron-left"]';
+
+const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
 
 const { describe, skip } = test;
 
@@ -23,7 +24,7 @@ describe("Left side bar", () => {
     await selectTissueAndGeneOption(page);
 
     // click chevron left to collapse the left tab
-    await page.locator(CHEVRON_LEFT).click();
+    await page.getByTestId(SIDE_BAR_TOGGLE_BUTTON_ID).click();
 
     // verify the left tab is collapsed
     expect(await page.getByTestId("add-organism").isVisible()).toBeFalsy();
@@ -53,7 +54,7 @@ describe("Left side bar", () => {
           const plotSizeBeforeFilter = await checkPlotSize(page);
 
           //select a filter
-          await selectFilterOption(page, filterOption);
+          await selectSecondaryFilterOption(page, filterOption);
 
           // check the count of source data displayed after adding a filter
           const countAfterFilter = await checkSourceData(page);
@@ -61,18 +62,20 @@ describe("Left side bar", () => {
           //check plot height after adding a filter
           const plotSizeAfterFilter = await checkPlotSize(page);
 
-          // verify source  data loading some data
+          // verify source data loading some data
           expect(countBeforeFilter).toBeGreaterThan(0);
-          // verify source  data changed after filter is applied
+
+          // verify source data changed after filter is applied
           expect(countBeforeFilter === countAfterFilter).toBeFalsy();
 
           //verify data plot data loading some data
           expect(plotSizeBeforeFilter).toBeGreaterThan(0);
 
-          //verify data plot data changed after filter was  applied
+          //verify data plot data changed after filter was applied
           expect(plotSizeBeforeFilter === plotSizeAfterFilter).toBeFalsy();
+
           //uncheck filter
-          await deSelectFilterOption(page, filterOption);
+          await deSelectSecondaryFilterOption(page, filterOption);
         },
         { page }
       );
