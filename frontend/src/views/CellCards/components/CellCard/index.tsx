@@ -61,7 +61,7 @@ export default function CellCard(): JSX.Element {
       {/* Flex item left */}
       <Wrapper>
         {/* index, ref, and id are required for NavigationJumpTo SDS component */}
-        <div {...{ index: 0 }} ref={sectionRef0} id="id-0">
+        <div ref={sectionRef0} id="section-0">
           <CellCardHeader>
             <CellCardHeaderInnerWrapper>
               <CellCardName data-testid={CELL_CARD_HEADER_NAME}>
@@ -92,15 +92,15 @@ export default function CellCard(): JSX.Element {
           <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
         </div>
 
-        <div {...{ index: 1 }} ref={sectionRef1} id="id-1">
+        <div ref={sectionRef1} id="section-1">
           <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
         </div>
 
-        <div {...{ index: 2 }} ref={sectionRef2} id="id-2">
+        <div ref={sectionRef2} id="section-2">
           <EnrichedGenesTable cellTypeId={cellTypeId} />
         </div>
 
-        <div {...{ index: 3 }} ref={sectionRef3} id="id-3">
+        <div ref={sectionRef3} id="section-3">
           <SourceDataTable cellTypeId={cellTypeId} />
         </div>
       </Wrapper>

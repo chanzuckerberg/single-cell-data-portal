@@ -9,7 +9,7 @@ export const CellCardsView = styled.div`
   column-gap: 120px;
   margin: auto;
   max-width: 1440px;
-  padding: ${TOP_PADDING_PX}px 40px 0px 40px;
+  padding: ${TOP_PADDING_PX}px 40px 40px 40px;
 `;
 
 export const Wrapper = styled.div`
