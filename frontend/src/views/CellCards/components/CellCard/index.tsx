@@ -14,6 +14,8 @@ import Description from "./components/Description";
 import CellCardSearchBar from "../CellCardSearchBar";
 import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
 import EnrichedGenesTable from "./components/EnrichedGenesTable";
+import OntologyDagView from "./components/OntologyDagView";
+import FullScreenProvider from "./components/FullScreenProvider";
 import SourceDataTable from "./components/SourceDataTable";
 import CellCardSidebar from "./components/CellCardSidebar";
 
@@ -28,6 +30,7 @@ export default function CellCard(): JSX.Element {
   const sectionRef1 = React.useRef(null);
   const sectionRef2 = React.useRef(null);
   const sectionRef3 = React.useRef(null);
+  const sectionRef4 = React.useRef(null);
 
   const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
   // cell type id
@@ -60,7 +63,6 @@ export default function CellCard(): JSX.Element {
     <CellCardsView>
       {/* Flex item left */}
       <Wrapper>
-        {/* index, ref, and id are required for NavigationJumpTo SDS component */}
         <div ref={sectionRef0} id="section-0">
           <CellCardHeader>
             <CellCardHeaderInnerWrapper>
@@ -81,8 +83,6 @@ export default function CellCard(): JSX.Element {
                 />
               </a>
             </CellCardHeaderInnerWrapper>
-
-            {/* Show search bar in header in skinny mode since normally it would be in the sidebar */}
             {skinnyMode && (
               <SearchBarWrapper>
                 <CellCardSearchBar />
@@ -93,14 +93,17 @@ export default function CellCard(): JSX.Element {
         </div>
 
         <div ref={sectionRef1} id="section-1">
+          <FullScreenProvider>
+            <OntologyDagView cellTypeId={cellTypeId} skinnyMode={skinnyMode} />
+          </FullScreenProvider>
+        </div>
+        <div ref={sectionRef2} id="section-2">
           <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
         </div>
-
-        <div ref={sectionRef2} id="section-2">
+        <div ref={sectionRef3} id="section-3">
           <EnrichedGenesTable cellTypeId={cellTypeId} />
         </div>
-
-        <div ref={sectionRef3} id="section-3">
+        <div ref={sectionRef4} id="section-4">
           <SourceDataTable cellTypeId={cellTypeId} />
         </div>
       </Wrapper>
@@ -110,9 +113,10 @@ export default function CellCard(): JSX.Element {
         <CellCardSidebar
           items={[
             { elementRef: sectionRef0, title: "Intro" },
-            { elementRef: sectionRef1, title: "Marker Genes" },
-            { elementRef: sectionRef2, title: "Highly Expressed Genes" },
-            { elementRef: sectionRef3, title: "Source Data" },
+            { elementRef: sectionRef1, title: "Cell Ontology" },
+            { elementRef: sectionRef2, title: "Marker Genes" },
+            { elementRef: sectionRef3, title: "Highly Expressed Genes" },
+            { elementRef: sectionRef4, title: "Source Data" },
           ]}
         />
       )}
