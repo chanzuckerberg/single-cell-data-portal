@@ -33,6 +33,7 @@ import {
 import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node";
 import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node/components/RectOrCircle";
 import { CELL_CARD_SOURCE_DATA_TABLE } from "src/views/CellCards/components/CellCard/components/SourceDataTable";
+import { CELL_CARD_NAVIGATION_SIDEBAR } from "src/views/CellCards/components/CellCard/components/CellCardSidebar";
 
 const { describe } = test;
 
@@ -373,6 +374,22 @@ describe("Cell Cards", () => {
         );
         await node.hover();
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+      });
+    });
+    describe("CellCard Sidebar", () => {
+      test.only("Scrolling on CellCard updates the navbar", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        // I want to test that the navbar updates when the user scrolls on the CellCard
+        // Assume that the navbar test ID is stored in "NAVBAR_TEST_ID"
+        // Assume that the section IDs are of the form "SECTION_0", "SECTION_1", etc.
+        const navbar = page.getByTestId(CELL_CARD_NAVIGATION_SIDEBAR);
+        const section0 = page.getByTestId("section-0");
+        await section0.scrollIntoViewIfNeeded();
+        const section3 = page.getByTestId("section-3");
+        await section3.scrollIntoViewIfNeeded();
+        await section0.scrollIntoViewIfNeeded();
       });
     });
   });

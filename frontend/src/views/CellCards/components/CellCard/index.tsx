@@ -58,7 +58,7 @@ export default function CellCard(): JSX.Element {
       {/* Flex item left */}
       <Wrapper>
         {/* Intro section */}
-        <div ref={sectionRef0} id="section-0" />
+        <div ref={sectionRef0} id="section-0" data-testid="section-0" />
         <CellCardHeader>
           <CellCardHeaderInnerWrapper>
             <CellCardName data-testid={CELL_CARD_HEADER_NAME}>
@@ -87,21 +87,21 @@ export default function CellCard(): JSX.Element {
         <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
 
         {/* Cell Ontology section */}
-        <div ref={sectionRef1} id="section-1" />
+        <div ref={sectionRef1} id="section-1" data-testid="section-1" />
         <FullScreenProvider>
           <OntologyDagView cellTypeId={cellTypeId} skinnyMode={skinnyMode} />
         </FullScreenProvider>
 
         {/* Marker Genes section */}
-        <div ref={sectionRef2} id="section-2" />
+        <div ref={sectionRef2} id="section-2" data-testid="section-2" />
         <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
 
         {/* Highly Expressed Genes section */}
-        <div ref={sectionRef3} id="section-3" />
+        <div ref={sectionRef3} id="section-3" data-testid="section-3" />
         <EnrichedGenesTable cellTypeId={cellTypeId} />
 
         {/* Source Data section */}
-        <div ref={sectionRef4} id="section-4" />
+        <div ref={sectionRef4} id="section-4" data-testid="section-4" />
         <SourceDataTable cellTypeId={cellTypeId} />
       </Wrapper>
 
