@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0m  locator resolved to visible <div data-testid="cell-card-header-name" class="css-1…>Neuron</div> [38;5;45m+41ms[0m
