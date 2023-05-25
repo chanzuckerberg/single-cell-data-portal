@@ -136,7 +136,9 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
   // Animation duration - initially zero so the animation doesn't play on load
   const [duration, setDuration] = useState(0);
 
-  // The raw cell ontology tree data
+  // The raw cell ontology tree data. This is called "rawTree" because it does not contain
+  // the "isExpanded" property that is used to track the expanded state of each node, along with
+  // other properties like the positions of the nodes.
   const { data: rawTree } = useCellOntologyTree();
 
   // Contains the nodes that are initially expanded (expandedNodes) and the nodes that are collapsed
@@ -163,6 +165,8 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
       if (d.isExpanded) {
         // If this node is a key in `notShownWhenExpandedNodes`, then it is a parent to nodes
         // that should be collapsed. Therefore, set `appendDummy` to `true`.
+        // The term "dummy" here is used to describe the collapsed node containing hidden terms.
+        // The text label of a "dummy" is the number of hidden terms, e.g. 52 cell types.
         const appendDummy = d.id in notShownWhenExpandedNodes;
 
         // `showAllChildren` is a flag that is set to `true` when the user clicks on a collapsed node.
@@ -189,6 +193,10 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
             isExpanded: false,
           });
         } else if (d.showAllChildren) {
+          // Sorting such that the first child in the `newChildren` array is the
+          // same as the first child in the original array (`d.children`) seems to
+          // ensure that the position of the visible node is preserved when its dummy
+          // sibling node is expanded. It makes for smoother animations.
           if (d.children) {
             const firstId = d.children[0].id;
             newChildren.sort((a, b) => {
@@ -213,8 +221,13 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
     };
   }, [cellTypeId]);
 
+  // This useEffect is used to set the initial transform matrix when the tree data changes.
+  // The initial transform matrix is used to center the tree view on the target node.
+  // This hook is also used to set the initial positions of the nodes in the tree to `x0` and `y0`.
   useEffect(() => {
     if (data) {
+      // This block sets the initial positions of the nodes in the tree to `x0` and `y0`.
+      // This is used when animating transitions in node positions.
       data.each((node) => {
         const pointNode = node as HierarchyPointNode<TreeNodeWithState>;
         if (pointNode.x && pointNode.y) {
@@ -222,12 +235,16 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
           node.data.y0 = pointNode.y;
         }
       });
+      // Now, we find the target node that has children visible.
+      // By construction, only one copy of the target node in the tree will have children visible.
+      // The target node is the node corresponding to the cell type id of the CellCard.
       let targetNode = data
         .descendants()
         .find(
           (node) =>
             node.data.id.split("__").at(0) === cellTypeId && node.data.children
         ) as HierarchyPointNode<TreeNodeWithState> | undefined;
+      // If no target nodes have children, just pick any target node.
       if (!targetNode) {
         targetNode = data
           .descendants()
@@ -235,6 +252,7 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
           | HierarchyPointNode<TreeNodeWithState>
           | undefined;
       }
+      // If the target node is found and its position is known, set the initial transform matrix.
       if (targetNode) {
         if (targetNode.x !== undefined && targetNode.y !== undefined) {
           setInitialTransformMatrix({
