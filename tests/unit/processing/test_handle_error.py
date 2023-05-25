@@ -1,7 +1,51 @@
 from unittest.mock import Mock, patch
 
+import pytest
+
 from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetStatus, DatasetVersionId
 from backend.layers.processing.upload_failures.app import get_failure_slack_notification_message, parse_event
+
+
+@pytest.fixture
+def sample_slack_header_block():
+    return {
+        "type": "header",
+        "text": {
+            "type": "plain_text",
+            "text": "Dataset failed to process:fire:",
+            "emoji": True,
+        },
+    }
+
+
+@pytest.fixture
+def sample_slack_status_block():
+    return {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "```{\n"
+            '  "cxg_status": null,\n'
+            '  "h5ad_status": null,\n'
+            '  "processing_status": null,\n'
+            '  "rds_status": null,\n'
+            '  "upload_status": null,\n'
+            '  "validation_message": null,\n'
+            '  "validation_status": null\n'
+            "}```",
+        },
+    }
+
+
+@pytest.fixture
+def sample_slack_status_block_empty():
+    return {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "``````",
+        },
+    }
 
 
 def test_parse_event_with_empty_event():
@@ -100,7 +144,9 @@ def mock_get_dataset_version(dataset_id, collection_id):
     return MockDatasetVersionId
 
 
-def test_get_failure_slack_notification_message_with_dataset_id_none():
+def test_get_failure_slack_notification_message_with_dataset_id_none(
+    sample_slack_header_block, sample_slack_status_block_empty
+):
     dataset_id = None
     step_name = "Step 1"
     job_id = "123456"
@@ -114,14 +160,7 @@ def test_get_failure_slack_notification_message_with_dataset_id_none():
         )
     assert result == {
         "blocks": [
-            {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Dataset failed to process:fire:",
-                    "emoji": True,
-                },
-            },
+            sample_slack_header_block,
             {
                 "type": "section",
                 "text": {
@@ -140,19 +179,15 @@ def test_get_failure_slack_notification_message_with_dataset_id_none():
                     f"*Processing Status*:\n",
                 },
             },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "``````",
-                },
-            },
+            sample_slack_status_block_empty,
         ]
     }
     logger_mock.error.assert_called_with("Dataset None not found")
 
 
-def test_get_failure_slack_notification_message_with_dataset_not_found():
+def test_get_failure_slack_notification_message_with_dataset_not_found(
+    sample_slack_header_block, sample_slack_status_block_empty
+):
     dataset_id = "dataset123"
     step_name = "Step 1"
     job_id = "123456"
@@ -176,14 +211,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found():
 
     assert result == {
         "blocks": [
-            {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Dataset failed to process:fire:",
-                    "emoji": True,
-                },
-            },
+            sample_slack_header_block,
             {
                 "type": "section",
                 "text": {
@@ -202,13 +230,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found():
                     f"*Processing Status*:\n",
                 },
             },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "``````",
-                },
-            },
+            sample_slack_status_block_empty,
         ]
     }
     logger_mock.error.assert_called_with("Dataset dataset123 not found")
@@ -222,7 +244,9 @@ def mock_collection_version(owner, version_id):
     return MockCollectionVersion
 
 
-def test_get_failure_slack_notification_message_with_missing_collection():
+def test_get_failure_slack_notification_message_with_missing_collection(
+    sample_slack_header_block, sample_slack_status_block
+):
     dataset_id = "dataset123"
     collection_id = "collection123"
     collection_version_id = "collection_version_id123"
@@ -252,14 +276,7 @@ def test_get_failure_slack_notification_message_with_missing_collection():
 
     assert result == {
         "blocks": [
-            {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Dataset failed to process:fire:",
-                    "emoji": True,
-                },
-            },
+            sample_slack_header_block,
             {
                 "type": "section",
                 "text": {
@@ -278,21 +295,7 @@ def test_get_failure_slack_notification_message_with_missing_collection():
                     f"*Processing Status*:\n",
                 },
             },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "```{\n"
-                    '  "cxg_status": null,\n'
-                    '  "h5ad_status": null,\n'
-                    '  "processing_status": null,\n'
-                    '  "rds_status": null,\n'
-                    '  "upload_status": null,\n'
-                    '  "validation_message": null,\n'
-                    '  "validation_status": null\n'
-                    "}```",
-                },
-            },
+            sample_slack_status_block,
         ]
     }
     logger_mock.error.assert_called_with(f"Collection {collection_id} not found")
@@ -300,7 +303,9 @@ def test_get_failure_slack_notification_message_with_missing_collection():
     get_unpublished_collection_version_from_canonical_mock.assert_called_with(CollectionId(collection_id))
 
 
-def test_get_failure_slack_notification_message_with_dataset_and_collection():
+def test_get_failure_slack_notification_message_with_dataset_and_collection(
+    sample_slack_header_block, sample_slack_status_block
+):
     dataset_id = "dataset123"
     collection_id = "collection123"
     step_name = "Step 1"
@@ -329,14 +334,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection():
 
     assert result == {
         "blocks": [
-            {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Dataset failed to process:fire:",
-                    "emoji": True,
-                },
-            },
+            sample_slack_header_block,
             {
                 "type": "section",
                 "text": {
@@ -355,21 +353,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection():
                     f"*Processing Status*:\n",
                 },
             },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "```{\n"
-                    '  "cxg_status": null,\n'
-                    '  "h5ad_status": null,\n'
-                    '  "processing_status": null,\n'
-                    '  "rds_status": null,\n'
-                    '  "upload_status": null,\n'
-                    '  "validation_message": null,\n'
-                    '  "validation_status": null\n'
-                    "}```",
-                },
-            },
+            sample_slack_status_block,
         ]
     }
     get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_id))
