@@ -32,6 +32,13 @@ interface Directory {
   subDirectories: Array<Directory>;
 }
 
+enum ExpandedValue {
+  DEFAULT_COLLAPSE = 0,
+  DEFAULT_EXPAND = 1,
+  USER_COLLAPSE = 2,
+  USER_EXPAND = 3,
+}
+
 const CACHED_FILE_PATHS = new Map<string, Directory>();
 function filePaths(...root: Array<string>): Directory {
   const cacheStore = CACHED_FILE_PATHS && CACHED_FILE_PATHS.get(root.join("/"));
@@ -73,6 +80,20 @@ function generatePaths(
     });
   }
   return slugs;
+}
+
+function containsActiveFile(directory: Directory, activeFile: string): boolean {
+  if (directory.files.includes(activeFile)) {
+    return true;
+  }
+
+  for (const subDirectory of directory.subDirectories) {
+    if (containsActiveFile(subDirectory, activeFile)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -180,15 +201,24 @@ const DirectoryListItem = ({
   activeFile: string;
 }) => {
   const initialState = useMemo(() => {
-    return directory.files.includes(activeFile) ? 1 : 0;
+    return directory.files.includes(activeFile)
+      ? ExpandedValue.DEFAULT_EXPAND
+      : ExpandedValue.DEFAULT_COLLAPSE;
   }, [directory.files, activeFile]);
 
-  // 0 = default collapse, 1 = default expand, 2 = user collapse, 3 = user expand
-  const [isExpanded, setIsExpanded] = useState<0 | 1 | 2 | 3>(initialState);
+  const [isExpanded, setIsExpanded] = useState<ExpandedValue>(initialState);
 
   return (
     <Fragment>
-      <li onClick={() => setIsExpanded(isExpanded % 2 == 0 ? 3 : 2)}>
+      <li
+        onClick={() =>
+          setIsExpanded(
+            isExpanded % 2 == 0
+              ? ExpandedValue.USER_EXPAND
+              : ExpandedValue.USER_COLLAPSE
+          )
+        }
+      >
         {directory.dirName.split("__")[1]}{" "}
         <Icon
           sdsIcon={isExpanded % 2 == 1 ? "chevronDown" : "chevronRight"}
@@ -218,17 +248,23 @@ const Directory = memo(function RenderDirectory({
 }: {
   activeFile: string;
   directory: Directory;
-  isExpanded: 0 | 1 | 2 | 3;
-  setIsExpanded: (isExpanded: 0 | 1 | 2 | 3) => void;
+  isExpanded: ExpandedValue;
+  setIsExpanded: (isExpanded: ExpandedValue) => void;
   isChild?: boolean;
 }) {
+  const initialState = useMemo(() => {
+    return containsActiveFile(directory, activeFile)
+      ? ExpandedValue.DEFAULT_EXPAND
+      : ExpandedValue.DEFAULT_COLLAPSE;
+  }, [directory.files, activeFile]);
+  setIsExpanded(initialState);
+
   const fileComponents: Array<[string, JSX.Element]> = directory.files.map(
     (file) => {
       let href = "/docs/";
       if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
       href += file;
       const isActiveFile = file === activeFile;
-      if (isActiveFile && isExpanded < 2) setIsExpanded(1);
 
       return [
         file,
