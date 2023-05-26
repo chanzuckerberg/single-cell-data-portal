@@ -1,4 +1,9 @@
-import { Button, CommonThemeProps, fontBodyS, getSpaces } from "czifui";
+import {
+  Button,
+  CommonThemeProps,
+  fontBodyS,
+  getSpaces,
+} from "@czi-sds/components";
 import styled from "@emotion/styled";
 
 const spacesM = (props: CommonThemeProps) => getSpaces(props)?.m;

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ButtonIcon, CommonThemeProps, getColors } from "czifui";
+import { ButtonIcon, CommonThemeProps, getColors } from "@czi-sds/components";
 
 const primary600 = (props: CommonThemeProps) => getColors(props)?.primary[600];
 
