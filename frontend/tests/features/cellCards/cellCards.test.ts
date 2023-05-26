@@ -153,7 +153,7 @@ describe("Cell Cards", () => {
             return await element.textContent();
           })
         );
-        expect(columnHeaders).toEqual(["Symbol", "Name", "Publications"]);
+        expect(columnHeaders).toEqual(["Symbol", "Name", "References"]);
         const rowElements = await page
           .locator(`${tableSelector} tbody tr`)
           .elementHandles();
