@@ -100,12 +100,10 @@ class ProcessMain(ProcessingLogic):
         try:
             if step_name == "download-validate":
                 self.process_download_validate.process(dataset_id, dropbox_uri, artifact_bucket, datasets_bucket)
-            elif step_name == "cxg":
+            elif step_name == "cxg" or step_name == "cxg_remaster":
                 self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)
             elif step_name == "seurat":
                 self.process_seurat.process(dataset_id, artifact_bucket, datasets_bucket)
-            elif step_name == "cxg_remaster":
-                raise NotImplementedError("cxg remasters are not supported anymore")
             else:
                 self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
@@ -132,7 +130,7 @@ class ProcessMain(ProcessingLogic):
                 self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
             elif step_name == "seurat":
                 self.update_processing_status(dataset_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED)
-            elif step_name == "cxg":
+            elif step_name == "cxg" or step_name == "cxg_remaster":
                 self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
             return False
 
