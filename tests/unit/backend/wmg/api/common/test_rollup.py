@@ -1,60 +1,16 @@
+"""This module tests the rollup functions called directly and indirectly by the WMG API.
+
+In detail, this module tests the public and private functions defined in `backend.wmg.api.common.rollup` module.
+"""
 import unittest
 
-import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
 from parameterized import parameterized
 
-from backend.wmg.api.v1 import _add_missing_combinations_to_gene_expression_df_for_rollup, rollup
-from backend.wmg.data.rollup import are_cell_types_colinear, rollup_across_cell_type_descendants
+from backend.wmg.api.common.rollup import _add_missing_combinations_to_gene_expression_df_for_rollup, rollup
 from backend.wmg.data.schemas.cube_schema import expression_summary_logical_attrs
-
-
-class TestLowLevelRollupFunctionsTraversingCellTypeLineage(unittest.TestCase):
-    # test that the rollup function works as expected
-    def test__expression_rollup_across_cell_type_descendants(self):
-        # second cell type is descendant of first cell type
-        # fourth cell type is descendant of third cell type
-        cell_types = ["CL:0000786", "CL:0000986", "CL:0000980", "CL:0001202"]
-        df = pd.DataFrame()
-        df["cell_type_ontology_term_id"] = cell_types
-        np.random.seed(0)
-        exprs = np.random.rand(len(cell_types), 10)
-        for i in range(exprs.shape[1]):
-            df[i] = exprs[:, i]
-
-        df_rollup = rollup_across_cell_type_descendants(df)
-        df_expected = df.copy()
-        expected_exprs = exprs.copy()
-        expected_exprs[0] = exprs[0] + exprs[1]
-        expected_exprs[2] = exprs[2] + exprs[3]
-
-        for i in range(expected_exprs.shape[1]):
-            df_expected[i] = expected_exprs[:, i]
-        assert np.all(df_expected == df_rollup)
-
-    def test__expression_rollup_no_descendants_overlap(self):
-        # these cell types are not descendants of each other
-        cell_types = ["CL:0000786", "CL:0000980"]
-        df = pd.DataFrame()
-        df["cell_type_ontology_term_id"] = cell_types
-        np.random.seed(0)
-        exprs = np.random.rand(len(cell_types), 10)
-        for i in range(exprs.shape[1]):
-            df[i] = exprs[:, i]
-
-        df_rollup = rollup_across_cell_type_descendants(df)
-        assert np.all(df == df_rollup)
-
-    def test__cell_types_in_same_lineage_are_colinear(self):
-        # first and second pairs of cell types are in the same lineage
-        # third pair of cell types are not in the same lineage
-        cell_type_pairs = [["CL:0000786", "CL:0000986"], ["CL:0000980", "CL:0001202"], ["CL:0000786", "CL:0000980"]]
-        expected_colinearity = [True, True, False]
-        for cell_types, expected in zip(cell_type_pairs, expected_colinearity):
-            a, b = cell_types
-            assert are_cell_types_colinear(a, b) == expected
 
 
 def _create_cell_counts_df_helper(cell_counts_rows: list[list], columns: list[str], index_cols: list[str]) -> DataFrame:
@@ -567,14 +523,3 @@ class TestHighLevelRollupHelperFunctions(unittest.TestCase):
 
         # assert equality
         assert_frame_equal(actual_dot_plot_matrix_df, expected_dot_plot_matrix_df)
-
-        # now test the entire rollup function end-to-end, which includes
-        # `_add_missing_combinations_to_gene_expression_df_for_rollup`
-        dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(dot_plot_matrix_df, cell_counts_cell_type_agg)
-
-        # assert that the n_cells_tissue column is still 100
-        assert (dot_plot_matrix_df["n_cells_tissue"] == 100).all()
-
-        # assert that the added rows that could not be rescued via rollup are properly filtered out
-        # these rows will still have 0 for all numeric columns, excluding n_cells_tissue
-        assert (dot_plot_matrix_df["sum"] > 0).all()
