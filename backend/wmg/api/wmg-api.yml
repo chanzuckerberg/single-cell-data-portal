@@ -62,6 +62,7 @@ paths:
                   required:
                     - gene_ontology_term_ids
                     - organism_ontology_term_id
+                    - tissue_ontology_term_ids
                   properties:
                     gene_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
