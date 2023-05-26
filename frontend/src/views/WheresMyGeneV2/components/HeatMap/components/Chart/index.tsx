@@ -240,7 +240,10 @@ export default memo(function Chart({
           return allChartProps;
         });
 
-        setIsLoading((isLoading) => ({ ...isLoading, [tissue]: false }));
+        setIsLoading((isLoading) => {
+          if (!isLoading[tissue]) return isLoading;
+          return { ...isLoading, [tissue]: false };
+        });
       },
       getDebounceMs(selectedGeneData.length),
       { leading: false }

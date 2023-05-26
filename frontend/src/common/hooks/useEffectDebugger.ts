@@ -38,7 +38,13 @@ const useEffectDebugger = (
   );
 
   if (Object.keys(changedDeps).length) {
-    console.log("[use-effect-debugger] ", changedDeps);
+    console.log("[START use-effect-debugger]");
+    Object.entries(changedDeps).forEach(([key, { before, after }]) => {
+      console.log(`${key}`);
+      console.log(before);
+      console.log(after);
+    });
+    console.log("[END use-effect-debugger]");
   }
 
   useEffect(effectHook, [effectHook, ...dependencies]);

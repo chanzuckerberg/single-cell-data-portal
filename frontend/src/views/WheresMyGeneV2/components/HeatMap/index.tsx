@@ -4,6 +4,7 @@ import {
   Dispatch,
   memo,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -47,6 +48,7 @@ import {
   XAxisWrapper,
   YAxisWrapper,
 } from "./style";
+import { memoize } from "lodash";
 
 interface Props {
   className?: string;
@@ -162,37 +164,42 @@ export default memo(function HeatMap({
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
-  // would this be more performant as a bitmap of booleans?
-  const initialBitMap = useMemo(() => {
+  const initialDisplayedCellTypes = useMemo(() => {
     return Object.entries(sortedCellTypesByTissueName).reduce(
-      (acc, [tissue, cellTypes]) => {
-        acc[tissue] = {};
-        cellTypes.forEach((cellType) => {
-          acc[tissue][cellType.id] = false;
-        });
-        acc[tissue]["HEADER_ROW"] = true;
+      (acc, [tissue]) => {
+        acc.add(tissue + tissue);
         return acc;
       },
-      {} as { [tissue: string]: { [cellType: string]: boolean } }
+      new Set<string>()
     );
   }, [sortedCellTypesByTissueName]);
   // (seve): This state should be moved to the store
-  // This is a 2 dimensional array of booleans that represents which rows belonging to each tissue displayed
-  const [displayedRowBitMap, setDisplayedRowBitMap] = useState(initialBitMap);
+  const [displayedCellTypes, setDisplayedCellTypes] = useState<Set<string>>(
+    initialDisplayedCellTypes
+  );
+
+  // set of tissue names that are visible and set of cell types that are visible
+  // presence is visible
 
   useEffect(() => {
-    setDisplayedRowBitMap(initialBitMap);
-  }, [initialBitMap]);
+    setDisplayedCellTypes(initialDisplayedCellTypes);
+  }, [initialDisplayedCellTypes]);
 
-  const handleExpand = () => {
+  const [expandedTissues, setExpandedTissues] = useState<Array<Tissue>>([]);
+
+  const handleExpand = useCallback(() => {
+    if (expandedTissues.includes("lung")) {
+      setExpandedTissues([]);
+    }
     //expand the first tissue
-    displayedRowBitMap["lung"] = Object.fromEntries(
-      Object.entries(displayedRowBitMap["lung"]).map(([key]) => {
-        return [key, true];
-      })
-    );
-    setDisplayedRowBitMap(displayedRowBitMap);
-  };
+    const newDisplayedCellTypes = new Set<string>(displayedCellTypes);
+
+    sortedCellTypesByTissueName["lung"].forEach((cellType) => {
+      newDisplayedCellTypes.add("lung" + cellType.name);
+    });
+
+    setDisplayedCellTypes(newDisplayedCellTypes);
+  }, [displayedCellTypes, sortedCellTypesByTissueName, expandedTissues]);
 
   return (
     <>
@@ -210,33 +217,36 @@ export default memo(function HeatMap({
           </XAxisWrapper>
           <YAxisWrapper>
             {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
-              const tissueCellTypes = getTissueCellTypes({
+              const tissueCellTypes = memoizedGetTissueCellTypes({
                 cellTypeSortBy,
                 cellTypes,
                 sortedCellTypesByTissueName,
                 tissue: tissue.name,
-                displayedRowBitMap,
+                displayedCellTypes: displayedCellTypes,
               });
+
               return (
-                <YAxisChart
-                  key={tissue.name}
-                  tissue={tissue.name}
-                  tissueID={tissue.id}
-                  cellTypes={tissueCellTypes}
-                  generateMarkerGenes={generateMarkerGenes}
-                  selectedOrganismId={selectedOrganismId}
-                />
+                tissueCellTypes.length > 0 && (
+                  <YAxisChart
+                    key={tissue.name}
+                    tissue={tissue.name}
+                    tissueID={tissue.id}
+                    cellTypes={tissueCellTypes}
+                    generateMarkerGenes={generateMarkerGenes}
+                    selectedOrganismId={selectedOrganismId}
+                  />
+                )
               );
             })}
           </YAxisWrapper>
           <ChartWrapper ref={chartWrapperRef}>
             {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
-              const tissueCellTypes = getTissueCellTypes({
+              const tissueCellTypes = memoizedGetTissueCellTypes({
                 cellTypeSortBy,
                 cellTypes,
                 sortedCellTypesByTissueName,
                 tissue: tissue.name,
-                displayedRowBitMap,
+                displayedCellTypes: displayedCellTypes,
               });
 
               const selectedGeneData =
@@ -285,25 +295,47 @@ function getTissueCellTypes({
   sortedCellTypesByTissueName,
   tissue,
   cellTypeSortBy,
-  displayedRowBitMap,
+  displayedCellTypes,
 }: {
   cellTypes: { [tissue: Tissue]: CellTypeRow[] };
   sortedCellTypesByTissueName: { [tissue: string]: CellTypeRow[] };
   tissue: Tissue;
   cellTypeSortBy: SORT_BY;
-  displayedRowBitMap: { [tissue: string]: { [cellType: string]: boolean } };
+  displayedCellTypes: Set<string>;
 }) {
   const tissueCellTypes = cellTypes[tissue];
+  if (!tissueCellTypes || tissueCellTypes.length === 0) return [];
   const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
-  const ret =
+  let ret =
     (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY
       ? tissueCellTypes
       : sortedTissueCellTypes) || EMPTY_ARRAY;
-  if (ret[0]?.id !== "HEADER_ROW")
-    ret.unshift({ ...ret[0], id: "HEADER_ROW", name: tissue });
 
-  return ret.filter((cellType) => displayedRowBitMap[tissue]?.[cellType.id]);
+  if (ret[ret.length - 1].name !== tissue)
+    ret.push({ ...ret[0], name: tissue });
+
+  ret = ret.filter((cellType) =>
+    displayedCellTypes.has(tissue + cellType.name)
+  );
+  return ret;
 }
+
+const memoizedGetTissueCellTypes = memoize(
+  getTissueCellTypes,
+  ({
+    cellTypes,
+    sortedCellTypesByTissueName,
+    tissue,
+    cellTypeSortBy,
+    displayedCellTypes,
+  }) => {
+    return `${tissue}-${cellTypeSortBy}-${[...displayedCellTypes]?.join(
+      ""
+    )}-${cellTypes[tissue]?.join("")}-${sortedCellTypesByTissueName[
+      tissue
+    ]?.join("")}`;
+  }
+);
 
 function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {
   return Object.values(isLoading).some((isLoading) => isLoading);

@@ -54,8 +54,12 @@ export interface PrimaryFilterDimensionsResponse {
   tissues: OntologyTermsByOrganism;
 }
 
+function replaceV1WithV2(url: string): string {
+  return url.replace("/v1/", "/v2/");
+}
+
 export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
-  const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
+  const url = API_URL + replaceV1WithV2(API.WMG_PRIMARY_FILTER_DIMENSIONS);
 
   const response: RawPrimaryFilterDimensionsResponse = await (
     await fetch(url, DEFAULT_FETCH_OPTIONS)
@@ -240,7 +244,7 @@ async function fetchFiltersQuery({
 }): Promise<FiltersQueryResponse | undefined> {
   if (!query) return;
 
-  const url = API_URL + API.WMG_FILTERS_QUERY;
+  const url = API_URL + replaceV1WithV2(API.WMG_FILTERS_QUERY);
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -267,7 +271,7 @@ async function fetchQuery({
 }): Promise<QueryResponse | undefined> {
   if (!query) return;
 
-  const url = API_URL + API.WMG_QUERY;
+  const url = API_URL + replaceV1WithV2(API.WMG_QUERY);
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -1090,7 +1094,7 @@ export async function fetchMarkerGenes({
   tissueID,
   test = "ttest",
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
-  const url = API_URL + API.WMG_MARKER_GENES;
+  const url = API_URL + replaceV1WithV2(API.WMG_MARKER_GENES);
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -1114,7 +1118,9 @@ export async function fetchGeneInfo({
   signal,
 }: FetchGeneInfoParams): Promise<GeneInfo> {
   const url =
-    API_URL + API.WMG_GENE_INFO + `?geneID=${geneID}&gene=${geneSymbol}`;
+    API_URL +
+    replaceV1WithV2(API.WMG_GENE_INFO) +
+    `?geneID=${geneID}&gene=${geneSymbol}`;
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS, // Required for CORS
     signal,
