@@ -1,5 +1,10 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontBodyS, fontHeaderXl, getSpaces } from "@czi-sds/components";
+import {
+  CommonThemeProps,
+  fontBodyS,
+  fontHeaderXl,
+  getSpaces,
+} from "@czi-sds/components";
 
 const spacesXxl = (props: CommonThemeProps) => getSpaces(props)?.xxl;
 
