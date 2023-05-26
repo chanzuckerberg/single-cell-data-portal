@@ -338,13 +338,12 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
                 >
                   <div data-testid={CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP}>
                     <b>{tooltipData?.n_cells}</b> cells
-                    {
-                      tooltipData?.n_cells !== tooltipData?.n_cells_rollup && 
+                    {tooltipData?.n_cells !== tooltipData?.n_cells_rollup && (
                       <>
                         <br />
                         <b>{tooltipData?.n_cells_rollup}</b> descendant cells
                       </>
-                    }
+                    )}
                   </div>
                 </TooltipInPortal>
               )}
