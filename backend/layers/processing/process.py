@@ -101,7 +101,8 @@ class ProcessMain(ProcessingLogic):
             if step_name == "download-validate":
                 self.process_download_validate.process(dataset_id, dropbox_uri, artifact_bucket, datasets_bucket)
             elif step_name == "cxg" or step_name == "cxg_remaster":
-                self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)
+                is_reprocess = step_name == "cxg_remaster"
+                self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket, is_reprocess=is_reprocess)
             elif step_name == "seurat":
                 self.process_seurat.process(dataset_id, artifact_bucket, datasets_bucket)
             else:
