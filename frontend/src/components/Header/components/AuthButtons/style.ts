@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getColors } from "czifui";
+import { fontBodyS, getColors } from "@czi-sds/components";
 
 export const LogOutAnchor = styled.a`
   &:hover {

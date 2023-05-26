@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Icon } from "czifui";
+import { Icon } from "@czi-sds/components";
 import fs from "fs";
 import matter from "gray-matter";
 import { GetStaticPaths } from "next";

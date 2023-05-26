@@ -5,7 +5,7 @@ import {
   fontBodyS,
   getColors,
   Callout,
-} from "czifui";
+} from "@czi-sds/components";
 
 export const GeneSummary = styled.div`
   ${fontBodyXs}

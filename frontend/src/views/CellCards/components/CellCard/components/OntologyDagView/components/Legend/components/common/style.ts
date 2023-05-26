@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyXxxs, getColors } from "czifui";
+import { fontBodyXxxs, getColors } from "@czi-sds/components";
 
 export const StyledLegendText = styled.text`
   ${fontBodyXxxs}

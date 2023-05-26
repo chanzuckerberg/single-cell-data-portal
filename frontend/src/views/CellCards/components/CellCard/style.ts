@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontHeaderXxl, Tag } from "czifui";
+import { fontHeaderXxl, Tag } from "@czi-sds/components";
 
 export const TOP_PADDING_PX = 32;
 export const SIDEBAR_COLUMN_GAP_PX = 120;

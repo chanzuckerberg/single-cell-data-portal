@@ -1,6 +1,6 @@
 import { SelectChangeEvent } from "@mui/material/Select";
 import FormControl from "@mui/material/FormControl";
-import { MenuItem } from "czifui";
+import { MenuItem } from "@czi-sds/components";
 import { StyledSelect } from "./style";
 interface Props {
   handleChange: (event: SelectChangeEvent<unknown>) => void;

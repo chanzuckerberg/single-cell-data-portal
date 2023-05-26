@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
-import { CommonThemeProps, getSpaces } from "czifui";
+import { CommonThemeProps, getSpaces } from "@czi-sds/components";
 
 const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
 

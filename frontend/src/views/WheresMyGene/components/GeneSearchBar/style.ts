@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Button, fontBodyXxs, getColors } from "czifui";
+import { Button, fontBodyXxs, getColors } from "@czi-sds/components";
 
 export const Container = styled.div`
   width: 80vw;

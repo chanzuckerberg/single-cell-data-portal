@@ -1,5 +1,5 @@
 import React, { ReactElement, useMemo } from "react";
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
   TableTitleWrapper,

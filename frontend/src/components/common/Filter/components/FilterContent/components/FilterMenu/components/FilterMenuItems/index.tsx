@@ -1,4 +1,4 @@
-import { Icon } from "czifui";
+import { Icon } from "@czi-sds/components";
 import React from "react";
 import { ListItemIcon, ListItemText } from "@mui/material";
 import {
