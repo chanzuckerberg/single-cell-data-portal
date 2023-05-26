@@ -1,4 +1,5 @@
 import {
+  ACCESS_TYPE,
   Collection,
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
@@ -170,6 +171,7 @@ export function getIsPublishable(datasets: Array<Dataset>): boolean {
     datasets.some((dataset) => !dataset.tombstone)
   );
 }
+
 // check if revision meets publishing criteria
 export function revisionIsPublishable(
   collection: Collection,
@@ -223,6 +225,42 @@ function buildCollectionMetadataLink(
 function isPrivateRevision(collection: Collection) {
   return (
     collection.visibility === VISIBILITY_TYPE.PRIVATE && collection.revision_of
+  );
+}
+
+/**
+ * Returns true if the collection is a private revision of a published collection.
+ * The collection should have:
+ * - write access, and be
+ * - private, and have a
+ * - corresponding published collection ID.
+ * @param collection - Collection.
+ * @returns True if the collection is a private revision of a published collection.
+ */
+export function isCollectionPrivateRevision(collection: Collection): boolean {
+  return (
+    collection.access_type === ACCESS_TYPE.WRITE &&
+    collection.visibility === VISIBILITY_TYPE.PRIVATE &&
+    !!collection.revision_of
+  );
+}
+
+/**
+ * Returns true if the published collection has a corresponding private revision.
+ * The collection should have:
+ * - write access, and be
+ * - public, and have a
+ * - corresponding revision collection ID.
+ * @param collection - Collection.
+ * @returns True if the published collection has a corresponding private revision.
+ */
+export function isCollectionHasPrivateRevision(
+  collection: Collection
+): boolean {
+  return (
+    collection.access_type === ACCESS_TYPE.WRITE &&
+    collection.visibility === VISIBILITY_TYPE.PUBLIC &&
+    !!collection.revising_in
   );
 }
 
