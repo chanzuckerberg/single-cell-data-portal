@@ -25,9 +25,9 @@ export const CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN =
 interface TableRow {
   symbol: string;
   name: string;
-  publications: ReactElement | string;
+  references: ReactElement | string;
 }
-const tableColumns: Array<keyof TableRow> = ["symbol", "name", "publications"];
+const tableColumns: Array<keyof TableRow> = ["symbol", "name", "references"];
 
 interface Props {
   cellTypeId: string;
@@ -95,7 +95,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
       rows.push({
         symbol: markerGene.symbol,
         name: markerGene.name,
-        publications: publicationLinks,
+        references: publicationLinks,
       });
     }
     return rows;
