@@ -9,6 +9,7 @@ import styled from "@emotion/styled";
 import { Collection } from "src/common/entities";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import CreateCollection from "src/components/CreateCollectionModal";
+import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 
 const DeleteButton = ({
   isRevision,
@@ -42,28 +43,35 @@ const EditButton = (props: Partial<IMenuItemProps>) => {
 };
 
 interface Props {
-  id?: string;
+  collection: Collection;
+  handleDeleteCollection: DeleteCollectionFn;
+  isDeleting: boolean;
   isRevision: boolean;
-  visibility: Collection["visibility"];
 }
 
 const StyledMenu = styled(RawMenu)`
   border-radius: 3px;
   padding: 8px;
+
   & > li:last-child {
     margin-bottom: 0;
   }
 `;
 
-const Menu = ({ id = "", isRevision, visibility }: Props) => {
+const Menu = ({
+  collection,
+  handleDeleteCollection,
+  isDeleting,
+  isRevision,
+}: Props) => {
   return (
     <StyledMenu>
-      <CreateCollection id={id} Button={EditButton} />
+      <CreateCollection id={collection.id} Button={EditButton} />
       <DeleteCollection
-        id={id}
-        isRevision={isRevision}
         Button={DeleteButton}
-        visibility={visibility}
+        handleDeleteCollection={handleDeleteCollection}
+        isDeleting={isDeleting}
+        isRevision={isRevision}
       />
     </StyledMenu>
   );

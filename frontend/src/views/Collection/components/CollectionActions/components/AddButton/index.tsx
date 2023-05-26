@@ -1,10 +1,10 @@
-import { Intent, Popover, Position } from "@blueprintjs/core";
-import { StyledOutlineButton } from "src/components/common/Button/common/style";
+import { Popover, Position } from "@blueprintjs/core";
 import {
   Props as DropboxChooserProps,
   UploadingFile,
 } from "src/components/DropboxChooser";
 import Content from "./components/Content";
+import { ActionButton as Button } from "src/views/Collection/components/CollectionActions/style";
 
 export interface UploadedFiles {
   [datasetID: string]: UploadingFile;
@@ -20,9 +20,9 @@ const AddButton = ({ addNewFile }: Props) => {
       position={Position.BOTTOM_LEFT}
       content={<Content addNewFile={addNewFile} />}
     >
-      <StyledOutlineButton intent={Intent.PRIMARY} outlined>
+      <Button sdsStyle="square" sdsType="secondary">
         Add
-      </StyledOutlineButton>
+      </Button>
     </Popover>
   );
 };
