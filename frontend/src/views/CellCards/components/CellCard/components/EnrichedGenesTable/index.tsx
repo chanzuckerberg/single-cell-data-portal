@@ -129,7 +129,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
                 testId={CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN}
               />
               <Link
-                url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}`}
+                url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"
               />
             </TableTitleInnerWrapper>
