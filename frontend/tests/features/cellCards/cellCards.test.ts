@@ -33,6 +33,7 @@ import {
 import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node";
 import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node/components/RectOrCircle";
 import { CELL_CARD_SOURCE_DATA_TABLE } from "src/views/CellCards/components/CellCard/components/SourceDataTable";
+import { CELL_CARD_NAVIGATION_SIDEBAR } from "src/views/CellCards/components/CellCard/components/CellCardSidebar";
 
 const { describe } = test;
 
@@ -373,6 +374,53 @@ describe("Cell Cards", () => {
         );
         await node.hover();
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+      });
+    });
+    describe("CellCard Sidebar", () => {
+      test("Scrolling on CellCard updates the navbar", async ({ page }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        const navbar = page.getByTestId(CELL_CARD_NAVIGATION_SIDEBAR);
+        const section0 = page.getByTestId("section-0");
+        await section0.scrollIntoViewIfNeeded();
+        const section2 = page.getByTestId("section-2");
+        await section2.scrollIntoViewIfNeeded();
+
+        // check that the navbar tab corresponding to section 2 is highlighted
+        const selectedTab = navbar.locator(
+          ".MuiButtonBase-root.MuiTab-root.Mui-selected"
+        );
+        const selectedTabText = await selectedTab.innerText();
+        expect(selectedTabText).toBe("Marker Genes");
+      });
+      test("Clicking on the navbar scrolls to the section", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        const navbar = page.getByTestId(CELL_CARD_NAVIGATION_SIDEBAR);
+
+        // scroll to the bottom
+        const section4 = page.getByTestId("section-4");
+        await section4.scrollIntoViewIfNeeded();
+
+        // check that source data is in viewport
+        const sourceData = page.getByTestId(CELL_CARD_SOURCE_DATA_TABLE);
+        await sourceData.waitFor({ timeout: 5000 });
+        expect(sourceData).toBeInViewport();
+
+        // get the second navbar tab (ontology) and click to scroll
+        const elements = await navbar
+          .locator(".MuiButtonBase-root.MuiTab-root")
+          .elementHandles();
+        const tab = elements[1];
+        await tab.click();
+
+        // check that ontology is in viewport
+        const ontologyView = page.getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW);
+        await ontologyView.waitFor({ timeout: 5000 });
+        expect(ontologyView).toBeInViewport();
+
+        // check that source data is not in viewport
+        expect(sourceData).not.toBeInViewport();
       });
     });
   });

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import Image from "next/image";
-import { Button } from "czifui";
+import { Button } from "@czi-sds/components";
 
 export const StyledTooltip = styled.div`
   text-align: left;

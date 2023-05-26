@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Tag, fontBodyXs } from "czifui";
+import { Tag, fontBodyXs } from "@czi-sds/components";
 
 export const StyledTag = styled(Tag)`
   ${fontBodyXs}

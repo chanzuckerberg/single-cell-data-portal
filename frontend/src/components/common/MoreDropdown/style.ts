@@ -1,10 +1,13 @@
-import { Classes } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { StyledButton } from "src/components/common/Grid/components/ActionButton/style";
-import { GRAY } from "src/components/common/theme";
+import { ButtonIcon, CommonThemeProps, getSpaces } from "@czi-sds/components";
 
-export const MoreButton = styled(StyledButton)`
-  &.${Classes.BUTTON}.${Classes.MINIMAL} svg {
-    fill: ${GRAY.A};
+const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
+
+export const MoreButton = styled(ButtonIcon)`
+  padding: ${spacesXs}px;
+
+  .MuiSvgIcon-root {
+    height: 16px;
+    width: 16px;
   }
 `;

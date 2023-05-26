@@ -1,6 +1,3 @@
-/* eslint-disable sonarjs/cognitive-complexity */
-/* eslint-disable sonarjs/no-collapsible-if */
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useMemo, useEffect, useState } from "react";
 import { Group } from "@visx/group";
 import { Global } from "@emotion/react";
@@ -94,10 +91,7 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
     const skinnyAdjustment = skinnyMode ? 0 : SIDEBAR_COLUMN_GAP_PX + 240;
     const width = Math.min(
       DEFAULT_ONTOLOGY_WIDTH,
-      window.innerWidth -
-        LEFT_RIGHT_PADDING_PX -
-        LEFT_RIGHT_PADDING_PX -
-        skinnyAdjustment
+      window.innerWidth - LEFT_RIGHT_PADDING_PX * 2 - skinnyAdjustment
     );
     setResizeWidth(width);
     if (!isFullScreen) setWidth(width);
@@ -116,7 +110,7 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [isFullScreen]);
+  }, [isFullScreen, skinnyMode]);
 
   // Handle the resizing of the ontology view when full screen mode is toggled
   useEffect(() => {

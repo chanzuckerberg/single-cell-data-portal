@@ -9,7 +9,7 @@ import {
   fontHeaderXl,
   getColors,
   InputText,
-} from "czifui";
+} from "@czi-sds/components";
 import Modal from "../common/Modal";
 
 export const BOTTOM_BANNER_ID = "bottom-banner";

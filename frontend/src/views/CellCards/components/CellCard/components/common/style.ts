@@ -1,5 +1,10 @@
 import styled from "@emotion/styled";
-import { fontHeaderM, fontBodyXxs, fontBodyS, getColors } from "czifui";
+import {
+  fontHeaderM,
+  fontBodyXxs,
+  fontBodyS,
+  getColors,
+} from "@czi-sds/components";
 
 export const TableTitle = styled.div`
   ${fontHeaderM}

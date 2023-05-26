@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Popover } from "@mui/material";
-import { CommonThemeProps, getShadows, getSpaces } from "czifui";
+import { CommonThemeProps, getShadows, getSpaces } from "@czi-sds/components";
 
 const shadowM = (props: CommonThemeProps) => getShadows(props)?.m;
 const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;

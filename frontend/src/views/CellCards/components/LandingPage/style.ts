@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontHeaderXxl } from "czifui";
+import { fontHeaderXxl } from "@czi-sds/components";
 
 export const Wrapper = styled.div`
   display: flex;

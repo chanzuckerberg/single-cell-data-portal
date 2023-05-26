@@ -1,4 +1,4 @@
-import { ButtonIcon } from "czifui";
+import { ButtonIcon } from "@czi-sds/components";
 import { Children, memo, ReactElement, ReactNode } from "react";
 import {
   Position,
