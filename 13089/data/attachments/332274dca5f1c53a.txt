@@ -1,0 +1,53 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api <= browserType.launch succeeded +257ms
+  pw:api => browser.newContext started +3ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +88ms
+  pw:api   "commit" event fired +22ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +14ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +6ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +57ms
+  pw:api => page.goto started +32ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +9ms
+  pw:api   "commit" event fired +117ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +1ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +13ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +15ms
+  pw:api   "networkidle" event fired +536ms
+  pw:api <= page.goto succeeded +2s
+  pw:api => locator.scrollIntoViewIfNeeded started +3ms
+  pw:api waiting for getByTestId('section-0') +139ms
+  pw:api   locator resolved to hidden <div id="section-0" data-testid="section-0"></div> +74ms
+  pw:api   waiting for element to be  and stable +48ms
+  pw:api   element is  and stable +24ms
+  pw:api <= locator.scrollIntoViewIfNeeded succeeded +9ms
+  pw:api => locator.scrollIntoViewIfNeeded started +1ms
+  pw:api waiting for getByTestId('section-2') +13ms
+  pw:api   locator resolved to hidden <div id="section-2" data-testid="section-2"></div> +16ms
+  pw:api   waiting for element to be  and stable +17ms
+  pw:api   element is  and stable +27ms
+  pw:api <= locator.scrollIntoViewIfNeeded succeeded +4ms
+  pw:api => locator.innerText started +1ms
+  pw:api waiting for getByTestId('cell-card-navigation-sidebar').locator('.MuiButtonBase-root.MuiTab-root.Mui-selected') +15ms
+  pw:api   locator resolved to <button role="tab" tabindex="0" type="button" aria-selec…>Intro</button> +215ms
+  pw:api <= locator.innerText succeeded +142ms
+  pw:api => page.screenshot started +20ms
+  pw:api taking page screenshot +29ms
+  pw:api <= page.screenshot succeeded +215ms
+  pw:api => browserContext.close started +243ms
+  pw:api <= browserContext.close succeeded +9s
+  pw:api => video.saveAs started +3ms
+  pw:api <= video.saveAs succeeded +2ms
+  pw:api => browser.close started +485ms
+  pw:api <= browser.close succeeded +23ms
