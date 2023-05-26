@@ -1,6 +1,6 @@
 import { Classes, InputGroup } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { Callout } from "czifui";
+import { Callout } from "@czi-sds/components";
 import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
 
 export const StyledInputGroup = styled(InputGroup)`

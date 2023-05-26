@@ -1,6 +1,11 @@
 import styled from "@emotion/styled";
 import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
-import { CommonThemeProps, fontBodyXs, getColors, Tag as SDSTag } from "czifui";
+import {
+  CommonThemeProps,
+  fontBodyXs,
+  getColors,
+  Tag as SDSTag,
+} from "@czi-sds/components";
 
 const gray100 = (props: CommonThemeProps) => getColors(props)?.gray[100];
 

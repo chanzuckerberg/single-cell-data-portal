@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontBodyS, getSpaces } from "czifui";
+import { CommonThemeProps, fontBodyS, getSpaces } from "@czi-sds/components";
 
 export const DESCRIPTION_LINE_HEIGHT_PX = 20;
 export const MAX_LINE_COUNT = 6;

@@ -1,4 +1,4 @@
-import { DefaultMenuSelectOption } from "czifui";
+import { DefaultMenuSelectOption } from "@czi-sds/components";
 import { CSSProperties } from "react";
 
 export interface Organism {

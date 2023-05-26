@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
-import { CommonThemeProps, getColors, getSpaces } from "czifui";
+import { CommonThemeProps, getSpaces, getColors } from "@czi-sds/components";
 import { css } from "@emotion/react";
 
 const grey400 = (props: CommonThemeProps) => getColors(props)?.gray[400];

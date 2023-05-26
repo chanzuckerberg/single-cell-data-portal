@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontBodyXxxs, getColors } from "czifui";
+import { fontBodyS, fontBodyXxxs, getColors } from "@czi-sds/components";
 import {
   Content as CommonContent,
   Header as CommonHeader,

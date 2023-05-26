@@ -28,7 +28,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { COMPARE_OPTION_ID_FOR_AGGREGATED } from "src/common/queries/wheresMyGene";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 
 interface Props {
   cellTypes?: CellType[];

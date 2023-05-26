@@ -36,7 +36,7 @@ import { TreeNodeWithState } from "./common/types";
 import Legend from "./components/Legend";
 import AnimatedNodes from "./components/AnimatedNodes";
 import AnimatedLinks from "./components/AnimatedLinks";
-import { LEFT_RIGHT_PADDING_PX } from "../../style";
+import { LEFT_RIGHT_PADDING_PX, SIDEBAR_COLUMN_GAP_PX } from "../../style";
 
 export const CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP =
   "cell-card-ontology-dag-view-tooltip";
@@ -48,10 +48,10 @@ export const CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER =
 
 interface TreeProps {
   cellTypeId: string;
-  // skinnyMode: boolean;
+  skinnyMode: boolean;
 }
 
-export default function OntologyDagView({ cellTypeId }: TreeProps) {
+export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
   // Adjusts the cell type id to match the format used in the ontology tree
   cellTypeId = cellTypeId.replace(":", "_");
 
@@ -88,22 +88,21 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
 
   // Handle the resizing of the ontology view when the screen is resized
   useEffect(() => {
-    // Keeping this comment because it will be needed when the sidebar is added.
-    // const skinnyAdjustment = skinnyMode ? 0 : SIDEBAR_COLUMN_GAP_PX + 240;
+    const skinnyAdjustment = skinnyMode ? 0 : SIDEBAR_COLUMN_GAP_PX + 240;
     const width = Math.min(
       DEFAULT_ONTOLOGY_WIDTH,
-      window.innerWidth - LEFT_RIGHT_PADDING_PX - LEFT_RIGHT_PADDING_PX // - skinnyAdjustment
+      window.innerWidth - LEFT_RIGHT_PADDING_PX * 2 - skinnyAdjustment
     );
     setResizeWidth(width);
     if (!isFullScreen) setWidth(width);
 
     const handleResize = () => {
-      //const skinnyAdjustment = skinnyMode ? 0 : SIDEBAR_COLUMN_GAP_PX + 240;
+      const skinnyAdjustment = skinnyMode ? 0 : SIDEBAR_COLUMN_GAP_PX + 240;
 
       // Account for the padding on the left and right of the CellCard component
       const width = Math.min(
         DEFAULT_ONTOLOGY_WIDTH,
-        window.innerWidth - LEFT_RIGHT_PADDING_PX * 2 // - skinnyAdjustment
+        window.innerWidth - LEFT_RIGHT_PADDING_PX * 2 - skinnyAdjustment
       );
       // Always set the resize width, but only set the width if not in full screen mode
       setResizeWidth(width);
@@ -111,7 +110,7 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [isFullScreen]);
+  }, [isFullScreen, skinnyMode]);
 
   // Handle the resizing of the ontology view when full screen mode is toggled
   useEffect(() => {
@@ -391,7 +390,7 @@ export default function OntologyDagView({ cellTypeId }: TreeProps) {
           </TableUnavailableHeader>
           <TableUnavailableDescription>
             The cell ontology visualization for this cell type is currently not
-            available as it is not a descendant of "animal cell".
+            available as it is not a descendant of &quot;animal cell&quot;.
           </TableUnavailableDescription>
         </TableUnavailableContainer>
       )}

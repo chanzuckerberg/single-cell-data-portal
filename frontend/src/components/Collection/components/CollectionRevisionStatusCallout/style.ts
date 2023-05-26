@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Banner, Link } from "czifui";
+import { Banner, Link } from "@czi-sds/components";
 import { CollectionHero } from "src/views/Collection/style";
 
 export const CollectionRevisionCallout = styled(Banner)`

@@ -5,7 +5,7 @@ import {
   getColors,
   getSpaces,
   Tag as SDSTag,
-} from "czifui";
+} from "@czi-sds/components";
 
 const primary100 = (props: CommonThemeProps) => getColors(props)?.primary[100];
 const primary500 = (props: CommonThemeProps) => getColors(props)?.primary[500];

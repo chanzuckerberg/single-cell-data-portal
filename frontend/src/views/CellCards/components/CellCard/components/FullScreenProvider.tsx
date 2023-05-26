@@ -11,7 +11,9 @@ const FullScreenContext = createContext<FullScreenContextProps | undefined>(
   undefined
 );
 
-const FullScreenProvider: React.FC = ({ children }) => {
+const FullScreenProvider: React.FC<React.PropsWithChildren<{}>> = ({
+  children,
+}) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const [screenDimensions, setScreenDimensions] = useState<{

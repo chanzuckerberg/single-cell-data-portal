@@ -6,7 +6,7 @@ import {
 } from "src/components/common/Grid/components/HeaderCell/style";
 import { TableSortByToggleProps } from "react-table";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
-import { Icon } from "czifui";
+import { Icon } from "@czi-sds/components";
 
 interface Props {
   alignment?: ALIGNMENT;

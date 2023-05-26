@@ -1,5 +1,10 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontBodyS, getColors, getSpaces } from "czifui";
+import {
+  CommonThemeProps,
+  fontBodyS,
+  getColors,
+  getSpaces,
+} from "@czi-sds/components";
 
 const gray500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
 const primary400 = (props: CommonThemeProps) => getColors(props)?.primary[400];
