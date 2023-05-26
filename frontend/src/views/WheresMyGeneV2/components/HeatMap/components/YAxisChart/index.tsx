@@ -18,8 +18,6 @@ import {
   FlexRowJustified,
   HiddenCellTypeLabelStyle,
   StyledImage,
-  TissueName,
-  TissueWrapper,
   Wrapper,
 } from "./style";
 import { SELECTED_STYLE } from "../../style";
