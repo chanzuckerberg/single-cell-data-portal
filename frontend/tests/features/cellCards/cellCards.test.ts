@@ -377,9 +377,7 @@ describe("Cell Cards", () => {
       });
     });
     describe("CellCard Sidebar", () => {
-      test.only("Scrolling on CellCard updates the navbar", async ({
-        page,
-      }) => {
+      test("Scrolling on CellCard updates the navbar", async ({ page }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
         // I want to test that the navbar updates when the user scrolls on the CellCard
         // Assume that the navbar test ID is stored in "NAVBAR_TEST_ID"
