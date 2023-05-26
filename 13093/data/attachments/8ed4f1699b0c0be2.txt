@@ -1,0 +1,51 @@
+  pw:api => selectors.setTestIdAttribute started +5ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +46ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +13ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +59ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +8ms
+  pw:api   "commit" event fired +117ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +26ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +4ms
+  pw:api   "networkidle" event fired +538ms
+  pw:api <= page.goto succeeded +2s
+  pw:api => locator.scrollIntoViewIfNeeded started +2ms
+  pw:api waiting for getByTestId('section-0') +48ms
+  pw:api   locator resolved to hidden <div id="section-0" data-testid="section-0"></div> +68ms
+  pw:api   waiting for element to be  and stable +32ms
+  pw:api   element is  and stable +35ms
+  pw:api <= locator.scrollIntoViewIfNeeded succeeded +3ms
+  pw:api => locator.scrollIntoViewIfNeeded started +1ms
+  pw:api waiting for getByTestId('section-2') +11ms
+  pw:api   locator resolved to hidden <div id="section-2" data-testid="section-2"></div> +8ms
+  pw:api   waiting for element to be  and stable +17ms
+  pw:api   element is  and stable +28ms
+  pw:api <= locator.scrollIntoViewIfNeeded succeeded +2ms
+  pw:api => locator.innerText started +1ms
+  pw:api waiting for getByTestId('cell-card-navigation-sidebar').locator('.MuiButtonBase-root.MuiTab-root.Mui-selected') +13ms
+  pw:api   locator resolved to <button role="tab" tabindex="0" type="button" aria-selec…>Intro</button> +203ms
+  pw:api <= locator.innerText succeeded +131ms
+  pw:api => page.screenshot started +17ms
+  pw:api taking page screenshot +49ms
+  pw:api <= page.screenshot succeeded +193ms
+  pw:api => browserContext.close started +267ms
+  pw:api <= browserContext.close succeeded +7s
+  pw:api => video.saveAs started +3ms
+  pw:api <= video.saveAs succeeded +2ms
+  pw:api => browser.close started +239ms
+  pw:api <= browser.close succeeded +25ms
