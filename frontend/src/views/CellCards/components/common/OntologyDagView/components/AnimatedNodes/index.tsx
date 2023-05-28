@@ -100,7 +100,7 @@ export default function AnimatedNodes({
               const isInCorpus =
                 (node.data.id.split("__").at(0)?.replace("_", ":") ?? "") in
                 cellTypesById;
-                
+
               return (
                 <Node
                   key={`${key}-node`}
