@@ -41,6 +41,7 @@ export const StyledTag = styled(Tag)`
 `;
 
 export const SearchBarWrapper = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  margin-top: 16px;
   width: 240px;
 `;

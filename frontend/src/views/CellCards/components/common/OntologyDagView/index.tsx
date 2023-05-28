@@ -319,9 +319,9 @@ export default function OntologyDagView({ cellTypeId, tissueId, skinnyMode, init
   return (
     <div data-testid={CELL_CARD_ONTOLOGY_DAG_VIEW}>
       <Global styles={TooltipInPortalStyle} />
-      <TableTitleWrapper>
+      {!!cellTypeId && <TableTitleWrapper>
         <TableTitle>Cell Ontology</TableTitle>
-      </TableTitleWrapper>
+      </TableTitleWrapper>}
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
           key={centeredNodeCoords ? "centered" : "initial"}

@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useTissueCards } from "src/common/queries/cellCards";
+import { useTissuesById } from "src/common/queries/cellCards";
 import { TISSUE_CARD_MAX_WIDTH, TissueCardHeader, TissueCardHeaderInnerWrapper, TissueCardName, StyledTag, Wrapper, SearchBarWrapper } from "./style";
 import CellCardSearchBar from "../CellCardSearchBar";
 import OntologyDagView from "../common/OntologyDagView";
@@ -14,9 +14,9 @@ export default function TissueCard(): JSX.Element {
   // cell type id
   const { tissueId: tissueIdRaw } = router.query;
   const tissueId = (tissueIdRaw as string)?.replace("_", ":") ?? "";
-  const { data: tissueCardsData } = useTissueCards();
-  const tissueName = tissueCardsData?.[tissueIdRaw as keyof typeof tissueCardsData]?.name ?? tissueId;
-  
+  const tissuesById= useTissuesById();
+  const tissueName = tissuesById?.[tissueId as keyof typeof tissuesById]?.label ?? tissueId;
+
   return (
     <Wrapper>
       <TissueCardHeader>
@@ -38,10 +38,10 @@ export default function TissueCard(): JSX.Element {
             />
           </a>
         </TissueCardHeaderInnerWrapper>
-        <SearchBarWrapper>
-          <CellCardSearchBar />
-        </SearchBarWrapper>
       </TissueCardHeader>
+      <SearchBarWrapper>
+        <CellCardSearchBar />
+      </SearchBarWrapper>      
       <FullScreenProvider>
         <OntologyDagView tissueId={tissueId} skinnyMode={false} initialWidth={TISSUE_CARD_MAX_WIDTH} initialHeight={560}/>
       </FullScreenProvider>

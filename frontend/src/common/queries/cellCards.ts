@@ -282,16 +282,31 @@ export const USE_TISSUE_CARDS_QUERY = {
   id: "tissue-cards-query",
 };
 
-interface TissueCardsQueryResponse {
-  [tissueId: string]: {
-    cell_types: string[];
-    name: string;
-  }
+interface TissueCardsQueryResponseEntry {
+  id: string;
+  label: string;
+  cell_types: string[];
 }
+
+export type TissueCardsQueryResponse = TissueCardsQueryResponseEntry[];
 
 export const useTissueCards = (): UseQueryResult<TissueCardsQueryResponse> => {
   return useCellCardQuery<TissueCardsQueryResponse>(TYPES.TISSUE_CARDS);
 };
+
+export function useTissuesById(): { [id: string]: Pick<TissueCardsQueryResponseEntry,"label" | "cell_types"> } | undefined {
+  const { data, isLoading } = useTissueCards();
+
+  return useMemo(() => {
+    if (!data || isLoading) return;
+    const accumulator: { [id: string]: Pick<TissueCardsQueryResponseEntry,"label" | "cell_types">  } = {};
+    return data.reduce((acc, curr) => {
+      const { id, label, cell_types } = curr;
+      acc[id] = {label, cell_types};
+      return acc;
+    }, accumulator);
+  }, [data, isLoading]);
+}
 
 /**
  * Mapping from data/response type to properties used for querying
