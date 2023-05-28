@@ -6,7 +6,10 @@ import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import FullscreenIcon from "@material-ui/icons/Fullscreen";
 import FullscreenExitIcon from "@material-ui/icons/FullscreenExit";
-import { TableTitleWrapper, TableTitle } from "../../CellCard/components/common/style";
+import {
+  TableTitleWrapper,
+  TableTitle,
+} from "../../CellCard/components/common/style";
 import { Zoom } from "@visx/zoom";
 import { RectClipPath } from "@visx/clip-path";
 import {
@@ -37,7 +40,10 @@ import { TreeNodeWithState } from "./common/types";
 import Legend from "./components/Legend";
 import AnimatedNodes from "./components/AnimatedNodes";
 import AnimatedLinks from "./components/AnimatedLinks";
-import { LEFT_RIGHT_PADDING_PX, SIDEBAR_COLUMN_GAP_PX } from "../../CellCard/style";
+import {
+  LEFT_RIGHT_PADDING_PX,
+  SIDEBAR_COLUMN_GAP_PX,
+} from "../../CellCard/style";
 
 export const CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP =
   "cell-card-ontology-dag-view-tooltip";
@@ -62,14 +68,20 @@ interface TissueIdProps extends BaseTreeProps {
   cellTypeId?: never;
   tissueId: string;
 }
-  
+
 type TreeProps = CellTypeIdProps | TissueIdProps;
 
-export default function OntologyDagView({ cellTypeId, tissueId, skinnyMode, initialHeight, initialWidth }: TreeProps) {
+export default function OntologyDagView({
+  cellTypeId,
+  tissueId,
+  skinnyMode,
+  initialHeight,
+  initialWidth,
+}: TreeProps) {
   skinnyMode = cellTypeId ? skinnyMode : true;
 
   // Adjusts the cell type id to match the format used in the ontology tree
-  cellTypeId = cellTypeId?.replace(":","_");
+  cellTypeId = cellTypeId?.replace(":", "_");
 
   const defaultHeight = initialHeight ?? DEFAULT_ONTOLOGY_HEIGHT;
   const defaultWidth = initialWidth ?? DEFAULT_ONTOLOGY_WIDTH;
@@ -90,7 +102,7 @@ export default function OntologyDagView({ cellTypeId, tissueId, skinnyMode, init
   const [initialTransformMatrix, setInitialTransformMatrix] = useState<
     typeof initialTransformMatrixDefault
   >(initialTransformMatrixDefault);
-  
+
   // This toggler is used for centering the Zoom component on the target cell type.
   // It triggers a re-render of the Zoom component so that updates to the initialTransformMatrix
   // take effect.
@@ -163,10 +175,12 @@ export default function OntologyDagView({ cellTypeId, tissueId, skinnyMode, init
 
   // Contains the nodes that are initially expanded (expandedNodes) and the nodes that are collapsed
   // by default when their parents are expanded (notShownWhenExpanded).
-  const entityId = cellTypeId ?? (tissueId ?? "");
-  const useTreeState = cellTypeId ? useCellOntologyTreeState : useCellOntologyTreeStateTissue;
+  const entityId = cellTypeId ?? tissueId ?? "";
+  const useTreeState = cellTypeId
+    ? useCellOntologyTreeState
+    : useCellOntologyTreeStateTissue;
   const { data: initialTreeState } = useTreeState(entityId);
-  
+
   const expandedNodes = initialTreeState?.isExpandedNodes ?? [];
   const notShownWhenExpandedNodes =
     initialTreeState?.notShownWhenExpandedNodes ?? {};
@@ -319,9 +333,11 @@ export default function OntologyDagView({ cellTypeId, tissueId, skinnyMode, init
   return (
     <div data-testid={CELL_CARD_ONTOLOGY_DAG_VIEW}>
       <Global styles={TooltipInPortalStyle} />
-      {!!cellTypeId && <TableTitleWrapper>
-        <TableTitle>Cell Ontology</TableTitle>
-      </TableTitleWrapper>}
+      {!!cellTypeId && (
+        <TableTitleWrapper>
+          <TableTitle>Cell Ontology</TableTitle>
+        </TableTitleWrapper>
+      )}
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
           key={centeredNodeCoords ? "centered" : "initial"}

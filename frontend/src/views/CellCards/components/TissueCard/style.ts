@@ -13,7 +13,7 @@ export const Wrapper = styled.div`
   max-width: ${TISSUE_CARD_MAX_WIDTH}px;
   margin: auto;
   padding: ${TOP_PADDING_PX}px ${LEFT_RIGHT_PADDING_PX}px 0px
-    ${LEFT_RIGHT_PADDING_PX}px;  
+    ${LEFT_RIGHT_PADDING_PX}px;
 `;
 
 export const TissueCardHeaderInnerWrapper = styled.div`

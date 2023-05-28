@@ -159,10 +159,7 @@ export type SourceDataQueryResponse = SourceDataQueryResponseEntry[];
 export const useSourceData = (
   entityId: string
 ): UseQueryResult<SourceDataQueryResponse> => {
-  return useCellCardQuery<SourceDataQueryResponse>(
-    TYPES.SOURCE_DATA,
-    entityId
-  );
+  return useCellCardQuery<SourceDataQueryResponse>(TYPES.SOURCE_DATA, entityId);
 };
 
 /* ========== enriched_genes ========== */
@@ -225,9 +222,7 @@ export const USE_CL_DESCRIPTION_QUERY = {
 
 export type ClDescriptionQueryResponse = string;
 
-export const useClDescription = (
-  entityId: string
-): UseQueryResult<string> => {
+export const useClDescription = (entityId: string): UseQueryResult<string> => {
   return useCellCardQuery<string>(TYPES.CL_DESCRIPTION, entityId);
 };
 
@@ -294,15 +289,21 @@ export const useTissueCards = (): UseQueryResult<TissueCardsQueryResponse> => {
   return useCellCardQuery<TissueCardsQueryResponse>(TYPES.TISSUE_CARDS);
 };
 
-export function useTissuesById(): { [id: string]: Pick<TissueCardsQueryResponseEntry,"label" | "cell_types"> } | undefined {
+export function useTissuesById():
+  | {
+      [id: string]: Pick<TissueCardsQueryResponseEntry, "label" | "cell_types">;
+    }
+  | undefined {
   const { data, isLoading } = useTissueCards();
 
   return useMemo(() => {
     if (!data || isLoading) return;
-    const accumulator: { [id: string]: Pick<TissueCardsQueryResponseEntry,"label" | "cell_types">  } = {};
+    const accumulator: {
+      [id: string]: Pick<TissueCardsQueryResponseEntry, "label" | "cell_types">;
+    } = {};
     return data.reduce((acc, curr) => {
       const { id, label, cell_types } = curr;
-      acc[id] = {label, cell_types};
+      acc[id] = { label, cell_types };
       return acc;
     }, accumulator);
   }, [data, isLoading]);
@@ -325,7 +326,7 @@ const QUERY_MAPPING: {
   INITIAL_CELL_ONTOLOGY_TREE_TISSUE: {
     queryKey: USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY,
     url: `/api/ontology_tree_state_tissue?entityId=%s`,
-  },  
+  },
   SOURCE_DATA: {
     queryKey: USE_SOURCE_DATA_QUERY,
     url: `/api/source_data?entityId=%s`,
@@ -353,5 +354,5 @@ const QUERY_MAPPING: {
   TISSUE_CARDS: {
     queryKey: USE_TISSUE_CARDS_QUERY,
     url: "/api/tissue_cards",
-  },  
+  },
 };

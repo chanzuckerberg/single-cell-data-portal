@@ -26,19 +26,20 @@ export default function CellCardSearchBar(): JSX.Element {
     const entities: Entity[] = [];
     for (const cellType of cellTypes) {
       entities.push(cellType);
-    }    
+    }
     for (const tissue of tissueData) {
       entities.push(tissue);
     }
     return entities;
   }, [tissueData, cellTypes]);
-    
+
   const [open, setOpen] = useState(false);
   const [inputValue, setValue] = useState("");
 
   // Used for keyboard navigation for cell type search
-  const [highlightedEntity, setHighlightedEntity] =
-    useState<Entity | null>(null);
+  const [highlightedEntity, setHighlightedEntity] = useState<Entity | null>(
+    null
+  );
 
   const handleFocus = () => {
     setOpen(true);
@@ -55,9 +56,11 @@ export default function CellCardSearchBar(): JSX.Element {
         document.getElementById(CELL_CARD_SEARCH_BAR)?.blur();
         setOpen(false);
       } else {
-        router.push(`${ROUTES.CELL_CARDS}/tissues/${entityId.replace(":", "_")}`);
+        router.push(
+          `${ROUTES.CELL_CARDS}/tissues/${entityId.replace(":", "_")}`
+        );
         document.getElementById(CELL_CARD_SEARCH_BAR)?.blur();
-        setOpen(false);        
+        setOpen(false);
       }
     }
   }
@@ -147,15 +150,15 @@ export default function CellCardSearchBar(): JSX.Element {
               const a = aRaw.toLowerCase();
               const b = bRaw.toLowerCase();
               const searchTerm = state.inputValue.toLowerCase();
-              
+
               // Determine if each item starts with the search term
               const aStartsWithSearch = a.startsWith(searchTerm);
               const bStartsWithSearch = b.startsWith(searchTerm);
-            
+
               // Determine if each item starts with "CL:"
               const isA_CL = entityA.id.startsWith("CL:");
               const isB_CL = entityB.id.startsWith("CL:");
-            
+
               // First, sort by search term
               if (aStartsWithSearch && !bStartsWithSearch) {
                 return -1;
@@ -163,7 +166,7 @@ export default function CellCardSearchBar(): JSX.Element {
               if (!aStartsWithSearch && bStartsWithSearch) {
                 return 1;
               }
-            
+
               // If neither or both start with the search term, then sort by "CL:" vs "UBERON:"
               if (isA_CL && !isB_CL) {
                 return 1;
@@ -171,10 +174,10 @@ export default function CellCardSearchBar(): JSX.Element {
               if (!isA_CL && isB_CL) {
                 return -1;
               }
-            
+
               // If they are both "CL:" or both "UBERON:", then sort alphabetically
               return a.localeCompare(b);
-            });            
+            });
         }}
       />
     </div>

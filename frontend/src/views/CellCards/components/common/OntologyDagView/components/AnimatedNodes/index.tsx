@@ -106,7 +106,9 @@ export default function AnimatedNodes({
                   isInCorpus={isInCorpus}
                   animationKey={key}
                   node={node}
-                  isTargetNode={cellTypeIds.includes(node.data.id.split("__").at(0))}
+                  isTargetNode={cellTypeIds.includes(
+                    node.data.id.split("__").at(0)
+                  )}
                   handleMouseOver={handleMouseOver}
                   handleMouseOut={hideTooltip}
                   maxWidth={NODE_SPACINGS[1] - 20}
