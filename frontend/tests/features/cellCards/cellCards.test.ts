@@ -34,6 +34,7 @@ import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/Cell
 import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/common/OntologyDagView/components/Node/components/RectOrCircle";
 import { CELL_CARD_SOURCE_DATA_TABLE } from "src/views/CellCards/components/CellCard/components/SourceDataTable";
 import { CELL_CARD_NAVIGATION_SIDEBAR } from "src/views/CellCards/components/CellCard/components/CellCardSidebar";
+import { TISSUE_CARD_HEADER_NAME, TISSUE_CARD_HEADER_TAG } from "src/views/CellCards/components/TissueCard";
 
 const { describe } = test;
 
@@ -375,6 +376,76 @@ describe("Cell Cards", () => {
         await node.hover();
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
       });
+    });
+    describe("TissueCard", () => {
+      test("All tissue card components are present", async ({ page }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`, page); // Lung
+        await isElementVisible(page, TISSUE_CARD_HEADER_NAME);
+        await isElementVisible(page, TISSUE_CARD_HEADER_TAG);
+        await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW);
+        await isElementVisible(page, CELL_CARD_SEARCH_BAR);
+        const headerName = page.getByTestId(TISSUE_CARD_HEADER_NAME);
+        const headerNameText = await headerName.textContent();
+        expect(headerNameText).toBe("Lung");
+      });
+      test("Clicking on a parent node expands and collapses its children", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`, page); // Lung
+        await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: 5000 });
+        const nodesLocator = `[data-testid^='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
+        // collapse node's children
+        const nodesBefore = await page.locator(nodesLocator).elementHandles();
+        const numNodesBefore = nodesBefore.length;
+
+        const node = page.getByTestId(
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0002371__0-has-children-isTargetNode=false`
+        );
+        await waitForElementAndClick(node);
+
+        const nodesAfter = await page.locator(nodesLocator).elementHandles();
+        const numNodesAfter = nodesAfter.length;
+        expect(numNodesBefore).toBeGreaterThan(numNodesAfter);
+
+        // expand node's children
+        await waitForElementAndClick(node);
+        const nodesAfter2 = await page.locator(nodesLocator).elementHandles();
+        const numNodesAfter2 = nodesAfter2.length;
+        expect(numNodesAfter2).toBeGreaterThan(numNodesAfter);
+      });
+      test("Clicking on a cell type label links to its Cell Card", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`, page); // Lung
+        await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: 5000 });
+        const label = page.getByTestId(
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL_0002371__0`
+        );
+        await waitForElementAndClick(label);
+        await page.waitForURL(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0002371`);
+        // Check that the new node is highlighted green (isTargetNode=true)
+        await page
+          .getByTestId(
+            `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0002371__0-has-children-isTargetNode=true`
+          )
+          .waitFor({ timeout: 5000 });
+      });
+      test("Node tooltip displays on hover", async ({ page }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`, page); // Lung
+        await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: 5000 });
+
+        const node = page.getByTestId(
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0002371__0-has-children-isTargetNode=false`
+        );
+        await node.hover();
+        await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+      });      
     });
     describe("CellCard Sidebar", () => {
       test("Scrolling on CellCard updates the navbar", async ({ page }) => {
