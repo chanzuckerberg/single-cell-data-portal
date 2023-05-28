@@ -12,6 +12,8 @@ export enum TYPES {
   CL_DESCRIPTION = "CL_DESCRIPTION",
   DESCRIPTION = "DESCRIPTION",
   CELL_CARDS = "CELL_CARDS",
+  INITIAL_CELL_ONTOLOGY_TREE_TISSUE = "INITIAL_CELL_ONTOLOGY_TREE_TISSUE",
+  TISSUE_CARDS = "TISSUE_CARDS",
 }
 
 interface CellCardQuery {
@@ -63,14 +65,14 @@ async function fetchQuery({
  */
 export function useCellCardQuery<T = CellCardResponse>(
   dataType: TYPES,
-  cellTypeId = "" // Empty string if cell type is not needed for fetch function
+  queryId = "" // Empty string if cell type is not needed for fetch function
 ): UseQueryResult<T> {
   const { queryKey, url: rawUrl } = QUERY_MAPPING[dataType];
   return useQuery(
-    cellTypeId ? [queryKey, cellTypeId] : [queryKey],
+    queryId ? [queryKey, queryId] : [queryKey],
     ({ signal }) =>
       fetchQuery({
-        url: rawUrl.replace("%s", cellTypeId), // Replacing raw url with cellTypeId if applicable
+        url: rawUrl.replace("%s", queryId), // Replacing raw url with entityId if applicable
         signal,
       }),
     {
@@ -113,11 +115,26 @@ export interface InitialCellOntologyTreeStateResponse {
 }
 
 export const useCellOntologyTreeState = (
-  cellTypeId: string
+  entityId: string
 ): UseQueryResult<InitialCellOntologyTreeStateResponse> => {
   return useCellCardQuery<InitialCellOntologyTreeStateResponse>(
     TYPES.INITIAL_CELL_ONTOLOGY_TREE,
-    cellTypeId
+    entityId
+  );
+};
+
+/* ========== ontology_tree_state_tissue ========== */
+export const USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY = {
+  entities: [ENTITIES.CELL_CARDS_INITIAL_CELL_ONTOLOGY_TREE_STATE_TISSUE],
+  id: "cell-cards-cell-ontology-tree-state-tissue-query",
+};
+
+export const useCellOntologyTreeStateTissue = (
+  entityId: string
+): UseQueryResult<InitialCellOntologyTreeStateResponse> => {
+  return useCellCardQuery<InitialCellOntologyTreeStateResponse>(
+    TYPES.INITIAL_CELL_ONTOLOGY_TREE_TISSUE,
+    entityId
   );
 };
 
@@ -140,11 +157,11 @@ interface SourceDataQueryResponseEntry {
 export type SourceDataQueryResponse = SourceDataQueryResponseEntry[];
 
 export const useSourceData = (
-  cellTypeId: string
+  entityId: string
 ): UseQueryResult<SourceDataQueryResponse> => {
   return useCellCardQuery<SourceDataQueryResponse>(
     TYPES.SOURCE_DATA,
-    cellTypeId
+    entityId
   );
 };
 
@@ -165,11 +182,11 @@ interface EnrichedGenesQueryResponseEntry {
 export type EnrichedGenesQueryResponse = EnrichedGenesQueryResponseEntry[];
 
 export const useEnrichedGenes = (
-  cellTypeId: string
+  entityId: string
 ): UseQueryResult<EnrichedGenesQueryResponse> => {
   return useCellCardQuery<EnrichedGenesQueryResponse>(
     TYPES.ENRICHED_GENES,
-    cellTypeId
+    entityId
   );
 };
 
@@ -192,11 +209,11 @@ export type CanonicalMarkersQueryResponse =
   CanonicalMarkersQueryResponseEntry[];
 
 export const useCanonicalMarkers = (
-  cellTypeId: string
+  entityId: string
 ): UseQueryResult<CanonicalMarkersQueryResponse> => {
   return useCellCardQuery<CanonicalMarkersQueryResponse>(
     TYPES.CANONICAL_MARKERS,
-    cellTypeId
+    entityId
   );
 };
 
@@ -209,9 +226,9 @@ export const USE_CL_DESCRIPTION_QUERY = {
 export type ClDescriptionQueryResponse = string;
 
 export const useClDescription = (
-  cellTypeId: string
+  entityId: string
 ): UseQueryResult<string> => {
-  return useCellCardQuery<string>(TYPES.CL_DESCRIPTION, cellTypeId);
+  return useCellCardQuery<string>(TYPES.CL_DESCRIPTION, entityId);
 };
 
 /* ========== description ========== */
@@ -222,8 +239,8 @@ export const USE_DESCRIPTION_QUERY = {
 
 export type DescriptionQueryResponse = string;
 
-export const useDescription = (cellTypeId: string): UseQueryResult<string> => {
-  return useCellCardQuery<string>(TYPES.DESCRIPTION, cellTypeId);
+export const useDescription = (entityId: string): UseQueryResult<string> => {
+  return useCellCardQuery<string>(TYPES.DESCRIPTION, entityId);
 };
 
 /* ========== cell_cards ========== */
@@ -239,14 +256,14 @@ interface CellCardsQueryResponseEntry {
 
 export type CellCardsQueryResponse = CellCardsQueryResponseEntry[];
 
-export const useCellTypes = (): UseQueryResult<CellCardsQueryResponse> => {
+export const useCellCards = (): UseQueryResult<CellCardsQueryResponse> => {
   return useCellCardQuery<CellCardsQueryResponse>(TYPES.CELL_CARDS);
 };
 
 /* ========== cell types by Id ========== */
 
 export function useCellTypesById(): { [id: string]: string } | undefined {
-  const { data, isLoading } = useCellTypes();
+  const { data, isLoading } = useCellCards();
 
   return useMemo(() => {
     if (!data || isLoading) return;
@@ -258,6 +275,23 @@ export function useCellTypesById(): { [id: string]: string } | undefined {
     }, accumulator);
   }, [data, isLoading]);
 }
+
+/* ========== tissue_cards ========== */
+export const USE_TISSUE_CARDS_QUERY = {
+  entities: [ENTITIES.CELL_CARDS_TISSUE_CARDS],
+  id: "tissue-cards-query",
+};
+
+interface TissueCardsQueryResponse {
+  [tissueId: string]: {
+    cell_types: string[];
+    name: string;
+  }
+}
+
+export const useTissueCards = (): UseQueryResult<TissueCardsQueryResponse> => {
+  return useCellCardQuery<TissueCardsQueryResponse>(TYPES.TISSUE_CARDS);
+};
 
 /**
  * Mapping from data/response type to properties used for querying
@@ -271,30 +305,38 @@ const QUERY_MAPPING: {
   },
   INITIAL_CELL_ONTOLOGY_TREE: {
     queryKey: USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY,
-    url: `/api/ontology_tree_state?cellTypeId=%s`,
+    url: `/api/ontology_tree_state?entityId=%s`,
   },
+  INITIAL_CELL_ONTOLOGY_TREE_TISSUE: {
+    queryKey: USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY,
+    url: `/api/ontology_tree_state_tissue?entityId=%s`,
+  },  
   SOURCE_DATA: {
     queryKey: USE_SOURCE_DATA_QUERY,
-    url: `/api/source_data?cellTypeId=%s`,
+    url: `/api/source_data?entityId=%s`,
   },
   ENRICHED_GENES: {
     queryKey: USE_ENRICHED_GENES_QUERY,
-    url: `/api/enriched_genes?cellTypeId=%s`,
+    url: `/api/enriched_genes?entityId=%s`,
   },
   CANONICAL_MARKERS: {
     queryKey: USE_CANONICAL_MARKERS_QUERY,
-    url: `/api/canonical_markers?cellTypeId=%s`,
+    url: `/api/canonical_markers?entityId=%s`,
   },
   CL_DESCRIPTION: {
     queryKey: USE_CL_DESCRIPTION_QUERY,
-    url: `/api/cl_description?cellTypeId=%s`,
+    url: `/api/cl_description?entityId=%s`,
   },
   DESCRIPTION: {
     queryKey: USE_DESCRIPTION_QUERY,
-    url: `/api/description?cellTypeId=%s`,
+    url: `/api/description?entityId=%s`,
   },
   CELL_CARDS: {
     queryKey: USE_CELL_CARDS_QUERY,
-    url: "/api/cell_guides",
+    url: "/api/cell_cards",
   },
+  TISSUE_CARDS: {
+    queryKey: USE_TISSUE_CARDS_QUERY,
+    url: "/api/tissue_cards",
+  },  
 };

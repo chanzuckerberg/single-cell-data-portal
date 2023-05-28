@@ -4,7 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import InputAdornment from "@mui/material/InputAdornment";
 import { SectionItem, SectionTitle, StyledAutocomplete } from "./style";
 import { ROUTES } from "src/common/constants/routes";
-import { useCellTypes } from "src/common/queries/cellCards";
+import { useCellCards } from "src/common/queries/cellCards";
 import { useRouter } from "next/router";
 
 export const CELL_CARD_SEARCH_BAR_TEXT_INPUT =
@@ -18,7 +18,7 @@ interface CellType {
 
 export default function CellCardSearchBar(): JSX.Element {
   const router = useRouter();
-  const { data: cellTypes } = useCellTypes();
+  const { data: cellTypes } = useCellCards();
 
   const [open, setOpen] = useState(false);
   const [inputValue, setValue] = useState("");

@@ -29,9 +29,9 @@ import {
   CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
-} from "src/views/CellCards/components/CellCard/components/OntologyDagView";
-import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node";
-import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node/components/RectOrCircle";
+} from "src/views/CellCards/components/common/OntologyDagView";
+import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellCards/components/common/OntologyDagView/components/Node";
+import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/common/OntologyDagView/components/Node/components/RectOrCircle";
 import { CELL_CARD_SOURCE_DATA_TABLE } from "src/views/CellCards/components/CellCard/components/SourceDataTable";
 import { CELL_CARD_NAVIGATION_SIDEBAR } from "src/views/CellCards/components/CellCard/components/CellCardSidebar";
 

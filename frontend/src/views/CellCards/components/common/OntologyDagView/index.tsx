@@ -6,18 +6,19 @@ import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import FullscreenIcon from "@material-ui/icons/Fullscreen";
 import FullscreenExitIcon from "@material-ui/icons/FullscreenExit";
-import { TableTitleWrapper, TableTitle } from "../common/style";
+import { TableTitleWrapper, TableTitle } from "../../CellCard/components/common/style";
 import { Zoom } from "@visx/zoom";
 import { RectClipPath } from "@visx/clip-path";
 import {
   useCellOntologyTree,
   useCellOntologyTreeState,
+  useCellOntologyTreeStateTissue,
 } from "src/common/queries/cellCards";
 import {
   TableUnavailableContainer,
   TableUnavailableHeader,
   TableUnavailableDescription,
-} from "../common/style";
+} from "../../CellCard/components/common/style";
 import {
   FullscreenButton,
   HoverContainer,
@@ -36,7 +37,7 @@ import { TreeNodeWithState } from "./common/types";
 import Legend from "./components/Legend";
 import AnimatedNodes from "./components/AnimatedNodes";
 import AnimatedLinks from "./components/AnimatedLinks";
-import { LEFT_RIGHT_PADDING_PX, SIDEBAR_COLUMN_GAP_PX } from "../../style";
+import { LEFT_RIGHT_PADDING_PX, SIDEBAR_COLUMN_GAP_PX } from "../../CellCard/style";
 
 export const CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP =
   "cell-card-ontology-dag-view-tooltip";
@@ -46,17 +47,35 @@ export const CELL_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON =
 export const CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER =
   "cell-card-ontology-dag-view-hover-container";
 
-interface TreeProps {
-  cellTypeId: string;
-  skinnyMode: boolean;
+interface BaseTreeProps {
+  skinnyMode?: boolean;
+  initialWidth?: number;
+  initialHeight?: number;
 }
 
-export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
-  // Adjusts the cell type id to match the format used in the ontology tree
-  cellTypeId = cellTypeId.replace(":", "_");
+interface CellTypeIdProps extends BaseTreeProps {
+  cellTypeId: string;
+  tissueId?: never;
+}
 
-  const [width, setWidth] = useState(DEFAULT_ONTOLOGY_WIDTH);
-  const [height, setHeight] = useState(DEFAULT_ONTOLOGY_HEIGHT);
+interface TissueIdProps extends BaseTreeProps {
+  cellTypeId?: never;
+  tissueId: string;
+}
+  
+type TreeProps = CellTypeIdProps | TissueIdProps;
+
+export default function OntologyDagView({ cellTypeId, tissueId, skinnyMode, initialHeight, initialWidth }: TreeProps) {
+  skinnyMode = cellTypeId ? skinnyMode : true;
+
+  // Adjusts the cell type id to match the format used in the ontology tree
+  cellTypeId = cellTypeId?.replace(":","_");
+
+  const defaultHeight = initialHeight ?? DEFAULT_ONTOLOGY_HEIGHT;
+  const defaultWidth = initialWidth ?? DEFAULT_ONTOLOGY_WIDTH;
+
+  const [width, setWidth] = useState(defaultWidth);
+  const [height, setHeight] = useState(defaultHeight);
 
   // This determines the initial Zoom position and scale
   const initialTransformMatrixDefault = {
@@ -67,9 +86,11 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
     skewX: 0,
     skewY: 0,
   };
+
   const [initialTransformMatrix, setInitialTransformMatrix] = useState<
     typeof initialTransformMatrixDefault
   >(initialTransformMatrixDefault);
+  
   // This toggler is used for centering the Zoom component on the target cell type.
   // It triggers a re-render of the Zoom component so that updates to the initialTransformMatrix
   // take effect.
@@ -77,7 +98,7 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
 
   // This is used to store the desired resized width of the ontology view
   // while full screen mode is active.
-  const [resizeWidth, setResizeWidth] = useState(DEFAULT_ONTOLOGY_WIDTH);
+  const [resizeWidth, setResizeWidth] = useState(defaultWidth);
 
   const {
     isFullScreen,
@@ -90,7 +111,7 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
   useEffect(() => {
     const skinnyAdjustment = skinnyMode ? 0 : SIDEBAR_COLUMN_GAP_PX + 240;
     const width = Math.min(
-      DEFAULT_ONTOLOGY_WIDTH,
+      defaultWidth,
       window.innerWidth - LEFT_RIGHT_PADDING_PX * 2 - skinnyAdjustment
     );
     setResizeWidth(width);
@@ -101,7 +122,7 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
 
       // Account for the padding on the left and right of the CellCard component
       const width = Math.min(
-        DEFAULT_ONTOLOGY_WIDTH,
+        defaultWidth,
         window.innerWidth - LEFT_RIGHT_PADDING_PX * 2 - skinnyAdjustment
       );
       // Always set the resize width, but only set the width if not in full screen mode
@@ -110,12 +131,12 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [isFullScreen, skinnyMode]);
+  }, [isFullScreen, skinnyMode, defaultWidth]);
 
   // Handle the resizing of the ontology view when full screen mode is toggled
   useEffect(() => {
     let newWidth = resizeWidth;
-    let newHeight = DEFAULT_ONTOLOGY_HEIGHT;
+    let newHeight = defaultHeight;
     if (screenDimensions.width > 0 && isFullScreen) {
       newWidth = screenDimensions.width;
     }
@@ -124,7 +145,7 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
     }
     setWidth(newWidth);
     setHeight(newHeight);
-  }, [screenDimensions, isFullScreen, resizeWidth]);
+  }, [screenDimensions, isFullScreen, resizeWidth, defaultHeight]);
 
   // This is used to trigger a re-render of the ontology view
   const [triggerRender, setTriggerRender] = useState(false);
@@ -142,7 +163,10 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
 
   // Contains the nodes that are initially expanded (expandedNodes) and the nodes that are collapsed
   // by default when their parents are expanded (notShownWhenExpanded).
-  const { data: initialTreeState } = useCellOntologyTreeState(cellTypeId);
+  const entityId = cellTypeId ?? (tissueId ?? "");
+  const useTreeState = cellTypeId ? useCellOntologyTreeState : useCellOntologyTreeStateTissue;
+  const { data: initialTreeState } = useTreeState(entityId);
+  
   const expandedNodes = initialTreeState?.isExpandedNodes ?? [];
   const notShownWhenExpandedNodes =
     initialTreeState?.notShownWhenExpandedNodes ?? {};
@@ -218,7 +242,7 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
       setInitialTransformMatrix(initialTransformMatrixDefault);
       hideTooltip();
     };
-  }, [cellTypeId]);
+  }, [cellTypeId, tissueId]);
 
   // This useEffect is used to set the initial transform matrix when the tree data changes.
   // The initial transform matrix is used to center the tree view on the target node.
@@ -252,6 +276,7 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
           | undefined;
       }
       // If the target node is found and its position is known, set the initial transform matrix.
+      // This will always be false when in tissue mode.
       if (targetNode) {
         if (targetNode.x !== undefined && targetNode.y !== undefined) {
           setInitialTransformMatrix({
@@ -367,7 +392,7 @@ export default function OntologyDagView({ cellTypeId, skinnyMode }: TreeProps) {
                         <AnimatedLinks tree={tree} duration={duration} />
                         <AnimatedNodes
                           tree={tree}
-                          cellTypeId={cellTypeId}
+                          cellTypeIds={cellTypeId ? [cellTypeId] : []}
                           duration={duration}
                           setDuration={setDuration}
                           toggleTriggerRender={toggleTriggerRender}

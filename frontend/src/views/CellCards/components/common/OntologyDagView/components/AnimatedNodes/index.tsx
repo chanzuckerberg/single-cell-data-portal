@@ -9,7 +9,7 @@ import { NODE_SPACINGS, TREE_ANIMATION_DURATION } from "../../common/constants";
 
 interface AnimatedNodesProps {
   tree: HierarchyPointNode<TreeNodeWithState>;
-  cellTypeId: string;
+  cellTypeIds: string[];
   duration: number;
   setDuration: (duration: number) => void;
   toggleTriggerRender: () => void;
@@ -25,7 +25,7 @@ interface AnimatedNodesProps {
 }
 export default function AnimatedNodes({
   tree,
-  cellTypeId,
+  cellTypeIds,
   duration,
   setDuration,
   toggleTriggerRender,
@@ -106,7 +106,7 @@ export default function AnimatedNodes({
                   isInCorpus={isInCorpus}
                   animationKey={key}
                   node={node}
-                  isTargetNode={node.data.id.split("__").at(0) === cellTypeId}
+                  isTargetNode={cellTypeIds.includes(node.data.id.split("__").at(0))}
                   handleMouseOver={handleMouseOver}
                   handleMouseOut={hideTooltip}
                   maxWidth={NODE_SPACINGS[1] - 20}
