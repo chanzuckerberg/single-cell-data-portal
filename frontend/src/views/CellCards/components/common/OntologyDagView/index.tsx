@@ -408,7 +408,7 @@ export default function OntologyDagView({
                         <AnimatedLinks tree={tree} duration={duration} />
                         <AnimatedNodes
                           tree={tree}
-                          cellTypeIds={cellTypeId ? [cellTypeId] : []}
+                          cellTypeId={cellTypeId}
                           duration={duration}
                           setDuration={setDuration}
                           toggleTriggerRender={toggleTriggerRender}
