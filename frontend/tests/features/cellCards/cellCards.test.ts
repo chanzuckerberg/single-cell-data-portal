@@ -34,7 +34,10 @@ import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/Cell
 import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/common/OntologyDagView/components/Node/components/RectOrCircle";
 import { CELL_CARD_SOURCE_DATA_TABLE } from "src/views/CellCards/components/CellCard/components/SourceDataTable";
 import { CELL_CARD_NAVIGATION_SIDEBAR } from "src/views/CellCards/components/CellCard/components/CellCardSidebar";
-import { TISSUE_CARD_HEADER_NAME, TISSUE_CARD_HEADER_TAG } from "src/views/CellCards/components/TissueCard";
+import {
+  TISSUE_CARD_HEADER_NAME,
+  TISSUE_CARD_HEADER_TAG,
+} from "src/views/CellCards/components/TissueCard";
 
 const { describe } = test;
 
@@ -379,7 +382,10 @@ describe("Cell Cards", () => {
     });
     describe("TissueCard", () => {
       test("All tissue card components are present", async ({ page }) => {
-        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`, page); // Lung
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`,
+          page
+        ); // Lung
         await isElementVisible(page, TISSUE_CARD_HEADER_NAME);
         await isElementVisible(page, TISSUE_CARD_HEADER_TAG);
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW);
@@ -391,7 +397,10 @@ describe("Cell Cards", () => {
       test("Clicking on a parent node expands and collapses its children", async ({
         page,
       }) => {
-        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`, page); // Lung
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`,
+          page
+        ); // Lung
         await page
           .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: 5000 });
@@ -418,7 +427,10 @@ describe("Cell Cards", () => {
       test("Clicking on a cell type label links to its Cell Card", async ({
         page,
       }) => {
-        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`, page); // Lung
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`,
+          page
+        ); // Lung
         await page
           .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: 5000 });
@@ -435,7 +447,10 @@ describe("Cell Cards", () => {
           .waitFor({ timeout: 5000 });
       });
       test("Node tooltip displays on hover", async ({ page }) => {
-        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`, page); // Lung
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`,
+          page
+        ); // Lung
         await page
           .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: 5000 });
@@ -445,7 +460,7 @@ describe("Cell Cards", () => {
         );
         await node.hover();
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
-      });      
+      });
     });
     describe("CellCard Sidebar", () => {
       test("Scrolling on CellCard updates the navbar", async ({ page }) => {
