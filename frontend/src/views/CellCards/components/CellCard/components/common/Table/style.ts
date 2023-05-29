@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getColors, getSpacings } from "czifui";
+import { fontBodyS, getColors, getSpacings } from "@czi-sds/components";
 
 export const StyledTable = styled.table`
   width: 100%;

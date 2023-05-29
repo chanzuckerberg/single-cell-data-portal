@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import {
   StyledTable,
   StyledHead,
@@ -38,7 +38,9 @@ function Table<T extends object>({
           {rows.map((row, rowIndex) => (
             <StyledRow key={rowIndex} highlight={rowIndex % 2 === 1}>
               {columns.map((column, cellIndex) => (
-                <StyledCell key={cellIndex}>{row[column]}</StyledCell>
+                <StyledCell key={cellIndex}>
+                  {row[column] as ReactNode}
+                </StyledCell>
               ))}
             </StyledRow>
           ))}

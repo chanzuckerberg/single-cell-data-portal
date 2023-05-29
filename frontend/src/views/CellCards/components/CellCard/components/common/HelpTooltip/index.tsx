@@ -1,4 +1,4 @@
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { TooltipButton, StyledTooltip, StyledIconImage } from "./style";

@@ -5,8 +5,13 @@ import {
   useQueryClient,
   UseQueryResult,
 } from "react-query";
-import { Collection, VISIBILITY_TYPE } from "src/common/entities";
-import { buildSummaryCitation } from "src/common/queries/filter";
+import { Collection, COLLECTION_STATUS } from "src/common/entities";
+import {
+  buildSummaryCitation,
+  ProcessedCollectionResponse,
+  USE_COLLECTIONS_INDEX,
+  USE_DATASETS_INDEX,
+} from "src/common/queries/filter";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
@@ -19,6 +24,22 @@ import {
   JSON_BODY_FETCH_OPTIONS,
 } from "./common";
 import { ENTITIES } from "./entities";
+import { QueryClient } from "react-query/core";
+
+/**
+ * Never expire cached query.
+ */
+const DEFAULT_QUERY_OPTIONS = {
+  staleTime: Infinity,
+};
+
+/**
+ * Cached query matching the refetch predicate, that are not being rendered, will be invalidated and refetched
+ * in the background.
+ */
+const DEFAULT_BACKGROUND_REFETCH = {
+  refetchInactive: true,
+};
 
 /**
  * Error text returned from BE when DOI format is identified as invalid.
@@ -77,59 +98,10 @@ enum ERROR_VALUE {
  */
 type Error = { [key in ERROR_KEY]?: ERROR_VALUE } & { reason: string };
 
-export const USE_COLLECTIONS = {
-  entities: [ENTITIES.COLLECTION],
-  id: "collections",
-};
-
 function idError(id: string | null) {
   if (!id) {
     throw Error("No collection id given");
   }
-}
-
-export enum REVISION_STATUS {
-  NOT_STARTED,
-  STARTED,
-  DISABLED,
-}
-
-export interface CollectionResponse {
-  id: string;
-  created_at: number;
-  visibility: VISIBILITY_TYPE;
-  revision_of?: string;
-}
-
-export interface RevisionResponse extends CollectionResponse {
-  revision: REVISION_STATUS;
-}
-
-// if we return as a Map it will be easier to fetch collections by id
-export type CollectionResponsesMap = Map<
-  CollectionResponse["id"],
-  Map<VISIBILITY_TYPE, CollectionResponse>
->;
-
-async function fetchCollections(): Promise<CollectionResponsesMap> {
-  const json = await (
-    await fetch(API_URL + API.COLLECTIONS, DEFAULT_FETCH_OPTIONS)
-  ).json();
-
-  const collectionsMap: CollectionResponsesMap = new Map();
-
-  for (const collection of json.collections as CollectionResponse[]) {
-    const publicID = collection.revision_of || collection.id;
-    const collectionsWithID = collectionsMap.get(publicID) || new Map();
-    collectionsWithID.set(collection.visibility, collection);
-    collectionsMap.set(publicID, collectionsWithID);
-  }
-
-  return collectionsMap;
-}
-
-export function useCollections(): UseQueryResult<CollectionResponsesMap> {
-  return useQuery([USE_COLLECTIONS], fetchCollections);
 }
 
 export const USE_COLLECTION = {
@@ -156,7 +128,7 @@ export interface TombstonedCollection {
   tombstone: true;
 }
 
-function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
+function fetchCollection() {
   return async function (
     id: string
   ): Promise<Collection | TombstonedCollection | null> {
@@ -182,14 +154,6 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     };
 
     let publishedCounterpart;
-
-    if (allCollections && collection.visibility === VISIBILITY_TYPE.PUBLIC) {
-      const collectionsWithID = allCollections.get(id);
-
-      collection.revisioning_in = collectionsWithID?.get(
-        VISIBILITY_TYPE.PRIVATE
-      )?.id;
-    }
 
     if (collection.revision_of) {
       const publicCollectionURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
@@ -228,14 +192,12 @@ export function useCollection({
 }: {
   id?: string;
 }): UseQueryResult<Collection | TombstonedCollection | null> {
-  const { data: collections } = useCollections();
-  const queryFn = fetchCollection(collections);
-
+  const queryFn = fetchCollection();
   return useQuery<Collection | TombstonedCollection | null>(
-    [USE_COLLECTION, id, collections],
+    [USE_COLLECTION, id],
     () => queryFn(id),
     {
-      enabled: !!collections,
+      ...DEFAULT_QUERY_OPTIONS,
     }
   );
 }
@@ -270,10 +232,12 @@ export async function createCollection(
 
 export function useCreateCollection() {
   const queryClient = useQueryClient();
-
   return useMutation(createCollection, {
-    onSuccess: () => {
-      queryClient.invalidateQueries([USE_COLLECTIONS]);
+    onSuccess: async (): Promise<void> => {
+      await queryClient.invalidateQueries(
+        [USE_COLLECTIONS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
     },
   });
 }
@@ -323,21 +287,16 @@ async function collectionUploadLinks({
 
 export function useCollectionUploadLinks(id: string) {
   const queryCache = useQueryClient();
-
   return useMutation(collectionUploadLinks, {
-    onSuccess: () => {
-      queryCache.invalidateQueries([USE_COLLECTION, id]);
+    onSuccess: async (): Promise<void> => {
+      await queryCache.invalidateQueries([USE_COLLECTION, id]);
     },
   });
 }
 
-async function deleteCollection({
-  collectionID,
-}: {
-  collectionID: Collection["id"];
-}) {
+async function deleteCollection(collection: Collection): Promise<Collection> {
   const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
-    id: collectionID,
+    id: collection.id,
   });
 
   const response = await fetch(finalURL, DELETE_FETCH_OPTIONS);
@@ -345,90 +304,92 @@ async function deleteCollection({
   if (!response.ok) {
     throw await response.json();
   }
+  return collection;
 }
 
-export function useDeleteCollection(
-  id = "",
-  visibility = ""
-): UseMutationResult<
-  void,
+export function useDeleteCollection(): UseMutationResult<
+  Collection,
   unknown,
-  { collectionID: string },
-  { previousCollections: CollectionResponsesMap }
+  Collection
 > {
   const queryClient = useQueryClient();
   return useMutation(deleteCollection, {
-    onError: (
-      _,
-      __,
-      context: { previousCollections: CollectionResponsesMap } | undefined
-    ) => {
-      queryClient.setQueryData([USE_COLLECTIONS], context?.previousCollections);
-    },
-    onMutate: async () => {
-      await queryClient.cancelQueries([USE_COLLECTIONS]);
-
-      const previousCollections = queryClient.getQueryData([
-        USE_COLLECTIONS,
-      ]) as CollectionResponsesMap;
-
-      const newCollections = new Map(previousCollections);
-      const collectionsWithID = newCollections.get(id);
-      // If we're deleting a public collection or there is no revision, nuke it from the cache
-      if (
-        visibility === VISIBILITY_TYPE.PUBLIC ||
-        (collectionsWithID && collectionsWithID.entries.length > 1)
-      ) {
-        newCollections.delete(id);
-      } else {
-        // Otherwise, we need to preserve the public collection
-        collectionsWithID?.delete(VISIBILITY_TYPE.PRIVATE);
-        if (collectionsWithID) newCollections.set(id, collectionsWithID);
+    onSuccess: async (collection: Collection): Promise<void> => {
+      queryClient.removeQueries([USE_COLLECTION, collection.id]);
+      await queryClient.invalidateQueries(
+        [USE_COLLECTIONS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
+      await queryClient.invalidateQueries(
+        [USE_DATASETS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
+      if (collection.revision_of) {
+        await queryClient.invalidateQueries(
+          [USE_COLLECTION, collection.revision_of],
+          DEFAULT_BACKGROUND_REFETCH
+        );
       }
-      queryClient.setQueryData([USE_COLLECTIONS], newCollections);
-
-      return { previousCollections };
-    },
-    onSuccess: () => {
-      return Promise.all([
-        queryClient.invalidateQueries([USE_COLLECTIONS]),
-        queryClient.removeQueries([USE_COLLECTION, id], {
-          exact: false,
-        }),
-      ]);
     },
   });
 }
 
 export type PublishCollection = {
-  id: Collection["id"];
+  collection: Collection;
   payload: string;
 };
 
-async function publishCollection({ id, payload }: PublishCollection) {
-  const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
-  console.log("attempting to publish via API call");
+async function publishCollection({
+  collection,
+  payload,
+}: PublishCollection): Promise<Collection> {
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, {
+    id: collection.id,
+  });
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
     body: payload,
     method: "POST",
   });
-
   if (!response.ok) {
     throw await response.json();
   }
-  return id;
+  return collection;
 }
 
 export function usePublishCollection() {
   const queryClient = useQueryClient();
-
   return useMutation(publishCollection, {
-    onSuccess: (id) => {
-      console.log("Completed publish mutation");
-      queryClient.invalidateQueries([USE_COLLECTIONS]);
-      queryClient.invalidateQueries([USE_COLLECTION, id]);
+    onSuccess: async (collection: Collection): Promise<void> => {
+      await queryClient.invalidateQueries(
+        [USE_COLLECTIONS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
+      await queryClient.invalidateQueries(
+        [USE_DATASETS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
+      // Invalidate the private or private revision collection.
+      // If the collection is a private revision, the query should be marked as invalid without executing a background
+      // re-fetch. A background refresh on the "active" private revision collection query will trigger an immediate
+      // re-fetch of the collection. However, the response returns published values where the "id" corresponds
+      // to the published collection's "id", which is the "revision_of" value of the private revision.
+      // Additionally, the visibility of the collection is updated to "PUBLIC".
+      // This re-fetch happens before the "usePublishCollection" mutate function executes the "onSuccess" callback,
+      // resulting in unintended consequences. For example, the "Publish" button unmounts before the user is routed
+      // to the updated collection because the visibility is no longer "PRIVATE."
+      const inRevision = Boolean(collection.revision_of);
+      await queryClient.invalidateQueries([USE_COLLECTION, collection.id], {
+        refetchActive: !inRevision, // If the collection is in revision, mark as invalid without executing a re-fetch.
+      });
+      if (inRevision) {
+        // If the collection is in revision, invalidate the published collection.
+        await queryClient.invalidateQueries(
+          [USE_COLLECTION, collection.revision_of],
+          DEFAULT_BACKGROUND_REFETCH
+        );
+      }
     },
   });
 }
@@ -482,14 +443,10 @@ export function useEditCollection(
   unknown
 > {
   const queryClient = useQueryClient();
-
-  const { data: collections } = useCollections(); //all collections
-
   const { data: collection } = useCollection({
     //revision
     id: collectionID,
   });
-
   const { data: publishedCollection } = useCollection({
     //published collection
     id: publicID,
@@ -497,40 +454,41 @@ export function useEditCollection(
 
   return useMutation(editCollection, {
     // newCollection is the result of the PUT on the revision
-    onSuccess: ({ collection: newCollection }) => {
+    onSuccess: async ({ collection: newCollection }): Promise<void> => {
       // Check for updated collection: it's possible server-side validation errors have occurred where the error has
       // been swallowed (allowing error messages to be displayed on the edit form) and success flow is executed even
       // though update did not occur.
       if (!newCollection) {
         return;
       }
-      queryClient.setQueryData(
-        [USE_COLLECTION, collectionID, collections],
-        () => {
-          let revision_diff;
-          if (isTombstonedCollection(newCollection)) {
-            return newCollection;
-          } else if (
-            !isTombstonedCollection(collection) &&
-            !isTombstonedCollection(publishedCollection) &&
-            collection?.revision_of &&
+      queryClient.setQueryData([USE_COLLECTION, collectionID], () => {
+        let revision_diff;
+        if (isTombstonedCollection(newCollection)) {
+          return newCollection;
+        } else if (
+          !isTombstonedCollection(collection) &&
+          !isTombstonedCollection(publishedCollection) &&
+          collection?.revision_of &&
+          publishedCollection
+        ) {
+          revision_diff = checkForRevisionChange(
+            newCollection,
             publishedCollection
-          ) {
-            revision_diff = checkForRevisionChange(
-              newCollection,
-              publishedCollection
-            );
+          );
 
-            return { ...collection, ...newCollection, revision_diff };
-          }
-          return { ...collection, ...newCollection };
+          return { ...collection, ...newCollection, revision_diff };
         }
+        return { ...collection, ...newCollection };
+      });
+      await queryClient.invalidateQueries(
+        [USE_COLLECTIONS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
       );
     },
   });
 }
 
-const createRevision = async function (id: string) {
+const createRevision = async function (id: Collection["id"]) {
   idError(id);
   const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
@@ -543,14 +501,65 @@ const createRevision = async function (id: string) {
   return response.json();
 };
 
-export function useCreateRevision(callback: (id: Collection["id"]) => void) {
-  const queryClient = useQueryClient();
+/**
+ * Sets USE_COLLECTION, updates the public collection with:
+ * - revision_diff: the revision difference between the public collection and the private revision, and
+ * - revising_in: the id of the private revision collection.
+ * @param revision - Private revision collection.
+ * @param queryClient - QueryClient to update the cache.
+ */
+function createRevisionSetUseCollection(
+  revision: Collection,
+  queryClient: QueryClient
+): void {
+  // Grab the public collection cache.
+  const publicCollection = queryClient.getQueryData([
+    USE_COLLECTION,
+    revision.revision_of,
+  ]) as Collection;
+  // Update the public collection cache.
+  queryClient.setQueryData([USE_COLLECTION, revision.revision_of], {
+    ...publicCollection,
+    revision_diff: false,
+    revising_in: revision.id,
+  });
+  // Create the private revision collection cache.
+  queryClient.setQueryData([USE_COLLECTION, revision.id], revision);
+}
 
+/**
+ * Sets USE_COLLECTIONS_INDEX, updates the public collection of the new private revision with:
+ * - revisedBy: the id of the new private revision, and
+ * - status: the public collection status.
+ * @param revision - Private revision collection.
+ * @param queryClient - QueryClient to update the cache.
+ */
+function createRevisionSetUseCollectionsIndex(
+  revision: Collection,
+  queryClient: QueryClient
+): void {
+  if (!revision.revision_of) {
+    throw Error("Create revision response does not have a revision_of field");
+  }
+  const updatedCollectionsById = new Map(
+    queryClient.getQueryData([USE_COLLECTIONS_INDEX])
+  ) as Map<string, ProcessedCollectionResponse>;
+  const collection = updatedCollectionsById.get(revision.revision_of);
+  const updatedCollection = {
+    ...collection,
+    revisedBy: revision.id,
+    status: [COLLECTION_STATUS.PUBLISHED, COLLECTION_STATUS.REVISION],
+  } as ProcessedCollectionResponse;
+  updatedCollectionsById.set(revision.revision_of, updatedCollection);
+  queryClient.setQueryData([USE_COLLECTIONS_INDEX], updatedCollectionsById);
+}
+
+export function useCreateRevision() {
+  const queryClient = useQueryClient();
   return useMutation(createRevision, {
-    onSuccess: async (collection: Collection) => {
-      await queryClient.invalidateQueries([USE_COLLECTIONS]);
-      await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
-      callback(collection.id);
+    onSuccess: async (revision): Promise<void> => {
+      createRevisionSetUseCollectionsIndex(revision, queryClient);
+      createRevisionSetUseCollection(revision, queryClient);
     },
   });
 }
@@ -590,10 +599,9 @@ export function useReuploadDataset(
   collectionId: string
 ): UseMutationResult<unknown, unknown, ReuploadLink, unknown> {
   const queryClient = useQueryClient();
-
   return useMutation(reuploadDataset, {
-    onSuccess: () => {
-      queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
     },
   });
 }

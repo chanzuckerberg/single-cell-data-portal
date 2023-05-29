@@ -1,4 +1,4 @@
-import { List, ListItem } from "czifui";
+import { List, ListItem } from "@czi-sds/components";
 import { useContext, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";

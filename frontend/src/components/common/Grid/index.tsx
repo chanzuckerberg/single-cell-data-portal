@@ -2,6 +2,7 @@ import { TableInstance } from "react-table";
 import {
   Categories,
   TableCountSummary,
+  Testable,
 } from "src/components/common/Filter/common/entities";
 import { Grid as StyledGrid } from "./style";
 import React from "react";
@@ -14,7 +15,7 @@ interface Props<T extends Categories> {
   tableInstance: TableInstance<T>;
 }
 
-export default function Grid<T extends Categories>({
+export default function Grid<T extends Categories & Testable>({
   className,
   tableCountSummary,
   tableInstance,
@@ -32,11 +33,16 @@ export default function Grid<T extends Categories>({
               {headerGroup.headers.map((column) => {
                 const { key, ...restColumnHeaderProps } =
                   column.getHeaderProps();
+                const { onClick } = column.getSortByToggleProps();
                 return (
                   <HeaderCell
                     key={key}
                     alignment={column.alignment}
+                    isSortable={column.canSort}
+                    isSorted={column.isSorted}
+                    isSortedDesc={column.isSortedDesc}
                     label={column.render("Header")}
+                    onSort={onClick}
                     tag={
                       column.showCountAndTotal ? (
                         <CountAndTotal tableCountSummary={tableCountSummary} />
@@ -55,7 +61,7 @@ export default function Grid<T extends Categories>({
           prepareRow(row);
           const { key, ...restRowProps } = row.getRowProps();
           return (
-            <tr key={key} {...restRowProps}>
+            <tr key={key} data-testid={row.original.testId} {...restRowProps}>
               {row.cells.map((cell) => {
                 const { key, ...restCellProps } = cell.getCellProps();
                 return (

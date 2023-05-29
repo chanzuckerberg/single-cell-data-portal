@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
-import { ButtonIcon, fontBodyXs, fontBodyXxs, getColors, Icon } from "czifui";
+import {
+  ButtonIcon,
+  fontBodyXs,
+  fontBodyXxs,
+  getColors,
+  Icon,
+} from "@czi-sds/components";
 import { NotificationWrapper } from "src/components/common/Filter/common/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
