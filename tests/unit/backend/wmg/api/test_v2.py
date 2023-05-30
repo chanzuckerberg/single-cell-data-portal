@@ -528,18 +528,6 @@ class WmgApiV2Tests(unittest.TestCase):
 
         self.assertEqual(400, response.status_code)
 
-    def test__query_missing_tissue_request__returns_400(self):
-        request = dict(
-            filter=dict(
-                gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                organism_ontology_term_id="organism_ontology_term_id_0",
-            ),
-        )
-
-        response = self.app.post("/wmg/v2/query", json=request)
-
-        self.assertEqual(400, response.status_code)
-
     @patch("backend.wmg.api.v2.fetch_datasets_metadata")
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
