@@ -1,1 +1,0 @@
-  [38;5;45;1mpw:api [0mwaiting for locator('[data-testid="sex-filter"] [role="button"]') [38;5;45m+102ms[0m
