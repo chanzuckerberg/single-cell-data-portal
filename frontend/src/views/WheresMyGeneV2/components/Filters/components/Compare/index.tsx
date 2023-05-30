@@ -1,7 +1,7 @@
 import {
   DefaultDropdownMenuOption,
   InputDropdownProps as IInputDropdownProps,
-} from "czifui";
+} from "@czi-sds/components";
 import { useContext, useMemo } from "react";
 import {
   DispatchContext,

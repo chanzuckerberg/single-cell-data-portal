@@ -1,4 +1,4 @@
-import { Button } from "czifui";
+import { Button } from "@czi-sds/components";
 import cloneDeep from "lodash/cloneDeep";
 import {
   Dispatch,
@@ -188,18 +188,28 @@ export default memo(function HeatMap({
   const [expandedTissues, setExpandedTissues] = useState<Array<Tissue>>([]);
 
   const handleExpand = useCallback(() => {
+    const newDisplayedCellTypes = new Set<string>(displayedCellTypes);
+
     if (expandedTissues.includes("lung")) {
       setExpandedTissues([]);
+      setDisplayedCellTypes(initialDisplayedCellTypes);
+      console.log("DEFAULT");
+
+      return;
     }
     //expand the first tissue
-    const newDisplayedCellTypes = new Set<string>(displayedCellTypes);
 
     sortedCellTypesByTissueName["lung"].forEach((cellType) => {
       newDisplayedCellTypes.add("lung" + cellType.name);
     });
-
+    setExpandedTissues(["lung"]);
     setDisplayedCellTypes(newDisplayedCellTypes);
-  }, [displayedCellTypes, sortedCellTypesByTissueName, expandedTissues]);
+  }, [
+    displayedCellTypes,
+    sortedCellTypesByTissueName,
+    expandedTissues,
+    initialDisplayedCellTypes,
+  ]);
 
   return (
     <>

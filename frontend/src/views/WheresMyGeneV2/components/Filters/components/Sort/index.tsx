@@ -1,4 +1,4 @@
-import { InputDropdownProps as IInputDropdownProps } from "czifui";
+import { InputDropdownProps as IInputDropdownProps } from "@czi-sds/components";
 import { useContext, useMemo } from "react";
 import {
   DispatchContext,

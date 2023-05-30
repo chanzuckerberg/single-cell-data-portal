@@ -1,8 +1,8 @@
 import { HTMLTable } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { Button, fontBodyS } from "czifui";
+import { Button, fontBodyS } from "@czi-sds/components";
 import Image from "next/image";
-import { fontBodyXxs, getColors } from "czifui";
+import { fontBodyXxs, getColors } from "@czi-sds/components";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
 

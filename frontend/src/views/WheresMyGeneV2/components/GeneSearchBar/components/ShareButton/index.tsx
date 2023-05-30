@@ -1,4 +1,4 @@
-import { Notification } from "czifui";
+import { Notification } from "@czi-sds/components";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";

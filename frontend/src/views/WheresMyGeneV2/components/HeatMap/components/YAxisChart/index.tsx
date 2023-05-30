@@ -29,7 +29,7 @@ import {
   CellTypeRow,
 } from "src/common/queries/wheresMyGeneV2";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 
 interface Props {
   cellTypes: CellTypeRow[];

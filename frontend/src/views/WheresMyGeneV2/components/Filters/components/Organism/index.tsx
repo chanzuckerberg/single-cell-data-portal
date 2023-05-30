@@ -1,7 +1,7 @@
 import {
   DefaultMenuSelectOption,
   InputDropdownProps as RawInputDropdownProps,
-} from "czifui";
+} from "@czi-sds/components";
 import { useContext, useEffect, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";

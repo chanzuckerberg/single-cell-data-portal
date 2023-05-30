@@ -6,7 +6,7 @@ import {
   getColors,
   getFontWeights,
   getSpaces,
-} from "czifui";
+} from "@czi-sds/components";
 
 export const Label = styled("div")`
   ${fontBodyS}

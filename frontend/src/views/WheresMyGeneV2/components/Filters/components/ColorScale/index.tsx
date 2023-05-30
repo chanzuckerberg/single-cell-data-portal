@@ -1,4 +1,7 @@
-import { InputDropdownProps as IInputDropdownProps, Tooltip } from "czifui";
+import {
+  InputDropdownProps as IInputDropdownProps,
+  Tooltip,
+} from "@czi-sds/components";
 import { useContext, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
