@@ -17,7 +17,6 @@ import NextLink from "next/link";
 import pathTool from "path";
 import { Fragment, memo, useState, useMemo } from "react";
 import rehypeSlug from "rehype-slug";
-import { noop } from "src/common/constants/utils";
 import { OFF_WHITE, PINK } from "src/common/theme";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import Layout from "src/components/Layout";
@@ -201,7 +200,7 @@ const DirectoryListItem = ({
   activeFile: string;
 }) => {
   const initialState = useMemo(() => {
-    return directory.files.includes(activeFile)
+    return containsActiveFile(directory, activeFile)
       ? ExpandedValue.DEFAULT_EXPAND
       : ExpandedValue.DEFAULT_COLLAPSE;
   }, [directory.files, activeFile]);
@@ -232,7 +231,6 @@ const DirectoryListItem = ({
           isChild
           activeFile={activeFile}
           isExpanded={isExpanded}
-          setIsExpanded={setIsExpanded}
         />
       </div>
     </Fragment>
@@ -243,22 +241,13 @@ const Directory = memo(function RenderDirectory({
   activeFile,
   directory,
   isExpanded,
-  setIsExpanded,
   isChild = false,
 }: {
   activeFile: string;
   directory: Directory;
   isExpanded: ExpandedValue;
-  setIsExpanded: (isExpanded: ExpandedValue) => void;
   isChild?: boolean;
 }) {
-  const initialState = useMemo(() => {
-    return containsActiveFile(directory, activeFile)
-      ? ExpandedValue.DEFAULT_EXPAND
-      : ExpandedValue.DEFAULT_COLLAPSE;
-  }, [directory.files, activeFile]);
-  setIsExpanded(initialState);
-
   const fileComponents: Array<[string, JSX.Element]> = directory.files.map(
     (file) => {
       let href = "/docs/";
@@ -342,8 +331,7 @@ const PageNavigator = ({
       <Directory
         directory={filePath}
         activeFile={activeFile}
-        isExpanded={1}
-        setIsExpanded={noop}
+        isExpanded={ExpandedValue.DEFAULT_EXPAND}
       />
     </StyledLeftNav>
   );
