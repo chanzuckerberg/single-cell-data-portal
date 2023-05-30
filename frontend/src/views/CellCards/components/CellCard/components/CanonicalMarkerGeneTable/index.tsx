@@ -127,9 +127,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
                   label={
                     "Anatomical Structures, Cell Types and Biomarkers (ASCT+B)"
                   }
-                  url={
-                    "https://hubmapconsortium.github.io/ccf/pages/ccf-anatomical-structures.html"
-                  }
+                  url={"https://humanatlas.io/asctb-tables"}
                 />
                 {
                   " tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
