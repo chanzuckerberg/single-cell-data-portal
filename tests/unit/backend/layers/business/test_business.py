@@ -998,6 +998,22 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             self.assertEqual(version_from_db.artifacts[0].type, DatasetArtifactType.H5AD.value)
             self.assertEqual(version_from_db.artifacts[0].uri, "http://fake.uri/artifact.h5ad")
 
+    def test_update_dataset_artifact_ok(self):
+        """
+        A dataset artifact can be updated using `update_dataset_artifact`
+        """
+        published_collection = self.initialize_published_collection()
+        for dataset in published_collection.datasets:
+            cxg_artifact = [artifact for artifact in dataset.artifacts if artifact.type == "cxg"][0]
+            self.assertEqual(cxg_artifact.uri, "s3://fake-bucket/local.cxg")
+            self.business_logic.update_dataset_artifact(cxg_artifact.id, "s3://fake-bucket/new-name.cxg")
+
+            version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
+            updated_cxg_artifact = [
+                artifact for artifact in version_from_db.artifacts if artifact.id == cxg_artifact.id
+            ][0]
+            self.assertEqual(updated_cxg_artifact.uri, "s3://fake-bucket/new-name.cxg")
+
     def test_add_dataset_artifact_wrong_type_fail(self):
         """
         Adding a dataset artifact with an unsupported type should fail
