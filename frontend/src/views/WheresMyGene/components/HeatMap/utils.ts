@@ -21,7 +21,7 @@ import {
 import { TISSUE_CELL_TYPE_DIVIDER } from "./hooks/useSortedGeneNames";
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
-export const X_AXIS_HOVER_CONTAINER_HEIGHT_PX = 40;
+export const X_AXIS_HOVER_CONTAINER_HEIGHT_PX = 36;
 export const X_AXIS_CHART_HEIGHT_PX = 80 + X_AXIS_HOVER_CONTAINER_HEIGHT_PX;
 export const Y_AXIS_CHART_WIDTH_PX = 300;
 
