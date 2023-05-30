@@ -22,6 +22,20 @@ class WmgQueryCriteria(BaseModel):
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
+class WmgQueryCriteriaV2(BaseModel):
+    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)
+    organism_ontology_term_id: str  # required!
+    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
+    # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+
+
 class WmgFiltersQueryCriteria(BaseModel):
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ButtonIcon, fontBodyXxs, getColors } from "czifui";
+import { ButtonIcon, fontBodyXxs, getColors } from "@czi-sds/components";
 
 export const StyledButtonDiv = styled.div`
   display: flex;

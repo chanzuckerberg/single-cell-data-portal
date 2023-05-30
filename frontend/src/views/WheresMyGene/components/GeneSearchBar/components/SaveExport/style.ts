@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
-import { Button, fontBodyS, fontBodyXs, fontCapsXxs, getColors } from "czifui";
+import {
+  Button,
+  fontBodyS,
+  fontBodyXs,
+  fontCapsXxs,
+  getColors,
+} from "@czi-sds/components";
 import Modal from "src/components/common/Modal";
 
 export const DOWNLOAD_MODAL_WIDTH_PX = 600;

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getColors, Notification } from "czifui";
+import { CommonThemeProps, getColors, Notification } from "@czi-sds/components";
 import { NotificationWrapper } from "src/components/common/Filter/common/style";
 
 export const BETA_NOTIFICATION_ID = "beta-notification";

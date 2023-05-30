@@ -13,7 +13,7 @@ import Link from "../common/Link";
 import { useCanonicalMarkers } from "src/common/queries/cellCards";
 import DropdownSelect from "../common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material";
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
 
@@ -119,7 +119,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
           <TableTitle>Marker Genes</TableTitle>
           <HelpTooltip
             text={
-              <>
+              <div>
                 {
                   "The below marker genes and associated publications were derived from the "
                 }
@@ -134,7 +134,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
                 {
                   " tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
                 }
-              </>
+              </div>
             }
           />
         </TableTitleInnerWrapper>

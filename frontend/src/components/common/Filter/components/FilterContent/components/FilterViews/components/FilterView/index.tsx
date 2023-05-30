@@ -1,4 +1,4 @@
-import { ListSubheader } from "czifui";
+import { ListSubheader } from "@czi-sds/components";
 import React, { useEffect, useRef, useState } from "react";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {

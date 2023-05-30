@@ -101,7 +101,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
             <TableTitle>Highly Expressed Genes</TableTitle>
             <HelpTooltip
               text={
-                <>
+                <div>
                   {
                     "The marker genes listed below are computationally derived from the "
                   }
@@ -116,7 +116,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
                     url={ROUTES.FMG_DOCS}
                   />
                   {"."}
-                </>
+                </div>
               }
             />
           </TableTitleInnerWrapper>
