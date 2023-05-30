@@ -590,6 +590,14 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version.artifacts = artifacts
         return artifact_id
 
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        """
+        Updates uri for an existing artifact_id
+        """
+        with self._manage_session() as session:
+            artifact = session.query(DatasetArtifactTable).filter_by(id=artifact_id.id).one()
+            artifact.uri = artifact_uri
+
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
         Updates the processing status for a dataset version.
