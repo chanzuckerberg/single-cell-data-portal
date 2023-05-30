@@ -1,0 +1,11 @@
+INFO     processing:process_logic.py:106 Converting local.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_seurat' id='139960530008960'> in 0:00:00.000719
+INFO     root:logger.py:19 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [960610d0-a69b-4452-9002-96f7dd3a5baa/local.rds] to s3://fake_bucket_name/960610d0-a69b-4452-9002-96f7dd3a5baa/local.rds
+INFO     processing:process_logic.py:86 Updated database with rds.
+INFO     processing:process_logic.py:93 Uploaded 960610d0-a69b-4452-9002-96f7dd3a5baa.rds to s3://fake_datasets_bucket/960610d0-a69b-4452-9002-96f7dd3a5baa/960610d0-a69b-4452-9002-96f7dd3a5baa.rds
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     root:logger.py:21 Complete create_artifact
