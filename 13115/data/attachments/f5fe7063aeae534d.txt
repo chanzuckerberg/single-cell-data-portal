@@ -1,0 +1,147 @@
+  pw:api => selectors.setTestIdAttribute started +30ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +49ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +3ms
+  pw:api => tracing.start started +0ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +63ms
+  pw:api => page.waitForResponse started +12ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +8ms
+  pw:api   "commit" event fired +10s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +157ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +25ms
+  pw:api   navigated to "about:blank" +16ms
+  pw:api <= page.goto succeeded +10ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease" +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease" +28ms
+  pw:api =>  started +2s
+  pw:api <= page.waitForResponse succeeded +3ms
+  pw:api => page.waitForEvent started +12ms
+  pw:api => locator.click started +14ms
+  pw:api waiting for event "download" +44ms
+  pw:api <=  succeeded +18ms
+  pw:api waiting for getByTestId('download-button') +303ms
+  pw:api   "networkidle" event fired +457ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="download…>…</button> +3s
+  pw:api attempting click action +1s
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +40ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +172ms
+  pw:api   click action done +151ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +8ms
+  pw:api <= locator.click succeeded +59ms
+  pw:api => locator.getAttribute started +1ms
+  pw:api waiting for getByTestId('csv-checkbox') +62ms
+  pw:api   locator resolved to <span data-testid="csv-checkbox" class="MuiButtonBase-…>…</span> +21ms
+  pw:api <= locator.getAttribute succeeded +56ms
+  pw:api => locator.getAttribute started +1ms
+  pw:api waiting for getByTestId('csv-checkbox') +50ms
+  pw:api   locator resolved to <span data-testid="csv-checkbox" class="MuiButtonBase-…>…</span> +22ms
+  pw:api <= locator.getAttribute succeeded +50ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('csv-checkbox').locator('input') +48ms
+  pw:api   locator resolved to <input type="checkbox" data-indeterminate="false" class…/> +24ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +38ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +25ms
+  pw:api   click action done +33ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +0ms
+  pw:api <= locator.click succeeded +33ms
+  pw:api => locator.getAttribute started +0ms
+  pw:api waiting for getByTestId('png-checkbox') +18ms
+  pw:api   locator resolved to <span data-testid="png-checkbox" class="MuiButtonBase-…>…</span> +10ms
+  pw:api <= locator.getAttribute succeeded +22ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('png-checkbox').locator('input') +15ms
+  pw:api   locator resolved to <input checked type="checkbox" data-indeterminate="fals…/> +12ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +9ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +24ms
+  pw:api   click action done +24ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +0ms
+  pw:api <= locator.click succeeded +30ms
+  pw:api => locator.getAttribute started +0ms
+  pw:api waiting for getByTestId('png-checkbox') +20ms
+  pw:api   locator resolved to <span data-testid="png-checkbox" class="MuiButtonBase-…>…</span> +15ms
+  pw:api <= locator.getAttribute succeeded +22ms
+  pw:api => locator.getAttribute started +1ms
+  pw:api waiting for getByTestId('svg-checkbox') +14ms
+  pw:api   locator resolved to <span data-testid="svg-checkbox" class="MuiButtonBase-…>…</span> +10ms
+  pw:api <= locator.getAttribute succeeded +20ms
+  pw:api => locator.getAttribute started +1ms
+  pw:api waiting for getByTestId('svg-checkbox') +15ms
+  pw:api   locator resolved to <span data-testid="svg-checkbox" class="MuiButtonBase-…>…</span> +10ms
+  pw:api <= locator.getAttribute succeeded +20ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('dialog-download-button') +14ms
+  pw:api   locator resolved to <button tabindex="0" type="button" sdssize="large" data-…>Download</button> +18ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +19ms
+  pw:api   click action done +95ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +46ms
+  pw:api <= page.waitForEvent succeeded +6s
+  pw:api => download.saveAs started +5ms
+  pw:api <= download.saveAs succeeded +4ms
+(node:5413) [DEP0147] DeprecationWarning: In future versions of Node.js, fs.rmdir(path, { recursive: true }) will be removed. Use fs.rm(path, { recursive: true }) instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+  pw:api => locator.count started +45ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +95ms
+  pw:api => locator.textContent started +12ms
+  pw:api waiting for locator('[data-testid="sex-filter"] [role="button"]') +1ms
+  pw:api <= locator.count succeeded +32ms
+  pw:api => locator.textContent started +12ms
+  pw:api waiting for locator('[data-testid="sex-filter"] [role="button"]') +2ms
+  pw:api   locator resolved to <div tabindex="0" role="button" class="MuiButtonBase-…>…</div> +1ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api => expect.toBeVisible started +7ms
+  pw:api   not waiting, "load" event already fired +14ms
+  pw:api expect.toBeVisible with timeout 10000ms +1ms
+  pw:api waiting for getByTestId('download-button') +2ms
+  pw:api   locator resolved to <div tabindex="0" role="button" class="MuiButtonBase-…>…</div> +2ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api => expect.toBeVisible started +14ms
+  pw:api   not waiting, "load" event already fired +30ms
+  pw:api expect.toBeVisible with timeout 10000ms +0ms
+  pw:api waiting for getByTestId('download-button') +0ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="download…>…</button> +1ms
+  pw:api <= expect.toBeVisible succeeded +11ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="download…>…</button> +27ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api taking page screenshot +660ms
+  pw:api => browserContext.close started +117ms
+  pw:api <= browserContext.close succeeded +5s
