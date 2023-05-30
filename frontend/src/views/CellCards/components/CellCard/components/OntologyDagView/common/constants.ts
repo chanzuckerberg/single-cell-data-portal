@@ -9,5 +9,5 @@ export const largeSize = 8;
 export const defaultMargin = { top: 50, left: 0, right: 0, bottom: 0 };
 export const DEFAULT_ONTOLOGY_WIDTH = 1000;
 export const DEFAULT_ONTOLOGY_HEIGHT = 500;
-export const NODE_SPACINGS = [15, 200];
+export const NODE_SPACINGS = [18, 200];
 export const TREE_ANIMATION_DURATION = 250;
