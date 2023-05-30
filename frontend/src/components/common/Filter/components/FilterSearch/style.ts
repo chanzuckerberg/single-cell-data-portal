@@ -1,7 +1,12 @@
 import { Classes, InputGroup } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { ButtonIcon, CommonThemeProps, getColors, getSpaces } from "czifui";
+import {
+  ButtonIcon,
+  CommonThemeProps,
+  getColors,
+  getSpaces,
+} from "@czi-sds/components";
 import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 
 const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;

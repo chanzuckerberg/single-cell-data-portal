@@ -6,11 +6,12 @@ import DatasetRow from "src/components/Collection/components/CollectionDatasetsG
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import { Grid as StyledGrid } from "src/components/common/Grid/style";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
-import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
 import { sortByCellCountDescending } from "./common/util";
+import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
 
 interface Props {
   className?: string;
+  collectionId: Collection["id"];
   datasets: Dataset[];
   uploadedFiles: UploadedFiles;
   invalidateCollectionQuery: () => void;
@@ -36,6 +37,7 @@ interface Props {
 
 const DatasetsGrid: FC<Props> = ({
   className,
+  collectionId,
   datasets,
   uploadedFiles,
   invalidateCollectionQuery,
@@ -66,6 +68,7 @@ const DatasetsGrid: FC<Props> = ({
             visibility={visibility}
             accessType={accessType}
             key={dataset.id}
+            collectionId={collectionId}
             dataset={dataset}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}

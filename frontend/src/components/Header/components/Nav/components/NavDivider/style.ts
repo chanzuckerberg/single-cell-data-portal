@@ -1,5 +1,5 @@
 import { Divider } from "@mui/material";
-import { CommonThemeProps, getColors } from "czifui";
+import { CommonThemeProps, getColors } from "@czi-sds/components";
 import styled from "@emotion/styled";
 
 const gray500 = (props: CommonThemeProps) => getColors(props)?.gray[500];

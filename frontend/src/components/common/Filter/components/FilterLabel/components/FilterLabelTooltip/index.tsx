@@ -1,4 +1,4 @@
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 import { ReactElement, useMemo } from "react";
 import { categoryTooltipCss } from "src/components/common/Filter/components/FilterLabel/components/FilterLabelTooltip/style";
 

@@ -3,7 +3,7 @@
  */
 
 import { COLLECTION_LINK_TYPE } from "src/common/entities";
-import { DefaultDropdownMenuOption } from "czifui";
+import { DefaultDropdownMenuOption } from "@czi-sds/components";
 import { Value as DropdownValue } from "src/components/common/Form/Dropdown";
 import { CONSORTIA } from "src/components/CreateCollectionModal/components/Content/common/constants";
 
