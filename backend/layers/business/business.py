@@ -566,6 +566,12 @@ class BusinessLogic(BusinessLogicInterface):
 
         return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
 
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        """
+        Updates uri for an existing artifact_id
+        """
+        self.database_provider.update_dataset_artifact(artifact_id, artifact_uri)
+
     def create_collection_version(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
         """
         Creates a collection version for an existing canonical collection.
