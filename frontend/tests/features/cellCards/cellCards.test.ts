@@ -332,7 +332,7 @@ describe("Cell Cards", () => {
         const nodesLocator = `[data-testid^='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
         const nodesBefore = await page.locator(nodesLocator).elementHandles();
         const numNodesBefore = nodesBefore.length;
-    
+
         const dummyChildLocator = `[data-testid='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-dummy-child-CL_0000842__0-has-children-isTargetNode=false']`;
         const dummyChild = (
           await page.locator(dummyChildLocator).elementHandles()
