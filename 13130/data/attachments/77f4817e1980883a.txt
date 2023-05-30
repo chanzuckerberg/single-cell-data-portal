@@ -1,0 +1,89 @@
+  pw:api => selectors.setTestIdAttribute started +5ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +38ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +4ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +5ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +36ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +4ms
+  pw:api   "commit" event fired +398ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +154ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +14ms
+  pw:api   "networkidle" event fired +546ms
+  pw:api <= page.goto succeeded +1s
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-card-header-name') to be visible +33ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-header-name" class="css-1…>Neuron</div> +57ms
+  pw:api <= locator.waitFor succeeded +19ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-card-header-name') +8ms
+  pw:api <= locator.isVisible succeeded +16ms
+  pw:api => locator.waitFor started +9ms
+  pw:api waiting for getByTestId('cell-card-header-tag') to be visible +7ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-header-tag" class="MuiChi…>…</div> +5ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-card-header-tag') +6ms
+  pw:api <= locator.isVisible succeeded +15ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-card-cl-description') to be visible +8ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-cl-description" class="cs…>…</div> +4ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-card-cl-description') +17ms
+  pw:api <= locator.isVisible succeeded +11ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-card-gpt-description') to be visible +14ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-gpt-description" class="c…>…</div> +5ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-card-gpt-description') +11ms
+  pw:api <= locator.isVisible succeeded +10ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-card-gpt-tooltip-link') to be visible +7ms
+  pw:api   locator resolved to visible <a target="_blank" data-mui-internal-clone-element=…>ChatGPT</a> +8ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +0ms
+  pw:api   checking visibility of getByTestId('cell-card-gpt-tooltip-link') +7ms
+  pw:api <= locator.isVisible succeeded +10ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-card-search-bar') to be visible +6ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-search-bar">…</div> +9ms
+  pw:api <= locator.waitFor succeeded +16ms
+  pw:api => locator.isVisible started +0ms
+  pw:api   checking visibility of getByTestId('cell-card-search-bar') +7ms
+  pw:api <= locator.isVisible succeeded +9ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-card-canonical-marker-genes-table') to be visible +10ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-canonical-marker-genes-ta…>…</div> +6ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-card-canonical-marker-genes-table') +6ms
+  pw:api <= locator.isVisible succeeded +9ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view') to be visible +11ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-ontology-dag-view">…</div> +6ms
+  pw:api <= locator.waitFor succeeded +11ms
+  pw:api => locator.isVisible started +0ms
+  pw:api   checking visibility of getByTestId('cell-card-ontology-dag-view') +8ms
+  pw:api <= locator.isVisible succeeded +13ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByTestId('cell-card-header-name') +7ms
+  pw:api   locator resolved to <div data-testid="cell-card-header-name" class="css-1…>Neuron</div> +5ms
+  pw:api <= locator.textContent succeeded +10ms
+  pw:api taking page screenshot +158ms
+  pw:api => browserContext.close started +83ms
+  pw:api <= browserContext.close succeeded +5s
