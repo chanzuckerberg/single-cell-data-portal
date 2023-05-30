@@ -134,6 +134,12 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
                 {
                   " tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
                 }
+                <br />
+                <br />
+                <i>
+                  Quardokus, Ellen, Bruce W. Herr II, Lisel Record, Katy Börner.
+                  2022. HuBMAP ASCT+B Tables. Accessed May 16, 2023.
+                </i>
               </div>
             }
           />
