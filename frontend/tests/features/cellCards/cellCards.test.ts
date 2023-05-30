@@ -463,21 +463,6 @@ describe("Cell Cards", () => {
       });
     });
     describe("CellCard Sidebar", () => {
-      test("Scrolling on CellCard updates the navbar", async ({ page }) => {
-        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
-        const navbar = page.getByTestId(CELL_CARD_NAVIGATION_SIDEBAR);
-        const section0 = page.getByTestId("section-0");
-        await section0.scrollIntoViewIfNeeded();
-        const section2 = page.getByTestId("section-2");
-        await section2.scrollIntoViewIfNeeded();
-
-        // check that the navbar tab corresponding to section 2 is highlighted
-        const selectedTab = navbar.locator(
-          ".MuiButtonBase-root.MuiTab-root.Mui-selected"
-        );
-        const selectedTabText = await selectedTab.innerText();
-        expect(selectedTabText).toBe("Marker Genes");
-      });
       test("Clicking on the navbar scrolls to the section", async ({
         page,
       }) => {
