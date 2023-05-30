@@ -1,15 +1,18 @@
 import styled from "@emotion/styled";
-import { fontHeaderXxl, Tag } from "czifui";
+import { fontHeaderXxl, Tag } from "@czi-sds/components";
 
 export const TOP_PADDING_PX = 32;
+export const SIDEBAR_COLUMN_GAP_PX = 120;
+export const LEFT_RIGHT_PADDING_PX = 40;
 
 export const CellCardsView = styled.div`
   display: flex;
   flex-direction: row;
-  column-gap: 120px;
+  column-gap: ${SIDEBAR_COLUMN_GAP_PX}px;
   margin: auto;
   max-width: 1440px;
-  padding: ${TOP_PADDING_PX}px 40px 0px 40px;
+  padding: ${TOP_PADDING_PX}px ${LEFT_RIGHT_PADDING_PX}px 0px
+    ${LEFT_RIGHT_PADDING_PX}px;
 `;
 
 export const Wrapper = styled.div`

@@ -1,4 +1,4 @@
-import { Icon, TagFilter } from "czifui";
+import { Icon, TagFilter } from "@czi-sds/components";
 import { SelectedTags } from "./style";
 
 type OnRemoveFn = () => void;

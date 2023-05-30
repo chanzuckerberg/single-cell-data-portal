@@ -1,4 +1,4 @@
-import { ListSubheader } from "czifui";
+import { ListSubheader } from "@czi-sds/components";
 import React from "react";
 import {
   CATEGORY_FILTER_ID,

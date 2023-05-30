@@ -322,6 +322,17 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version.artifacts.append(DatasetArtifact(artifact_id, artifact_type, artifact_uri))
         return artifact_id
 
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        found_artifact = False
+        for version in self.datasets_versions.values():
+            if found_artifact:
+                break
+            for artifact in version.artifacts:
+                if artifact.id == artifact_id:
+                    artifact.uri = artifact_uri
+                    found_artifact = True
+                    break
+
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         version = self.datasets_versions[version_id.id]
         version.metadata = copy.deepcopy(metadata)

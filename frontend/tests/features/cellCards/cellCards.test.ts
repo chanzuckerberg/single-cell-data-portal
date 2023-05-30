@@ -24,7 +24,16 @@ import {
   CELL_CARD_ENRICHED_GENES_TABLE,
   CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN,
 } from "src/views/CellCards/components/CellCard/components/EnrichedGenesTable";
+import {
+  CELL_CARD_ONTOLOGY_DAG_VIEW,
+  CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
+  CELL_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
+  CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
+} from "src/views/CellCards/components/CellCard/components/OntologyDagView";
+import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node";
+import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node/components/RectOrCircle";
 import { CELL_CARD_SOURCE_DATA_TABLE } from "src/views/CellCards/components/CellCard/components/SourceDataTable";
+import { CELL_CARD_NAVIGATION_SIDEBAR } from "src/views/CellCards/components/CellCard/components/CellCardSidebar";
 
 const { describe } = test;
 
@@ -40,8 +49,7 @@ describe("Cell Cards", () => {
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}`, page);
       const element = page.getByTestId(CELL_CARD_SEARCH_BAR_TEXT_INPUT);
-      await element.waitFor();
-      await element.click();
+      await waitForElementAndClick(element);
       // get number of elements with role option in dropdown
       const numOptionsBefore = await countLocator(page.getByRole("option"));
       // type in search bar
@@ -64,8 +72,7 @@ describe("Cell Cards", () => {
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}`, page);
       const element = page.getByTestId(CELL_CARD_SEARCH_BAR_TEXT_INPUT);
-      await element.waitFor();
-      await element.click();
+      await waitForElementAndClick(element);
       await element.type("neuron");
       // input down arrow key
       await element.press("ArrowDown");
@@ -86,6 +93,7 @@ describe("Cell Cards", () => {
       await isElementVisible(page, CELL_CARD_GPT_TOOLTIP_LINK);
       await isElementVisible(page, CELL_CARD_SEARCH_BAR);
       await isElementVisible(page, CELL_CARD_CANONICAL_MARKER_GENES_TABLE);
+      await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW);
       const headerName = page.getByTestId(CELL_CARD_HEADER_NAME);
       const headerNameText = await headerName.textContent();
       expect(headerNameText).toBe("Neuron");
@@ -112,8 +120,7 @@ describe("Cell Cards", () => {
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
       const element = page.getByTestId(CELL_CARD_SEARCH_BAR_TEXT_INPUT);
-      await element.waitFor({ timeout: 5000 });
-      await element.click();
+      await waitForElementAndClick(element);
       // get number of elements with role option in dropdown
       const numOptionsBefore = await countLocator(page.getByRole("option"));
       // type in search bar
@@ -131,138 +138,279 @@ describe("Cell Cards", () => {
       // check that the url has changed to the correct cell card
       await page.waitForURL(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000622`); // Acinar cell
     });
-  });
-  test("Canonical marker gene table is displayed with columns and at least one entry displayed", async ({
-    page,
-  }) => {
-    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
-    const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
+    describe("Canonical Marker Gene Table", () => {
+      test("Canonical marker gene table is displayed with columns and at least one entry displayed", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
+        const columnHeaderElements = await page
+          .locator(`${tableSelector} thead th`)
+          .elementHandles();
+        // get text content of each column header
+        const columnHeaders = await Promise.all(
+          columnHeaderElements.map(async (element) => {
+            return await element.textContent();
+          })
+        );
+        expect(columnHeaders).toEqual(["Symbol", "Name", "References"]);
+        const rowElements = await page
+          .locator(`${tableSelector} tbody tr`)
+          .elementHandles();
+        const rowCount = rowElements.length;
+        expect(rowCount).toBeGreaterThan(1);
+      });
+      test("Canonical marker gene table is updated by the tissue dropdown", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
+        const rowElementsBefore = await page
+          .locator(`${tableSelector} tbody tr`)
+          .elementHandles();
+        const rowCountBefore = rowElementsBefore.length;
+        expect(rowCountBefore).toBeGreaterThan(1);
 
-    const columnHeaderElements = await page
-      .locator(`${tableSelector} thead th`)
-      .elementHandles();
-    // get text content of each column header
-    const columnHeaders = await Promise.all(
-      columnHeaderElements.map(async (element) => {
-        return await element.textContent();
-      })
-    );
-    expect(columnHeaders).toEqual(["Symbol", "Name", "Publications"]);
-    const rowElements = await page
-      .locator(`${tableSelector} tbody tr`)
-      .elementHandles();
-    const rowCount = rowElements.length;
-    expect(rowCount).toBeGreaterThan(1);
-  });
-  test("Canonical marker gene table is updated by the tissue dropdown", async ({
-    page,
-  }) => {
-    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
-    const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
-    const rowElementsBefore = await page
-      .locator(`${tableSelector} tbody tr`)
-      .elementHandles();
-    const rowCountBefore = rowElementsBefore.length;
-    expect(rowCountBefore).toBeGreaterThan(1);
+        const dropdown = page.getByTestId(
+          CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN
+        );
+        await waitForElementAndClick(dropdown);
+        await dropdown.press("ArrowDown");
+        await dropdown.press("Enter");
 
-    const dropdown = page.getByTestId(
-      CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN
-    );
-    await dropdown.waitFor({ timeout: 5000 });
-    await dropdown.click();
-    await dropdown.press("ArrowDown");
-    await dropdown.press("Enter");
+        const rowElementsAfter = await page
+          .locator(`${tableSelector} tbody tr`)
+          .elementHandles();
+        const rowCountAfter = rowElementsAfter.length;
+        expect(rowCountAfter).toBeGreaterThan(1);
+        expect(rowCountAfter).not.toBe(rowCountBefore);
+      });
+    });
+    describe("Enriched Genes Table", () => {
+      test("Enriched gene table is displayed with columns and at least one entry displayed", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
 
-    const rowElementsAfter = await page
-      .locator(`${tableSelector} tbody tr`)
-      .elementHandles();
-    const rowCountAfter = rowElementsAfter.length;
-    expect(rowCountAfter).toBeGreaterThan(1);
-    expect(rowCountAfter).not.toBe(rowCountBefore);
-  });
+        const columnHeaderElements = await page
+          .locator(`${tableSelector} thead th`)
+          .elementHandles();
+        // get text content of each column header
+        const columnHeaders = await Promise.all(
+          columnHeaderElements.map(async (element) => {
+            return await element.textContent();
+          })
+        );
+        expect(columnHeaders).toEqual([
+          "Symbol",
+          "Name",
+          "Expression Score",
+          "% of Cells",
+        ]);
+        const rowElements = await page
+          .locator(`${tableSelector} tbody tr`)
+          .elementHandles();
+        const rowCount = rowElements.length;
+        expect(rowCount).toBeGreaterThan(1);
+      });
+      test("Enriched marker gene table is updated by the organism dropdown", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+        const rowElementsBefore = await page
+          .locator(`${tableSelector} tbody tr`)
+          .elementHandles();
+        const rowCountBefore = rowElementsBefore.length;
+        expect(rowCountBefore).toBeGreaterThan(1);
+        const firstRowContentBefore = await rowElementsBefore[0].textContent();
 
-  test("Enriched gene table is displayed with columns and at least one entry displayed", async ({
-    page,
-  }) => {
-    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
-    const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+        const dropdown = page.getByTestId(
+          CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN
+        );
+        await waitForElementAndClick(dropdown);
+        await dropdown.press("ArrowDown");
+        await dropdown.press("Enter");
 
-    const columnHeaderElements = await page
-      .locator(`${tableSelector} thead th`)
-      .elementHandles();
-    // get text content of each column header
-    const columnHeaders = await Promise.all(
-      columnHeaderElements.map(async (element) => {
-        return await element.textContent();
-      })
-    );
-    expect(columnHeaders).toEqual([
-      "Symbol",
-      "Name",
-      "Expression Score",
-      "% of Cells",
-    ]);
-    const rowElements = await page
-      .locator(`${tableSelector} tbody tr`)
-      .elementHandles();
-    const rowCount = rowElements.length;
-    expect(rowCount).toBeGreaterThan(1);
-  });
+        const rowElementsAfter = await page
+          .locator(`${tableSelector} tbody tr`)
+          .elementHandles();
+        const rowCountAfter = rowElementsAfter.length;
+        expect(rowCountAfter).toBeGreaterThan(1);
+        const firstRowContentAfter = await rowElementsAfter[0].textContent();
+        expect(firstRowContentBefore).not.toBe(firstRowContentAfter);
+      });
+    });
 
-  test("Enriched marker gene table is updated by the organism dropdown", async ({
-    page,
-  }) => {
-    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
-    const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
-    const rowElementsBefore = await page
-      .locator(`${tableSelector} tbody tr`)
-      .elementHandles();
-    const rowCountBefore = rowElementsBefore.length;
-    expect(rowCountBefore).toBeGreaterThan(1);
-    const firstRowContentBefore = await rowElementsBefore[0].textContent();
+    describe("Source Data Table", () => {
+      test("Source data table is displayed with columns and at least one entry displayed", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        const tableSelector = `[data-testid='${CELL_CARD_SOURCE_DATA_TABLE}']`;
 
-    const dropdown = page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN);
-    await dropdown.waitFor({ timeout: 5000 });
-    await dropdown.click();
-    await dropdown.press("ArrowDown");
-    await dropdown.press("Enter");
+        const columnHeaderElements = await page
+          .locator(`${tableSelector} thead th`)
+          .elementHandles();
+        // get text content of each column header
+        const columnHeaders = await Promise.all(
+          columnHeaderElements.map(async (element) => {
+            return await element.textContent();
+          })
+        );
+        expect(columnHeaders).toEqual([
+          "Collection",
+          "Publication",
+          "Tissue",
+          "Disease",
+          "Organism",
+        ]);
+        const rowElements = await page
+          .locator(`${tableSelector} tbody tr`)
+          .elementHandles();
+        const rowCount = rowElements.length;
+        expect(rowCount).toBeGreaterThan(1);
+      });
+    });
 
-    const rowElementsAfter = await page
-      .locator(`${tableSelector} tbody tr`)
-      .elementHandles();
-    const rowCountAfter = rowElementsAfter.length;
-    expect(rowCountAfter).toBeGreaterThan(1);
-    const firstRowContentAfter = await rowElementsAfter[0].textContent();
-    expect(firstRowContentBefore).not.toBe(firstRowContentAfter);
-  });
+    describe("Ontology Viewer", () => {
+      test("Clicking on a parent node expands and collapses its children", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: 5000 });
+        const nodesLocator = `[data-testid^='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
+        // collapse node's children
+        const nodesBefore = await page.locator(nodesLocator).elementHandles();
+        const numNodesBefore = nodesBefore.length;
 
-  test("Source data table is displayed with columns and at least one entry displayed", async ({
-    page,
-  }) => {
-    await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
-    const tableSelector = `[data-testid='${CELL_CARD_SOURCE_DATA_TABLE}']`;
+        const node = page.getByTestId(
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0000540__0-has-children-isTargetNode=true`
+        );
+        await waitForElementAndClick(node);
 
-    const columnHeaderElements = await page
-      .locator(`${tableSelector} thead th`)
-      .elementHandles();
-    // get text content of each column header
-    const columnHeaders = await Promise.all(
-      columnHeaderElements.map(async (element) => {
-        return await element.textContent();
-      })
-    );
-    expect(columnHeaders).toEqual([
-      "Collection",
-      "Publication",
-      "Tissue",
-      "Disease",
-      "Organism",
-    ]);
-    const rowElements = await page
-      .locator(`${tableSelector} tbody tr`)
-      .elementHandles();
-    const rowCount = rowElements.length;
-    expect(rowCount).toBeGreaterThan(1);
+        const nodesAfter = await page.locator(nodesLocator).elementHandles();
+        const numNodesAfter = nodesAfter.length;
+        expect(numNodesBefore).toBeGreaterThan(numNodesAfter);
+
+        // expand node's children
+        await waitForElementAndClick(node);
+        const nodesAfter2 = await page.locator(nodesLocator).elementHandles();
+        const numNodesAfter2 = nodesAfter2.length;
+        expect(numNodesAfter2).toBeGreaterThan(numNodesAfter);
+      });
+      test("Clicking on a cell type label links to its Cell Card", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: 5000 });
+        const label = page.getByTestId(
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL_0000878__0`
+        );
+        await waitForElementAndClick(label);
+        await page.waitForURL(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000878`);
+        // Check that the new node is highlighted green (isTargetNode=true)
+        await page
+          .getByTestId(
+            `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0000878__0-has-children-isTargetNode=true`
+          )
+          .waitFor({ timeout: 5000 });
+      });
+      test("Clicking on a collapsed node stub displays hidden cell types", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: 5000 });
+
+        const nodesLocator = `[data-testid^='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
+        const nodesBefore = await page.locator(nodesLocator).elementHandles();
+        const numNodesBefore = nodesBefore.length;
+
+        const dummyChildLocator = `[data-testid='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-dummy-child-CL_0000842__0-has-children-isTargetNode=false']`;
+        const dummyChild = (
+          await page.locator(dummyChildLocator).elementHandles()
+        )[0];
+        // check that dummyChild is clickable
+        const isVisible = await dummyChild.isVisible();
+        expect(isVisible).toBe(true);
+        await dummyChild.click();
+
+        const nodesAfter = await page.locator(nodesLocator).elementHandles();
+        const numNodesAfter = nodesAfter.length;
+        expect(numNodesAfter).toBeGreaterThan(numNodesBefore);
+      });
+      test("Clicking the full screen button maximizes the ontology viewer", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        const ontologyDagView = page.getByTestId(
+          CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER
+        );
+        await ontologyDagView.waitFor({ timeout: 5000 });
+        const ontologyDagViewSizeBefore = await ontologyDagView.boundingBox();
+        await ontologyDagView.hover();
+        const fullScreenButton = page.getByTestId(
+          CELL_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
+        );
+        await waitForElementAndClick(fullScreenButton);
+
+        const ontologyDagViewSizeAfter = await ontologyDagView.boundingBox();
+        expect(ontologyDagViewSizeAfter?.width).toBeGreaterThan(
+          ontologyDagViewSizeBefore?.width ?? 0
+        );
+      });
+      test("Node tooltip displays on hover", async ({ page }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: 5000 });
+
+        const node = page.getByTestId(
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0000540__0-has-children-isTargetNode=true`
+        );
+        await node.hover();
+        await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+      });
+    });
+    describe("CellCard Sidebar", () => {
+      test("Clicking on the navbar scrolls to the section", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        const navbar = page.getByTestId(CELL_CARD_NAVIGATION_SIDEBAR);
+
+        // scroll to the bottom
+        const section4 = page.getByTestId("section-4");
+        await section4.scrollIntoViewIfNeeded();
+
+        // check that source data is in viewport
+        const sourceData = page.getByTestId(CELL_CARD_SOURCE_DATA_TABLE);
+        await sourceData.waitFor({ timeout: 5000 });
+        expect(sourceData).toBeInViewport();
+
+        // get the second navbar tab (ontology) and click to scroll
+        const elements = await navbar
+          .locator(".MuiButtonBase-root.MuiTab-root")
+          .elementHandles();
+        const tab = elements[1];
+        await tab.click();
+
+        // check that ontology is in viewport
+        const ontologyView = page.getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW);
+        await ontologyView.waitFor({ timeout: 5000 });
+        expect(ontologyView).toBeInViewport();
+
+        // check that source data is not in viewport
+        expect(sourceData).not.toBeInViewport();
+      });
+    });
   });
 });
 
@@ -276,6 +424,11 @@ async function isElementVisible(page: Page, testId: string) {
     },
     { page }
   );
+}
+
+async function waitForElementAndClick(locator: Locator) {
+  await locator.waitFor({ timeout: 5000 });
+  await locator.click();
 }
 
 async function countLocator(locator: Locator) {

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Autocomplete } from "@mui/material";
-import { fontBodyXs, fontCapsXxxs, getColors } from "czifui";
+import { fontBodyXs, fontCapsXxxs, getColors } from "@czi-sds/components";
 
 export const StyledAutocomplete = styled(Autocomplete)`
   height: 32px;

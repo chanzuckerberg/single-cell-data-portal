@@ -5,7 +5,7 @@ import {
   ComplexFilterInputDropdown,
   getColors,
   getSpaces,
-} from "czifui";
+} from "@czi-sds/components";
 import { Label, Wrapper as RawWrapper } from "./components/common/style";
 
 export const StyledComplexFilterInputDropdown = styled(

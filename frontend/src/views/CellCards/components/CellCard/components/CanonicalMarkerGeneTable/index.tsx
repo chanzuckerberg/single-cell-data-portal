@@ -13,7 +13,7 @@ import Link from "../common/Link";
 import { useCanonicalMarkers } from "src/common/queries/cellCards";
 import DropdownSelect from "../common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material";
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
 
@@ -25,9 +25,9 @@ export const CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN =
 interface TableRow {
   symbol: string;
   name: string;
-  publications: ReactElement | string;
+  references: ReactElement | string;
 }
-const tableColumns: Array<keyof TableRow> = ["symbol", "name", "publications"];
+const tableColumns: Array<keyof TableRow> = ["symbol", "name", "references"];
 
 interface Props {
   cellTypeId: string;
@@ -95,7 +95,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
       rows.push({
         symbol: markerGene.symbol,
         name: markerGene.name,
-        publications: publicationLinks,
+        references: publicationLinks,
       });
     }
     return rows;
@@ -119,7 +119,7 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
           <TableTitle>Marker Genes</TableTitle>
           <HelpTooltip
             text={
-              <>
+              <div>
                 {
                   "The below marker genes and associated publications were derived from the "
                 }
@@ -127,14 +127,18 @@ const CanonicalMarkerGeneTable = ({ cellTypeId }: Props) => {
                   label={
                     "Anatomical Structures, Cell Types and Biomarkers (ASCT+B)"
                   }
-                  url={
-                    "https://hubmapconsortium.github.io/ccf/pages/ccf-anatomical-structures.html"
-                  }
+                  url={"https://humanatlas.io/asctb-tables"}
                 />
                 {
                   " tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
                 }
-              </>
+                <br />
+                <br />
+                <i>
+                  Quardokus, Ellen, Bruce W. Herr II, Lisel Record, Katy Börner.
+                  2022. HuBMAP ASCT+B Tables. Accessed May 16, 2023.
+                </i>
+              </div>
             }
           />
         </TableTitleInnerWrapper>

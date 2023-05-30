@@ -101,7 +101,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
             <TableTitle>Highly Expressed Genes</TableTitle>
             <HelpTooltip
               text={
-                <>
+                <div>
                   {
                     "The marker genes listed below are computationally derived from the "
                   }
@@ -116,7 +116,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
                     url={ROUTES.FMG_DOCS}
                   />
                   {"."}
-                </>
+                </div>
               }
             />
           </TableTitleInnerWrapper>
@@ -129,7 +129,7 @@ const EnrichedGenesTable = ({ cellTypeId }: Props) => {
                 testId={CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN}
               />
               <Link
-                url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}`}
+                url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"
               />
             </TableTitleInnerWrapper>
