@@ -14,6 +14,7 @@ import {
   formatLabel,
   X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
+  X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
 } from "../../utils";
 import {
   XAxisWrapper,
@@ -22,6 +23,7 @@ import {
   GeneButtonStyle,
   XAxisGeneName,
   InfoButtonWrapper,
+  HoverContainer,
 } from "./style";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { StyledImage } from "../YAxisChart/style";
@@ -29,6 +31,8 @@ import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
 interface Props {
   geneNames: string[];
 }
+
+export const GENE_LABEL_HOVER_CONTAINER_ID = "gene-hover-container";
 
 function GeneButton({
   geneName,
@@ -48,13 +52,16 @@ function GeneButton({
   `;
   const formattedLabel = formatLabel(
     geneName,
-    X_AXIS_CHART_HEIGHT_PX,
+    X_AXIS_CHART_HEIGHT_PX - X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
     currentFont
   );
 
   return (
     <GeneButtonStyle data-testid={`gene-label-${geneName}`}>
-      <XAxisLabel className={"gene-label-container"}>
+      <HoverContainer
+        id={GENE_LABEL_HOVER_CONTAINER_ID}
+        data-testid={GENE_LABEL_HOVER_CONTAINER_ID}
+      >
         <div
           data-testid={`gene-delete-icon-${geneName}`}
           className="gene-delete-icon"
@@ -68,34 +75,34 @@ function GeneButton({
         >
           <Icon sdsIcon="trashCan" sdsSize="s" sdsType="interactive"></Icon>
         </div>
+
+        <InfoButtonWrapper
+          data-testid="gene-info-button-x-axis"
+          className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+          onClick={() => {
+            if (!dispatch) return;
+            track(EVENTS.WMG_GENE_INFO, {
+              gene: geneName,
+            });
+            // This will populate gene info and clear cell type info so that FMG panel closes
+            dispatch(selectGeneInfoFromXAxis(geneName));
+          }}
+        >
+          <StyledImage
+            src={InfoSVG.src}
+            width="10"
+            height="10"
+            alt={`display gene info for ${geneName}`}
+            data-testid={`gene-info-icon-${geneName}`}
+          />
+        </InfoButtonWrapper>
+      </HoverContainer>
+      <XAxisLabel className={"gene-label-container"}>
         <XAxisGeneName
           active={genesToDelete.includes(geneName)}
           font={currentFont}
           data-testid={`gene-name-${geneName}`}
         >
-          <InfoButtonWrapper
-            data-testid="gene-info-button-x-axis"
-            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-            onClick={() => {
-              if (!dispatch) return;
-
-              track(EVENTS.WMG_GENE_INFO, {
-                gene: geneName,
-              });
-
-              // This will populate gene info and clear cell type info so that FMG panel closes
-              dispatch(selectGeneInfoFromXAxis(geneName));
-            }}
-          >
-            <StyledImage
-              src={InfoSVG.src}
-              width="10"
-              height="10"
-              alt={`display gene info for ${geneName}`}
-              data-testid={`gene-info-icon-${geneName}`}
-            />
-          </InfoButtonWrapper>
-
           {formattedLabel}
         </XAxisGeneName>
       </XAxisLabel>

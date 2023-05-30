@@ -13,6 +13,7 @@ import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
+import { searchAndAddGene } from "tests/utils/wmgUtils";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -501,16 +502,20 @@ describe("Where's My Gene", () => {
   });
 
   describe("Gene info", () => {
+    const TEST_GENE = "DMP1";
+
     test("Display gene info panel in sidebar", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
       await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
       await selectFirstNOptions(1, page);
 
-      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-      await selectFirstNOptions(3, page);
+      await searchAndAddGene(page, TEST_GENE);
 
       await waitForHeatmapToRender(page);
+
+      // hover over gene label
+      await page.getByTestId(`gene-name-${TEST_GENE}`).hover();
 
       await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
 
@@ -535,8 +540,12 @@ describe("Where's My Gene", () => {
         name: "lung",
       });
 
-      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-      await selectFirstNOptions(3, page);
+      await searchAndAddGene(page, TEST_GENE);
+
+      await waitForHeatmapToRender(page);
+
+      // hover over gene label
+      await page.getByTestId(`gene-name-${TEST_GENE}`).hover();
 
       await waitForHeatmapToRender(page);
 
@@ -556,6 +565,9 @@ describe("Where's My Gene", () => {
       await getButtonAndClick(page, RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID);
 
       await waitForElementToBeRemoved(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
+
+      // hover over gene label
+      await page.getByTestId(`gene-name-${TEST_GENE}`).hover();
 
       await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
 

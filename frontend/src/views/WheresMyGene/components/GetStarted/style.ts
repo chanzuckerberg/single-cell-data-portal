@@ -88,7 +88,7 @@ export const StyledStepTwo = styled.div`
   z-index: ${Z_INDEX};
   flex: 0;
 
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
+  min-height: ${X_AXIS_CHART_HEIGHT_PX}px;
   margin-left: ${GAP_PX}px;
 `;
 

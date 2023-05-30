@@ -35,23 +35,23 @@ export const XAxisLabel = styled.div`
   writing-mode: vertical-rl;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   display: flex;
-  justify-content: space-between;
+  justify-content: end;
   align-items: center;
+  margin-bottom: 2px;
 `;
 
 export const XAxisGeneName = styled.span`
-  display: flex;
   transform: scale(-1, -1);
-  overflow: hidden;
   ${selectedStyle}
 `;
 
 export const InfoButtonWrapper = styled.div`
-  transform: scale(-1, -1);
+  transform: scale(1, 1);
   cursor: pointer;
   display: flex;
   margin-bottom: 4px;
   margin-top: 4px;
+  justify-content: center;
 `;
 
 export const GeneButtonStyle = styled.div`
@@ -59,18 +59,24 @@ export const GeneButtonStyle = styled.div`
   border: none;
   z-index: 2;
   display: inline-flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: end;
   white-space: nowrap;
   overflow: hidden;
+  flex-direction: column;
+  align-items: center;
 
-  .gene-delete-icon {
-    visibility: hidden;
+  :hover {
+    #gene-hover-container {
+      visibility: visible;
+    }
   }
-  .gene-label-container:hover .gene-delete-icon {
-    visibility: visible;
-    cursor: pointer;
-  }
+`;
+
+export const HoverContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  visibility: hidden;
 `;
 
 export const CellCountLabel = styled.div`
