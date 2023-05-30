@@ -1,4 +1,3 @@
-import { Mark } from "@mui/base/SliderUnstyled";
 import Slider from "@mui/material/Slider";
 import React, { SyntheticEvent, useState } from "react";
 import {
@@ -28,7 +27,7 @@ interface Props {
  * @param values
  * @returns Array of slider marks.
  */
-function buildMarks(values: number[]): Mark[] {
+function buildMarks(values: number[]) {
   return values.map((value) => {
     return { label: formatNumberToScale(value), value: value };
   });

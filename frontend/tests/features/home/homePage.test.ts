@@ -1,10 +1,10 @@
-import { Page, expect, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import { goToPage, tryUntil } from "tests/utils/helpers";
 
 const { describe } = test;
-const COLLECTION_LINK = "collection-link";
+const COLLECTIONS_LINK_ID = "collections-link";
 const SCROLL_Y_PX = 999999;
 
 describe("Homepage", () => {
@@ -16,12 +16,12 @@ describe("Homepage", () => {
       },
       { page }
     );
-    await expect(page.getByTestId(COLLECTION_LINK)).toBeVisible();
+    await expect(page.getByTestId(COLLECTIONS_LINK_ID)).toBeVisible();
 
     await isPageScrollableToSeeSiteMap(page);
 
     // check collection link works
-    await page.getByTestId(COLLECTION_LINK).click();
+    await page.getByTestId(COLLECTIONS_LINK_ID).click();
     await page.waitForURL("**" + ROUTES.COLLECTIONS);
 
     await isGlobalLayoutWrapperScrollable(page);

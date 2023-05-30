@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Button, Icon } from "czifui";
+import { Button, Icon } from "@czi-sds/components";
 import {
   Position,
   SideBar as SideBarWrapper,
@@ -81,6 +81,7 @@ export default function SideBar({
       <SideBarPositionerComponent isExpanded={isExpanded}>
         <SideBarToggleButtonWrapper>
           <Button
+            data-testid="side-bar-toggle-button"
             disabled={disabled}
             endIcon={
               <Icon

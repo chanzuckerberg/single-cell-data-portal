@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CellCardDescription, Source, Wrapper } from "./style";
 import { useDescription, useClDescription } from "src/common/queries/cellCards";
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 

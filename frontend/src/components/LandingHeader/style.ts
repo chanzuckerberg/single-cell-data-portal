@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getSpaces } from "czifui";
+import { CommonThemeProps, getSpaces } from "@czi-sds/components";
 import { PT_TEXT_COLOR } from "../common/theme";
 import Nav from "src/components/Header/components/Nav";
 import { NavDivider } from "src/components/Header/components/Nav/components/NavDivider/style";

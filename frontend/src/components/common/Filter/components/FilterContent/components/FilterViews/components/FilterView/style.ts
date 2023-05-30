@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Divider } from "@mui/material";
-import { CommonThemeProps, getSpaces } from "czifui";
+import { CommonThemeProps, getSpaces } from "@czi-sds/components";
 import { scrollbar } from "src/components/common/Filter/components/FilterContent/components/common/style";
 
 const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;

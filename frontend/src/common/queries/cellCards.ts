@@ -66,7 +66,6 @@ export function useCellCardQuery<T = CellCardResponse>(
   cellTypeId = "" // Empty string if cell type is not needed for fetch function
 ): UseQueryResult<T> {
   const { queryKey, url: rawUrl } = QUERY_MAPPING[dataType];
-
   return useQuery(
     cellTypeId ? [queryKey, cellTypeId] : [queryKey],
     ({ signal }) =>
@@ -84,7 +83,7 @@ export function useCellCardQuery<T = CellCardResponse>(
 /* ========== ontology_tree ========== */
 export const USE_CELL_ONTOLOGY_TREE_QUERY = {
   entities: [ENTITIES.CELL_CARDS_CELL_ONTOLOGY_TREE],
-  id: "cell-explorer-cell-ontology-tree-query",
+  id: "cell-cards-cell-ontology-tree-query",
 };
 
 export interface CellOntologyTreeResponse {
@@ -93,7 +92,6 @@ export interface CellOntologyTreeResponse {
   n_cells_rollup: number;
   n_cells: number;
   children?: this[];
-  _children?: this[];
 }
 
 export const useCellOntologyTree =
@@ -104,7 +102,7 @@ export const useCellOntologyTree =
 /* ========== ontology_tree_state ========== */
 export const USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY = {
   entities: [ENTITIES.CELL_CARDS_INITIAL_CELL_ONTOLOGY_TREE_STATE],
-  id: "cell-explorer-cell-ontology-tree-query",
+  id: "cell-cards-cell-ontology-tree-state-query",
 };
 
 export interface InitialCellOntologyTreeStateResponse {
@@ -126,7 +124,7 @@ export const useCellOntologyTreeState = (
 /* ========== source_data ========== */
 export const USE_SOURCE_DATA_QUERY = {
   entities: [ENTITIES.CELL_CARDS_SOURCE_DATA],
-  id: "cell-explorer-source-data-query",
+  id: "cell-cards-source-data-query",
 };
 
 interface SourceDataQueryResponseEntry {
@@ -153,7 +151,7 @@ export const useSourceData = (
 /* ========== enriched_genes ========== */
 export const USE_ENRICHED_GENES_QUERY = {
   entities: [ENTITIES.CELL_CARDS_ENRICHED_GENES],
-  id: "cell-explorer-enriched-genes-query",
+  id: "cell-cards-enriched-genes-query",
 };
 
 interface EnrichedGenesQueryResponseEntry {
@@ -178,7 +176,7 @@ export const useEnrichedGenes = (
 /* ========== canonical_markers ========== */
 export const USE_CANONICAL_MARKERS_QUERY = {
   entities: [ENTITIES.CELL_CARDS_CANONICAL_MARKERS],
-  id: "cell-explorer-canonical-markersquery",
+  id: "cell-cards-canonical-markersquery",
 };
 
 interface CanonicalMarkersQueryResponseEntry {
@@ -205,7 +203,7 @@ export const useCanonicalMarkers = (
 /* ========== CL description ========== */
 export const USE_CL_DESCRIPTION_QUERY = {
   entities: [ENTITIES.CELL_CARDS_CL_DESCRIPTION],
-  id: "cell-explorer-cl-description-query",
+  id: "cell-cards-cl-description-query",
 };
 
 export type ClDescriptionQueryResponse = string;
@@ -219,7 +217,7 @@ export const useClDescription = (
 /* ========== description ========== */
 export const USE_DESCRIPTION_QUERY = {
   entities: [ENTITIES.CELL_CARDS_DESCRIPTION],
-  id: "cell-explorer-description-query",
+  id: "cell-cards-description-query",
 };
 
 export type DescriptionQueryResponse = string;
