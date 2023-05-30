@@ -83,8 +83,7 @@ export async function downloadAndVerifyFiles(
   });
 }
 
-export async function deleteDownloadedFiles(filePath: string, page: Page) {
-  await page.waitForTimeout(3000);
+export async function deleteDownloadedFiles(filePath: string) {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);
@@ -139,12 +138,6 @@ export const getCsvMetadata = (
     });
   });
 };
-
-interface MetadataVerificationOptions {
-  filterName: string;
-  data: string[];
-  noSelectionText?: string;
-}
 
 export const verifyMetadata = async (
   page: Page,
@@ -244,6 +237,11 @@ const verifyFilterValues = (
     data[6].includes(`# Sex Filter Values: ${sexFilterValue}`)
   ).toBeTruthy();
 };
+interface MetadataVerificationOptions {
+  filterName: string;
+  data: string[];
+  noSelectionText?: string;
+}
 
 export async function downloadGeneFile(
   page: Page,
@@ -354,7 +352,7 @@ async function compareImages(imagePath1: string, imagePath2: string) {
       maxHeight,
       { threshold: 0.95 }
     );
-    expect(numDiffPixels).toBeLessThan(400_000);
+    expect(numDiffPixels).toBeLessThan(400000);
   }
 }
 export async function compareSvg(
