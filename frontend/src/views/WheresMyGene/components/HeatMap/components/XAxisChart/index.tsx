@@ -24,6 +24,7 @@ import {
   XAxisGeneName,
   InfoButtonWrapper,
   HoverContainer,
+  DeleteButtonWrapper,
 } from "./style";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { StyledImage } from "../YAxisChart/style";
@@ -62,7 +63,7 @@ function GeneButton({
         id={GENE_LABEL_HOVER_CONTAINER_ID}
         data-testid={GENE_LABEL_HOVER_CONTAINER_ID}
       >
-        <div
+        <DeleteButtonWrapper
           data-testid={`gene-delete-icon-${geneName}`}
           className="gene-delete-icon"
           onClick={() => {
@@ -74,7 +75,7 @@ function GeneButton({
           }}
         >
           <Icon sdsIcon="trashCan" sdsSize="s" sdsType="interactive"></Icon>
-        </div>
+        </DeleteButtonWrapper>
 
         <InfoButtonWrapper
           data-testid="gene-info-button-x-axis"

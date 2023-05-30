@@ -54,13 +54,16 @@ export const InfoButtonWrapper = styled.div`
   justify-content: center;
 `;
 
+export const DeleteButtonWrapper = styled.div`
+  cursor: pointer;
+`;
+
 export const GeneButtonStyle = styled.div`
   background-color: white;
   border: none;
   z-index: 2;
   display: inline-flex;
   justify-content: space-between;
-  align-items: end;
   white-space: nowrap;
   overflow: hidden;
   flex-direction: column;
