@@ -1,4 +1,4 @@
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 import { ECharts, init } from "echarts";
 import { capitalize } from "lodash";
 import cloneDeep from "lodash/cloneDeep";

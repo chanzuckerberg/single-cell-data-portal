@@ -4,28 +4,28 @@ import { FC, useCallback, useState } from "react";
 import { useQueryClient } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
 import {
+  USE_COLLECTION,
   useCollection,
   useCollectionUploadLinks,
   useReuploadDataset,
-  USE_COLLECTION,
 } from "src/common/queries/collections";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { CollectionDatasetsGrid } from "src/components/Collection/components/CollectionDatasetsGrid/style";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
-import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
 import Toast from "src/views/Collection/components/Toast";
 import EmptyModal from "../EmptyModal";
+import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
 
 interface Props {
-  collectionID: Collection["id"];
+  collectionId: Collection["id"];
   visibility: Collection["visibility"];
   datasets: Array<Dataset>;
   isRevision: boolean;
 }
 
 const DatasetTab: FC<Props> = ({
-  collectionID: collectionId,
+  collectionId,
   visibility,
   datasets,
   isRevision,
@@ -77,6 +77,7 @@ const DatasetTab: FC<Props> = ({
       {isDatasetPresent ? (
         <CollectionDatasetsGrid
           accessType={collection?.access_type}
+          collectionId={collectionId}
           datasets={datasets}
           invalidateCollectionQuery={invalidateCollectionQuery}
           isRevision={isRevision}

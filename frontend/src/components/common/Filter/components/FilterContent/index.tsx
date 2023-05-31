@@ -81,7 +81,6 @@ function buildBasicFilterContent(
     return (
       <FilterMenu
         categoryFilterId={categoryFilterId}
-        isMultiselect // Can possibly be single select with future filter types
         isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
         onFilter={onFilter}
         pinnedValues={filterCategoryValuesWithCount(pinnedValues)}

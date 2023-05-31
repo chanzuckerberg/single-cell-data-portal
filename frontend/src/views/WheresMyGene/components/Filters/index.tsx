@@ -4,7 +4,7 @@ import {
   DefaultMenuSelectOption,
   InputDropdownProps,
   Tooltip,
-} from "czifui";
+} from "@czi-sds/components";
 import isEqual from "lodash/isEqual";
 import {
   Dispatch,

@@ -1,6 +1,11 @@
 import { css } from "@emotion/css";
 import styled from "@emotion/styled";
-import { fontBodyXs, getColors, getSpaces, TooltipTable } from "czifui";
+import {
+  fontBodyXs,
+  getColors,
+  getSpaces,
+  TooltipTable,
+} from "@czi-sds/components";
 import { X_AXIS_CHART_HEIGHT_PX } from "../../utils";
 
 export const ChartContainer = styled.div`

@@ -3,9 +3,10 @@ import { useMemo } from "react";
 import RawMoreDropdown from "src/components/common/MoreDropdown";
 import { Props as ChooserProps } from "src/components/DropboxChooser";
 import Menu from "./components/Menu";
+import { Collection } from "src/common/entities";
 
 interface Props {
-  collectionId?: string;
+  collectionId: Collection["id"];
   datasetId?: string;
   revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
@@ -14,7 +15,7 @@ interface Props {
 }
 
 const MoreDropdown = ({
-  collectionId = "",
+  collectionId,
   datasetId = "",
   revisionsEnabled,
   onUploadFile,

@@ -1,3 +1,4 @@
+import { ListSubheader } from "@czi-sds/components";
 import React from "react";
 import {
   CATEGORY_FILTER_ID,
@@ -7,7 +8,6 @@ import {
 } from "src/components/common/Filter/common/entities";
 import FilterCategoryViewPanel from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterCategoryViewPanel";
 import FilterViewList from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList";
-import { ViewHeader } from "../FilterView/style";
 
 interface Props {
   categoryFilterId: CATEGORY_FILTER_ID;
@@ -54,7 +54,7 @@ export default function FilterSinglePanelCategoryView({
         isZerosVisible={false}
         onFilter={onFilter}
         values={filteredViews}
-        ViewHeader={label ? <ViewHeader>{label}</ViewHeader> : undefined}
+        ViewHeader={label ? <ListSubheader>{label}</ListSubheader> : undefined}
       />
     </FilterCategoryViewPanel>
   );

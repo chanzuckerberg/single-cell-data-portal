@@ -425,6 +425,16 @@ class BusinessLogic(BusinessLogicInterface):
         datasets, _ = self.database_provider.get_all_mapped_datasets_and_collections()
         return datasets
 
+    def get_datasets_for_collections(self, collections: Iterable[CollectionVersion]) -> Iterable[DatasetVersion]:
+        datasets = []
+        for collection in collections:
+            datasest_ids = [d.id for d in collection.datasets]
+            collection_datasets: List[DatasetVersion] = [
+                self.database_provider.get_dataset_version(DatasetVersionId(id)) for id in datasest_ids
+            ]
+            datasets.extend(collection_datasets)
+        return datasets
+
     def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithPublishedDatasets]:
         """
         Retrieves all the datasets from the database that belong to a published collection
@@ -555,6 +565,12 @@ class BusinessLogic(BusinessLogicInterface):
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
         return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
+
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        """
+        Updates uri for an existing artifact_id
+        """
+        self.database_provider.update_dataset_artifact(artifact_id, artifact_uri)
 
     def create_collection_version(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
         """

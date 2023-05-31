@@ -139,12 +139,11 @@ def rollup_across_cell_type_descendants(
     dim_shapes = tuple(dim_shapes)
     array_to_sum = np.zeros(dim_shapes)
     # slot the numeric data into the multi-dimensional numpy array
-    array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
 
+    array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
     cell_types = cell_type_column.unique()
 
     summed = rollup_across_cell_type_descendants_array(array_to_sum, cell_types)
-
     # extract numeric data and write back into the dataframe
     summed = summed[tuple(dim_indices)]
     dtypes = numeric_df.dtypes

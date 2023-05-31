@@ -5,7 +5,7 @@ import {
   getColors,
   getFontWeights,
   getSpaces,
-} from "czifui";
+} from "@czi-sds/components";
 
 const gray300 = (props: CommonThemeProps) => getColors(props)?.gray[300];
 const gray500 = (props: CommonThemeProps) => getColors(props)?.gray[500];

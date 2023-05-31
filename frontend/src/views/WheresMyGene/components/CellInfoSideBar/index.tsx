@@ -1,4 +1,4 @@
-import { Button, Icon, Tooltip } from "czifui";
+import { Button, Icon, Tooltip } from "@czi-sds/components";
 import React, { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";

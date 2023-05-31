@@ -1,42 +1,47 @@
-import { MenuItem } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
+import { Icon } from "@czi-sds/components";
+import React from "react";
+import { ListItemIcon, ListItemText } from "@mui/material";
 import {
   CATEGORY_FILTER_ID,
   OnFilterFn,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
-import { SelectionIcon } from "../../../../../../common/style";
-import { MenuItemWrapper } from "./style";
+import { ListItem } from "./style";
 
 interface Props {
   categoryFilterId: CATEGORY_FILTER_ID;
-  isMultiselect: boolean;
   menuItems: SelectCategoryValueView[];
   onFilter: OnFilterFn;
 }
 
 export default function FilterMenuItems({
   categoryFilterId,
-  isMultiselect,
   menuItems,
   onFilter,
 }: Props): JSX.Element {
+  // (clevercanary): For optimal rendering performance for the PUBLICATION_AUTHORS category filter, the SDS ListItem
+  // and Mui ListItemButton components are substituted a standard li element.
   return (
     <>
       {menuItems.map(({ categoryValueId, count, label, selected }) => (
-        <MenuItemWrapper key={categoryValueId} isSelected={selected}>
-          <MenuItem
-            icon={
-              <SelectionIcon
-                icon={selected ? IconNames.TICK : IconNames.BLANK}
-              />
-            }
-            labelElement={count}
-            onClick={() => onFilter(categoryFilterId, categoryValueId, label)}
-            shouldDismissPopover={!isMultiselect}
-            text={label}
+        <ListItem
+          key={categoryValueId}
+          onClick={() => onFilter(categoryFilterId, categoryValueId, label)}
+          selected={selected}
+        >
+          {/* Icon */}
+          <ListItemIcon>
+            {selected && (
+              <Icon sdsIcon="check" sdsSize="s" sdsType="iconButton" />
+            )}
+          </ListItemIcon>
+          {/* List item text and count */}
+          <ListItemText
+            disableTypography
+            primary={<span>{label}</span>}
+            secondary={<span>{count}</span>}
           />
-        </MenuItemWrapper>
+        </ListItem>
       ))}
     </>
   );
