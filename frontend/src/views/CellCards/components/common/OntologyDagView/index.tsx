@@ -45,6 +45,7 @@ import {
   LEFT_RIGHT_PADDING_PX,
   SIDEBAR_COLUMN_GAP_PX,
 } from "../../CellCard/style";
+import { init } from "echarts";
 
 export const CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP =
   "cell-card-ontology-dag-view-tooltip";
@@ -83,9 +84,6 @@ export default function OntologyDagView({
   initialWidth,
 }: TreeProps) {
   skinnyMode = cellTypeId ? skinnyMode : true;
-
-  // Adjusts the cell type id to match the format used in the ontology tree
-  cellTypeId = cellTypeId?.replace(":", "_");
 
   const defaultHeight = initialHeight ?? DEFAULT_ONTOLOGY_HEIGHT;
   const defaultWidth = initialWidth ?? DEFAULT_ONTOLOGY_WIDTH;
@@ -472,7 +470,7 @@ function setCellCountsInRawTree(
   graph: TreeNodeWithState,
   tissueCounts: TissueCountsPerCellType
 ) {
-  const cellTypeId = graph.id.split("__").at(0)?.replace("_", ":") ?? graph.id;
+  const cellTypeId = graph.id.split("__").at(0) ?? graph.id;
 
   graph.n_cells = tissueCounts[cellTypeId]?.n_cells ?? graph.n_cells;
   graph.n_cells_rollup =
