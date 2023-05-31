@@ -496,6 +496,29 @@ class WmgApiV2Tests(unittest.TestCase):
             "'organism_ontology_term_id' is a required property - 'filter'", json.loads(response.data)["detail"]
         )
 
+    def test__filter_request_with_query_key_not_specified_in_api_spec_returns_400(self):
+        filter_dict = dict(
+            # these don't matter for the expected result
+            gene_ontology_term_ids=["gene_ontology_term_id_0"],
+            organism_ontology_term_id="organism_ontology_term_id_0",
+            tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+            # these matter for the expected result
+            development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+            self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
+        )
+
+        filter_request = dict(
+            filter=filter_dict,
+            is_rollup=True,
+        )
+
+        response = self.app.post("/wmg/v2/filters", json=filter_request)
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "Additional properties are not allowed ('is_rollup' was unexpected)", json.loads(response.data)["detail"]
+        )
+
     @patch("backend.wmg.api.v2.fetch_datasets_metadata")
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
@@ -522,10 +545,7 @@ class WmgApiV2Tests(unittest.TestCase):
                 self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
             )
 
-            filter_0_request = dict(
-                filter=filter_0,
-                is_rollup=True,
-            )
+            filter_0_request = dict(filter=filter_0)
 
             response = self.app.post("/wmg/v2/filters", json=filter_0_request)
 
@@ -549,7 +569,6 @@ class WmgApiV2Tests(unittest.TestCase):
                 "tissue_terms": [{"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],
                 "cell_type_terms": [{"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}],
             }
-            print(f"PRATHAP SAYS: {json.loads(response.data)}")
             self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
 
     @patch("backend.wmg.api.v2.fetch_datasets_metadata")
@@ -587,11 +606,7 @@ class WmgApiV2Tests(unittest.TestCase):
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                 )
 
-                filter_0_request = dict(
-                    filter=filter_0,
-                    # matters for this test
-                    is_rollup=True,
-                )
+                filter_0_request = dict(filter=filter_0)
 
                 filter_0_no_dev_stage_filter = dict(
                     # these don't matter for the expected result
@@ -602,7 +617,7 @@ class WmgApiV2Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=[],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                 )
-                filter_0_no_dev_stage_request = dict(filter=filter_0_no_dev_stage_filter, is_rollup=True)
+                filter_0_no_dev_stage_request = dict(filter=filter_0_no_dev_stage_filter)
 
                 filter_0_no_ethnicity_filter = dict(
                     # these don't matter for the expected result
@@ -613,7 +628,7 @@ class WmgApiV2Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
                     self_reported_ethnicity_ontology_term_ids=[],
                 )
-                filter_0_no_ethnicity_request = dict(filter=filter_0_no_ethnicity_filter, is_rollup=True)
+                filter_0_no_ethnicity_request = dict(filter=filter_0_no_ethnicity_filter)
                 # the values for dev_stage terms when a dev stage filter is included should match the values returned
                 # if no filter is passed in for dev stage
                 response = self.app.post("/wmg/v2/filters", json=filter_0_request)
@@ -667,7 +682,7 @@ class WmgApiV2Tests(unittest.TestCase):
                     {"self_reported_ethnicity_ontology_term_id_1": "self_reported_ethnicity_ontology_term_id_1_label"},
                     {"self_reported_ethnicity_ontology_term_id_2": "self_reported_ethnicity_ontology_term_id_2_label"},
                 ]
-                self_reported_ethnicity_0_request = dict(filter=self_reported_ethnicity_0_filter, is_rollup=True)
+                self_reported_ethnicity_0_request = dict(filter=self_reported_ethnicity_0_filter)
                 response = self.app.post("/wmg/v2/filters", json=self_reported_ethnicity_0_request)
                 dev_stage_terms = _sort_list_by_dictionary_keys(
                     json.loads(response.data)["filter_dims"]["development_stage_terms"]
@@ -696,7 +711,7 @@ class WmgApiV2Tests(unittest.TestCase):
                 expected_self_reported_ethnicity_term = [
                     {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
                 ]
-                self_reported_ethnicity_1_request = dict(filter=self_reported_ethnicity_1_filter, is_rollup=True)
+                self_reported_ethnicity_1_request = dict(filter=self_reported_ethnicity_1_filter)
                 response = self.app.post("/wmg/v2/filters", json=self_reported_ethnicity_1_request)
                 dev_stage_terms_no_dev_filter = _sort_list_by_dictionary_keys(
                     json.loads(response.data)["filter_dims"]["development_stage_terms"]
@@ -716,9 +731,7 @@ class WmgApiV2Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_1"],
                 )
-                self_reported_ethnicity_1_dev_1_request = dict(
-                    filter=self_reported_ethnicity_1_dev_1_filter, is_rollup=True
-                )
+                self_reported_ethnicity_1_dev_1_request = dict(filter=self_reported_ethnicity_1_dev_1_filter)
 
                 response = self.app.post("/wmg/v2/filters", json=self_reported_ethnicity_1_dev_1_request)
                 dev_stage_terms_dev_filter = _sort_list_by_dictionary_keys(
@@ -754,8 +767,8 @@ class WmgApiV2Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_2"],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_2"],
                 )
-                self_reported_ethnicity_2_request = dict(filter=self_reported_ethnicity_2_filter, is_rollup=True)
-                eth_2_dev_2_request = dict(filter=self_reported_ethnicity_2_dev_2_filter, is_rollup=True)
+                self_reported_ethnicity_2_request = dict(filter=self_reported_ethnicity_2_filter)
+                eth_2_dev_2_request = dict(filter=self_reported_ethnicity_2_dev_2_filter)
                 response = self.app.post("/wmg/v2/filters", json=self_reported_ethnicity_2_request)
                 dev_stage_terms_eth_2_no_dev_filter = _sort_list_by_dictionary_keys(
                     json.loads(response.data)["filter_dims"]["development_stage_terms"]
