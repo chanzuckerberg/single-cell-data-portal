@@ -45,7 +45,6 @@ import {
   LEFT_RIGHT_PADDING_PX,
   SIDEBAR_COLUMN_GAP_PX,
 } from "../../CellCard/style";
-import { init } from "echarts";
 
 export const CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP =
   "cell-card-ontology-dag-view-tooltip";
