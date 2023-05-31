@@ -1,31 +1,45 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import InputAdornment from "@mui/material/InputAdornment";
 import { SectionItem, SectionTitle, StyledAutocomplete } from "./style";
 import { ROUTES } from "src/common/constants/routes";
-import { useCellTypes } from "src/common/queries/cellCards";
+import { useCellCards, useTissueCards } from "src/common/queries/cellCards";
 import { useRouter } from "next/router";
 
 export const CELL_CARD_SEARCH_BAR_TEXT_INPUT =
   "cell-card-search-bar-text-input";
 export const CELL_CARD_SEARCH_BAR = "cell-card-search-bar";
 
-interface CellType {
+interface Entity {
   id: string;
   label: string;
 }
 
 export default function CellCardSearchBar(): JSX.Element {
   const router = useRouter();
-  const { data: cellTypes } = useCellTypes();
+  const { data: tissueData } = useTissueCards();
+  const { data: cellTypes } = useCellCards();
+
+  const options: Entity[] = useMemo(() => {
+    if (!tissueData || !cellTypes) return [];
+    const entities: Entity[] = [];
+    for (const cellType of cellTypes) {
+      entities.push(cellType);
+    }
+    for (const tissue of tissueData) {
+      entities.push(tissue);
+    }
+    return entities;
+  }, [tissueData, cellTypes]);
 
   const [open, setOpen] = useState(false);
   const [inputValue, setValue] = useState("");
 
   // Used for keyboard navigation for cell type search
-  const [highlightedCellType, setHighlightedCellType] =
-    useState<CellType | null>(null);
+  const [highlightedEntity, setHighlightedEntity] = useState<Entity | null>(
+    null
+  );
 
   const handleFocus = () => {
     setOpen(true);
@@ -35,11 +49,19 @@ export default function CellCardSearchBar(): JSX.Element {
     setOpen(false);
   };
 
-  function changeCellType(cellTypeId: string) {
-    if (cellTypeId) {
-      router.push(`${ROUTES.CELL_CARDS}/${cellTypeId.replace(":", "_")}`);
-      document.getElementById(CELL_CARD_SEARCH_BAR)?.blur();
-      setOpen(false);
+  function changeEntity(entityId: string) {
+    if (entityId) {
+      if (entityId.startsWith("CL:")) {
+        router.push(`${ROUTES.CELL_CARDS}/${entityId.replace(":", "_")}`);
+        document.getElementById(CELL_CARD_SEARCH_BAR)?.blur();
+        setOpen(false);
+      } else {
+        router.push(
+          `${ROUTES.CELL_CARDS}/tissues/${entityId.replace(":", "_")}`
+        );
+        document.getElementById(CELL_CARD_SEARCH_BAR)?.blur();
+        setOpen(false);
+      }
     }
   }
 
@@ -53,25 +75,26 @@ export default function CellCardSearchBar(): JSX.Element {
           setValue("");
         }}
         onKeyDown={(event) => {
-          if (highlightedCellType && event.key === "Enter") {
-            changeCellType(highlightedCellType.id);
+          if (highlightedEntity && event.key === "Enter") {
+            changeEntity(highlightedEntity.id);
           }
         }}
         onHighlightChange={(_, value) => {
-          const cellType = value as CellType;
-          setHighlightedCellType(cellType);
+          const entity = value as Entity;
+          setHighlightedEntity(entity);
         }}
         disablePortal
         id={CELL_CARD_SEARCH_BAR}
-        options={cellTypes ?? []}
+        options={options}
         groupBy={(option) => {
-          const cellType = option as CellType;
-          return cellType.id.split(":").at(0) ?? "";
+          const entity = option as Entity;
+          return entity.id.split(":").at(0) ?? "";
         }}
         renderGroup={(params) => {
+          const title = params.group === "CL" ? "Cell Type" : "Tissue";
           return (
             <div key={params.key}>
-              <SectionTitle> Cell Type </SectionTitle>
+              <SectionTitle> {title} </SectionTitle>
               {params.children}
             </div>
           );
@@ -94,16 +117,16 @@ export default function CellCardSearchBar(): JSX.Element {
           />
         )}
         renderOption={(props, option) => {
-          const cellType = option as CellType;
+          const entity = option as Entity;
           return (
             <SectionItem
               {...props}
-              key={cellType.id}
+              key={entity.id}
               onClick={() => {
-                changeCellType(cellType.id);
+                changeEntity(entity.id);
               }}
             >
-              {cellType.label}
+              {entity.label}
             </SectionItem>
           );
         }}
@@ -111,26 +134,48 @@ export default function CellCardSearchBar(): JSX.Element {
         filterOptions={(options, state) => {
           return options
             .filter((option) => {
-              const cellType = option as CellType;
+              const entity = option as Entity;
               return (
-                cellType.label &&
-                cellType.label
+                entity.label &&
+                entity.label
                   .toLowerCase()
                   .includes(state.inputValue.toLowerCase())
               );
             })
-            .sort((cellTypeA, cellTypeB) => {
-              const aRaw = (cellTypeA as CellType).label;
-              const bRaw = (cellTypeB as CellType).label;
+            .sort((entity1, entity2) => {
+              const entityA = entity1 as Entity;
+              const entityB = entity2 as Entity;
+              const aRaw = entityA.label;
+              const bRaw = entityB.label;
               const a = aRaw.toLowerCase();
               const b = bRaw.toLowerCase();
               const searchTerm = state.inputValue.toLowerCase();
-              if (a.startsWith(searchTerm) && !b.startsWith(searchTerm)) {
+
+              // Determine if each item starts with the search term
+              const aStartsWithSearch = a.startsWith(searchTerm);
+              const bStartsWithSearch = b.startsWith(searchTerm);
+
+              // Determine if each item starts with "CL:"
+              const isA_CL = entityA.id.startsWith("CL:");
+              const isB_CL = entityB.id.startsWith("CL:");
+
+              // First, sort by search term
+              if (aStartsWithSearch && !bStartsWithSearch) {
                 return -1;
               }
-              if (!a.startsWith(searchTerm) && b.startsWith(searchTerm)) {
+              if (!aStartsWithSearch && bStartsWithSearch) {
                 return 1;
               }
+
+              // If neither or both start with the search term, then sort by "CL:" vs "UBERON:"
+              if (isA_CL && !isB_CL) {
+                return 1;
+              }
+              if (!isA_CL && isB_CL) {
+                return -1;
+              }
+
+              // If they are both "CL:" or both "UBERON:", then sort alphabetically
               return a.localeCompare(b);
             });
         }}
