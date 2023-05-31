@@ -107,11 +107,18 @@ export const USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY = {
   id: "cell-cards-cell-ontology-tree-state-query",
 };
 
+export interface TissueCountsPerCellType {
+  [cell_type_id: string]: {
+    n_cells: number;
+    n_cells_rollup: number;
+  }
+}
 export interface InitialCellOntologyTreeStateResponse {
   isExpandedNodes: string[];
   notShownWhenExpandedNodes: {
     [key: string]: string[];
   };
+  tissueCounts?: TissueCountsPerCellType
 }
 
 export const useCellOntologyTreeState = (

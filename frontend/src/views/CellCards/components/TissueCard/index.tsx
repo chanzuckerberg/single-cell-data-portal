@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useTissuesById } from "src/common/queries/cellCards";
 import {
@@ -25,6 +26,15 @@ export default function TissueCard(): JSX.Element {
   const tissuesById = useTissuesById();
   const tissueName =
     tissuesById?.[tissueId as keyof typeof tissuesById]?.label ?? tissueId;
+
+  // get current height of viewport
+  const [height, setHeight] = useState(1000);
+  useEffect(() => {
+    const onResize = () => setHeight(window.innerHeight - 200);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   return (
     <Wrapper>
@@ -54,9 +64,10 @@ export default function TissueCard(): JSX.Element {
       <FullScreenProvider>
         <OntologyDagView
           tissueId={tissueId}
+          tissueName={tissueName}
           skinnyMode={false}
           initialWidth={TISSUE_CARD_MAX_WIDTH}
-          initialHeight={560}
+          initialHeight={height}
         />
       </FullScreenProvider>
     </Wrapper>

@@ -50,6 +50,7 @@ interface StyledSVGProps {
 }
 export const StyledSVG = styled.svg<StyledSVGProps>`
   cursor: ${({ isDragging }) => (isDragging ? "grabbing" : "grab")};
+  touch-action: none;
   position: absolute;
   top: 0;
   left: 0;
