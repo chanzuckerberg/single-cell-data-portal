@@ -13,6 +13,7 @@ import {
 import { Zoom } from "@visx/zoom";
 import { RectClipPath } from "@visx/clip-path";
 import {
+  TissueCountsPerCellType,
   useCellOntologyTree,
   useCellOntologyTreeState,
   useCellOntologyTreeStateTissue,
@@ -62,11 +63,13 @@ interface BaseTreeProps {
 interface CellTypeIdProps extends BaseTreeProps {
   cellTypeId: string;
   tissueId?: never;
+  tissueName?: never;
 }
 
 interface TissueIdProps extends BaseTreeProps {
   cellTypeId?: never;
   tissueId: string;
+  tissueName: string;
 }
 
 type TreeProps = CellTypeIdProps | TissueIdProps;
@@ -74,6 +77,7 @@ type TreeProps = CellTypeIdProps | TissueIdProps;
 export default function OntologyDagView({
   cellTypeId,
   tissueId,
+  tissueName,
   skinnyMode,
   initialHeight,
   initialWidth,
@@ -173,26 +177,29 @@ export default function OntologyDagView({
   // other properties like the positions of the nodes.
   const { data: rawTree } = useCellOntologyTree();
 
-  // Contains the nodes that are initially expanded (expandedNodes) and the nodes that are collapsed
-  // by default when their parents are expanded (notShownWhenExpanded).
   const entityId = cellTypeId ?? tissueId ?? "";
   const useTreeState = cellTypeId
     ? useCellOntologyTreeState
     : useCellOntologyTreeStateTissue;
+  // Contains the nodes that are initially expanded (expandedNodes) and the nodes that are collapsed
+  // by default when their parents are expanded (notShownWhenExpanded).
+  // Also optionally contains cell counts for each node in the tissue ontology view (tissueCounts).
   const { data: initialTreeState } = useTreeState(entityId);
-
-  const expandedNodes = initialTreeState?.isExpandedNodes ?? [];
-  const notShownWhenExpandedNodes =
-    initialTreeState?.notShownWhenExpandedNodes ?? {};
 
   // Populate the tree data structure nodes with "isExpanded".
   const treeData: TreeNodeWithState | null = useMemo(() => {
     const newTree = rawTree ? JSON.parse(JSON.stringify(rawTree)) : null;
     if (newTree) {
+      const expandedNodes = initialTreeState?.isExpandedNodes ?? [];
       setIsExpandedInRawTree(newTree, expandedNodes);
+
+      const tissueCounts = initialTreeState?.tissueCounts ?? {};
+      if (Object.keys(tissueCounts).length > 0) {
+        setCellCountsInRawTree(newTree, tissueCounts);
+      }
     }
     return newTree;
-  }, [rawTree, expandedNodes, notShownWhenExpandedNodes]);
+  }, [rawTree, initialTreeState]);
 
   // Create the tree data structure
   const data = useMemo(() => {
@@ -200,6 +207,8 @@ export default function OntologyDagView({
     return hierarchy(treeData, (d) => {
       const newChildren: TreeNodeWithState[] = [];
       if (d.isExpanded) {
+        const notShownWhenExpandedNodes =
+          initialTreeState?.notShownWhenExpandedNodes ?? {};
         // If this node is a key in `notShownWhenExpandedNodes`, then it is a parent to nodes
         // that should be collapsed. Therefore, set `appendDummy` to `true`.
         // The term "dummy" here is used to describe the collapsed node containing hidden terms.
@@ -246,7 +255,7 @@ export default function OntologyDagView({
       }
       return newChildren.length ? newChildren : null;
     });
-  }, [treeData, triggerRender]);
+  }, [treeData, triggerRender, initialTreeState]);
 
   // Cleanup when the cell type id changes
   useEffect(() => {
@@ -378,9 +387,13 @@ export default function OntologyDagView({
                   left={tooltipLeft}
                 >
                   <div data-testid={CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP}>
-                    <b>{tooltipData?.n_cells}</b> cells
+                    <b>{tooltipData?.n_cells}</b>
+                    {" cells"}
+                    {tissueName ? ` in ${tissueName}` : ""}
                     <br />
-                    <b>{tooltipData?.n_cells_rollup}</b> descendant cells
+                    <b>{tooltipData?.n_cells_rollup}</b>
+                    {" descendant cells"}
+                    {tissueName ? ` in ${tissueName}` : ""}
                   </div>
                 </TooltipInPortal>
               )}
@@ -447,6 +460,23 @@ function setIsExpandedInRawTree(
   if (graph.children) {
     for (const child of graph.children) {
       setIsExpandedInRawTree(child, isExpandedNodes);
+    }
+  }
+}
+
+function setCellCountsInRawTree(
+  graph: TreeNodeWithState,
+  tissueCounts: TissueCountsPerCellType
+) {
+  const cellTypeId = graph.id.split("__").at(0)?.replace("_", ":") ?? graph.id;
+
+  graph.n_cells = tissueCounts[cellTypeId]?.n_cells ?? graph.n_cells;
+  graph.n_cells_rollup =
+    tissueCounts[cellTypeId]?.n_cells_rollup ?? graph.n_cells_rollup;
+
+  if (graph.children) {
+    for (const child of graph.children) {
+      setCellCountsInRawTree(child, tissueCounts);
     }
   }
 }
