@@ -22,6 +22,7 @@ import {
   getHeatmapHeight,
   getHeatmapWidth,
   X_AXIS_CHART_HEIGHT_PX,
+  X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../../HeatMap/utils";
 
@@ -509,6 +510,7 @@ async function generateImage({
     filter: screenshotFilter(tissueName),
     height:
       heatmapHeight +
+      X_AXIS_HOVER_CONTAINER_HEIGHT_PX +
       X_AXIS_CHART_HEIGHT_PX +
       DATA_MESSAGE_BANNER_HEIGHT_PX +
       LEGEND_HEIGHT_PX +

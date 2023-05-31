@@ -31,6 +31,7 @@ export interface State {
   } | null;
   geneInfoGene: string | null;
   compare?: CompareId;
+  xAxisHeight: number;
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -40,6 +41,8 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   ethnicities: [],
   sexes: [],
 };
+
+const INITIAL_X_AXIS_HEIGHT = 80;
 
 // (thuang): If you have derived states based on the state, use `useMemo`
 // to cache the derived states instead of putting them in the state.
@@ -57,6 +60,7 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
+  xAxisHeight: INITIAL_X_AXIS_HEIGHT,
 };
 
 export const REDUCERS = {
@@ -80,6 +84,7 @@ export const REDUCERS = {
   selectTissues,
   setSnapshotId,
   toggleGeneToDelete,
+  setXAxisHeight,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -123,6 +128,7 @@ function deleteSingleGene(
   return {
     ...state,
     selectedGenes: newSelectedGenes,
+    xAxisHeight: INITIAL_X_AXIS_HEIGHT,
   };
 }
 
@@ -130,6 +136,7 @@ function deleteAllGenes(state: State, _: PayloadAction<null>): State {
   return {
     ...state,
     selectedGenes: [],
+    xAxisHeight: INITIAL_X_AXIS_HEIGHT,
   };
 }
 
@@ -388,5 +395,12 @@ function selectCompare(
   return {
     ...state,
     compare: action.payload,
+  };
+}
+
+function setXAxisHeight(state: State, action: PayloadAction<number>): State {
+  return {
+    ...state,
+    xAxisHeight: action.payload,
   };
 }

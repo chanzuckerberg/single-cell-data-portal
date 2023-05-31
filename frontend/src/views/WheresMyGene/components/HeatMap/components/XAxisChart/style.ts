@@ -2,7 +2,6 @@ import styled from "@emotion/styled";
 import { SELECTED_STYLE } from "../../style";
 import {
   HEAT_MAP_BASE_CELL_WIDTH_PX,
-  X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
 
@@ -10,10 +9,15 @@ export const ECHART_AXIS_LABEL_COLOR_HEX = "#6e7079";
 export const ECHART_AXIS_LABEL_FONT_SIZE_PX = 12;
 export const GENE_INFO_BUTTON_PADDING_PX = 12;
 
-export const XAxisContainer = styled.div`
+interface XAxisContainerProps {
+  height: number;
+  width: number;
+}
+
+export const XAxisContainer = styled.div<XAxisContainerProps>`
   ${xAxisWidth}
   background-color: white;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
+  height: ${(props) => props.height}px;
   top: 0px;
   position: absolute;
   display: flex;
@@ -21,10 +25,16 @@ export const XAxisContainer = styled.div`
   justify-content: space-between;
 `;
 
-export const XAxisWrapper = styled.div`
+interface XAxisWrapperProps {
+  height: number;
+  width: number;
+  left: number;
+}
+
+export const XAxisWrapper = styled.div<XAxisWrapperProps>`
   ${xAxisWidthAndOffset}
   background-color: white;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
+  height: ${(props) => props.height}px;
   position: absolute;
   z-index: 2;
 `;
@@ -80,6 +90,7 @@ export const HoverContainer = styled.div`
   display: flex;
   flex-direction: column;
   visibility: hidden;
+  position: absolute;
 `;
 
 export const CellCountLabel = styled.div`
