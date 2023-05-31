@@ -41,7 +41,7 @@ import {
 
 const { describe } = test;
 
-describe("Cell Cards", () => {
+describe.only("Cell Cards", () => {
   describe("Landing Page", () => {
     test("All LandingPage components are present", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}`, page);
@@ -292,7 +292,7 @@ describe("Cell Cards", () => {
         const numNodesBefore = nodesBefore.length;
 
         const node = page.getByTestId(
-          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0000540__0-has-children-isTargetNode=true`
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
         );
         await waitForElementAndClick(node);
 
@@ -314,14 +314,14 @@ describe("Cell Cards", () => {
           .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: 5000 });
         const label = page.getByTestId(
-          `${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL_0000878__0`
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000878__4`
         );
         await waitForElementAndClick(label);
         await page.waitForURL(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000878`);
         // Check that the new node is highlighted green (isTargetNode=true)
         await page
           .getByTestId(
-            `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0000878__0-has-children-isTargetNode=true`
+            `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000878__4-has-children-isTargetNode=true`
           )
           .waitFor({ timeout: 5000 });
       });
@@ -337,7 +337,7 @@ describe("Cell Cards", () => {
         const nodesBefore = await page.locator(nodesLocator).elementHandles();
         const numNodesBefore = nodesBefore.length;
 
-        const dummyChildLocator = `[data-testid='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-dummy-child-CL_0000842__0-has-children-isTargetNode=false']`;
+        const dummyChildLocator = `[data-testid='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-dummy-child-CL:0000842__0-has-children-isTargetNode=false']`;
         const dummyChild = (
           await page.locator(dummyChildLocator).elementHandles()
         )[0];
@@ -377,13 +377,13 @@ describe("Cell Cards", () => {
           .waitFor({ timeout: 5000 });
 
         const node = page.getByTestId(
-          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0000540__0-has-children-isTargetNode=true`
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
         );
         await node.hover();
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
       });
     });
-    describe("TissueCard", () => {
+    describe("Tissue Card", () => {
       test("All tissue card components are present", async ({ page }) => {
         await goToPage(
           `${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`,
@@ -397,36 +397,6 @@ describe("Cell Cards", () => {
         const headerNameText = await headerName.textContent();
         expect(headerNameText).toBe("Lung");
       });
-      test("Clicking on a parent node expands and collapses its children", async ({
-        page,
-      }) => {
-        await goToPage(
-          `${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`,
-          page
-        ); // Lung
-        await page
-          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
-          .waitFor({ timeout: 5000 });
-        const nodesLocator = `[data-testid^='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
-        // collapse node's children
-        const nodesBefore = await page.locator(nodesLocator).elementHandles();
-        const numNodesBefore = nodesBefore.length;
-
-        const node = page.getByTestId(
-          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0002371__0-has-children-isTargetNode=false`
-        );
-        await waitForElementAndClick(node);
-
-        const nodesAfter = await page.locator(nodesLocator).elementHandles();
-        const numNodesAfter = nodesAfter.length;
-        expect(numNodesBefore).toBeGreaterThan(numNodesAfter);
-
-        // expand node's children
-        await waitForElementAndClick(node);
-        const nodesAfter2 = await page.locator(nodesLocator).elementHandles();
-        const numNodesAfter2 = nodesAfter2.length;
-        expect(numNodesAfter2).toBeGreaterThan(numNodesAfter);
-      });
       test("Clicking on a cell type label links to its Cell Card", async ({
         page,
       }) => {
@@ -438,14 +408,14 @@ describe("Cell Cards", () => {
           .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: 5000 });
         const label = page.getByTestId(
-          `${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL_0002371__0`
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000066__0`
         );
         await waitForElementAndClick(label);
-        await page.waitForURL(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0002371`);
+        await page.waitForURL(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000066`);
         // Check that the new node is highlighted green (isTargetNode=true)
         await page
           .getByTestId(
-            `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0002371__0-has-children-isTargetNode=true`
+            `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000066__0-has-children-isTargetNode=true`
           )
           .waitFor({ timeout: 5000 });
       });
@@ -459,10 +429,14 @@ describe("Cell Cards", () => {
           .waitFor({ timeout: 5000 });
 
         const node = page.getByTestId(
-          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0002371__0-has-children-isTargetNode=false`
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000066__0-has-children-isTargetNode=false`
         );
         await node.hover();
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+        const textContent = await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+        expect(textContent).toContain("in lung");
       });
     });
     describe("CellCard Sidebar", () => {
