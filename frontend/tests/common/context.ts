@@ -15,7 +15,7 @@ const VIEWPORT = {
 export const COMMON_PLAYWRIGHT_CONTEXT: Config["use"] = {
   acceptDownloads: true,
   /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-  actionTimeout: 0,
+  actionTimeout: 10000,
   headless: !isHeadful,
   ignoreHTTPSErrors: true,
   screenshot: "only-on-failure",
