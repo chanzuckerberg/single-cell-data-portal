@@ -287,7 +287,6 @@ export const USE_TISSUE_CARDS_QUERY = {
 interface TissueCardsQueryResponseEntry {
   id: string;
   label: string;
-  cell_types: string[];
 }
 
 export type TissueCardsQueryResponse = TissueCardsQueryResponseEntry[];
@@ -298,7 +297,7 @@ export const useTissueCards = (): UseQueryResult<TissueCardsQueryResponse> => {
 
 export function useTissuesById():
   | {
-      [id: string]: Pick<TissueCardsQueryResponseEntry, "label" | "cell_types">;
+      [id: string]: Pick<TissueCardsQueryResponseEntry, "label">;
     }
   | undefined {
   const { data, isLoading } = useTissueCards();
@@ -306,11 +305,11 @@ export function useTissuesById():
   return useMemo(() => {
     if (!data || isLoading) return;
     const accumulator: {
-      [id: string]: Pick<TissueCardsQueryResponseEntry, "label" | "cell_types">;
+      [id: string]: Pick<TissueCardsQueryResponseEntry, "label">;
     } = {};
     return data.reduce((acc, curr) => {
-      const { id, label, cell_types } = curr;
-      acc[id] = { label, cell_types };
+      const { id, label } = curr;
+      acc[id] = { label };
       return acc;
     }, accumulator);
   }, [data, isLoading]);

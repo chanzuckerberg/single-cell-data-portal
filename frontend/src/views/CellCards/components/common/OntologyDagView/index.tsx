@@ -75,6 +75,16 @@ interface TissueIdProps extends BaseTreeProps {
 
 type TreeProps = CellTypeIdProps | TissueIdProps;
 
+// This determines the initial Zoom position and scale
+const initialTransformMatrixDefault = {
+  scaleX: 1,
+  scaleY: 1,
+  translateX: 10,
+  translateY: 500 / 2,
+  skewX: 0,
+  skewY: 0,
+};
+
 export default function OntologyDagView({
   cellTypeId,
   tissueId,
@@ -90,16 +100,6 @@ export default function OntologyDagView({
 
   const [width, setWidth] = useState(defaultWidth);
   const [height, setHeight] = useState(defaultHeight);
-
-  // This determines the initial Zoom position and scale
-  const initialTransformMatrixDefault = {
-    scaleX: 1,
-    scaleY: 1,
-    translateX: 10,
-    translateY: height / 2,
-    skewX: 0,
-    skewY: 0,
-  };
 
   const [initialTransformMatrix, setInitialTransformMatrix] = useState<
     typeof initialTransformMatrixDefault
