@@ -390,10 +390,14 @@ export default function OntologyDagView({
                     <b>{tooltipData?.n_cells}</b>
                     {" cells"}
                     {tissueName ? ` in ${tissueName}` : ""}
-                    <br />
-                    <b>{tooltipData?.n_cells_rollup}</b>
-                    {" descendant cells"}
-                    {tissueName ? ` in ${tissueName}` : ""}
+                    {tooltipData?.n_cells !== tooltipData?.n_cells_rollup && (
+                      <>
+                        <br />
+                        <b>{tooltipData?.n_cells_rollup}</b>
+                        {" descendant cells"}
+                        {tissueName ? ` in ${tissueName}` : ""}
+                      </>
+                    )}
                   </div>
                 </TooltipInPortal>
               )}

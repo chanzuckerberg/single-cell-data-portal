@@ -157,7 +157,7 @@ describe("Cell Cards", () => {
             return await element.textContent();
           })
         );
-        expect(columnHeaders).toEqual(["Symbol", "Name", "Publications"]);
+        expect(columnHeaders).toEqual(["Symbol", "Name", "References"]);
         const rowElements = await page
           .locator(`${tableSelector} tbody tr`)
           .elementHandles();
@@ -328,7 +328,7 @@ describe("Cell Cards", () => {
       test("Clicking on a collapsed node stub displays hidden cell types", async ({
         page,
       }) => {
-        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
         await page
           .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: 5000 });
@@ -337,10 +337,13 @@ describe("Cell Cards", () => {
         const nodesBefore = await page.locator(nodesLocator).elementHandles();
         const numNodesBefore = nodesBefore.length;
 
-        const dummyChildLocator = `[data-testid^='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-dummy-child']`;
+        const dummyChildLocator = `[data-testid='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-dummy-child-CL_0000842__0-has-children-isTargetNode=false']`;
         const dummyChild = (
           await page.locator(dummyChildLocator).elementHandles()
         )[0];
+        // check that dummyChild is clickable
+        const isVisible = await dummyChild.isVisible();
+        expect(isVisible).toBe(true);
         await dummyChild.click();
 
         const nodesAfter = await page.locator(nodesLocator).elementHandles();
