@@ -62,6 +62,7 @@ paths:
                   required:
                     - gene_ontology_term_ids
                     - organism_ontology_term_id
+                  additionalProperties: false
                   properties:
                     gene_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
@@ -91,6 +92,7 @@ paths:
                     - disease
               required:
                 - filter
+              additionalProperties: false
       responses:
         "200":
           description: OK
@@ -573,11 +575,13 @@ paths:
           application/json:
             schema:
               type: object
+              #additionalProperties: false
               properties:
                 filter:
                   type: object
                   required:
                     - organism_ontology_term_id
+                  #additionalProperties: false
                   properties:
                     organism_ontology_term_id:
                       type: string
@@ -655,6 +659,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: false
               properties:
                 celltype:
                   type: string
