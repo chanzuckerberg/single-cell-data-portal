@@ -183,7 +183,7 @@ export default function OntologyDagView({
     : useCellOntologyTreeStateTissue;
   // Contains the nodes that are initially expanded (expandedNodes) and the nodes that are collapsed
   // by default when their parents are expanded (notShownWhenExpanded).
-  // Also optionally contains cell counts for each node in the tissue ontology view (tissueCounts).    
+  // Also optionally contains cell counts for each node in the tissue ontology view (tissueCounts).
   const { data: initialTreeState } = useTreeState(entityId);
 
   // Populate the tree data structure nodes with "isExpanded".
@@ -208,7 +208,7 @@ export default function OntologyDagView({
       const newChildren: TreeNodeWithState[] = [];
       if (d.isExpanded) {
         const notShownWhenExpandedNodes =
-          initialTreeState?.notShownWhenExpandedNodes ?? {};        
+          initialTreeState?.notShownWhenExpandedNodes ?? {};
         // If this node is a key in `notShownWhenExpandedNodes`, then it is a parent to nodes
         // that should be collapsed. Therefore, set `appendDummy` to `true`.
         // The term "dummy" here is used to describe the collapsed node containing hidden terms.
@@ -387,9 +387,13 @@ export default function OntologyDagView({
                   left={tooltipLeft}
                 >
                   <div data-testid={CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP}>
-                    <b>{tooltipData?.n_cells}</b>{" cells"}{tissueName ? ` in ${tissueName}`: ""}
+                    <b>{tooltipData?.n_cells}</b>
+                    {" cells"}
+                    {tissueName ? ` in ${tissueName}` : ""}
                     <br />
-                    <b>{tooltipData?.n_cells_rollup}</b>{" descendant cells"}{tissueName ? ` in ${tissueName}`: ""}
+                    <b>{tooltipData?.n_cells_rollup}</b>
+                    {" descendant cells"}
+                    {tissueName ? ` in ${tissueName}` : ""}
                   </div>
                 </TooltipInPortal>
               )}
@@ -464,10 +468,11 @@ function setCellCountsInRawTree(
   graph: TreeNodeWithState,
   tissueCounts: TissueCountsPerCellType
 ) {
-  const cellTypeId = graph.id.split("__").at(0)?.replace("_",":") ?? graph.id;
+  const cellTypeId = graph.id.split("__").at(0)?.replace("_", ":") ?? graph.id;
 
   graph.n_cells = tissueCounts[cellTypeId]?.n_cells ?? graph.n_cells;
-  graph.n_cells_rollup = tissueCounts[cellTypeId]?.n_cells_rollup ?? graph.n_cells_rollup;
+  graph.n_cells_rollup =
+    tissueCounts[cellTypeId]?.n_cells_rollup ?? graph.n_cells_rollup;
 
   if (graph.children) {
     for (const child of graph.children) {
