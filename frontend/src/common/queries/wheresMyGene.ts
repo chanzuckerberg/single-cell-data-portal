@@ -413,7 +413,6 @@ export interface FilterDimensions {
   tissue_terms: { id: string; name: string }[];
 }
 
-// (seve): Is this function used anywhere?
 export function useFilterDimensions(version: 1 | 2 = 1): {
   data: FilterDimensions;
   isLoading: boolean;
