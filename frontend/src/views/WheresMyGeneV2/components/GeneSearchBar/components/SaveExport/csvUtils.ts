@@ -2,19 +2,19 @@ import {
   FilterDimensions,
   OntologyTerm,
   COMPARE_OPTION_ID_FOR_AGGREGATED,
-} from "src/common/queries/wheresMyGeneV2";
+} from "src/common/queries/wheresMyGene";
 import {
   CompareId,
   getCompareOptionNameById,
-} from "src/views/WheresMyGeneV2/common/constants";
-import { State } from "src/views/WheresMyGeneV2/common/store";
+} from "src/views/WheresMyGene/common/constants";
+import { State } from "src/views/WheresMyGene/common/store";
 import { Props } from ".";
-import { ChartProps } from "../../../HeatMap/hooks/common/types";
+import { generateAndCopyShareUrl } from "../ShareButton/utils";
+import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
 import {
   ChartFormat,
   deserializeCellTypeMetadata,
-} from "../../../HeatMap/utils";
-import { generateAndCopyShareUrl } from "../ShareButton/utils";
+} from "src/views/WheresMyGene/components/HeatMap/utils";
 
 const NO_SELECTION_STRING = "No selection";
 

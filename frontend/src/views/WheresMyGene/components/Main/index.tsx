@@ -217,7 +217,7 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [dispatch]);
 
-  const hasSelectedTissues = selectedTissues.length > 0;
+  const hasSelectedTissues = (selectedTissues?.length ?? 0) > 0;
   const hasSelectedGenes = selectedGenes.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
@@ -380,7 +380,7 @@ export default function WheresMyGene(): JSX.Element {
               echartsRendererMode={echartsRendererMode}
               cellTypeSortBy={sortBy.cellTypes}
               geneSortBy={sortBy.genes}
-              selectedTissues={selectedTissues}
+              selectedTissues={selectedTissues ?? []}
               isScaled={isScaled}
               isLoadingAPI={isLoading}
               cellTypes={cellTypesByTissueName}

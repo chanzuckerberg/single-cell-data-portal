@@ -2,11 +2,14 @@ import { Intent } from "@blueprintjs/core";
 import { LoadingIndicator } from "@czi-sds/components";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
-import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGeneV2";
+import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
-import { DispatchContext, StateContext } from "../../common/store";
-import { selectGenes } from "../../common/store/actions";
-import { Gene } from "../../common/types";
+import {
+  DispatchContext,
+  StateContext,
+} from "src/views/WheresMyGene/common/store";
+import { selectGenes } from "src/views/WheresMyGene/common/store/actions";
+import { Gene } from "src/views/WheresMyGene/common/types";
 import QuickSelect from "./components/QuickSelect";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 
@@ -19,7 +22,7 @@ export default function GeneSearchBar({
   const { selectedGenes, selectedOrganismId } = useContext(StateContext);
 
   const { data, isLoading: isLoadingPrimaryFilters } =
-    usePrimaryFilterDimensions();
+    usePrimaryFilterDimensions(2); //temp version 2
 
   const { genes: rawGenes } = data || {};
 

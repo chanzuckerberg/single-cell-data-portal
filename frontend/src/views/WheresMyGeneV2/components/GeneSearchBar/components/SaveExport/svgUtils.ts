@@ -1,18 +1,19 @@
-import { Tissue } from "src/views/WheresMyGeneV2/common/types";
+// import {
+import { CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX } from "src/components/Layout/style";
+import { capitalize } from "../../../HeatMap/components/YAxisChart";
 import {
   ECHART_AXIS_LABEL_COLOR_HEX,
   ECHART_AXIS_LABEL_FONT_SIZE_PX,
-} from "../../../HeatMap/components/XAxisChart/style";
+} from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
+import { PLASMA_SVG_STRING } from "src/views/WheresMyGene/components/Filters/components/ColorScale";
 import {
   HEAT_MAP_BASE_CELL_PX,
   X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
-} from "../../../HeatMap/utils";
-import { PLASMA_SVG_STRING } from "../../../Filters/components/ColorScale";
-import { CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX } from "src/components/Layout/style";
-import { CHART_PADDING_PX } from "../../../HeatMap/style";
-import { Y_AXIS_TISSUE_WIDTH_PX } from "../../../HeatMap/components/YAxisChart/style";
-import { capitalize } from "../../../HeatMap/components/YAxisChart";
+} from "src/views/WheresMyGene/components/HeatMap/utils";
+import { Y_AXIS_TISSUE_WIDTH_PX } from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
+import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
+import { Tissue } from "src/views/WheresMyGene/common/types";
 
 export const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
 const FONT_FAMILY = "sans-serif";

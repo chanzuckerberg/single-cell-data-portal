@@ -1,14 +1,25 @@
 import { memo, useEffect, useMemo, useState } from "react";
-import { CellType, Tissue } from "src/views/WheresMyGeneV2/common/types";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
+import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
+import { Tooltip } from "@czi-sds/components";
+import InfoSVG from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
+
+import {
+  COMPARE_OPTION_ID_FOR_AGGREGATED,
+  CellTypeRow,
+} from "src/common/queries/wheresMyGene";
+import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import {
   CellTypeMetadata,
+  Y_AXIS_CHART_WIDTH_PX,
   deserializeCellTypeMetadata,
   formatLabel,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
-  Y_AXIS_CHART_WIDTH_PX,
-} from "../../utils";
-import InfoSVG from "./icons/info-sign-icon.svg";
+} from "src/views/WheresMyGene/components/HeatMap/utils";
+import { SELECTED_STYLE } from "src/views/WheresMyGene/components/HeatMap/style";
 import {
   CellCountLabelStyle,
   CellTypeLabelStyle,
@@ -19,17 +30,7 @@ import {
   HiddenCellTypeLabelStyle,
   StyledImage,
   Wrapper,
-} from "./style";
-import { SELECTED_STYLE } from "../../style";
-import { track } from "src/common/analytics";
-import { EVENTS } from "src/common/analytics/events";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
-import {
-  COMPARE_OPTION_ID_FOR_AGGREGATED,
-  CellTypeRow,
-} from "src/common/queries/wheresMyGeneV2";
-import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
-import { Tooltip } from "@czi-sds/components";
+} from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
 
 interface Props {
   cellTypes: CellTypeRow[];

@@ -130,7 +130,7 @@ export default function ShareButton(): JSX.Element {
           sdsSize="medium"
           sdsType="primary"
           sdsIcon="share"
-          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
+          disabled={selectedTissues?.length === 0 || selectedGenes.length === 0}
         />
       </StyledButtonDiv>
     </>

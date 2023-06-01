@@ -17,28 +17,24 @@ import {
   generateTermsByKey,
   OntologyTerm,
   usePrimaryFilterDimensions,
-} from "src/common/queries/wheresMyGeneV2";
-import { HEATMAP_CONTAINER_ID } from "../../common/constants";
-import { DispatchContext, State } from "../../common/store";
-import { addCellInfoCellType } from "../../common/store/actions";
+} from "src/common/queries/wheresMyGene";
+import { DispatchContext, State } from "src/views/WheresMyGene/common/store";
+import { addCellInfoCellType } from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
-} from "../../common/types";
-import Loader from "../Loader";
-import Chart from "./components/Chart";
-import XAxisChart from "./components/XAxisChart";
-import { CellCountLabel } from "./components/XAxisChart/style";
+} from "src/views/WheresMyGene/common/types";
 import YAxisChart from "./components/YAxisChart";
-import { ChartProps } from "./hooks/common/types";
-import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
+import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
+import { memoize } from "lodash";
+import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
 import {
   useSortedGeneNames,
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
-} from "./hooks/useSortedGeneNames";
-import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
+} from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedGeneNames";
+import { useSortedCellTypesByTissueName } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedCellTypesByTissueName";
 import {
   ChartWrapper,
   Container,
@@ -47,8 +43,12 @@ import {
   XAxisMask,
   XAxisWrapper,
   YAxisWrapper,
-} from "./style";
-import { memoize } from "lodash";
+} from "src/views/WheresMyGene/components/HeatMap/style";
+import { CellCountLabel } from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
+import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
+import Loader from "src/views/WheresMyGene/components/Loader";
+import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
+import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
 
 interface Props {
   className?: string;
@@ -96,7 +96,7 @@ export default memo(function HeatMap({
   const chartWrapperRef = useRef<HTMLDivElement>(null);
   const dispatch = useContext(DispatchContext);
 
-  const { data } = usePrimaryFilterDimensions();
+  const { data } = usePrimaryFilterDimensions(2); //temp explicit version
 
   // Get tissueName to ID map for use in find marker genes
   const tissuesByName = useMemo(() => {
@@ -314,6 +314,7 @@ function getTissueCellTypes({
   displayedCellTypes: Set<string>;
 }) {
   const tissueCellTypes = cellTypes[tissue];
+
   if (!tissueCellTypes || tissueCellTypes.length === 0) return [];
   const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
   let ret =

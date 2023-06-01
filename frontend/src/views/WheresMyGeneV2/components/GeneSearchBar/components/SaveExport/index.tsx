@@ -16,14 +16,6 @@ import {
   HEATMAP_CONTAINER_ID,
 } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
-import { ChartProps } from "../../../HeatMap/hooks/common/types";
-
-import {
-  getHeatmapHeight,
-  getHeatmapWidth,
-  X_AXIS_CHART_HEIGHT_PX,
-  Y_AXIS_CHART_WIDTH_PX,
-} from "../../../HeatMap/utils";
 
 import { Label } from "../../style";
 import { StyledButtonIcon } from "../QuickSelect/style";
@@ -70,9 +62,16 @@ import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
-import { LEGEND_HEIGHT_PX } from "../../../InfoPanel/components/Legend/style";
 import { LEGEND_MARGIN_BOTTOM_PX } from "src/views/WheresMyGene/style";
-import { CHART_PADDING_PX } from "../../../HeatMap/style";
+import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
+import {
+  X_AXIS_CHART_HEIGHT_PX,
+  Y_AXIS_CHART_WIDTH_PX,
+  getHeatmapHeight,
+  getHeatmapWidth,
+} from "src/views/WheresMyGene/components/HeatMap/utils";
+import { LEGEND_HEIGHT_PX } from "src/views/WheresMyGene/components/InfoPanel/components/Legend/style";
+import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
 
 let heatmapContainerScrollTop: number | undefined;
 
@@ -134,7 +133,7 @@ export default function SaveExport({
   const [selectedFileTypes, setFileTypes] = useState<("png" | "svg" | "csv")[]>(
     ["png"]
   );
-  const { data: availableOrganisms } = useAvailableOrganisms();
+  const { data: availableOrganisms } = useAvailableOrganisms(2);
 
   const handleButtonClick = useCallback(() => {
     if (!isOpen) track(EVENTS.WMG_DOWNLOAD_CLICKED);

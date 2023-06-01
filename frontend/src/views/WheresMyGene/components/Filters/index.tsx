@@ -122,7 +122,9 @@ export default memo(function Filters({
     isLoading: rawIsLoading,
   } = useFilterDimensions();
 
-  const isHeatmapShown = !!selectedTissues.length && !!selectedGenes.length;
+  const isHeatmapShown =
+    ((selectedTissues && !!selectedTissues.length) || !selectedTissues) &&
+    !!selectedGenes.length;
 
   const InputDropdownProps = {
     sdsStyle: "minimal",

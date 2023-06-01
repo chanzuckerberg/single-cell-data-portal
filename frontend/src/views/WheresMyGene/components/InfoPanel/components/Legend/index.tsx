@@ -1,8 +1,16 @@
-import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
+import {
+  Dispatch,
+  Fragment,
+  memo,
+  MouseEventHandler,
+  SetStateAction,
+} from "react";
 import { FilterDimensions } from "src/common/queries/wheresMyGene";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import SaveExport from "../../../GeneSearchBar/components/SaveExport";
+import SaveExportV2 from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import ShareButton from "../../../GeneSearchBar/components/ShareButton";
+import ShareButtonV2 from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
 import { ChartProps } from "../../../HeatMap/hooks/common/types";
 import ExpressedInCells from "../ExpressedInCells";
@@ -12,7 +20,7 @@ import { LegendWrapper } from "./style";
 interface Props {
   isScaled: boolean;
   handleRightSidebarButtonClick: MouseEventHandler<HTMLButtonElement>;
-  selectedTissues: Array<string>;
+  selectedTissues?: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
   setDownloadStatus: Dispatch<
@@ -38,16 +46,32 @@ export default memo(function Legend({
 }: Props): JSX.Element {
   return (
     <LegendWrapper data-testid="legend-wrapper">
-      <SaveExport
-        selectedTissues={selectedTissues}
-        selectedGenes={selectedGenes}
-        selectedCellTypes={selectedCellTypes}
-        setDownloadStatus={setDownloadStatus}
-        setEchartsRendererMode={setEchartsRendererMode}
-        allChartProps={allChartProps}
-        availableFilters={availableFilters}
-      />
-      <ShareButton />
+      {selectedTissues ? (
+        <Fragment>
+          <SaveExport
+            selectedTissues={selectedTissues}
+            selectedGenes={selectedGenes}
+            selectedCellTypes={selectedCellTypes}
+            setDownloadStatus={setDownloadStatus}
+            setEchartsRendererMode={setEchartsRendererMode}
+            allChartProps={allChartProps}
+            availableFilters={availableFilters}
+          />
+          <ShareButton />
+        </Fragment>
+      ) : (
+        <Fragment>
+          <SaveExportV2
+            selectedGenes={selectedGenes}
+            selectedCellTypes={selectedCellTypes}
+            setDownloadStatus={setDownloadStatus}
+            setEchartsRendererMode={setEchartsRendererMode}
+            allChartProps={allChartProps}
+            availableFilters={availableFilters}
+          />
+          <ShareButtonV2 />
+        </Fragment>
+      )}
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}
       />

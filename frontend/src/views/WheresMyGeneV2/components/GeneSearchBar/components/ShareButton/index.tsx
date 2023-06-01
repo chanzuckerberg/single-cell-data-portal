@@ -3,13 +3,8 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
-import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGeneV2";
 import { isSSR } from "src/common/utils/isSSR";
-import { getCompareOptionNameById } from "src/views/WheresMyGeneV2/common/constants";
-import {
-  DispatchContext,
-  StateContext,
-} from "src/views/WheresMyGeneV2/common/store";
+
 import { StyledButtonIcon } from "../QuickSelect/style";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
 import {
@@ -21,13 +16,19 @@ import {
   StyledNotificationWrapper,
 } from "./style";
 import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
+import {
+  DispatchContext,
+  StateContext,
+} from "src/views/WheresMyGene/common/store";
+import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
+import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
 
 export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
 
   const { selectedFilters, selectedGenes, selectedOrganismId, compare } = state;
 
-  const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions();
+  const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions(2); //temp explicit version
   const dispatch = useContext(DispatchContext);
   const [showURLCopyNotification, setShowURLCopyNotification] = useState(0);
 
