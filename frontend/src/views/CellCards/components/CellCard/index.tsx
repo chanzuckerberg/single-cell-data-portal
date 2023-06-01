@@ -15,8 +15,8 @@ import Description from "./components/Description";
 import CellCardSearchBar from "../CellCardSearchBar";
 import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
 import EnrichedGenesTable from "./components/EnrichedGenesTable";
-import OntologyDagView from "./components/OntologyDagView";
-import FullScreenProvider from "./components/FullScreenProvider";
+import OntologyDagView from "../common/OntologyDagView";
+import FullScreenProvider from "../common/FullScreenProvider";
 import SourceDataTable from "./components/SourceDataTable";
 import CellCardSidebar from "./components/CellCardSidebar";
 
