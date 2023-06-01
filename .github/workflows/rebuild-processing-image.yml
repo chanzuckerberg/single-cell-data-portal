@@ -16,9 +16,9 @@ permissions:
 on:
   repository_dispatch:
     types: [rebuild-processing]
-  push: # TODO: remove, just for testing workflow
-    branches:
-      - nayib/rebuild-processing-image
+#  push: # TODO: remove, just for testing workflow
+#    branches:
+#      - nayib/rebuild-processing-image
 
 jobs:
   rebuild-and-push-processing-image-dev:
@@ -68,7 +68,7 @@ jobs:
       - name: Docker build, push, and tag
         shell: bash
         run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} processing
+          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} --slice processing
 
 #  rebuild-and-push-processing-image-prod:
 #    runs-on: ubuntu-20.04
