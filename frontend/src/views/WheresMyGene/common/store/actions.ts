@@ -191,6 +191,15 @@ export function loadStateFromURL(
   };
 }
 
+export function setXAxisHeight(
+  payload: number
+): GetActionTypeOfReducer<typeof REDUCERS["setXAxisHeight"]> {
+  return {
+    payload,
+    type: "setXAxisHeight",
+  };
+}
+
 type GetActionTypeOfReducer<T> = T extends (
   state: never,
   action: infer Action

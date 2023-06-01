@@ -6,7 +6,7 @@ import {
   getSpaces,
   TooltipTable,
 } from "@czi-sds/components";
-import { X_AXIS_CHART_HEIGHT_PX } from "../../utils";
+import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
 
 export const ChartContainer = styled.div`
   ${getWidthAndHeight}
