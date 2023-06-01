@@ -77,7 +77,7 @@ paths:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     sex_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    development_ontology_stage_term_ids:
+                    development_stage_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     self_reported_ethnicity_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
