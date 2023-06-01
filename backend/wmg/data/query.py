@@ -9,7 +9,7 @@ from backend.wmg.data.snapshot import WmgSnapshot
 
 
 class WmgQueryCriteria(BaseModel):
-    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)
+    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=1)  # required!
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -23,7 +23,7 @@ class WmgQueryCriteria(BaseModel):
 
 
 class WmgQueryCriteriaV2(BaseModel):
-    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)
+    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -127,7 +127,9 @@ class WmgQuery:
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
     @staticmethod
-    def _query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str]) -> DataFrame:
+    def _query(
+        cube: Array, criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, FmgQueryCriteria], indexed_dims: List[str]
+    ) -> DataFrame:
         query_cond = ""
         attrs = {}
         for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
