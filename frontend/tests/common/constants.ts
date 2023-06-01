@@ -16,7 +16,7 @@ const TEST_ENV_TO_TEST_URL = {
   localProd: "http://localhost:9000",
   prod: "https://cellxgene.cziscience.com",
   rdev: process.env.RDEV_LINK || "",
-  staging: "https://localhost:3000",
+  staging: "https://cellxgene.staging.single-cell.czi.technology",
 };
 
 export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];
