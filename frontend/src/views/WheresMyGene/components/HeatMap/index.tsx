@@ -15,7 +15,10 @@ import {
   OntologyTerm,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import { HEATMAP_CONTAINER_ID } from "../../common/constants";
+import {
+  HEATMAP_CONTAINER_ID,
+  X_AXIS_CHART_HEIGHT_PX,
+} from "../../common/constants";
 import { DispatchContext, State, StateContext } from "../../common/store";
 import { addCellInfoCellType } from "../../common/store/actions";
 import {
@@ -45,7 +48,6 @@ import {
   XAxisWrapper,
   YAxisWrapper,
 } from "./style";
-import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
   className?: string;

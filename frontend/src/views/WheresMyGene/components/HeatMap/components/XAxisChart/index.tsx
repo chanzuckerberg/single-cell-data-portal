@@ -22,9 +22,7 @@ import { CHART_PADDING_PX, SELECTED_STYLE } from "../../style";
 import {
   getHeatmapWidth,
   formatLabel,
-  X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
-  X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
 } from "../../utils";
 import {
   XAxisWrapper,
@@ -39,6 +37,11 @@ import {
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { StyledImage } from "../YAxisChart/style";
 import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
+import {
+  X_AXIS_CHART_HEIGHT_PX,
+  X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
+} from "src/views/WheresMyGene/common/constants";
+
 interface Props {
   geneNames: string[];
 }

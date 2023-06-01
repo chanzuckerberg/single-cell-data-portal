@@ -1,5 +1,5 @@
 import isEqual from "lodash/isEqual";
-import { CompareId } from "../constants";
+import { CompareId, X_AXIS_CHART_HEIGHT_PX } from "../constants";
 import { CellType, SORT_BY } from "../types";
 
 export interface PayloadAction<Payload> {
@@ -42,8 +42,6 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   sexes: [],
 };
 
-const INITIAL_X_AXIS_HEIGHT = 80;
-
 // (thuang): If you have derived states based on the state, use `useMemo`
 // to cache the derived states instead of putting them in the state.
 export const INITIAL_STATE: State = {
@@ -60,7 +58,7 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
-  xAxisHeight: INITIAL_X_AXIS_HEIGHT,
+  xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
 };
 
 export const REDUCERS = {
@@ -128,7 +126,7 @@ function deleteSingleGene(
   return {
     ...state,
     selectedGenes: newSelectedGenes,
-    xAxisHeight: INITIAL_X_AXIS_HEIGHT,
+    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
   };
 }
 
@@ -136,7 +134,7 @@ function deleteAllGenes(state: State, _: PayloadAction<null>): State {
   return {
     ...state,
     selectedGenes: [],
-    xAxisHeight: INITIAL_X_AXIS_HEIGHT,
+    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
   };
 }
 

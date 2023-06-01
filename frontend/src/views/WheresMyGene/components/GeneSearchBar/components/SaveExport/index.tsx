@@ -14,6 +14,8 @@ import {
   CompareId,
   getCompareOptionNameById,
   HEATMAP_CONTAINER_ID,
+  X_AXIS_CHART_HEIGHT_PX,
+  X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
 } from "src/views/WheresMyGene/common/constants";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { ChartProps } from "../../../HeatMap/hooks/common/types";
@@ -21,8 +23,6 @@ import { ChartProps } from "../../../HeatMap/hooks/common/types";
 import {
   getHeatmapHeight,
   getHeatmapWidth,
-  X_AXIS_CHART_HEIGHT_PX,
-  X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../../HeatMap/utils";
 

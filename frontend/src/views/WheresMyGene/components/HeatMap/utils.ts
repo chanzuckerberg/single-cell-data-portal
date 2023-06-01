@@ -11,7 +11,6 @@ import {
   getOptionIdFromCellTypeViewId,
   OptionId,
 } from "src/common/queries/wheresMyGene";
-import { INITIAL_STATE } from "../../common/store";
 import {
   CellType,
   CellTypeSummary,
@@ -22,8 +21,6 @@ import {
 import { TISSUE_CELL_TYPE_DIVIDER } from "./hooks/useSortedGeneNames";
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
-export const X_AXIS_HOVER_CONTAINER_HEIGHT_PX = 40;
-export const X_AXIS_CHART_HEIGHT_PX = INITIAL_STATE.xAxisHeight;
 export const Y_AXIS_CHART_WIDTH_PX = 300;
 
 const Y_AXIS_BOTTOM_PADDING = "10px";
