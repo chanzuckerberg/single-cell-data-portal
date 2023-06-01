@@ -68,6 +68,7 @@ export const REDUCERS = {
   addSelectedGenes,
   deleteSelectedGenes,
   deleteSingleGene,
+  deleteAllGenes,
   loadStateFromURL,
   selectCompare,
   resetGenesToDelete,
@@ -122,6 +123,13 @@ function deleteSingleGene(
   return {
     ...state,
     selectedGenes: newSelectedGenes,
+  };
+}
+
+function deleteAllGenes(state: State, _: PayloadAction<null>): State {
+  return {
+    ...state,
+    selectedGenes: [],
   };
 }
 

@@ -30,12 +30,14 @@ import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
-import SideBar from "src/components/common/SideBar";
 import DatasetsActionsCell from "src/components/Datasets/components/Grid/components/DatasetActionsCell";
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
+import SideBar from "src/components/common/SideBar";
 import { View } from "../globalStyle";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
+import { CATEGORY_FILTER_DENY_LIST } from "src/views/Datasets/common/constants";
+import { useViewMode } from "src/common/hooks/useViewMode";
 
 /**
  * Collection ID object key.
@@ -78,13 +80,19 @@ const RECENCY = "recency";
 const COLUMN_ID_RECENCY = "recency";
 
 export default function Datasets(): JSX.Element {
+  const { mode, status } = useViewMode();
+
   /* Pop toast if user has come from Explorer with work in progress */
   useExplainNewTab(
     "To maintain your in-progress work on the previous dataset, we opened a new tab."
   );
 
   // Filterable datasets joined from datasets and collections responses.
-  const { isError, isLoading, rows: datasetRows } = useFetchDatasetRows();
+  const {
+    isError,
+    isLoading,
+    rows: datasetRows,
+  } = useFetchDatasetRows(mode, status);
 
   // Column configuration backing table.
   const columnConfig: Column<DatasetRow>[] = useMemo(
@@ -101,6 +109,7 @@ export default function Datasets(): JSX.Element {
         },
         Header: "Datasets",
         accessor: DATASET_NAME,
+        disableSortBy: true,
         showCountAndTotal: true,
       },
       {
@@ -109,6 +118,7 @@ export default function Datasets(): JSX.Element {
         )) as Renderer<CellProps<DatasetRow>>,
         Header: "Tissue",
         accessor: ontologyLabelCellAccessorFn("tissue"),
+        disableSortBy: true,
         id: "tissue",
       },
       {
@@ -120,6 +130,7 @@ export default function Datasets(): JSX.Element {
         ),
         Header: "Disease",
         accessor: ontologyLabelCellAccessorFn("disease"),
+        disableSortBy: true,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.DISEASE,
       },
@@ -129,6 +140,7 @@ export default function Datasets(): JSX.Element {
         ),
         Header: "Assay",
         accessor: ontologyLabelCellAccessorFn("assay"),
+        disableSortBy: true,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ASSAY,
       },
@@ -138,18 +150,20 @@ export default function Datasets(): JSX.Element {
         ),
         Header: "Organism",
         accessor: ontologyLabelCellAccessorFn("organism"),
+        disableSortBy: true,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ORGANISM,
       },
       {
-        Cell: ({ value }: CellPropsValue<number | null>) => (
+        Cell: ({ value }: CellPropsValue<number>) => (
           <RightAlignCell>
-            <CountCell cellCount={value || 0} />
+            <CountCell cellCount={value} />
           </RightAlignCell>
         ),
         Header: "Cells",
         accessor: "cell_count",
         alignment: ALIGNMENT.RIGHT,
+        disableSortBy: true,
         filter: "between",
         id: CATEGORY_FILTER_ID.CELL_COUNT,
       },
@@ -164,6 +178,7 @@ export default function Datasets(): JSX.Element {
           />
         ),
         accessor: (datasetRow: DatasetRow): DatasetRow => datasetRow,
+        disableSortBy: true,
         id: "dataset_actions",
       },
       // Hidden, required for sorting by recency.
@@ -266,6 +281,7 @@ export default function Datasets(): JSX.Element {
     {
       columns: columnConfig,
       data: datasetRows,
+      disableSortBy: false,
       initialState: {
         filters: initialFilters,
         hiddenColumns: [
@@ -307,13 +323,15 @@ export default function Datasets(): JSX.Element {
 
   // Determine the set of categories to display for the datasets view.
   const categories = useMemo<Set<CATEGORY_FILTER_ID>>(() => {
-    return Object.values(CATEGORY_FILTER_ID).reduce(
-      (accum, categoryFilterId: CATEGORY_FILTER_ID) => {
+    return Object.values(CATEGORY_FILTER_ID)
+      .filter(
+        (categoryFilterId: CATEGORY_FILTER_ID) =>
+          !CATEGORY_FILTER_DENY_LIST.includes(categoryFilterId)
+      )
+      .reduce((accum, categoryFilterId: CATEGORY_FILTER_ID) => {
         accum.add(categoryFilterId);
         return accum;
-      },
-      new Set<CATEGORY_FILTER_ID>()
-    );
+      }, new Set<CATEGORY_FILTER_ID>());
   }, []);
 
   // Set up filter instance.

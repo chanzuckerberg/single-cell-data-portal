@@ -1,9 +1,8 @@
 import styled from "@emotion/styled";
-import {
-  SideBarPositioner as RawSideBarPositioner,
-  SIDEBAR_BOX_SHADOW_COLOR,
-} from "src/components/common/SideBar/style";
+import { SideBarPositioner as RawSideBarPositioner } from "src/components/common/SideBar/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+
+export const SIDEBAR_BOX_SHADOW_COLOR = "rgba(16, 22, 26, 0.15)";
 
 export const RightSideBarPositioner = styled(RawSideBarPositioner)`
   max-height: ${sectionMaxheight};

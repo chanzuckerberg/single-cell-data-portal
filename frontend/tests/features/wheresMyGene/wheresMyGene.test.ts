@@ -268,6 +268,9 @@ describe("Where's My Gene", () => {
     await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstNOptions(GENE_COUNT, page);
 
+    // Waits in case API is slow, fixes flakey tests
+    await waitForHeatmapToRender(page);
+
     const beforeGeneNames = await getGeneNames(page);
     const beforeCellTypeNames = await getCellTypeNames(page);
 
@@ -878,6 +881,43 @@ describe("Where's My Gene", () => {
       ).toBeTruthy();
     });
   });
+
+  describe("Clear All Genes Button", () => {
+    const CLEAR_GENES_BUTTON_ID = "clear-genes-button";
+
+    test("Clear three genes", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      const TISSUE_COUNT = 1;
+      const GENE_COUNT = 3;
+
+      // Select tissue
+      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
+      await selectFirstNOptions(TISSUE_COUNT, page);
+
+      // Select genes
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
+      await selectFirstNOptions(GENE_COUNT, page);
+
+      // Genes before clear
+      const beforeGeneNames = await getGeneNames(page);
+      expect(beforeGeneNames.length).toBe(GENE_COUNT);
+
+      // Click clear all button
+      await page.getByTestId(CLEAR_GENES_BUTTON_ID).click();
+
+      // Count genes after clear
+      const afterGeneNames = await getGeneNames(page);
+
+      await tryUntil(
+        async () => {
+          expect(afterGeneNames.length).toBe(0);
+          expect(afterGeneNames).not.toEqual(beforeGeneNames);
+        },
+        { page }
+      );
+    });
+  });
 });
 
 async function getNames({
@@ -900,7 +940,9 @@ async function getNames({
   await tryUntil(
     async () => {
       const names = await labelsLocator.allTextContents();
-      expect(typeof names[0]).toBe("string");
+      if (names.length) {
+        expect(typeof names[0]).toBe("string");
+      }
     },
     { page }
   );
