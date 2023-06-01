@@ -69,28 +69,29 @@ jobs:
         shell: bash
         run: |
           happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} processing
-  rebuild-and-push-processing-image-prod:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - name: Checkout Prod
-        uses: actions/checkout@v2
-        with:
-          ref: prod
-      - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
-        with:
-          happy_version: "0.59.0"
-      - name: Docker build, push, and tag
-        shell: bash
-        run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} processing
+
+#  rebuild-and-push-processing-image-prod:
+#    runs-on: ubuntu-20.04
+#    steps:
+#      - name: Configure AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v2
+#        with:
+#          aws-region: us-west-2
+#          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+#          role-duration-seconds: 1800
+#      - name: Login to ECR
+#        uses: docker/login-action@v1
+#        with:
+#          registry: ${{ secrets.ECR_REPO }}
+#      - name: Checkout Prod
+#        uses: actions/checkout@v2
+#        with:
+#          ref: prod
+#      - name: Install happy
+#        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+#        with:
+#          happy_version: "0.59.0"
+#      - name: Docker build, push, and tag
+#        shell: bash
+#        run: |
+#          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} processing
