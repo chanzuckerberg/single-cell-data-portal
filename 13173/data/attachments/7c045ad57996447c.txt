@@ -1,0 +1,64 @@
+  pw:api => selectors.setTestIdAttribute started +3ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +34ms
+  pw:api   "commit" event fired +11ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +0ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +31ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000084", waiting until "load" +10ms
+  pw:api   "commit" event fired +67ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000084" +2ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000084" +2ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000084" +4ms
+  pw:api   "networkidle" event fired +505ms
+  pw:api <= page.goto succeeded +719ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +278ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api <= elementHandle.textContent succeeded +50ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-card-enriched-genes-table-dropdown') to be visible +11ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-enriched-genes-table-drop…>…</div> +22ms
+  pw:api <= locator.waitFor succeeded +14ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-card-enriched-genes-table-dropdown') +18ms
+  pw:api   locator resolved to <div data-testid="cell-card-enriched-genes-table-drop…>…</div> +5ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +11ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +97ms
+  pw:api   click action done +148ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +10ms
+  pw:api <= locator.click succeeded +28ms
+  pw:api => locator.press started +1ms
+  pw:api waiting for getByTestId('cell-card-enriched-genes-table-dropdown') +31ms
+  pw:api   locator resolved to <div data-testid="cell-card-enriched-genes-table-drop…>…</div> +42ms
+  pw:api elementHandle.press("ArrowDown") +1ms
+  pw:api <= locator.press succeeded +44ms
+  pw:api => locator.press started +0ms
+  pw:api waiting for getByTestId('cell-card-enriched-genes-table-dropdown') +23ms
+  pw:api   locator resolved to <div data-testid="cell-card-enriched-genes-table-drop…>…</div> +17ms
+  pw:api elementHandle.press("Enter") +2ms
+  pw:api <= locator.press succeeded +390ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +185ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api <= elementHandle.textContent succeeded +12ms
+  pw:api taking page screenshot +257ms
+  pw:api => browserContext.close started +77ms
+  pw:api <= browserContext.close succeeded +4s
