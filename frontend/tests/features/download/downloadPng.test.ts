@@ -29,7 +29,7 @@ describe("PNG download tests", () => {
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
     verifyPng(dirPath, tissues, "no-filter");
-    deleteDownloadedFiles(dirPath, page);
+    deleteDownloadedFiles(dirPath);
   });
 
   test(`Should verify png data for lung and blood tissue with sex filter applied and group by selected`, async ({
@@ -44,7 +44,7 @@ describe("PNG download tests", () => {
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
     verifyPng(dirPath, tissues, "filter");
-    deleteDownloadedFiles(dirPath, page);
+    deleteDownloadedFiles(dirPath);
   });
   test(`Should verify png for lung and blood tissue with no group set`, async ({
     page,
@@ -58,6 +58,6 @@ describe("PNG download tests", () => {
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
     verifyPng(dirPath, tissues, "no-group");
-    deleteDownloadedFiles(dirPath, page);
+    deleteDownloadedFiles(dirPath);
   });
 });
