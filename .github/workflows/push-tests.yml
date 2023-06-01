@@ -32,7 +32,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
@@ -54,12 +54,24 @@ jobs:
 
   e2e-test:
     timeout-minutes: 60
+    name: E2E tests ${{ matrix.project }} ${{ matrix.shardCurrent }} / ${{ matrix.shardTotal }}
     runs-on: ubuntu-20.04
+    concurrency:
+      group: ${{ github.ref }}-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
+      cancel-in-progress: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, edge]
+        shardCurrent: [1]
+        shardTotal: [3]
+
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "16.14.2"
       - name: Configure AWS Credentials
@@ -69,10 +81,10 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install dependencies
         run: |
           npm ci
@@ -82,14 +94,17 @@ jobs:
 
       # Run E2E tests
       - name: Run E2E tests
-        run: DEBUG=pw:api npm run e2e
+        env:
+          CI: true
+          PROJECT: ${{ matrix.project }}
+        run: DEBUG=pw:api npx playwright test --project ${{ matrix.project }} --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: test-results
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          name: test-results-${{ matrix.project }}-${{ matrix.shardCurrent }}
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/test-results
           retention-days: 30
       # Upload Allure results as an artifact
       - uses: actions/upload-artifact@v3
@@ -109,6 +124,36 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
+
+  wait-for-shards:
+    name: Wait for shards
+    needs: e2e-test # run after shards
+    runs-on: ubuntu-20.04
+    if: success() # only run when all shards have passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "{success}={true}" >> $GITHUB_OUTPUT
+
+  # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
+  e2e-result:
+    name: e2e-result
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [e2e-test, wait-for-shards]
+    steps:
+      - name: Check result
+        run: |
+          passed="${{ needs.e2e-test.result }}"
+          if [[ $passed == "success" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
 
   backend-unit-test:
     runs-on: ubuntu-20.04
@@ -226,7 +271,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
@@ -234,7 +279,7 @@ jobs:
           fetch-depth: 0
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
@@ -292,7 +337,7 @@ jobs:
           fetch-depth: 0
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
@@ -347,7 +392,7 @@ jobs:
           fetch-depth: 0
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
