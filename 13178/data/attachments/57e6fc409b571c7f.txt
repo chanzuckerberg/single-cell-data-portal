@@ -1,0 +1,53 @@
+  pw:api => selectors.setTestIdAttribute started +3ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +43ms
+  pw:api   "commit" event fired +11ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +6ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +0ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +38ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +5ms
+  pw:api   "commit" event fired +81ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +5s
+  pw:api <= page.goto succeeded +153ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-card-search-bar-text-input') to be visible +4ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +37ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +3ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +23ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +54ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +102ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +103ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +503ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +503ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +502ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +503ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +503ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +502ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +502ms
+  pw:api   locator resolved to hidden <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +510ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +55ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +572ms
+  pw:api   "networkidle" event fired +1s
+  pw:api <= locator.waitFor failed +1s
+  pw:api => page.screenshot started +2ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +50ms
+  pw:api taking page screenshot +200ms
+  pw:api <= page.screenshot succeeded +130ms
+  pw:api => browserContext.close started +144ms
+  pw:api <= browserContext.close succeeded +9s
+  pw:api => video.saveAs started +2ms
+  pw:api <= video.saveAs succeeded +1ms
+  pw:api => browser.close started +3ms
+  pw:api <= browser.close succeeded +19ms
