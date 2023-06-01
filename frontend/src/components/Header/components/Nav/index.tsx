@@ -22,7 +22,7 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
         <Link href={ROUTES.COLLECTIONS} passHref>
           <AnchorButton
             active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
-            data-testid="collection-link"
+            data-testid="collections-link"
             href="passHref"
             minimal
             onClick={() => {
@@ -58,6 +58,19 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
           />
         </Link>
       </LinkWrapper>
+      {/* <LinkWrapper>
+        <Link href={ROUTES.CELL_CARDS} passHref>
+          <AnchorButton
+            active={isRouteActive(pathname, ROUTES.CELL_CARDS)}
+            href="passHref"
+            minimal
+            onClick={() => {
+              track(EVENTS.CELL_CARDS_CLICK_NAV);
+            }}
+            text="Cell Cards"
+          />
+        </Link>
+      </LinkWrapper> */}
       <NavDivider />
       <LinkWrapper>
         <AnchorButton

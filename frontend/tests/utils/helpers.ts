@@ -2,9 +2,14 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { ElementHandle, expect, Page } from "@playwright/test";
+import { ElementHandle, expect, Locator, Page } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
+import {
+  CELL_TYPE_LABELS_ID,
+  ERROR_NO_TESTID_OR_LOCATOR,
+  GENE_LABELS_ID,
+} from "../common/constants";
 
 /**
  * (thuang): From oauth/users.json
@@ -193,5 +198,205 @@ export async function selectNthOption(page: Page, number: number) {
   }
 
   await page.keyboard.press("Enter");
+  await page.keyboard.press("Escape");
+}
+
+export async function waitForHeatmapToRender(page: Page) {
+  await tryUntil(
+    async () => {
+      await expect(page.locator("canvas")).not.toHaveCount(0);
+    },
+    { page }
+  );
+}
+
+export async function waitForElement(page: Page, testId: string) {
+  await tryUntil(
+    async () => {
+      await expect(page.getByTestId(testId)).not.toHaveCount(0);
+    },
+    { page }
+  );
+}
+
+export async function getButtonAndClick(page: Page, testID: string) {
+  await tryUntil(
+    async () => {
+      await page.getByTestId(testID).click();
+    },
+    { page }
+  );
+}
+
+// for when there are multiple buttons with the same testID
+export async function getFirstButtonAndClick(page: Page, testID: string) {
+  await tryUntil(
+    async () => {
+      const buttons = await page.getByTestId(testID).elementHandles();
+      await buttons[0].click();
+    },
+    { page }
+  );
+}
+
+export async function getCellTypeFmgButtonAndClick(
+  page: Page,
+  cellType: string
+) {
+  await waitForElement(page, CELL_TYPE_LABELS_ID);
+
+  await tryUntil(
+    async () => {
+      await page
+        .getByRole("img", {
+          name: "display marker genes for " + cellType,
+        })
+        .click();
+    },
+    { page }
+  );
+}
+
+export async function clickDropdownOptionByName({
+  page,
+  testId,
+  name,
+}: {
+  page: Page;
+  testId: string;
+  name: string;
+}) {
+  await page.getByTestId(testId).click();
+  await page.getByRole("option").filter({ hasText: name }).click();
+  await page.keyboard.press("Escape");
+}
+
+export async function getGeneNames(page: Page) {
+  return getNames({ page, locator: page.locator(GENE_LABELS_ID) });
+}
+
+export async function getCellTypeNames(page: Page) {
+  return getNames({ page, testId: CELL_TYPE_LABELS_ID });
+}
+
+// (alec) use this instead of locator.count() to make sure that the element is actually present
+// when counting
+export async function countLocator(locator: Locator) {
+  return (await locator.elementHandles()).length;
+}
+
+export async function getNames({
+  page,
+  testId,
+  locator,
+}: {
+  page: Page;
+  testId?: string;
+  locator?: Locator;
+}): Promise<string[]> {
+  let labelsLocator: Locator;
+  if (testId) {
+    labelsLocator = page.getByTestId(testId);
+  } else if (locator) {
+    labelsLocator = locator;
+  } else {
+    throw Error(ERROR_NO_TESTID_OR_LOCATOR);
+  }
+  await tryUntil(
+    async () => {
+      const names = await labelsLocator.allTextContents();
+      expect(typeof names[0]).toBe("string");
+    },
+    { page }
+  );
+
+  return labelsLocator.allTextContents();
+}
+
+export async function clickUntilOptionsShowUp({
+  page,
+  testId,
+  locator,
+}: {
+  page: Page;
+  testId?: string;
+  locator?: Locator;
+}) {
+  // either testId or locator must be defined, not both
+  // locator is used when the element cannot be found using just the test Id from the page
+  await tryUntil(
+    async () => {
+      if (testId) {
+        await page.getByTestId(testId).click();
+      } else if (locator) {
+        await locator.click();
+      } else {
+        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
+      }
+      await page.getByRole("tooltip").getByRole("option").elementHandles();
+    },
+    { page }
+  );
+}
+
+export async function clickUntilDownloadModalShowsUp({
+  page,
+  testId,
+  locator,
+}: {
+  page: Page;
+  testId?: string;
+  locator?: Locator;
+}) {
+  await tryUntil(
+    async () => {
+      if (testId) {
+        await page.getByTestId(testId).click();
+      } else if (locator) {
+        await locator.click();
+      } else {
+        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
+      }
+      await page.locator(".bp4-dialog").elementHandle();
+    },
+    { page }
+  );
+}
+
+export async function clickUntilSidebarShowsUp({
+  page,
+  testId,
+  locator,
+}: {
+  page: Page;
+  testId?: string;
+  locator?: Locator;
+}) {
+  await tryUntil(
+    async () => {
+      if (testId) {
+        await page.getByTestId(testId).click();
+      } else if (locator) {
+        await locator.click();
+      } else {
+        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
+      }
+      await page.locator(".bp4-drawer-header").elementHandle();
+    },
+    { page }
+  );
+}
+
+// (thuang): This only works when a dropdown is open
+export async function selectFirstOption(page: Page) {
+  await selectFirstNOptions(1, page);
+}
+
+export async function selectFirstNOptions(count: number, page: Page) {
+  for (let i = 0; i < count; i++) {
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+  }
+
   await page.keyboard.press("Escape");
 }

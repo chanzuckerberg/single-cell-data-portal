@@ -5,7 +5,7 @@ import {
   ADD_GENE_BTN,
   ADD_GENE_LBL,
   ADD_TISSUE_LBL,
-} from "tests/utils/constants";
+} from "tests/common/constants";
 import { getById } from "tests/utils/selectors";
 import { isDevStagingProd, tryUntil } from "tests/utils/helpers";
 

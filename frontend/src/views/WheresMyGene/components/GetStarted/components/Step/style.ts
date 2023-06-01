@@ -1,5 +1,10 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontCapsXxs, fontHeaderL, getColors } from "czifui";
+import {
+  CommonThemeProps,
+  fontCapsXxs,
+  fontHeaderL,
+  getColors,
+} from "@czi-sds/components";
 
 const PADDING_PX = 24;
 

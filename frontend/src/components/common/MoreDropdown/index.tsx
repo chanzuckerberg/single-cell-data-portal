@@ -1,5 +1,4 @@
 import { IButtonProps, IPopoverProps, Popover } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
 import { MoreButton } from "src/components/common/MoreDropdown/style";
 
 interface Props {
@@ -15,9 +14,10 @@ const MoreDropdown = ({
     <Popover {...popoverProps}>
       <MoreButton
         {...buttonProps}
-        minimal
-        icon={IconNames.MORE}
         data-testid="collection-more-button"
+        sdsIcon="dotsHorizontal"
+        sdsSize="small"
+        sdsType="tertiary"
       />
     </Popover>
   );

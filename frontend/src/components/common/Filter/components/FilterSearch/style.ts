@@ -1,17 +1,25 @@
 import { Classes, InputGroup } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { ButtonIcon, getColors } from "czifui";
+import {
+  ButtonIcon,
+  CommonThemeProps,
+  getColors,
+  getSpaces,
+} from "@czi-sds/components";
 import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
+
+const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
+const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
 
 export const ViewSearch = styled(InputGroup)`
   &.${Classes.INPUT_GROUP} {
-    margin-bottom: 4px;
+    margin-bottom: ${spacesXxs}px;
 
     .${Classes.ICON} {
       color: ${GRAY.A};
       margin: 0;
-      padding: 4px;
+      padding: ${spacesXxs}px;
       top: 50%;
       transform: translateY(-50%);
     }
@@ -30,7 +38,7 @@ export const ViewSearch = styled(InputGroup)`
     }
 
     .${Classes.INPUT_ACTION} {
-      right: 8px;
+      right: ${spacesS}px;
       top: 50%;
       transform: translateY(-50%);
     }

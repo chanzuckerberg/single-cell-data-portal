@@ -59,7 +59,7 @@ import {
   csvGeneExpressionRow,
   csvHeaders,
 } from "./csvUtils";
-import { InputCheckbox } from "czifui";
+import { InputCheckbox } from "@czi-sds/components";
 import {
   DATA_MESSAGE_BANNER_HEIGHT_PX,
   DATA_MESSAGE_BANNER_ID,

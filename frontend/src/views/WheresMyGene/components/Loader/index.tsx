@@ -1,4 +1,4 @@
-import { LoadingIndicator } from "czifui";
+import { LoadingIndicator } from "@czi-sds/components";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import { Wrapper } from "./style";
 

@@ -15,7 +15,7 @@ import {
   Icon,
   MenuSelect,
   SDSTheme,
-} from "czifui";
+} from "@czi-sds/components";
 import { pull, uniq } from "lodash";
 
 import React, {

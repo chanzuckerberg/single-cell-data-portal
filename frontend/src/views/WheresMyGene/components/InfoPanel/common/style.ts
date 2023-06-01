@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyXxs, fontHeaderXxs, getColors } from "czifui";
+import { fontBodyXxs, fontHeaderXxs, getColors } from "@czi-sds/components";
 
 export const LowHigh = styled.div`
   display: flex;

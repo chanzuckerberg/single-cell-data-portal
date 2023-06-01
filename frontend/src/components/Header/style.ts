@@ -7,7 +7,7 @@ import {
   getColors,
   getSpaces,
   InputDropdown,
-} from "czifui";
+} from "@czi-sds/components";
 import { PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
 import { button } from "src/components/Header/components/Nav/style";
 

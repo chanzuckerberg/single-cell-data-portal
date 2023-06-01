@@ -1,5 +1,5 @@
 import { createTheme } from "@mui/material/styles";
-import { defaultAppTheme, makeThemeOptions } from "czifui";
+import { defaultAppTheme, makeThemeOptions } from "@czi-sds/components";
 
 const { fontWeights } = defaultAppTheme;
 

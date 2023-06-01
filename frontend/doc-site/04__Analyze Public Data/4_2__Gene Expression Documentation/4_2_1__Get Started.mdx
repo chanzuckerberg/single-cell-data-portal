@@ -20,7 +20,7 @@ Genes that are lowly expressed or expressed in a small percentage of cells are d
 
 <Image src={"/doc-site/4-2_figure2.png"} />
 
-**Figure 2.** Types of possible qualitatively assessments in a dot plot.
+**Figure 2.** Types of possible qualitative assessments in a dot plot.
 
 ### How to Make Sense of Normalized Values
 
@@ -41,13 +41,9 @@ The examples in Figure 3 have a relatively constant percentage of cells expressi
 
 ### How to Navigate Cell Types
 
-Cell types in the dot plot (rows) are ordered by default with an <NextLink href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_2__Cell%20Type%20and%20Gene%20Ordering">algorithm</NextLink> that preserves relationships in the Cell Type ontology (CL). Child cell types are represented by indentation with a maximum depth of 2, any cell types with higher depth than that get truncated to 2.
+Cell types in the dot plot (rows) are ordered by default with a heuristic <NextLink href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_2__Cell%20Type%20and%20Gene%20Ordering">algorithm</NextLink> that tries to preserve relationships in the Cell Type ontology (CL).
 
-All cell types from a given tissue are shown as originally annotated in the dataset-of-origin. This leads to scenarios where parent and children cell types may be present in the dot plot, but they are independent observations and the former is not a superset of the latter (Figure 4).
-
-<Image src={"/doc-site/4-2_figure4.png"} />
-
-**Figure 4.** In some cases parent and children cell types are present, but these are independent of each other.
+The expressions and cell counts of parent cell type terms are <NextLink href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing">supersets</NextLink> of child terms. In other words, the expression of a gene in a parent cell type includes the expression of that gene in all its descendant cell types.
 
 ### Caveats of Normalization
 
@@ -55,4 +51,4 @@ Given that data are <NextLink href="/docs/04__Analyze%20Public%20Data/4_2__Gene%
 
 Nonetheless, caution is advised when finding subtle differences in the dot plot across cell types.
 
-Users interested in evaluating the pre-normalized absolute expression data can access it through our cell api (coming soon).
+Users interested in evaluating the pre-normalized absolute expression data can access it through our <NextLink href="https://chanzuckerberg.github.io/cellxgene-census/index.html">CELLxGENE census</NextLink> API.
