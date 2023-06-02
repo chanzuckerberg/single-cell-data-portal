@@ -187,7 +187,7 @@ export default memo(function HeatMap({
               tissue,
             });
             return tissueCellTypes.length ? (
-              <div id={`y-axis-${tissue}`}>
+              <div id={`y-axis-${tissue.replace(/\s+/g, "-")}`}>
                 <YAxisChart
                   key={tissue}
                   tissue={tissue}
@@ -219,11 +219,13 @@ export default memo(function HeatMap({
              */
 
             if (!selectedGeneData?.length) {
+              console.log(tissue);
               const height =
-                document.getElementById(`y-axis-${tissue}`)?.clientHeight ?? 0;
+                document.getElementById(`y-axis-${tissue.replace(/\s+/g, "-")}`)
+                  ?.clientHeight ?? 0;
               return (
                 <div
-                  key={`y-axis-${tissue}`}
+                  key={`y-axis-${tissue.replace(/\s+/g, "-")}`}
                   style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
                 />
               );
