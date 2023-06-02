@@ -193,7 +193,6 @@ export default memo(function HeatMap({
     if (expandedTissues.includes("lung")) {
       setExpandedTissues([]);
       setDisplayedCellTypes(initialDisplayedCellTypes);
-      console.log("DEFAULT");
 
       return;
     }
@@ -232,7 +231,7 @@ export default memo(function HeatMap({
                 cellTypes,
                 sortedCellTypesByTissueName,
                 tissue: tissue.name,
-                displayedCellTypes: displayedCellTypes,
+                displayedCellTypes,
               });
 
               return (

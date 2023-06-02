@@ -10,7 +10,9 @@ import {
 } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
+  CellTypeByTissueName,
   FilterDimensions,
+  GeneExpressionSummariesByTissueName,
   generateTermsByKey,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
@@ -80,16 +82,44 @@ export default function WheresMyGene(): JSX.Element {
 
   const [isScaled, setIsScaled] = useState(true);
 
-  const { data: cellTypesByTissueName } = useCellTypesByTissueName(2);
+  //(seve): These useEffects are deceptively simple.
+  // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
 
+  const {
+    data: rawCellTypesByTissueName,
+    isLoading: isLoadingCellTypesByTissueName,
+  } = useCellTypesByTissueName(2);
+
+  const [cellTypesByTissueName, setCellTypesByTissueName] =
+    useState<CellTypeByTissueName>(EMPTY_OBJECT);
+
+  // This is needed
+  useEffect(() => {
+    if (isLoadingCellTypesByTissueName) return;
+
+    setCellTypesByTissueName(rawCellTypesByTissueName);
+  }, [rawCellTypesByTissueName, isLoadingCellTypesByTissueName]);
   /**
    * This holds ALL the geneData we have loaded from the API, including previously
    * and currently selected genes.
    * We use `selectedGeneData` to subset the data to only the genes that are
    * currently selected.
    */
-  const { data: geneExpressionSummariesByTissueName, isLoading } =
+  const { data: rawGeneExpressionSummariesByTissueName, isLoading } =
     useGeneExpressionSummariesByTissueName(2);
+
+  const [
+    geneExpressionSummariesByTissueName,
+    setGeneExpressionSummariesByTissueName,
+  ] = useState<GeneExpressionSummariesByTissueName>(EMPTY_OBJECT);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    setGeneExpressionSummariesByTissueName(
+      rawGeneExpressionSummariesByTissueName
+    );
+  }, [rawGeneExpressionSummariesByTissueName, isLoading]);
 
   // TODO(thuang): Fix this complexity
   // eslint-disable-next-line sonarjs/cognitive-complexity

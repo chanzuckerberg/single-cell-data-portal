@@ -37,6 +37,7 @@ import {
 } from "./style";
 import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
+import { useRouter } from "next/router";
 
 const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };
@@ -110,6 +111,8 @@ export default memo(function Filters({
     ethnicities,
     sexes,
   } = selectedFilters;
+  const { pathname } = useRouter();
+  const isVersion2 = pathname.includes("v2");
 
   const {
     data: {
@@ -120,7 +123,7 @@ export default memo(function Filters({
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions();
+  } = useFilterDimensions(isVersion2 ? 2 : 1);
 
   const isHeatmapShown =
     ((selectedTissues && !!selectedTissues.length) || !selectedTissues) &&

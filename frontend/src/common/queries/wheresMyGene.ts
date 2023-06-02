@@ -61,7 +61,7 @@ function replaceV1WithV2(version: 1 | 2) {
 }
 
 export async function fetchPrimaryFilterDimensions(
-  version: 1 | 2 = 1
+  version: 1 | 2
 ): Promise<PrimaryFilterDimensionsResponse> {
   const url = API_URL + replaceV1WithV2(version).WMG_PRIMARY_FILTER_DIMENSIONS;
 
@@ -125,7 +125,7 @@ export function usePrimaryFilterDimensions(
   const currentSnapshotId = useSnapshotId();
 
   return useQuery<PrimaryFilterDimensionsResponse>(
-    [USE_PRIMARY_FILTER_DIMENSIONS, currentSnapshotId],
+    [USE_PRIMARY_FILTER_DIMENSIONS, currentSnapshotId, version],
     () => fetchPrimaryFilterDimensions(version),
     {
       onSuccess(response) {
@@ -461,7 +461,6 @@ export function useExpressionSummary(version: 1 | 2 = 1): {
   data: QueryResponse["expression_summary"];
 } {
   const requestBody = useWMGQueryRequestBody(version);
-  console.log("useExpressionSummary", requestBody);
 
   const { data, isLoading } = useWMGQuery(requestBody, version);
 
@@ -561,7 +560,6 @@ export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 1): {
   isLoading: boolean;
 } {
   const { data, isLoading } = useExpressionSummary(version);
-
   const {
     data: primaryFilterDimensions,
     isLoading: isLoadingPrimaryFilterDimensions,
@@ -706,8 +704,6 @@ export function useTermIdLabels(version: 1 | 2 = 1): {
   isLoading: boolean;
 } {
   const requestBody = useWMGQueryRequestBody(version);
-
-  console.log("useTermIdLabels", requestBody);
 
   const { data, isLoading } = useWMGQuery(requestBody, version);
 
@@ -909,7 +905,8 @@ function useWMGQueryRequestBody(version: 1 | 2) {
     selectedOrganismId,
     selectedFilters,
   } = useContext(StateContext);
-  const { data } = usePrimaryFilterDimensions();
+
+  const { data } = usePrimaryFilterDimensions(version);
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
@@ -994,7 +991,9 @@ function useWMGFiltersQueryRequestBody(
 ): FiltersQuery | null {
   const { selectedTissues, selectedOrganismId, selectedFilters } =
     useContext(StateContext);
-  const { data } = usePrimaryFilterDimensions();
+  console.log("calling usePrimaryFilterDimensions with version", version);
+
+  const { data } = usePrimaryFilterDimensions(version);
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
@@ -1307,8 +1306,11 @@ export function useMarkerGenes({
   );
 }
 
-export function useGeneInfo(geneSymbol: string): UseQueryResult<GeneInfo> {
-  const { data } = usePrimaryFilterDimensions();
+export function useGeneInfo(
+  geneSymbol: string,
+  version: 1 | 2 = 1
+): UseQueryResult<GeneInfo> {
+  const { data } = usePrimaryFilterDimensions(version);
   const genesByName = useMemo((): { [name: string]: OntologyTerm } => {
     let result: { [name: string]: OntologyTerm } = {};
 
