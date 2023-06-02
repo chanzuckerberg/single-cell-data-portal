@@ -70,6 +70,7 @@ export async function downloadAndVerifyFiles(
   //download and extract file
   await downloadGeneFile(page, tissues, subDirectory, fileTypes);
 
+  // If the selected filetypes includes csv then ensure the csv file is created based on number of tissues selected
   if (fileTypes.includes("csv")) {
     if (tissues.length === 1) {
       expect(
@@ -438,8 +439,6 @@ export async function downloadGeneFile(
     // If only one file type is selected and it's csv, AND multiple tissues, then name the csv file as generic name
     fileName = `${dirPath}/CELLxGENE_gene_expression.csv`;
   }
-
-  console.log(fileName);
 
   await download.saveAs(fileName);
   //extract zip file
