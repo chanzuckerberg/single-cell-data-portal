@@ -69,11 +69,11 @@ def test_parse_event_with_empty_event():
 
 
 def test_parse_event_with_error_cause():
-    error_cause = (
+    expected_error_cause = (
         '{"JobName": "Step1", "JobId": "789", "Container": {"Environment": [{"Name": "AWS_DEFAULT_REGION", '
         '"Value": "us-east-1"}]}}'
     )
-    event = {"execution": "arn", "dataset_id": "123", "collection_id": "456", "error": {"Cause": error_cause}}
+    event = {"execution": "arn", "dataset_id": "123", "collection_id": "456", "error": {"Cause": expected_error_cause}}
     (
         dataset_id,
         collection_version_id,
@@ -89,7 +89,7 @@ def test_parse_event_with_error_cause():
     assert error_step_name == "Step1"
     assert error_job_id == "789"
     assert error_aws_regions == "us-east-1"
-    assert error_cause is error_cause
+    assert expected_error_cause is error_cause
     assert execution_arn == "arn"
 
 
@@ -137,7 +137,7 @@ def test_parse_event_with_invalid_error_cause():
     assert execution_arn is None
 
 
-def mock_get_dataset_version(dataset_id, collection_id):
+def mock_get_dataset_version(collection_id):
     MockDatasetVersionId = Mock()
     MockDatasetVersionId.collection_id = collection_id
     MockDatasetVersionId.status = DatasetStatus(None, None, None, None, None, None)
@@ -255,7 +255,7 @@ def test_get_failure_slack_notification_message_with_missing_collection(
     aws_regions = "us-west-2"
     execution_arn = "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"
 
-    get_dataset_version_mock = Mock(return_value=mock_get_dataset_version(dataset_id, CollectionId(collection_id)))
+    get_dataset_version_mock = Mock(return_value=mock_get_dataset_version(CollectionId(collection_id)))
     get_unpublished_collection_version_from_canonical_mock = Mock(return_value=None)
 
     get_business_logic_mock = Mock()
@@ -315,7 +315,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
     owner = "test"
     collection_version_id = "version123"
 
-    get_dataset_version_mock = Mock(return_value=mock_get_dataset_version(dataset_id, CollectionId(collection_id)))
+    get_dataset_version_mock = Mock(return_value=mock_get_dataset_version(CollectionId(collection_id)))
     get_unpublished_collection_version_from_canonical_mock = Mock(
         return_value=mock_collection_version(owner, CollectionVersionId(collection_version_id))
     )
