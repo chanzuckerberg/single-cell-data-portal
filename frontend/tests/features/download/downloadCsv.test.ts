@@ -15,7 +15,7 @@ import {
 } from "tests/common/constants";
 
 const { describe, skip } = test;
-describe.only("CSV download tests", () => {
+describe("CSV download tests", () => {
   skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
 
   test(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
