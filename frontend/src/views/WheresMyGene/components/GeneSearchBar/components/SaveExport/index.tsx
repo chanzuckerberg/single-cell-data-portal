@@ -432,7 +432,6 @@ function generateCsv({
   allChartProps,
   compare,
   selectedGenes,
-  tissueName,
   availableFilters,
   selectedFilters,
   selectedOrganismId,
@@ -442,7 +441,6 @@ function generateCsv({
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
   selectedGenes: Props["selectedGenes"];
-  tissueName: string;
   availableFilters: Partial<FilterDimensions>;
   selectedFilters: State["selectedFilters"];
   selectedOrganismId: string | null;
@@ -464,23 +462,25 @@ function generateCsv({
     })
   );
 
-  // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
-  const cellTypeIdToMetadataMapping = Object.values(
-    buildCellTypeIdToMetadataMapping(tissueName, allChartProps)
-  );
+  for (const tissueName of selectedTissues) {
+    // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
+    const cellTypeIdToMetadataMapping = Object.values(
+      buildCellTypeIdToMetadataMapping(tissueName, allChartProps)
+    );
 
-  for (const metadataForCellType of cellTypeIdToMetadataMapping) {
-    for (const geneName of selectedGenes) {
-      for (const metadata of metadataForCellType) {
-        output.push(
-          csvGeneExpressionRow({
-            metadata,
-            tissueName,
-            allChartProps,
-            geneName,
-            compare,
-          })
-        );
+    for (const metadataForCellType of cellTypeIdToMetadataMapping) {
+      for (const geneName of selectedGenes) {
+        for (const metadata of metadataForCellType) {
+          output.push(
+            csvGeneExpressionRow({
+              metadata,
+              tissueName,
+              allChartProps,
+              geneName,
+              compare,
+            })
+          );
+        }
       }
     }
   }
@@ -641,35 +641,23 @@ function download_({
         }px`;
       }
 
-      const exports: ExportData[] = (
-        await Promise.all(
-          selectedTissues.map(async (tissueName) => {
-            // Handles if whitespace is in the tissue name for the element ID
-            const formattedTissueName = tissueName.replace(/\s+/g, "-");
+      const exports: ExportData[] = [];
 
-            // Generate exports for each filetype for the tissue
-            return await Promise.all(
-              selectedFileTypes.map(async (fileType) => {
-                let input;
+      await Promise.all(
+        selectedTissues.map(async (tissueName) => {
+          // Handles if whitespace is in the tissue name for the element ID
+          const formattedTissueName = tissueName.replace(/\s+/g, "-");
 
-                if (fileType === "csv") {
-                  input = generateCsv({
-                    allChartProps,
-                    compare,
-                    selectedGenes,
-                    tissueName,
-                    availableFilters,
-                    selectedFilters,
-                    selectedOrganismId,
-                    availableOrganisms,
-                    selectedTissues,
-                  });
-                } else {
-                  const heatmapHeight = getHeatmapHeight(
-                    selectedCellTypes[tissueName]
-                  );
+          // Generate exports for images only
+          return await Promise.all(
+            selectedFileTypes.map(async (fileType) => {
+              if (fileType === "png" || fileType === "svg") {
+                const heatmapHeight = getHeatmapHeight(
+                  selectedCellTypes[tissueName]
+                );
 
-                  input = await generateImage({
+                exports.push({
+                  input: await generateImage({
                     fileType,
                     heatmapNode,
                     heatmapHeight,
@@ -678,18 +666,31 @@ function download_({
                     isMultipleTissues:
                       selectedTissues.length > 1 ||
                       selectedFileTypes.length > 1,
-                  });
-                }
-
-                return {
-                  input,
+                  }),
                   name: `${formattedTissueName}.${fileType}`,
-                };
-              })
-            );
-          })
-        )
-      ).flat();
+                });
+              }
+            })
+          );
+        })
+      );
+
+      // CSV has all tissues in one file
+      if (selectedFileTypes.includes("csv")) {
+        exports.push({
+          input: generateCsv({
+            allChartProps,
+            compare,
+            selectedGenes,
+            availableFilters,
+            selectedFilters,
+            selectedOrganismId,
+            availableOrganisms,
+            selectedTissues,
+          }),
+          name: "CELLxGENE_gene_expression.csv",
+        });
+      }
 
       if (isPng) {
         // Remove classes that were required for styling PNG
