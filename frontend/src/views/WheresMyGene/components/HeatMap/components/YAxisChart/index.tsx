@@ -63,7 +63,7 @@ export default memo(function YAxisChart({
   }, [cellTypes, tissue]);
 
   return (
-    <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
+    <Wrapper>
       <TissueWrapper height={heatmapHeight}>
         <TissueName>{capitalize(tissue)}</TissueName>
       </TissueWrapper>
@@ -131,7 +131,10 @@ const CellTypeButton = ({
   const isTruncated = formattedName.includes("...");
 
   return (
-    <FlexRowJustified data-testid="cell-type-label-count">
+    <FlexRowJustified
+      id="cell-type-label-count"
+      data-testid="cell-type-label-count"
+    >
       <FlexRow>
         <CellTypeLabelStyle>
           <Tooltip
@@ -156,7 +159,9 @@ const CellTypeButton = ({
                   {name}
                 </HiddenCellTypeLabelStyle>
               )}
-              <div data-testid="cell-type-name">{formattedName}</div>
+              <div id="cell-type-name" data-testid="cell-type-name">
+                {formattedName}
+              </div>
             </div>
           </Tooltip>
         </CellTypeLabelStyle>
@@ -190,7 +195,7 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle data-testid="cell-count">
+      <CellCountLabelStyle id="cell-count" data-testid="cell-count">
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>
