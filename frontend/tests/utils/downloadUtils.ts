@@ -29,37 +29,33 @@ export async function verifyCsv(
   filterName: string,
   url: string
 ): Promise<void> {
-  tissues.forEach(async (tissue) => {
-    const metadata = await getCsvMetadata(tissue, subDirectory);
-    // extract the headers and data arrays from the metadata object
-    // put all the headers in an array
-    const headers = metadata.headers;
-    const data = metadata.data;
+  const metadata = await getCsvMetadata(tissues, subDirectory);
+  // extract the headers and data arrays from the metadata object
+  // put all the headers in an array
+  const headers = metadata.headers;
+  const data = metadata.data;
 
-    //get number of element in csv
-    const csvElementsCount = metadata.rowCount;
+  //get number of element in csv
+  const csvElementsCount = metadata.rowCount;
 
-    //get number of element displayed in ui
-    const uiElementsCount = await page
-      .locator(
-        `[data-testid="cell-type-labels-${tissue}"] [data-testid="cell-type-label-count"]`
-      )
-      .count();
+  //get number of element displayed in ui
+  const uiElementsCount = await page
+    .locator(`[data-testid="cell-type-label-count"]`)
+    .count();
 
-    //verify the number of element in the csv this is the Ui displayed multiplied by the number of genes selected
-    expect(csvElementsCount).toEqual(uiElementsCount * 3);
+  //verify the number of element in the csv this is the Ui displayed multiplied by the number of genes selected
+  expect(csvElementsCount).toEqual(uiElementsCount * 3);
 
-    const options = {
-      filterName: filterName,
-      data: headers,
-    };
+  const options = {
+    filterName: filterName,
+    data: headers,
+  };
 
-    //verify meta data
-    await verifyMetadata(page, options, url);
+  //verify meta data
+  await verifyMetadata(page, options, url);
 
-    //verify all the headers are present in the csv
-    expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
-  });
+  //verify all the headers are present in the csv
+  expect(data[0]).toEqual(expect.arrayContaining(EXPECTED_HEADER));
 }
 
 export function subDirectory() {
@@ -74,14 +70,32 @@ export async function downloadAndVerifyFiles(
   //download and extract file
   await downloadGeneFile(page, tissues, subDirectory, fileTypes);
 
-  // verify files are available
-  fileTypes.forEach((extension: string) => {
-    tissues.forEach((tissue) => {
+  if (fileTypes.includes("csv")) {
+    if (tissues.length === 1) {
       expect(
-        fs.existsSync(`${downLoadPath}/${subDirectory}/${tissue}.${extension}`)
+        fs.existsSync(`${downLoadPath}/${subDirectory}/${tissues[0]}.csv`)
       ).toBeTruthy();
+    } else if (tissues.length > 1) {
+      expect(
+        fs.existsSync(
+          `${downLoadPath}/${subDirectory}/CELLxGENE_gene_expression.csv`
+        )
+      ).toBeTruthy();
+    }
+  }
+
+  // verify png and svg files are available
+  fileTypes
+    .filter((ext) => ext !== "csv") // Do not include csv since it downloads as one file for all tissues
+    .forEach((extension: string) => {
+      tissues.forEach((tissue) => {
+        expect(
+          fs.existsSync(
+            `${downLoadPath}/${subDirectory}/${tissue}.${extension}`
+          )
+        ).toBeTruthy();
+      });
     });
-  });
 }
 
 export async function deleteDownloadedFiles(filePath: string) {
@@ -98,13 +112,17 @@ export interface CsvMetadata {
 }
 
 export const getCsvMetadata = (
-  tissue: string,
+  tissues: string[],
   subDirectory: string
 ): Promise<CsvMetadata> => {
   return new Promise((resolve, reject) => {
     // Open the CSV file for reading
     const fileStream = fs.createReadStream(
-      `${downLoadPath}/${subDirectory}/${tissue}.csv`,
+      `${downLoadPath}/${subDirectory}/${
+        tissues.length === 1
+          ? `${tissues[0]}.csv`
+          : "CELLxGENE_gene_expression.csv"
+      }`,
       { encoding: "utf8" }
     );
 
@@ -118,12 +136,11 @@ export const getCsvMetadata = (
 
     // Listen for 'line' events emitted by the readline interface
     csvFileInterface.on("line", (line) => {
-      const row = line.split(",");
-      if (row.length > 1) {
-        data.push(row);
+      if (!line.startsWith("#")) {
+        data.push(line.split(","));
         rowCount++;
-      } else if (row.length === 1) {
-        headers.push(row[0]);
+      } else {
+        headers.push(line);
       }
     });
 
@@ -409,13 +426,20 @@ export async function downloadGeneFile(
 
   // download can be zipped or not depending on number of tissues
   let fileName = `${dirPath}/download.zip`;
-  if (
-    fileTypes.length === 1 &&
-    tissues.length === 1 &&
-    fileTypes[0] !== "csv"
-  ) {
+
+  if (fileTypes.length === 1 && tissues.length === 1) {
+    // if only one file and tissue is selected then set the filename as "tissueName.extension"
     fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
+  } else if (
+    fileTypes.length === 1 &&
+    tissues.length > 1 &&
+    fileTypes[0] === "csv"
+  ) {
+    // If only one file type is selected and it's csv, AND multiple tissues, then name the csv file as generic name
+    fileName = `${dirPath}/CELLxGENE_gene_expression.csv`;
   }
+
+  console.log(fileName);
 
   await download.saveAs(fileName);
   //extract zip file

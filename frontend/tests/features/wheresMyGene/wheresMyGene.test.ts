@@ -735,7 +735,7 @@ describe("Where's My Gene", () => {
 
       const files = ["blood.csv", "blood.png", "blood.svg"];
 
-      expect(zipEntries.length).toBe(3);
+      expect(zipEntries.length).toBe(files.length);
 
       for (const entry of zipEntries) {
         expect(files.includes(entry.name)).toBe(true);
@@ -791,15 +791,14 @@ describe("Where's My Gene", () => {
       const zipEntries = zip.getEntries();
 
       const files = [
-        "blood.csv",
+        "CELLxGENE_gene_expression.csv",
         "blood.png",
         "blood.svg",
-        "lung.csv",
         "lung.png",
         "lung.svg",
       ];
 
-      expect(zipEntries.length).toBe(6);
+      expect(zipEntries.length).toBe(files.length);
 
       for (const entry of zipEntries) {
         expect(files.includes(entry.name)).toBe(true);

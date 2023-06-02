@@ -688,7 +688,10 @@ function download_({
             availableOrganisms,
             selectedTissues,
           }),
-          name: "CELLxGENE_gene_expression.csv",
+          name:
+            selectedTissues.length === 1 // If only one tissue is selected, use tissue name as filename
+              ? `${selectedTissues[0]}.csv`
+              : "CELLxGENE_gene_expression.csv",
         });
       }
 
