@@ -45,7 +45,7 @@ jobs:
       - name: Docker build, push, and tag
         shell: bash
         run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} --slice processing
+          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8}
 
 #  rebuild-and-push-processing-image-staging:
 #    runs-on: ubuntu-20.04
