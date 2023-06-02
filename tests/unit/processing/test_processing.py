@@ -129,11 +129,11 @@ class ProcessingTest(BaseProcessingTest):
             status = self.business_logic.get_dataset_status(dataset_version_id)
             self.assertEqual(status.cxg_status, DatasetConversionStatus.UPLOADED)
 
-            self.assertTrue(self.s3_provider.uri_exists(f"s3://diff_cxg_bucket/{dataset_version_id.id}.cxg/"))
+            self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"))
 
             artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
             cxg_artifact = [artifact for artifact in artifacts if artifact.type == "cxg"][0]
-            self.assertTrue(cxg_artifact, f"s3://diff_cxg_bucket/{dataset_version_id.id}.cxg/")
+            self.assertTrue(cxg_artifact, f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/")
 
     @patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata")
     @patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat")

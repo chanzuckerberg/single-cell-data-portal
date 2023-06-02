@@ -84,17 +84,21 @@ class ProcessCxg(ProcessingLogic):
         cxg_dir = self.convert_file(
             self.make_cxg, local_filename, "Issue creating cxg.", dataset_id, DatasetStatusKey.CXG
         )
-        key_prefix = self.get_key_prefix(dataset_id.id)
-        s3_uri = f"s3://{cellxgene_bucket}/{key_prefix}.cxg/"
+        s3_uri = None
+        if is_reprocess:
+            existing_artifacts = self.business_logic.get_dataset_artifacts(dataset_id)
+            existing_cxg = [artifact for artifact in existing_artifacts if artifact.type == DatasetArtifactType.CXG][0]
+            if existing_cxg:
+                s3_uri = existing_cxg.uri
+
+        if s3_uri is None:
+            key_prefix = self.get_key_prefix(dataset_id.id)
+            s3_uri = f"s3://{cellxgene_bucket}/{key_prefix}.cxg/"
+
         self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADING)
         self.copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         self.logger.info(f"Updating database with cxg artifact for dataset {dataset_id}. s3_uri is {s3_uri}")
-        if is_reprocess:
-            artifacts = self.business_logic.get_dataset_artifacts(dataset_id)
-            cxg_artifact = [artifact for artifact in artifacts if artifact.type == DatasetArtifactType.CXG]
-            if cxg_artifact and cxg_artifact[0].uri != s3_uri:
-                self.business_logic.update_dataset_artifact(cxg_artifact[0].id, s3_uri)
-        else:
+        if not is_reprocess:
             self.business_logic.add_dataset_artifact(dataset_id, DatasetArtifactType.CXG, s3_uri)
 
         self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADED)
