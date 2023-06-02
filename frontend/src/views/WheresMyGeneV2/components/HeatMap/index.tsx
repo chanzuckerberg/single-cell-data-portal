@@ -232,7 +232,7 @@ export default memo(function HeatMap({
             <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
             <XAxisChart geneNames={sortedGeneNames} />
           </XAxisWrapper>
-          <YAxisWrapper top={xAxisHeight}>
+          <YAxisWrapper top={0}>
             {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
               const tissueCellTypes = memoizedGetTissueCellTypes({
                 cellTypeSortBy,
