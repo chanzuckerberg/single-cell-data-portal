@@ -14,6 +14,7 @@ import {
   CompareId,
   getCompareOptionNameById,
   HEATMAP_CONTAINER_ID,
+  X_AXIS_CHART_HEIGHT_PX,
 } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
 
@@ -65,7 +66,6 @@ import {
 import { LEGEND_MARGIN_BOTTOM_PX } from "src/views/WheresMyGene/style";
 import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
 import {
-  X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
   getHeatmapHeight,
   getHeatmapWidth,
