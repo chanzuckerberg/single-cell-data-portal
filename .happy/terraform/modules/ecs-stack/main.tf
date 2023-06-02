@@ -223,6 +223,7 @@ module upload_error_lambda {
   deployment_stage           = local.deployment_stage
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
+  datasets_bucket            = local.datasets_bucket
   lambda_execution_role      = local.lambda_execution_role
   subnets                    = local.subnets
   security_groups            = local.security_groups
