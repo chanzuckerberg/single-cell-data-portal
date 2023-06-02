@@ -18,7 +18,11 @@ import {
   OntologyTerm,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import { DispatchContext, State } from "src/views/WheresMyGene/common/store";
+import {
+  DispatchContext,
+  State,
+  StateContext,
+} from "src/views/WheresMyGene/common/store";
 import { addCellInfoCellType } from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
@@ -45,7 +49,10 @@ import {
   YAxisWrapper,
 } from "src/views/WheresMyGene/components/HeatMap/style";
 import { CellCountLabel } from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
-import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
+import {
+  HEATMAP_CONTAINER_ID,
+  X_AXIS_CHART_HEIGHT_PX,
+} from "src/views/WheresMyGene/common/constants";
 import Loader from "src/views/WheresMyGene/components/Loader";
 import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
@@ -91,6 +98,7 @@ export default memo(function HeatMap({
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes });
 
+  const { xAxisHeight } = useContext(StateContext);
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const chartWrapperRef = useRef<HTMLDivElement>(null);
@@ -215,16 +223,16 @@ export default memo(function HeatMap({
       <Button onClick={handleExpand}>EXPAND</Button>
 
       <ContainerWrapper>
-        <TopLeftCornerMask>
+        <TopLeftCornerMask height={xAxisHeight}>
           <CellCountLabel>Cell Count</CellCountLabel>
         </TopLeftCornerMask>
         <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
           {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
           <XAxisWrapper id="x-axis-wrapper">
-            <XAxisMask data-testid="x-axis-mask" />
+            <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
             <XAxisChart geneNames={sortedGeneNames} />
           </XAxisWrapper>
-          <YAxisWrapper>
+          <YAxisWrapper top={xAxisHeight}>
             {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
               const tissueCellTypes = memoizedGetTissueCellTypes({
                 cellTypeSortBy,
@@ -236,19 +244,21 @@ export default memo(function HeatMap({
 
               return (
                 tissueCellTypes.length > 0 && (
-                  <YAxisChart
-                    key={tissue.name}
-                    tissue={tissue.name}
-                    tissueID={tissue.id}
-                    cellTypes={tissueCellTypes}
-                    generateMarkerGenes={generateMarkerGenes}
-                    selectedOrganismId={selectedOrganismId}
-                  />
+                  <div id={`y-axis-${tissue.name}`}>
+                    <YAxisChart
+                      key={tissue.name}
+                      tissue={tissue.name}
+                      tissueID={tissue.id}
+                      cellTypes={tissueCellTypes}
+                      generateMarkerGenes={generateMarkerGenes}
+                      selectedOrganismId={selectedOrganismId}
+                    />
+                  </div>
                 )
               );
             })}
           </YAxisWrapper>
-          <ChartWrapper ref={chartWrapperRef}>
+          <ChartWrapper ref={chartWrapperRef} top={xAxisHeight}>
             {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
               const tissueCellTypes = memoizedGetTissueCellTypes({
                 cellTypeSortBy,
@@ -266,7 +276,17 @@ export default memo(function HeatMap({
                * the chart, because it will cause the chart to render with 0 width,
                * which is an error for echarts
                */
-              if (!selectedGeneData?.length) return null;
+              if (!selectedGeneData?.length) {
+                const height =
+                  document.getElementById(`y-axis-${tissue.name}`)
+                    ?.clientHeight ?? 0;
+                return (
+                  <div
+                    key={`y-axis-${tissue.name}`}
+                    style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
+                  />
+                );
+              }
 
               return (
                 <Chart
