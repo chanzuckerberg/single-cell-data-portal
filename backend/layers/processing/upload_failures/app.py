@@ -161,7 +161,7 @@ def cleanup_artifacts(dataset_id: str, error_step_name: str) -> None:
     with logger.LogSuppressed(Exception, message="Failed to clean up artifacts."):
         object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
         if not error_step_name or error_step_name == "download-validate":
-            delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], object_key + "/")
+            delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], object_key)
         if not error_step_name or error_step_name == "cxg":
             cellxgene_bucket = os.getenv(
                 "CELLXGENE_BUCKET", default=f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"
