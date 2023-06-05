@@ -989,7 +989,6 @@ function useWMGFiltersQueryRequestBody(
 ): FiltersQuery | null {
   const { selectedTissues, selectedOrganismId, selectedFilters } =
     useContext(StateContext);
-  console.log("calling usePrimaryFilterDimensions with version", version);
 
   const { data } = usePrimaryFilterDimensions(version);
 
