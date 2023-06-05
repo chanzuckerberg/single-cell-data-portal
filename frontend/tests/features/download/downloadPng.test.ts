@@ -4,6 +4,7 @@ import { isDevStagingProd } from "tests/utils/helpers";
 import {
   deleteDownloadedFiles,
   downloadAndVerifyFiles,
+  getActualImage,
   subDirectory,
   verifyPng,
 } from "tests/utils/downloadUtils";
@@ -28,7 +29,8 @@ describe("PNG download tests", () => {
     const dirPath = `${downLoadPath}/${folder}`;
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
-    verifyPng(dirPath, tissues, "no-filter");
+    await getActualImage(page, dirPath);
+    verifyPng(page, dirPath, tissues);
     deleteDownloadedFiles(dirPath);
   });
 
@@ -43,7 +45,8 @@ describe("PNG download tests", () => {
     const dirPath = `${downLoadPath}/${folder}`;
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
-    verifyPng(dirPath, tissues, "filter");
+    await getActualImage(page, dirPath);
+    verifyPng(page, dirPath, tissues);
     deleteDownloadedFiles(dirPath);
   });
   test(`Should verify png for lung and blood tissue with no group set`, async ({
@@ -57,7 +60,8 @@ describe("PNG download tests", () => {
     const dirPath = `${downLoadPath}/${folder}`;
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
-    verifyPng(dirPath, tissues, "no-group");
+    await getActualImage(page, dirPath);
+    verifyPng(page, dirPath, tissues);
     deleteDownloadedFiles(dirPath);
   });
 });

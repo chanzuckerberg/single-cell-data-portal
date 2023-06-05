@@ -285,14 +285,14 @@ export async function downloadGeneFile(
   const download = await downloadPromise;
 
   // download can be zipped or not depending on number of tissues
-  let fileName = `${dirPath}/download.zip`;
-  if (
-    fileTypes.length === 1 &&
-    tissues.length === 1 &&
-    fileTypes[0] !== "csv"
-  ) {
-    fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
-  }
+  const fileName = `${dirPath}/download.zip`;
+  // if (
+  //   fileTypes.length === 1 &&
+  //   tissues.length === 1 &&
+  //   fileTypes[0] !== "png"
+  // ) {
+  //   fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
+  // }
 
   await download.saveAs(fileName);
   //extract zip file
@@ -307,19 +307,51 @@ export const getFilterText = async (page: Page, filterName: string) => {
   return await page.locator(filter_label).textContent();
 };
 
-export function verifyPng(
-  dirPath: string,
-  tissues: string[],
-  subDirectory: string
-) {
-  tissues.forEach(async (tissue) => {
-    // Capture the actual screenshot and compare it with the expected screenshot
-    const expectedPng = `./tests/fixtures/download/${subDirectory}/${tissue}.png`;
+export function verifyPng(page: Page, dirPath: string, tissues: string[]) {
+  tissues.forEach(async () => {
+    // Specify the input image file path
+    const inputImagePath = `${dirPath}/blood.png`;
 
-    const actualPng = `${dirPath}/${tissue}.png`;
+    // Specify the output image file path
+    const outputImagePath = `${dirPath}/blood_cropped.png`;
+    // Specify the height of the region to be removed from the top
+    const startHeight = 567;
+    // Perform the extraction operation
+    sharp(inputImagePath)
+      .metadata()
+      .then((metadata) => {
+        const imageHeight = metadata.height || 0;
+        const extractHeight = imageHeight - startHeight;
+
+        const extractRegion = {
+          top: startHeight,
+          left: 0,
+          width: metadata.width || 0,
+          height: extractHeight,
+        };
+
+        sharp(inputImagePath)
+          .extract(extractRegion)
+          .toFile(outputImagePath)
+          .then(() => {
+            console.log("Image processed successfully");
+          })
+          .catch((err) => {
+            console.error("Error while processing image:", err);
+          });
+      })
+      .catch((err) => {
+        console.error("Error while retrieving image metadata:", err);
+      });
+
+    const actualPng = outputImagePath;
+    // Capture the actual screenshot and compare it with the expected screenshot
+    const expectedPng = `${dirPath}/blood_actual.png`;
+    await page.waitForTimeout(1000);
     compareImages(expectedPng, actualPng);
   });
 }
+
 async function compareImages(imagePath1: string, imagePath2: string) {
   const imageBuffer1 = await fs.promises.readFile(imagePath1);
   const imageBuffer2 = await fs.promises.readFile(imagePath2);
@@ -352,6 +384,7 @@ async function compareImages(imagePath1: string, imagePath2: string) {
       maxHeight,
       { threshold: 0.95 }
     );
+    console.log(numDiffPixels);
     expect(numDiffPixels).toBeLessThan(400000);
   }
 }
@@ -372,4 +405,70 @@ export async function compareSvg(
   );
   expect(await page.screenshot()).toMatchSnapshot(webGeneImage);
   await browser.close();
+}
+export async function getActualImage(
+  page: Page,
+  dirPath: string
+): Promise<void> {
+  const geneCanvasId = '[data-zr-dom-id*="zr"]';
+  //close popup
+  await page
+    .locator('[data-testid="newsletter-modal-banner-wrapper"] button')
+    .click();
+  // Get the start element
+  const startElement = await page.$("#heatmap-container-id");
+  if (!startElement) {
+    console.error("Start element not found");
+    await page.close();
+    return;
+  }
+
+  // Get the stop element
+  const stopElement = await page.locator(geneCanvasId).nth(0);
+  if (!stopElement) {
+    console.error("Stop element not found");
+    await page.close();
+    return;
+  }
+
+  // Get the bounding boxes of the elements
+  const startBoundingBox = await startElement.boundingBox();
+  const stopBoundingBox = await stopElement.boundingBox();
+
+  if (!startBoundingBox || !stopBoundingBox) {
+    console.error("Bounding box not found");
+    await page.close();
+    return;
+  }
+
+  // Calculate the starting and stopping coordinates
+  const startX = startBoundingBox.x;
+  const startY = startBoundingBox.y;
+  const stopX = stopBoundingBox.x + stopBoundingBox.width;
+  const stopY = stopBoundingBox.y + stopBoundingBox.height;
+
+  // Calculate the width and height of the desired screenshot area
+  const width = stopX - startX;
+  const height = stopY - startY;
+  // Calculate the viewport dimensions to accommodate the elements
+  const viewportWidth = Math.max(
+    startBoundingBox.x + startBoundingBox.width,
+    stopBoundingBox.x + stopBoundingBox.width
+  );
+  const viewportHeight = Math.max(
+    startBoundingBox.y + startBoundingBox.height,
+    stopBoundingBox.y + stopBoundingBox.height
+  );
+
+  // Set the viewport size
+  await page.setViewportSize({
+    width: viewportWidth,
+    height: viewportHeight,
+  });
+
+  // Take a screenshot of the desired area
+  await page.screenshot({
+    path: `${dirPath}/blood_actual.png`,
+    clip: { x: startX, y: startY, width, height },
+  });
 }
