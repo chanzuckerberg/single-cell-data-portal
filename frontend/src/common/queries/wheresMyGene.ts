@@ -185,7 +185,7 @@ type Filter = FilterV1 | FilterV2;
 
 interface FilterSecondary {
   organism_ontology_term_id: string;
-  tissue_ontology_term_ids?: string[];
+  tissue_ontology_term_ids: string[];
   dataset_ids: string[];
   disease_ontology_term_ids: string[];
   sex_ontology_term_ids: string[];
@@ -294,8 +294,6 @@ async function fetchQuery({
   version: 1 | 2;
 }): Promise<QueryResponse | undefined> {
   if (!query) return;
-
-  console.log("fetchQuery", query);
 
   const url = API_URL + replaceV1WithV2(version).WMG_QUERY;
 
