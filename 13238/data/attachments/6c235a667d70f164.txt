@@ -1,0 +1,43 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +9ms
+  pw:api <= browserType.launch succeeded +358ms
+  pw:api => browser.newContext started +3ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +97ms
+  pw:api   "commit" event fired +27ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +6ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +7ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +90ms
+  pw:api => page.goto started +31ms
+  pw:api navigating to "https://localhost:3000/cell-guide", waiting until "load" +10ms
+  pw:api   "commit" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide" +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide" +28ms
+  pw:api <= page.goto succeeded +77ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('landing-page-header') to be visible +33ms
+  pw:api   locator resolved to visible <div data-testid="landing-page-header" class="css-1tx…>CellGuide is a comprehensive resource for knowled…</div> +57ms
+  pw:api <= locator.waitFor succeeded +14ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('landing-page-header') +6ms
+  pw:api <= locator.isVisible succeeded +6ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('cell-card-search-bar') to be visible +2ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-search-bar">…</div> +3ms
+  pw:api <= locator.waitFor succeeded +5ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-card-search-bar') +3ms
+  pw:api <= locator.isVisible succeeded +3ms
+  pw:api taking page screenshot +97ms
+  pw:api => browserContext.close started +71ms
+  pw:api <= browserContext.close succeeded +5s
