@@ -37,7 +37,7 @@ def parse_event(event: dict):
     dataset_id = event.get("dataset_id")
     collection_version_id = event.get("collection_id")
     error_cause = event.get("error", {}).get("Cause", "")
-    execution_arn = event.get("execution")
+    execution_arn = event.get("execution_id")
     try:
         error_cause_dict = json.loads(error_cause)
     except json.decoder.JSONDecodeError:
