@@ -199,7 +199,8 @@ def _dataset_to_response(
             else _ontology_term_ids_to_response(dataset.metadata.development_stage),
             "disease": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.disease),
             "donor_id": None if dataset.metadata is None else dataset.metadata.donor_id,
-            "id": dataset_id,
+            "dataset_id": dataset.dataset_id.id,
+            "id": dataset_id,  # change to "dataset_version_id" = dataset_id
             "is_primary_data": None if dataset.metadata is None else dataset.metadata.is_primary_data,
             "is_valid": True,  # why do we have this
             "mean_genes_per_cell": None if dataset.metadata is None else dataset.metadata.mean_genes_per_cell,

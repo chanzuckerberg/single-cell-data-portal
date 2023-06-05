@@ -26,6 +26,10 @@ import { ROUTES } from "../constants/routes";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
+import { useFetchCollectionRows } from "./filter";
+import { TombstonedCollection, useManyCollections } from "./collections";
+import { Collection } from "../entities";
+import { useViewMode } from "src/common/hooks/useViewMode";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -391,6 +395,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   development_stage_terms: [],
   disease_terms: [],
   self_reported_ethnicity_terms: [],
+  publicationFilter: [],
   sex_terms: [],
   tissue_terms: [],
 };
@@ -415,6 +420,16 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
+  const { mode, status } = useViewMode();
+
+  // Extracting row metadata from collections
+  const { rows: rawPublications } = useFetchCollectionRows(mode, status);
+
+  // Reconstructing rows into publication_list format
+  const publication_list: { [id: string]: string }[] = rawPublications.map(
+    ({ summaryCitation }) => ({ id: summaryCitation })
+  );
+
   const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
@@ -436,6 +451,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
 
+    // filter publicationFilter based on what's coming in from datasets
     return {
       data: {
         datasets: sortedDatasets.map((dataset) => ({
@@ -446,6 +462,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
+        publicationFilter: publication_list.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },
@@ -908,6 +925,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
+
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
@@ -987,13 +1005,22 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 function useWMGFiltersQueryRequestBody(
   version: 1 | 2 = 1
 ): FiltersQuery | null {
-  const { selectedTissues, selectedOrganismId, selectedFilters } =
-    useContext(StateContext);
+  const {
+    selectedTissues,
+    selectedOrganismId,
+    selectedFilters,
+    selectedPublicationFilter,
+  } = useContext(StateContext);
 
   const { data } = usePrimaryFilterDimensions(version);
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
+  const { publications } = selectedPublicationFilter;
+
+  const { data: collections } = useManyCollections({ ids: publications });
+
+  console.log(collections);
 
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
@@ -1016,9 +1043,31 @@ function useWMGFiltersQueryRequestBody(
         return tissuesByName[tissueName].id;
       }) ?? EMPTY_ARRAY;
 
+    const publicationDatasetIds: string[] = [];
+
+    collections?.map((collection: Collection | TombstonedCollection | null) => {
+      if (!collection || collection.tombstone) return;
+      for (const d of collection.datasets.values()) {
+        publicationDatasetIds.push(
+          ...d.dataset_assets.map((el) => el.dataset_id)
+        );
+      }
+    });
+
+    console.log("publicationDatasetIds", publicationDatasetIds);
+    console.log("datasets", datasets);
+
+    function findIntersection(a: string[], b: string[]) {
+      return a.filter((x) => b.includes(x));
+    }
+
+    const intersect = findIntersection(datasets, publicationDatasetIds);
+
+    console.log("intersect", intersect);
+
     return {
       filter: {
-        dataset_ids: datasets,
+        dataset_ids: intersect,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
         organism_ontology_term_id: selectedOrganismId,
@@ -1036,6 +1085,7 @@ function useWMGFiltersQueryRequestBody(
     developmentStages,
     diseases,
     ethnicities,
+    collections,
     sexes,
     version,
   ]);

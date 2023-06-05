@@ -72,8 +72,13 @@ export default function WheresMyGene(): JSX.Element {
     [tissue: string]: ChartProps;
   }>({});
 
+  // Treating publications as a filter, but not being passed through backend technically. 
+  type availableFilters = Partial<FilterDimensions> & {
+    publicationFilter?: { id: string; name: string }[];
+  } 
+
   const [availableFilters, setAvailableFilters] =
-    useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
+    useState<availableFilters>(EMPTY_OBJECT);
 
   const [isScaled, setIsScaled] = useState(true);
 
