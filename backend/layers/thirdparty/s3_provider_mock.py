@@ -1,5 +1,6 @@
 import contextlib
 from typing import List
+from urllib.parse import urlparse
 
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 
@@ -11,6 +12,10 @@ class MockS3Provider(S3ProviderInterface):
 
     def __init__(self) -> None:
         self.mock_s3_fs = []
+
+    def parse_s3_uri(self, s3_uri: str):
+        parsed_url = urlparse(s3_uri)
+        return parsed_url.netloc, parsed_url.path[1:]
 
     def upload_file(self, src_file: str, bucket_name: str, dst_file: str, extra_args: dict):
         url = f"s3://{bucket_name}/{dst_file}"
