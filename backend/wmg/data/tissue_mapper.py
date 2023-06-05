@@ -106,7 +106,9 @@ class TissueMapper:
         "UBERON_0001062",  # anatomical entity
     ]
 
-    def __init__(self, uberon_ontology: str = "https://github.com/obophenotype/uberon/releases/latest/download/uberon.owl"):
+    def __init__(
+        self, uberon_ontology: str = "https://github.com/obophenotype/uberon/releases/latest/download/uberon.owl"
+    ):
         # TODO: use the pinned ontology at `single-cell-curation`
         self._uberon = owlready2.get_ontology(uberon_ontology)
         self._uberon.load()
