@@ -1,4 +1,3 @@
-// import {
 import { CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX } from "src/components/Layout/style";
 import { capitalize } from "../../../HeatMap/components/YAxisChart";
 import {
