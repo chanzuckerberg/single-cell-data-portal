@@ -1,10 +1,4 @@
-import {
-  Dispatch,
-  Fragment,
-  memo,
-  MouseEventHandler,
-  SetStateAction,
-} from "react";
+import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
 import { FilterDimensions } from "src/common/queries/wheresMyGene";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import SaveExport from "../../../GeneSearchBar/components/SaveExport";

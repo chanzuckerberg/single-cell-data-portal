@@ -7,12 +7,12 @@ import {
 import { PLASMA_SVG_STRING } from "src/views/WheresMyGene/components/Filters/components/ColorScale";
 import {
   HEAT_MAP_BASE_CELL_PX,
-  X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { Y_AXIS_TISSUE_WIDTH_PX } from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
 import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
 import { Tissue } from "src/views/WheresMyGene/common/types";
+import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
 
 export const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
 const FONT_FAMILY = "sans-serif";
