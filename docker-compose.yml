@@ -37,6 +37,9 @@ services:
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
     platform: linux/amd64
+    # the profiles should match what go in the slices profile section
+    profiles:
+      - frontend
     build:
       context: frontend
       cache_from:

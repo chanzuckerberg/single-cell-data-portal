@@ -7,45 +7,24 @@
   "services": ["frontend", "backend"],
   "slices": {
     "frontend": {
-        "build_images": [
-            "corpora-frontend"
-        ],
         "profile": "frontend"
     },
     "backend": {
-        "build_images": [
-            "corpora-backend"
-        ],
         "profile": "backend"
     },
     "processing": {
-        "build_images": [
-            "corpora-upload"
-        ],
         "profile": "processing"
     },
     "wmg_processing": {
-        "build_images": [
-            "wmg-processing"
-        ],
         "profile": "wmg_processing"
     },
     "dataset_submissions": {
-        "build_images": [
-            "dataset-submissions"
-        ],
         "profile": "dataset_submissions"
     },
     "upload_failures": {
-        "build_images": [
-            "corpora-upload-failures"
-        ],
         "profile": "upload_failures"
     },
     "upload_success": {
-        "build_images": [
-            "corpora-upload-success"
-        ],
         "profile": "upload_success"
     },
   },
