@@ -185,7 +185,7 @@ type Filter = FilterV1 | FilterV2;
 
 interface FilterSecondary {
   organism_ontology_term_id: string;
-  tissue_ontology_term_ids: string[];
+  tissue_ontology_term_ids?: string[];
   dataset_ids: string[];
   disease_ontology_term_ids: string[];
   sex_ontology_term_ids: string[];
@@ -1036,6 +1036,7 @@ function useWMGFiltersQueryRequestBody(
     diseases,
     ethnicities,
     sexes,
+    version,
   ]);
 }
 
