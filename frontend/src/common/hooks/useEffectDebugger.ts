@@ -8,7 +8,7 @@ const usePrevious = (value: unknown, initialValue: unknown): unknown[] => {
   });
   return ref.current as unknown[];
 };
-const useEffectDebugger = (
+export const useEffectDebugger = (
   effectHook: EffectCallback,
   dependencies: unknown[],
   dependencyNames = []
@@ -49,4 +49,3 @@ const useEffectDebugger = (
 
   useEffect(effectHook, [effectHook, ...dependencies]);
 };
-export default useEffectDebugger;

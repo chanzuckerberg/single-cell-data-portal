@@ -380,7 +380,7 @@ export default function WheresMyGene(): JSX.Element {
               echartsRendererMode={echartsRendererMode}
               cellTypeSortBy={sortBy.cellTypes}
               geneSortBy={sortBy.genes}
-              selectedTissues={selectedTissues ?? []}
+              selectedTissues={selectedTissues ?? EMPTY_ARRAY}
               isScaled={isScaled}
               isLoadingAPI={isLoading}
               cellTypes={cellTypesByTissueName}

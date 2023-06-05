@@ -23,7 +23,7 @@ import { API } from "../API";
 import { APIV2 } from "src/common/tempAPIV2";
 
 import { ROUTES } from "../constants/routes";
-import { EMPTY_OBJECT } from "../constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
@@ -1011,9 +1011,10 @@ function useWMGFiltersQueryRequestBody(
     if (!data || !selectedOrganismId) {
       return null;
     }
-    const tissue_ontology_term_ids = selectedTissues?.map((tissueName) => {
-      return tissuesByName[tissueName].id;
-    });
+    const tissue_ontology_term_ids =
+      selectedTissues?.map((tissueName) => {
+        return tissuesByName[tissueName].id;
+      }) ?? EMPTY_ARRAY;
 
     return {
       filter: {
@@ -1023,7 +1024,7 @@ function useWMGFiltersQueryRequestBody(
         organism_ontology_term_id: selectedOrganismId,
         self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
-        ...(version === 1 && { tissue_ontology_term_ids }),
+        tissue_ontology_term_ids,
       },
     };
   }, [

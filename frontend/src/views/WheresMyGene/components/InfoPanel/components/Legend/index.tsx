@@ -47,7 +47,7 @@ export default memo(function Legend({
   return (
     <LegendWrapper data-testid="legend-wrapper">
       {selectedTissues ? (
-        <Fragment>
+        <>
           <SaveExport
             selectedTissues={selectedTissues}
             selectedGenes={selectedGenes}
@@ -58,9 +58,9 @@ export default memo(function Legend({
             availableFilters={availableFilters}
           />
           <ShareButton />
-        </Fragment>
+        </>
       ) : (
-        <Fragment>
+        <>
           <SaveExportV2
             selectedGenes={selectedGenes}
             selectedCellTypes={selectedCellTypes}
@@ -70,7 +70,7 @@ export default memo(function Legend({
             availableFilters={availableFilters}
           />
           <ShareButtonV2 />
-        </Fragment>
+        </>
       )}
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}
