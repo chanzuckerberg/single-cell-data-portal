@@ -448,7 +448,11 @@ export async function downloadGeneFile(
   }
 }
 
-// Gets the date in mmddyy format
+/**
+ * (ashin-czi): Gets the date in mmddyy format
+ * Copied from `frontend/src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport/csvUtils.ts`
+ * since Playwright doesn't like importing from that file due to its dependency on `d3`
+ */
 export function getCurrentDate() {
   const today = new Date();
   const month = (today.getMonth() + 1).toString().padStart(2, "0");

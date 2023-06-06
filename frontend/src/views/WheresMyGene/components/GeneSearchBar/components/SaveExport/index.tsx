@@ -23,6 +23,7 @@ import { ChartProps } from "../../../HeatMap/hooks/common/types";
 import {
   getHeatmapHeight,
   getHeatmapWidth,
+  hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../../HeatMap/utils";
 
@@ -647,7 +648,7 @@ function download_({
       await Promise.all(
         selectedTissues.map(async (tissueName) => {
           // Handles if whitespace is in the tissue name for the element ID
-          const formattedTissueName = tissueName.replace(/\s+/g, "-");
+          const formattedTissueName = hyphenize(tissueName);
 
           // Generate exports for images only
           return await Promise.all(

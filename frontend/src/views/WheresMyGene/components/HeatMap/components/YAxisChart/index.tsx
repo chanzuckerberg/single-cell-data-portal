@@ -6,6 +6,7 @@ import {
   formatLabel,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
+  hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
 import InfoSVG from "./icons/info-sign-icon.svg";
@@ -47,7 +48,7 @@ export default memo(function YAxisChart({
   generateMarkerGenes,
   tissueID,
 }: Props): JSX.Element {
-  const tissueKey = tissue.replace(/\s+/g, "-");
+  const tissueKey = hyphenize(tissue);
 
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)

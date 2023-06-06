@@ -48,6 +48,7 @@ import {
   XAxisWrapper,
   YAxisWrapper,
 } from "./style";
+import { hyphenize } from "./utils";
 
 interface Props {
   className?: string;
@@ -187,7 +188,7 @@ export default memo(function HeatMap({
               tissue,
             });
             return tissueCellTypes.length ? (
-              <div id={`y-axis-${tissue.replace(/\s+/g, "-")}`}>
+              <div id={`y-axis-${hyphenize(tissue)}`}>
                 <YAxisChart
                   key={tissue}
                   tissue={tissue}
@@ -219,13 +220,12 @@ export default memo(function HeatMap({
              */
 
             if (!selectedGeneData?.length) {
-              console.log(tissue);
               const height =
-                document.getElementById(`y-axis-${tissue.replace(/\s+/g, "-")}`)
+                document.getElementById(`y-axis-${hyphenize(tissue)}`)
                   ?.clientHeight ?? 0;
               return (
                 <div
-                  key={`y-axis-${tissue.replace(/\s+/g, "-")}`}
+                  key={`y-axis-${hyphenize(tissue)}`}
                   style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
                 />
               );
