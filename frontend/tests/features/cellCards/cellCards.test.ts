@@ -200,7 +200,7 @@ describe("Cell Cards", () => {
         expect(rowCountAfter).not.toBe(rowCountBefore);
       });
     });
-    describe.only("Enriched Genes Table", () => {
+    describe("Enriched Genes Table", () => {
       test("Enriched gene table is displayed with columns and at least one entry displayed", async ({
         page,
       }) => {
