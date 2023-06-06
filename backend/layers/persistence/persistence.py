@@ -126,6 +126,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         return CanonicalDataset(
             DatasetId(str(row.id)),
             None if row.version_id is None else DatasetVersionId(str(row.version_id)),
+            False,
             row.published_at,
         )
 
@@ -185,6 +186,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             return CanonicalDataset(
                 dataset_id,
                 None if dataset.version_id is None else DatasetVersionId(str(dataset.version_id)),
+                False,
                 dataset.published_at,
             )
 
@@ -487,7 +489,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 if dataset.published_at is None:
                     dataset.published_at = published_at
 
-    def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> DatasetVersion:
+    def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool = False) -> DatasetVersion:
         """
         Returns a dataset version by id.
         """
@@ -495,6 +497,10 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one_or_none()
             if dataset_version is None:
                 return None
+            if not get_tombstoned:
+                dataset = session.query(DatasetTable).filter_by(id=dataset_version.dataset_id).one_or_none()
+                if dataset.tombstone:
+                    return None
             return self._hydrate_dataset_version(dataset_version)
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
@@ -572,7 +578,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             session.add(canonical_dataset)
             session.add(dataset_version)
-            return self._row_to_dataset_version(dataset_version, CanonicalDataset(dataset_id, None, None), [])
+            return self._row_to_dataset_version(dataset_version, CanonicalDataset(dataset_id, None, False, None), [])
 
     def add_dataset_artifact(
         self, version_id: DatasetVersionId, artifact_type: DatasetArtifactType, artifact_uri: str
