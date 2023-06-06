@@ -1,0 +1,52 @@
+  pw:api => selectors.setTestIdAttribute started +5ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +35ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +52ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +3ms
+  pw:api   "commit" event fired +104ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +9ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +3ms
+  pw:api   "networkidle" event fired +527ms
+  pw:api <= page.goto succeeded +319ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-card-canonical-marker-genes-table-selector') +112ms
+  pw:api   locator resolved to <button class="css-fyfffg-TableSelectorButton edz3d3n3" …>Canonical</button> +45ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +19ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +155ms
+  pw:api   click action done +95ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +34ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +44ms
+  pw:api => elementHandle.textContent started +0ms
+  pw:api => elementHandle.textContent started +7ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api <= elementHandle.textContent succeeded +99ms
+  pw:api <= elementHandle.textContent succeeded +5ms
+  pw:api <= elementHandle.textContent succeeded +13ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +27ms
+  pw:api taking page screenshot +162ms
+  pw:api => browserContext.close started +92ms
+  pw:api <= browserContext.close succeeded +5s
