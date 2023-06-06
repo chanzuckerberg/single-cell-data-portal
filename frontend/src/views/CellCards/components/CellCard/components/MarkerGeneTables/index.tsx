@@ -88,6 +88,7 @@ interface Props {
 
 const MarkerGeneTables = ({ cellTypeId }: Props) => {
   const [selectedOrganism, setSelectedOrganism] = useState("");
+  // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
   const [selectedOrgan, setSelectedOrgan] = useState("");
 
@@ -207,6 +208,7 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
       // logic above for setting the initial organism/organ.
       setSelectedOrganism("");
       setSelectedOrgan("");
+      setActiveTable(0);
     };
   }, []);
 
