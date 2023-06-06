@@ -401,7 +401,7 @@ export function getGeneNames(
 }
 
 /**
- * This is to add hyphens to tissue names that have spaces so that they can be used as properly as an element ID
+ * This is to add hyphens to tissue names that have spaces so that they can be used properly as an element ID
  */
 export function hyphenize(str: string): string {
   return str.replace(/\s+/g, "-");
