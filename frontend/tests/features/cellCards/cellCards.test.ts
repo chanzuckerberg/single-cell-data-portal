@@ -190,6 +190,8 @@ describe("Cell Cards", () => {
         );
         await waitForElementAndClick(dropdown);
         await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown"); // selects kidney
         await dropdown.press("Enter");
 
         const rowElementsAfter = await page
