@@ -1,0 +1,61 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +59ms
+  pw:api   "commit" event fired +18ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +7ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +59ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide/tissues/UBERON_0002048", waiting until "load" +7ms
+  pw:api   "commit" event fired +4s
+  pw:api   navigated to "https://localhost:3000/cell-guide/tissues/UBERON_0002048" +1ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide/tissues/UBERON_0002048" +25ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/tissues/UBERON_0002048" +10ms
+  pw:api <= page.goto succeeded +464ms
+  pw:api => locator.waitFor started +1ms
+  pw:api   "networkidle" event fired +72ms
+  pw:api waiting for getByTestId('tissue-card-header-name') to be visible +78ms
+  pw:api   locator resolved to visible <div data-testid="tissue-card-header-name" class="css…>Lung</div> +91ms
+  pw:api <= locator.waitFor succeeded +26ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByTestId('tissue-card-header-name') +20ms
+  pw:api <= locator.isVisible succeeded +20ms
+  pw:api => locator.waitFor started +4ms
+  pw:api waiting for getByTestId('tissue-card-header-tag') to be visible +7ms
+  pw:api   locator resolved to visible <div data-testid="tissue-card-header-tag" class="MuiC…>…</div> +7ms
+  pw:api <= locator.waitFor succeeded +17ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('tissue-card-header-tag') +7ms
+  pw:api <= locator.isVisible succeeded +9ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view') to be visible +8ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-ontology-dag-view">…</div> +9ms
+  pw:api <= locator.waitFor succeeded +13ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-card-ontology-dag-view') +8ms
+  pw:api <= locator.isVisible succeeded +8ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-card-search-bar') to be visible +8ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-search-bar">…</div> +10ms
+  pw:api <= locator.waitFor succeeded +12ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-card-search-bar') +6ms
+  pw:api <= locator.isVisible succeeded +12ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByTestId('tissue-card-header-name') +16ms
+  pw:api   locator resolved to <div data-testid="tissue-card-header-name" class="css…>Lung</div> +9ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api taking page screenshot +145ms
+  pw:api => browserContext.close started +133ms
+  pw:api <= browserContext.close succeeded +9s
