@@ -10,7 +10,7 @@ export interface State {
   genesToDelete: string[];
   selectedGenes: string[];
   selectedOrganismId: string | null;
-  selectedTissues: string[];
+  selectedTissues?: string[];
   selectedFilters: {
     datasets: string[];
     developmentStages: string[];
@@ -364,7 +364,7 @@ export interface LoadStateFromURLPayload {
   compare: State["compare"];
   filters: Partial<State["selectedFilters"]>;
   organism: State["selectedOrganismId"];
-  tissues: State["selectedTissues"];
+  tissues?: State["selectedTissues"];
   genes: State["selectedGenes"];
 }
 

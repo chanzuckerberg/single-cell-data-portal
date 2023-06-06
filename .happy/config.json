@@ -4,7 +4,30 @@
   "default_env": "rdev",
   "app": "data-portal",
   "default_compose_env_file": ".env.ecr",
-  "services": ["frontend", "backend"],
+  "services": ["frontend", "backend", "processing"],
+  "slices": {
+    "frontend": {
+        "profile": "frontend"
+    },
+    "backend": {
+        "profile": "backend"
+    },
+    "processing": {
+        "profile": "processing"
+    },
+    "wmg_processing": {
+        "profile": "wmg_processing"
+    },
+    "dataset_submissions": {
+        "profile": "dataset_submissions"
+    },
+    "upload_failures": {
+        "profile": "upload_failures"
+    },
+    "upload_success": {
+        "profile": "upload_success"
+    }
+  },
   "environments": {
     "rdev": {
       "aws_profile": "single-cell-dev",
