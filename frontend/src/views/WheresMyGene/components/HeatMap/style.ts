@@ -8,6 +8,7 @@ import {
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
 import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
+import { X_AXIS_CHART_HEIGHT_PX } from "../../common/constants";
 
 export const CHART_PADDING_PX = 10;
 
@@ -49,7 +50,7 @@ export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
   top: 0px;
   left: 0px;
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  height: ${(props) => props.height}px;
+  height: ${(props) => props.height ?? X_AXIS_CHART_HEIGHT_PX}px;
 `;
 
 interface YAxisWrapperProps {
@@ -59,7 +60,7 @@ interface YAxisWrapperProps {
 export const YAxisWrapper = styled.div<YAxisWrapperProps>`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
   position: sticky;
-  top: ${(props) => props.top}px;
+  top: ${(props) => props.top ?? X_AXIS_CHART_HEIGHT_PX}px;
   left: 0;
   z-index: 1;
   padding-top: 5px;

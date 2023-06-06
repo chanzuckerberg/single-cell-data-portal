@@ -3,13 +3,8 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
-import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import { isSSR } from "src/common/utils/isSSR";
-import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
-import {
-  DispatchContext,
-  StateContext,
-} from "src/views/WheresMyGene/common/store";
+
 import { StyledButtonIcon } from "../QuickSelect/style";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
 import {
@@ -21,19 +16,19 @@ import {
   StyledNotificationWrapper,
 } from "./style";
 import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
+import {
+  DispatchContext,
+  StateContext,
+} from "src/views/WheresMyGene/common/store";
+import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
+import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
 
 export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
 
-  const {
-    selectedFilters,
-    selectedTissues,
-    selectedGenes,
-    selectedOrganismId,
-    compare,
-  } = state;
+  const { selectedFilters, selectedGenes, selectedOrganismId, compare } = state;
 
-  const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions();
+  const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions(2); //temp explicit version
   const dispatch = useContext(DispatchContext);
   const [showURLCopyNotification, setShowURLCopyNotification] = useState(0);
 
@@ -44,7 +39,6 @@ export default function ShareButton(): JSX.Element {
       compare,
       filters: selectedFilters,
       organism: selectedOrganismId,
-      tissues: selectedTissues,
       genes: selectedGenes,
     });
 
@@ -56,18 +50,10 @@ export default function ShareButton(): JSX.Element {
       group_by_option: getCompareOptionNameById(compare),
       self_reported_ethnicity_filter: selectedFilters.ethnicities,
       sex_filter: selectedFilters.sexes,
-      tissues: selectedTissues,
     });
 
     setShowURLCopyNotification((prev) => prev + 1);
-  }, [
-    selectedFilters,
-    selectedTissues,
-    selectedGenes,
-    selectedOrganismId,
-    dispatch,
-    compare,
-  ]);
+  }, [selectedFilters, selectedGenes, selectedOrganismId, dispatch, compare]);
 
   useEffect(() => {
     if (isSSR() || isLoadingFilterDims || !dispatch) return;
@@ -83,7 +69,6 @@ export default function ShareButton(): JSX.Element {
 
       if (loadedState) {
         track(EVENTS.WMG_SHARE_LOADED, {
-          tissues: loadedState.tissues,
           genes: loadedState.genes,
           organism: loadedState.organism,
           dataset_filter: loadedState.filters.datasets,
@@ -130,7 +115,7 @@ export default function ShareButton(): JSX.Element {
           sdsSize="medium"
           sdsType="primary"
           sdsIcon="share"
-          disabled={selectedTissues?.length === 0 || selectedGenes.length === 0}
+          disabled={selectedGenes.length === 0}
         />
       </StyledButtonDiv>
     </>

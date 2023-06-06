@@ -1,6 +1,6 @@
 import { DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
-import React, {
+import {
   useCallback,
   useContext,
   useEffect,
@@ -19,31 +19,41 @@ import {
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
-import { View } from "../../../globalStyle";
-import { DispatchContext, StateContext } from "../../common/store";
+import {
+  DispatchContext,
+  StateContext,
+} from "src/views/WheresMyGene/common/store";
 import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
   deleteSelectedGenes,
-} from "../../common/store/actions";
-import { GeneExpressionSummary } from "../../common/types";
-import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
-import CellInfoBar from "../CellInfoSideBar";
-import GeneInfoBar from "../GeneInfoSideBar";
-import Filters from "../Filters";
-import GeneSearchBar from "../GeneSearchBar";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
-import GetStarted from "../GetStarted";
+} from "src/views/WheresMyGene/common/store/actions";
+import { GeneExpressionSummary } from "src/views/WheresMyGene/common/types";
+import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
+import Filters from "src/views/WheresMyGene/components/Filters";
+import GeneInfoSideBar from "src/views/WheresMyGene/components/GeneInfoSideBar";
+import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport";
+import { UnderlyingDataChangeBanner } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport/ExportBanner";
+import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
+import InfoPanel from "src/views/WheresMyGene/components/InfoPanel";
+import Legend from "src/views/WheresMyGene/components/InfoPanel/components/Legend";
+import Loader from "src/views/WheresMyGene/components/Loader";
+import {
+  StyledBannerContainer,
+  StyledSidebarDrawer,
+} from "src/views/WheresMyGene/components/Main/style";
+import RightSideBar from "src/views/WheresMyGene/components/RightSideBar";
+import ScreenTint from "src/views/WheresMyGene/components/ScreenTint";
+import {
+  SideBarPositioner,
+  SideBarWrapper,
+  Top,
+  Wrapper,
+} from "src/views/WheresMyGene/style";
+import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
-import { ChartProps } from "../HeatMap/hooks/common/types";
-import InfoPanel from "../InfoPanel";
-import Legend from "../InfoPanel/components/Legend";
-import Loader from "../Loader";
-import ScreenTint from "../ScreenTint";
-import { StyledBannerContainer, StyledSidebarDrawer } from "./style";
-import RightSideBar from "../RightSideBar";
-import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import BottomBanner from "src/components/BottomBanner";
 
 export const INFO_PANEL_WIDTH_PX = 320;
@@ -52,21 +62,15 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const {
-    selectedGenes,
-    selectedTissues,
-    sortBy,
-    geneInfoGene,
-    cellInfoCellType,
-  } = state;
+  const { selectedGenes, sortBy, geneInfoGene, cellInfoCellType } = state;
 
   const selectedOrganismId = state.selectedOrganismId || "";
 
-  const { data: { tissues: allTissues } = {} } = usePrimaryFilterDimensions();
+  const { data: { tissues } = {} } = usePrimaryFilterDimensions(2); //temp explicit version 2
 
   let tissuesByID;
-  if (allTissues) {
-    tissuesByID = generateTermsByKey(allTissues, "id");
+  if (tissues) {
+    tissuesByID = generateTermsByKey(tissues, "id");
   }
 
   const [allChartProps, setAllChartProps] = useState<{
@@ -78,20 +82,23 @@ export default function WheresMyGene(): JSX.Element {
 
   const [isScaled, setIsScaled] = useState(true);
 
+  //(seve): These useEffects are deceptively simple.
+  // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
+
   const {
     data: rawCellTypesByTissueName,
     isLoading: isLoadingCellTypesByTissueName,
-  } = useCellTypesByTissueName();
+  } = useCellTypesByTissueName(2);
 
   const [cellTypesByTissueName, setCellTypesByTissueName] =
     useState<CellTypeByTissueName>(EMPTY_OBJECT);
 
+  // This is needed
   useEffect(() => {
     if (isLoadingCellTypesByTissueName) return;
 
     setCellTypesByTissueName(rawCellTypesByTissueName);
   }, [rawCellTypesByTissueName, isLoadingCellTypesByTissueName]);
-
   /**
    * This holds ALL the geneData we have loaded from the API, including previously
    * and currently selected genes.
@@ -99,7 +106,7 @@ export default function WheresMyGene(): JSX.Element {
    * currently selected.
    */
   const { data: rawGeneExpressionSummariesByTissueName, isLoading } =
-    useGeneExpressionSummariesByTissueName();
+    useGeneExpressionSummariesByTissueName(2);
 
   const [
     geneExpressionSummariesByTissueName,
@@ -217,13 +224,6 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [dispatch]);
 
-  const hasSelectedTissues = (selectedTissues?.length ?? 0) > 0;
-  const hasSelectedGenes = selectedGenes.length > 0;
-
-  const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedTissues || hasSelectedGenes;
-  }, [hasSelectedTissues, hasSelectedGenes]);
-
   const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
     useState(false);
   const handleSourceDatasetButtonClick = useCallback(() => {
@@ -297,7 +297,7 @@ export default function WheresMyGene(): JSX.Element {
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
         <RightSideBar>
-          <CellInfoBar
+          <CellInfoSideBar
             generateGeneInfo={generateGeneInfo}
             cellInfoCellType={cellInfoCellType}
             tissueInfo={tissuesByID[cellInfoCellType.tissueID]}
@@ -308,7 +308,7 @@ export default function WheresMyGene(): JSX.Element {
           {
             // Split right sidebar view if fmg AND gene info is populated
             geneInfoGene && (
-              <GeneInfoBar
+              <GeneInfoSideBar
                 geneInfoGene={geneInfoGene}
                 handleClose={handleCloseGeneInfoSideBar}
                 title={`${geneInfoGene}`}
@@ -320,7 +320,7 @@ export default function WheresMyGene(): JSX.Element {
         // Gene info full right sidebar length
         geneInfoGene && (
           <RightSideBar>
-            <GeneInfoBar
+            <GeneInfoSideBar
               geneInfoGene={geneInfoGene}
               handleClose={handleCloseGeneInfoSideBar}
               title={`${geneInfoGene}`}
@@ -331,7 +331,7 @@ export default function WheresMyGene(): JSX.Element {
 
       <View id="view" overflow="hidden">
         <Wrapper>
-          {isLoading && !shouldShowHeatMap && <Loader />}
+          {isLoading && <Loader />}
 
           {/* Used for PNG and SVG exports to render message banner to render in output */}
           {downloadStatus.isLoading && (
@@ -345,7 +345,6 @@ export default function WheresMyGene(): JSX.Element {
             <Legend
               selectedCellTypes={cellTypesByTissueName}
               selectedGenes={selectedGenes}
-              selectedTissues={selectedTissues}
               isScaled={isScaled}
               handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
               setDownloadStatus={setDownloadStatus}
@@ -354,12 +353,6 @@ export default function WheresMyGene(): JSX.Element {
               availableFilters={availableFilters}
             />
           </Top>
-
-          <GetStarted
-            tissueSelected={hasSelectedTissues}
-            isLoading={isLoading}
-            geneSelected={hasSelectedGenes}
-          />
 
           <StyledSidebarDrawer
             position="right"
@@ -375,26 +368,23 @@ export default function WheresMyGene(): JSX.Element {
 
           <ScreenTint isDownloading={downloadStatus} />
 
-          {shouldShowHeatMap ? (
-            <HeatMap
-              echartsRendererMode={echartsRendererMode}
-              cellTypeSortBy={sortBy.cellTypes}
-              geneSortBy={sortBy.genes}
-              selectedTissues={selectedTissues ?? EMPTY_ARRAY}
-              isScaled={isScaled}
-              isLoadingAPI={isLoading}
-              cellTypes={cellTypesByTissueName}
-              genes={selectedGenes}
-              selectedGeneExpressionSummariesByTissueName={
-                selectedGeneExpressionSummariesByTissueName
-              }
-              scaledMeanExpressionMax={scaledMeanExpressionMax}
-              scaledMeanExpressionMin={scaledMeanExpressionMin}
-              selectedOrganismId={selectedOrganismId}
-              allChartProps={allChartProps}
-              setAllChartProps={setAllChartProps}
-            />
-          ) : null}
+          <HeatMap
+            echartsRendererMode={echartsRendererMode}
+            cellTypeSortBy={sortBy.cellTypes}
+            geneSortBy={sortBy.genes}
+            isScaled={isScaled}
+            isLoadingAPI={isLoading}
+            cellTypes={cellTypesByTissueName}
+            genes={selectedGenes}
+            selectedGeneExpressionSummariesByTissueName={
+              selectedGeneExpressionSummariesByTissueName
+            }
+            scaledMeanExpressionMax={scaledMeanExpressionMax}
+            scaledMeanExpressionMin={scaledMeanExpressionMin}
+            selectedOrganismId={selectedOrganismId}
+            allChartProps={allChartProps}
+            setAllChartProps={setAllChartProps}
+          />
         </Wrapper>
       </View>
 

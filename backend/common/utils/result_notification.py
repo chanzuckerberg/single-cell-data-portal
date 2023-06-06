@@ -9,6 +9,15 @@ from backend.common.corpora_config import CorporaConfig
 logger = logging.getLogger(__name__)
 
 
+aws_batch_job_url_fmt_str = (
+    "https://{aws_region}.console.aws.amazon.com/batch/v2/home?region={aws_region}#jobs/detail/{job_id}"
+)
+aws_sfn_url_fmt_str = (
+    "https://{aws_region}.console.aws.amazon.com/states/home?region={"
+    "aws_region}#/v2/executions/details/{execution_arn}"
+)
+
+
 def notify_slack(data: dict):
     """
     This will only create a slack notification if called in the production env
@@ -24,7 +33,7 @@ def notify_slack(data: dict):
 def format_failed_batch_issue_slack_alert(data: dict) -> dict:
     aws_region = os.getenv("AWS_DEFAULT_REGION")
     job_id = os.getenv("AWS_BATCH_JOB_ID")
-    job_url = f"https://{aws_region}.console.aws.amazon.com/batch/v2/home?region={aws_region}#jobs/detail/{job_id}"
+    job_url = aws_batch_job_url_fmt_str.format(aws_region=aws_region, job_id=job_id)
     batch_data = {
         "type": "section",
         "text": {

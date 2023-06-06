@@ -16,14 +16,12 @@ export const LATEST_SHARE_LINK_VERSION = "2";
 export const generateAndCopyShareUrl = ({
   filters,
   organism,
-  tissues,
   genes,
   compare,
   copyToClipboard = true,
 }: {
   filters: State["selectedFilters"];
   organism: State["selectedOrganismId"];
-  tissues: State["selectedTissues"];
   genes: State["selectedGenes"];
   compare: State["compare"];
   copyToClipboard?: boolean;
@@ -38,7 +36,6 @@ export const generateAndCopyShareUrl = ({
   Object.entries(stripEmptyFilters(filters)).forEach(([key, value]) => {
     url.searchParams.set(key, value.join(","));
   });
-  if (tissues) url.searchParams.set("tissues", tissues.join(","));
   url.searchParams.set("genes", genes.join(","));
   url.searchParams.set("ver", LATEST_SHARE_LINK_VERSION);
 
@@ -106,10 +103,6 @@ export const loadStateFromQueryParams = (
     paramsToRemove.push("organism");
   }
 
-  // Check for tissues
-  const newSelectedTissues = params.get("tissues")?.split(delimiter) || [];
-  if (newSelectedTissues.length > 0) paramsToRemove.push("tissues");
-
   //Check for genes
   const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
@@ -119,7 +112,6 @@ export const loadStateFromQueryParams = (
   // If there are no filters, tissues, or genes selected, don't update the state
   if (
     Object.values(Object.keys(newSelectedFilters)).length === 0 &&
-    newSelectedTissues.length === 0 &&
     newSelectedGenes.length === 0
   ) {
     return null;
@@ -137,7 +129,6 @@ export const loadStateFromQueryParams = (
       compare: newCompare,
       filters: newSelectedFilters,
       organism: newSelectedOrganism,
-      tissues: newSelectedTissues,
       genes: newSelectedGenes,
     })
   );
@@ -146,7 +137,6 @@ export const loadStateFromQueryParams = (
     compare: newCompare,
     filters: newSelectedFilters,
     organism: newSelectedOrganism,
-    tissues: newSelectedTissues,
     genes: newSelectedGenes,
   };
 };
