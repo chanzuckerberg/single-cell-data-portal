@@ -5,6 +5,7 @@ import requests
 from tests.functional.backend.common import BaseFunctionalTestCase
 from tests.functional.backend.wmg.fixtures import (
     secondary_filter_common_case_request_data,
+    secondary_filter_data_with_ontology_term_ids,
     secondary_filter_extreme_case_request_data,
 )
 
@@ -29,7 +30,7 @@ class TestWmgApi(BaseFunctionalTestCase):
         self.assertStatusCode(requests.codes.ok, res)
         self.assertGreater(len(res.content), 10)
 
-    def test_secondary_filters_common_case(self):
+    def test_query_endpoint_common_case(self):
         """
         1 tissue w/50 cell types, 20 genes, 3 secondary filters specified
         Returns in less than 10 seconds
@@ -42,7 +43,7 @@ class TestWmgApi(BaseFunctionalTestCase):
         self.assertStatusCode(requests.codes.ok, res)
         self.assertGreater(len(res.content), 10)
 
-    def test_secondary_filters_extreme_case(self):
+    def test_query_endpoint_extreme_case(self):
         """
         4 tissues w/largest cell type counts, 400 genes, no secondary filtering
         Returns in less than 15 seconds
@@ -51,5 +52,53 @@ class TestWmgApi(BaseFunctionalTestCase):
         data = secondary_filter_extreme_case_request_data.copy()
         data["snapshot_id"] = self.data["snapshot_id"]
         res = self.session.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
+        self.assertStatusCode(requests.codes.ok, res)
+        self.assertGreater(len(res.content), 10)
+
+    def test_query_endpoint_400_ontology_term_ids(self):
+        """
+        /v1/query should not support the cell_type_ontology_term_ids filter
+        """
+        headers = {"Content-Type": "application/json"}
+
+        data = secondary_filter_data_with_ontology_term_ids.copy()
+        data["snapshot_id"] = self.data["snapshot_id"]
+        res = self.session.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
+        self.assertStatusCode(400, res)
+        self.assertGreater(len(res.content), 10)
+
+    def test_filter_endpoint_common_case(self):
+        """
+        /v1/filters should support the common case /v1/queries supports
+        """
+        headers = {"Content-Type": "application/json"}
+
+        data = secondary_filter_common_case_request_data.copy()
+        data["snapshot_id"] = self.data["snapshot_id"]
+        res = self.session.post(f"{self.api}/filters", data=json.dumps(data), headers=headers)
+        self.assertStatusCode(requests.codes.ok, res)
+        self.assertGreater(len(res.content), 10)
+
+    def test_filter_endpoint_extreme_case(self):
+        """
+        /v1/filters should support the extreme case /v1/queries supports
+        """
+        headers = {"Content-Type": "application/json"}
+        data = secondary_filter_extreme_case_request_data.copy()
+        data["snapshot_id"] = self.data["snapshot_id"]
+        res = self.session.post(f"{self.api}/filters", data=json.dumps(data), headers=headers)
+        self.assertStatusCode(requests.codes.ok, res)
+        self.assertGreater(len(res.content), 10)
+
+    def test_filter_endpoint_supports_ontology_term_ids(self):
+        """
+        /v1/filters differs from /v1/query in that it supports the cell_type_ontology_term_ids filter
+        Ensure that hitting this endpoint with cell_type_ontology_term_ids is a valid request
+        """
+        headers = {"Content-Type": "application/json"}
+
+        data = secondary_filter_data_with_ontology_term_ids.copy()
+        data["snapshot_id"] = self.data["snapshot_id"]
+        res = self.session.post(f"{self.api}/filters", data=json.dumps(data), headers=headers)
         self.assertStatusCode(requests.codes.ok, res)
         self.assertGreater(len(res.content), 10)
