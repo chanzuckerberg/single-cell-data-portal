@@ -5,6 +5,7 @@ import {
   fontBodyS,
   getColors,
 } from "@czi-sds/components";
+import { Divider } from "@mui/material";
 
 export const TableTitle = styled.div`
   ${fontHeaderM}
@@ -64,4 +65,8 @@ export const TableUnavailableDescription = styled("span")`
       color: ${colors?.gray[500]};
     `;
   }}
+`;
+
+export const StyledDivider = styled(Divider)`
+  margin-top: 8px;
 `;

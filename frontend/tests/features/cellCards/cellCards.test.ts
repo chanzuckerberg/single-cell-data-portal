@@ -18,12 +18,12 @@ import {
 } from "src/views/CellCards/components/CellCard";
 import {
   CELL_CARD_CANONICAL_MARKER_GENES_TABLE,
-  CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN,
-} from "src/views/CellCards/components/CellCard/components/CanonicalMarkerGeneTable";
-import {
   CELL_CARD_ENRICHED_GENES_TABLE,
-  CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN,
-} from "src/views/CellCards/components/CellCard/components/EnrichedGenesTable";
+  CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN,
+  CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
+  CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
+  CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR,
+} from "src/views/CellCards/components/CellCard/components/MarkerGeneTables";
 import {
   CELL_CARD_ONTOLOGY_DAG_VIEW,
   CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
@@ -147,6 +147,11 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        // set canonical marker genes table as active
+        await page
+          .getByTestId(CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+          .click();
+
         const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
@@ -168,6 +173,11 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        // set canonical marker genes table as active
+        await page
+          .getByTestId(CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+          .click();
+
         const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
         const rowElementsBefore = await page
           .locator(`${tableSelector} tbody tr`)
@@ -176,7 +186,7 @@ describe("Cell Cards", () => {
         expect(rowCountBefore).toBeGreaterThan(1);
 
         const dropdown = page.getByTestId(
-          CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN
+          CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN
         );
         await waitForElementAndClick(dropdown);
         await dropdown.press("ArrowDown");
@@ -190,11 +200,14 @@ describe("Cell Cards", () => {
         expect(rowCountAfter).not.toBe(rowCountBefore);
       });
     });
-    describe("Enriched Genes Table", () => {
+    describe.only("Enriched Genes Table", () => {
       test("Enriched gene table is displayed with columns and at least one entry displayed", async ({
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        // set enriched marker genes table as active
+        await page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR).click();
+
         const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
 
         const columnHeaderElements = await page
@@ -222,6 +235,9 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        // set enriched marker genes table as active
+        await page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR).click();
+
         const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
         const rowElementsBefore = await page
           .locator(`${tableSelector} tbody tr`)
@@ -231,7 +247,7 @@ describe("Cell Cards", () => {
         const firstRowContentBefore = await rowElementsBefore[0].textContent();
 
         const dropdown = page.getByTestId(
-          CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN
+          CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM
         );
         await waitForElementAndClick(dropdown);
         await dropdown.press("ArrowDown");
