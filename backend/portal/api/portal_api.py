@@ -194,6 +194,7 @@ def _dataset_to_response(
             "created_at": dataset.created_at,
             "dataset_assets": [_dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts],
             "dataset_deployments": dataset_deployments,
+            "dataset_id": dataset.dataset_id.id,
             "development_stage": None
             if dataset.metadata is None
             else _ontology_term_ids_to_response(dataset.metadata.development_stage),
