@@ -57,18 +57,6 @@ class TestWmgApi(BaseFunctionalTestCase):
         self.assertStatusCode(requests.codes.ok, res)
         self.assertGreater(len(res.content), 10)
 
-    def test_query_endpoint_400_ontology_term_ids(self):
-        """
-        /v1/query should not support the cell_type_ontology_term_ids filter
-        """
-        headers = {"Content-Type": "application/json"}
-
-        data = secondary_filter_data_with_ontology_term_ids.copy()
-        data["snapshot_id"] = self.data["snapshot_id"]
-        res = self.session.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
-        self.assertStatusCode(400, res)
-        self.assertGreater(len(res.content), 10)
-
     def test_filter_endpoint_common_case(self):
         """
         /v1/filters should support the common case /v1/queries supports
