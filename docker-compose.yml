@@ -37,6 +37,8 @@ services:
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
     platform: linux/amd64
+    profiles:
+      - frontend
     build:
       context: frontend
       cache_from:
@@ -70,6 +72,8 @@ services:
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
     platform: linux/amd64
+    profiles:
+      - upload_failures
     build:
       context: .
       cache_from:
@@ -105,6 +109,8 @@ services:
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
     platform: linux/amd64
+    profiles:
+      - upload_success
     build:
       context: .
       cache_from:
@@ -140,6 +146,8 @@ services:
   dataset_submissions:
     image: "${DOCKER_REPO}dataset-submissions"
     platform: linux/amd64
+    profiles:
+      - dataset_submissions
     build:
       context: .
       cache_from:
@@ -174,6 +182,8 @@ services:
   processing:
     image: "${DOCKER_REPO}corpora-upload"
     platform: linux/amd64
+    profiles:
+      - processing
     build:
       context: .
       cache_from:
@@ -209,6 +219,8 @@ services:
   wmg_processing:
     image: "${DOCKER_REPO}wmg-processing"
     platform: linux/amd64
+    profiles:
+      - wmg_processing
     build:
       context: .
       cache_from:
@@ -242,6 +254,8 @@ services:
   backend:
     image: "${DOCKER_REPO}corpora-backend"
     platform: linux/amd64
+    profiles:
+      - backend
     build:
       context: .
       cache_from:

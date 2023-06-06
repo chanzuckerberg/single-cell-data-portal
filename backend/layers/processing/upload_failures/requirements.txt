@@ -5,3 +5,4 @@ requests>=2.22.0
 pyrsistent
 boto3
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
+python-json-logger==2.0.7

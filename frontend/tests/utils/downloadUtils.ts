@@ -1,10 +1,14 @@
-import { Page, chromium, expect } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
-import { getTestID } from "./selectors";
+import { getById, getTestID } from "./selectors";
 import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL } from "tests/common/constants";
+import { TEST_URL, downLoadPath } from "tests/common/constants";
+import pixelmatch from "pixelmatch";
+import { PNG } from "pngjs";
+import sharp from "sharp";
+import { goToWMG } from "./wmgUtils";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -17,7 +21,6 @@ const EXPECTED_HEADER = [
   ' Scaled"',
   "Number of Cells Expressing Genes",
 ];
-const downLoadPath = "./tests/downloads";
 
 export async function verifyCsv(
   page: Page,
@@ -85,8 +88,6 @@ export async function deleteDownloadedFiles(filePath: string) {
   fs.rmdir(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);
-    } else {
-      console.log("Folder deleted successfully");
     }
   });
 }
@@ -138,12 +139,6 @@ export const getCsvMetadata = (
     });
   });
 };
-
-interface MetadataVerificationOptions {
-  filterName: string;
-  data: string[];
-  noSelectionText?: string;
-}
 
 export const verifyMetadata = async (
   page: Page,
@@ -243,6 +238,133 @@ const verifyFilterValues = (
     data[6].includes(`# Sex Filter Values: ${sexFilterValue}`)
   ).toBeTruthy();
 };
+interface MetadataVerificationOptions {
+  filterName: string;
+  data: string[];
+  noSelectionText?: string;
+}
+
+export const getFilterText = async (page: Page, filterName: string) => {
+  const filter_label = `${getTestID(filterName)} [role="button"]`;
+  return await page.locator(filter_label).textContent();
+};
+export async function compareSvg(
+  page: Page,
+  webCellImage: string,
+  webGeneImage: string,
+  svgFile: string,
+  folder: string,
+  tissue: string
+): Promise<void> {
+  const svg = fs.readFileSync(`${downLoadPath}/${svgFile}`, "utf-8");
+  await page.setContent(svg);
+  const actualCell = `${downLoadPath}/${folder}/${tissue}1.png`;
+  await page
+    .locator("svg")
+    .locator("svg")
+    .nth(3)
+    .screenshot({ path: actualCell });
+  const actualGene = `${downLoadPath}/${folder}/${tissue}gene.png`;
+
+  // take a picture of dot plot on svg
+  await page.locator('[id="0"]').screenshot({
+    path: actualGene,
+  });
+  compareImages(actualGene, webGeneImage);
+
+  compareImages(actualCell, webCellImage);
+}
+
+async function compareImages(imagePath1: string, imagePath2: string) {
+  const imageBuffer1 = await fs.promises.readFile(imagePath1);
+  const imageBuffer2 = await fs.promises.readFile(imagePath2);
+
+  const image1 = PNG.sync.read(imageBuffer1);
+  const image2 = PNG.sync.read(imageBuffer2);
+
+  if (image1.width !== image2.width || image1.height !== image2.height) {
+    const maxWidth = Math.max(image1.width, image2.width);
+    const maxHeight = Math.max(image1.height, image2.height);
+
+    const resizedImage1 = await sharp(imageBuffer1)
+      .resize(maxWidth, maxHeight)
+      .png()
+      .toBuffer();
+    const resizedImage2 = await sharp(imageBuffer2)
+      .resize(maxWidth, maxHeight)
+      .png()
+      .toBuffer();
+
+    const resizedImage1PNG = PNG.sync.read(resizedImage1);
+    const resizedImage2PNG = PNG.sync.read(resizedImage2);
+
+    const diffPNG = new PNG({ width: maxWidth, height: maxHeight });
+    const numDiffPixels = pixelmatch(
+      resizedImage1PNG.data,
+      resizedImage2PNG.data,
+      diffPNG.data,
+      maxWidth,
+      maxHeight,
+      { threshold: 0.95 }
+    );
+    expect(numDiffPixels).toBeLessThan(20000);
+  }
+}
+export async function captureTissueSnapshot(
+  page: Page,
+  downLoadPath: string,
+  folder: string,
+  tissues: string[],
+
+  i: number
+): Promise<void> {
+  const geneCanvasId = '[data-zr-dom-id*="zr"]';
+  const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
+  const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
+
+  const yAxisElement = page.locator(getById(`${tissues[i]}-y-axis`));
+  const box = await yAxisElement.boundingBox();
+  if (!box) {
+    console.error("Element not found");
+    return;
+  }
+
+  await page.setViewportSize({
+    width: box.width * 10,
+    height: box.height * 3,
+  });
+
+  await yAxisElement.screenshot({
+    path: cellSnapshot,
+  });
+
+  await page.locator(geneCanvasId).nth(0).screenshot({ path: geneSnapshot });
+}
+
+export async function verifySvgDownload(
+  page: Page,
+  sharedLink: string,
+  tissues: string[],
+  folder: string
+): Promise<void> {
+  for (let i = 0; i < tissues.length; i++) {
+    const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
+    const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
+
+    await goToWMG(page, sharedLink);
+    await downloadAndVerifyFiles(page, ["svg"], tissues, folder);
+    await captureTissueSnapshot(page, downLoadPath, folder, tissues, i);
+    await compareSvg(
+      page,
+      cellSnapshot,
+      geneSnapshot,
+      `${folder}/${tissues[i]}.svg`,
+      folder,
+      tissues[i]
+    );
+    await deleteDownloadedFiles(`./tests/downloads/${folder}`);
+  }
+}
 
 export async function downloadGeneFile(
   page: Page,
@@ -301,27 +423,4 @@ export async function downloadGeneFile(
     const zip = new AdmZip(fileName);
     zip.extractAllTo(dirPath);
   }
-}
-
-export const getFilterText = async (page: Page, filterName: string) => {
-  const filter_label = `${getTestID(filterName)} [role="button"]`;
-  return await page.locator(filter_label).textContent();
-};
-export async function compareSvg(
-  webCellImage: string,
-  webGeneImage: string,
-  svgFile: string
-): Promise<void> {
-  const browser = await chromium.launch();
-  const browserContext = await browser.newContext();
-  const page = await browserContext.newPage();
-  await page.goto(svgFile);
-  expect(page.locator("svg").locator("svg").nth(3)).toMatchSnapshot(
-    webCellImage
-  );
-  expect(page.locator("svg").locator("svg").nth(4)).toMatchSnapshot(
-    webCellImage
-  );
-  expect(await page.screenshot()).toMatchSnapshot(webGeneImage);
-  await browser.close();
 }

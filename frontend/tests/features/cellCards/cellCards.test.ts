@@ -18,22 +18,26 @@ import {
 } from "src/views/CellCards/components/CellCard";
 import {
   CELL_CARD_CANONICAL_MARKER_GENES_TABLE,
-  CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN,
-} from "src/views/CellCards/components/CellCard/components/CanonicalMarkerGeneTable";
-import {
   CELL_CARD_ENRICHED_GENES_TABLE,
-  CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN,
-} from "src/views/CellCards/components/CellCard/components/EnrichedGenesTable";
+  CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN,
+  CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
+  CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
+  CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR,
+} from "src/views/CellCards/components/CellCard/components/MarkerGeneTables";
 import {
   CELL_CARD_ONTOLOGY_DAG_VIEW,
   CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
-} from "src/views/CellCards/components/CellCard/components/OntologyDagView";
-import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node";
-import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/CellCard/components/OntologyDagView/components/Node/components/RectOrCircle";
+} from "src/views/CellCards/components/common/OntologyDagView";
+import { CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellCards/components/common/OntologyDagView/components/Node";
+import { CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellCards/components/common/OntologyDagView/components/Node/components/RectOrCircle";
 import { CELL_CARD_SOURCE_DATA_TABLE } from "src/views/CellCards/components/CellCard/components/SourceDataTable";
 import { CELL_CARD_NAVIGATION_SIDEBAR } from "src/views/CellCards/components/CellCard/components/CellCardSidebar";
+import {
+  TISSUE_CARD_HEADER_NAME,
+  TISSUE_CARD_HEADER_TAG,
+} from "src/views/CellCards/components/TissueCard";
 
 const { describe } = test;
 
@@ -143,6 +147,11 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        // set canonical marker genes table as active
+        await page
+          .getByTestId(CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+          .click();
+
         const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
@@ -164,6 +173,11 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        // set canonical marker genes table as active
+        await page
+          .getByTestId(CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+          .click();
+
         const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
         const rowElementsBefore = await page
           .locator(`${tableSelector} tbody tr`)
@@ -172,10 +186,12 @@ describe("Cell Cards", () => {
         expect(rowCountBefore).toBeGreaterThan(1);
 
         const dropdown = page.getByTestId(
-          CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN
+          CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN
         );
         await waitForElementAndClick(dropdown);
         await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown"); // selects kidney
         await dropdown.press("Enter");
 
         const rowElementsAfter = await page
@@ -191,7 +207,11 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        // set enriched marker genes table as active
+        await page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR).click();
+
         const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+        await page.locator(tableSelector).waitFor({ timeout: 5000 });
 
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
@@ -218,7 +238,12 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        // set enriched marker genes table as active
+        await page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR).click();
+
         const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+        await page.locator(tableSelector).waitFor({ timeout: 5000 });
+
         const rowElementsBefore = await page
           .locator(`${tableSelector} tbody tr`)
           .elementHandles();
@@ -227,7 +252,7 @@ describe("Cell Cards", () => {
         const firstRowContentBefore = await rowElementsBefore[0].textContent();
 
         const dropdown = page.getByTestId(
-          CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN
+          CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM
         );
         await waitForElementAndClick(dropdown);
         await dropdown.press("ArrowDown");
@@ -288,7 +313,7 @@ describe("Cell Cards", () => {
         const numNodesBefore = nodesBefore.length;
 
         const node = page.getByTestId(
-          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0000540__0-has-children-isTargetNode=true`
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
         );
         await waitForElementAndClick(node);
 
@@ -310,14 +335,14 @@ describe("Cell Cards", () => {
           .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: 5000 });
         const label = page.getByTestId(
-          `${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL_0000878__0`
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000878__4`
         );
         await waitForElementAndClick(label);
         await page.waitForURL(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000878`);
         // Check that the new node is highlighted green (isTargetNode=true)
         await page
           .getByTestId(
-            `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0000878__0-has-children-isTargetNode=true`
+            `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000878__4-has-children-isTargetNode=true`
           )
           .waitFor({ timeout: 5000 });
       });
@@ -333,7 +358,7 @@ describe("Cell Cards", () => {
         const nodesBefore = await page.locator(nodesLocator).elementHandles();
         const numNodesBefore = nodesBefore.length;
 
-        const dummyChildLocator = `[data-testid='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-dummy-child-CL_0000842__0-has-children-isTargetNode=false']`;
+        const dummyChildLocator = `[data-testid='${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-dummy-child-CL:0000842__0-has-children-isTargetNode=false']`;
         const dummyChild = (
           await page.locator(dummyChildLocator).elementHandles()
         )[0];
@@ -373,10 +398,66 @@ describe("Cell Cards", () => {
           .waitFor({ timeout: 5000 });
 
         const node = page.getByTestId(
-          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL_0000540__0-has-children-isTargetNode=true`
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
         );
         await node.hover();
         await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+      });
+    });
+    describe("Tissue Card", () => {
+      test("All tissue card components are present", async ({ page }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`,
+          page
+        ); // Lung
+        await isElementVisible(page, TISSUE_CARD_HEADER_NAME);
+        await isElementVisible(page, TISSUE_CARD_HEADER_TAG);
+        await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW);
+        await isElementVisible(page, CELL_CARD_SEARCH_BAR);
+        const headerName = page.getByTestId(TISSUE_CARD_HEADER_NAME);
+        const headerNameText = await headerName.textContent();
+        expect(headerNameText).toBe("Lung");
+      });
+      test("Clicking on a cell type label links to its Cell Card", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`,
+          page
+        ); // Lung
+        await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: 5000 });
+        const label = page.getByTestId(
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000066__0`
+        );
+        await waitForElementAndClick(label);
+        await page.waitForURL(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000066`);
+        // Check that the new node is highlighted green (isTargetNode=true)
+        await page
+          .getByTestId(
+            `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000066__0-has-children-isTargetNode=true`
+          )
+          .waitFor({ timeout: 5000 });
+      });
+      test("Node tooltip displays on hover", async ({ page }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_CARDS}/tissues/UBERON_0002048`,
+          page
+        ); // Lung
+        await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: 5000 });
+
+        const node = page.getByTestId(
+          `${CELL_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000066__0-has-children-isTargetNode=false`
+        );
+        await node.hover();
+        await isElementVisible(page, CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+        const textContent = await page
+          .getByTestId(CELL_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+        expect(textContent).toContain("in lung");
       });
     });
     describe("CellCard Sidebar", () => {
@@ -387,8 +468,8 @@ describe("Cell Cards", () => {
         const navbar = page.getByTestId(CELL_CARD_NAVIGATION_SIDEBAR);
 
         // scroll to the bottom
-        const section4 = page.getByTestId("section-4");
-        await section4.scrollIntoViewIfNeeded();
+        const section3 = page.getByTestId("section-3");
+        await section3.scrollIntoViewIfNeeded();
 
         // check that source data is in viewport
         const sourceData = page.getByTestId(CELL_CARD_SOURCE_DATA_TABLE);

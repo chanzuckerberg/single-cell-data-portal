@@ -69,7 +69,7 @@ export default function GeneSearchBar({
         const notCellCulture = !tissue.name.includes("(cell culture)");
         const notFiltered =
           filteredTissues.map((val) => val.name).includes(tissue.name) ||
-          selectedTissues.includes(tissue.name);
+          selectedTissues?.includes(tissue.name);
         return notCellCulture && notFiltered;
       });
       setTissues(newTissues);
@@ -101,9 +101,11 @@ export default function GeneSearchBar({
   }, [tissues]);
 
   const selectedTissueOptions: Tissue[] = useMemo(() => {
-    return selectedTissues.map((tissue: string) => {
-      return tissuesByName.get(tissue.toLowerCase()) as Tissue;
-    });
+    return (
+      selectedTissues?.map((tissue: string) => {
+        return tissuesByName.get(tissue.toLowerCase()) as Tissue;
+      }) || []
+    );
   }, [selectedTissues, tissuesByName]);
 
   const selectedGeneOptions: Gene[] = useMemo(() => {
