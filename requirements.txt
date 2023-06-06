@@ -10,7 +10,7 @@ ruff==0.0.239 # Must be kept in sync with ruff version in .pre-commit-config.yam
 furl
 jsonschema
 moto==3.1.3
-owlready2
+owlready2==0.40.0
 parameterized
 PyMySQL==0.9.3
 pytest
