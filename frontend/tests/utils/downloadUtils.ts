@@ -79,7 +79,7 @@ export async function downloadAndVerifyFiles(
     } else if (tissues.length > 1) {
       expect(
         fs.existsSync(
-          `${downLoadPath}/${subDirectory}/CELLxGENE_gene_expression.csv`
+          `${downLoadPath}/${subDirectory}/CELLxGENE_gene_expression_${getCurrentDate()}.csv`
         )
       ).toBeTruthy();
     }
@@ -122,7 +122,7 @@ export const getCsvMetadata = (
       `${downLoadPath}/${subDirectory}/${
         tissues.length === 1
           ? `${tissues[0]}.csv`
-          : "CELLxGENE_gene_expression.csv"
+          : `CELLxGENE_gene_expression_${getCurrentDate()}.csv`
       }`,
       { encoding: "utf8" }
     );
@@ -437,7 +437,7 @@ export async function downloadGeneFile(
     fileTypes[0] === "csv"
   ) {
     // If only one file type is selected and it's csv, AND multiple tissues, then name the csv file as generic name
-    fileName = `${dirPath}/CELLxGENE_gene_expression.csv`;
+    fileName = `${dirPath}/CELLxGENE_gene_expression_${getCurrentDate()}.csv`;
   }
 
   await download.saveAs(fileName);
@@ -446,4 +446,14 @@ export async function downloadGeneFile(
     const zip = new AdmZip(fileName);
     zip.extractAllTo(dirPath);
   }
+}
+
+// Gets the date in mmddyy format
+export function getCurrentDate() {
+  const today = new Date();
+  const month = (today.getMonth() + 1).toString().padStart(2, "0");
+  const day = today.getDate().toString().padStart(2, "0");
+  const year = today.getFullYear().toString().slice(-2);
+
+  return month + day + year;
 }

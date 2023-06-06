@@ -59,6 +59,7 @@ import {
   buildCellTypeIdToMetadataMapping,
   csvGeneExpressionRow,
   csvHeaders,
+  getCurrentDate,
 } from "./csvUtils";
 import { InputCheckbox } from "@czi-sds/components";
 import {
@@ -691,7 +692,7 @@ function download_({
           name:
             selectedTissues.length === 1 // If only one tissue is selected, use tissue name as filename
               ? `${selectedTissues[0]}.csv`
-              : "CELLxGENE_gene_expression.csv",
+              : `CELLxGENE_gene_expression_${getCurrentDate()}.csv`,
         });
       }
 
