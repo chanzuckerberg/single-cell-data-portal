@@ -286,6 +286,13 @@ export async function downloadGeneFile(
 
   // download can be zipped or not depending on number of tissues
   const fileName = `${dirPath}/download.zip`;
+  // if (
+  //   fileTypes.length === 1 &&
+  //   tissues.length === 1 &&
+  //   fileTypes[0] !== "png"
+  // ) {
+  //   fileName = `${dirPath}/${tissues[0]}.${fileTypes[0]}`;
+  // }
 
   await download.saveAs(fileName);
   //extract zip file
@@ -299,6 +306,51 @@ export const getFilterText = async (page: Page, filterName: string) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   return await page.locator(filter_label).textContent();
 };
+
+export function verifyPng(page: Page, dirPath: string, tissues: string[]) {
+  tissues.forEach(async () => {
+    // Specify the input image file path
+    const inputImagePath = `${dirPath}/blood.png`;
+
+    // Specify the output image file path
+    const outputImagePath = `${dirPath}/blood_cropped.png`;
+    // Specify the height of the region to be removed from the top
+    const startHeight = 567;
+    // Perform the extraction operation
+    sharp(inputImagePath)
+      .metadata()
+      .then((metadata) => {
+        const imageHeight = metadata.height || 0;
+        const extractHeight = imageHeight - startHeight;
+
+        const extractRegion = {
+          top: startHeight,
+          left: 0,
+          width: metadata.width || 0,
+          height: extractHeight,
+        };
+
+        sharp(inputImagePath)
+          .extract(extractRegion)
+          .toFile(outputImagePath)
+          .then(() => {
+            console.log("Image processed successfully");
+          })
+          .catch((err) => {
+            console.error("Error while processing image:", err);
+          });
+      })
+      .catch((err) => {
+        console.error("Error while retrieving image metadata:", err);
+      });
+
+    const actualPng = outputImagePath;
+    // Capture the actual screenshot and compare it with the expected screenshot
+    const expectedPng = `${dirPath}/blood_actual.png`;
+    await page.waitForTimeout(1000);
+    compareImages(expectedPng, actualPng);
+  });
+}
 
 async function compareImages(imagePath1: string, imagePath2: string) {
   const imageBuffer1 = await fs.promises.readFile(imagePath1);
@@ -334,7 +386,6 @@ async function compareImages(imagePath1: string, imagePath2: string) {
     );
     console.log(numDiffPixels);
     expect(numDiffPixels).toBeLessThan(400000);
-    return true;
   }
 }
 export async function compareSvg(
@@ -420,52 +471,4 @@ export async function getActualImage(
     path: `${dirPath}/blood_actual.png`,
     clip: { x: startX, y: startY, width, height },
   });
-}
-export async function verifyPng(
-  dirPath: string,
-  tissues: string[]
-): Promise<void> {
-  const verificationPromises = tissues.map(async (tissue) => {
-    const inputImagePath = `${dirPath}/${tissue}.png`;
-    const outputImagePath = `${dirPath}/${tissue}_cropped.png`;
-    const expectedPng = `${dirPath}/${tissue}_actual.png`;
-
-    await performExtraction(inputImagePath, outputImagePath);
-    const verified = await compareImages(expectedPng, outputImagePath);
-
-    if (verified) {
-      console.log(`${tissue} PNG file is verified.`);
-    } else {
-      console.log(`${tissue} PNG file verification failed.`);
-    }
-  });
-
-  await Promise.all(verificationPromises);
-}
-async function performExtraction(
-  inputImagePath: string,
-  outputImagePath: string
-): Promise<void> {
-  const startHeight = 560;
-
-  const metadata = await sharp(inputImagePath).metadata();
-  const imageHeight = metadata.height || 0;
-  const extractHeight = imageHeight - startHeight;
-
-  const extractRegion = {
-    top: startHeight,
-    left: 0,
-    width: metadata.width || 0,
-    height: extractHeight,
-  };
-
-  await sharp(inputImagePath)
-    .extract(extractRegion)
-    .toFile(outputImagePath)
-    .then(() => {
-      console.log("Image processed successfully");
-    })
-    .catch((err) => {
-      console.error("Error while processing image:", err);
-    });
 }

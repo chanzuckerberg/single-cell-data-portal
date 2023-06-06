@@ -23,17 +23,15 @@ describe("PNG download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_FILTER);
-    const tissues = ["blood"];
+    const tissues = ["blood", "lung"];
     const fileTypes = ["png"];
     const folder = subDirectory();
     const dirPath = `${downLoadPath}/${folder}`;
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
-
-    //verify Png
     await getActualImage(page, dirPath);
-    await verifyPng(dirPath, tissues);
-    await deleteDownloadedFiles(dirPath);
+    verifyPng(page, dirPath, tissues);
+    deleteDownloadedFiles(dirPath);
   });
 
   test(`Should verify png data for lung and blood tissue with sex filter applied and group by selected`, async ({
@@ -41,32 +39,29 @@ describe("PNG download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_FILTER);
-    const tissues = ["blood"];
+    const tissues = ["blood", "lung"];
     const fileTypes = ["png"];
     const folder = subDirectory();
     const dirPath = `${downLoadPath}/${folder}`;
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
-
-    //verify Png
     await getActualImage(page, dirPath);
-    await verifyPng(dirPath, tissues);
-    await deleteDownloadedFiles(dirPath);
+    verifyPng(page, dirPath, tissues);
+    deleteDownloadedFiles(dirPath);
   });
   test(`Should verify png for lung and blood tissue with no group set`, async ({
     page,
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_GROUP);
-    const tissues = ["blood"];
+    const tissues = ["blood", "lung"];
     const fileTypes = ["png"];
     const folder = subDirectory();
     const dirPath = `${downLoadPath}/${folder}`;
     //download file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
-    //verify Png
     await getActualImage(page, dirPath);
-    await verifyPng(dirPath, tissues);
-    await deleteDownloadedFiles(dirPath);
+    verifyPng(page, dirPath, tissues);
+    deleteDownloadedFiles(dirPath);
   });
 });
