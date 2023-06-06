@@ -4,8 +4,14 @@
   "default_env": "rdev",
   "app": "data-portal",
   "default_compose_env_file": ".env.ecr",
-  "services": ["frontend", "backend"],
+  "services": ["frontend", "backend", "processing"],
   "slices": {
+    "frontend": {
+        "profile": "frontend"
+    },
+    "backend": {
+        "profile": "backend"
+    },
     "processing": {
         "profile": "processing"
     },
