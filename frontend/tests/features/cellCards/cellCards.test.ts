@@ -209,6 +209,7 @@ describe("Cell Cards", () => {
         await page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR).click();
 
         const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+        await page.locator(tableSelector).waitFor({ timeout: 5000 });
 
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
@@ -239,6 +240,8 @@ describe("Cell Cards", () => {
         await page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR).click();
 
         const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+        await page.locator(tableSelector).waitFor({ timeout: 5000 });
+
         const rowElementsBefore = await page
           .locator(`${tableSelector} tbody tr`)
           .elementHandles();
@@ -463,8 +466,8 @@ describe("Cell Cards", () => {
         const navbar = page.getByTestId(CELL_CARD_NAVIGATION_SIDEBAR);
 
         // scroll to the bottom
-        const section4 = page.getByTestId("section-4");
-        await section4.scrollIntoViewIfNeeded();
+        const section3 = page.getByTestId("section-3");
+        await section3.scrollIntoViewIfNeeded();
 
         // check that source data is in viewport
         const sourceData = page.getByTestId(CELL_CARD_SOURCE_DATA_TABLE);
