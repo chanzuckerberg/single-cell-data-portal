@@ -16,9 +16,6 @@ permissions:
 on:
   repository_dispatch:
     types: [rebuild-processing]
-  push:
-    branches:
-      - nayib/rebuild-processing-image # TODO: remove, just for testing
 
 jobs:
   rebuild-and-push-processing-image-dev:
@@ -46,7 +43,7 @@ jobs:
         shell: bash
         run: |
           export BRANCH_SHA=$(git rev-parse --short=8 HEAD)
-          happy push dev-devstack --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
+          happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
 
   rebuild-and-push-processing-image-staging:
     runs-on: ubuntu-20.04
@@ -73,7 +70,7 @@ jobs:
         shell: bash
         run: |
           export BRANCH_SHA=$(git rev-parse --short=8 HEAD)
-          happy push stage-stagestack --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
+          happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
 
   rebuild-and-push-processing-image-prod:
     runs-on: ubuntu-20.04
@@ -100,4 +97,4 @@ jobs:
         shell: bash
         run: |
           export BRANCH_SHA=$(git rev-parse --short=8 HEAD)
-          happy push prod-prodstack --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
+          happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
