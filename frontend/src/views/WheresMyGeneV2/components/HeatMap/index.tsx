@@ -277,13 +277,13 @@ export default memo(function HeatMap({
                * which is an error for echarts
                */
               if (!selectedGeneData?.length) {
-                const height =
-                  document.getElementById(`y-axis-${tissue.name}`)
-                    ?.clientHeight ?? 0;
+                // const height =
+                //   document.getElementById(`y-axis-${tissue.name}`)
+                //     ?.clientHeight ?? 0;
                 return (
                   <div
                     key={`y-axis-${tissue.name}`}
-                    style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
+                    style={{ height: `${0}px` }} // This should be investigated more as to why it fixes dot alignment
                   />
                 );
               }

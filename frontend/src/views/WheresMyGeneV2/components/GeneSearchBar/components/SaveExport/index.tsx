@@ -496,20 +496,14 @@ async function generateImage({
 }): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
-  const allHeatmapsHeight = tissues.reduce((acc, tissueName) => {
-    return acc + getHeatmapHeight(selectedCellTypes[tissueName]);
-  }, 0);
+  // const allHeatmapsHeight = tissues.reduce((acc, tissueName) => {
+  //   return acc + getHeatmapHeight(selectedCellTypes[tissueName]);
+  // }, 0);
 
   const imageURL = await convertHTMLtoImage(heatmapNode, {
     backgroundColor: "white",
     filter: screenshotFilter,
-    height:
-      allHeatmapsHeight +
-      X_AXIS_CHART_HEIGHT_PX * tissues.length +
-      DATA_MESSAGE_BANNER_HEIGHT_PX +
-      LEGEND_HEIGHT_PX +
-      LEGEND_MARGIN_BOTTOM_PX +
-      CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
+    height: heatmapNode.scrollHeight,
     pixelRatio: 4,
     width: heatmapNode.offsetWidth,
   });
