@@ -1,7 +1,7 @@
 import logging
+import pathlib
 import subprocess
 from typing import Dict, Union
-import pathlib
 
 import anndata
 import numpy as np
