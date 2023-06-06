@@ -19,6 +19,7 @@ import {
 import Table from "../common/Table";
 import DropdownSelect from "../common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material/Select";
+import { Pagination } from "@mui/material";
 import {
   useCanonicalMarkers,
   useEnrichedGenes,
@@ -86,11 +87,14 @@ interface Props {
   cellTypeId: string;
 }
 
+const ROWS_PER_PAGE = 10;
+
 const MarkerGeneTables = ({ cellTypeId }: Props) => {
   const [selectedOrganism, setSelectedOrganism] = useState("");
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
   const [selectedOrgan, setSelectedOrgan] = useState("");
+  const [page, setPage] = useState(1);
 
   let uniqueOrganisms = ["Homo sapiens"];
   let uniqueOrgans: string[] = ["All Tissues"];
@@ -209,6 +213,7 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
       setSelectedOrganism("");
       setSelectedOrgan("");
       setActiveTable(0);
+      setPage(1);
     };
   }, []);
 
@@ -252,16 +257,28 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
       </i>
     </div>
   );
+
+  const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
   const tableComponent = activeTable ? (
     <Table<TableRowEnrichedGenes>
       columns={tableColumnsEnrichedGenes}
-      rows={tableRows as TableRowEnrichedGenes[]}
+      rows={
+        tableRows.slice(
+          (page - 1) * ROWS_PER_PAGE,
+          page * ROWS_PER_PAGE
+        ) as TableRowEnrichedGenes[]
+      }
       columnIdToName={tableColumnNamesEnrichedGenes}
     />
   ) : (
     <Table<TableRowCanonicalGenes>
       columns={tableColumnsCanonicalGenes}
-      rows={tableRows as TableRowCanonicalGenes[]}
+      rows={
+        tableRows.slice(
+          (page - 1) * ROWS_PER_PAGE,
+          page * ROWS_PER_PAGE
+        ) as TableRowCanonicalGenes[]
+      }
       columnIdToName={tableColumnNamesCanonicalGenes}
     />
   );
@@ -276,6 +293,13 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
       </TableUnavailableDescription>
     </TableUnavailableContainer>
   );
+
+  const handlePageChange = (
+    _event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    setPage(page);
+  };
 
   return (
     <div
@@ -323,20 +347,37 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
         <TableSelectorButton
           data-testid={CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR}
           isActive={activeTable === 0}
-          onClick={() => setActiveTable(0)}
+          onClick={() => {
+            setPage(1);
+            setActiveTable(0);
+          }}
         >
           Canonical
         </TableSelectorButton>
         <TableSelectorButton
           data-testid={CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR}
           isActive={activeTable === 1}
-          onClick={() => setActiveTable(1)}
+          onClick={() => {
+            setPage(1);
+            setActiveTable(1);
+          }}
         >
           Computational
         </TableSelectorButton>
       </TableSelectorRow>
       <StyledDivider />
-      {tableRows.length > 0 ? tableComponent : tableUnavailableComponent}
+      {tableRows.length > 0 ? (
+        <div>
+          {tableComponent}
+          <Pagination
+            count={pageCount}
+            page={page}
+            onChange={handlePageChange}
+          />
+        </div>
+      ) : (
+        tableUnavailableComponent
+      )}
     </div>
   );
 };
