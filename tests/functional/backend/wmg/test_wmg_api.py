@@ -4,6 +4,8 @@ import requests
 
 from tests.functional.backend.common import BaseFunctionalTestCase
 from tests.functional.backend.wmg.fixtures import (
+    markers_happy_path,
+    markers_missing_tissue,
     secondary_filter_common_case_request_data,
     secondary_filter_data_with_ontology_term_ids,
     secondary_filter_extreme_case_request_data,
@@ -101,4 +103,25 @@ class TestWmgApi(BaseFunctionalTestCase):
         data["snapshot_id"] = self.data["snapshot_id"]
         res = self.session.post(f"{self.api}/filters", data=json.dumps(data), headers=headers)
         self.assertStatusCode(requests.codes.ok, res)
+        self.assertGreater(len(res.content), 10)
+
+    def test_markers_happy_path(self):
+        headers = {"Content-Type": "application/json"}
+
+        data = markers_happy_path.copy()
+        data["snapshot_id"] = self.data["snapshot_id"]
+        res = self.session.post(f"{self.api}/markers", data=json.dumps(data), headers=headers)
+        self.assertStatusCode(requests.codes.ok, res)
+        self.assertGreater(len(res.content), 10)
+
+    def test_markers_missing_tissue(self):
+        """
+        requests missing required params should fail
+        """
+        headers = {"Content-Type": "application/json"}
+
+        data = markers_missing_tissue.copy()
+        data["snapshot_id"] = self.data["snapshot_id"]
+        res = self.session.post(f"{self.api}/markers", data=json.dumps(data), headers=headers)
+        self.assertStatusCode(400, res)
         self.assertGreater(len(res.content), 10)

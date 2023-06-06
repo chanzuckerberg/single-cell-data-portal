@@ -472,3 +472,18 @@ secondary_filter_data_with_ontology_term_ids = {
         "cell_type_ontology_term_ids": ["CL:0000010"],
     },
 }
+
+markers_happy_path = {
+    "celltype": "UBERON:0002048",
+    "organism": "NCBITaxon:9606",
+    "tissue": "UBERON:0000178",
+    "n_markers": 10,
+    "test": "ttest",
+}
+
+markers_missing_tissue = {
+    "celltype": "UBERON:0002048",
+    "organism": "NCBITaxon:9606",
+    "n_markers": 10,
+    "test": "ttest",
+}
