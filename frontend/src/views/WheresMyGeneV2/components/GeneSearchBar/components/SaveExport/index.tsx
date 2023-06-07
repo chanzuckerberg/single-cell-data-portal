@@ -366,30 +366,35 @@ function generateSvg({
   });
 
   // Build heatmaps for all tissues for wmg v2
-  const tissueSVGs = tissues.map((tissueName) => {
-    const heatmapHeight = expandedTissues.includes(tissueName)
-      ? getHeatmapHeight(selectedCellTypes[tissueName])
-      : X_AXIS_CHART_HEIGHT_PX;
-
-    // Render elements to SVG
-    const yAxisSvg = renderYAxis({
-      heatmapHeight,
-      tissueName,
-      yOffset,
-    });
-    const dotsSvg = renderDots({
-      tissueName,
-      yOffset,
-    });
-
-    // Do not add offset if svg could not be generated to prevent gaps in output
+  const tissueSVGs = tissues
+    // Do not include tissues that are not in selectedCellTypes
     // For example if DOM is not displaying a certain tissue because it has no cell types (ex. urethra, central nervous system)
-    if (yAxisSvg || dotsSvg) {
-      yOffset += heatmapHeight;
-    }
+    .filter((tissueName) => !!selectedCellTypes[tissueName])
+    .map((tissueName) => {
+      const heatmapHeight = expandedTissues.includes(tissueName)
+        ? getHeatmapHeight(selectedCellTypes[tissueName])
+        : X_AXIS_CHART_HEIGHT_PX;
 
-    return { xAxisSvg, yAxisSvg, dotsSvg, legendSvg };
-  });
+      if (tissueName === "urethra") {
+        console.log("******");
+        console.log(selectedCellTypes[tissueName]);
+      }
+
+      // Render elements to SVG
+      const yAxisSvg = renderYAxis({
+        heatmapHeight,
+        tissueName,
+        yOffset,
+      });
+      const dotsSvg = renderDots({
+        tissueName,
+        yOffset,
+      });
+
+      yOffset += heatmapHeight;
+
+      return { xAxisSvg, yAxisSvg, dotsSvg, legendSvg };
+    });
 
   const svgWidth =
     heatmapWidth +

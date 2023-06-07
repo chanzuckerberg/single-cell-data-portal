@@ -49,7 +49,10 @@ import {
   YAxisWrapper,
 } from "src/views/WheresMyGene/components/HeatMap/style";
 import { CellCountLabel } from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
-import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
+import {
+  HEATMAP_CONTAINER_ID,
+  X_AXIS_CHART_HEIGHT_PX,
+} from "src/views/WheresMyGene/common/constants";
 import Loader from "src/views/WheresMyGene/components/Loader";
 import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
@@ -286,13 +289,13 @@ export default memo(function HeatMap({
                * which is an error for echarts
                */
               if (!selectedGeneData?.length) {
-                // const height =
-                //   document.getElementById(`y-axis-${hyphenize(tissue.name)}`)
-                //     ?.clientHeight ?? 0;
+                const height =
+                  document.getElementById(`y-axis-${hyphenize(tissue.name)}`)
+                    ?.clientHeight ?? 0;
                 return (
                   <div
                     key={`y-axis-${hyphenize(tissue.name)}`}
-                    style={{ height: `${0}px` }}
+                    style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
                   />
                 );
               }
