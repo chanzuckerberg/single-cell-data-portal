@@ -72,7 +72,7 @@ export async function downloadAndVerifyFiles(
   subDirectory: string
 ): Promise<void> {
   //download and extract file
-  await downloadGeneFile(page, tissues, subDirectory, fileTypes);
+  await downloadGeneFile(page, subDirectory, fileTypes);
 
   // verify files are available
   fileTypes.forEach((extension: string) => {
@@ -341,7 +341,6 @@ export async function verifySvgDownload(
 
 export async function downloadGeneFile(
   page: Page,
-  tissues: string[],
   subDirectory: string,
   fileTypes: string[] = ["png"]
 ): Promise<void> {
