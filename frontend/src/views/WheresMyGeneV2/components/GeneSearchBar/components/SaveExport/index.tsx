@@ -16,7 +16,7 @@ import {
   HEATMAP_CONTAINER_ID,
   X_AXIS_CHART_HEIGHT_PX,
 } from "src/views/WheresMyGene/common/constants";
-import { CellType } from "src/views/WheresMyGene/common/types";
+import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
 
 import { Label } from "../../style";
 import { StyledButtonIcon } from "../QuickSelect/style";
@@ -64,7 +64,7 @@ import {
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
 import { LEGEND_MARGIN_BOTTOM_PX } from "src/views/WheresMyGene/style";
-import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
+
 import {
   Y_AXIS_CHART_WIDTH_PX,
   getHeatmapHeight,

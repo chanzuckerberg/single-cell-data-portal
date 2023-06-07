@@ -17,8 +17,11 @@ import {
   X_AXIS_CHART_HEIGHT_PX,
   X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
 } from "src/views/WheresMyGene/common/constants";
-import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
-import { ChartProps } from "../../../HeatMap/hooks/common/types";
+import {
+  CellType,
+  ChartProps,
+  Tissue,
+} from "src/views/WheresMyGene/common/types";
 
 import {
   getHeatmapHeight,

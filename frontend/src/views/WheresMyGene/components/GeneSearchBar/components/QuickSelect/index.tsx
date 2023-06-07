@@ -286,10 +286,6 @@ export default function QuickSelect<
         open={open}
         className={classes.popper}
         anchorEl={ref.current}
-        // (thuang): MUI types require `onResize` and `onResizeCapture` for
-        // some reason. Please recheck if we can remove them in the future
-        onResize={noop}
-        onResizeCapture={noop}
       >
         <MenuSelect
           open

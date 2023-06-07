@@ -9,12 +9,10 @@ import {
 } from "src/views/WheresMyGene/common/constants";
 import { State } from "src/views/WheresMyGene/common/store";
 import { Props } from ".";
-import { ChartProps } from "../../../HeatMap/hooks/common/types";
-import {
-  ChartFormat,
-  deserializeCellTypeMetadata,
-} from "../../../HeatMap/utils";
+import { deserializeCellTypeMetadata } from "../../../HeatMap/utils";
 import { generateAndCopyShareUrl } from "../ShareButton/utils";
+import { ChartProps } from "src/views/WheresMyGene/common/types";
+import { ChartFormat } from "../../../HeatMap/components/Chart/components/Chart/hooks/utils";
 
 const NO_SELECTION_STRING = "No selection";
 
