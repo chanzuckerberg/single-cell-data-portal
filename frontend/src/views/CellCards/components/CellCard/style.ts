@@ -1,9 +1,23 @@
 import styled from "@emotion/styled";
-import { fontHeaderXxl, Tag } from "@czi-sds/components";
+import {
+  Button,
+  CommonThemeProps,
+  fontBodyS,
+  fontHeaderXxl,
+  getSpaces,
+  Tag,
+} from "@czi-sds/components";
 
 export const TOP_PADDING_PX = 32;
 export const SIDEBAR_COLUMN_GAP_PX = 120;
+
+// spacing.xxl and spacing.xl
 export const LEFT_RIGHT_PADDING_PX = 40;
+export const LEFT_RIGHT_PADDING_PX_SKINNY_MODE = 24;
+
+interface CellCardsViewProps extends CommonThemeProps {
+  skinnyMode: boolean;
+}
 
 export const CellCardsView = styled.div`
   display: flex;
@@ -11,8 +25,18 @@ export const CellCardsView = styled.div`
   column-gap: ${SIDEBAR_COLUMN_GAP_PX}px;
   margin: auto;
   max-width: 1440px;
-  padding: ${TOP_PADDING_PX}px ${LEFT_RIGHT_PADDING_PX}px 0px
-    ${LEFT_RIGHT_PADDING_PX}px;
+
+  ${(props: CellCardsViewProps) => {
+    const { skinnyMode } = props;
+    const spaces = getSpaces(props);
+    const space = skinnyMode ? spaces?.xl : spaces?.xxl;
+
+    return `
+    padding: ${TOP_PADDING_PX}px ${space}px 0px
+      ${space}px;
+
+    `;
+  }}
 `;
 
 export const Wrapper = styled.div`
@@ -46,7 +70,18 @@ export const StyledTag = styled(Tag)`
   margin: 0;
 `;
 
+export const SearchBarPositioner = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
 export const SearchBarWrapper = styled.div`
   margin-bottom: 20px;
   width: 240px;
+`;
+
+export const SuggestChangeButton = styled(Button)`
+  ${fontBodyS}
+  font-weight: 500;
+  text-transform: capitalize;
 `;
