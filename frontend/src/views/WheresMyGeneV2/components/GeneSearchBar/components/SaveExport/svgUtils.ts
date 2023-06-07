@@ -390,7 +390,6 @@ export function renderDots({
   tissueName,
   yOffset,
 }: {
-  heatmapContainer?: HTMLElement | null;
   tissueName: Tissue;
   yOffset: number;
 }) {

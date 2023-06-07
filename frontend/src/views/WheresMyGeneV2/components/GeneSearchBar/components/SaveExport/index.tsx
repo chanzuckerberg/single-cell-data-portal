@@ -373,13 +373,11 @@ function generateSvg({
 
     // Render elements to SVG
     const yAxisSvg = renderYAxis({
-      heatmapContainer,
       heatmapHeight,
       tissueName,
       yOffset,
     });
     const dotsSvg = renderDots({
-      heatmapContainer,
       tissueName,
       yOffset,
     });
