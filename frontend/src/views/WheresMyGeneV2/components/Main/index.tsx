@@ -14,6 +14,7 @@ import {
   FilterDimensions,
   GeneExpressionSummariesByTissueName,
   generateTermsByKey,
+  OntologyTerm,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
   usePrimaryFilterDimensions,
@@ -29,7 +30,10 @@ import {
   closeRightSidebar,
   deleteSelectedGenes,
 } from "src/views/WheresMyGene/common/store/actions";
-import { GeneExpressionSummary } from "src/views/WheresMyGene/common/types";
+import {
+  GeneExpressionSummary,
+  Tissue,
+} from "src/views/WheresMyGene/common/types";
 import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGene/components/Filters";
 import GeneInfoSideBar from "src/views/WheresMyGene/components/GeneInfoSideBar";
@@ -81,6 +85,14 @@ export default function WheresMyGene(): JSX.Element {
     useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
   const [isScaled, setIsScaled] = useState(true);
+
+  // This is set in HeatMap and the value is used as a list of tissues in SaveExport
+  const [tissuesByName, setTissuesByName] = useState<{
+    [name: string]: OntologyTerm;
+  }>({});
+
+  // This is set in HeatMap and the value is used to determine spacing in SVG export
+  const [expandedTissues, setExpandedTissues] = useState<Array<Tissue>>([]);
 
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
@@ -351,6 +363,8 @@ export default function WheresMyGene(): JSX.Element {
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
               availableFilters={availableFilters}
+              tissues={Object.keys(tissuesByName)}
+              expandedTissues={expandedTissues}
             />
           </Top>
 
@@ -384,6 +398,9 @@ export default function WheresMyGene(): JSX.Element {
             selectedOrganismId={selectedOrganismId}
             allChartProps={allChartProps}
             setAllChartProps={setAllChartProps}
+            setTissuesByName={setTissuesByName}
+            expandedTissues={expandedTissues}
+            setExpandedTissues={setExpandedTissues}
           />
         </Wrapper>
       </View>

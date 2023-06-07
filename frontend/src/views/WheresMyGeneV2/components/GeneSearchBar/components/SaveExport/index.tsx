@@ -112,6 +112,8 @@ export interface Props {
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
+  tissues: string[];
+  expandedTissues: string[];
 }
 
 interface ExportData {
@@ -126,6 +128,8 @@ export default function SaveExport({
   setEchartsRendererMode,
   allChartProps,
   availableFilters,
+  tissues,
+  expandedTissues,
 }: Props): JSX.Element {
   const { selectedFilters, selectedOrganismId, compare } =
     useContext(StateContext);
@@ -174,6 +178,7 @@ export default function SaveExport({
     // Callback function to execute when mutations are observed
     const callback = debounce(() => {
       download();
+      observer.disconnect(); // Ensures file is only downloaded once
     }, MUTATION_OBSERVER_TIMEOUT);
 
     const observer = new MutationObserver(callback);
@@ -198,6 +203,8 @@ export default function SaveExport({
         selectedOrganismId,
         setEchartsRendererMode,
         setDownloadStatus,
+        tissues,
+        expandedTissues,
       }),
       MUTATION_OBSERVER_TIMEOUT
     );
@@ -211,7 +218,7 @@ export default function SaveExport({
     ) {
       setEchartsRendererMode("svg");
     } else {
-      // Kind of a hack to modify the DOM to trigger the observer
+      // Kind of a hack to modify the DOM to trigger the observer for csv since dom wouldn't change to trigger observer
       heatmapNode.classList.add("is-downloading");
     }
   }, [
@@ -226,6 +233,8 @@ export default function SaveExport({
     selectedGenes,
     selectedOrganismId,
     setEchartsRendererMode,
+    tissues,
+    expandedTissues,
   ]);
 
   return (
@@ -320,11 +329,13 @@ function generateSvg({
   heatmapWidth,
   tissues,
   selectedCellTypes,
+  expandedTissues,
 }: {
   svg: string;
   heatmapWidth: number;
   tissues: string[];
   selectedCellTypes: Props["selectedCellTypes"];
+  expandedTissues: string[];
 }) {
   const heatmapNode = new DOMParser().parseFromString(svg, "image/svg+xml");
   const heatmapContainer = heatmapNode
@@ -344,14 +355,23 @@ function generateSvg({
 
   let yOffset = paddedBannerHeight;
 
+  const legendSvg = renderLegend({
+    heatmapContainer,
+    yOffset,
+  });
+
+  const xAxisSvg = renderXAxis({
+    heatmapContainer,
+    yOffset,
+  });
+
+  // Build heatmaps for all tissues for wmg v2
   const tissueSVGs = tissues.map((tissueName) => {
-    const heatmapHeight = getHeatmapHeight(selectedCellTypes[tissueName]);
+    const heatmapHeight = expandedTissues.includes(tissueName)
+      ? getHeatmapHeight(selectedCellTypes[tissueName])
+      : X_AXIS_CHART_HEIGHT_PX;
 
     // Render elements to SVG
-    const xAxisSvg = renderXAxis({
-      heatmapContainer,
-      yOffset,
-    });
     const yAxisSvg = renderYAxis({
       heatmapContainer,
       heatmapHeight,
@@ -363,12 +383,13 @@ function generateSvg({
       tissueName,
       yOffset,
     });
-    const legendSvg = renderLegend({
-      heatmapContainer,
-      yOffset,
-    });
 
-    yOffset += heatmapHeight;
+    // Do not add offset if svg could not be generated to prevent gaps in output
+    // For example if DOM is not displaying a certain tissue because it has no cell types (ex. urethra, central nervous system)
+    if (yAxisSvg || dotsSvg) {
+      yOffset += heatmapHeight;
+    }
+
     return { xAxisSvg, yAxisSvg, dotsSvg, legendSvg };
   });
 
@@ -486,6 +507,7 @@ async function generateImage({
   isMultipleFormatDownload,
   tissues,
   selectedCellTypes,
+  expandedTissues,
 }: {
   fileType: string;
   heatmapNode: HTMLDivElement;
@@ -493,6 +515,7 @@ async function generateImage({
   isMultipleFormatDownload: boolean;
   tissues: string[];
   selectedCellTypes: Props["selectedCellTypes"];
+  expandedTissues: string[];
 }): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
@@ -522,6 +545,7 @@ async function generateImage({
       svg: decodeURIComponent(imageURL.split(",")[1]),
       tissues,
       selectedCellTypes,
+      expandedTissues,
     });
   } else if (fileType === "png" && isMultipleFormatDownload) {
     input = base64URLToArrayBuffer(imageURL);
@@ -585,6 +609,8 @@ function download_({
   observer,
   setDownloadStatus,
   setEchartsRendererMode,
+  tissues,
+  expandedTissues,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
@@ -604,6 +630,8 @@ function download_({
     }>
   >;
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
+  tissues: string[];
+  expandedTissues: string[];
 }) {
   return async () => {
     try {
@@ -633,9 +661,6 @@ function download_({
         }px`;
       }
 
-      const tissues =
-        availableFilters.tissue_terms?.map((term) => term.name) || [];
-
       const exports: ExportData[] =
         // Generate exports for each filetype
         (
@@ -661,6 +686,7 @@ function download_({
                   isMultipleFormatDownload: selectedFileTypes.length > 1,
                   tissues,
                   selectedCellTypes,
+                  expandedTissues,
                 });
               }
 

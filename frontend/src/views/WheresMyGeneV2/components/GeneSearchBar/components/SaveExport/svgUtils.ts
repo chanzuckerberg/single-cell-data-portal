@@ -1,5 +1,4 @@
 import { CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX } from "src/components/Layout/style";
-import { capitalize } from "../../../HeatMap/components/YAxisChart";
 import {
   ECHART_AXIS_LABEL_COLOR_HEX,
   ECHART_AXIS_LABEL_FONT_SIZE_PX,
@@ -7,9 +6,9 @@ import {
 import { PLASMA_SVG_STRING } from "src/views/WheresMyGene/components/Filters/components/ColorScale";
 import {
   HEAT_MAP_BASE_CELL_PX,
+  hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
-import { Y_AXIS_TISSUE_WIDTH_PX } from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
 import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
 import { Tissue } from "src/views/WheresMyGene/common/types";
 import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
@@ -280,23 +279,24 @@ export function renderXAxis({
 }
 
 export function renderYAxis({
-  heatmapContainer,
   tissueName,
   heatmapHeight,
   yOffset,
 }: {
-  heatmapContainer?: HTMLElement | null;
   tissueName: Tissue;
   heatmapHeight: number;
   yOffset: number;
 }) {
-  if (!heatmapContainer) return;
+  const yAxis = document.querySelector(
+    `#${formatTissueNameForSelector(tissueName)}-y-axis`
+  );
 
-  const yAxis = heatmapContainer.querySelector(`#${tissueName}-y-axis`);
+  if (!yAxis) return;
 
   const svg = document.createElementNS(NAME_SPACE_URI, "svg");
 
   const svgAttributes = {
+    id: "cell-type-label-and-count",
     height: `${heatmapHeight}px`,
     width: `${Y_AXIS_CHART_WIDTH_PX}px`, // Adds padding for current tissue label
     x: `${CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX}`,
@@ -305,40 +305,13 @@ export function renderYAxis({
 
   applyAttributes(svg, svgAttributes);
 
-  // Container for tissue label
-  const tissueLabelContainer = document.createElementNS(NAME_SPACE_URI, "svg");
-
-  const RECT_WIDTH = 5;
-
-  const tissueLabelText = document.createElementNS(NAME_SPACE_URI, "text");
-  tissueLabelText.textContent = capitalize(tissueName);
-  applyAttributes(tissueLabelText, {
-    y: `${Y_AXIS_TISSUE_WIDTH_PX - RECT_WIDTH - 12}`,
-    "text-anchor": "end",
-    transform: LABEL_ROTATION,
-    "font-family": "Inter, sans-serif",
-    "font-size": `14px`,
-    "font-weight": "bold",
-  });
-
-  const tissueLabelRect = document.createElementNS(NAME_SPACE_URI, "rect");
-  applyAttributes(tissueLabelRect, {
-    width: `${RECT_WIDTH}`,
-    height: `${heatmapHeight}`,
-    x: `${Y_AXIS_TISSUE_WIDTH_PX - RECT_WIDTH}`,
-    fill: "black",
-  });
-
-  tissueLabelContainer.append(tissueLabelText);
-  tissueLabelContainer.append(tissueLabelRect);
-
   // cell type names container group
   const cellTypeNamesContainer = document.createElementNS(
     NAME_SPACE_URI,
     "svg"
   );
   applyAttributes(cellTypeNamesContainer, {
-    x: `${Y_AXIS_TISSUE_WIDTH_PX + 10}`,
+    x: 0,
   });
 
   Array.from(
@@ -393,7 +366,7 @@ export function renderYAxis({
 
     const countAttributes = {
       "text-anchor": "end",
-      x: Y_AXIS_CHART_WIDTH_PX - CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
+      x: Y_AXIS_CHART_WIDTH_PX,
       y: HEAT_MAP_BASE_CELL_PX / 2,
     };
 
@@ -408,14 +381,12 @@ export function renderYAxis({
     cellTypeNamesContainer.appendChild(group);
   });
 
-  svg.append(tissueLabelContainer);
   svg.append(cellTypeNamesContainer);
 
   return svg;
 }
 
 export function renderDots({
-  heatmapContainer,
   tissueName,
   yOffset,
 }: {
@@ -423,10 +394,8 @@ export function renderDots({
   tissueName: Tissue;
   yOffset: number;
 }) {
-  if (!heatmapContainer) return;
-
-  const chart = heatmapContainer
-    .querySelector(`#${tissueName}-chart`)
+  const chart = document
+    .querySelector(`#${formatTissueNameForSelector(tissueName)}-chart`)
     ?.querySelector("svg");
 
   if (!chart) return;
@@ -457,4 +426,12 @@ export function applyAttributes(
   for (const [key, value] of Object.entries(attributes)) {
     node.setAttribute(key, String(value));
   }
+}
+
+// This is for cases where the id for the tissue may have certain characters which need to be escaped in the query selector
+function formatTissueNameForSelector(str: string) {
+  return hyphenize(str)
+    .replace(":", "\\:")
+    .replace("(", "\\(")
+    .replace(")", "\\)");
 }
