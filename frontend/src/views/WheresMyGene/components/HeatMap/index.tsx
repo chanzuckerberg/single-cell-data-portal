@@ -23,6 +23,7 @@ import { DispatchContext, State, StateContext } from "../../common/store";
 import { addCellInfoCellType } from "../../common/store/actions";
 import {
   CellType,
+  ChartProps,
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
@@ -32,7 +33,6 @@ import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import { CellCountLabel } from "./components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
-import { ChartProps } from "./hooks/common/types";
 import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {
   useSortedGeneNames,
