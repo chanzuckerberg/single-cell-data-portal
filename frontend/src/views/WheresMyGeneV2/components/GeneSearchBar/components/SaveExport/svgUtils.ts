@@ -251,27 +251,27 @@ export function renderXAxis({
   // Create gene labels
   const geneLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
 
-  Array.from(
-    xAxis?.querySelectorAll(`[data-testid*='gene-label-'] span`) || []
-  ).forEach((label, index) => {
-    const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
+  Array.from(xAxis?.querySelectorAll(`[id*='gene-label-'] span`) || []).forEach(
+    (label, index) => {
+      const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
 
-    const labelAttributes = {
-      transform: LABEL_ROTATION,
-      "font-size": "12px",
-      x: -(X_AXIS_CHART_HEIGHT_PX + yOffset + 10),
-      y:
-        xOffset +
-        HEAT_MAP_BASE_CELL_PX +
-        CHART_PADDING_PX / 2 +
-        index * HEAT_MAP_BASE_CELL_PX,
-    };
+      const labelAttributes = {
+        transform: LABEL_ROTATION,
+        "font-size": "12px",
+        x: -(X_AXIS_CHART_HEIGHT_PX + yOffset + 10),
+        y:
+          xOffset +
+          HEAT_MAP_BASE_CELL_PX +
+          CHART_PADDING_PX / 2 +
+          index * HEAT_MAP_BASE_CELL_PX,
+      };
 
-    applyAttributes(geneLabelText, labelAttributes);
-    geneLabelText.textContent = label.innerHTML;
+      applyAttributes(geneLabelText, labelAttributes);
+      geneLabelText.textContent = label.innerHTML;
 
-    geneLabelContainer.append(geneLabelText);
-  });
+      geneLabelContainer.append(geneLabelText);
+    }
+  );
 
   svg.append(geneLabelContainer);
 
@@ -314,72 +314,68 @@ export function renderYAxis({
     x: 0,
   });
 
-  Array.from(
-    yAxis?.querySelectorAll("[data-testid='cell-type-label-count']") || []
-  ).forEach((labelCount, index) => {
-    const label = labelCount.querySelector(
-      "[data-testid='cell-type-name']"
-    )?.textContent;
+  Array.from(yAxis?.querySelectorAll(".cell-type-label-count") || []).forEach(
+    (labelCount, index) => {
+      const label = labelCount.querySelector(".cell-type-name")?.textContent;
 
-    const count = labelCount.querySelector(
-      "[data-testid='cell-count']"
-    )?.textContent;
+      const count = labelCount.querySelector(".cell-count")?.textContent;
 
-    // group
-    const group = document.createElementNS(NAME_SPACE_URI, "svg");
+      // group
+      const group = document.createElementNS(NAME_SPACE_URI, "svg");
 
-    const groupAttributes = {
-      id: "cell-name-label-group",
-      fill: ECHART_AXIS_LABEL_COLOR_HEX,
-      "font-family": FONT_FAMILY,
-      "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
-      x: 0,
-      /**
-       * (thuang): Add `HEAT_MAP_BASE_CELL_PX / 2` top margin, so we render the
-       * first label in the middle of the first cell
-       */
-      y: index * HEAT_MAP_BASE_CELL_PX,
-    };
+      const groupAttributes = {
+        id: "cell-name-label-group",
+        fill: ECHART_AXIS_LABEL_COLOR_HEX,
+        "font-family": FONT_FAMILY,
+        "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
+        x: 0,
+        /**
+         * (thuang): Add `HEAT_MAP_BASE_CELL_PX / 2` top margin, so we render the
+         * first label in the middle of the first cell
+         */
+        y: index * HEAT_MAP_BASE_CELL_PX,
+      };
 
-    applyAttributes(group, groupAttributes);
+      applyAttributes(group, groupAttributes);
 
-    // cellTypeLabel
-    const cellTypeLabel = document.createElementNS(NAME_SPACE_URI, "text");
+      // cellTypeLabel
+      const cellTypeLabel = document.createElementNS(NAME_SPACE_URI, "text");
 
-    // Preserves whitespace
-    cellTypeLabel.setAttributeNS(
-      "http://www.w3.org/XML/1998/namespace",
-      "xml:space",
-      "preserve"
-    );
+      // Preserves whitespace
+      cellTypeLabel.setAttributeNS(
+        "http://www.w3.org/XML/1998/namespace",
+        "xml:space",
+        "preserve"
+      );
 
-    const labelAttributes = {
-      x: 0,
-      y: HEAT_MAP_BASE_CELL_PX / 2,
-    };
+      const labelAttributes = {
+        x: 0,
+        y: HEAT_MAP_BASE_CELL_PX / 2,
+      };
 
-    applyAttributes(cellTypeLabel, labelAttributes);
-    cellTypeLabel.textContent = String(label);
+      applyAttributes(cellTypeLabel, labelAttributes);
+      cellTypeLabel.textContent = String(label);
 
-    // cellCount
-    const cellCount = document.createElementNS(NAME_SPACE_URI, "text");
+      // cellCount
+      const cellCount = document.createElementNS(NAME_SPACE_URI, "text");
 
-    const countAttributes = {
-      "text-anchor": "end",
-      x: Y_AXIS_CHART_WIDTH_PX,
-      y: HEAT_MAP_BASE_CELL_PX / 2,
-    };
+      const countAttributes = {
+        "text-anchor": "end",
+        x: Y_AXIS_CHART_WIDTH_PX,
+        y: HEAT_MAP_BASE_CELL_PX / 2,
+      };
 
-    applyAttributes(cellCount, countAttributes);
+      applyAttributes(cellCount, countAttributes);
 
-    cellCount.textContent = String(count);
+      cellCount.textContent = String(count);
 
-    // append children
-    group.appendChild(cellTypeLabel);
-    group.appendChild(cellCount);
+      // append children
+      group.appendChild(cellTypeLabel);
+      group.appendChild(cellCount);
 
-    cellTypeNamesContainer.appendChild(group);
-  });
+      cellTypeNamesContainer.appendChild(group);
+    }
+  );
 
   svg.append(cellTypeNamesContainer);
 
