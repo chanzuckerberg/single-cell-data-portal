@@ -27,7 +27,7 @@ import {
   closeRightSidebar,
   deleteSelectedGenes,
 } from "../../common/store/actions";
-import { GeneExpressionSummary } from "../../common/types";
+import { ChartProps, GeneExpressionSummary } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import CellInfoBar from "../CellInfoSideBar";
 import GeneInfoBar from "../GeneInfoSideBar";
@@ -36,7 +36,6 @@ import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
-import { ChartProps } from "../HeatMap/hooks/common/types";
 import InfoPanel from "../InfoPanel";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";

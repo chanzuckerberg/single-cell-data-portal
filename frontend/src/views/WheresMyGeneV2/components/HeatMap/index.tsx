@@ -26,6 +26,7 @@ import {
 import { addCellInfoCellType } from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
+  ChartProps,
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
@@ -33,7 +34,6 @@ import {
 import YAxisChart from "./components/YAxisChart";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
 import { memoize } from "lodash";
-import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
 import {
   useSortedGeneNames,
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,

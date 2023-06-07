@@ -1,12 +1,11 @@
 import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
 import { FilterDimensions } from "src/common/queries/wheresMyGene";
-import { CellType } from "src/views/WheresMyGene/common/types";
+import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
 import SaveExport from "../../../GeneSearchBar/components/SaveExport";
 import SaveExportV2 from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import ShareButton from "../../../GeneSearchBar/components/ShareButton";
 import ShareButtonV2 from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
-import { ChartProps } from "../../../HeatMap/hooks/common/types";
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";

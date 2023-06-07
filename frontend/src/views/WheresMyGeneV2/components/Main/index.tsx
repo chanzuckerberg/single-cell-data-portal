@@ -33,6 +33,7 @@ import {
 import {
   GeneExpressionSummary,
   Tissue,
+  ChartProps,
 } from "src/views/WheresMyGene/common/types";
 import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGene/components/Filters";
@@ -40,7 +41,7 @@ import GeneInfoSideBar from "src/views/WheresMyGene/components/GeneInfoSideBar";
 import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport";
 import { UnderlyingDataChangeBanner } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport/ExportBanner";
-import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
+
 import InfoPanel from "src/views/WheresMyGene/components/InfoPanel";
 import Legend from "src/views/WheresMyGene/components/InfoPanel/components/Legend";
 import Loader from "src/views/WheresMyGene/components/Loader";
