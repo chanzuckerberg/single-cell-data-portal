@@ -188,7 +188,20 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
         lambda: defaultdict(lambda: defaultdict(dict))
     )
 
-    # Populate aggregated gene expressions
+    # Populate gene expressions stats for each (gene, tissue) combination
+    query_result_agg = query_result.groupby(["gene_ontology_term_id", "tissue_ontology_term_id"], as_index=False).agg(
+        {"nnz": "sum", "sum": "sum", "n_cells_tissue": "first"}
+    )
+
+    for i in range(query_result_agg.shape[0]):
+        row = query_result_agg.iloc[i]
+        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id]["aggregated"] = dict(
+            n=int(row["nnz"]),
+            me=float(row["sum"] / row["nnz"]),
+            tpc=float(row["nnz"] / row["n_cells_tissue"]),
+        )
+
+    # Populate gene expressions stats for each (gene, tissue, cell_type) combination
     query_result_agg = query_result.groupby(
         ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
     ).agg({"nnz": "sum", "sum": "sum", "n_cells_cell_type": "sum", "n_cells_tissue": "first"})
@@ -204,7 +217,7 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
             tpc=float(row["nnz"] / row["n_cells_tissue"]),
         )
 
-    # Populate compare filter gene expressions
+    # Populate gene expression stats for each (gene, tissue, cell_type, <compare_dimension>) combination
     if compare:
         for i in range(query_result.shape[0]):
             row = query_result.iloc[i]
@@ -272,9 +285,20 @@ def build_ordered_cell_types_by_tissue(
     # Create nested dicts with tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
     structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
 
-    # Populate aggregated gene expressions
+    # Populate aggregated cell counts for each tissue
+    joined_agg = joined.groupby(["tissue_ontology_term_id"], as_index=False).agg({"n_total_cells": "sum"})
+
+    for i in range(joined_agg.shape[0]):
+        row = joined_agg.iloc[i]
+        structured_result[row.tissue_ontology_term_id]["aggregated"] = {
+            "tissue_ontology_term_id": row.tissue_ontology_term_id,
+            "name": ontology_term_label(row.tissue_ontology_term_id),
+            "total_count": int(row.n_total_cells),
+        }
+
+    # Populate aggregated cell counts for each (tissue, cell_type) combination
     joined_agg = joined.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).agg(
-        {"n_total_cells": "sum", "depth": "first", "order": "first"}
+        {"order": "first"}
     )
 
     agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).sum().T
@@ -288,7 +312,7 @@ def build_ordered_cell_types_by_tissue(
             "order": int(row.order),
         }
 
-    # Populate compare filter gene expressions
+    # Populate aggregated cell counts for each (tissue, cell_type, <compare_dimension>) combination
     cell_counts_cell_type_agg_T = cell_counts_cell_type_agg.T
     if compare:
         for i in range(joined.shape[0]):

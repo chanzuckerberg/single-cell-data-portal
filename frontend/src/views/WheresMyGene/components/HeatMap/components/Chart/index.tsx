@@ -40,6 +40,7 @@ import {
   getGeneNames,
   getHeatmapHeight,
   getHeatmapWidth,
+  hyphenize,
 } from "../../utils";
 import { ChartContainer, StyledTooltipTable, tooltipCss } from "./style";
 
@@ -404,7 +405,7 @@ export default memo(function Chart({
         height={heatmapHeight}
         width={heatmapWidth}
         ref={ref}
-        id={`${tissue.replace(/\s+/g, "-")}-chart`}
+        id={`${hyphenize(tissue)}-chart`}
         onMouseLeave={() => {
           // Handles race condition when a timeout is set after clearing
           setTimeout(() => {

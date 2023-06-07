@@ -18,6 +18,7 @@ import {
   formatLabel,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
+  hyphenize,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { SELECTED_STYLE } from "src/views/WheresMyGene/components/HeatMap/style";
 import {
@@ -49,7 +50,7 @@ export default memo(function YAxisChart({
   generateMarkerGenes,
   tissueID,
 }: Props): JSX.Element {
-  const tissueKey = tissue.replace(/\s+/g, "-");
+  const tissueKey = hyphenize(tissue);
 
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
@@ -65,7 +66,7 @@ export default memo(function YAxisChart({
   }, [cellTypes, tissue]);
 
   return (
-    <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
+    <Wrapper id={`${hyphenize(tissue)}-y-axis`}>
       <Container
         data-testid={`cell-type-labels-${tissueKey}`}
         height={heatmapHeight}
