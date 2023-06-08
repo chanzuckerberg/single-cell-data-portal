@@ -443,6 +443,7 @@ function generateCsv({
   selectedFilters,
   selectedOrganismId,
   availableOrganisms,
+  tissues,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
@@ -451,6 +452,7 @@ function generateCsv({
   selectedFilters: State["selectedFilters"];
   selectedOrganismId: string | null;
   availableOrganisms: OntologyTerm[] | null | undefined;
+  tissues: string[];
 }) {
   const output: (string | number | undefined)[][] = [];
 
@@ -466,9 +468,7 @@ function generateCsv({
     })
   );
 
-  const tissues = availableFilters.tissue_terms?.map((term) => term.name);
-
-  tissues?.forEach((tissueName) => {
+  tissues.forEach((tissueName) => {
     // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
     const cellTypeIdToMetadataMapping = Object.values(
       buildCellTypeIdToMetadataMapping(tissueName, allChartProps)
@@ -681,6 +681,7 @@ function download_({
                   selectedFilters,
                   selectedOrganismId,
                   availableOrganisms,
+                  tissues,
                 });
               } else {
                 input = await generateImage({
