@@ -259,7 +259,6 @@ export default memo(function Filters({
   }, [self_reported_ethnicity_terms, ethnicities]);
 
   const selectedPublications = useMemo(() => {
-    // IF a publication is selected, we want to update the selectedDatasets function!!
     return publicationFilter.filter((publication) =>
       publications?.includes(publication.id)
     );
@@ -305,6 +304,7 @@ export default memo(function Filters({
                 [label]: selected.name,
               });
             } else {
+              // (note) can delete this once Amanda finishes analytics for publications
               const { eventName, label } = {
                 eventName: "Publication Selected!",
                 label: "publication",

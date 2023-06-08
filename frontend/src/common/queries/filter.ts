@@ -196,6 +196,49 @@ export function useFetchCollectionRows(
 }
 
 /**
+ * Fetch collection and dataset information and build collection-specific filter view model.
+ * @param mode - View mode.
+ * @param status - Query status.
+ * @returns All public collections and the aggregated metadata of their datasets.
+ */
+export function useFetchPublicationRows(
+  mode: VIEW_MODE,
+  status: QueryStatus
+): FetchCategoriesRows<CollectionRow> {
+  // Fetch datasets.
+  const {
+    data: datasets,
+    isError: datasetsError,
+    isLoading: datasetsLoading,
+  } = useFetchDatasets(mode, status);
+
+  // Fetch collections.
+  const {
+    data: collectionsById,
+    isError: collectionsError,
+    isLoading: collectionsLoading,
+  } = useFetchCollections(mode, status);
+
+  // Return publications, filtered out based on what datasets have been selected!!
+
+  // View model built from join of collections response and aggregated metadata of dataset rows.
+  // Build dataset rows once datasets and collections responses have resolved.
+  const collectionRows = useMemo(() => {
+    if (!datasets || !collectionsById) {
+      return [];
+    }
+    const datasetRows = buildDatasetRows(collectionsById, datasets);
+    return buildCollectionRows(collectionsById, datasetRows);
+  }, [datasets, collectionsById, selectedFilters]);
+
+  return {
+    isError: datasetsError || collectionsError,
+    isLoading: datasetsLoading || collectionsLoading,
+    rows: collectionRows,
+  };
+}
+
+/**
  * Cache-enabled hook for fetching collections and returning only core collection fields.
  * @param mode - View mode.
  * @param status - Query status.
