@@ -56,6 +56,7 @@ import {
 import Loader from "src/views/WheresMyGene/components/Loader";
 import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
+import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
 
 interface Props {
   className?: string;
@@ -78,6 +79,13 @@ interface Props {
     }>
   >;
   allChartProps: { [tissue: string]: ChartProps };
+  setTissuesByName: Dispatch<
+    SetStateAction<{
+      [name: string]: OntologyTerm;
+    }>
+  >;
+  expandedTissues: string[];
+  setExpandedTissues: Dispatch<SetStateAction<string[]>>;
 }
 
 export default memo(function HeatMap({
@@ -95,6 +103,9 @@ export default memo(function HeatMap({
   echartsRendererMode,
   allChartProps,
   setAllChartProps,
+  setTissuesByName,
+  expandedTissues,
+  setExpandedTissues,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes });
 
@@ -116,8 +127,10 @@ export default memo(function HeatMap({
 
     result = generateTermsByKey(tissues, "name");
 
+    setTissuesByName(result);
+
     return result;
-  }, [data]);
+  }, [data, setTissuesByName]);
 
   const generateMarkerGenes = (cellType: CellType, tissueID: string) => {
     if (!dispatch) return;
@@ -193,8 +206,6 @@ export default memo(function HeatMap({
     setDisplayedCellTypes(initialDisplayedCellTypes);
   }, [initialDisplayedCellTypes]);
 
-  const [expandedTissues, setExpandedTissues] = useState<Array<Tissue>>([]);
-
   const handleExpand = useCallback(() => {
     const newDisplayedCellTypes = new Set<string>(displayedCellTypes);
 
@@ -213,8 +224,9 @@ export default memo(function HeatMap({
     setDisplayedCellTypes(newDisplayedCellTypes);
   }, [
     displayedCellTypes,
-    sortedCellTypesByTissueName,
     expandedTissues,
+    sortedCellTypesByTissueName,
+    setExpandedTissues,
     initialDisplayedCellTypes,
   ]);
 
@@ -244,7 +256,7 @@ export default memo(function HeatMap({
 
               return (
                 tissueCellTypes.length > 0 && (
-                  <div id={`y-axis-${tissue.name}`}>
+                  <div id={`y-axis-${hyphenize(tissue.name)}`}>
                     <YAxisChart
                       key={tissue.name}
                       tissue={tissue.name}
@@ -278,12 +290,16 @@ export default memo(function HeatMap({
                */
               if (!selectedGeneData?.length) {
                 const height =
-                  document.getElementById(`y-axis-${tissue.name}`)
+                  document.getElementById(`y-axis-${hyphenize(tissue.name)}`)
                     ?.clientHeight ?? 0;
                 return (
                   <div
-                    key={`y-axis-${tissue.name}`}
-                    style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
+                    key={`y-axis-${hyphenize(tissue.name)}`}
+                    style={{
+                      height: `${
+                        !height ? 0 : height + X_AXIS_CHART_HEIGHT_PX
+                      }px`,
+                    }}
                   />
                 );
               }
