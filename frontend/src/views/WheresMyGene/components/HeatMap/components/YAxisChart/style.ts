@@ -9,10 +9,7 @@ export const Y_AXIS_TISSUE_WIDTH_PX = 30;
 
 export const Wrapper = styled.div`
   display: flex;
-
-  // This needed to be padding-bottom instead of margin-bottom because html-to-image wasn't properly handling margins
-  padding-bottom: ${X_AXIS_CHART_HEIGHT_PX}px;
-
+  margin-bottom: ${X_AXIS_CHART_HEIGHT_PX}px;
   margin-right: ${Y_AXIS_TISSUE_WIDTH_PX}px;
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
 `;
