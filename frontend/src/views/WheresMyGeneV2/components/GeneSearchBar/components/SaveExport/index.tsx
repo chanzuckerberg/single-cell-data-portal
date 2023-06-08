@@ -368,7 +368,7 @@ function generateSvg({
   // Build heatmaps for all tissues for wmg v2
   const tissueSVGs = tissues.map((tissueName) => {
     const heatmapHeight = expandedTissues.includes(tissueName)
-      ? getHeatmapHeight(selectedCellTypes[tissueName])
+      ? getHeatmapHeight(selectedCellTypes[tissueName]) + X_AXIS_CHART_HEIGHT_PX
       : X_AXIS_CHART_HEIGHT_PX;
 
     // Render elements to SVG
