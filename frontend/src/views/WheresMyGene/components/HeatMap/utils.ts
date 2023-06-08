@@ -21,7 +21,6 @@ import {
 import { TISSUE_CELL_TYPE_DIVIDER } from "./hooks/useSortedGeneNames";
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
-export const X_AXIS_CHART_HEIGHT_PX = 80;
 export const Y_AXIS_CHART_WIDTH_PX = 300;
 
 const Y_AXIS_BOTTOM_PADDING = "10px";
@@ -65,15 +64,23 @@ export function formatLabel(
   name: string,
   maxWidth: number,
   font: string
-): string {
+): {
+  text: string;
+  length: number;
+} {
   // failsafe, should never be falsy
-  if (!CTX) return name;
+  if (!CTX) return { text: name, length: 0 };
 
   CTX.font = font;
   const ellipsisWidth = CTX.measureText("...").width;
 
-  if (CTX.measureText(name).width <= maxWidth) {
-    return name;
+  const fullWidth = CTX.measureText(name).width;
+
+  if (fullWidth <= maxWidth) {
+    return {
+      text: name,
+      length: fullWidth,
+    };
   }
 
   const labelHalfWidth = (maxWidth - ellipsisWidth) / 2;
@@ -81,7 +88,12 @@ export function formatLabel(
   const firstHalf = getFixedWidth(name, labelHalfWidth, font);
   const secondHalf = getFixedWidth(name, labelHalfWidth, font, true);
 
-  return firstHalf + "..." + secondHalf;
+  const formattedLabel = firstHalf + "..." + secondHalf;
+
+  return {
+    text: formattedLabel,
+    length: CTX.measureText(formattedLabel).width,
+  };
 }
 
 /**

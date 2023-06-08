@@ -13,10 +13,9 @@ import {
 import { useCellTypesById } from "src/common/queries/cellCards";
 import Description from "./components/Description";
 import CellCardSearchBar from "../CellCardSearchBar";
-import CanonicalMarkerGeneTable from "./components/CanonicalMarkerGeneTable";
-import EnrichedGenesTable from "./components/EnrichedGenesTable";
-import OntologyDagView from "./components/OntologyDagView";
-import FullScreenProvider from "./components/FullScreenProvider";
+import MarkerGeneTables from "./components/MarkerGeneTables";
+import OntologyDagView from "../common/OntologyDagView";
+import FullScreenProvider from "../common/FullScreenProvider";
 import SourceDataTable from "./components/SourceDataTable";
 import CellCardSidebar from "./components/CellCardSidebar";
 
@@ -34,7 +33,6 @@ export default function CellCard(): JSX.Element {
   const sectionRef1 = React.useRef(null);
   const sectionRef2 = React.useRef(null);
   const sectionRef3 = React.useRef(null);
-  const sectionRef4 = React.useRef(null);
 
   const [skinnyMode, setSkinnyMode] = useState<boolean>(true);
   // cell type id
@@ -94,14 +92,10 @@ export default function CellCard(): JSX.Element {
 
         {/* Marker Genes section */}
         <div ref={sectionRef2} id="section-2" data-testid="section-2" />
-        <CanonicalMarkerGeneTable cellTypeId={cellTypeId} />
-
-        {/* Highly Expressed Genes section */}
-        <div ref={sectionRef3} id="section-3" data-testid="section-3" />
-        <EnrichedGenesTable cellTypeId={cellTypeId} />
+        <MarkerGeneTables cellTypeId={cellTypeId} />
 
         {/* Source Data section */}
-        <div ref={sectionRef4} id="section-4" data-testid="section-4" />
+        <div ref={sectionRef3} id="section-3" data-testid="section-3" />
         <SourceDataTable cellTypeId={cellTypeId} />
       </Wrapper>
 
@@ -112,8 +106,7 @@ export default function CellCard(): JSX.Element {
             { elementRef: sectionRef0, title: "Intro" },
             { elementRef: sectionRef1, title: "Cell Ontology" },
             { elementRef: sectionRef2, title: "Marker Genes" },
-            { elementRef: sectionRef3, title: "Highly Expressed Genes" },
-            { elementRef: sectionRef4, title: "Source Data" },
+            { elementRef: sectionRef3, title: "Source Data" },
           ]}
         />
       )}

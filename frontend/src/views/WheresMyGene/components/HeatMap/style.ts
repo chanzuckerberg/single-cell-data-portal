@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
+import { Y_AXIS_CHART_WIDTH_PX } from "./utils";
 import { LIGHT_GRAY } from "src/components/common/theme";
 import { LEGEND_HEIGHT_PX } from "../InfoPanel/components/Legend/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
@@ -8,6 +8,7 @@ import {
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
 import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
+import { X_AXIS_CHART_HEIGHT_PX } from "../../common/constants";
 
 export const CHART_PADDING_PX = 10;
 
@@ -38,20 +39,28 @@ export const ContainerWrapper = styled.div`
   position: relative;
 `;
 
-export const TopLeftCornerMask = styled.div`
+interface TopLeftCornerMaskProps {
+  height: number;
+}
+
+export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
   position: absolute;
   background-color: white;
   z-index: 3;
   top: 0px;
   left: 0px;
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
+  height: ${(props) => props.height ?? X_AXIS_CHART_HEIGHT_PX}px;
 `;
 
-export const YAxisWrapper = styled.div`
+interface YAxisWrapperProps {
+  top: number;
+}
+
+export const YAxisWrapper = styled.div<YAxisWrapperProps>`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
   position: sticky;
-  top: ${X_AXIS_CHART_HEIGHT_PX}px;
+  top: ${(props) => props.top ?? X_AXIS_CHART_HEIGHT_PX}px;
   left: 0;
   z-index: 1;
   padding-top: 5px;
@@ -59,9 +68,13 @@ export const YAxisWrapper = styled.div`
   overflow: hidden;
 `;
 
-export const XAxisMask = styled.div`
+interface XAxisMaskProps {
+  height: number;
+}
+
+export const XAxisMask = styled.div<XAxisMaskProps>`
   width: ${Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}px;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
+  height: ${(props) => props.height}px;
 `;
 
 export const XAxisWrapper = styled.div`
@@ -74,11 +87,15 @@ export const XAxisWrapper = styled.div`
   z-index: 2;
 `;
 
-export const ChartWrapper = styled.div`
+interface ChartWrapperProps {
+  top: number;
+}
+
+export const ChartWrapper = styled.div<ChartWrapperProps>`
   position: absolute;
   padding-left: ${CHART_PADDING_PX}px;
   padding-right: ${CHART_PADDING_PX}px;
   padding-top: 5px;
   left: ${Y_AXIS_CHART_WIDTH_PX}px;
-  top: ${X_AXIS_CHART_HEIGHT_PX}px;
+  top: ${(props) => props.top}px;
 `;

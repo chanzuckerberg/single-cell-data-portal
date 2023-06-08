@@ -20,6 +20,10 @@ resource aws_batch_job_definition batch_job_def {
       "value": "${var.wmg_bucket}"
     },
     {
+      "name": "API_URL",
+      "value": "${var.api_url}"
+    },
+    {
       "name": "DEPLOYMENT_STAGE",
       "value": "${var.deployment_stage}"
     },
