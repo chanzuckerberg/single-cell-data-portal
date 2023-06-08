@@ -371,11 +371,6 @@ function generateSvg({
       ? getHeatmapHeight(selectedCellTypes[tissueName])
       : X_AXIS_CHART_HEIGHT_PX;
 
-    if (tissueName === "urethra") {
-      console.log("******");
-      console.log(selectedCellTypes[tissueName]);
-    }
-
     // Render elements to SVG
     const yAxisSvg = renderYAxis({
       heatmapHeight,
@@ -660,10 +655,14 @@ function download_({
         }px`;
       }
 
+      // Since allChartProps does not have the correct order of tissues
+      // We use this to filter out rawTissues for tissues with no cell types
+      const unorderedTissues = Object.keys(allChartProps);
+
       // Do not include tissues that are not in selectedCellTypes
       // For example if DOM is not displaying a certain tissue because it has no cell types (ex. urethra, central nervous system)
-      const tissues = rawTissues.filter(
-        (tissueName) => !!selectedCellTypes[tissueName]
+      const tissues = rawTissues.filter((tissueName) =>
+        unorderedTissues.includes(tissueName)
       );
 
       const exports: ExportData[] =
