@@ -24,8 +24,8 @@ interface Props {
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
-  tissues: string[];
-  expandedTissues: string[];
+  tissues?: string[];
+  expandedTissues?: string[];
 }
 
 export default memo(function Legend({
@@ -65,8 +65,8 @@ export default memo(function Legend({
             setEchartsRendererMode={setEchartsRendererMode}
             allChartProps={allChartProps}
             availableFilters={availableFilters}
-            tissues={tissues}
-            expandedTissues={expandedTissues}
+            tissues={tissues || []}
+            expandedTissues={expandedTissues || []}
           />
           <ShareButtonV2 />
         </>
