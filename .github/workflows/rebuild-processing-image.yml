@@ -98,3 +98,11 @@ jobs:
         run: |
           export BRANCH_SHA=$(git rev-parse --short=8 HEAD)
           happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
+      - name: Alert in Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,eventName,workflow,job
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: always() # Pick up events even if the job fails or is canceled.
