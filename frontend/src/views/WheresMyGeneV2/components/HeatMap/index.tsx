@@ -256,16 +256,14 @@ export default memo(function HeatMap({
 
               return (
                 tissueCellTypes.length > 0 && (
-                  <div id={`y-axis-${hyphenize(tissue.name)}`}>
-                    <YAxisChart
-                      key={tissue.name}
-                      tissue={tissue.name}
-                      tissueID={tissue.id}
-                      cellTypes={tissueCellTypes}
-                      generateMarkerGenes={generateMarkerGenes}
-                      selectedOrganismId={selectedOrganismId}
-                    />
-                  </div>
+                  <YAxisChart
+                    key={tissue.name}
+                    tissue={tissue.name}
+                    tissueID={tissue.id}
+                    cellTypes={tissueCellTypes}
+                    generateMarkerGenes={generateMarkerGenes}
+                    selectedOrganismId={selectedOrganismId}
+                  />
                 )
               );
             })}
@@ -280,6 +278,9 @@ export default memo(function HeatMap({
                 displayedCellTypes: displayedCellTypes,
               });
 
+              // Don't render anything if tissue has no cell types for some reason
+              if (!tissueCellTypes.length) return;
+
               const selectedGeneData =
                 orderedSelectedGeneExpressionSummariesByTissueName[tissue.name];
 
@@ -290,16 +291,13 @@ export default memo(function HeatMap({
                */
               if (!selectedGeneData?.length) {
                 const height =
-                  document.getElementById(`y-axis-${hyphenize(tissue.name)}`)
+                  document.getElementById(`${hyphenize(tissue.name)}-y-axis`)
                     ?.clientHeight ?? 0;
                 return (
                   <div
-                    key={`y-axis-${hyphenize(tissue.name)}`}
-                    style={{
-                      height: `${
-                        !height ? 0 : height + X_AXIS_CHART_HEIGHT_PX
-                      }px`,
-                    }}
+                    id={`no-chart-data-${hyphenize(tissue.name)}`} // Not used, just to make it stand out
+                    key={`${tissue.name}-${echartsRendererMode}`}
+                    style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
                   />
                 );
               }
