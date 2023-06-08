@@ -366,35 +366,31 @@ function generateSvg({
   });
 
   // Build heatmaps for all tissues for wmg v2
-  const tissueSVGs = tissues
-    // Do not include tissues that are not in selectedCellTypes
-    // For example if DOM is not displaying a certain tissue because it has no cell types (ex. urethra, central nervous system)
-    .filter((tissueName) => !!selectedCellTypes[tissueName])
-    .map((tissueName) => {
-      const heatmapHeight = expandedTissues.includes(tissueName)
-        ? getHeatmapHeight(selectedCellTypes[tissueName])
-        : X_AXIS_CHART_HEIGHT_PX;
+  const tissueSVGs = tissues.map((tissueName) => {
+    const heatmapHeight = expandedTissues.includes(tissueName)
+      ? getHeatmapHeight(selectedCellTypes[tissueName])
+      : X_AXIS_CHART_HEIGHT_PX;
 
-      if (tissueName === "urethra") {
-        console.log("******");
-        console.log(selectedCellTypes[tissueName]);
-      }
+    if (tissueName === "urethra") {
+      console.log("******");
+      console.log(selectedCellTypes[tissueName]);
+    }
 
-      // Render elements to SVG
-      const yAxisSvg = renderYAxis({
-        heatmapHeight,
-        tissueName,
-        yOffset,
-      });
-      const dotsSvg = renderDots({
-        tissueName,
-        yOffset,
-      });
-
-      yOffset += heatmapHeight;
-
-      return { xAxisSvg, yAxisSvg, dotsSvg, legendSvg };
+    // Render elements to SVG
+    const yAxisSvg = renderYAxis({
+      heatmapHeight,
+      tissueName,
+      yOffset,
     });
+    const dotsSvg = renderDots({
+      tissueName,
+      yOffset,
+    });
+
+    yOffset += heatmapHeight;
+
+    return { xAxisSvg, yAxisSvg, dotsSvg, legendSvg };
+  });
 
   const svgWidth =
     heatmapWidth +
@@ -612,7 +608,7 @@ function download_({
   observer,
   setDownloadStatus,
   setEchartsRendererMode,
-  tissues,
+  tissues: rawTissues,
   expandedTissues,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
@@ -663,6 +659,12 @@ function download_({
           CHART_PADDING_PX * 2
         }px`;
       }
+
+      // Do not include tissues that are not in selectedCellTypes
+      // For example if DOM is not displaying a certain tissue because it has no cell types (ex. urethra, central nervous system)
+      const tissues = rawTissues.filter(
+        (tissueName) => !!selectedCellTypes[tissueName]
+      );
 
       const exports: ExportData[] =
         // Generate exports for each filetype
