@@ -297,9 +297,7 @@ export default memo(function HeatMap({
                   <div
                     id={`no-chart-data-${hyphenize(tissue.name)}`} // Not used, just to make it stand out
                     key={`${tissue.name}-${echartsRendererMode}`}
-                    style={{
-                      height: `${height + X_AXIS_CHART_HEIGHT_PX}px`,
-                    }}
+                    style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
                   />
                 );
               }
