@@ -513,10 +513,6 @@ async function generateImage({
 }): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
-  // const allHeatmapsHeight = tissues.reduce((acc, tissueName) => {
-  //   return acc + getHeatmapHeight(selectedCellTypes[tissueName]);
-  // }, 0);
-
   const imageURL = await convertHTMLtoImage(heatmapNode, {
     backgroundColor: "white",
     filter: screenshotFilter,
