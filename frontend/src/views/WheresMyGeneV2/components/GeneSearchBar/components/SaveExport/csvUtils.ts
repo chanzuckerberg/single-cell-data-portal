@@ -10,11 +10,10 @@ import {
 import { State } from "src/views/WheresMyGene/common/store";
 import { Props } from ".";
 import { generateAndCopyShareUrl } from "../ShareButton/utils";
-import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
-import {
-  ChartFormat,
-  deserializeCellTypeMetadata,
-} from "src/views/WheresMyGene/components/HeatMap/utils";
+
+import { deserializeCellTypeMetadata } from "src/views/WheresMyGene/components/HeatMap/utils";
+import { ChartProps } from "src/views/WheresMyGene/common/types";
+import { ChartFormat } from "src/views/WheresMyGene/components/HeatMap/components/Chart/components/Chart/hooks/utils";
 
 const NO_SELECTION_STRING = "No selection";
 

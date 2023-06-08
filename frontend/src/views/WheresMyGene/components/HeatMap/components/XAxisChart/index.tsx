@@ -127,6 +127,7 @@ function GeneButton({
         <XAxisGeneName
           active={genesToDelete.includes(geneName)}
           font={currentFont}
+          className={`gene-name-${geneName}`}
           data-testid={`gene-name-${geneName}`}
         >
           {formattedLabel}

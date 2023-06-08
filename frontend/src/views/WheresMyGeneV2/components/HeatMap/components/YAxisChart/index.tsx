@@ -131,7 +131,10 @@ const CellTypeButton = ({
   const isTruncated = formattedName.includes("...");
 
   return (
-    <FlexRowJustified data-testid="cell-type-label-count">
+    <FlexRowJustified
+      className="cell-type-label-count"
+      data-testid="cell-type-label-count"
+    >
       <FlexRow>
         <CellTypeLabelStyle>
           <Tooltip
@@ -154,7 +157,9 @@ const CellTypeButton = ({
                   {name}
                 </HiddenCellTypeLabelStyle>
               )}
-              <div data-testid="cell-type-name">{formattedName}</div>
+              <div className="cell-type-name" data-testid="cell-type-name">
+                {formattedName}
+              </div>
             </div>
           </Tooltip>
         </CellTypeLabelStyle>
@@ -188,7 +193,7 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle data-testid="cell-count">
+      <CellCountLabelStyle className="cell-count" data-testid="cell-count">
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>

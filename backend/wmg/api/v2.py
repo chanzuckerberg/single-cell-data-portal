@@ -195,10 +195,10 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
 
     for i in range(query_result_agg.shape[0]):
         row = query_result_agg.iloc[i]
-        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id]["aggregated"] = dict(
+        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id]["tissue_stats"]["aggregated"] = dict(
             n=int(row["nnz"]),
-            me=float(row["sum"] / row["nnz"]),
-            tpc=float(row["nnz"] / row["n_cells_tissue"]),
+            me=(float(row["sum"] / row["nnz"]) if row["nnz"] else 0.0),
+            tpc=(float(row["nnz"] / row["n_cells_tissue"]) if row["n_cells_tissue"] else 0.0),
         )
 
     # Populate gene expressions stats for each (gene, tissue, cell_type) combination
@@ -212,9 +212,9 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
             "aggregated"
         ] = dict(
             n=int(row["nnz"]),
-            me=float(row["sum"] / row["nnz"]),
-            pc=float(row["nnz"] / row["n_cells_cell_type"]),
-            tpc=float(row["nnz"] / row["n_cells_tissue"]),
+            me=(float(row["sum"] / row["nnz"]) if row["nnz"] else 0.0),
+            pc=(float(row["nnz"] / row["n_cells_cell_type"]) if row["n_cells_cell_type"] else 0.0),
+            tpc=(float(row["nnz"] / row["n_cells_tissue"]) if row["n_cells_tissue"] else 0.0),
         )
 
     # Populate gene expression stats for each (gene, tissue, cell_type, <compare_dimension>) combination
@@ -225,9 +225,9 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
                 row[compare]
             ] = dict(
                 n=int(row["nnz"]),
-                me=float(row["sum"] / row["nnz"]),
-                pc=float(row["nnz"] / row["n_cells_cell_type"]),
-                tpc=float(row["nnz"] / row["n_cells_tissue"]),
+                me=(float(row["sum"] / row["nnz"]) if row["nnz"] else 0.0),
+                pc=(float(row["nnz"] / row["n_cells_cell_type"]) if row["n_cells_cell_type"] else 0.0),
+                tpc=(float(row["nnz"] / row["n_cells_tissue"]) if row["n_cells_tissue"] else 0.0),
             )
 
     return structured_result
@@ -290,10 +290,11 @@ def build_ordered_cell_types_by_tissue(
 
     for i in range(joined_agg.shape[0]):
         row = joined_agg.iloc[i]
-        structured_result[row.tissue_ontology_term_id]["aggregated"] = {
+        structured_result[row.tissue_ontology_term_id]["tissue_stats"]["aggregated"] = {
             "tissue_ontology_term_id": row.tissue_ontology_term_id,
             "name": ontology_term_label(row.tissue_ontology_term_id),
             "total_count": int(row.n_total_cells),
+            "order": -1,
         }
 
     # Populate aggregated cell counts for each (tissue, cell_type) combination
