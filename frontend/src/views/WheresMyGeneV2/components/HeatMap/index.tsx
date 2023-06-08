@@ -278,6 +278,9 @@ export default memo(function HeatMap({
                 displayedCellTypes: displayedCellTypes,
               });
 
+              // Don't render anything if tissue has no cell types for some reason
+              if (!tissueCellTypes.length) return;
+
               const selectedGeneData =
                 orderedSelectedGeneExpressionSummariesByTissueName[tissue.name];
 
@@ -295,7 +298,7 @@ export default memo(function HeatMap({
                     id={`no-chart-data-${hyphenize(tissue.name)}`} // Not used, just to make it stand out
                     key={`${tissue.name}-${echartsRendererMode}`}
                     style={{
-                      height: `${height && height + X_AXIS_CHART_HEIGHT_PX}px`,
+                      height: `${height + X_AXIS_CHART_HEIGHT_PX}px`,
                     }}
                   />
                 );
