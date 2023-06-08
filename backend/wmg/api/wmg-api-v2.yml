@@ -107,7 +107,11 @@ paths:
                         {
                           "tissuetype1":
                             {
-                              "aggregated": { "me": 0.0, "n": 0, "tpc": 0.0 },
+                              "tissue_stats":
+                                {
+                                  "aggregated":
+                                    { "me": 0.0, "n": 0, "tpc": 0.0 },
+                                },
                               "celltype1":
                                 {
                                   "aggregated":
@@ -183,7 +187,11 @@ paths:
                             },
                           "tissuetype2":
                             {
-                              "aggregated": { "me": 0.0, "n": 0, "tpc": 0.0 },
+                              "tissue_stats":
+                                {
+                                  "aggregated":
+                                    { "me": 0.0, "n": 0, "tpc": 0.0 },
+                                },
                               "celltype1":
                                 {
                                   "aggregated":
@@ -262,7 +270,11 @@ paths:
                         {
                           "tissuetype1":
                             {
-                              "aggregated": { "me": 0.0, "n": 0, "tpc": 0.0 },
+                              "tissue_stats":
+                                {
+                                  "aggregated":
+                                    { "me": 0.0, "n": 0, "tpc": 0.0 },
+                                },
                               "celltype1":
                                 {
                                   "aggregated":
@@ -340,7 +352,11 @@ paths:
                             },
                           "tissuetype2":
                             {
-                              "aggregated": { "me": 0.0, "n": 0, "tpc": 0.0 },
+                              "tissue_stats":
+                                {
+                                  "aggregated":
+                                    { "me": 0.0, "n": 0, "tpc": 0.0 },
+                                },
                               "celltype1":
                                 {
                                   "aggregated":
@@ -422,11 +438,14 @@ paths:
                         {
                           "tissuetype1":
                             {
-                              "aggregated":
+                              "tissue_stats":
                                 {
-                                  "name": "tissue type 1",
-                                  "tissue_ontology_term_id": "tissuetype1",
-                                  "total_count": 4,
+                                  "aggregated":
+                                    {
+                                      "name": "tissue type 1",
+                                      "tissue_ontology_term_id": "tissuetype1",
+                                      "total_count": 4,
+                                    },
                                 },
                               "celltype1":
                                 {

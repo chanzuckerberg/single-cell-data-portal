@@ -98,9 +98,11 @@ def generate_expected_term_id_labels_dictionary(
             "total_count": sum(
                 [agg_dict["aggregated"]["total_count"] for _, agg_dict in result["cell_types"][tissue].items()]
             ),
+            "order": -1,
         }
 
-        result["cell_types"][tissue]["aggregated"] = tissue_cell_counts
+        result["cell_types"][tissue]["tissue_stats"] = {}
+        result["cell_types"][tissue]["tissue_stats"]["aggregated"] = tissue_cell_counts
 
     result["genes"] = []
     for gene in genes:
@@ -159,6 +161,7 @@ def generate_expected_expression_summary_dictionary(
             result[gene] = {}
             for tissue in tissues:
                 result[gene][tissue] = {}
+
                 for cell_type in cell_types:
                     result[gene][tissue][cell_type] = {}
 
@@ -195,7 +198,8 @@ def generate_expected_expression_summary_dictionary(
                     "tpc": tpc_gene_tissue,
                 }
 
-                result[gene][tissue]["aggregated"] = gene_tissue_expr_stats
+                result[gene][tissue]["tissue_stats"] = {}
+                result[gene][tissue]["tissue_stats"]["aggregated"] = gene_tissue_expr_stats
 
     return result
 
@@ -273,7 +277,7 @@ def generate_test_inputs_and_expected_outputs(
         cell_count_tissue=cell_count_tissue,
         cell_types=cell_types,
         cell_count_tissue_cell_type=cell_count_tissue_cell_type,
-        nnz_gene_tissue_cell_type=expected_combinations_per_cell_type,
+        nnz_gene_tissue_cell_type=nnz_gene_tissue_cell_type,
         compare_terms=compare_terms,
         cell_counts_tissue_cell_type_compare_dim=cell_counts_tissue_cell_type_compare_dim,
         nnz_gene_tissue_cell_type_compare_dim=nnz_gene_tissue_cell_type_compare_dim,
