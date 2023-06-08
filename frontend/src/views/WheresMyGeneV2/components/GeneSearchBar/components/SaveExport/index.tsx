@@ -63,14 +63,11 @@ import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
-import { LEGEND_MARGIN_BOTTOM_PX } from "src/views/WheresMyGene/style";
-
 import {
   Y_AXIS_CHART_WIDTH_PX,
   getHeatmapHeight,
   getHeatmapWidth,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
-import { LEGEND_HEIGHT_PX } from "src/views/WheresMyGene/components/InfoPanel/components/Legend/style";
 import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
 
 let heatmapContainerScrollTop: number | undefined;
