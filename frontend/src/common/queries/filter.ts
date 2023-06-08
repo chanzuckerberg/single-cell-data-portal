@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import { QueryStatus, useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
 import {
@@ -32,6 +32,7 @@ import {
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
 import { VIEW_MODE } from "src/common/hooks/useViewMode";
+import { StateContext } from "src/views/WheresMyGene/common/store";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
@@ -196,7 +197,7 @@ export function useFetchCollectionRows(
 }
 
 /**
- * Fetch collection and dataset information and build collection-specific filter view model.
+ * Fetch collection and dataset information and build collection-specific filter view model for the publication filter.
  * @param mode - View mode.
  * @param status - Query status.
  * @returns All public collections and the aggregated metadata of their datasets.
@@ -219,7 +220,8 @@ export function useFetchPublicationRows(
     isLoading: collectionsLoading,
   } = useFetchCollections(mode, status);
 
-  // Return publications, filtered out based on what datasets have been selected!!
+  const { selectedFilters, selectedPublicationFilter } =
+    useContext(StateContext);
 
   // View model built from join of collections response and aggregated metadata of dataset rows.
   // Build dataset rows once datasets and collections responses have resolved.
@@ -228,8 +230,16 @@ export function useFetchPublicationRows(
       return [];
     }
     const datasetRows = buildDatasetRows(collectionsById, datasets);
+
+    // Return publications, filtered out based on what datasets have been selected!!
+    const { datasets: selectedDatasets } = selectedFilters; //this gives us the selected dataset IDs
+    console.log("selectedFilters", selectedDatasets);
+    // TODO:
+    // 1. Find publications that match with the datasets & select them?
+    // 2. Return those publications as selected
+
     return buildCollectionRows(collectionsById, datasetRows);
-  }, [datasets, collectionsById, selectedFilters]);
+  }, [datasets, collectionsById, selectedFilters, selectedPublicationFilter]);
 
   return {
     isError: datasetsError || collectionsError,

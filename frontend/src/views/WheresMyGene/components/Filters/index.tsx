@@ -42,7 +42,10 @@ import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
 import { useRouter } from "next/router";
 
-import { useFetchCollectionRows } from "src/common/queries/filter";
+import {
+  useFetchCollectionRows,
+  useFetchPublicationRows,
+} from "src/common/queries/filter";
 import { useViewMode } from "src/common/hooks/useViewMode";
 
 const ANALYTICS_MAPPING: {
@@ -152,7 +155,7 @@ export default memo(function Filters({
   const { publications } = selectedPublicationFilter;
   const { mode, status } = useViewMode();
 
-  const { rows: rawPublications } = useFetchCollectionRows(mode, status);
+  const { rows: rawPublications } = useFetchPublicationRows(mode, status);
 
   const {
     data: {

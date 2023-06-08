@@ -26,10 +26,11 @@ import { ROUTES } from "../constants/routes";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
-import { useFetchCollectionRows } from "./filter";
+import { useFetchCollectionRows, useFetchPublicationRows } from "./filter";
 import { TombstonedCollection, useManyCollections } from "./collections";
 import { Collection } from "../entities";
 import { useViewMode } from "src/common/hooks/useViewMode";
+import { Dataset } from "@mui/icons-material";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -423,7 +424,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
   const { mode, status } = useViewMode();
 
   // Extracting row metadata from collections
-  const { rows: rawPublications } = useFetchCollectionRows(mode, status);
+  const { rows: rawPublications } = useFetchPublicationRows(mode, status);
 
   // Reconstructing rows into publication_list format
   const publication_list: { [id: string]: string }[] = rawPublications.map(
@@ -1048,9 +1049,7 @@ function useWMGFiltersQueryRequestBody(
     collections?.map((collection: Collection | TombstonedCollection | null) => {
       if (!collection || collection.tombstone) return;
       for (const d of collection.datasets.values()) {
-        publicationDatasetIds.push(
-          ...d.dataset_assets.map((el) => el.dataset_id)
-        );
+        publicationDatasetIds.push(d["dataset_id"]);
       }
     });
 
