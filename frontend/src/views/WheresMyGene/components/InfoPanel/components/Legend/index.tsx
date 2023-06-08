@@ -9,6 +9,7 @@ import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 
 interface Props {
   isScaled: boolean;
@@ -24,6 +25,8 @@ interface Props {
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
+  tissues?: string[];
+  expandedTissues?: string[];
 }
 
 export default memo(function Legend({
@@ -36,6 +39,8 @@ export default memo(function Legend({
   setEchartsRendererMode,
   allChartProps,
   availableFilters,
+  tissues,
+  expandedTissues,
 }: Props): JSX.Element {
   return (
     <LegendWrapper data-testid="legend-wrapper">
@@ -61,6 +66,8 @@ export default memo(function Legend({
             setEchartsRendererMode={setEchartsRendererMode}
             allChartProps={allChartProps}
             availableFilters={availableFilters}
+            tissues={tissues || EMPTY_ARRAY}
+            expandedTissues={expandedTissues || EMPTY_ARRAY}
           />
           <ShareButtonV2 />
         </>
