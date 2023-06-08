@@ -367,6 +367,8 @@ function generateSvg({
 
   // Build heatmaps for all tissues for wmg v2
   const tissueSVGs = tissues.map((tissueName) => {
+    // If tissue is expanded, use the heatmap height + padding
+    // If tissue is NOT expanded, just add padding
     const heatmapHeight = expandedTissues.includes(tissueName)
       ? getHeatmapHeight(selectedCellTypes[tissueName]) + X_AXIS_CHART_HEIGHT_PX
       : X_AXIS_CHART_HEIGHT_PX;
