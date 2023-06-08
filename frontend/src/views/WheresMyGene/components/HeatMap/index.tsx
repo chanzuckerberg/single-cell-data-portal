@@ -23,6 +23,7 @@ import { DispatchContext, State, StateContext } from "../../common/store";
 import { addCellInfoCellType } from "../../common/store/actions";
 import {
   CellType,
+  ChartProps,
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
@@ -32,7 +33,6 @@ import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import { CellCountLabel } from "./components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
-import { ChartProps } from "./hooks/common/types";
 import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {
   useSortedGeneNames,
@@ -48,6 +48,7 @@ import {
   XAxisWrapper,
   YAxisWrapper,
 } from "./style";
+import { hyphenize } from "./utils";
 
 interface Props {
   className?: string;
@@ -187,7 +188,7 @@ export default memo(function HeatMap({
               tissue,
             });
             return tissueCellTypes.length ? (
-              <div id={`y-axis-${tissue}`}>
+              <div id={`y-axis-${hyphenize(tissue)}`}>
                 <YAxisChart
                   key={tissue}
                   tissue={tissue}
@@ -220,10 +221,11 @@ export default memo(function HeatMap({
 
             if (!selectedGeneData?.length) {
               const height =
-                document.getElementById(`y-axis-${tissue}`)?.clientHeight ?? 0;
+                document.getElementById(`y-axis-${hyphenize(tissue)}`)
+                  ?.clientHeight ?? 0;
               return (
                 <div
-                  key={`y-axis-${tissue}`}
+                  key={`y-axis-${hyphenize(tissue)}`}
                   style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
                 />
               );

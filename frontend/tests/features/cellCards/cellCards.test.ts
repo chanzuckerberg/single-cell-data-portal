@@ -18,12 +18,12 @@ import {
 } from "src/views/CellCards/components/CellCard";
 import {
   CELL_CARD_CANONICAL_MARKER_GENES_TABLE,
-  CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN,
-} from "src/views/CellCards/components/CellCard/components/CanonicalMarkerGeneTable";
-import {
   CELL_CARD_ENRICHED_GENES_TABLE,
-  CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN,
-} from "src/views/CellCards/components/CellCard/components/EnrichedGenesTable";
+  CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN,
+  CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
+  CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
+  CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR,
+} from "src/views/CellCards/components/CellCard/components/MarkerGeneTables";
 import {
   CELL_CARD_ONTOLOGY_DAG_VIEW,
   CELL_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
@@ -147,6 +147,11 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+        // set canonical marker genes table as active
+        await page
+          .getByTestId(CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+          .click();
+
         const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
@@ -168,6 +173,11 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        // set canonical marker genes table as active
+        await page
+          .getByTestId(CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+          .click();
+
         const tableSelector = `[data-testid='${CELL_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
         const rowElementsBefore = await page
           .locator(`${tableSelector} tbody tr`)
@@ -176,10 +186,12 @@ describe("Cell Cards", () => {
         expect(rowCountBefore).toBeGreaterThan(1);
 
         const dropdown = page.getByTestId(
-          CELL_CARD_CANONICAL_MARKER_GENES_TABLE_DROPDOWN
+          CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN
         );
         await waitForElementAndClick(dropdown);
         await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown"); // selects kidney
         await dropdown.press("Enter");
 
         const rowElementsAfter = await page
@@ -195,7 +207,11 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        // set enriched marker genes table as active
+        await page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR).click();
+
         const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+        await page.locator(tableSelector).waitFor({ timeout: 5000 });
 
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
@@ -222,7 +238,12 @@ describe("Cell Cards", () => {
         page,
       }) => {
         await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000084`, page); // T cell
+        // set enriched marker genes table as active
+        await page.getByTestId(CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR).click();
+
         const tableSelector = `[data-testid='${CELL_CARD_ENRICHED_GENES_TABLE}']`;
+        await page.locator(tableSelector).waitFor({ timeout: 5000 });
+
         const rowElementsBefore = await page
           .locator(`${tableSelector} tbody tr`)
           .elementHandles();
@@ -231,7 +252,7 @@ describe("Cell Cards", () => {
         const firstRowContentBefore = await rowElementsBefore[0].textContent();
 
         const dropdown = page.getByTestId(
-          CELL_CARD_ENRICHED_GENES_TABLE_DROPDOWN
+          CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM
         );
         await waitForElementAndClick(dropdown);
         await dropdown.press("ArrowDown");
@@ -447,8 +468,8 @@ describe("Cell Cards", () => {
         const navbar = page.getByTestId(CELL_CARD_NAVIGATION_SIDEBAR);
 
         // scroll to the bottom
-        const section4 = page.getByTestId("section-4");
-        await section4.scrollIntoViewIfNeeded();
+        const section3 = page.getByTestId("section-3");
+        await section3.scrollIntoViewIfNeeded();
 
         // check that source data is in viewport
         const sourceData = page.getByTestId(CELL_CARD_SOURCE_DATA_TABLE);
