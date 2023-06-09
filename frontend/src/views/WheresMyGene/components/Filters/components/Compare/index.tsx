@@ -14,6 +14,13 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { LabelWrapper, NewChip } from "./style";
 import { COMPARE_OPTIONS } from "src/views/WheresMyGene/common/constants";
+import { Tooltip } from "@czi-sds/components";
+import {
+  StyledIconImage,
+  StyledTooltip,
+  TooltipButton,
+} from "../../../CellInfoSideBar/style";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -45,7 +52,38 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
   return (
     <div>
       <LabelWrapper>
-        <Label>Group By</Label>
+        <Label>
+          Group By
+          <Tooltip
+            id="group-by-tooltip-icon"
+            className="group-by-tooltip-icon"
+            sdsStyle="dark"
+            placement="right"
+            width="default"
+            arrow
+            title={
+              <StyledTooltip>
+                {areFiltersDisabled && (
+                  <p>
+                    Please select at least one tissue and gene to use this
+                    option.
+                  </p>
+                )}
+                <div>
+                  View expression for each cell type by the dimension selected.
+                </div>
+              </StyledTooltip>
+            }
+          >
+            <TooltipButton
+              sdsStyle="minimal"
+              sdsType="secondary"
+              isAllCaps={false}
+            >
+              <StyledIconImage src={questionMarkIcon} />
+            </TooltipButton>
+          </Tooltip>
+        </Label>
         <NewChip label="NEW" />
       </LabelWrapper>
       <Wrapper>

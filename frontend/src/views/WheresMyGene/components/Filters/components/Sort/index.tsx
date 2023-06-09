@@ -1,4 +1,7 @@
-import { InputDropdownProps as IInputDropdownProps } from "@czi-sds/components";
+import {
+  InputDropdownProps as IInputDropdownProps,
+  Tooltip,
+} from "@czi-sds/components";
 import { useContext, useMemo } from "react";
 import {
   DispatchContext,
@@ -10,6 +13,13 @@ import { Wrapper, FilterLabel, StyledDropdown } from "../common/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ViewOptionsWrapper } from "./style";
+import {
+  StyledIconImage,
+  StyledTooltip,
+  TooltipButton,
+} from "../../../CellInfoSideBar/style";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
+import { ROUTES } from "src/common/constants/routes";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -58,7 +68,50 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
   return (
     <ViewOptionsWrapper>
       <Wrapper>
-        <FilterLabel>Sort Cell Types</FilterLabel>
+        <FilterLabel>
+          Sort Cell Types
+          <Tooltip
+            id="sort-cell-types-tooltip-icon"
+            className="sort-cell-types-tooltip-icon"
+            sdsStyle="dark"
+            placement="right"
+            width="default"
+            arrow
+            title={
+              <StyledTooltip>
+                {areFiltersDisabled && (
+                  <p>
+                    Please select at least one tissue and gene to use this
+                    option.
+                  </p>
+                )}
+                <p>
+                  Sort cell types by Cell Ontology or Hierarchical ordering.
+                  Cell ontology ordering groups cell types together based on
+                  their ontological relationships. Hierarchical ordering groups
+                  cell types with similar expression patterns together based on
+                  the genes selected.
+                </p>
+                <a
+                  href={ROUTES.WMG_DOCS_ORDERING}
+                  rel="noopener"
+                  target="_blank"
+                >
+                  Click to read more.
+                </a>
+              </StyledTooltip>
+            }
+          >
+            <TooltipButton
+              sdsStyle="minimal"
+              sdsType="secondary"
+              isAllCaps={false}
+            >
+              <StyledIconImage src={questionMarkIcon} />
+            </TooltipButton>
+          </Tooltip>
+        </FilterLabel>
+
         <StyledDropdown
           data-testid="cell-type-sort-dropdown"
           onChange={cellTypesOnChange}
@@ -69,7 +122,48 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
         />
       </Wrapper>
       <Wrapper>
-        <FilterLabel>Sort Genes</FilterLabel>
+        <FilterLabel>
+          Sort Genes
+          <Tooltip
+            id="sort-cell-types-tooltip-icon"
+            className="sort-cell-types-tooltip-icon"
+            sdsStyle="dark"
+            placement="right"
+            width="default"
+            arrow
+            title={
+              <StyledTooltip>
+                {areFiltersDisabled && (
+                  <p>
+                    Please select at least one tissue and gene to use this
+                    option.
+                  </p>
+                )}
+                <p>
+                  Sort genes As Entered or using Hierarchical ordering. Genes
+                  are displayed in the order they are added to the dot plot
+                  using As Entered ordering. Hierarchical ordering groups genes
+                  with similar expression patterns together.
+                </p>
+                <a
+                  href={ROUTES.WMG_DOCS_ORDERING}
+                  rel="noopener"
+                  target="_blank"
+                >
+                  Click to read more.
+                </a>
+              </StyledTooltip>
+            }
+          >
+            <TooltipButton
+              sdsStyle="minimal"
+              sdsType="secondary"
+              isAllCaps={false}
+            >
+              <StyledIconImage src={questionMarkIcon} />
+            </TooltipButton>
+          </Tooltip>
+        </FilterLabel>
         <StyledDropdown
           data-testid="gene-sort-dropdown"
           onChange={genesOnChange}
