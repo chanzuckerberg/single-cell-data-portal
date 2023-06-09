@@ -125,8 +125,8 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
         <FilterLabel>
           Sort Genes
           <Tooltip
-            id="sort-cell-types-tooltip-icon"
-            className="sort-cell-types-tooltip-icon"
+            id="sort-genes-tooltip-icon"
+            className="sort-genes-tooltip-icon"
             sdsStyle="dark"
             placement="right"
             width="default"
