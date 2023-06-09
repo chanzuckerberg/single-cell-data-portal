@@ -21,6 +21,7 @@ import {
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { ROUTES } from "src/common/constants/routes";
 import {
+  SELECT_TISSUE_GENE_TEXT,
   SORT_CELL_TYPES_TOOLTIP_TEXT,
   SORT_GENES_TOOLTIP_TEXT,
 } from "src/views/WheresMyGene/common/constants";
@@ -85,8 +86,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
               <StyledTooltip>
                 {areFiltersDisabled && (
                   <p>
-                    Please select at least one tissue and gene to use this
-                    option.
+                    <em>{SELECT_TISSUE_GENE_TEXT}</em>
                   </p>
                 )}
                 <p>{SORT_CELL_TYPES_TOOLTIP_TEXT}</p>
@@ -133,8 +133,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
               <StyledTooltip>
                 {areFiltersDisabled && (
                   <p>
-                    Please select at least one tissue and gene to use this
-                    option.
+                    <em>{SELECT_TISSUE_GENE_TEXT}</em>
                   </p>
                 )}
                 <p>{SORT_GENES_TOOLTIP_TEXT}</p>

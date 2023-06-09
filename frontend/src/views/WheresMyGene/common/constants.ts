@@ -27,6 +27,8 @@ export const X_AXIS_CHART_HEIGHT_PX = 80;
 export const X_AXIS_HOVER_CONTAINER_HEIGHT_PX = 40;
 
 // Below constants are for left sidebar tooltip text so that tests can import these strings from this file instead
+export const SELECT_TISSUE_GENE_TEXT =
+  "Please select at least one tissue and gene to use this option.";
 export const GROUP_BY_TOOLTIP_TEXT =
   "View expression for each cell type by the dimension selected.";
 export const COLOR_SCALE_TOOLTIP_TEXT =

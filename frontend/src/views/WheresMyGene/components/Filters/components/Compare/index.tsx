@@ -16,6 +16,7 @@ import { LabelWrapper, NewChip } from "./style";
 import {
   COMPARE_OPTIONS,
   GROUP_BY_TOOLTIP_TEXT,
+  SELECT_TISSUE_GENE_TEXT,
 } from "src/views/WheresMyGene/common/constants";
 import { Tooltip } from "@czi-sds/components";
 import {
@@ -67,8 +68,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
               <StyledTooltip>
                 {areFiltersDisabled && (
                   <p>
-                    Please select at least one tissue and gene to use this
-                    option.
+                    <em>{SELECT_TISSUE_GENE_TEXT}</em>
                   </p>
                 )}
                 <div>{GROUP_BY_TOOLTIP_TEXT}</div>
