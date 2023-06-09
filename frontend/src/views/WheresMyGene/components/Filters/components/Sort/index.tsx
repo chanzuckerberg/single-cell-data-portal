@@ -20,6 +20,10 @@ import {
 } from "../../../CellInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { ROUTES } from "src/common/constants/routes";
+import {
+  SORT_CELL_TYPES_TOOLTIP_TEXT,
+  SORT_GENES_TOOLTIP_TEXT,
+} from "src/views/WheresMyGene/common/constants";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -85,13 +89,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
                     option.
                   </p>
                 )}
-                <p>
-                  Sort cell types by Cell Ontology or Hierarchical ordering.
-                  Cell ontology ordering groups cell types together based on
-                  their ontological relationships. Hierarchical ordering groups
-                  cell types with similar expression patterns together based on
-                  the genes selected.
-                </p>
+                <p>{SORT_CELL_TYPES_TOOLTIP_TEXT}</p>
                 <a
                   href={ROUTES.WMG_DOCS_ORDERING}
                   rel="noopener"
@@ -103,6 +101,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
             }
           >
             <TooltipButton
+              data-testid="sort-cell-types-tooltip-icon"
               sdsStyle="minimal"
               sdsType="secondary"
               isAllCaps={false}
@@ -125,7 +124,6 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
         <FilterLabel>
           Sort Genes
           <Tooltip
-            id="sort-genes-tooltip-icon"
             className="sort-genes-tooltip-icon"
             sdsStyle="dark"
             placement="right"
@@ -139,12 +137,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
                     option.
                   </p>
                 )}
-                <p>
-                  Sort genes As Entered or using Hierarchical ordering. Genes
-                  are displayed in the order they are added to the dot plot
-                  using As Entered ordering. Hierarchical ordering groups genes
-                  with similar expression patterns together.
-                </p>
+                <p>{SORT_GENES_TOOLTIP_TEXT}</p>
                 <a
                   href={ROUTES.WMG_DOCS_ORDERING}
                   rel="noopener"
@@ -156,6 +149,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
             }
           >
             <TooltipButton
+              data-testid="sort-genes-tooltip-icon"
               sdsStyle="minimal"
               sdsType="secondary"
               isAllCaps={false}

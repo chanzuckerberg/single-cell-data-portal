@@ -13,7 +13,10 @@ import { Wrapper, Label, StyledDropdown } from "../common/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { LabelWrapper, NewChip } from "./style";
-import { COMPARE_OPTIONS } from "src/views/WheresMyGene/common/constants";
+import {
+  COMPARE_OPTIONS,
+  GROUP_BY_TOOLTIP_TEXT,
+} from "src/views/WheresMyGene/common/constants";
 import { Tooltip } from "@czi-sds/components";
 import {
   StyledIconImage,
@@ -55,7 +58,6 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
         <Label>
           Group By
           <Tooltip
-            id="group-by-tooltip-icon"
             className="group-by-tooltip-icon"
             sdsStyle="dark"
             placement="right"
@@ -69,13 +71,12 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
                     option.
                   </p>
                 )}
-                <div>
-                  View expression for each cell type by the dimension selected.
-                </div>
+                <div>{GROUP_BY_TOOLTIP_TEXT}</div>
               </StyledTooltip>
             }
           >
             <TooltipButton
+              data-testid="group-by-tooltip-icon"
               sdsStyle="minimal"
               sdsType="secondary"
               isAllCaps={false}
