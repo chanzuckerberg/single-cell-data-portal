@@ -63,14 +63,11 @@ import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
-import { LEGEND_MARGIN_BOTTOM_PX } from "src/views/WheresMyGene/style";
-
 import {
   Y_AXIS_CHART_WIDTH_PX,
   getHeatmapHeight,
   getHeatmapWidth,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
-import { LEGEND_HEIGHT_PX } from "src/views/WheresMyGene/components/InfoPanel/components/Legend/style";
 import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
 
 let heatmapContainerScrollTop: number | undefined;
@@ -515,20 +512,10 @@ async function generateImage({
 }): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
-  const allHeatmapsHeight = tissues.reduce((acc, tissueName) => {
-    return acc + getHeatmapHeight(selectedCellTypes[tissueName]);
-  }, 0);
-
   const imageURL = await convertHTMLtoImage(heatmapNode, {
     backgroundColor: "white",
     filter: screenshotFilter,
-    height:
-      allHeatmapsHeight +
-      X_AXIS_CHART_HEIGHT_PX * tissues.length +
-      DATA_MESSAGE_BANNER_HEIGHT_PX +
-      LEGEND_HEIGHT_PX +
-      LEGEND_MARGIN_BOTTOM_PX +
-      CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
+    height: heatmapNode.scrollHeight,
     pixelRatio: 4,
     width: heatmapNode.offsetWidth,
   });
