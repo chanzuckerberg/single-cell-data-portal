@@ -9,6 +9,8 @@ import {
   CellCardHeaderInnerWrapper,
   SearchBarWrapper,
   LEFT_RIGHT_PADDING_PX,
+  SuggestChangeButton,
+  SearchBarPositioner,
 } from "./style";
 import { useCellTypesById } from "src/common/queries/cellCards";
 import Description from "./components/Description";
@@ -48,13 +50,26 @@ export default function CellCard(): JSX.Element {
       );
     handleResize();
     window.addEventListener("resize", handleResize);
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
-    <CellCardsView>
+    <CellCardsView skinnyMode={skinnyMode}>
       {/* Flex item left */}
       <Wrapper>
+        {/* (thuang): Somehow we need a parent to prevent error:
+          NotFoundError: Failed to execute 'insertBefore' on 'Node'
+         */}
+        <div>
+          {skinnyMode && (
+            <SearchBarPositioner>
+              <SearchBarWrapper>
+                <CellCardSearchBar />
+              </SearchBarWrapper>
+            </SearchBarPositioner>
+          )}
+        </div>
         {/* Intro section */}
         <div ref={sectionRef0} id="section-0" data-testid="section-0" />
         <CellCardHeader>
@@ -65,6 +80,7 @@ export default function CellCard(): JSX.Element {
             <a
               href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
               target="_blank"
+              rel="noreferrer noopener"
             >
               <StyledTag
                 data-testid={CELL_CARD_HEADER_TAG}
@@ -76,11 +92,15 @@ export default function CellCard(): JSX.Element {
               />
             </a>
           </CellCardHeaderInnerWrapper>
-          {skinnyMode && (
-            <SearchBarWrapper>
-              <CellCardSearchBar />
-            </SearchBarWrapper>
-          )}
+          <a
+            href="https://airtable.com/shrEReYLtRTAAsNiE"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            <SuggestChangeButton sdsType="primary" sdsStyle="minimal">
+              Suggest Change
+            </SuggestChangeButton>
+          </a>
         </CellCardHeader>
         <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
 

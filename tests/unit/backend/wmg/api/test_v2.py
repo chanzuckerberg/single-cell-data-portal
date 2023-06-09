@@ -2,6 +2,8 @@ import json
 import unittest
 from unittest.mock import patch
 
+from pytest import approx
+
 from backend.api_server.app import app
 from backend.wmg.api.v2 import find_dimension_id_from_compare
 from backend.wmg.data.query import MarkerGeneQueryCriteria
@@ -29,7 +31,39 @@ TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
 # this should only be used for generating expected outputs when using the test snapshot (see test_snapshot.py)
-def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, total_count, compare_terms=None):
+def generate_expected_term_id_labels_dictionary(
+    *,
+    genes: list[str],
+    tissues: list[str],
+    cell_types: list[str],
+    cell_count_tissue_cell_type: int,
+    compare_terms: list[str],
+    cell_counts_tissue_cell_type_compare_dim: int,
+) -> dict:
+    """
+    Generates aggregated cell counts and cell ordering expected to be returned by /wmg/v2/query endpoint.
+
+    Arguments
+    ---------
+    genes: list of gene ontology term IDs
+
+    tissues: list of tissue ontology term IDs
+
+    cell_types: list of cell_type ontology term IDs
+
+    cell_count_tissue_cell_type: total number of cells for each (tissue, cell_type) combination (scalar)
+
+    compare_terms: list of ontology term IDs form the compare dimension (optional)
+
+    cell_counts_tissue_cell_type_compare_dim: total number of cells for each
+    (tissue, cell_type, <compare_dim>) combination (scalar)
+
+    Returns
+    -------
+    result: A dictionary containing aggregate cell counts and cell type ordering info that is indexable by
+            ["cell_types"][<tissue_ontology_term_id>][<cell_type_ontology_term_id>][<compare_dimension>]
+    """
+
     result = {}
     result["cell_types"] = {}
     # assume tissues are sorted, and cell types are sorted within each tissue
@@ -39,23 +73,36 @@ def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, tota
     orders = [int(tissue.split("_")[-1]) * len(cell_types) for tissue in tissues]
     for tissue, order in zip(tissues, orders):
         result["cell_types"][tissue] = {}
+
         for cell_type in cell_types:
             result["cell_types"][tissue][cell_type] = {}
             result["cell_types"][tissue][cell_type]["aggregated"] = {
                 "cell_type_ontology_term_id": cell_type,
                 "name": f"{cell_type}_label",
-                "total_count": total_count,
+                "total_count": cell_count_tissue_cell_type,
                 "order": order,
             }
-            if compare_terms:
-                for term in compare_terms:
-                    result["cell_types"][tissue][cell_type][term] = {
-                        "cell_type_ontology_term_id": cell_type,
-                        "name": f"{term}_label",
-                        "total_count": total_count // len(compare_terms),
-                        "order": order,
-                    }
+
+            for term in compare_terms:
+                result["cell_types"][tissue][cell_type][term] = {
+                    "cell_type_ontology_term_id": cell_type,
+                    "name": f"{term}_label",
+                    "total_count": cell_counts_tissue_cell_type_compare_dim,
+                    "order": order,
+                }
             order += 1
+
+        tissue_cell_counts = {
+            "tissue_ontology_term_id": tissue,
+            "name": f"{tissue}_label",
+            "total_count": sum(
+                [agg_dict["aggregated"]["total_count"] for _, agg_dict in result["cell_types"][tissue].items()]
+            ),
+            "order": -1,
+        }
+
+        result["cell_types"][tissue]["tissue_stats"] = {}
+        result["cell_types"][tissue]["tissue_stats"]["aggregated"] = tissue_cell_counts
 
     result["genes"] = []
     for gene in genes:
@@ -64,51 +111,132 @@ def generate_expected_term_id_labels_dictionary(genes, tissues, cell_types, tota
     return result
 
 
-def generate_expected_expression_summary_dictionary(genes, tissues, cell_types, n, me, pc, tpc, compare_terms=None):
+def generate_expected_expression_summary_dictionary(
+    *,
+    genes: list[str],
+    tissues: list[str],
+    cell_count_tissue: int,
+    cell_types: list[str],
+    cell_count_tissue_cell_type: int,
+    nnz_gene_tissue_cell_type: int,
+    compare_terms: list[str],
+    cell_counts_tissue_cell_type_compare_dim: int,
+    nnz_gene_tissue_cell_type_compare_dim: int,
+    me: float,
+) -> dict:
+    """
+    Generates expression summary stats expected to be returned by /wmg/v2/query endpoint.
+
+    Arguments
+    ---------
+    genes: list of gene ontology term IDs
+
+    tissues: list of tissue ontology term IDs
+
+    cell_count_tissue: total number of cells for each tissue combination (scalar)
+
+    cell_types: list of cell_type ontology term IDs
+
+    cell_count_tissue_cell_type: total number of cells for each (tissue, cell_type) combination (scalar)
+
+    nnz_gene_tissue_cell_type: the nnz value for each (gene, tissue, cell_type) combination (scalar)
+
+    compare_terms: list of ontology term IDs form the compare dimension (optional)
+
+    cell_counts_tissue_cell_type_compare_dim: total number of cells for each
+    (tissue, cell_type, <compare_dim>) combination (scalar)
+
+    nnz_gene_tissue_cell_type_compare_dim: the nnz value for each (gene, tissue, cell_type, <compare_dim>) combination (scalar)
+
+    me: mean expression value to use for each (gene, tissue, cell_type) combination (scalar)
+
+    Returns
+    -------
+    result: A dictionary containing gene expression stats that is indexable by
+            [<gene_ontology_term_id>][<tissue_ontology_term_id>][<cell_type_ontology_term_id>][<compare_dimension>]
+    """
     result = {}
     for gene in genes:
         if gene != ".":
             result[gene] = {}
             for tissue in tissues:
                 result[gene][tissue] = {}
+
                 for cell_type in cell_types:
                     result[gene][tissue][cell_type] = {}
+
+                    pc_gene_tissue_cell_type = nnz_gene_tissue_cell_type / cell_count_tissue_cell_type
+                    tpc_gene_tissue_cell_type = nnz_gene_tissue_cell_type / cell_count_tissue
+
                     result[gene][tissue][cell_type]["aggregated"] = {
-                        "n": n,
+                        "n": nnz_gene_tissue_cell_type,
                         "me": me,
-                        "pc": pc,
-                        "tpc": tpc,
+                        "pc": pc_gene_tissue_cell_type,
+                        "tpc": tpc_gene_tissue_cell_type,
                     }
-                    if compare_terms:
-                        for term in compare_terms:
-                            result[gene][tissue][cell_type][term] = {
-                                "n": n // len(compare_terms),
-                                "me": me,
-                                "pc": pc,
-                                "tpc": tpc / len(compare_terms),
-                            }
+
+                    for term in compare_terms:
+                        pc_gene_tissue_cell_type_compare_dim = (
+                            nnz_gene_tissue_cell_type_compare_dim / cell_counts_tissue_cell_type_compare_dim
+                        )
+                        tpc_gene_tissue_cell_type_compare_dim = (
+                            nnz_gene_tissue_cell_type_compare_dim / cell_count_tissue
+                        )
+
+                        result[gene][tissue][cell_type][term] = {
+                            "n": nnz_gene_tissue_cell_type_compare_dim,
+                            "me": me,
+                            "pc": pc_gene_tissue_cell_type_compare_dim,
+                            "tpc": tpc_gene_tissue_cell_type_compare_dim,
+                        }
+
+                nnz_gene_tissue = sum([agg_dict["aggregated"]["n"] for _, agg_dict in result[gene][tissue].items()])
+                tpc_gene_tissue = nnz_gene_tissue / cell_count_tissue
+                gene_tissue_expr_stats = {
+                    "n": nnz_gene_tissue,
+                    "me": me,
+                    "tpc": tpc_gene_tissue,
+                }
+
+                result[gene][tissue]["tissue_stats"] = {}
+                result[gene][tissue]["tissue_stats"]["aggregated"] = gene_tissue_expr_stats
 
     return result
 
 
-def generate_test_inputs_and_expected_outputs(genes, organism, dim_size, me, expected_count, compare_dim=None):
+def generate_test_inputs_and_expected_outputs(
+    genes: list[str],
+    organism: str,
+    dim_size: int,
+    me: float,
+    cell_count_per_row_cell_counts_cube: int,
+    compare_dim=None,
+) -> tuple:
     """
     Generates test inputs and expected outputs for the /wmg/v2/query endpoint.
 
     Arguments
     ---------
     genes: list of gene ontology term IDs
+
     organism: organism ontology term ID
+
     dim_size: size of each dimension of the test cube
-    me: mean expression value to use for each gene/tissue/cell_type combination (scalar)
-    expected_count: expected number of cells for each gene/tissue/cell_type combination (scalar)
+
+    me: mean expression value to use for each (gene, tissue, cell_type) combination (scalar)
+
+    cell_count_per_row_cell_counts_cube: num of cells per row in cell_counts cube (scalar)
+
     compare_dim: dimension to use for compare feature (optional). None if compare isn't used.
 
     Returns
     -------
     tuple of (request, expected_expression_summary, expected_term_id_labels)
+
     request: dictionary containing the request body to send to the /wmg/v2/query endpoint
+
     expected_expression_summary: dictionary containing the expected expression summary values
+
     expected_term_id_labels: dictionary containing the expected term ID labels
     """
     cell_types = [f"cell_type_ontology_term_id_{i}" for i in range(dim_size)]
@@ -117,29 +245,43 @@ def generate_test_inputs_and_expected_outputs(genes, organism, dim_size, me, exp
     # includes all tissues
     all_tissues = [f"tissue_ontology_term_id_{i}" for i in range(dim_size)]
 
+    expected_combinations_per_tissue = dim_size ** len(expression_summary_non_indexed_dims)
+    cell_count_tissue = cell_count_per_row_cell_counts_cube * expected_combinations_per_tissue
+
     expected_combinations_per_cell_type = dim_size ** len(
         set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
     )
-    compare_terms = (
-        [f"{find_dimension_id_from_compare(compare_dim)}_{i}" for i in range(dim_size)] if compare_dim else None
-    )
+    nnz_gene_tissue_cell_type = expected_combinations_per_cell_type
+    cell_count_tissue_cell_type = expected_combinations_per_cell_type * cell_count_per_row_cell_counts_cube
+
+    compare_terms = []
+    cell_counts_tissue_cell_type_compare_dim = 0
+    nnz_gene_tissue_cell_type_compare_dim = 0
+
+    if compare_dim:
+        compare_terms = [f"{find_dimension_id_from_compare(compare_dim)}_{i}" for i in range(dim_size)]
+        cell_counts_tissue_cell_type_compare_dim = cell_count_tissue_cell_type // len(compare_terms)
+        nnz_gene_tissue_cell_type_compare_dim = nnz_gene_tissue_cell_type // len(compare_terms)
 
     expected_term_id_labels = generate_expected_term_id_labels_dictionary(
-        genes,
-        all_tissues,
-        cell_types,
-        expected_combinations_per_cell_type * expected_count,
+        genes=genes,
+        tissues=all_tissues,
+        cell_types=cell_types,
+        cell_count_tissue_cell_type=cell_count_tissue_cell_type,
         compare_terms=compare_terms,
+        cell_counts_tissue_cell_type_compare_dim=cell_counts_tissue_cell_type_compare_dim,
     )
     expected_expression_summary = generate_expected_expression_summary_dictionary(
-        genes,
-        all_tissues,
-        cell_types,
-        expected_combinations_per_cell_type,
-        me,
-        1 / expected_count,
-        expected_combinations_per_cell_type / (expected_count * (dim_size ** len(expression_summary_non_indexed_dims))),
+        genes=genes,
+        tissues=all_tissues,
+        cell_count_tissue=cell_count_tissue,
+        cell_types=cell_types,
+        cell_count_tissue_cell_type=cell_count_tissue_cell_type,
+        nnz_gene_tissue_cell_type=nnz_gene_tissue_cell_type,
         compare_terms=compare_terms,
+        cell_counts_tissue_cell_type_compare_dim=cell_counts_tissue_cell_type_compare_dim,
+        nnz_gene_tissue_cell_type_compare_dim=nnz_gene_tissue_cell_type_compare_dim,
+        me=me,
     )
 
     request = dict(filter=dict(gene_ontology_term_ids=genes, organism_ontology_term_id=organism))
@@ -158,6 +300,33 @@ class WmgApiV2Tests(unittest.TestCase):
     Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a
     temporary WMG cube on local filesystem to avoid dependency on localstack S3.
     """
+
+    # TODO(prathap): Write a generalized utility function that extends the
+    # comparison capability of sequences to also compare floating point
+    # values: https://docs.python.org/3/library/collections.abc.html#module-collections.abc
+    def assert_equality_nested_dict_with_floats(self, *, expected, actual, key_path):
+        self.assertEqual(expected.keys(), actual.keys(), f"Assertion failure in key path: {key_path}")
+
+        for k, expected_value in expected.items():
+            key_path.append(k)
+
+            actual_value = actual[k]
+
+            if isinstance(expected_value, (float, int)) and isinstance(actual_value, (float, int)):
+                self.assertEqual(expected_value, approx(actual_value), f"Assertion failure in key path: {key_path}")
+            else:
+                self.assertIs(type(expected_value), type(actual_value), f"Assertion failure in key path: {key_path}")
+
+                if isinstance(expected_value, dict):
+                    self.assert_equality_nested_dict_with_floats(
+                        expected=expected_value, actual=actual_value, key_path=key_path
+                    )
+                else:
+                    self.assertEqual(expected_value, actual_value, f"Assertion failure in key path: {key_path}")
+
+            key_path.pop()
+
+        self.assertTrue(True, f"Assertion failure in key path: {key_path}")
 
     def setUp(self):
         super().setUp()
@@ -247,7 +416,9 @@ class WmgApiV2Tests(unittest.TestCase):
                 "expression_summary": expected_expression_summary,
                 "term_id_labels": expected_term_id_labels,
             }
-            self.assertEqual(expected_response, json.loads(response.data))
+            self.assert_equality_nested_dict_with_floats(
+                expected=expected_response, actual=json.loads(response.data), key_path=[]
+            )
 
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
@@ -290,7 +461,10 @@ class WmgApiV2Tests(unittest.TestCase):
                 "expression_summary": expected_expression_summary,
                 "term_id_labels": expected_term_id_labels,
             }
-            self.assertEqual(expected_response, json.loads(response.data))
+
+            self.assert_equality_nested_dict_with_floats(
+                expected=expected_response, actual=json.loads(response.data), key_path=[]
+            )
 
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
@@ -330,7 +504,10 @@ class WmgApiV2Tests(unittest.TestCase):
                 "expression_summary": expected_expression_summary,
                 "term_id_labels": expected_term_id_labels,
             }
-            self.assertEqual(expected, json.loads(response.data))
+
+            self.assert_equality_nested_dict_with_floats(
+                expected=expected, actual=json.loads(response.data), key_path=[]
+            )
 
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
@@ -370,7 +547,10 @@ class WmgApiV2Tests(unittest.TestCase):
                 "expression_summary": expected_expression_summary,
                 "term_id_labels": expected_term_id_labels,
             }
-            self.assertEqual(expected, json.loads(response.data))
+
+            self.assert_equality_nested_dict_with_floats(
+                expected=expected, actual=json.loads(response.data), key_path=[]
+            )
 
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
