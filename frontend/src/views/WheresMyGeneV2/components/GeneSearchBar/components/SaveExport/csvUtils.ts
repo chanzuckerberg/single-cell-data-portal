@@ -225,13 +225,13 @@ export function buildCellTypeIdToMetadataMapping(
     }
 
     cellTypeIdMapping[key].push({
-      name: name,
+      name,
       compareValueName:
         optionId === COMPARE_OPTION_ID_FOR_AGGREGATED
           ? COMPARE_OPTION_ID_FOR_AGGREGATED
           : name.trim(),
-      viewId: viewId,
-      total_count: total_count,
+      viewId,
+      total_count,
     });
   }
 
