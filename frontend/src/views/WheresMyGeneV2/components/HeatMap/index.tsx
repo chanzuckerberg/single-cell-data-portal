@@ -1,4 +1,3 @@
-import { Button } from "@czi-sds/components";
 import cloneDeep from "lodash/cloneDeep";
 import {
   Dispatch,
@@ -33,7 +32,7 @@ import {
 } from "src/views/WheresMyGene/common/types";
 import YAxisChart from "./components/YAxisChart";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { memoize, set } from "lodash";
+import { memoize } from "lodash";
 import {
   useSortedGeneNames,
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
@@ -51,6 +50,7 @@ import {
 import { CellCountLabel } from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
 import {
   HEATMAP_CONTAINER_ID,
+  MARGIN_BETWEEN_HEATMAPS,
   X_AXIS_CHART_HEIGHT_PX,
 } from "src/views/WheresMyGene/common/constants";
 import Loader from "src/views/WheresMyGene/components/Loader";
@@ -252,89 +252,103 @@ export default memo(function HeatMap({
             <XAxisChart geneNames={sortedGeneNames} />
           </XAxisWrapper>
           <YAxisWrapper top={0}>
-            {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
-              const tissueCellTypes = memoizedGetTissueCellTypes({
-                cellTypeSortBy,
-                cellTypes,
-                sortedCellTypesByTissueName,
-                tissue: tissue.name,
-                displayedCellTypes,
-              });
+            {Object.values(tissuesByName)
+              .sort((a, b) =>
+                // sort tissues alphabetically
+                a.name.localeCompare(b.name)
+              )
+              .map((tissue: OntologyTerm) => {
+                const tissueCellTypes = memoizedGetTissueCellTypes({
+                  cellTypeSortBy,
+                  cellTypes,
+                  sortedCellTypesByTissueName,
+                  tissue: tissue.name,
+                  displayedCellTypes,
+                });
 
-              return (
-                tissueCellTypes.length > 0 && (
-                  <YAxisChart
-                    key={tissue.name}
-                    tissue={tissue.name}
-                    tissueID={tissue.id}
-                    cellTypes={tissueCellTypes}
-                    generateMarkerGenes={generateMarkerGenes}
-                    selectedOrganismId={selectedOrganismId}
-                    expandedTissues={expandedTissues}
-                    handleExpandCollapse={handleExpandCollapse}
-                  />
-                )
-              );
-            })}
+                return (
+                  tissueCellTypes.length > 0 && (
+                    <YAxisChart
+                      key={tissue.name}
+                      tissue={tissue.name}
+                      tissueID={tissue.id}
+                      cellTypes={tissueCellTypes}
+                      generateMarkerGenes={generateMarkerGenes}
+                      selectedOrganismId={selectedOrganismId}
+                      expandedTissues={expandedTissues}
+                      handleExpandCollapse={handleExpandCollapse}
+                    />
+                  )
+                );
+              })}
           </YAxisWrapper>
           <ChartWrapper ref={chartWrapperRef} top={xAxisHeight}>
-            {Object.values(tissuesByName).map((tissue: OntologyTerm) => {
-              const tissueCellTypes = memoizedGetTissueCellTypes({
-                cellTypeSortBy,
-                cellTypes,
-                sortedCellTypesByTissueName,
-                tissue: tissue.name,
-                displayedCellTypes: displayedCellTypes,
-              });
+            {Object.values(tissuesByName)
+              .sort((a, b) =>
+                // sort tissues alphabetically
+                a.name.localeCompare(b.name)
+              )
+              .map((tissue: OntologyTerm) => {
+                const tissueCellTypes = memoizedGetTissueCellTypes({
+                  cellTypeSortBy,
+                  cellTypes,
+                  sortedCellTypesByTissueName,
+                  tissue: tissue.name,
+                  displayedCellTypes: displayedCellTypes,
+                });
 
-              // Don't render anything if tissue has no cell types for some reason
-              if (!tissueCellTypes.length) return;
+                // Don't render anything if tissue has no cell types for some reason
+                if (!tissueCellTypes.length) return;
 
-              const selectedGeneData =
-                orderedSelectedGeneExpressionSummariesByTissueName[tissue.name];
+                const selectedGeneData =
+                  orderedSelectedGeneExpressionSummariesByTissueName[
+                    tissue.name
+                  ];
 
-              /**
-               * (thuang): If there is no selected gene data, we don't want to render
-               * the chart, because it will cause the chart to render with 0 width,
-               * which is an error for echarts
-               */
-              if (!selectedGeneData?.length) {
-                const height =
-                  document.getElementById(`${hyphenize(tissue.name)}-y-axis`)
-                    ?.clientHeight ?? 0;
+                /**
+                 * (thuang): If there is no selected gene data, we don't want to render
+                 * the chart, because it will cause the chart to render with 0 width,
+                 * which is an error for echarts
+                 */
+                if (!selectedGeneData?.length) {
+                  const height =
+                    document.getElementById(`${hyphenize(tissue.name)}-y-axis`)
+                      ?.clientHeight ?? 0;
+                  return (
+                    <div
+                      id={`no-chart-data-${hyphenize(tissue.name)}`} // Not used, just to make it stand out
+                      key={`${tissue.name}-${echartsRendererMode}`}
+                      style={{
+                        height: `${height + MARGIN_BETWEEN_HEATMAPS}px`,
+                      }}
+                    />
+                  );
+                }
+
                 return (
-                  <div
-                    id={`no-chart-data-${hyphenize(tissue.name)}`} // Not used, just to make it stand out
+                  <Chart
+                    isScaled={isScaled}
+                    /**
+                     * (thuang): We use `key` to force re-render the HeatMap component
+                     * when the renderer mode changes, so echarts can create new instances
+                     */
                     key={`${tissue.name}-${echartsRendererMode}`}
-                    style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
+                    tissue={tissue.name}
+                    cellTypes={tissueCellTypes}
+                    selectedGeneData={
+                      orderedSelectedGeneExpressionSummariesByTissueName[
+                        tissue.name
+                      ]
+                    }
+                    setIsLoading={setIsLoading}
+                    scaledMeanExpressionMax={scaledMeanExpressionMax}
+                    scaledMeanExpressionMin={scaledMeanExpressionMin}
+                    echartsRendererMode={echartsRendererMode}
+                    setAllChartProps={setAllChartProps}
+                    chartProps={allChartProps[tissue.name]}
                   />
                 );
-              }
-
-              return (
-                <Chart
-                  isScaled={isScaled}
-                  /**
-                   * (thuang): We use `key` to force re-render the HeatMap component
-                   * when the renderer mode changes, so echarts can create new instances
-                   */
-                  key={`${tissue.name}-${echartsRendererMode}`}
-                  tissue={tissue.name}
-                  cellTypes={tissueCellTypes}
-                  selectedGeneData={
-                    orderedSelectedGeneExpressionSummariesByTissueName[
-                      tissue.name
-                    ]
-                  }
-                  setIsLoading={setIsLoading}
-                  scaledMeanExpressionMax={scaledMeanExpressionMax}
-                  scaledMeanExpressionMin={scaledMeanExpressionMin}
-                  echartsRendererMode={echartsRendererMode}
-                  setAllChartProps={setAllChartProps}
-                  chartProps={allChartProps[tissue.name]}
-                />
-              );
-            })}
+              })}
           </ChartWrapper>
         </Container>
       </ContainerWrapper>
