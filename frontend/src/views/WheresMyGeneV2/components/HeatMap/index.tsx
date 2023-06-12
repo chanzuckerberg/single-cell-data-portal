@@ -51,7 +51,6 @@ import { CellCountLabel } from "src/views/WheresMyGene/components/HeatMap/compon
 import {
   HEATMAP_CONTAINER_ID,
   MARGIN_BETWEEN_HEATMAPS,
-  X_AXIS_CHART_HEIGHT_PX,
 } from "src/views/WheresMyGene/common/constants";
 import Loader from "src/views/WheresMyGene/components/Loader";
 import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
