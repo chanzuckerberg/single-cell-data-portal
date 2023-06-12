@@ -211,26 +211,27 @@ export function buildCellTypeIdToMetadataMapping(
     [cellTypeId: string]: CsvMetadata[];
   } = {};
 
-  let currentCellTypeName = "";
   for (const cellTypeMetaData of allChartProps[
     tissue
   ].cellTypeMetadata.reverse()) {
     const { id, name, total_count, optionId, viewId } =
       deserializeCellTypeMetadata(cellTypeMetaData);
 
-    if (!cellTypeIdMapping[id]) {
-      cellTypeIdMapping[id] = [];
-      currentCellTypeName = name;
+    // Using id+name as the key for uniqueness
+    const key = `${id}-${name}`;
+
+    if (!cellTypeIdMapping[key]) {
+      cellTypeIdMapping[key] = [];
     }
 
-    cellTypeIdMapping[id].push({
-      name: currentCellTypeName,
+    cellTypeIdMapping[key].push({
+      name,
       compareValueName:
         optionId === COMPARE_OPTION_ID_FOR_AGGREGATED
           ? COMPARE_OPTION_ID_FOR_AGGREGATED
           : name.trim(),
-      viewId: viewId,
-      total_count: total_count,
+      viewId,
+      total_count,
     });
   }
 

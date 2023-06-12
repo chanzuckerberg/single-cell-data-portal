@@ -63,14 +63,11 @@ import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
-import { LEGEND_MARGIN_BOTTOM_PX } from "src/views/WheresMyGene/style";
-
 import {
   Y_AXIS_CHART_WIDTH_PX,
   getHeatmapHeight,
   getHeatmapWidth,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
-import { LEGEND_HEIGHT_PX } from "src/views/WheresMyGene/components/InfoPanel/components/Legend/style";
 import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
 
 let heatmapContainerScrollTop: number | undefined;
@@ -367,6 +364,8 @@ function generateSvg({
 
   // Build heatmaps for all tissues for wmg v2
   const tissueSVGs = tissues.map((tissueName) => {
+    // If tissue is expanded, then use the heatmap height + padding
+    // If tissue is NOT expanded, then just add padding
     const heatmapHeight = expandedTissues.includes(tissueName)
       ? getHeatmapHeight(selectedCellTypes[tissueName]) + X_AXIS_CHART_HEIGHT_PX
       : X_AXIS_CHART_HEIGHT_PX;
@@ -443,6 +442,7 @@ function generateCsv({
   selectedFilters,
   selectedOrganismId,
   availableOrganisms,
+  tissues,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
@@ -451,6 +451,7 @@ function generateCsv({
   selectedFilters: State["selectedFilters"];
   selectedOrganismId: string | null;
   availableOrganisms: OntologyTerm[] | null | undefined;
+  tissues: string[];
 }) {
   const output: (string | number | undefined)[][] = [];
 
@@ -466,9 +467,7 @@ function generateCsv({
     })
   );
 
-  const tissues = availableFilters.tissue_terms?.map((term) => term.name);
-
-  tissues?.forEach((tissueName) => {
+  tissues.forEach((tissueName) => {
     // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
     const cellTypeIdToMetadataMapping = Object.values(
       buildCellTypeIdToMetadataMapping(tissueName, allChartProps)
@@ -513,20 +512,10 @@ async function generateImage({
 }): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
-  const allHeatmapsHeight = tissues.reduce((acc, tissueName) => {
-    return acc + getHeatmapHeight(selectedCellTypes[tissueName]);
-  }, 0);
-
   const imageURL = await convertHTMLtoImage(heatmapNode, {
     backgroundColor: "white",
     filter: screenshotFilter,
-    height:
-      allHeatmapsHeight +
-      X_AXIS_CHART_HEIGHT_PX * tissues.length +
-      DATA_MESSAGE_BANNER_HEIGHT_PX +
-      LEGEND_HEIGHT_PX +
-      LEGEND_MARGIN_BOTTOM_PX +
-      CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX * 2,
+    height: heatmapNode.scrollHeight,
     pixelRatio: 4,
     width: heatmapNode.offsetWidth,
   });
@@ -681,6 +670,7 @@ function download_({
                   selectedFilters,
                   selectedOrganismId,
                   availableOrganisms,
+                  tissues,
                 });
               } else {
                 input = await generateImage({
