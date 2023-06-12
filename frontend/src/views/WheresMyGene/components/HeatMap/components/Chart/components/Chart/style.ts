@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
+import { MARGIN_BETWEEN_HEATMAPS } from "src/views/WheresMyGene/common/constants";
 
 export const ChartContainer = styled.div`
   ${getWidthAndHeight}
-  margin-bottom: ${X_AXIS_CHART_HEIGHT_PX}px;
+  margin-bottom: ${MARGIN_BETWEEN_HEATMAPS}px;
 `;
 
 function getWidthAndHeight({

@@ -26,7 +26,7 @@ interface Props {
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
   tissues?: string[];
-  expandedTissues?: string[];
+  expandedTissues?: Set<string>;
 }
 
 export default memo(function Legend({
@@ -67,7 +67,7 @@ export default memo(function Legend({
             allChartProps={allChartProps}
             availableFilters={availableFilters}
             tissues={tissues || EMPTY_ARRAY}
-            expandedTissues={expandedTissues || EMPTY_ARRAY}
+            expandedTissues={expandedTissues ?? new Set()}
           />
           <ShareButtonV2 />
         </>

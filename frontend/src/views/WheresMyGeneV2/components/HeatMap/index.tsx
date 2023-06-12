@@ -33,7 +33,7 @@ import {
 } from "src/views/WheresMyGene/common/types";
 import YAxisChart from "./components/YAxisChart";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { memoize } from "lodash";
+import { memoize, set } from "lodash";
 import {
   useSortedGeneNames,
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
@@ -84,8 +84,8 @@ interface Props {
       [name: string]: OntologyTerm;
     }>
   >;
-  expandedTissues: string[];
-  setExpandedTissues: Dispatch<SetStateAction<string[]>>;
+  expandedTissues: Set<string>;
+  setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
 }
 
 export default memo(function HeatMap({
@@ -185,55 +185,62 @@ export default memo(function HeatMap({
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
-  const initialDisplayedCellTypes = useMemo(() => {
-    return Object.entries(sortedCellTypesByTissueName).reduce(
-      (acc, [tissue]) => {
+  const initialDisplayedCellTypes = useMemo(
+    () =>
+      Object.entries(tissuesByName).reduce((acc, [tissue]) => {
         acc.add(tissue + tissue);
         return acc;
-      },
-      new Set<string>()
-    );
-  }, [sortedCellTypesByTissueName]);
-  // (seve): This state should be moved to the store
-  const [displayedCellTypes, setDisplayedCellTypes] = useState<Set<string>>(
-    initialDisplayedCellTypes
+      }, new Set<string>()),
+    [tissuesByName]
   );
 
   // set of tissue names that are visible and set of cell types that are visible
   // presence is visible
+  const [displayedCellTypes, setDisplayedCellTypes] = useState<Set<string>>(
+    initialDisplayedCellTypes
+  );
 
   useEffect(() => {
     setDisplayedCellTypes(initialDisplayedCellTypes);
-  }, [initialDisplayedCellTypes]);
+    setExpandedTissues(new Set<string>());
+  }, [initialDisplayedCellTypes, setExpandedTissues]);
 
-  const handleExpand = useCallback(() => {
-    const newDisplayedCellTypes = new Set<string>(displayedCellTypes);
+  const handleExpandCollapse = useCallback(
+    (tissue: string) => {
+      const newDisplayedCellTypes = new Set<string>(displayedCellTypes);
+      const newExpandedTissues = new Set<string>(expandedTissues);
+      let addedTissue = false;
 
-    if (expandedTissues.includes("lung")) {
-      setExpandedTissues([]);
-      setDisplayedCellTypes(initialDisplayedCellTypes);
-
-      return;
-    }
-    //expand the first tissue
-
-    sortedCellTypesByTissueName["lung"].forEach((cellType) => {
-      newDisplayedCellTypes.add("lung" + cellType.name);
-    });
-    setExpandedTissues(["lung"]);
-    setDisplayedCellTypes(newDisplayedCellTypes);
-  }, [
-    displayedCellTypes,
-    expandedTissues,
-    sortedCellTypesByTissueName,
-    setExpandedTissues,
-    initialDisplayedCellTypes,
-  ]);
+      if (expandedTissues.has(tissue)) {
+        newExpandedTissues.delete(tissue);
+      } else {
+        newExpandedTissues.add(tissue);
+        addedTissue = true;
+      }
+      if (addedTissue) {
+        sortedCellTypesByTissueName[tissue].forEach((cellType) => {
+          newDisplayedCellTypes.add(tissue + cellType.name);
+        });
+      } else {
+        [...newDisplayedCellTypes].forEach((cellType) => {
+          if (cellType.includes(tissue) && cellType !== `${tissue}${tissue}`) {
+            newDisplayedCellTypes.delete(cellType);
+          }
+        });
+      }
+      setDisplayedCellTypes(newDisplayedCellTypes);
+      setExpandedTissues(newExpandedTissues);
+    },
+    [
+      displayedCellTypes,
+      expandedTissues,
+      setExpandedTissues,
+      sortedCellTypesByTissueName,
+    ]
+  );
 
   return (
     <>
-      <Button onClick={handleExpand}>EXPAND</Button>
-
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
           <CellCountLabel>Cell Count</CellCountLabel>
@@ -263,6 +270,8 @@ export default memo(function HeatMap({
                     cellTypes={tissueCellTypes}
                     generateMarkerGenes={generateMarkerGenes}
                     selectedOrganismId={selectedOrganismId}
+                    expandedTissues={expandedTissues}
+                    handleExpandCollapse={handleExpandCollapse}
                   />
                 )
               );
@@ -354,9 +363,6 @@ function getTissueCellTypes({
     (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY
       ? tissueCellTypes
       : sortedTissueCellTypes) || EMPTY_ARRAY;
-
-  if (ret[ret.length - 1].name !== tissue)
-    ret.push({ ...ret[0], name: tissue });
 
   ret = ret.filter((cellType) =>
     displayedCellTypes.has(tissue + cellType.name)

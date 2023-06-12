@@ -25,3 +25,5 @@ export const X_AXIS_CHART_HEIGHT_PX = 80;
 // This is the height of the container for the gene delete and hover icons
 // Increasing this value adds more space between the gene label and icons
 export const X_AXIS_HOVER_CONTAINER_HEIGHT_PX = 40;
+
+export const MARGIN_BETWEEN_HEATMAPS = 8;
