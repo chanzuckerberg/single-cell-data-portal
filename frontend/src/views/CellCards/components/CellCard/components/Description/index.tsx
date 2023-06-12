@@ -38,7 +38,10 @@ export default function Description({
           <Source>
             {"Source: "}
             <Link
-              url={"http://obofoundry.org/ontology/cl.html"}
+              url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeId.replace(
+                ":",
+                "_"
+              )}`}
               label={"Cell Ontology"}
             />
           </Source>
