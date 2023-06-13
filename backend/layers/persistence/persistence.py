@@ -386,7 +386,9 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_all_mapped_collection_versions(self, get_tombstoned: bool = False) -> Iterable[CollectionVersion]:
         """
-        Retrieves all the collection versions that are mapped to a canonical collection.
+        Retrieves all the collection versions that are mapped to a canonical collection. This method does not require
+        tombstone filtering at the 'individual Dataset' level because by definition, only active Dataset version ids
+        will be present in the CollectionVersion.datasets array for active (mapped) Collection versions.
         """
         with self._manage_session() as session:
             if get_tombstoned:
