@@ -1,5 +1,5 @@
-import React, { ReactElement, useEffect, useMemo, useState } from "react";
-import { Tooltip } from "@czi-sds/components";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
+import { ButtonIcon, Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
   TableTitleWrapper,
@@ -40,7 +40,7 @@ export const CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR =
   "cell-card-enriched-genes-table-selector";
 
 interface TableRowEnrichedGenes {
-  symbol: string;
+  symbol: ReactNode;
   name: string;
   me: string;
   pc: string;
@@ -63,9 +63,9 @@ const tableColumnNamesEnrichedGenes: Record<
 };
 
 interface TableRowCanonicalGenes {
-  symbol: string;
+  symbol: ReactNode;
   name: string;
-  references: ReactElement | string;
+  references: ReactNode;
 }
 const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> = [
   "symbol",
@@ -85,13 +85,14 @@ type TableRow = TableRowEnrichedGenes | TableRowCanonicalGenes;
 
 interface Props {
   cellTypeId: string;
+  setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const ROWS_PER_PAGE = 10;
 
 export const MARKER_GENES_TOOLTIP_TEST_ID = "marker-genes-help-tooltip";
 
-const MarkerGeneTables = ({ cellTypeId }: Props) => {
+const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   const [selectedOrganism, setSelectedOrganism] = useState("");
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -116,12 +117,11 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
       // All Tissues always selected
       setSelectedOrgan("All Tissues");
 
-      const organismsArray = Array.from(organisms).sort((a, b) => {
+      return Array.from(organisms).sort((a, b) => {
         if (a === "Homo sapiens") return -1;
         if (b === "Homo sapiens") return 1;
         return a.localeCompare(b);
       });
-      return organismsArray;
     }, [genes, cellTypeId]);
 
     tableRows = useMemo(() => {
@@ -131,7 +131,18 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
         const { pc, me, name, symbol, organism } = markerGene;
         if (organism !== selectedOrganism) continue;
         rows.push({
-          symbol: symbol,
+          symbol: (
+            <>
+              {symbol}{" "}
+              <ButtonIcon
+                aria-label={`display gene info for ${symbol}`}
+                sdsIcon="infoCircle"
+                sdsSize="small"
+                sdsType="secondary"
+                onClick={() => setGeneInfoGene(symbol)}
+              />
+            </>
+          ),
           name,
           me: me.toFixed(2),
           pc: (pc * 100).toFixed(1),
@@ -181,14 +192,22 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
         }
       }
       for (const markerGene of genes) {
-        if (markerGene.tissue_general !== selectedOrgan) continue;
+        const {
+          tissue_general,
+          publication,
+          publication_titles,
+          symbol,
+          name,
+        } = markerGene;
+
+        if (tissue_general !== selectedOrgan) continue;
+
         // multiple publications for a single gene are joined by ";;"
-        const publications = Array.from(
-          new Set(markerGene.publication.split(";;"))
-        );
+        const publications = Array.from(new Set(publication.split(";;")));
         const publicationTitles = Array.from(
-          new Set(markerGene.publication_titles.split(";;"))
+          new Set(publication_titles.split(";;"))
         );
+
         const publicationLinks = (
           <PublicationLinkWrapper>
             {publicationTitles
@@ -233,13 +252,24 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
         );
 
         rows.push({
-          symbol: markerGene.symbol,
-          name: markerGene.name,
+          name,
+          symbol: (
+            <>
+              {symbol}{" "}
+              <ButtonIcon
+                aria-label={`display gene info for ${symbol}`}
+                sdsIcon="infoCircle"
+                sdsSize="small"
+                sdsType="secondary"
+                onClick={() => setGeneInfoGene(symbol)}
+              />
+            </>
+          ),
           references: publicationLinks,
         });
       }
       return rows;
-    }, [genes, selectedOrgan, cellTypeId]);
+    }, [genes, selectedOrgan, setGeneInfoGene]);
   }
 
   useEffect(() => {
