@@ -30,7 +30,7 @@ import {
 import { ChartProps, GeneExpressionSummary } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import CellInfoBar from "../CellInfoSideBar";
-import GeneInfoBar from "../GeneInfoSideBar";
+import GeneInfoBar from "../../../../components/GeneInfoSideBar";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
@@ -41,9 +41,10 @@ import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
 import { StyledBannerContainer, StyledSidebarDrawer } from "./style";
-import RightSideBar from "../RightSideBar";
+import RightSideBar from "../../../../components/common/RightSideBar";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import BottomBanner from "src/components/BottomBanner";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -295,7 +296,7 @@ export default function WheresMyGene(): JSX.Element {
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
-        <RightSideBar>
+        <RightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
           <CellInfoBar
             generateGeneInfo={generateGeneInfo}
             cellInfoCellType={cellInfoCellType}
@@ -310,7 +311,7 @@ export default function WheresMyGene(): JSX.Element {
               <GeneInfoBar
                 geneInfoGene={geneInfoGene}
                 handleClose={handleCloseGeneInfoSideBar}
-                title={`${geneInfoGene}`}
+                title={geneInfoGene}
               />
             )
           }
@@ -322,7 +323,7 @@ export default function WheresMyGene(): JSX.Element {
             <GeneInfoBar
               geneInfoGene={geneInfoGene}
               handleClose={handleCloseGeneInfoSideBar}
-              title={`${geneInfoGene}`}
+              title={geneInfoGene}
             />
           </RightSideBar>
         )
