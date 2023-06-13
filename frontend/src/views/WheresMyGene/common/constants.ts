@@ -26,7 +26,6 @@ export const X_AXIS_CHART_HEIGHT_PX = 80;
 // Increasing this value adds more space between the gene label and icons
 export const X_AXIS_HOVER_CONTAINER_HEIGHT_PX = 40;
 
-
 export const MARGIN_BETWEEN_HEATMAPS = 8;
 
 // Below constants are for left sidebar tooltip text so that tests can import these strings from this file instead
@@ -40,4 +39,3 @@ export const SORT_CELL_TYPES_TOOLTIP_TEXT =
   "Sort cell types by Cell Ontology or Hierarchical ordering. Cell ontology ordering groups cell types together based on their ontological relationships. Hierarchical ordering groups cell types with similar expression patterns together based on the genes selected.";
 export const SORT_GENES_TOOLTIP_TEXT =
   "Sort genes As Entered or using Hierarchical ordering. Genes are displayed in the order they are added to the dot plot using As Entered ordering. Hierarchical ordering groups genes with similar expression patterns together.";
-
