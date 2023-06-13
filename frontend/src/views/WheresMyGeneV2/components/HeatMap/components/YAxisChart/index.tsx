@@ -1,9 +1,9 @@
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
-import { Tooltip } from "@czi-sds/components";
+import { Icon, Tooltip } from "@czi-sds/components";
 import InfoSVG from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
 
 import {
@@ -30,6 +30,7 @@ import {
   FlexRowJustified,
   HiddenCellTypeLabelStyle,
   StyledImage,
+  TissueHeaderLabelStyle,
   Wrapper,
 } from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
 
@@ -38,6 +39,8 @@ interface Props {
   tissue: Tissue;
   tissueID: string;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
+  handleExpandCollapse: (tissue: Tissue) => void;
+  expandedTissues: Set<Tissue>;
   selectedOrganismId: string;
 }
 
@@ -48,6 +51,8 @@ export default memo(function YAxisChart({
   cellTypes = [],
   tissue,
   generateMarkerGenes,
+  handleExpandCollapse,
+  expandedTissues,
   tissueID,
 }: Props): JSX.Element {
   const tissueKey = hyphenize(tissue);
@@ -78,14 +83,30 @@ export default memo(function YAxisChart({
             const { name } = deserializeCellTypeMetadata(
               cellType as CellTypeMetadata
             );
+
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
+            const expanded = expandedTissues.has(tissue);
 
             const { text: paddedName } = formatLabel(
               name,
               Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
               selectedFont // prevents selected style from overlapping count
             );
+            if (name === tissue) {
+              return (
+                <TissueHeaderButton
+                  key={`${cellType}-cell-type-button`}
+                  formattedName={paddedName}
+                  metadata={cellType}
+                  tissue={tissue}
+                  generateMarkerGenes={generateMarkerGenes}
+                  expanded={expanded}
+                  handleExpandCollapse={handleExpandCollapse}
+                  data-testid="cell-type-label"
+                />
+              );
+            }
             return (
               <CellTypeButton
                 key={`${cellType}-cell-type-button`}
@@ -104,6 +125,57 @@ export default memo(function YAxisChart({
   );
 });
 
+const TissueHeaderButton = ({
+  formattedName,
+  metadata,
+  tissue,
+  handleExpandCollapse,
+  expanded,
+}: {
+  formattedName: string;
+  metadata: CellTypeMetadata;
+  generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
+  tissue: Tissue;
+  handleExpandCollapse: (tissue: Tissue) => void;
+  expanded: boolean;
+}) => {
+  const { total_count } = deserializeCellTypeMetadata(metadata);
+  const formattedString = Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+    notation: "compact",
+  }).format(total_count);
+  const countString = `${formattedString}`.toLowerCase();
+
+  return (
+    <FlexRowJustified
+      className="cell-type-label-count"
+      data-testid="cell-type-label-count"
+    >
+      <FlexRow
+        onClick={useCallback(() => {
+          handleExpandCollapse(tissue);
+        }, [tissue, handleExpandCollapse])}
+      >
+        <Icon
+          sdsIcon={expanded ? "triangleDown" : "triangleRight"}
+          sdsSize="s"
+          color="gray"
+          sdsType="static"
+        />
+        <TissueHeaderLabelStyle>
+          <div>
+            <div className="cell-type-name" data-testid="cell-type-name">
+              {capitalize(formattedName)}
+            </div>
+          </div>
+        </TissueHeaderLabelStyle>
+      </FlexRow>
+      <CellCountLabelStyle className="cell-count" data-testid="cell-count">
+        {countString}
+      </CellCountLabelStyle>
+    </FlexRowJustified>
+  );
+};
 const CellTypeButton = ({
   formattedName,
   name,
@@ -131,7 +203,10 @@ const CellTypeButton = ({
   const isTruncated = formattedName.includes("...");
 
   return (
-    <FlexRowJustified data-testid="cell-type-label-count">
+    <FlexRowJustified
+      className="cell-type-label-count"
+      data-testid="cell-type-label-count"
+    >
       <FlexRow>
         <CellTypeLabelStyle>
           <Tooltip
@@ -154,7 +229,9 @@ const CellTypeButton = ({
                   {name}
                 </HiddenCellTypeLabelStyle>
               )}
-              <div data-testid="cell-type-name">{formattedName}</div>
+              <div className="cell-type-name" data-testid="cell-type-name">
+                {formattedName}
+              </div>
             </div>
           </Tooltip>
         </CellTypeLabelStyle>
@@ -188,7 +265,7 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle data-testid="cell-count">
+      <CellCountLabelStyle className="cell-count" data-testid="cell-count">
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>

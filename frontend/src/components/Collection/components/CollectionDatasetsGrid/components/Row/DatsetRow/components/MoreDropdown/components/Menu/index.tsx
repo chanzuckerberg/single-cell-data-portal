@@ -39,6 +39,7 @@ const UpdateButton = (props: Partial<IMenuItemProps>) => {
 interface Props {
   collectionId: Collection["id"];
   datasetId?: string;
+  isPublished: boolean;
   revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
   isLoading: boolean;
@@ -56,10 +57,14 @@ const StyledMenu = styled(RawMenu)`
 const Menu = ({
   collectionId,
   datasetId = "",
+  isPublished,
   revisionsEnabled,
   onUploadFile,
   isLoading,
 }: Props): JSX.Element => {
+  // A dataset may be deleted if the collection is private, or the dataset has not been previously
+  // published; where the published_at property is used to determine whether the dataset has been previously published.
+  const shouldShowDelete = !revisionsEnabled || !isPublished;
   return (
     <StyledMenu>
       {revisionsEnabled && (
@@ -67,11 +72,13 @@ const Menu = ({
           <UpdateButton disabled={isLoading} />
         </DropboxChooser>
       )}
-      <DeleteDataset
-        Button={DeleteButton}
-        collectionId={collectionId}
-        datasetId={datasetId}
-      />
+      {shouldShowDelete && (
+        <DeleteDataset
+          Button={DeleteButton}
+          collectionId={collectionId}
+          datasetId={datasetId}
+        />
+      )}
     </StyledMenu>
   );
 };

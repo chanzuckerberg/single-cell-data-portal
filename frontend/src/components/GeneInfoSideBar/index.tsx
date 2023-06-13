@@ -3,14 +3,17 @@ import {
   GeneName,
   GeneSummary,
   GeneSynonyms,
-  GeneSynonymsLabel,
+  Label,
   GeneSynonymsWrapper,
   GeneUrl,
+  OutLinksWrapper,
   StyledCallout,
 } from "./style";
 import { useGeneInfo } from "src/common/queries/wheresMyGene";
-import { RightSidebarProperties } from "../RightSideBar";
-import { GeneInfo } from "../../common/types";
+import { RightSidebarProperties } from "../common/RightSideBar";
+import { GeneInfo } from "../../views/WheresMyGene/common/types";
+
+const GENE_CARDS_URL = "https://www.genecards.org/cgi-bin/carddisp.pl?gene=";
 
 export interface GeneInfoBarProps extends RightSidebarProperties {
   geneInfoGene: string;
@@ -42,18 +45,30 @@ function GeneInfoSideBar({
 
   return (
     <div id="gene-info-wrapper" data-testid={`${geneInfoGene}-gene-info`}>
-      {data ? <GeneInfoResult data={data} /> : GeneInfoNoData}
+      {data ? (
+        <GeneInfoResult geneInfoGene={geneInfoGene} data={data} />
+      ) : (
+        GeneInfoNoData
+      )}
     </div>
   );
 }
 
-function GeneInfoResult({ data }: { data: GeneInfo }) {
+function GeneInfoResult({
+  geneInfoGene,
+  data,
+}: {
+  geneInfoGene: string;
+  data: GeneInfo;
+}) {
+  const { name, summary, synonyms, show_warning_banner, ncbi_url } = data;
+
   return (
     <div id="gene-info-wrapper">
       <>
-        <GeneName data-testid="gene-info-header">{data.name}</GeneName>
+        <GeneName data-testid="gene-info-header">{name}</GeneName>
 
-        {data.show_warning_banner && (
+        {show_warning_banner && (
           <>
             <StyledCallout autoDismiss={false} intent={"warning"}>
               NCBI didn&apos;t return an exact match for this gene.
@@ -62,22 +77,38 @@ function GeneInfoResult({ data }: { data: GeneInfo }) {
         )}
 
         <GeneSummary data-testid="gene-info-gene-summary">
-          {data.summary}
+          {summary}
         </GeneSummary>
 
         <GeneSynonymsWrapper data-testid="gene-info-gene-synonyms">
-          <GeneSynonymsLabel>Synonyms</GeneSynonymsLabel>
-          <GeneSynonyms>{data.synonyms.join(", ")}</GeneSynonyms>
+          <Label>Synonyms</Label>
+          <GeneSynonyms>{synonyms.join(", ")}</GeneSynonyms>
         </GeneSynonymsWrapper>
 
-        <GeneUrl
-          href={data.ncbi_url}
-          target="_blank"
-          rel="noreferrer noopener"
-          data-testid="gene-info-ncbi-link"
-        >
-          View on NCBI
-        </GeneUrl>
+        <OutLinksWrapper>
+          <GeneUrl
+            href={GENE_CARDS_URL + geneInfoGene}
+            target="_blank"
+            rel="noreferrer noopener"
+            data-testid="gene-info-geneCards-link"
+          >
+            View on GeneCards
+          </GeneUrl>
+
+          <span>
+            <Label>
+              Source:{" "}
+              <GeneUrl
+                href={ncbi_url}
+                target="_blank"
+                rel="noreferrer noopener"
+                data-testid="gene-info-ncbi-link"
+              >
+                NCBI
+              </GeneUrl>
+            </Label>
+          </span>
+        </OutLinksWrapper>
       </>
     </div>
   );

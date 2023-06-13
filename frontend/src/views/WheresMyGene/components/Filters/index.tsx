@@ -3,7 +3,6 @@ import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
-  Tooltip,
 } from "@czi-sds/components";
 import isEqual from "lodash/isEqual";
 import {
@@ -436,36 +435,12 @@ export default memo(function Filters({
 
       <Organism isLoading={isLoading} />
 
-      <Tooltip
-        sdsStyle="dark"
-        arrow
-        placement="right"
-        title={"Please select at least one tissue and gene to use this option."}
-        disableHoverListener={isHeatmapShown}
-        disableFocusListener={isHeatmapShown}
-      >
-        <div>
-          <Compare areFiltersDisabled={!isHeatmapShown} />
-        </div>
-      </Tooltip>
+      <Compare areFiltersDisabled={!isHeatmapShown} />
 
       <div>
         <ViewOptionsLabel>View Options</ViewOptionsLabel>
         <ViewOptionsWrapper>
-          <Tooltip
-            sdsStyle="dark"
-            arrow
-            placement="right"
-            title={
-              "Please select at least one tissue and gene to use this option."
-            }
-            disableHoverListener={isHeatmapShown}
-            disableFocusListener={isHeatmapShown}
-          >
-            <div>
-              <Sort areFiltersDisabled={!isHeatmapShown} />
-            </div>
-          </Tooltip>
+          <Sort areFiltersDisabled={!isHeatmapShown} />
           <ColorScale setIsScaled={setIsScaled} />
         </ViewOptionsWrapper>
       </div>
