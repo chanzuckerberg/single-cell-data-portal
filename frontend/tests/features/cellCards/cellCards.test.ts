@@ -492,7 +492,7 @@ describe("Cell Cards", () => {
       });
     });
   });
-  describe.only("Marker Genes table shows tooltips", () => {
+  describe("Marker Genes table shows tooltips", () => {
     const computationalTabButton = "cell-card-enriched-genes-table-selector";
 
     test("Marker Genes help tooltip - Canonical", async ({ page }) => {
