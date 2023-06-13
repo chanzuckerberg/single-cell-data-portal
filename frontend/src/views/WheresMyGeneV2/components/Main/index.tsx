@@ -41,7 +41,7 @@ import {
 } from "src/views/WheresMyGene/common/types";
 import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGene/components/Filters";
-import GeneInfoSideBar from "src/views/WheresMyGene/components/GeneInfoSideBar";
+import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport";
 import { UnderlyingDataChangeBanner } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport/ExportBanner";
@@ -53,7 +53,7 @@ import {
   StyledBannerContainer,
   StyledSidebarDrawer,
 } from "src/views/WheresMyGene/components/Main/style";
-import RightSideBar from "src/views/WheresMyGene/components/RightSideBar";
+import RightSideBar from "src/components/common/RightSideBar";
 import ScreenTint from "src/views/WheresMyGene/components/ScreenTint";
 import {
   SideBarPositioner,
@@ -64,6 +64,7 @@ import {
 import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -318,7 +319,7 @@ export default function WheresMyGene(): JSX.Element {
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
-        <RightSideBar>
+        <RightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
           <CellInfoSideBar
             generateGeneInfo={generateGeneInfo}
             cellInfoCellType={cellInfoCellType}
@@ -345,7 +346,7 @@ export default function WheresMyGene(): JSX.Element {
             <GeneInfoSideBar
               geneInfoGene={geneInfoGene}
               handleClose={handleCloseGeneInfoSideBar}
-              title={`${geneInfoGene}`}
+              title={geneInfoGene}
             />
           </RightSideBar>
         )

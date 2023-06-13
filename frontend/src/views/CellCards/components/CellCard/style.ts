@@ -8,6 +8,9 @@ import {
   Tag,
 } from "@czi-sds/components";
 
+import RightSideBar from "src/components/common/RightSideBar";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+
 export const TOP_PADDING_PX = 32;
 export const SIDEBAR_COLUMN_GAP_PX = 120;
 
@@ -84,4 +87,12 @@ export const SuggestChangeButton = styled(Button)`
   ${fontBodyS}
   font-weight: 500;
   text-transform: capitalize;
+`;
+
+export const StyledRightSideBar = styled(RightSideBar)`
+  position: fixed;
+  top: ${HEADER_HEIGHT_PX}px;
+  right: 0;
+  height: 100vh;
+  background-color: white;
 `;
