@@ -70,7 +70,7 @@ function Table<T extends object>({
   return (
     <TableWrapper>
       <StyledTable>
-        <StyledHead data-testid="marker-genes-table-head">
+        <StyledHead>
           <tr>
             {columns.map((column, index) => {
               const columnName = columnIdToName
