@@ -6,7 +6,9 @@ import {
   StyledRow,
   StyledCell,
   TableWrapper,
+  StyledHeadCellContent,
 } from "./style";
+import HelpTooltip from "../HelpTooltip";
 
 interface TableProps<T> {
   columns: Array<Extract<keyof T, string>>;
@@ -25,13 +27,26 @@ function Table<T extends object>({
       <StyledTable>
         <StyledHead>
           <tr>
-            {columns.map((column, index) => (
-              <StyledHeadCell key={index}>
-                {columnIdToName
-                  ? columnIdToName[column]
-                  : column.charAt(0).toUpperCase() + column.slice(1)}
-              </StyledHeadCell>
-            ))}
+            {columns.map((column, index) => {
+              const columnName = columnIdToName
+                ? columnIdToName[column]
+                : column.charAt(0).toUpperCase() + column.slice(1);
+
+              return (
+                <StyledHeadCell key={index}>
+                  <StyledHeadCellContent>
+                    <div>{columnName}</div>
+                    {columnName === "Expression Score" ? (
+                      <HelpTooltip dark text="Expression Score" />
+                    ) : (
+                      columnName === "% of Cells" && (
+                        <HelpTooltip dark text="% of Cells" />
+                      )
+                    )}
+                  </StyledHeadCellContent>
+                </StyledHeadCell>
+              );
+            })}
           </tr>
         </StyledHead>
         <tbody>

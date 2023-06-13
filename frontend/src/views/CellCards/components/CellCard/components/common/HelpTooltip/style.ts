@@ -20,7 +20,7 @@ export const TooltipButton = styled(Button)`
   font-weight: 500;
   font-size: 12px;
   min-width: unset;
-  margin-top: 2.5px;
+  margin-left: 2.5px;
 `;
 
 export const StyledIconImage = styled(Image)`

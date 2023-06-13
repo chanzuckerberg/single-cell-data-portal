@@ -7,11 +7,12 @@ import { ReactElement } from "react";
 interface Props {
   text: string | ReactElement;
   placement?: "top" | "bottom" | "left" | "right";
+  dark?: boolean;
 }
-const HelpTooltip = ({ text, placement = "right" }: Props) => {
+const HelpTooltip = ({ text, placement = "right", dark }: Props) => {
   return (
     <Tooltip
-      sdsStyle="light"
+      sdsStyle={dark ? "dark" : "light"}
       placement={placement}
       width="wide"
       arrow
