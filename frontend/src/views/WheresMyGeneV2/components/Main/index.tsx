@@ -8,7 +8,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
+import {
+  EMPTY_ARRAY,
+  EMPTY_OBJECT,
+  EMPTY_SET,
+} from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
   FilterDimensions,
@@ -94,7 +98,9 @@ export default function WheresMyGene(): JSX.Element {
   }>({});
 
   // This is set in HeatMap and the value is used to determine spacing in SVG export
-  const [expandedTissues, setExpandedTissues] = useState<Array<Tissue>>([]);
+  const [expandedTissues, setExpandedTissues] = useState<Set<Tissue>>(
+    EMPTY_SET as Set<Tissue>
+  );
 
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
@@ -199,18 +205,18 @@ export default function WheresMyGene(): JSX.Element {
       if (!tissueGeneExpressionSummaries) continue;
 
       result[tissueName] = selectedGenes.map((geneName) => {
+        // early return to avoid unnecessary generation of empty object
+        if (tissueGeneExpressionSummaries[geneName])
+          return tissueGeneExpressionSummaries[geneName];
+
         // (thuang): This is needed to ensure the heatmap's gene column
         // is available even if there's no expression data for the column.
         // Otherwise the heatmap columns and column labels won't match up
         // where there's holes in the data.
-        const emptyGeneExpressionSummary = {
+        return {
           cellTypeGeneExpressionSummaries: EMPTY_ARRAY,
           name: geneName,
         };
-
-        return (
-          tissueGeneExpressionSummaries[geneName] || emptyGeneExpressionSummary
-        );
       });
     }
 

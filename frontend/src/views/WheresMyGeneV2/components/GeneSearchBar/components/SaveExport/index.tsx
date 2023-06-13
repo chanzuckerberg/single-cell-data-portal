@@ -110,7 +110,7 @@ export interface Props {
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
   tissues: string[];
-  expandedTissues: string[];
+  expandedTissues: Set<string>;
 }
 
 interface ExportData {
@@ -332,7 +332,7 @@ function generateSvg({
   heatmapWidth: number;
   tissues: string[];
   selectedCellTypes: Props["selectedCellTypes"];
-  expandedTissues: string[];
+  expandedTissues: Set<string>;
 }) {
   const heatmapNode = new DOMParser().parseFromString(svg, "image/svg+xml");
   const heatmapContainer = heatmapNode
@@ -366,7 +366,7 @@ function generateSvg({
   const tissueSVGs = tissues.map((tissueName) => {
     // If tissue is expanded, then use the heatmap height + padding
     // If tissue is NOT expanded, then just add padding
-    const heatmapHeight = expandedTissues.includes(tissueName)
+    const heatmapHeight = expandedTissues.has(tissueName)
       ? getHeatmapHeight(selectedCellTypes[tissueName]) + X_AXIS_CHART_HEIGHT_PX
       : X_AXIS_CHART_HEIGHT_PX;
 
@@ -508,7 +508,7 @@ async function generateImage({
   isMultipleFormatDownload: boolean;
   tissues: string[];
   selectedCellTypes: Props["selectedCellTypes"];
-  expandedTissues: string[];
+  expandedTissues: Set<string>;
 }): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
@@ -614,7 +614,7 @@ function download_({
   >;
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
   tissues: string[];
-  expandedTissues: string[];
+  expandedTissues: Set<string>;
 }) {
   return async () => {
     try {

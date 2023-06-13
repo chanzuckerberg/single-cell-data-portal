@@ -56,7 +56,7 @@ export function dataToChartFormat({
         geneIndex,
         id,
         meanExpression,
-        percentage,
+        percentage: percentage ?? tissuePercentage,
         scaledMeanExpression,
         tissuePercentage,
       };
