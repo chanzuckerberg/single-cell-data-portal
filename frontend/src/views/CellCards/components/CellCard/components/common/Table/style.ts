@@ -29,6 +29,11 @@ export const StyledHeadCell = styled.th`
   }}
 `;
 
+export const StyledHeadCellContent = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
 interface StyledRowProps {
   highlight: boolean;
 }

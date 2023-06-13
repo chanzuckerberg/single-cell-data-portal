@@ -12,6 +12,7 @@ export enum ROUTES {
   WMG_DOCS = "/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_1__Get%20Started",
   FMG_DOCS = "/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_5__Find%20Marker%20Genes",
   WMG_DOCS_ORDERING = "/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_2__Cell%20Type%20and%20Gene%20Ordering",
+  WMG_DOCS_DATA_PROCESSING = "/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing",
   SITEMAP = "/sitemap",
   CELL_CARDS = "/cell-guide",
 }
