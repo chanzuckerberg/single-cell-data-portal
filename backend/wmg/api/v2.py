@@ -55,24 +55,22 @@ def query():
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 
-            orig_dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(
+            gene_expression_df, cell_counts_grouped_df = get_dot_plot_data(
                 expression_summary, cell_counts, group_by_terms
             )
             if is_rollup:
-                rolledup_dot_plot_matrix_df, cell_counts_cell_type_agg = rollup(
-                    orig_dot_plot_matrix_df, cell_counts_cell_type_agg
+                rolled_gene_expression_df, rolled_cell_counts_grouped_df = rollup(
+                    gene_expression_df, cell_counts_grouped_df
                 )
 
             response = jsonify(
                 dict(
                     snapshot_id=snapshot.snapshot_identifier,
-                    expression_summary=build_expression_summary(
-                        orig_dot_plot_matrix_df, rolledup_dot_plot_matrix_df, compare
-                    ),
+                    expression_summary=build_expression_summary(gene_expression_df, rolled_gene_expression_df, compare),
                     term_id_labels=dict(
                         genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                         cell_types=build_ordered_cell_types_by_tissue(
-                            cell_counts_cell_type_agg, snapshot.cell_type_orderings, compare
+                            rolled_cell_counts_grouped_df, snapshot.cell_type_orderings, compare
                         ),
                     ),
                 )
@@ -187,16 +185,16 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
 
 
 def build_expression_summary(
-    orig_gene_expression_df: DataFrame, rolledup_gene_expression_df: DataFrame, compare: str
+    unrolled_gene_expression_df: DataFrame, rolled_gene_expression_df: DataFrame, compare: str
 ) -> dict:
     """
     Compute and build a data structure that contains gene expression summary statistics.
 
     Parameters
     ----------
-    orig_gene_expression_df: A dataframe containing raw gene expression values for each gene.
+    unrolled_gene_expression_df: A dataframe containing unrolled gene expression values for each gene.
 
-    rolledup_gene_expression_df: A dataframe containing rolleup gene expression values.
+    rolled_gene_expression_df: A dataframe containing rolleup gene expression values.
 
     compare: Optional. The compare dimension to further group the gene expression summary statistics into.
 
@@ -213,15 +211,15 @@ def build_expression_summary(
     #
     # For aggregations that do not contain `cell_type_ontology_term_id` as a component in the compound key
     # used to group rows, we SHOULD NOT USE the gene expression dataframe that contains rolled up values.
-    # That is, we should not use `rolledup_gene_expression_df` for such aggregations.
+    # That is, we should not use `rolled_gene_expression_df` for such aggregations.
     # This is because the roll up is computed over the cell_type ontology inheritance graph,
     # and such aggregations will count the rolled up values many times.
     #
     # For group-by compound keys that do not contain the `cell_type_ontology_term_id`,
-    # the original gene expression dataframe containing unaggregated gene expression values should be used.
-    # That is, we use `orig_gene_expression_df` for aggregation over the group by compound key:
+    # the unrolled gene expression dataframe containing unaggregated gene expression values should be used.
+    # That is, we use `unrolled_gene_expression_df` for aggregation over the group by compound key:
     # (`gene_ontology_term_id`, `tissue_ontology_term_id`)
-    gene_expr_grouped_df = orig_gene_expression_df.groupby(
+    gene_expr_grouped_df = unrolled_gene_expression_df.groupby(
         ["gene_ontology_term_id", "tissue_ontology_term_id"], as_index=False
     ).agg({"nnz": "sum", "sum": "sum", "n_cells_tissue": "first"})
 
@@ -237,8 +235,8 @@ def build_expression_summary(
     #
     # For aggregations that contain `cell_type_ontology_term_id` as a component in the compound key used
     # to group rows, we can use the gene expression dataframe that contains rolled up values.
-    # That is, we can use `rolledup_gene_expression_df` for such aggregations.
-    gene_expr_grouped_df = rolledup_gene_expression_df.groupby(
+    # That is, we can use `rolled_gene_expression_df` for such aggregations.
+    gene_expr_grouped_df = rolled_gene_expression_df.groupby(
         ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
     ).agg({"nnz": "sum", "sum": "sum", "n_cells_cell_type": "sum", "n_cells_tissue": "first"})
 
@@ -255,8 +253,8 @@ def build_expression_summary(
 
     # Populate gene expression stats for each (gene, tissue, cell_type, <compare_dimension>) combination
     if compare:
-        for i in range(rolledup_gene_expression_df.shape[0]):
-            row = rolledup_gene_expression_df.iloc[i]
+        for i in range(rolled_gene_expression_df.shape[0]):
+            row = rolled_gene_expression_df.iloc[i]
             structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
                 row[compare]
             ] = dict(
