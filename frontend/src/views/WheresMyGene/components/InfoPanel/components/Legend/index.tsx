@@ -9,7 +9,7 @@ import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
-import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_SET } from "src/common/constants/utils";
 
 interface Props {
   isScaled: boolean;
@@ -26,7 +26,7 @@ interface Props {
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
   tissues?: string[];
-  expandedTissues?: string[];
+  expandedTissues?: Set<string>;
 }
 
 export default memo(function Legend({
@@ -67,7 +67,7 @@ export default memo(function Legend({
             allChartProps={allChartProps}
             availableFilters={availableFilters}
             tissues={tissues || EMPTY_ARRAY}
-            expandedTissues={expandedTissues || EMPTY_ARRAY}
+            expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
           />
           <ShareButtonV2 />
         </>

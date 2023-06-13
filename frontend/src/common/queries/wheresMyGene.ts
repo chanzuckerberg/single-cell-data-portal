@@ -209,6 +209,10 @@ export interface QueryResponse {
     // gene_ontology_term_id
     [geneId: string]: {
       [tissueId: string]: {
+        tissue_stats: {
+          aggregated: RawCellTypeGeneExpressionSummaryData;
+        };
+      } & {
         [cellTypeId: CellTypeId]: {
           aggregated: RawCellTypeGeneExpressionSummaryData;
           [
@@ -221,21 +225,45 @@ export interface QueryResponse {
   snapshot_id: string;
   term_id_labels: {
     cell_types: {
-      [tissue_type_ontology_term_id: string]: {
-        [cell_type_ontology_term_id: string]: {
-          [compareOptionId: CompareOptionId]: {
-            name: string;
-            cell_type_ontology_term_id: CellTypeId;
-            order: number;
-            total_count: number;
-          };
-        };
-      };
+      [tissue_type_ontology_term_id: string]: TissueStats & CellTypeStats;
     };
     genes: {
       [id: string]: string;
     }[];
   };
+}
+
+interface TissueStats {
+  tissue_stats: {
+    aggregated: {
+      name: string;
+      order: -1;
+      tissue_ontology_term_id: CellTypeId;
+      total_count: number;
+    };
+  };
+}
+
+interface CellTypeStats {
+  [cell_type_ontology_term_id: string]: {
+    [compareOptionId: CompareOptionId]: {
+      name: string;
+      cell_type_ontology_term_id: CellTypeId;
+      order: number;
+      total_count: number;
+    };
+  };
+}
+
+function isTissueStats(
+  stats:
+    | TissueStats["tissue_stats"]["aggregated"]
+    | CellTypeStats[string][CompareOptionId]
+): stats is TissueStats["tissue_stats"]["aggregated"] {
+  return (
+    (stats as TissueStats["tissue_stats"]["aggregated"])
+      .tissue_ontology_term_id !== undefined
+  );
 }
 
 interface FiltersQueryResponse {
@@ -607,7 +635,10 @@ export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 1): {
             mergedExpressionSummaries.push(
               transformCellTypeGeneExpressionSummaryData({
                 ...expressionSummary,
-                viewId: getCellTypeViewId(cellTypeId, compareOptionId),
+                viewId: getCellTypeViewId(
+                  cellTypeId === "tissue_stats" ? tissueId : cellTypeId,
+                  compareOptionId
+                ),
               })
             );
           }
@@ -730,6 +761,16 @@ export function useTermIdLabels(version: 1 | 2 = 1): {
           [viewId: CellTypeRow["viewId"]]: CellTypeRow;
         } = {};
 
+        addCellTypeRowToResult({
+          result,
+          sortedCellTypeCompareOptions: [
+            [
+              "aggregated",
+              tissueCellTypesWithCompareOptions["tissue_stats"]["aggregated"],
+            ],
+          ],
+        });
+
         for (const cellTypeWithCompareOptions of sortedTissueCellTypesWithCompareOptions) {
           const sortedCellTypeCompareOptions = getSortedCellTypeCompareOptions(
             cellTypeWithCompareOptions
@@ -759,9 +800,10 @@ export function useTermIdLabels(version: 1 | 2 = 1): {
  * (thuang): This function sorts a tissue's cellTypeWithCompareOptions objects
  * by `order`
  */
-function getSortedTissueCellTypesWithCompareOptions(
-  tissueCellTypesWithCompareOptions: QueryResponse["term_id_labels"]["cell_types"][string]
-): QueryResponse["term_id_labels"]["cell_types"][string][string][] {
+function getSortedTissueCellTypesWithCompareOptions({
+  tissue_stats: _,
+  ...tissueCellTypesWithCompareOptions
+}: QueryResponse["term_id_labels"]["cell_types"][string]): QueryResponse["term_id_labels"]["cell_types"][string][string][] {
   return Object.values(tissueCellTypesWithCompareOptions).sort((a, b) => {
     const aAggregated = a.aggregated;
     const bAggregated = b.aggregated;
@@ -840,7 +882,10 @@ function addCellTypeRowToResult({
   sortedCellTypeCompareOptions: [
     // compareOptionId
     string,
-    QueryResponse["term_id_labels"]["cell_types"][string][string][string]
+    (
+      | CellTypeStats[string][CompareOptionId]
+      | TissueStats["tissue_stats"]["aggregated"]
+    )
   ][];
 }) {
   let cellTypeName = "";
@@ -851,12 +896,11 @@ function addCellTypeRowToResult({
   ] of sortedCellTypeCompareOptions) {
     const isAggregated = compareOptionId === COMPARE_OPTION_ID_FOR_AGGREGATED;
 
-    const {
-      cell_type_ontology_term_id,
-      name: rawName,
-      total_count,
-      order,
-    } = compareOptionData;
+    const { name: rawName, total_count, order } = compareOptionData;
+
+    const termID = isTissueStats(compareOptionData)
+      ? compareOptionData.tissue_ontology_term_id
+      : compareOptionData.cell_type_ontology_term_id;
 
     /**
      * (thuang): We manually indent 4 spaces instead of using CSS, so we don't
@@ -872,14 +916,11 @@ function addCellTypeRowToResult({
       cellTypeName = rawName;
     }
 
-    const viewId = getCellTypeViewId(
-      cell_type_ontology_term_id,
-      compareOptionId
-    );
+    const viewId = getCellTypeViewId(termID, compareOptionId);
 
     result[viewId] = {
       cellTypeName,
-      id: cell_type_ontology_term_id,
+      id: termID,
       isAggregated,
       name,
       order,
