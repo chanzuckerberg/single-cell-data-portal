@@ -429,6 +429,13 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()
             if canonical_collection:
                 canonical_collection.tombstone = True
+            # Tombstone the Datasets individually as well; technically not necessary but will protect us from bugs
+            dataset_versions = session.query(DatasetVersionTable).filter_by(collection_id=collection_id.id).all()
+            datasets = session.query(DatasetTable).filter(
+                DatasetTable.id.in_([dv.dataset_id for dv in dataset_versions])
+            )
+            for dataset in datasets:
+                dataset.tombstone = True
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
