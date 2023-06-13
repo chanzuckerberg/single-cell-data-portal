@@ -42,9 +42,6 @@ import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
 import { useRouter } from "next/router";
 
-// import { useFetchCollectionRows } from "src/common/queries/filter";
-// import { useViewMode } from "src/common/hooks/useViewMode";
-
 const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };
 } = {
@@ -82,6 +79,12 @@ interface FilterOption {
   id: string;
 }
 
+interface publicationFilterOption {
+  name: string;
+  label: string;
+  id: string | string[];
+}
+
 const mapTermToFilterOption = (term: {
   id: string;
   name: string;
@@ -93,28 +96,9 @@ const mapTermToFilterOption = (term: {
   };
 };
 
-const mapPublicationToFilterOption = (term: {
-  id: string;
-  name: string;
-}): FilterOption => {
-  if (term.name != "") {
-    return {
-      name: term.name,
-      label: `${term.name} (${term.id})`,
-      id: term.id,
-    };
-  } else {
-    return {
-      name: "No Publication",
-      label: `${term.name} (${term.id})`,
-      id: term.id,
-    };
-  }
-};
-
 //made new type for the publication filter to avoid touching anything used in other files
 type availableFilters = Partial<FilterDimensions> & {
-  publicationFilter?: { id: string; name: string }[];
+  publicationFilter?: { id: string | string[]; name: string }[];
 };
 
 export interface Props {
@@ -150,9 +134,6 @@ export default memo(function Filters({
   const isVersion2 = pathname.includes("v2");
 
   const { publications } = selectedPublicationFilter;
-  // const { mode, status } = useViewMode();
-
-  // const { rows: rawPublications } = useFetchCollectionRows(mode, status);
 
   const {
     data: {
@@ -198,7 +179,24 @@ export default memo(function Filters({
         : a.name.localeCompare(b.name)
     );
 
-    const newPublications = rawPublications.map(mapPublicationToFilterOption);
+    const newPublications: FilterOption[] = [];
+    // const noPublicationIds: string[] = [];
+
+    for (const publication of rawPublications) {
+      if (publication.name == "") {
+        // noPublicationIds.push(publication.id);
+      } else {
+        newPublications.push(mapTermToFilterOption(publication));
+      }
+    }
+
+    // Add default 'No Publication' option to the publication list
+    // newPublications.push({
+    //   name: "No Publication",
+    //   label: "No Publication",
+    //   id: noPublicationIds,
+    // });
+
     newPublications.sort((a, b) => a.name.localeCompare(b.name));
 
     const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
@@ -285,8 +283,6 @@ export default memo(function Filters({
         ) {
           return;
         }
-
-        console.log("handlePublicationFilterChange", key, options);
 
         const newlySelected = options.filter(
           (selected) => !currentOptions?.includes(selected)
