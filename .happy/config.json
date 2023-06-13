@@ -4,7 +4,7 @@
   "default_env": "rdev",
   "app": "data-portal",
   "default_compose_env_file": ".env.ecr",
-  "services": ["frontend", "backend", "processing"],
+  "services": ["frontend", "backend", "processing", "dataset_submissions", "upload_failures", "upload_success", "wmg_processing"],
   "slices": {
     "frontend": {
         "profile": "frontend"
