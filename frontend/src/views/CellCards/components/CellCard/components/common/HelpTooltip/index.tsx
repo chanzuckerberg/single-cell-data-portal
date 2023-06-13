@@ -7,17 +7,29 @@ import { ReactElement } from "react";
 interface Props {
   text: string | ReactElement;
   placement?: "top" | "bottom" | "left" | "right";
+  dark?: boolean;
+  buttonDataTestId?: string;
 }
-const HelpTooltip = ({ text, placement = "right" }: Props) => {
+const HelpTooltip = ({
+  text,
+  placement = "right",
+  dark,
+  buttonDataTestId = "",
+}: Props) => {
   return (
     <Tooltip
-      sdsStyle="light"
+      sdsStyle={dark ? "dark" : "light"}
       placement={placement}
       width="wide"
       arrow
       title={<StyledTooltip>{text}</StyledTooltip>}
     >
-      <TooltipButton sdsStyle="minimal" sdsType="secondary" isAllCaps={false}>
+      <TooltipButton
+        data-testid={buttonDataTestId}
+        sdsStyle="minimal"
+        sdsType="secondary"
+        isAllCaps={false}
+      >
         <StyledIconImage src={questionMarkIcon} />
       </TooltipButton>
     </Tooltip>
