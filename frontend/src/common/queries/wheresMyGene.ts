@@ -26,7 +26,7 @@ import { ROUTES } from "../constants/routes";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
-import { useFetchCollectionRows, useFetchPublicationRows } from "./filter";
+import { useFetchCollectionRows } from "./filter";
 import { TombstonedCollection, useManyCollections } from "./collections";
 import { Collection } from "../entities";
 import { useViewMode } from "src/common/hooks/useViewMode";
@@ -407,12 +407,12 @@ export interface RawDataset {
   id: string;
   label: string;
 }
-
 export interface FilterDimensions {
   datasets: RawDataset[];
   development_stage_terms: { id: string; name: string }[];
   disease_terms: { id: string; name: string }[];
   self_reported_ethnicity_terms: { id: string; name: string }[];
+  publicationFilter: { id: string; name: string }[];
   sex_terms: { id: string; name: string }[];
   tissue_terms: { id: string; name: string }[];
 }
@@ -424,12 +424,36 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
   const { mode, status } = useViewMode();
 
   // Extracting row metadata from collections
-  const { rows: rawPublications } = useFetchPublicationRows(mode, status);
+  const { rows: rawPublications } = useFetchCollectionRows(mode, status);
+  const { selectedPublicationFilter, selectedFilters } =
+    useContext(StateContext);
+  const { publications } = selectedPublicationFilter;
+  const { datasets: selectedDatasets } = selectedFilters;
+  const { data: collections } = useManyCollections({ ids: publications });
+  const { data: publication_list } = useManyCollections({
+    ids: rawPublications.map(({ id }) => id),
+  });
 
   // Reconstructing rows into publication_list format
-  const publication_list: { [id: string]: string }[] = rawPublications.map(
-    ({ summaryCitation }) => ({ id: summaryCitation })
-  );
+  const allPublications: { id: string; name: string; dataset_ids: string[] }[] =
+    publication_list?.map(
+      (collection: Collection | TombstonedCollection | null) => {
+        if (!collection || collection.tombstone) return;
+        const ids: string[] = [];
+        for (const d of collection.datasets.values()) {
+          // Taking explorer_url and extracting the stable dataset IDs.
+          let url = d["dataset_deployments"][0].url.toString();
+          url = url.substring(51);
+          url = url.substring(0, url.length - 5);
+          ids.push(url);
+        }
+        return {
+          id: collection.id,
+          name: collection.summaryCitation,
+          dataset_ids: ids,
+        };
+      }
+    );
 
   const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
@@ -452,10 +476,40 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
 
-    // filter publicationFilter based on what's coming in from datasets
+    const selectedPublicationDatasetIds: string[] = [];
+
+    collections?.map((collection: Collection | TombstonedCollection | null) => {
+      if (!collection || collection.tombstone) return;
+      for (const d of collection.datasets.values()) {
+        // Taking explorer_url and extracting the stable dataset IDs.
+        let url = d["dataset_deployments"][0].url.toString();
+        url = url.substring(51);
+        url = url.substring(0, url.length - 5);
+        selectedPublicationDatasetIds.push(url);
+      }
+    });
+
+    let intersect = sortedDatasets;
+
+    if (selectedPublicationDatasetIds.length > 0) {
+      intersect = sortedDatasets.filter((coll) =>
+        selectedPublicationDatasetIds.includes(coll.id)
+      );
+    }
+
+    let filteredPublications = allPublications;
+
+    if (selectedDatasets.length > 0) {
+      filteredPublications = filteredPublications.filter((coll) =>
+        selectedDatasets.some((datasetId) =>
+          coll.dataset_ids.includes(datasetId)
+        )
+      );
+    }
+
     return {
       data: {
-        datasets: sortedDatasets.map((dataset) => ({
+        datasets: intersect.map((dataset) => ({
           ...dataset,
           name: dataset.label,
         })),
@@ -463,13 +517,16 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
-        publicationFilter: publication_list.map(toEntity),
+        publicationFilter: filteredPublications.map((publication) => ({
+          id: publication.id,
+          name: publication.name,
+        })),
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },
       isLoading: false,
     };
-  }, [data, isLoading]);
+  }, [data, isLoading, allPublications, selectedDatasets, collections]);
 }
 
 export function useExpressionSummary(version: 1 | 2 = 1): {
@@ -1021,8 +1078,6 @@ function useWMGFiltersQueryRequestBody(
 
   const { data: collections } = useManyCollections({ ids: publications });
 
-  console.log(collections);
-
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
 
@@ -1049,20 +1104,15 @@ function useWMGFiltersQueryRequestBody(
     collections?.map((collection: Collection | TombstonedCollection | null) => {
       if (!collection || collection.tombstone) return;
       for (const d of collection.datasets.values()) {
-        publicationDatasetIds.push(d["dataset_id"]);
+        // Taking explorer_url and extracting the stable dataset IDs.
+        let url = d["dataset_deployments"][0].url.toString();
+        url = url.substring(51);
+        url = url.substring(0, url.length - 5);
+        publicationDatasetIds.push(url);
       }
     });
 
-    console.log("publicationDatasetIds", publicationDatasetIds);
-    console.log("datasets", datasets);
-
-    function findIntersection(a: string[], b: string[]) {
-      return a.filter((x) => b.includes(x));
-    }
-
-    const intersect = findIntersection(datasets, publicationDatasetIds);
-
-    console.log("intersect", intersect);
+    const intersect = datasets.filter((x) => publicationDatasetIds.includes(x));
 
     return {
       filter: {

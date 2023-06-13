@@ -42,11 +42,8 @@ import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
 import { useRouter } from "next/router";
 
-import {
-  useFetchCollectionRows,
-  useFetchPublicationRows,
-} from "src/common/queries/filter";
-import { useViewMode } from "src/common/hooks/useViewMode";
+// import { useFetchCollectionRows } from "src/common/queries/filter";
+// import { useViewMode } from "src/common/hooks/useViewMode";
 
 const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };
@@ -98,18 +95,18 @@ const mapTermToFilterOption = (term: {
 
 const mapPublicationToFilterOption = (term: {
   id: string;
-  summaryCitation: string;
+  name: string;
 }): FilterOption => {
-  if (term.summaryCitation != "") {
+  if (term.name != "") {
     return {
-      name: term.summaryCitation,
-      label: `${term.summaryCitation} (${term.id})`,
+      name: term.name,
+      label: `${term.name} (${term.id})`,
       id: term.id,
     };
   } else {
     return {
       name: "No Publication",
-      label: `${term.summaryCitation} (${term.id})`,
+      label: `${term.name} (${term.id})`,
       id: term.id,
     };
   }
@@ -153,9 +150,9 @@ export default memo(function Filters({
   const isVersion2 = pathname.includes("v2");
 
   const { publications } = selectedPublicationFilter;
-  const { mode, status } = useViewMode();
+  // const { mode, status } = useViewMode();
 
-  const { rows: rawPublications } = useFetchPublicationRows(mode, status);
+  // const { rows: rawPublications } = useFetchCollectionRows(mode, status);
 
   const {
     data: {
@@ -163,6 +160,7 @@ export default memo(function Filters({
       development_stage_terms: rawDevelopmentStages,
       disease_terms: rawDiseases,
       self_reported_ethnicity_terms: rawEthnicities,
+      publicationFilter: rawPublications,
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
@@ -202,8 +200,6 @@ export default memo(function Filters({
 
     const newPublications = rawPublications.map(mapPublicationToFilterOption);
     newPublications.sort((a, b) => a.name.localeCompare(b.name));
-
-    // TODO: aggregate No Publication data under one title UNLESS THEY HAVE A PREPRINT
 
     const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
     newEthnicities.sort((a, b) => a.name.localeCompare(b.name));
@@ -246,9 +242,7 @@ export default memo(function Filters({
   } = availableFilters;
 
   const selectedDatasets = useMemo(() => {
-    console.log("SELECTED DATASETS  BEFORE FILTER", datasetIds);
-    const ret = datasets.filter((dataset) => datasetIds?.includes(dataset.id));
-    console.log("SELECTED DATASETS AFTER FILTER", ret);
+    return datasets.filter((dataset) => datasetIds?.includes(dataset.id));
   }, [datasets, datasetIds]);
 
   const selectedDiseases = useMemo(() => {
@@ -292,7 +286,7 @@ export default memo(function Filters({
           return;
         }
 
-        console.log("HandlePublicationFilterChange:,", key, options);
+        console.log("handlePublicationFilterChange", key, options);
 
         const newlySelected = options.filter(
           (selected) => !currentOptions?.includes(selected)
