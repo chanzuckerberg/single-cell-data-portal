@@ -18,6 +18,7 @@ import {
   formatLabel,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
+  hyphenize,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { SELECTED_STYLE } from "src/views/WheresMyGene/components/HeatMap/style";
 import {
@@ -49,7 +50,7 @@ export default memo(function YAxisChart({
   generateMarkerGenes,
   tissueID,
 }: Props): JSX.Element {
-  const tissueKey = tissue.replace(/\s+/g, "-");
+  const tissueKey = hyphenize(tissue);
 
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
@@ -65,7 +66,7 @@ export default memo(function YAxisChart({
   }, [cellTypes, tissue]);
 
   return (
-    <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
+    <Wrapper id={`${hyphenize(tissue)}-y-axis`}>
       <Container
         data-testid={`cell-type-labels-${tissueKey}`}
         height={heatmapHeight}
@@ -130,7 +131,10 @@ const CellTypeButton = ({
   const isTruncated = formattedName.includes("...");
 
   return (
-    <FlexRowJustified data-testid="cell-type-label-count">
+    <FlexRowJustified
+      className="cell-type-label-count"
+      data-testid="cell-type-label-count"
+    >
       <FlexRow>
         <CellTypeLabelStyle>
           <Tooltip
@@ -153,7 +157,9 @@ const CellTypeButton = ({
                   {name}
                 </HiddenCellTypeLabelStyle>
               )}
-              <div data-testid="cell-type-name">{formattedName}</div>
+              <div className="cell-type-name" data-testid="cell-type-name">
+                {formattedName}
+              </div>
             </div>
           </Tooltip>
         </CellTypeLabelStyle>
@@ -187,7 +193,7 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle data-testid="cell-count">
+      <CellCountLabelStyle className="cell-count" data-testid="cell-count">
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>

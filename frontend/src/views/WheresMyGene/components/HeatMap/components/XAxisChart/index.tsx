@@ -80,7 +80,10 @@ function GeneButton({
   }
 
   return (
-    <GeneButtonStyle data-testid={`gene-label-${geneName}`}>
+    <GeneButtonStyle
+      id={`gene-label-${geneName}`}
+      data-testid={`gene-label-${geneName}`}
+    >
       <HoverContainer
         id={GENE_LABEL_HOVER_CONTAINER_ID}
         data-testid={GENE_LABEL_HOVER_CONTAINER_ID}
@@ -124,6 +127,7 @@ function GeneButton({
         <XAxisGeneName
           active={genesToDelete.includes(geneName)}
           font={currentFont}
+          className={`gene-name-${geneName}`}
           data-testid={`gene-name-${geneName}`}
         >
           {formattedLabel}

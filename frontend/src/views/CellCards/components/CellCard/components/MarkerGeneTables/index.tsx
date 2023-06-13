@@ -1,5 +1,5 @@
-import React, { ReactElement, useEffect, useMemo, useState } from "react";
-import { Tooltip } from "@czi-sds/components";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
+import { ButtonIcon, Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
   TableTitleWrapper,
@@ -40,7 +40,7 @@ export const CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR =
   "cell-card-enriched-genes-table-selector";
 
 interface TableRowEnrichedGenes {
-  symbol: string;
+  symbol: ReactNode;
   name: string;
   me: string;
   pc: string;
@@ -63,9 +63,9 @@ const tableColumnNamesEnrichedGenes: Record<
 };
 
 interface TableRowCanonicalGenes {
-  symbol: string;
+  symbol: ReactNode;
   name: string;
-  references: ReactElement | string;
+  references: ReactNode;
 }
 const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> = [
   "symbol",
@@ -85,11 +85,12 @@ type TableRow = TableRowEnrichedGenes | TableRowCanonicalGenes;
 
 interface Props {
   cellTypeId: string;
+  setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const ROWS_PER_PAGE = 10;
 
-const MarkerGeneTables = ({ cellTypeId }: Props) => {
+const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   const [selectedOrganism, setSelectedOrganism] = useState("");
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -114,12 +115,11 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
       // All Tissues always selected
       setSelectedOrgan("All Tissues");
 
-      const organismsArray = Array.from(organisms).sort((a, b) => {
+      return Array.from(organisms).sort((a, b) => {
         if (a === "Homo sapiens") return -1;
         if (b === "Homo sapiens") return 1;
         return a.localeCompare(b);
       });
-      return organismsArray;
     }, [genes, cellTypeId]);
 
     tableRows = useMemo(() => {
@@ -129,7 +129,18 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
         const { pc, me, name, symbol, organism } = markerGene;
         if (organism !== selectedOrganism) continue;
         rows.push({
-          symbol: symbol,
+          symbol: (
+            <>
+              {symbol}{" "}
+              <ButtonIcon
+                aria-label={`display gene info for ${symbol}`}
+                sdsIcon="infoCircle"
+                sdsSize="small"
+                sdsType="secondary"
+                onClick={() => setGeneInfoGene(symbol)}
+              />
+            </>
+          ),
           name,
           me: me.toFixed(2),
           pc: (pc * 100).toFixed(1),
@@ -163,46 +174,100 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
       if (!genes) return [];
       const rows = [];
 
+      const publicationTitlesToIndex = new Map();
+      let index = 0;
       for (const markerGene of genes) {
         if (markerGene.tissue_general !== selectedOrgan) continue;
-        // multiple publications for a single gene are joined by ";;"
-        const publications = markerGene.publication.split(";;");
         const publicationTitles = markerGene.publication_titles.split(";;");
+        for (let i = 0; i < publicationTitles.length; i += 1) {
+          if (
+            !publicationTitlesToIndex.has(publicationTitles[i]) &&
+            publicationTitles[i] !== ""
+          ) {
+            publicationTitlesToIndex.set(publicationTitles[i], index);
+            index += 1;
+          }
+        }
+      }
+      for (const markerGene of genes) {
+        const {
+          tissue_general,
+          publication,
+          publication_titles,
+          symbol,
+          name,
+        } = markerGene;
+
+        if (tissue_general !== selectedOrgan) continue;
+
+        // multiple publications for a single gene are joined by ";;"
+        const publications = Array.from(new Set(publication.split(";;")));
+        const publicationTitles = Array.from(
+          new Set(publication_titles.split(";;"))
+        );
+
         const publicationLinks = (
           <PublicationLinkWrapper>
-            {publications.map((publication, index) => {
-              if (publication && publicationTitles[index]) {
+            {publicationTitles
+              .sort((a, b) => {
                 return (
-                  <Tooltip
-                    key={`${publication}-${index}-tooltip`}
-                    placement="right"
-                    width="default"
-                    arrow={false}
-                    title={publicationTitles[index]}
-                    leaveDelay={0}
-                  >
-                    <span key={`${publication}-${index}-span`}>
-                      <Link
-                        key={`${publication}-${index}`}
-                        label={`[${index + 1}]`}
-                        url={`https://doi.org/${publication}`}
-                      />
-                    </span>
-                  </Tooltip>
+                  publicationTitlesToIndex.get(a) -
+                  publicationTitlesToIndex.get(b)
                 );
-              }
-            })}
+              })
+              .map((publicationTitle, index) => {
+                if (publicationTitle && publications[index]) {
+                  const referenceIndexLabel =
+                    publicationTitlesToIndex.get(publicationTitle) + 1;
+                  return (
+                    <Tooltip
+                      key={`${publications[index]}-${index}-tooltip`}
+                      placement="top"
+                      width="default"
+                      arrow={false}
+                      title={
+                        <div>
+                          {publicationTitle.split("\n\n").at(0)}
+                          <br />
+                          <br />
+                          <i>{publicationTitle.split("\n\n").at(1)}</i>
+                        </div>
+                      }
+                      leaveDelay={0}
+                    >
+                      <span key={`${publications[index]}-${index}-span`}>
+                        <Link
+                          key={`${publications[index]}-${index}`}
+                          label={`[${referenceIndexLabel}]`}
+                          url={`https://doi.org/${publications[index]}`}
+                        />
+                      </span>
+                    </Tooltip>
+                  );
+                }
+              })}
           </PublicationLinkWrapper>
         );
 
         rows.push({
-          symbol: markerGene.symbol,
-          name: markerGene.name,
+          name,
+          symbol: (
+            <>
+              {symbol}{" "}
+              <ButtonIcon
+                aria-label={`display gene info for ${symbol}`}
+                sdsIcon="infoCircle"
+                sdsSize="small"
+                sdsType="secondary"
+                onClick={() => setGeneInfoGene(symbol)}
+              />
+            </>
+          ),
           references: publicationLinks,
         });
       }
       return rows;
-    }, [genes, selectedOrgan, cellTypeId]);
+    }, [genes, selectedOrgan, setGeneInfoGene]);
   }
 
   useEffect(() => {

@@ -14,6 +14,7 @@ import {
   FilterDimensions,
   GeneExpressionSummariesByTissueName,
   generateTermsByKey,
+  OntologyTerm,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
   usePrimaryFilterDimensions,
@@ -29,14 +30,18 @@ import {
   closeRightSidebar,
   deleteSelectedGenes,
 } from "src/views/WheresMyGene/common/store/actions";
-import { GeneExpressionSummary } from "src/views/WheresMyGene/common/types";
+import {
+  GeneExpressionSummary,
+  Tissue,
+  ChartProps,
+} from "src/views/WheresMyGene/common/types";
 import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGene/components/Filters";
-import GeneInfoSideBar from "src/views/WheresMyGene/components/GeneInfoSideBar";
+import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport";
 import { UnderlyingDataChangeBanner } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport/ExportBanner";
-import { ChartProps } from "src/views/WheresMyGene/components/HeatMap/hooks/common/types";
+
 import InfoPanel from "src/views/WheresMyGene/components/InfoPanel";
 import Legend from "src/views/WheresMyGene/components/InfoPanel/components/Legend";
 import Loader from "src/views/WheresMyGene/components/Loader";
@@ -44,7 +49,7 @@ import {
   StyledBannerContainer,
   StyledSidebarDrawer,
 } from "src/views/WheresMyGene/components/Main/style";
-import RightSideBar from "src/views/WheresMyGene/components/RightSideBar";
+import RightSideBar from "src/components/common/RightSideBar";
 import ScreenTint from "src/views/WheresMyGene/components/ScreenTint";
 import {
   SideBarPositioner,
@@ -55,6 +60,7 @@ import {
 import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -81,6 +87,14 @@ export default function WheresMyGene(): JSX.Element {
     useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
   const [isScaled, setIsScaled] = useState(true);
+
+  // This is set in HeatMap and the value is used as a list of tissues in SaveExport
+  const [tissuesByName, setTissuesByName] = useState<{
+    [name: string]: OntologyTerm;
+  }>({});
+
+  // This is set in HeatMap and the value is used to determine spacing in SVG export
+  const [expandedTissues, setExpandedTissues] = useState<Array<Tissue>>([]);
 
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
@@ -273,6 +287,10 @@ export default function WheresMyGene(): JSX.Element {
     dispatch(addGeneInfoGene(gene));
   };
 
+  const sortedTissues = useMemo(() => {
+    return Object.keys(tissuesByName);
+  }, [tissuesByName]);
+
   return (
     <>
       <Head>
@@ -296,7 +314,7 @@ export default function WheresMyGene(): JSX.Element {
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
-        <RightSideBar>
+        <RightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
           <CellInfoSideBar
             generateGeneInfo={generateGeneInfo}
             cellInfoCellType={cellInfoCellType}
@@ -323,7 +341,7 @@ export default function WheresMyGene(): JSX.Element {
             <GeneInfoSideBar
               geneInfoGene={geneInfoGene}
               handleClose={handleCloseGeneInfoSideBar}
-              title={`${geneInfoGene}`}
+              title={geneInfoGene}
             />
           </RightSideBar>
         )
@@ -351,6 +369,8 @@ export default function WheresMyGene(): JSX.Element {
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
               availableFilters={availableFilters}
+              tissues={sortedTissues}
+              expandedTissues={expandedTissues}
             />
           </Top>
 
@@ -384,6 +404,9 @@ export default function WheresMyGene(): JSX.Element {
             selectedOrganismId={selectedOrganismId}
             allChartProps={allChartProps}
             setAllChartProps={setAllChartProps}
+            setTissuesByName={setTissuesByName}
+            expandedTissues={expandedTissues}
+            setExpandedTissues={setExpandedTissues}
           />
         </Wrapper>
       </View>

@@ -252,27 +252,27 @@ export function renderXAxis({
   // Create gene labels
   const geneLabelContainer = document.createElementNS(NAME_SPACE_URI, "g");
 
-  Array.from(
-    xAxis?.querySelectorAll(`[data-testid*='gene-label-'] span`) || []
-  ).forEach((label, index) => {
-    const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
+  Array.from(xAxis?.querySelectorAll(`[id*='gene-label-'] span`) || []).forEach(
+    (label, index) => {
+      const geneLabelText = document.createElementNS(NAME_SPACE_URI, "text");
 
-    const labelAttributes = {
-      transform: LABEL_ROTATION,
-      "font-size": "12px",
-      x: -(X_AXIS_CHART_HEIGHT_PX + yOffset + 10),
-      y:
-        xOffset +
-        HEAT_MAP_BASE_CELL_PX +
-        CHART_PADDING_PX / 2 +
-        index * HEAT_MAP_BASE_CELL_PX,
-    };
+      const labelAttributes = {
+        transform: LABEL_ROTATION,
+        "font-size": "12px",
+        x: -(X_AXIS_CHART_HEIGHT_PX + yOffset + 10),
+        y:
+          xOffset +
+          HEAT_MAP_BASE_CELL_PX +
+          CHART_PADDING_PX / 2 +
+          index * HEAT_MAP_BASE_CELL_PX,
+      };
 
-    applyAttributes(geneLabelText, labelAttributes);
-    geneLabelText.textContent = label.innerHTML;
+      applyAttributes(geneLabelText, labelAttributes);
+      geneLabelText.textContent = label.innerHTML;
 
-    geneLabelContainer.append(geneLabelText);
-  });
+      geneLabelContainer.append(geneLabelText);
+    }
+  );
 
   svg.append(geneLabelContainer);
 
@@ -292,7 +292,7 @@ export function renderYAxis({
 }) {
   if (!heatmapContainer) return;
 
-  const yAxis = heatmapContainer.querySelector(`#${tissueName}-y-axis`);
+  const yAxis = heatmapContainer.querySelector(`#y-axis-${tissueName}`);
 
   const svg = document.createElementNS(NAME_SPACE_URI, "svg");
 
@@ -342,15 +342,13 @@ export function renderYAxis({
   });
 
   Array.from(
-    yAxis?.querySelectorAll("[data-testid='cell-type-label-count']") || []
+    yAxis?.querySelectorAll("[id='cell-type-label-count']") || []
   ).forEach((labelCount, index) => {
     const label = labelCount.querySelector(
-      "[data-testid='cell-type-name']"
+      "[id='cell-type-name']"
     )?.textContent;
 
-    const count = labelCount.querySelector(
-      "[data-testid='cell-count']"
-    )?.textContent;
+    const count = labelCount.querySelector("[id='cell-count']")?.textContent;
 
     // group
     const group = document.createElementNS(NAME_SPACE_URI, "svg");
