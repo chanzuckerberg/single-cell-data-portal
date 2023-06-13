@@ -1,7 +1,0 @@
-INFO     processing:process_logic.py:106 Converting local.h5ad
-INFO     processing:process_logic.py:43 Updating processing status
-INFO     processing:process_logic.py:43 Updating processing status
-INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_cxg' id='139673315749024'> in 0:00:00.002261
-INFO     processing:process_logic.py:43 Updating processing status
-INFO     processing:process_cxg.py:107 Updating database with cxg artifact for dataset 965b11b9-a0a5-4079-8ad0-36ece09e30fe. s3_uri is s3://fake_cxg_bucket/965b11b9-a0a5-4079-8ad0-36ece09e30fe.cxg/
-INFO     processing:process_logic.py:43 Updating processing status
