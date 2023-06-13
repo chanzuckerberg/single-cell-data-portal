@@ -8,7 +8,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
+import {
+  EMPTY_ARRAY,
+  EMPTY_OBJECT,
+  EMPTY_SET,
+} from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
   FilterDimensions,
@@ -93,9 +97,8 @@ export default function WheresMyGene(): JSX.Element {
   }>({});
 
   // This is set in HeatMap and the value is used to determine spacing in SVG export
-  const [expandedTissues, setExpandedTissues] = useState<Set<Tissue>>(
-    new Set()
-  );
+  const [expandedTissues, setExpandedTissues] =
+    useState<Set<Tissue>>(EMPTY_SET);
 
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
