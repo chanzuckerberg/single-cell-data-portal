@@ -1,0 +1,38 @@
+  pw:api => selectors.setTestIdAttribute started +13ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +54ms
+  pw:api   "commit" event fired +18ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +23ms
+  pw:api => tracing.start started +9ms
+  pw:api <= tracing.start succeeded +11ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +143ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/tos/", waiting until "load" +17ms
+  pw:api   "commit" event fired +12s
+  pw:api   navigated to "https://localhost:3000/tos" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/tos" +25ms
+  pw:api <= page.goto succeeded +150ms
+  pw:api => expect.toBeVisible started +17ms
+  pw:api expect.toBeVisible with timeout 10000ms +16ms
+  pw:api waiting for getByText('Terms of Use').first() +1ms
+  pw:api   locator resolved to <h1 id="tos">Terms of Use</h1> +89ms
+  pw:api <= expect.toBeVisible succeeded +13ms
+  pw:api => expect.toBeVisible started +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cellxgene-logo') +1ms
+  pw:api   locator resolved to <img decoding="async" alt="CELLxGENE logo" data-nimg=…/> +4ms
+  pw:api <= expect.toBeVisible succeeded +6ms
+  pw:api taking page screenshot +110ms
+  pw:api => browserContext.close started +115ms
+  pw:api   "networkidle" event fired +15ms
+  pw:api <= browserContext.close succeeded +9s
