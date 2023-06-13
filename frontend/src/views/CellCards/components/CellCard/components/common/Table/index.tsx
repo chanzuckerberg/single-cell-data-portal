@@ -9,6 +9,7 @@ import {
   StyledHeadCellContent,
 } from "./style";
 import HelpTooltip from "../HelpTooltip";
+import { ROUTES } from "src/common/constants/routes";
 
 interface TableProps<T> {
   columns: Array<Extract<keyof T, string>>;
@@ -16,16 +17,60 @@ interface TableProps<T> {
   columnIdToName?: Record<Extract<keyof T, string>, string>;
 }
 
+export const EXPRESSION_SCORE_TOOLTIP_TEST_ID = "expression-score-tooltip";
+export const PERCENT_OF_CELLS_TOOLTIP_TEST_ID = "percent-of-cells-tooltip";
+
 // This is a generic table component that can be used to render any type of data.
 function Table<T extends object>({
   columns,
   rows,
   columnIdToName,
 }: TableProps<T>) {
+  const expressionScoreTooltip = (
+    <HelpTooltip
+      dark
+      buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
+      text={
+        <div>
+          The expression score is the average{" "}
+          <a
+            href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            rankit-normalized gene expression
+          </a>{" "}
+          among cells in the cell type that have non-zero values.
+        </div>
+      }
+    />
+  );
+
+  const percentOfCellsTooltip = (
+    <HelpTooltip
+      dark
+      buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
+      text={
+        <div>
+          Percentage of cells expressing a gene in the cell type. These numbers
+          are calculated after cells with{" "}
+          <a
+            href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            low coverage and low expression values
+          </a>{" "}
+          have been filtered out.
+        </div>
+      }
+    />
+  );
+
   return (
     <TableWrapper>
       <StyledTable>
-        <StyledHead>
+        <StyledHead data-testid="marker-genes-table-head">
           <tr>
             {columns.map((column, index) => {
               const columnName = columnIdToName
@@ -33,16 +78,12 @@ function Table<T extends object>({
                 : column.charAt(0).toUpperCase() + column.slice(1);
 
               return (
-                <StyledHeadCell key={index}>
+                <StyledHeadCell key={index} id={`${columnName}-header-cell`}>
                   <StyledHeadCellContent>
                     <div>{columnName}</div>
-                    {columnName === "Expression Score" ? (
-                      <HelpTooltip dark text="Expression Score" />
-                    ) : (
-                      columnName === "% of Cells" && (
-                        <HelpTooltip dark text="% of Cells" />
-                      )
-                    )}
+                    {columnName === "Expression Score"
+                      ? expressionScoreTooltip
+                      : columnName === "% of Cells" && percentOfCellsTooltip}
                   </StyledHeadCellContent>
                 </StyledHeadCell>
               );

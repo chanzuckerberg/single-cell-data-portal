@@ -89,6 +89,8 @@ interface Props {
 
 const ROWS_PER_PAGE = 10;
 
+export const MARKER_GENES_TOOLTIP_TEST_ID = "marker-genes-help-tooltip";
+
 const MarkerGeneTables = ({ cellTypeId }: Props) => {
   const [selectedOrganism, setSelectedOrganism] = useState("");
   // 0 is canonical marker genes, 1 is computational marker genes
@@ -349,6 +351,7 @@ const MarkerGeneTables = ({ cellTypeId }: Props) => {
           <TableTitleInnerWrapper columnGap={4}>
             <TableTitle>Marker Genes</TableTitle>
             <HelpTooltip
+              buttonDataTestId={MARKER_GENES_TOOLTIP_TEST_ID}
               text={
                 activeTable
                   ? enrichedGenesTooltipComponent
