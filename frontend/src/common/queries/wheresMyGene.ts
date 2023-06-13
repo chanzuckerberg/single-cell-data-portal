@@ -760,16 +760,16 @@ export function useTermIdLabels(version: 1 | 2 = 1): {
         const result: {
           [viewId: CellTypeRow["viewId"]]: CellTypeRow;
         } = {};
-
-        addCellTypeRowToResult({
-          result,
-          sortedCellTypeCompareOptions: [
-            [
-              "aggregated",
-              tissueCellTypesWithCompareOptions["tissue_stats"]["aggregated"],
+        if (tissueCellTypesWithCompareOptions["tissue_stats"])
+          addCellTypeRowToResult({
+            result,
+            sortedCellTypeCompareOptions: [
+              [
+                "aggregated",
+                tissueCellTypesWithCompareOptions["tissue_stats"]["aggregated"],
+              ],
             ],
-          ],
-        });
+          });
 
         for (const cellTypeWithCompareOptions of sortedTissueCellTypesWithCompareOptions) {
           const sortedCellTypeCompareOptions = getSortedCellTypeCompareOptions(
