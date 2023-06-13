@@ -295,6 +295,10 @@ def generate_test_inputs_and_expected_outputs(
     )
 
 
+# TODO(prathap): Write tests that mock backend.wmg.api.v2.get_dot_plot_data() and
+# backend.wmg.api.v2.rollup() so that we can test backend.wmg.api.v2.query() with
+# rollup operations.
+# see: https://github.com/chanzuckerberg/single-cell-data-portal/issues/4997
 class WmgApiV2Tests(unittest.TestCase):
     """
     Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a
