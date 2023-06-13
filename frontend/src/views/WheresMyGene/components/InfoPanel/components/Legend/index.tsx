@@ -67,7 +67,7 @@ export default memo(function Legend({
             allChartProps={allChartProps}
             availableFilters={availableFilters}
             tissues={tissues || EMPTY_ARRAY}
-            expandedTissues={expandedTissues ?? EMPTY_SET}
+            expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
           />
           <ShareButtonV2 />
         </>

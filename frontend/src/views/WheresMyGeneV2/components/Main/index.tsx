@@ -98,8 +98,9 @@ export default function WheresMyGene(): JSX.Element {
   }>({});
 
   // This is set in HeatMap and the value is used to determine spacing in SVG export
-  const [expandedTissues, setExpandedTissues] =
-    useState<Set<Tissue>>(EMPTY_SET);
+  const [expandedTissues, setExpandedTissues] = useState<Set<Tissue>>(
+    EMPTY_SET as Set<Tissue>
+  );
 
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
