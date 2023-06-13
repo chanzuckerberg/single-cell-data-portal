@@ -56,6 +56,7 @@ const QUERY_ID_DATASETS = "datasetIndex";
 export interface FetchCategoriesRows<T extends Categories> {
   isError: boolean;
   isLoading: boolean;
+  isSuccess: boolean;
   rows: T[];
 }
 
@@ -169,6 +170,7 @@ export function useFetchCollectionRows(
     data: datasets,
     isError: datasetsError,
     isLoading: datasetsLoading,
+    isSuccess: datasetsSuccess,
   } = useFetchDatasets(mode, status);
 
   // Fetch collections.
@@ -176,6 +178,7 @@ export function useFetchCollectionRows(
     data: collectionsById,
     isError: collectionsError,
     isLoading: collectionsLoading,
+    isSuccess: collectionsSuccess,
   } = useFetchCollections(mode, status);
 
   // View model built from join of collections response and aggregated metadata of dataset rows.
@@ -191,6 +194,7 @@ export function useFetchCollectionRows(
   return {
     isError: datasetsError || collectionsError,
     isLoading: datasetsLoading || collectionsLoading,
+    isSuccess: datasetsSuccess && collectionsSuccess,
     rows: collectionRows,
   };
 }
@@ -230,6 +234,7 @@ export function useFetchDatasetRows(
     data: datasets,
     isError: datasetsError,
     isLoading: datasetsLoading,
+    isSuccess: datasetsSuccess,
   } = useFetchDatasets(mode, status);
 
   // Fetch collections.
@@ -237,6 +242,7 @@ export function useFetchDatasetRows(
     data: collectionsById,
     isError: collectionsError,
     isLoading: collectionsLoading,
+    isSuccess: collectionsSuccess,
   } = useFetchCollections(mode, status);
 
   // Build dataset rows once datasets and collections responses have resolved.
@@ -256,6 +262,7 @@ export function useFetchDatasetRows(
   return {
     isError: datasetsError || collectionsError,
     isLoading: datasetsLoading || collectionsLoading,
+    isSuccess: datasetsSuccess && collectionsSuccess,
     rows: datasetRows,
   };
 }
