@@ -53,7 +53,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   e2e-test:
-    timeout-minutes: 60
+    timeout-minutes: 90
     runs-on: ubuntu-20.04
     defaults:
       run:
