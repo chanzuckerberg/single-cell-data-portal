@@ -462,27 +462,6 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
     ids: rawPublications.map(({ id }) => id),
   });
 
-  // Reconstructing rows into publication_list format
-  const allPublications: { id: string; name: string; dataset_ids: string[] }[] =
-    publication_list?.map(
-      (collection: Collection | TombstonedCollection | null) => {
-        if (!collection || collection.tombstone) return;
-        const ids: string[] = [];
-        for (const d of collection.datasets.values()) {
-          // Taking explorer_url and extracting the stable dataset IDs.
-          let url = d["dataset_deployments"][0].url.toString();
-          url = url.substring(51);
-          url = url.substring(0, url.length - 5);
-          ids.push(url);
-        }
-        return {
-          id: collection.id,
-          name: collection.summaryCitation,
-          dataset_ids: ids,
-        };
-      }
-    );
-
   const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
@@ -499,6 +478,33 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       sex_terms,
       tissue_terms,
     } = filter_dims;
+
+    // Reconstructing rows into publication_list format
+    const allPublications: {
+      id: string;
+      name: string;
+      dataset_ids: string[];
+    }[] = (publication_list ?? []).flatMap(
+      (collection: Collection | TombstonedCollection | null) => {
+        if (!collection || collection.tombstone) return [];
+
+        const ids: string[] = [];
+        for (const d of collection.datasets.values()) {
+          let url = d["dataset_deployments"][0].url.toString();
+          url = url.substring(51);
+          url = url.substring(0, url.length - 5);
+          ids.push(url);
+        }
+
+        return [
+          {
+            id: collection.id,
+            name: collection.summaryCitation || "",
+            dataset_ids: ids,
+          },
+        ];
+      }
+    );
 
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
@@ -554,7 +560,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       },
       isLoading: false,
     };
-  }, [data, isLoading, allPublications, selectedDatasets, collections]);
+  }, [data, isLoading, selectedDatasets, collections, publication_list]);
 }
 
 export function useExpressionSummary(version: 1 | 2 = 1): {
