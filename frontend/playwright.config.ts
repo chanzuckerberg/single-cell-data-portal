@@ -13,6 +13,25 @@ import featureFlags from "./tests/common/featureFlags";
 expect.extend(matchers);
 
 /**
+ * This is used if you want to use your own cookie, specifically for local logged in tests.
+ * Only used if USE_COOKIE is set to true and will overwrite all other cookies that may be set.
+ * Replace `value` string with your own auth cookie.
+ * NOTE:: the string typically starts with "ey" and ends with "="
+ */
+const MANUAL_COOKIE = [
+  {
+    name: "cxguser",
+    value: "ey...=",
+    domain: "api.cellxgene.dev.single-cell.czi.technology",
+    path: "/",
+    expires: 1965216850,
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  } as never,
+];
+
+/**
  * (thuang): Add `czi-checker`, so Plausible will ignore it.
  * NOTE: This changes all browsers to use Desktop Chrome UA, so please look
  * out for bugs that could be caused by this.
@@ -190,6 +209,11 @@ function getStorageState(): {
     // Merge loginState with featureFlags
     storageState.cookies = storageState.cookies.concat(loginState.cookies);
     storageState.origins = storageState.origins.concat(loginState.origins);
+  }
+
+  // For testing auth tests locally with a manual cookie
+  if (process.env.USE_COOKIE === "true") {
+    storageState.cookies = MANUAL_COOKIE;
   }
 
   return storageState;
