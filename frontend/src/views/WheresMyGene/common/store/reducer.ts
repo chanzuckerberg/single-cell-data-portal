@@ -276,7 +276,7 @@ function selectFilters(
   };
 }
 
-// (note to self): We  are using a single filter for all publications to avoid touching the backend / reconfiguring the cube
+// (cchoi): We  are using a single filter for all publications to avoid touching the backend / reconfiguring the cube
 function selectPublicationFilter(
   state: State,
   action: PayloadAction<{
