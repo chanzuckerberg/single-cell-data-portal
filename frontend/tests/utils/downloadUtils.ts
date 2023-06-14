@@ -340,7 +340,7 @@ export async function captureTissueSnapshot(
   const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
   const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
 
-  const yAxisElement = page.locator(getById(`${tissues[i]}-y-axis`));
+  const yAxisElement = page.locator(getById(`y-axis-${tissues[i]}`));
   const box = await yAxisElement.boundingBox();
   if (!box) {
     console.error("Element not found");
