@@ -20,8 +20,9 @@ expect.extend(matchers);
  */
 const MANUAL_COOKIE = [
   {
-    name: "cxguser",
+    //DO NOT commit your cookie value into repo.
     value: "ey...=",
+    name: "cxguser",
     domain: "api.cellxgene.dev.single-cell.czi.technology",
     path: "/",
     expires: 1965216850,
