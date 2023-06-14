@@ -3,7 +3,6 @@ import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
-  Tooltip,
 } from "@czi-sds/components";
 import isEqual from "lodash/isEqual";
 import {
@@ -37,6 +36,7 @@ import {
 } from "./style";
 import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
+import { useRouter } from "next/router";
 
 const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };
@@ -110,6 +110,8 @@ export default memo(function Filters({
     ethnicities,
     sexes,
   } = selectedFilters;
+  const { pathname } = useRouter();
+  const isVersion2 = pathname.includes("v2");
 
   const {
     data: {
@@ -120,9 +122,11 @@ export default memo(function Filters({
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions();
+  } = useFilterDimensions(isVersion2 ? 2 : 1);
 
-  const isHeatmapShown = !!selectedTissues.length && !!selectedGenes.length;
+  const isHeatmapShown =
+    (!selectedTissues || (selectedTissues && !!selectedTissues.length)) &&
+    !!selectedGenes.length;
 
   const InputDropdownProps = {
     sdsStyle: "minimal",
@@ -338,36 +342,12 @@ export default memo(function Filters({
 
       <Organism isLoading={isLoading} />
 
-      <Tooltip
-        sdsStyle="dark"
-        arrow
-        placement="right"
-        title={"Please select at least one tissue and gene to use this option."}
-        disableHoverListener={isHeatmapShown}
-        disableFocusListener={isHeatmapShown}
-      >
-        <div>
-          <Compare areFiltersDisabled={!isHeatmapShown} />
-        </div>
-      </Tooltip>
+      <Compare areFiltersDisabled={!isHeatmapShown} />
 
       <div>
         <ViewOptionsLabel>View Options</ViewOptionsLabel>
         <ViewOptionsWrapper>
-          <Tooltip
-            sdsStyle="dark"
-            arrow
-            placement="right"
-            title={
-              "Please select at least one tissue and gene to use this option."
-            }
-            disableHoverListener={isHeatmapShown}
-            disableFocusListener={isHeatmapShown}
-          >
-            <div>
-              <Sort areFiltersDisabled={!isHeatmapShown} />
-            </div>
-          </Tooltip>
+          <Sort areFiltersDisabled={!isHeatmapShown} />
           <ColorScale setIsScaled={setIsScaled} />
         </ViewOptionsWrapper>
       </div>

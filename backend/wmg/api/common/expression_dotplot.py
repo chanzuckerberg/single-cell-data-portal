@@ -30,7 +30,7 @@ def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
 
 
 def build_dot_plot_matrix(
-    query_result: DataFrame,
+    raw_gene_expression: DataFrame,
     cell_counts_cell_type_agg: DataFrame,
     cell_counts_tissue_agg: DataFrame,
     group_by_terms: List[str] = None,
@@ -39,7 +39,7 @@ def build_dot_plot_matrix(
         group_by_terms = DEFAULT_GROUP_BY_TERMS
 
     # Aggregate cube data by gene, tissue, cell type
-    expr_summary_agg = query_result.groupby(["gene_ontology_term_id"] + group_by_terms, as_index=False).sum(
+    expr_summary_agg = raw_gene_expression.groupby(["gene_ontology_term_id"] + group_by_terms, as_index=False).sum(
         numeric_only=True
     )
     return expr_summary_agg.join(cell_counts_cell_type_agg, on=group_by_terms, how="left").join(
@@ -48,7 +48,7 @@ def build_dot_plot_matrix(
 
 
 def get_dot_plot_data(
-    query_result: DataFrame,
+    raw_gene_expression: DataFrame,
     cell_counts: DataFrame,
     group_by_terms: List[str] = None,
 ) -> Tuple[DataFrame, DataFrame]:
@@ -58,6 +58,6 @@ def get_dot_plot_data(
     cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts, group_by_terms)
     cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
     dot_plot_matrix_df = build_dot_plot_matrix(
-        query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg, group_by_terms
+        raw_gene_expression, cell_counts_cell_type_agg, cell_counts_tissue_agg, group_by_terms
     )
     return dot_plot_matrix_df, cell_counts_cell_type_agg

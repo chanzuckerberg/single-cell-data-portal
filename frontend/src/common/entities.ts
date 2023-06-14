@@ -147,6 +147,7 @@ export interface Dataset {
   created_at: number;
   original_id?: string;
   published?: boolean;
+  published_at?: number;
   tombstone?: boolean;
   updated?: boolean;
   collection_visibility: Collection["visibility"];

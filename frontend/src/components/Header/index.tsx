@@ -6,7 +6,7 @@ import { FC, useRef, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
-import { noop } from "src/common/constants/utils";
+// import { noop } from "src/common/constants/utils";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import {
@@ -63,10 +63,6 @@ const Header: FC = () => {
             ref={dropdownRef}
             open={dropdownOpen}
             anchorEl={anchorEl}
-            // (thuang): MUI types require `onResize` and `onResizeCapture` for
-            // some reason. Please recheck if we can remove them in the future
-            onResize={noop}
-            onResizeCapture={noop}
           >
             <MenuSelect
               search={false}

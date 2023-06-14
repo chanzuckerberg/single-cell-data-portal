@@ -38,7 +38,7 @@ export const generateAndCopyShareUrl = ({
   Object.entries(stripEmptyFilters(filters)).forEach(([key, value]) => {
     url.searchParams.set(key, value.join(","));
   });
-  url.searchParams.set("tissues", tissues.join(","));
+  if (tissues) url.searchParams.set("tissues", tissues.join(","));
   url.searchParams.set("genes", genes.join(","));
   url.searchParams.set("ver", LATEST_SHARE_LINK_VERSION);
 

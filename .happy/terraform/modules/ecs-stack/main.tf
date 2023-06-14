@@ -191,6 +191,7 @@ module wmg_batch {
   image                         = "${local.wmg_upload_image_repo}:${local.image_tag}"
   batch_role_arn                = local.wmg_batch_role_arn
   cmd                           = ""
+  api_url                       = local.backend_url
   custom_stack_name             = local.custom_stack_name
   remote_dev_prefix             = local.remote_dev_prefix
   deployment_stage              = local.deployment_stage
