@@ -78,11 +78,11 @@ interface FilterOption {
   id: string;
 }
 
-interface publicationFilterOption {
-  name: string;
-  label: string;
-  id: string | string[];
-}
+// interface publicationFilterOption {
+//   name: string;
+//   label: string;
+//   id: string | string[];
+// }
 
 const mapTermToFilterOption = (term: {
   id: string;
