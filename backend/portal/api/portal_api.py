@@ -823,7 +823,7 @@ def get_dataset_identifiers(url: str):
             if dataset is None:
                 raise NotFoundHTTPException()
         except DatasetIsTombstonedException:
-            raise GoneHTTPException() from None
+            raise NotFoundHTTPException() from None  # This should change to GoneHTTPException once FE is ready for 410
 
     # A dataset version can appear in multiple collections versions. This endpoint should:
     # 1. Return the most recent published version that contains the dataset version (aka the mapped version)
