@@ -29,6 +29,7 @@ from backend.layers.business.exceptions import (
     CollectionUpdateException,
     CollectionVersionException,
     DatasetInWrongStatusException,
+    DatasetIsTombstonedException,
     DatasetNotFoundException,
     InvalidMetadataException,
     InvalidURIException,
@@ -817,9 +818,12 @@ def get_dataset_identifiers(url: str):
     dataset = get_business_logic().get_dataset_version(DatasetVersionId(_id))
     if dataset is None:
         # Lookup from canonical if the version cannot be found
-        dataset = get_business_logic().get_dataset_version_from_canonical(DatasetId(_id))
-    if dataset is None:
-        raise NotFoundHTTPException()
+        try:
+            dataset = get_business_logic().get_dataset_version_from_canonical(DatasetId(_id))
+            if dataset is None:
+                raise NotFoundHTTPException()
+        except DatasetIsTombstonedException:
+            raise GoneHTTPException() from None
 
     # A dataset version can appear in multiple collections versions. This endpoint should:
     # 1. Return the most recent published version that contains the dataset version (aka the mapped version)

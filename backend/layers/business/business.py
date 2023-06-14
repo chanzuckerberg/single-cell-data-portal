@@ -668,13 +668,15 @@ class BusinessLogic(BusinessLogicInterface):
             canonical_dataset = self.database_provider.get_canonical_dataset(dataset_id)
             if not canonical_dataset:
                 return None
+            if canonical_dataset.tombstoned:
+                raise DatasetIsTombstonedException()
             # dataset has never been published, so fetch its most recently created version
             latest = datetime.fromtimestamp(0)
             unpublished_dataset = None
-            for dataset in self.database_provider.get_all_versions_for_dataset(dataset_id):
-                if dataset.created_at > latest:
-                    latest = dataset.created_at
-                    unpublished_dataset = dataset
+            for dataset_version in self.database_provider.get_all_versions_for_dataset(dataset_id):
+                if dataset_version.created_at > latest:
+                    latest = dataset_version.created_at
+                    unpublished_dataset = dataset_version
             return unpublished_dataset
 
     def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[PublishedDatasetVersion]:

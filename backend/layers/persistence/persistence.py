@@ -506,6 +506,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             # update canonical collection -> collection version mapping
             collection = session.query(CollectionTable).filter_by(id=collection_id.id).one()
+            previous_c_v_id = collection.version_id
+
             collection.version_id = version_id.id
             # update canonical collection timestamps depending on whether this is its first publish
             if collection.originally_published_at is None:
@@ -519,6 +521,22 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_version.published_at = published_at
 
             # finalize collection version's dataset versions
+            version_ids_for_datasets_to_tombstone = []
+            if previous_c_v_id:
+                # Publishing a revision; Datasets could have been removed
+                previous_collection_version = session.query(CollectionVersionTable).filter_by(id=previous_c_v_id)
+                previous_d_v_ids = previous_collection_version.datasets
+                for previous_d_v_id in previous_d_v_ids:
+                    if previous_d_v_id not in collection_version.datasets:
+                        version_ids_for_datasets_to_tombstone.append(previous_d_v_id)
+
+            if version_ids_for_datasets_to_tombstone:
+                datasets = session.query(DatasetTable).filter(
+                    DatasetTable.version_id.in_(version_ids_for_datasets_to_tombstone)
+                )
+                for dataset in datasets:
+                    dataset.tombstone = True
+
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
             for dataset_version, dataset in (
                 session.query(DatasetVersionTable, DatasetTable)
@@ -546,13 +564,11 @@ class DatabaseProvider(DatabaseProviderInterface):
                     return None
             return self._hydrate_dataset_version(dataset_version)
 
-    def get_all_versions_for_dataset(self, dataset_id: DatasetId, get_tombstoned: bool = False) -> List[DatasetVersion]:
+    def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
         Returns all dataset versions for a canonical dataset_id
         """
         dataset = self.get_canonical_dataset(dataset_id)
-        if dataset.tombstoned and not get_tombstoned:
-            return []
         with self._manage_session() as session:
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
             artifact_ids = [artifact_id for dv in dataset_versions for artifact_id in dv.artifacts]
