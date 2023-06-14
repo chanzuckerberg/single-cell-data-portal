@@ -3,6 +3,7 @@ from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.common.entities import (
     CanonicalCollection,
+    CanonicalDataset,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -38,6 +39,11 @@ class DatabaseProviderInterface:
     def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:
         """
         Return the canonical collection with id `collection_id`
+        """
+
+    def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:
+        """
+        Return the canonical Dataset with id `dataset_id`
         """
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
@@ -125,7 +131,7 @@ class DatabaseProviderInterface:
         Sets the `published_at` datetime for a collection version and its datasets
         """
 
-    def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> DatasetVersion:
+    def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool) -> DatasetVersion:
         """
         Returns a dataset version by id.
         """

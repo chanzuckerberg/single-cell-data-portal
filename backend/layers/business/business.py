@@ -22,6 +22,7 @@ from backend.layers.business.exceptions import (
     CollectionVersionException,
     DatasetIngestException,
     DatasetInWrongStatusException,
+    DatasetIsTombstonedException,
     DatasetNotFoundException,
     DatasetUpdateException,
     DatasetVersionNotFoundException,
@@ -712,9 +713,11 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Given a dataset version id, return the DatasetVersion, if it's been part of a published CollectionVersion
         """
-        dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
+        dataset_version = self.database_provider.get_dataset_version(dataset_version_id, get_tombstoned=True)
         if not dataset_version:
             return None
+        if dataset_version.canonical_dataset.tombstoned:
+            raise DatasetIsTombstonedException()
         collection_versions = self.database_provider.get_all_versions_for_collection(dataset_version.collection_id)
         try:
             published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(

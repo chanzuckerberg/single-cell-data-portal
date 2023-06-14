@@ -387,7 +387,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def get_all_mapped_collection_versions(self, get_tombstoned: bool = False) -> Iterable[CollectionVersion]:
         """
         Retrieves all the collection versions that are mapped to a canonical collection. This method does not require
-        tombstone filtering at the 'individual Dataset' level because by definition, only active Dataset version ids
+        tombstone filtering at the 'individual Dataset' level because, by definition, only active Dataset version ids
         will be present in the CollectionVersion.datasets array for active (mapped) Collection versions.
         """
         with self._manage_session() as session:
@@ -568,7 +568,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
-        Returns all mapped datasets and mapped collection versions
+        Returns all mapped datasets and mapped collection versions.
         """
         active_collections = list(self.get_all_mapped_collection_versions())
         dataset_version_ids = []
@@ -776,12 +776,16 @@ class DatabaseProvider(DatabaseProviderInterface):
 
             return self._hydrate_dataset_version(new_dataset_version)
 
-    def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+    def get_dataset_mapped_version(
+        self, dataset_id: DatasetId, get_tombstoned: bool = False
+    ) -> Optional[DatasetVersion]:
         """
         Returns the dataset version mapped to a canonical dataset_id, or None if not existing
         """
         with self._manage_session() as session:
-            canonical_dataset = session.query(DatasetTable).filter_by(id=dataset_id.id).one_or_none()
+            canonical_dataset = (
+                session.query(DatasetTable).filter_by(id=dataset_id.id, tombstone=get_tombstoned).one_or_none()
+            )
             if canonical_dataset is None:
                 return None
             if canonical_dataset.version_id is None:
