@@ -285,7 +285,6 @@ function selectPublicationFilter(
   }>
 ): State {
   const { key, options } = action.payload;
-  // (note to self): payload is working for publication filter!!!!!!
 
   const { selectedPublicationFilter } = state;
 
