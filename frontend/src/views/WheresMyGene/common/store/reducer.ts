@@ -10,7 +10,7 @@ export interface State {
   genesToDelete: string[];
   selectedGenes: string[];
   selectedOrganismId: string | null;
-  selectedTissues: string[];
+  selectedTissues?: string[];
   selectedFilters: {
     datasets: string[];
     developmentStages: string[];
@@ -18,6 +18,12 @@ export interface State {
     ethnicities: string[];
     sexes: string[];
   };
+
+  // New state for publication filter
+  selectedPublicationFilter: {
+    publications: string[];
+  };
+
   /**
    * (thuang): BE API response always returns a snapshot ID. When the ID changes,
    * FE needs refresh the queries
@@ -42,6 +48,11 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   sexes: [],
 };
 
+// Need this to initialize selectedPublicationFilter
+const EMPTY_PUBLICATION_FILTER: State["selectedPublicationFilter"] = {
+  publications: [],
+};
+
 // (thuang): If you have derived states based on the state, use `useMemo`
 // to cache the derived states instead of putting them in the state.
 export const INITIAL_STATE: State = {
@@ -49,6 +60,7 @@ export const INITIAL_STATE: State = {
   geneInfoGene: null,
   genesToDelete: [],
   selectedFilters: EMPTY_FILTERS,
+  selectedPublicationFilter: EMPTY_PUBLICATION_FILTER,
   selectedGenes: [],
   selectedOrganismId: null,
   selectedTissues: [],
@@ -75,6 +87,7 @@ export const REDUCERS = {
   selectCompare,
   resetGenesToDelete,
   selectFilters,
+  selectPublicationFilter, // Added to the reducer here
   selectGenes,
   selectGeneInfoFromXAxis,
   selectOrganism,
@@ -263,6 +276,31 @@ function selectFilters(
   };
 }
 
+// (cchoi): We  are using a single filter for all publications to avoid touching the backend / reconfiguring the cube
+function selectPublicationFilter(
+  state: State,
+  action: PayloadAction<{
+    key: keyof State["selectedPublicationFilter"];
+    options: string[];
+  }>
+): State {
+  const { key, options } = action.payload;
+
+  const { selectedPublicationFilter } = state;
+
+  if (isEqual(selectedPublicationFilter[key], options)) return state;
+
+  const newSelectedFilters = {
+    ...state.selectedPublicationFilter,
+    [key]: options,
+  };
+
+  return {
+    ...state,
+    selectedPublicationFilter: newSelectedFilters,
+  };
+}
+
 function setSnapshotId(
   state: State,
   action: PayloadAction<State["snapshotId"]>
@@ -364,7 +402,7 @@ export interface LoadStateFromURLPayload {
   compare: State["compare"];
   filters: Partial<State["selectedFilters"]>;
   organism: State["selectedOrganismId"];
-  tissues: State["selectedTissues"];
+  tissues?: State["selectedTissues"];
   genes: State["selectedGenes"];
 }
 

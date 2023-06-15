@@ -14,6 +14,7 @@ import {
 import { selectOrganism } from "src/views/WheresMyGene/common/store/actions";
 import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
 import { StyledDropdown, Wrapper, Label } from "../common/style";
+import { useRouter } from "next/router";
 
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
   sdsStyle: "square",
@@ -26,7 +27,9 @@ interface Props {
 export default function Organism({ isLoading }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedOrganismId } = useContext(StateContext);
-  const { data: organisms } = useAvailableOrganisms();
+  const { pathname } = useRouter();
+  const isVersion2 = pathname.includes("v2");
+  const { data: organisms } = useAvailableOrganisms(isVersion2 ? 2 : 1);
 
   // (thuang): Default to "Homo sapiens" on first load
   useEffect(() => {

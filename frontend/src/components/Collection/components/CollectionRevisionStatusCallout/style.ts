@@ -10,7 +10,7 @@ export const CollectionRevisionCallout = styled(Banner)`
   top: 0;
 
   > div > div {
-    display: contents; /* targeting czifui IconWrapper style to override iconSize "l" and spaces "m" setting in app theme */
+    display: contents; /* targeting @czi-sds/components IconWrapper style to override iconSize "l" and spaces "m" setting in app theme */
   }
 
   svg {

@@ -1,6 +1,5 @@
 from typing import Dict, List, Union
 
-import tiledb
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
@@ -143,8 +142,6 @@ class WmgQuery:
                 attrs[attr] = vals
                 query_cond += f"{attr} in {vals}"
 
-        attr_cond = tiledb.QueryCondition(query_cond) if query_cond else None
-
         tiledb_dims_query = []
         for dim_name in indexed_dims:
             if criteria.dict()[dim_name]:
@@ -156,7 +153,7 @@ class WmgQuery:
 
         tiledb_dims_query = tuple(tiledb_dims_query)
 
-        query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
+        query_result_df = cube.query(cond=query_cond or None, use_arrow=True).df[tiledb_dims_query]
         return query_result_df
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):

@@ -37,6 +37,8 @@ services:
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
     platform: linux/amd64
+    profiles:
+      - frontend
     build:
       context: frontend
       cache_from:
@@ -70,6 +72,8 @@ services:
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
     platform: linux/amd64
+    profiles:
+      - upload_failures
     build:
       context: .
       cache_from:
@@ -105,6 +109,8 @@ services:
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
     platform: linux/amd64
+    profiles:
+      - upload_success
     build:
       context: .
       cache_from:
@@ -140,6 +146,8 @@ services:
   dataset_submissions:
     image: "${DOCKER_REPO}dataset-submissions"
     platform: linux/amd64
+    profiles:
+      - dataset_submissions
     build:
       context: .
       cache_from:
@@ -171,9 +179,49 @@ services:
       corporanet:
         aliases:
           - dataset_submissions.corporanet.local
+  schema_migration:
+    image: "${DOCKER_REPO}schema-migration"
+    platform: linux/amd64
+    profiles:
+      - schema_migration
+    build:
+      context: .
+      cache_from:
+        - "${DOCKER_REPO}schema-migration:branch-main"
+      dockerfile: Dockerfile.schema_migration
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
+    restart: "no"
+    ports:
+      - "9003:8080"
+    volumes:
+      - ./backend/schema_migration:/var/task
+      - ./backend/common:/var/task/backend/common
+      # Mount dirs in a layout suitable for running tests.
+      - .:/single-cell-data-portal
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=test
+      - ARTIFACT_BUCKET=artifact-bucket
+      - CELLXGENE_BUCKET=cellxgene-bucket
+    networks:
+      corporanet:
+        aliases:
+          - schema_migration.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
     platform: linux/amd64
+    profiles:
+      - processing
     build:
       context: .
       cache_from:
@@ -209,6 +257,8 @@ services:
   wmg_processing:
     image: "${DOCKER_REPO}wmg-processing"
     platform: linux/amd64
+    profiles:
+      - wmg_processing
     build:
       context: .
       cache_from:
@@ -242,6 +292,8 @@ services:
   backend:
     image: "${DOCKER_REPO}corpora-backend"
     platform: linux/amd64
+    profiles:
+      - backend
     build:
       context: .
       cache_from:
