@@ -29,7 +29,7 @@ import { ENTITIES } from "./entities";
 import { useFetchCollectionRows } from "./filter";
 import { TombstonedCollection, useManyCollections } from "./collections";
 import { Collection } from "../entities";
-import { VIEW_MODE, useViewMode } from "src/common/hooks/useViewMode";
+import { VIEW_MODE } from "src/common/hooks/useViewMode";
 import { Dataset } from "@mui/icons-material";
 
 interface RawOntologyTerm {
