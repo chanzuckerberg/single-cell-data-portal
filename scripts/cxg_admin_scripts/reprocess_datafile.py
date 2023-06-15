@@ -30,9 +30,58 @@ def get_happy_stack_name(deployment) -> str:
     return f"{deployment}-{deployment}stack"
 
 
-def cxg_remaster(ctx):
+def cxg_remaster():
     """Cxg remaster v2"""
-    pass
+
+    # loop thru rdev
+    import requests
+
+    datasets = requests.get("https://api.cellxgene.dev.single-cell.czi.technology/curation/v1/datasets").json()
+    ct = 0
+    client = boto3.client("stepfunctions")
+    aws_account_id = get_aws_account_id()
+    # deployment = ctx.obj["deployment"]
+    deployment = "dev"
+    happy_stack_name = get_happy_stack_name(deployment)
+    for dataset in datasets:
+        dataset_id = dataset["dataset_version_id"]
+
+        payload = {"dataset_id": dataset["dataset_version_id"]}
+
+        client.start_execution(
+            stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{happy_stack_name}-cxg-remaster-v2-sfn",
+            name=f"{dataset_id}-{int(time())}",
+            input=json.dumps(payload),
+        )
+        #
+        # click.echo(
+        #     f"Step function executing: "
+        #     f"https://us-west-2.console.aws.amazon.com/states/home?region=us-west-2#/executions/details/"
+        #     f"{response['executionArn']}"
+        # )
+        ct += 1
+    print(f"SFNs started: {ct}")
+
+
+def reprocess_failed_jobs():
+    client = boto3.client("stepfunctions")
+    aws_account_id = get_aws_account_id()
+    deployment = "dev"
+    happy_stack_name = get_happy_stack_name(deployment)
+    execution_metadata = client.list_executions(
+        stateMachineArn="arn:aws:states:us-west-2:699936264352:stateMachine:dp-dev-devstack-cxg-remaster-v2-sfn",
+        statusFilter="FAILED",
+        maxResults=400,
+    )["executions"]
+    dataset_ids = [arn["name"].rsplit("-", 1)[0] for arn in execution_metadata]
+    for dataset_id in dataset_ids:
+        payload = {"dataset_id": dataset_id}
+
+        client.start_execution(
+            stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{happy_stack_name}-cxg-remaster-v2-sfn",
+            name=f"{dataset_id}-{int(time())}-retry",
+            input=json.dumps(payload),
+        )
 
 
 def reprocess_seurat(ctx: Context, dataset_id: str) -> None:
@@ -68,3 +117,7 @@ def reprocess_seurat(ctx: Context, dataset_id: str) -> None:
         f"https://us-west-2.console.aws.amazon.com/states/home?region=us-west-2#/executions/details/"
         f"{response['executionArn']}"
     )
+
+
+if __name__ == "__main__":
+    reprocess_failed_jobs()

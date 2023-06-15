@@ -221,6 +221,10 @@ local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id
 	docker-compose $(COMPOSE_OPTS) up -d upload_success
 	curl -v -XPOST "http://127.0.0.1:9001/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)"}'
 
+.PHONY: local-rebuild-schema-migration
+local-rebuild-schema-migration: .env.ecr local-ecr-login
+	docker-compose $(COMPOSE_OPTS) build schema_migrate
+
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
 	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
