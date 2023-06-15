@@ -16,7 +16,6 @@ def get(dataset_version_id: str):
     """
     business_logic = get_business_logic()
     validate_uuid_else_forbidden(dataset_version_id)
-
     try:
         dataset_version = business_logic.get_prior_published_dataset_version(DatasetVersionId(dataset_version_id))
         if dataset_version is None:

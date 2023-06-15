@@ -519,18 +519,20 @@ class DatabaseProvider(DatabaseProviderInterface):
             # update collection version
             collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             collection_version.published_at = published_at
+            dataset_ids_for_new_collection_version = [
+                d.dataset_id.id for d in self.get_collection_version_with_datasets(version_id).datasets
+            ]
 
             # finalize collection version's dataset versions
             version_ids_for_datasets_to_tombstone = []
             if previous_c_v_id:
                 # Publishing a revision; Datasets could have been removed
-                previous_collection_version = session.query(CollectionVersionTable).filter_by(id=previous_c_v_id).one()
-                # print("prev col version")
-                # import pprint
-                # pprint.pprint(previous_collection_version)
-                previous_d_v_ids = previous_collection_version.datasets
+                previous_collection_version = self.get_collection_version_with_datasets(
+                    CollectionVersionId(previous_c_v_id)
+                )
+                previous_d_v_ids = [d.dataset_id.id for d in previous_collection_version.datasets]
                 for previous_d_v_id in previous_d_v_ids:
-                    if previous_d_v_id not in collection_version.datasets:
+                    if previous_d_v_id not in dataset_ids_for_new_collection_version:
                         version_ids_for_datasets_to_tombstone.append(previous_d_v_id)
 
             if version_ids_for_datasets_to_tombstone:

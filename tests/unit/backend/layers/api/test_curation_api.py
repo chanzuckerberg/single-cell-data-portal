@@ -1794,7 +1794,6 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         )
 
         headers = self.make_owner_header()
-
         # get previously published dataset version
         test_url = f"/curation/v1/dataset_versions/{initial_published_dataset_version_id}"
         response = self.app.get(test_url, headers=headers)
