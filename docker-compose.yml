@@ -199,7 +199,7 @@ services:
       - "9003:8080"
     volumes:
       - ./backend/schema_migration:/var/task
-      - ./backend/common:var/task/backend/common
+      - ./backend/common:/var/task/backend/common
       # Mount dirs in a layout suitable for running tests.
       - .:/single-cell-data-portal
     environment:

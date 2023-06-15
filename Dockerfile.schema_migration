@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.8
+FROM python:3.8
 
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
@@ -22,4 +22,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3" "-m" "migrate"]
+CMD ["python3", "-m", "migrate"]
