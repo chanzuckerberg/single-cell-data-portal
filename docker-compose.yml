@@ -216,7 +216,7 @@ services:
     networks:
       corporanet:
         aliases:
-          - dataset_submissions.corporanet.local
+          - schema_migration.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
     platform: linux/amd64

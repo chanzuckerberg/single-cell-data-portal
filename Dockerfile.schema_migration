@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.10
 
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
