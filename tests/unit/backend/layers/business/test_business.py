@@ -1116,7 +1116,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.business_logic.tombstone_collection(published_collection.collection_id)
 
         # The collection version canonical collection has tombstoned marked as True
-        collection_version = self.business_logic.get_collection_version(published_collection.version_id)
+        collection_version = self.business_logic.get_collection_version(
+            published_collection.version_id, get_tombstoned=True
+        )
         self.assertTrue(collection_version.canonical_collection.tombstoned)
 
     def test_publish_version_fails_on_published_collection(self):

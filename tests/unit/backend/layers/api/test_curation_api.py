@@ -84,7 +84,7 @@ class TestDeleteCollection(BaseAPIPortalTest):
                 self._test(private_collection_version_id, auth, expected_response)
 
     def test__delete_tombstone_collection(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
+        tests = [("not_owner", 410), ("noauth", 401), ("owner", 410), ("super", 410)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 collection = self.generate_published_collection()

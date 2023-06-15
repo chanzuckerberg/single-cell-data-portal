@@ -36,7 +36,9 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
-    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
+    def get_collection_version(
+        self, version_id: CollectionVersionId, get_tombstoned: bool
+    ) -> CollectionVersionWithDatasets:
         pass
 
     def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
