@@ -173,22 +173,12 @@ export default memo(function Filters({
     );
 
     const newPublications: FilterOption[] = [];
-    // const noPublicationIds: string[] = [];
 
     for (const publication of rawPublications) {
-      if (publication.name == "") {
-        // noPublicationIds.push(publication.id);
-      } else {
+      if (publication.name != "") {
         newPublications.push(mapTermToFilterOption(publication));
       }
     }
-
-    // Add default 'No Publication' option to the publication list
-    // newPublications.push({
-    //   name: "No Publication",
-    //   label: "No Publication",
-    //   id: noPublicationIds,
-    // });
 
     newPublications.sort((a, b) => a.name.localeCompare(b.name));
 
