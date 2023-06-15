@@ -146,22 +146,22 @@ def _open_cube(cube_uri) -> Array:
 
 
 def _load_cell_type_order() -> DataFrame:
-    return pd.read_json(_read_s3obj(f"snapshot/{CELL_TYPE_ORDERINGS_FILENAME}"))
+    return pd.read_json(f"snapshot/{CELL_TYPE_ORDERINGS_FILENAME}")
 
 
 def _load_primary_filter_data() -> Dict:
-    return json.loads(_read_s3obj(f"snapshot/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"))
+    with open(f"snapshot/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "r") as f:
+        return json.load(f)
 
 
 def _load_dataset_to_gene_ids_data() -> Dict:
-    return json.loads(_read_s3obj(f"snapshot/{DATASET_TO_GENE_IDS_FILENAME}"))
+    with open(f"snapshot/{DATASET_TO_GENE_IDS_FILENAME}", "r") as f:
+        return json.load(f)
 
 
 def _load_filter_graph_data() -> str:
-    try:
-        return json.loads(_read_s3obj(f"snapshot/{FILTER_RELATIONSHIPS_FILENAME}"))
-    except Exception:
-        return None
+    with open(f"snapshot/{FILTER_RELATIONSHIPS_FILENAME}", "r") as f:
+        return json.load(f)
 
 
 def _read_s3obj(relative_path: str) -> str:
