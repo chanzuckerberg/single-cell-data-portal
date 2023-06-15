@@ -223,7 +223,7 @@ local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id
 
 .PHONY: local-rebuild-schema-migration
 local-rebuild-schema-migration: .env.ecr local-ecr-login
-	docker-compose $(COMPOSE_OPTS) build schema_migrate
+	docker-compose $(COMPOSE_OPTS) build schema_migration
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
