@@ -108,30 +108,32 @@ def load_snapshot() -> WmgSnapshot:
     """
     global cached_snapshot
     if new_snapshot_identifier := _update_latest_snapshot_identifier():
-        cached_snapshot = _load_snapshot(new_snapshot_identifier)
+        cached_snapshot = _download_and_load_snapshot(new_snapshot_identifier)
         cached_snapshot.build_dataset_metadata_dict()
     return cached_snapshot
 
 
-def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
-    cell_type_orderings = _load_cell_type_order(new_snapshot_identifier)
-    primary_filter_dimensions = _load_primary_filter_data(new_snapshot_identifier)
-    dataset_to_gene_ids = _load_dataset_to_gene_ids_data(new_snapshot_identifier)
-    filter_relationships = _load_filter_graph_data(new_snapshot_identifier)
-
+def _download_and_load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
-    logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
+    logger.info(f"Downloading WMG snapshot at {snapshot_base_uri}")
+
+    os.system(f"aws s3 sync {snapshot_base_uri} snapshot/")
+
+    cell_type_orderings = _load_cell_type_order()
+    primary_filter_dimensions = _load_primary_filter_data()
+    dataset_to_gene_ids = _load_dataset_to_gene_ids_data()
+    filter_relationships = _load_filter_graph_data()
 
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
     return WmgSnapshot(
         snapshot_identifier=new_snapshot_identifier,
-        expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
-        expression_summary_default_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
-        expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
-        marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
-        cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
+        expression_summary_cube=_open_cube(f"snapshot/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        expression_summary_default_cube=_open_cube(f"snapshot/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
+        expression_summary_fmg_cube=_open_cube(f"snapshot/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
+        marker_genes_cube=_open_cube(f"snapshot/{MARKER_GENES_CUBE_NAME}"),
+        cell_counts_cube=_open_cube(f"snapshot/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=cell_type_orderings,
         primary_filter_dimensions=primary_filter_dimensions,
         dataset_to_gene_ids=dataset_to_gene_ids,
@@ -143,21 +145,21 @@ def _open_cube(cube_uri) -> Array:
     return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
 
 
-def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
-    return pd.read_json(_read_s3obj(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}"))
+def _load_cell_type_order() -> DataFrame:
+    return pd.read_json(_read_s3obj(f"snapshot/{CELL_TYPE_ORDERINGS_FILENAME}"))
 
 
-def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
-    return json.loads(_read_s3obj(f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"))
+def _load_primary_filter_data() -> Dict:
+    return json.loads(_read_s3obj(f"snapshot/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"))
 
 
-def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
-    return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
+def _load_dataset_to_gene_ids_data() -> Dict:
+    return json.loads(_read_s3obj(f"snapshot/{DATASET_TO_GENE_IDS_FILENAME}"))
 
 
-def _load_filter_graph_data(snapshot_identifier: str) -> str:
+def _load_filter_graph_data() -> str:
     try:
-        return json.loads(_read_s3obj(f"{snapshot_identifier}/{FILTER_RELATIONSHIPS_FILENAME}"))
+        return json.loads(_read_s3obj(f"snapshot/{FILTER_RELATIONSHIPS_FILENAME}"))
     except Exception:
         return None
 
