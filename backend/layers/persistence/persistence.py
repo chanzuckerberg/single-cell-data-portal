@@ -524,7 +524,10 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_ids_for_datasets_to_tombstone = []
             if previous_c_v_id:
                 # Publishing a revision; Datasets could have been removed
-                previous_collection_version = session.query(CollectionVersionTable).filter_by(id=previous_c_v_id)
+                previous_collection_version = session.query(CollectionVersionTable).filter_by(id=previous_c_v_id).one()
+                # print("prev col version")
+                # import pprint
+                # pprint.pprint(previous_collection_version)
                 previous_d_v_ids = previous_collection_version.datasets
                 for previous_d_v_id in previous_d_v_ids:
                     if previous_d_v_id not in collection_version.datasets:

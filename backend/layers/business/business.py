@@ -143,7 +143,7 @@ class BusinessLogic(BusinessLogicInterface):
         Returns the published collection version that belongs to a canonical collection.
         Returns None if no published collection exists
         """
-        self.database_provider.get_collection_mapped_version(collection_id)
+        return self.database_provider.get_collection_mapped_version(collection_id)
 
     def get_unpublished_collection_version_from_canonical(
         self, collection_id: CollectionId
