@@ -1,0 +1,78 @@
+  pw:api => selectors.setTestIdAttribute started +5ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api   navigated to "about:blank" +250ms
+  pw:api   navigated to "about:blank" +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +1ms
+  pw:api   "commit" event fired +45ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api   "load" event fired +1ms
+  pw:api <= browser.newContext succeeded +39ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +18ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api   navigated to "about:blank" +225ms
+  pw:api   navigated to "about:blank" +1ms
+  pw:api <= browserContext.newPage succeeded +2ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +16ms
+  pw:api   "commit" event fired +200ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +14s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +4ms
+  pw:api   "load" event fired +37ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +3ms
+  pw:api <= page.goto succeeded +328ms
+  pw:api => locator.waitFor started +1ms
+  pw:api   "networkidle" event fired +412ms
+  pw:api waiting for getByTestId('cell-card-search-bar-text-input') to be visible +815ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +46ms
+  pw:api <= locator.waitFor succeeded +118ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-card-search-bar-text-input') +37ms
+  pw:api   locator resolved to <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +52ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +35ms
+  pw:api   click action done +258ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +0ms
+  pw:api <= locator.click succeeded +81ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +1s
+  pw:api => locator.type started +9ms
+  pw:api waiting for getByTestId('cell-card-search-bar-text-input') +564ms
+  pw:api   locator resolved to <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +76ms
+  pw:api elementHandle.type("acinar cell") +33ms
+  pw:api <= locator.type succeeded +1s
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +44ms
+  pw:api => locator.elementHandles started +3ms
+  pw:api <= locator.elementHandles succeeded +35ms
+  pw:api => elementHandle.textContent started +1ms
+  pw:api <= elementHandle.textContent succeeded +60ms
+  pw:api => elementHandle.click started +2ms
+  pw:api attempting click action +29ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +41ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000622" +57ms
+  pw:api   click action done +197ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= elementHandle.click succeeded +102ms
+  pw:api => page.waitForURL started +1ms
+  pw:api <= page.waitForURL succeeded +6ms
+  pw:api   not waiting, "load" event already fired +4ms
+  pw:api taking page screenshot +459ms
+  pw:api => browserContext.close started +247ms
+  pw:api <= browserContext.close succeeded +57ms
