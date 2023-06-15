@@ -221,6 +221,7 @@ const DatasetRow: FC<Props> = ({
               <MoreDropdown
                 collectionId={collectionId}
                 datasetId={dataset.id}
+                isPublished={!!dataset.published_at} // Dataset has been published.
                 revisionsEnabled={revisionsEnabled}
                 onUploadFile={onUploadFile}
                 isLoading={isLoading}

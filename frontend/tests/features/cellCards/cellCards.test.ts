@@ -23,6 +23,7 @@ import {
   CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
   CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
   CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR,
+  MARKER_GENES_TOOLTIP_TEST_ID,
 } from "src/views/CellCards/components/CellCard/components/MarkerGeneTables";
 import {
   CELL_CARD_ONTOLOGY_DAG_VIEW,
@@ -38,6 +39,10 @@ import {
   TISSUE_CARD_HEADER_NAME,
   TISSUE_CARD_HEADER_TAG,
 } from "src/views/CellCards/components/TissueCard";
+import {
+  EXPRESSION_SCORE_TOOLTIP_TEST_ID,
+  PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
+} from "src/views/CellCards/components/CellCard/components/common/Table";
 
 const { describe } = test;
 
@@ -108,14 +113,8 @@ describe("Cell Cards", () => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
       await isElementVisible(page, CELL_CARD_GPT_TOOLTIP_LINK);
       await page.getByTestId(CELL_CARD_GPT_TOOLTIP_LINK).hover();
-      // check role tooltip is visible
-      const tooltipLocator = page.getByRole("tooltip");
-      await tooltipLocator.waitFor({ timeout: 5000 });
-      const tooltipLocatorVisible = await tooltipLocator.isVisible();
-      expect(tooltipLocatorVisible).toBe(true);
-      // check that tooltip contains disclaimer
-      const tooltipText = await tooltipLocator.textContent();
-      expect(tooltipText).toContain(
+      await checkTooltipContent(
+        page,
         `This summary on "neuron" was generated with ChatGPT, powered by the GPT3.5 Turbo model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below.`
       );
     });
@@ -493,7 +492,79 @@ describe("Cell Cards", () => {
       });
     });
   });
+  describe("Marker Genes table shows tooltips", () => {
+    const computationalTabButton = "cell-card-enriched-genes-table-selector";
+
+    test("Marker Genes help tooltip - Canonical", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+
+      await isElementVisible(page, MARKER_GENES_TOOLTIP_TEST_ID);
+      await page.getByTestId(MARKER_GENES_TOOLTIP_TEST_ID).hover();
+
+      await checkTooltipContent(
+        page,
+        "The below marker genes and associated publications were derived from the Anatomical Structures, Cell Types and Biomarkers (ASCT+B) tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+      );
+    });
+
+    test("Marker Genes help tooltip - Computational", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+
+      await page.getByTestId(computationalTabButton).click();
+
+      await isElementVisible(page, MARKER_GENES_TOOLTIP_TEST_ID);
+      await page.getByTestId(MARKER_GENES_TOOLTIP_TEST_ID).hover();
+
+      await checkTooltipContent(
+        page,
+        "The marker genes listed below are computationally derived from the CELLxGENE corpus. They are computed utilizing the same methodology as featured in our Find Marker Genes feature from the Gene Expression application."
+      );
+    });
+
+    test("Expression Score tooltip", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+
+      await page.getByTestId(computationalTabButton).click();
+
+      // Check expression score tooltip
+      await isElementVisible(page, EXPRESSION_SCORE_TOOLTIP_TEST_ID);
+      await page.getByTestId(EXPRESSION_SCORE_TOOLTIP_TEST_ID).hover();
+
+      await checkTooltipContent(
+        page,
+        "The expression score is the average rankit-normalized gene expression among cells in the cell type that have non-zero values."
+      );
+    });
+
+    test("Percent of Cells tooltip", async ({ page }) => {
+      // MARKER_GENES_TOOLTIP_TEST_ID
+      await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
+
+      await page.getByTestId(computationalTabButton).click();
+
+      // Check Percent of Cells tooltip
+      await isElementVisible(page, PERCENT_OF_CELLS_TOOLTIP_TEST_ID);
+      await page.getByTestId(PERCENT_OF_CELLS_TOOLTIP_TEST_ID).hover();
+
+      await checkTooltipContent(
+        page,
+        "Percentage of cells expressing a gene in the cell type. These numbers are calculated after cells with low coverage and low expression values have been filtered out."
+      );
+    });
+  });
 });
+
+async function checkTooltipContent(page: Page, text: string) {
+  // check role tooltip is visible
+  const tooltipLocator = page.getByRole("tooltip");
+  await tooltipLocator.waitFor({ timeout: 5000 });
+  const tooltipLocatorVisible = await tooltipLocator.isVisible();
+  expect(tooltipLocatorVisible).toBe(true);
+
+  // check that tooltip contains text
+  const tooltipText = await tooltipLocator.textContent();
+  expect(tooltipText).toContain(text);
+}
 
 async function isElementVisible(page: Page, testId: string) {
   await tryUntil(

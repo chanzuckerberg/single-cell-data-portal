@@ -104,7 +104,14 @@ const config: PlaywrightTestConfig = {
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: "./__snapshots__",
 
-  testDir: "tests",
+  /**
+   * (thuang): For colocation, component test files live in the same directory as
+   * their test pages. In the future, when Playwright component tests exit Beta,
+   * we can move test files to colocate with their component files.
+   *
+   * https://playwright.dev/docs/test-components
+   */
+  // testDir: "tests",
 
   /**
    * Maximum time one test can run for.

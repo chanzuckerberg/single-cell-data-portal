@@ -21,7 +21,7 @@ export const GeneSynonymsWrapper = styled.div`
   align-items: center;
 `;
 
-export const GeneSynonymsLabel = styled.div`
+export const Label = styled.div`
   ${fontBodyXs}
   ${(props) => {
     const colors = getColors(props);
@@ -50,7 +50,7 @@ export const GeneSynonyms = styled.div`
 
 export const GeneUrl = styled.a`
   ${fontBodyS}
-  font-weight: 500;
+  font-weight: 400;
   ${(props) => {
     const colors = getColors(props);
 
@@ -91,4 +91,9 @@ export const WarningBanner = styled.div`
       }
     `;
   }}
+`;
+
+export const OutLinksWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
 `;
