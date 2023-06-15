@@ -29,7 +29,7 @@ import { ENTITIES } from "./entities";
 import { useFetchCollectionRows } from "./filter";
 import { TombstonedCollection, useManyCollections } from "./collections";
 import { Collection } from "../entities";
-import { useViewMode } from "src/common/hooks/useViewMode";
+import { VIEW_MODE, useViewMode } from "src/common/hooks/useViewMode";
 import { Dataset } from "@mui/icons-material";
 
 interface RawOntologyTerm {
@@ -449,10 +449,11 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const { mode, status } = useViewMode();
-
   // Extracting row metadata from collections
-  const { rows: rawPublications } = useFetchCollectionRows(mode, status);
+  const { rows: rawPublications } = useFetchCollectionRows(
+    VIEW_MODE.DEFAULT,
+    "success"
+  );
   const { selectedPublicationFilter, selectedFilters } =
     useContext(StateContext);
   const { publications } = selectedPublicationFilter;
