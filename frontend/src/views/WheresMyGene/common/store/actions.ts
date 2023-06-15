@@ -119,6 +119,16 @@ export function selectFilters(
   };
 }
 
+export function selectPublicationFilter(
+  key: keyof State["selectedPublicationFilter"],
+  options: string[]
+): GetActionTypeOfReducer<typeof REDUCERS["selectPublicationFilter"]> {
+  return {
+    payload: { key, options },
+    type: "selectPublicationFilter",
+  };
+}
+
 export function setSnapshotId(
   snapshotId: State["snapshotId"]
 ): GetActionTypeOfReducer<typeof REDUCERS["setSnapshotId"]> {
