@@ -282,7 +282,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 collection = (
                     session.query(CollectionTable)
                     .filter_by(id=collection_version.collection_id, tombstone=False)
-                    .on_or_none()
+                    .one_or_none()
                 )
                 if not collection:
                     return None
@@ -625,7 +625,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
         dataset_id = DatasetId()
         dataset_version_id = DatasetVersionId()
-        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=None, published_at=None)
+        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=None, published_at=None, tombstone=False)
         dataset_version = DatasetVersionTable(
             id=dataset_version_id.id,
             dataset_id=dataset_id.id,
