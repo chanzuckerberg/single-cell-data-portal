@@ -129,7 +129,7 @@ jobs:
     name: Wait for shards
     needs: run-e2e-tests # run after shards
     runs-on: ubuntu-20.04
-    if: success() # only run when all shards have passed
+    #if: success() # only run when all shards have passed
     # store success output flag for ci job
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
@@ -139,7 +139,7 @@ jobs:
 
   # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
   e2e-test:
-    name: e2e-result
+    name: e2e-test
     if: always()
     runs-on: ubuntu-latest
     needs: [run-e2e-tests, wait-for-shards]
