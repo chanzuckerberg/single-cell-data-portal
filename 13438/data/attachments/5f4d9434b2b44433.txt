@@ -1,0 +1,71 @@
+  pw:api => selectors.setTestIdAttribute started +5ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +37ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +6ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +48ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +7ms
+  pw:api   "commit" event fired +98ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +166ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +14ms
+  pw:api   "networkidle" event fired +533ms
+  pw:api <= page.goto succeeded +460ms
+  pw:api => locator.scrollIntoViewIfNeeded started +1ms
+  pw:api waiting for getByTestId('section-3') +92ms
+  pw:api   locator resolved to hidden <div id="section-3" data-testid="section-3"></div> +47ms
+  pw:api   waiting for element to be  and stable +24ms
+  pw:api   element is  and stable +19ms
+  pw:api <= locator.scrollIntoViewIfNeeded succeeded +2ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-card-source-data-table') to be visible +8ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-source-data-table">…</div> +207ms
+  pw:api <= locator.waitFor succeeded +112ms
+  pw:api => expect.toBeInViewport started +5ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api expect.toBeInViewport with timeout 10000ms +51ms
+  pw:api waiting for getByTestId('cell-card-source-data-table') +0ms
+  pw:api   locator resolved to <div data-testid="cell-card-source-data-table">…</div> +78ms
+  pw:api <= locator.elementHandles succeeded +4ms
+  pw:api => elementHandle.click started +1ms
+  pw:api <= expect.toBeInViewport succeeded +9ms
+  pw:api attempting click action +30ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +8ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +60ms
+  pw:api   click action done +347ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +289ms
+  pw:api <= elementHandle.click succeeded +82ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view') to be visible +270ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-ontology-dag-view">…</div> +219ms
+  pw:api <= locator.waitFor succeeded +32ms
+  pw:api => expect.toBeInViewport started +4ms
+  pw:api => expect.not.toBeInViewport started +2ms
+  pw:api expect.toBeInViewport with timeout 10000ms +50ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view') +1ms
+  pw:api expect.not.toBeInViewport with timeout 10000ms +13ms
+  pw:api waiting for getByTestId('cell-card-source-data-table') +0ms
+  pw:api   locator resolved to <div data-testid="cell-card-ontology-dag-view">…</div> +81ms
+  pw:api <= expect.toBeInViewport succeeded +9ms
+  pw:api   locator resolved to <div data-testid="cell-card-source-data-table">…</div> +2ms
+  pw:api <= expect.not.toBeInViewport succeeded +1ms
+  pw:api taking page screenshot +165ms
+  pw:api => browserContext.close started +177ms
+  pw:api <= browserContext.close succeeded +6s
