@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from uuid import UUID
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.utils.http_exceptions import ForbiddenHTTPException, NotFoundHTTPException
+from backend.common.utils.http_exceptions import ForbiddenHTTPException, GoneHTTPException, NotFoundHTTPException
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.common.entities import (
     CollectionId,
@@ -346,7 +346,7 @@ def get_inferred_collection_version(collection_id: str) -> CollectionVersionWith
     # gets currently mapped collection version, or unpublished version if never published
     version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
     if version is None:
-        version = business_logic.get_collection_version(CollectionVersionId(collection_id))
+        version = business_logic.get_collection_version(CollectionVersionId(collection_id), get_tombstoned=True)
         if version is None:
             raise NotFoundHTTPException()
         # Only allow fetch by Collection Version ID if unpublished revision of published collection
@@ -354,7 +354,7 @@ def get_inferred_collection_version(collection_id: str) -> CollectionVersionWith
             raise ForbiddenHTTPException()
 
     if version.canonical_collection.tombstoned is True:
-        raise ForbiddenHTTPException()
+        raise GoneHTTPException()
     return version
 
 

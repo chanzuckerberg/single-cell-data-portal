@@ -928,10 +928,10 @@ class TestGetCollectionID(BaseAPIPortalTest):
             res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
             self.assertEqual(403, res.status_code)
 
-    def test__get_tombstoned_collection__403(self):
+    def test__get_tombstoned_collection__410(self):
         collection_version = self.generate_published_collection()
         self.business_logic.tombstone_collection(collection_version.collection_id)
-        self._test_response(collection_version, 403)
+        self._test_response(collection_version, 410)
 
     def test_get_collection_with_no_datasets(self):
         collection_version = self.generate_unpublished_collection(add_datasets=0)

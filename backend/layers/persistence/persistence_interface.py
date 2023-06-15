@@ -51,7 +51,9 @@ class DatabaseProviderInterface:
         Retrieves a specific collection version by id
         """
 
-    def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
+    def get_collection_version_with_datasets(
+        self, version_id: CollectionVersionId, get_tombstoned: bool
+    ) -> CollectionVersionWithDatasets:
         """
         Retrieves a specific collection version by id, with datasets
         """

@@ -159,11 +159,13 @@ class BusinessLogic(BusinessLogicInterface):
                 unpublished_collection = collection
         return unpublished_collection
 
-    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
+    def get_collection_version(
+        self, version_id: CollectionVersionId, get_tombstoned: bool = False
+    ) -> CollectionVersionWithDatasets:
         """
         Returns a specific collection version by id
         """
-        return self.database_provider.get_collection_version_with_datasets(version_id)
+        return self.database_provider.get_collection_version_with_datasets(version_id, get_tombstoned=get_tombstoned)
 
     def get_collection_versions_from_canonical(
         self, collection_id: CollectionId
