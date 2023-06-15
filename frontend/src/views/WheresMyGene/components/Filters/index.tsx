@@ -95,7 +95,7 @@ const mapTermToFilterOption = (term: {
   };
 };
 
-//made new type for the publication filter to avoid touching anything used in other files
+// (cchoi): Created new type for the publication filter to avoid touching anything used in other files
 type availableFilters = Partial<FilterDimensions> & {
   publicationFilter?: { id: string | string[]; name: string }[];
 };
@@ -296,7 +296,7 @@ export default memo(function Filters({
                 [label]: selected.name,
               });
             } else {
-              // (note) can delete this once Amanda finishes analytics for publications
+              // (cchoi): We can delete this once Amanda finishes analytics mapping for publications
               const { eventName, label } = {
                 eventName: "Publication Selected!",
                 label: "publication",

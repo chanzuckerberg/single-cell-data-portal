@@ -479,7 +479,8 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       tissue_terms,
     } = filter_dims;
 
-    // Reconstructing rows into publication_list format
+    // Reconstructing rows into publication_list format, with collection id, name, and STABLE dataset ids.
+    // (cchoi): This is a fix suggested by Emanuele to grab the stable dataset IDs without reconfiguring the cube or the API.
     const allPublications: {
       id: string;
       name: string;
@@ -487,7 +488,6 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
     }[] = (publication_list ?? []).flatMap(
       (collection: Collection | TombstonedCollection | null) => {
         if (!collection || collection.tombstone) return [];
-
         const ids: string[] = [];
         for (const d of collection.datasets.values()) {
           let url = d["dataset_deployments"][0].url.toString();
@@ -495,7 +495,6 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
           url = url.substring(0, url.length - 5);
           ids.push(url);
         }
-
         return [
           {
             id: collection.id,
@@ -515,7 +514,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
     collections?.map((collection: Collection | TombstonedCollection | null) => {
       if (!collection || collection.tombstone) return;
       for (const d of collection.datasets.values()) {
-        // Taking explorer_url and extracting the stable dataset IDs.
+        // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
         let url = d["dataset_deployments"][0].url.toString();
         url = url.substring(51);
         url = url.substring(0, url.length - 5);
