@@ -3,7 +3,7 @@ FROM public.ecr.aws/lambda/python:3.8
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 
-COPY backend/schema_migration/migration .
+COPY backend/schema_migration .
 
 RUN pip3 install -r requirements.txt
 
@@ -22,4 +22,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3" "-m" "migrate.schema_migrate"]
+CMD ["python3" "-m" "migrate"]
