@@ -401,7 +401,6 @@ export default memo(function Filters({
           InputDropdownProps={InputDropdownProps}
         />
 
-        {/* CAROLINE U ARE HERE  */}
         <StyledComplexFilter
           multiple
           data-testid="publication-filter"
