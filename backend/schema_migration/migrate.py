@@ -1,16 +1,73 @@
+import logging
 import os
 import sys
+from typing import Dict, List
 
 from backend.layers.business.business import BusinessLogic
+from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.processing import logger
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.uri_provider import UriProvider
+from backend.portal.api.providers import get_business_logic
+
+logger.configure_logging(level=logging.INFO)
+
+
+def gather_collections() -> Dict[str, Dict[str, List[str]]]:
+    """
+    This function is used to gather all the collections and their datasets that will be migrated
+    :return: A dictionary with the following structure:
+    {
+        "published": {"collection_id": ["dataset_id", "dataset_id", ...], ...},
+        "revision": {"collection_version_id": ["dataset_id", "dataset_id", ...], ...}
+        "private": {"collection_id": ["dataset_id", "dataset_id", ...], ...},
+    }
+    """
+    businnes_logic: BusinessLogic = get_business_logic()
+
+    collections_filter = CollectionQueryFilter()
+    collections = businnes_logic.get_collections(collections_filter)
+
+    response = {"published": {}, "private": {}, "revision": {}}
+
+    def get_datasets(_version):
+        datasets = []
+        for dataset in _version.datasets:
+            datasets.append(dataset.dataset_id.id)
+        return datasets
+
+    has_revision = []  # list of collections to skip if published with an active revision
+    for collection in collections:
+        if collection.is_published() and collection.collection_id not in has_revision:
+            version = businnes_logic.get_collection_version(collection.version_id)
+            response["published"][version.collection_id.id] = get_datasets(version)
+        elif collection.is_unpublished_version():
+            has_revision.append(
+                collection.collection_id
+            )  # skip the published version if it hasn't been encountered yet
+            response["published"].pop(collection.collection_id.id, None)
+            # remove from published if it was already encountered
+            version = businnes_logic.get_collection_version(collection.version_id)
+            response["revision"][version.version_id.id] = get_datasets(version)
+            # using version id instead of collection id
+        elif collection.is_initial_unpublished_version():
+            version = businnes_logic.get_collection_version(collection.version_id)
+            response["private"][version.collection_id.id] = get_datasets(version)
+    return response
 
 
 def migrate(step_name: str, business_logic: BusinessLogic) -> bool:
     """
     Gets called by the step function at every different step, as defined by `step_name`
     """
+    if step_name == "corpus_migrate":
+        corpus_migrate(business_logic)
+    return True
+
+
+def corpus_migrate(business_logic: BusinessLogic) -> bool:
+    gather_collections()
     return True
 
 
