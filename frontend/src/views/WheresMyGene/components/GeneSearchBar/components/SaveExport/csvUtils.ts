@@ -65,7 +65,8 @@ export function csvHeaders({
   output.push([
     `# Link Generated: ${generateAndCopyShareUrl({
       compare,
-      filters: selectedFilters, // Caroline,  check me
+      filters: selectedFilters,
+      publicationFilter: selectedPublicationFilter,
       organism: selectedOrganismId,
       tissues: selectedTissues,
       genes: selectedGenes,

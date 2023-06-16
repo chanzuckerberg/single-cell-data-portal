@@ -82,7 +82,6 @@ export default function ShareButton(): JSX.Element {
       const loadedState = loadStateFromQueryParams(
         params,
         selectedFilters,
-        // selectedPublicationFilter, // CAROLINE COME BACK 2 THIS
         dispatch
       );
 
@@ -95,7 +94,7 @@ export default function ShareButton(): JSX.Element {
           disease_filter: loadedState.filters.diseases,
           group_by_option: getCompareOptionNameById(loadedState.compare),
           self_reported_ethnicity_filter: loadedState.filters.ethnicities,
-          // publication_filter: loadedState.filters.publications,
+          publication_filter: loadedState.publications,
           sex_filter: loadedState.filters.sexes,
         });
       }
