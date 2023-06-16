@@ -27,6 +27,7 @@ export default function ShareButton(): JSX.Element {
 
   const {
     selectedFilters,
+    selectedPublicationFilter,
     selectedTissues,
     selectedGenes,
     selectedOrganismId,
@@ -55,6 +56,7 @@ export default function ShareButton(): JSX.Element {
       genes: selectedGenes,
       group_by_option: getCompareOptionNameById(compare),
       self_reported_ethnicity_filter: selectedFilters.ethnicities,
+      publication_filter: selectedPublicationFilter.publications,
       sex_filter: selectedFilters.sexes,
       tissues: selectedTissues,
     });
@@ -62,6 +64,7 @@ export default function ShareButton(): JSX.Element {
     setShowURLCopyNotification((prev) => prev + 1);
   }, [
     selectedFilters,
+    selectedPublicationFilter,
     selectedTissues,
     selectedGenes,
     selectedOrganismId,
@@ -78,6 +81,7 @@ export default function ShareButton(): JSX.Element {
       const loadedState = loadStateFromQueryParams(
         params,
         selectedFilters,
+        // selectedPublicationFilter, // CAROLINE COME BACK 2 THIS
         dispatch
       );
 
@@ -90,6 +94,7 @@ export default function ShareButton(): JSX.Element {
           disease_filter: loadedState.filters.diseases,
           group_by_option: getCompareOptionNameById(loadedState.compare),
           self_reported_ethnicity_filter: loadedState.filters.ethnicities,
+          // publication_filter: loadedState.filters.publications,
           sex_filter: loadedState.filters.sexes,
         });
       }
