@@ -44,6 +44,7 @@ export default function ShareButton(): JSX.Element {
     generateAndCopyShareUrl({
       compare,
       filters: selectedFilters,
+      publicationFilter: selectedPublicationFilter,
       organism: selectedOrganismId,
       tissues: selectedTissues,
       genes: selectedGenes,
