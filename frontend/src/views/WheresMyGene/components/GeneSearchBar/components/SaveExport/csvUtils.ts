@@ -31,6 +31,7 @@ export function csvHeaders({
   availableFilters,
   availableOrganisms,
   selectedFilters,
+  selectedPublicationFilter,
   selectedGenes,
   selectedOrganismId,
   selectedTissues,
@@ -39,12 +40,18 @@ export function csvHeaders({
   availableFilters: Partial<FilterDimensions>;
   availableOrganisms: OntologyTerm[] | null | undefined;
   selectedFilters: State["selectedFilters"];
+  selectedPublicationFilter: State["selectedPublicationFilter"];
   selectedGenes: Props["selectedGenes"];
   selectedOrganismId: string | null;
   selectedTissues: Props["selectedTissues"];
 }) {
-  const { datasets, disease_terms, self_reported_ethnicity_terms, sex_terms } =
-    availableFilters;
+  const {
+    datasets,
+    disease_terms,
+    self_reported_ethnicity_terms,
+    publicationFilter,
+    sex_terms,
+  } = availableFilters;
 
   const output: string[][] = [];
 
@@ -58,7 +65,7 @@ export function csvHeaders({
   output.push([
     `# Link Generated: ${generateAndCopyShareUrl({
       compare,
-      filters: selectedFilters,
+      filters: selectedFilters, // Caroline,  check me
       organism: selectedOrganismId,
       tissues: selectedTissues,
       genes: selectedGenes,
@@ -96,6 +103,18 @@ export function csvHeaders({
       self_reported_ethnicity_terms
         ?.filter((option) => {
           return selectedFilters.ethnicities.includes(option.id);
+        })
+        .map((selected) => selected.name)
+        .join(", ") || NO_SELECTION_STRING
+    }`,
+  ]);
+
+  // Publication
+  output.push([
+    `# Publication Filter Values: ${
+      publicationFilter
+        ?.filter((option) => {
+          return selectedPublicationFilter.publications.includes(option.id);
         })
         .map((selected) => selected.name)
         .join(", ") || NO_SELECTION_STRING
