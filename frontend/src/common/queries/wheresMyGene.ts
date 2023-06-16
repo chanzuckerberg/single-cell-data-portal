@@ -480,9 +480,11 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       tissue_terms,
     } = filter_dims;
 
+    let noPublicationIds: string[] = [];
+
     // Reconstructing rows into publication_list format, with collection id, name, and STABLE dataset ids.
     // (cchoi): This is a fix suggested by Emanuele to grab the stable dataset IDs without reconfiguring the cube or the API.
-    const allPublications: {
+    const prePublications: {
       id: string;
       name: string;
       dataset_ids: string[];
@@ -499,12 +501,31 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         return [
           {
             id: collection.id,
-            name: collection.summaryCitation || "",
+            name: collection.summaryCitation || "No Publication",
             dataset_ids: ids,
           },
         ];
       }
     );
+
+    // Take all "No Publication"s and aggregate their dataset_ids:
+    for (const publication of prePublications) {
+      if (publication.name === "No Publication") {
+        noPublicationIds = noPublicationIds.concat(publication.dataset_ids);
+      }
+    }
+
+    // Remove all "No Publication"s
+    const allPublications = prePublications.filter(
+      (publication) => publication.name !== "No Publication"
+    );
+
+    // Add a default "No Publication" with all of those dataset IDs aggregated
+    allPublications.push({
+      id: "No Publication",
+      name: "No Publication",
+      dataset_ids: noPublicationIds,
+    });
 
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
@@ -523,6 +544,10 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       }
     });
 
+    if (collections === undefined) {
+      selectedPublicationDatasetIds.push(...noPublicationIds);
+    }
+
     let intersect = sortedDatasets;
 
     if (selectedPublicationDatasetIds.length > 0) {
@@ -530,6 +555,8 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         selectedPublicationDatasetIds.includes(coll.id)
       );
     }
+
+    console.log(intersect);
 
     let filteredPublications = allPublications;
 
