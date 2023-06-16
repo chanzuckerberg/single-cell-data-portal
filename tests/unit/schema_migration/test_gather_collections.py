@@ -80,7 +80,7 @@ def business_logic_and_collections(published_collection, revision, private) -> T
 def test_with_revision(business_logic_and_collections):
     business_logic, collections = business_logic_and_collections
     published, revision = collections["revision"]
-    with mock.patch("backend.schema_migration.migrate.get_business_logic", return_value=business_logic):
+    with mock.patch("backend.schema_migration.migrate.business_logic", business_logic):
         business_logic.get_collections.side_effect = [[published], [revision]]  # get_collectioins is called twice
         response = gather_collections()
         assert published.collection_id.id not in response["published"]
@@ -91,7 +91,7 @@ def test_with_revision(business_logic_and_collections):
 def test_with_published(business_logic_and_collections):
     business_logic, collections = business_logic_and_collections
     published = collections["published"]
-    with mock.patch("backend.schema_migration.migrate.get_business_logic", return_value=business_logic):
+    with mock.patch("backend.schema_migration.migrate.business_logic", business_logic):
         business_logic.get_collections.side_effect = [published, []]  # get_collectioins is called twice
         response = gather_collections()
         assert published[0].collection_id.id in response["published"]
@@ -103,7 +103,7 @@ def test_with_published(business_logic_and_collections):
 def test_with_private(business_logic_and_collections):
     business_logic, collections = business_logic_and_collections
     private = collections["private"]
-    with mock.patch("backend.schema_migration.migrate.get_business_logic", return_value=business_logic):
+    with mock.patch("backend.schema_migration.migrate.business_logic", business_logic):
         business_logic.get_collections.side_effect = [[], private]  # get_collectioins is called twice
         response = gather_collections()
         assert private[0].collection_id.id in response["private"]
