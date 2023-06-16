@@ -52,6 +52,7 @@ import StatusCell from "src/components/common/Grid/components/StatusCell";
 import RevisionButton from "src/components/common/Grid/components/RevisionButton";
 import CategoryFilters from "src/components/common/Filter/components/Filters";
 import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
+import Loader from "src/components/common/Grid/components/Loader";
 
 export default function Collections(): JSX.Element {
   const { mode, status } = useViewMode();
@@ -62,9 +63,15 @@ export default function Collections(): JSX.Element {
   // Filterable collection datasets joined from datasets index and collections (or user-collections) index responses.
   const {
     isError,
-    isLoading,
+    isSuccess,
     rows: collectionRows,
   } = useFetchCollectionRows(mode, status);
+
+  // Show collections list when collections are successfully loaded.
+  const shouldShowCollections = !isError && isSuccess;
+
+  // Loading indicator for curator mode, when collections are not yet successfully loaded.
+  const shouldShowLoader = mode === VIEW_MODE.CURATOR && !shouldShowCollections;
 
   // Column configuration backing table.
   const columnConfig: Column<CollectionRow>[] = useMemo(
@@ -335,40 +342,44 @@ export default function Collections(): JSX.Element {
       <Head>
         <title>CELL&times;GENE | Collections</title>
       </Head>
-      {isError || isLoading ? null : (
-        <>
-          <SideBar
-            label="Filters"
-            isOpen={isSideBarOpen}
-            onToggle={storeIsSideBarOpen}
-          >
-            <CategoryFilters
-              filters={partitionCategoryViews(categoryViews, mode)}
-              onFilter={onFilter}
-            />
-          </SideBar>
-          <View>
-            {mode === VIEW_MODE.CURATOR && <CreateCollection />}
-            {!rows || rows.length === 0 ? (
-              <GridHero>
-                <h3>No Results</h3>
-                <p>There are no collections matching those filters.</p>
-              </GridHero>
-            ) : (
-              <CollectionsGrid
-                mode={mode}
-                tableCountSummary={buildTableCountSummary(
-                  rows,
-                  preFilteredRows
-                )}
-                // @ts-expect-error -- revisit tableInstance typing
-                tableInstance={tableInstance}
+      {isError ? null : shouldShowLoader ? (
+        <Loader />
+      ) : (
+        shouldShowCollections && (
+          <>
+            <SideBar
+              label="Filters"
+              isOpen={isSideBarOpen}
+              onToggle={storeIsSideBarOpen}
+            >
+              <CategoryFilters
+                filters={partitionCategoryViews(categoryViews, mode)}
+                onFilter={onFilter}
               />
-            )}
-          </View>
-          {/* May be added in the future after sign off */}
-          {/* <BottomBanner /> */}
-        </>
+            </SideBar>
+            <View>
+              {mode === VIEW_MODE.CURATOR && <CreateCollection />}
+              {!rows || rows.length === 0 ? (
+                <GridHero>
+                  <h3>No Results</h3>
+                  <p>There are no collections matching those filters.</p>
+                </GridHero>
+              ) : (
+                <CollectionsGrid
+                  mode={mode}
+                  tableCountSummary={buildTableCountSummary(
+                    rows,
+                    preFilteredRows
+                  )}
+                  // @ts-expect-error -- revisit tableInstance typing
+                  tableInstance={tableInstance}
+                />
+              )}
+            </View>
+            {/* May be added in the future after sign off */}
+            {/* <BottomBanner /> */}
+          </>
+        )
       )}
     </>
   );
