@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os
 import sys
@@ -26,8 +27,9 @@ def gather_collections() -> Dict[str, Dict[str, List[str]]]:
     """
     businnes_logic: BusinessLogic = get_business_logic()
 
-    collections_filter = CollectionQueryFilter()
-    collections = businnes_logic.get_collections(collections_filter)
+    CollectionQueryFilter()
+    published_collections = businnes_logic.get_collections(CollectionQueryFilter(is_published=True))
+    unpublished_collections = businnes_logic.get_collections(CollectionQueryFilter(is_published=False))
 
     response = {"published": {}, "private": {}, "revision": {}}
 
@@ -37,17 +39,15 @@ def gather_collections() -> Dict[str, Dict[str, List[str]]]:
             datasets.append(dataset.dataset_id.id)
         return datasets
 
+    collections = itertools.chain(unpublished_collections, published_collections)
+    # evaluate unpublished collections first, so that published versions are skipped if there is an active revision
     has_revision = []  # list of collections to skip if published with an active revision
     for collection in collections:
         if collection.is_published() and collection.collection_id not in has_revision:
             version = businnes_logic.get_collection_version(collection.version_id)
             response["published"][version.collection_id.id] = get_datasets(version)
         elif collection.is_unpublished_version():
-            has_revision.append(
-                collection.collection_id
-            )  # skip the published version if it hasn't been encountered yet
-            response["published"].pop(collection.collection_id.id, None)
-            # remove from published if it was already encountered
+            has_revision.append(collection.collection_id)  # revision found, skip published version
             version = businnes_logic.get_collection_version(collection.version_id)
             response["revision"][version.version_id.id] = get_datasets(version)
             # using version id instead of collection id

@@ -81,14 +81,7 @@ def test_with_revision(business_logic_and_collections):
     business_logic, collections = business_logic_and_collections
     published, revision = collections["revision"]
     with mock.patch("backend.schema_migration.migrate.get_business_logic", return_value=business_logic):
-        business_logic.get_collections.return_value = [published, revision]
-        response = gather_collections()
-        assert published.collection_id.id not in response["published"]
-        assert revision.version_id.id in response["revision"]
-        assert [ds.dataset_id.id for ds in revision.datasets] == response["revision"][revision.version_id.id]
-
-    with mock.patch("backend.schema_migration.migrate.get_business_logic", return_value=business_logic):
-        business_logic.get_collections.return_value = [revision, published]
+        business_logic.get_collections.side_effect = [[published], [revision]]  # get_collectioins is called twice
         response = gather_collections()
         assert published.collection_id.id not in response["published"]
         assert revision.version_id.id in response["revision"]
@@ -99,7 +92,7 @@ def test_with_published(business_logic_and_collections):
     business_logic, collections = business_logic_and_collections
     published = collections["published"]
     with mock.patch("backend.schema_migration.migrate.get_business_logic", return_value=business_logic):
-        business_logic.get_collections.return_value = published
+        business_logic.get_collections.side_effect = [published, []]  # get_collectioins is called twice
         response = gather_collections()
         assert published[0].collection_id.id in response["published"]
         assert [ds.dataset_id.id for ds in published[0].datasets] == response["published"][
@@ -111,7 +104,7 @@ def test_with_private(business_logic_and_collections):
     business_logic, collections = business_logic_and_collections
     private = collections["private"]
     with mock.patch("backend.schema_migration.migrate.get_business_logic", return_value=business_logic):
-        business_logic.get_collections.return_value = private
+        business_logic.get_collections.side_effect = [[], private]  # get_collectioins is called twice
         response = gather_collections()
         assert private[0].collection_id.id in response["private"]
         assert [ds.dataset_id.id for ds in private[0].datasets] == response["private"][private[0].collection_id.id]
