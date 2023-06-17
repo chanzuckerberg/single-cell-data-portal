@@ -1,0 +1,83 @@
+  pw:api => selectors.setTestIdAttribute started +5ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +40ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +3ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +47ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000084", waiting until "load" +7ms
+  pw:api   "commit" event fired +78ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000084" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000084" +12ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000084" +21ms
+  pw:api   "networkidle" event fired +568ms
+  pw:api <= page.goto succeeded +249ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-card-canonical-marker-genes-table-selector') +59ms
+  pw:api   locator resolved to <button class="css-fyfffg-TableSelectorButton edz3d3n3" …>Canonical</button> +43ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +13ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +96ms
+  pw:api   click action done +83ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +21ms
+  pw:api <= locator.click succeeded +42ms
+  pw:api => locator.elementHandles started +5ms
+  pw:api <= locator.elementHandles succeeded +70ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('cell-card-marker-genes-table-dropdown-organ') to be visible +17ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-marker-genes-table-dropdo…>…</div> +27ms
+  pw:api <= locator.waitFor succeeded +22ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-card-marker-genes-table-dropdown-organ') +9ms
+  pw:api   locator resolved to <div data-testid="cell-card-marker-genes-table-dropdo…>…</div> +13ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +19ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +10ms
+  pw:api   click action done +114ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +10ms
+  pw:api => locator.press started +1ms
+  pw:api waiting for getByTestId('cell-card-marker-genes-table-dropdown-organ') +24ms
+  pw:api   locator resolved to <div data-testid="cell-card-marker-genes-table-dropdo…>…</div> +12ms
+  pw:api elementHandle.press("ArrowDown") +2ms
+  pw:api <= locator.press succeeded +90ms
+  pw:api => locator.press started +1ms
+  pw:api waiting for getByTestId('cell-card-marker-genes-table-dropdown-organ') +11ms
+  pw:api   locator resolved to <div data-testid="cell-card-marker-genes-table-dropdo…>…</div> +9ms
+  pw:api elementHandle.press("ArrowDown") +2ms
+  pw:api <= locator.press succeeded +56ms
+  pw:api => locator.press started +0ms
+  pw:api waiting for getByTestId('cell-card-marker-genes-table-dropdown-organ') +21ms
+  pw:api   locator resolved to <div data-testid="cell-card-marker-genes-table-dropdo…>…</div> +33ms
+  pw:api elementHandle.press("ArrowDown") +22ms
+  pw:api <= locator.press succeeded +22ms
+  pw:api => locator.press started +1ms
+  pw:api waiting for getByTestId('cell-card-marker-genes-table-dropdown-organ') +6ms
+  pw:api   locator resolved to <div data-testid="cell-card-marker-genes-table-dropdo…>…</div> +23ms
+  pw:api elementHandle.press("Enter") +2ms
+  pw:api <= locator.press succeeded +163ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +47ms
+  pw:api taking page screenshot +336ms
+  pw:api => browserContext.close started +113ms
+  pw:api <= browserContext.close succeeded +6s
