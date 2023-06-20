@@ -1,3 +1,4 @@
+# ruff: noqa
 from unittest import mock
 
 from backend.layers.common.entities import CollectionVersionId

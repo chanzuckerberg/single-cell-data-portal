@@ -1,3 +1,4 @@
+# ruff: noqa
 from tests.unit.schema_migration.pytest_fixtures import (
     private,
     published_collection,
