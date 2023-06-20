@@ -2,14 +2,14 @@
  * Test suite for select filter-related utils.
  */
 import { expect, test } from "@playwright/test";
-import { goToWMG } from "../../utils/wmgUtils";
-import { isDevStagingProd, selectFirstOption } from "tests/utils/helpers";
+import { conditionallyRunTests, goToWMG } from "../../utils/wmgUtils";
+import { selectFirstOption } from "tests/utils/helpers";
 import { getById } from "tests/utils/selectors";
 
-const { describe, skip } = test;
+const { describe } = test;
 
 describe("Right side bar", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  conditionallyRunTests();
 
   test("Should link out to cellxgene documentation", async ({
     page,
