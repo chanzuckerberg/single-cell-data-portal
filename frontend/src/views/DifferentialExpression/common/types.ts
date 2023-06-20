@@ -1,4 +1,4 @@
-import { DefaultMenuSelectOption } from "czifui";
+import { DefaultMenuSelectOption } from "@czi-sds/components";
 
 export interface Organism {
   id: string;

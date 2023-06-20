@@ -3,7 +3,7 @@ import {
   CommonThemeProps,
   DropdownPopper as SDSDropdownPopper,
   getColors,
-} from "czifui";
+} from "@czi-sds/components";
 import { css } from "@emotion/react";
 
 interface DropdownFormProps extends CommonThemeProps {

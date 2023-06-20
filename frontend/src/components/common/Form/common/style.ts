@@ -7,7 +7,7 @@ import {
   PT_TEXT_COLOR,
   RED,
 } from "src/components/common/theme";
-import { CommonThemeProps, fontBodyS, getColors } from "czifui";
+import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
 
 export const formField = (props: CommonThemeProps) => {
   const colors = getColors(props);

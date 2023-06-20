@@ -1,7 +1,7 @@
 import { AnchorButton } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import { Popper } from "@mui/material";
-import { DefaultMenuSelectOption, MenuSelect } from "czifui";
+import { DefaultMenuSelectOption, MenuSelect } from "@czi-sds/components";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC, useRef, useState } from "react";

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Button, Icon } from "czifui";
+import { Button, Icon } from "@czi-sds/components";
 import {
   Position,
   SideBar as SideBarWrapper,

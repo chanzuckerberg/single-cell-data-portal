@@ -7,8 +7,8 @@ import {
   fontBodyS,
   fontBodyXs,
   getColors,
-} from "czifui";
-import { fontBodyXxs } from "czifui";
+} from "@czi-sds/components";
+import { fontBodyXxs } from "@czi-sds/components";
 
 export const CopyGenesButton = styled(Button)`
   ${fontBodyXxs}

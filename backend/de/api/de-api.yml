@@ -173,6 +173,8 @@ paths:
                 required:
                   - differentialExpressionResults1
                   - differentialExpressionResults2
+                  - pathwayEnrichmentAnalysisResults1
+                  - pathwayEnrichmentAnalysisResults2
                 properties:
                   snapshot_id:
                     $ref: "#/components/schemas/de_snapshot_id"
@@ -234,6 +236,64 @@ paths:
                           type: number
                           format: float
                           maxLength: 4
+                  pathwayEnrichmentAnalysisResults1:
+                    description: ->
+                      Pathway enrichment analysis results for differentially expressed genes in cell group 1
+                    type: array
+                    items:
+                      description: ->
+                        Object with FDR q-value, gene set, p-value, and DE genes in the gene set
+                      type: object
+                      properties:
+                        gene_set:
+                          description: gene set name
+                          type: string
+                        gene_symbols:
+                          description: DE gene symbols in the gene set
+                          type: string
+                        p_value:
+                          description: adjusted p-value
+                          type: number
+                          format: float
+                          maxLength: 4
+                          minimum: 0.0
+                          maximum: 1.0
+                        fdr_q_value:
+                          description: FDR q-value
+                          type: number
+                          format: float
+                          maxLength: 4
+                          minimum: 0.0
+                          maximum: 1.0
+                  pathwayEnrichmentAnalysisResults2:
+                    description: ->
+                      Pathway enrichment analysis results for differentially expressed genes in cell group 2
+                    type: array
+                    items:
+                      description: ->
+                        Object with FDR q-value, gene set, p-value, and DE genes in the gene set
+                      type: object
+                      properties:
+                        gene_set:
+                          description: gene set name
+                          type: string
+                        gene_symbols:
+                          description: DE gene symbols in the gene set
+                          type: string
+                        p_value:
+                          description: adjusted p-value
+                          type: number
+                          format: float
+                          maxLength: 4
+                          minimum: 0.0
+                          maximum: 1.0
+                        fdr_q_value:
+                          description: FDR q-value
+                          type: number
+                          format: float
+                          maxLength: 4
+                          minimum: 0.0
+                          maximum: 1.0
 
 components:
   schemas:

@@ -8,7 +8,7 @@ import {
   TagFilter,
   fontBodyXs,
   fontCapsXxs,
-} from "czifui";
+} from "@czi-sds/components";
 
 export const StyledPopper = styled(ComplexFilterPopper)`
   max-width: 750px;

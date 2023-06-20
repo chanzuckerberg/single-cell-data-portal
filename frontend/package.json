@@ -21,7 +21,7 @@
     "client-zip": "^2.2.2",
     "clipboard-copy": "^4.0.1",
     "csv": "^6.2.8",
-    "czifui": "^14.5.0",
+    "@czi-sds/components": "^14.5.0",
     "d3-scale-chromatic": "^3.0.0",
     "downloadjs": "^1.4.7",
     "echarts": "^5.2.2",

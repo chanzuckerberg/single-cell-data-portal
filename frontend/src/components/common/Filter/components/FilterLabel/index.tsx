@@ -1,5 +1,5 @@
 import React, { MouseEvent } from "react";
-import { ButtonDropdown } from "czifui";
+import { ButtonDropdown } from "@czi-sds/components";
 import FilterLabelTooltip from "src/components/common/Filter/components/FilterLabel/components/FilterLabelTooltip";
 import { CategoryButton } from "./style";
 

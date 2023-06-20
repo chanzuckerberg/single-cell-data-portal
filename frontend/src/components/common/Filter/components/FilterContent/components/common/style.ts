@@ -8,7 +8,7 @@ import {
   getSpaces,
   List as SDSList,
   ListItem,
-} from "czifui";
+} from "@czi-sds/components";
 import { css } from "@emotion/react";
 import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 

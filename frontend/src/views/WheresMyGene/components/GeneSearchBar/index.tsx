@@ -1,5 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import { LoadingIndicator } from "czifui";
+import { LoadingIndicator } from "@czi-sds/components";
 import React, {
   useCallback,
   useContext,

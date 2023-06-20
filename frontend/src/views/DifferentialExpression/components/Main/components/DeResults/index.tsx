@@ -1,4 +1,4 @@
-import { Icon } from "czifui";
+import { Icon } from "@czi-sds/components";
 import { useState, useEffect, useContext } from "react";
 import { useDifferentialExpression } from "src/common/queries/differentialExpression";
 import {

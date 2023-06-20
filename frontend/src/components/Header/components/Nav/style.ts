@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getSpaces } from "czifui";
+import { CommonThemeProps, getSpaces } from "@czi-sds/components";
 import { Classes, Colors } from "@blueprintjs/core";
 import { GRAY } from "src/components/common/theme";
 import { css } from "@emotion/react";

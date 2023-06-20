@@ -7,7 +7,7 @@ import {
   CommonThemeProps,
   Button,
   fontCapsXxs,
-} from "czifui";
+} from "@czi-sds/components";
 
 export const Wrapper = styled.div`
   height: 100%;

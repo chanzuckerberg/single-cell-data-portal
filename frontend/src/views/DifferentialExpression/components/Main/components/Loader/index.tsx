@@ -1,4 +1,4 @@
-import { LoadingIndicator } from "czifui";
+import { LoadingIndicator } from "@czi-sds/components";
 import { Wrapper } from "./style";
 
 export default function Loader(): JSX.Element {

@@ -4,7 +4,7 @@ import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
-} from "czifui";
+} from "@czi-sds/components";
 import isEqual from "lodash/isEqual";
 import { memo, useCallback, useContext, useEffect, useMemo } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Divider } from "@mui/material";
-import { List } from "czifui";
+import { List } from "@czi-sds/components";
 import {
   CATEGORY_FILTER_ID,
   OnFilterFn,
