@@ -10,7 +10,7 @@ from backend.layers.common.entities import (
     DatasetId,
     DatasetVersionId,
 )
-from backend.schema_migration.migrate import SchemaMigrate
+from backend.layers.processing.schema_migration import SchemaMigrate
 
 
 @pytest.fixture
@@ -78,5 +78,5 @@ def schema_migrate_and_collections(published_collection, revision, private) -> T
         return db[collection_version_id.id]
 
     business_logic.get_collection_version = _get_collection_version
-    schema_migrate = SchemaMigrate(business_logic, "")
+    schema_migrate = SchemaMigrate(business_logic)
     return schema_migrate, {"published": [published_collection], "revision": revision, "private": [private]}
