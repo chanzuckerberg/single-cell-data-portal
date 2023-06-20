@@ -1,0 +1,52 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +42ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +43ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000084", waiting until "load" +6ms
+  pw:api   "commit" event fired +97ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000084" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000084" +49ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000084" +19ms
+  pw:api <= page.goto succeeded +582ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view') to be visible +52ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-ontology-dag-view">…</div> +35ms
+  pw:api <= locator.waitFor succeeded +20ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +104ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +16ms
+  pw:api => elementHandle.isVisible started +1ms
+  pw:api <= elementHandle.isVisible succeeded +24ms
+  pw:api => elementHandle.click started +2ms
+  pw:api attempting click action +9ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +27ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +126ms
+  pw:api   "networkidle" event fired +91ms
+  pw:api   click action done +58ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +26ms
+  pw:api <= elementHandle.click succeeded +67ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +188ms
+  pw:api taking page screenshot +197ms
+  pw:api => browserContext.close started +98ms
+  pw:api <= browserContext.close succeeded +6s
