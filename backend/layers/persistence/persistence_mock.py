@@ -122,7 +122,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 continue
             included_dataset_version_ids = []
             for d_v_id in updated_version.datasets:
-                if self.datasets_versions[d_v_id.id].canonical_dataset.tombstoned != get_tombstoned:
+                if not get_tombstoned and self.datasets_versions[d_v_id.id].canonical_dataset.tombstoned:
                     continue
                 included_dataset_version_ids.append(d_v_id)
             yield updated_version
@@ -136,7 +136,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         for version_id, collection_version in self.collections_versions.items():
             if version_id in [c.version_id.id for c in self.collections.values()]:
                 collection_id = collection_version.collection_id.id
-                if self.collections[collection_id].tombstoned != get_tombstoned:
+                if not get_tombstoned and self.collections[collection_id].tombstoned:
                     continue
                 yield self._update_version_with_canonical(collection_version)
 
@@ -294,8 +294,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         dataset_versions = []
         for dv_id in ids:
             dataset_version = self._update_dataset_version_with_canonical(self.datasets_versions[dv_id.id])
-            if dataset_version.canonical_dataset.tombstoned == get_tombstoned:
-                dataset_versions.append(dataset_version)
+            if not get_tombstoned and dataset_version.canonical_dataset.tombstoned:
+                continue
+            dataset_versions.append(dataset_version)
         return dataset_versions
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
@@ -425,9 +426,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         return copy.deepcopy(self.datasets_versions[version_id.id].status)
 
-    def get_dataset_mapped_version(
-        self, dataset_id: DatasetId, get_tombstoned: bool = False
-    ) -> Optional[DatasetVersion]:
+    def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         cd = self.datasets.get(dataset_id.id)
         if cd is not None and not cd.tombstoned:
             version = None if cd.dataset_version_id is None else self.datasets_versions[cd.dataset_version_id.id]
