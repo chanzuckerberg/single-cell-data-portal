@@ -163,13 +163,6 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, n_genes=
     sums2[genes_indexer[es_agg2.index]] = es_agg2["sum"].values
     sqsums2[genes_indexer[es_agg2.index]] = es_agg2["sqsum"].values
 
-    n_cells2 -= n_cells1
-    sums2 -= sums1
-    sqsums2 -= sqsums1
-
-    sums2[sums2 < 0] = 0
-    sqsums2[sqsums2 < 0] = 0
-
     pvals, effects, tscores = _run_ttest(sums1, sqsums1, n_cells1, sums2, sqsums2, n_cells2)
     de_genes = np.array(genes)[np.argsort(-effects)]
     p = pvals[np.argsort(-effects)]

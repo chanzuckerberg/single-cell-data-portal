@@ -280,22 +280,22 @@ const PathwayEnrichmentResultsTable = ({
               <td>Gene set </td>
               <td>P-value</td>
               <td>FDR Q-value</td>
-              <td>DE genes</td>
+              {/* <td>DE genes</td> */}
             </tr>
           </thead>
           <tbody>
             {results.map((result) => {
-              const { geneSet, pValue, fdrQValue, geneSymbols } = result;
+              const { geneSet, pValue, fdrQValue } = result;
               return (
                 <tr key={geneSet}>
                   <td>{geneSet}</td>
                   <td>{pValue.toPrecision(4)}</td>
                   <td>{fdrQValue.toPrecision(4)}</td>
-                  <td>
+                  {/* <td>
                     {geneSymbols.map((geneSymbol) => (
                       <Tag label={geneSymbol} />
                     ))}
-                  </td>
+                  </td> */}
                 </tr>
               );
             })}

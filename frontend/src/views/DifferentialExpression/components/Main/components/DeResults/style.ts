@@ -17,7 +17,7 @@ export const CopyGenesButton = styled(Button)`
 `;
 
 export const TableWrapper = styled.div`
-  width: 375px;
+  width: 450px;
   max-height: 501px;
   min-height: 300px;
   overflow-y: scroll;
