@@ -533,10 +533,10 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
 
     let filteredPublications = allPublications;
 
-    if (selectedDatasets.length > 0) {
+    if (sortedDatasets.length > 0) {
       filteredPublications = filteredPublications.filter((coll) =>
-        selectedDatasets.some((datasetId) =>
-          coll.dataset_ids.includes(datasetId)
+        coll.dataset_ids.some((datasetId) =>
+          sortedDatasets.map((dataset) => dataset.id).includes(datasetId)
         )
       );
     }
@@ -1159,7 +1159,10 @@ function useWMGFiltersQueryRequestBody(
       }
     });
 
-    const intersect = datasets.filter((x) => publicationDatasetIds.includes(x));
+    let intersect = publicationDatasetIds;
+    if (datasets.length > 0) {
+      intersect = datasets.filter((x) => publicationDatasetIds.includes(x));
+    }
 
     return {
       filter: {
