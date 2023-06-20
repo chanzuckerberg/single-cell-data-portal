@@ -1,6 +1,5 @@
 import { test } from "@playwright/test";
-import { goToWMG } from "../../utils/wmgUtils";
-import { isDevStagingProd } from "tests/utils/helpers";
+import { conditionallyRunTests, goToWMG } from "../../utils/wmgUtils";
 import {
   subDirectory,
   downloadAndVerifyFiles,
@@ -14,9 +13,9 @@ import {
   SHARED_LINK_NO_GROUP,
 } from "tests/common/constants";
 
-const { describe, skip } = test;
+const { describe } = test;
 describe("CSV download tests", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  conditionallyRunTests();
 
   test(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
     page,

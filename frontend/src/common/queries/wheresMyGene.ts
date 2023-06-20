@@ -26,6 +26,11 @@ import { ROUTES } from "../constants/routes";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
+import { useFetchCollectionRows } from "./filter";
+import { TombstonedCollection, useManyCollections } from "./collections";
+import { Collection } from "../entities";
+import { VIEW_MODE } from "src/common/hooks/useViewMode";
+import { Dataset } from "@mui/icons-material";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -419,6 +424,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   development_stage_terms: [],
   disease_terms: [],
   self_reported_ethnicity_terms: [],
+  publicationFilter: [],
   sex_terms: [],
   tissue_terms: [],
 };
@@ -429,12 +435,12 @@ export interface RawDataset {
   id: string;
   label: string;
 }
-
 export interface FilterDimensions {
   datasets: RawDataset[];
   development_stage_terms: { id: string; name: string }[];
   disease_terms: { id: string; name: string }[];
   self_reported_ethnicity_terms: { id: string; name: string }[];
+  publicationFilter: { id: string; name: string }[];
   sex_terms: { id: string; name: string }[];
   tissue_terms: { id: string; name: string }[];
 }
@@ -443,6 +449,20 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
+  // Extracting row metadata from collections
+  const { rows: rawPublications } = useFetchCollectionRows(
+    VIEW_MODE.DEFAULT,
+    "success"
+  );
+  const { selectedPublicationFilter, selectedFilters } =
+    useContext(StateContext);
+  const { publications } = selectedPublicationFilter;
+  const { datasets: selectedDatasets } = selectedFilters;
+  const { data: collections } = useManyCollections({ ids: publications });
+  const { data: publication_list } = useManyCollections({
+    ids: rawPublications.map(({ id }) => id),
+  });
+
   const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
@@ -460,13 +480,70 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       tissue_terms,
     } = filter_dims;
 
+    // Reconstructing rows into publication_list format, with collection id, name, and STABLE dataset ids.
+    // (cchoi): This is a fix suggested by Emanuele to grab the stable dataset IDs without reconfiguring the cube or the API.
+    const allPublications: {
+      id: string;
+      name: string;
+      dataset_ids: string[];
+    }[] = (publication_list ?? []).flatMap(
+      (collection: Collection | TombstonedCollection | null) => {
+        if (!collection || collection.tombstone) return [];
+        const ids: string[] = [];
+        for (const d of collection.datasets.values()) {
+          let url = d["dataset_deployments"][0].url.toString();
+          url = url.substring(51);
+          url = url.substring(0, url.length - 5);
+          ids.push(url);
+        }
+        return [
+          {
+            id: collection.id,
+            name: collection.summaryCitation || "",
+            dataset_ids: ids,
+          },
+        ];
+      }
+    );
+
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
 
+    const selectedPublicationDatasetIds: string[] = [];
+
+    collections?.map((collection: Collection | TombstonedCollection | null) => {
+      if (!collection || collection.tombstone) return;
+      for (const d of collection.datasets.values()) {
+        // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
+        let url = d["dataset_deployments"][0].url.toString();
+        url = url.substring(51);
+        url = url.substring(0, url.length - 5);
+        selectedPublicationDatasetIds.push(url);
+      }
+    });
+
+    let intersect = sortedDatasets;
+
+    if (selectedPublicationDatasetIds.length > 0) {
+      intersect = sortedDatasets.filter((coll) =>
+        selectedPublicationDatasetIds.includes(coll.id)
+      );
+    }
+
+    let filteredPublications = allPublications;
+
+    if (sortedDatasets.length > 0) {
+      filteredPublications = filteredPublications.filter((coll) =>
+        coll.dataset_ids.some((datasetId) =>
+          sortedDatasets.map((dataset) => dataset.id).includes(datasetId)
+        )
+      );
+    }
+
     return {
       data: {
-        datasets: sortedDatasets.map((dataset) => ({
+        datasets: intersect.map((dataset) => ({
           ...dataset,
           name: dataset.label,
         })),
@@ -474,12 +551,16 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
+        publicationFilter: filteredPublications.map((publication) => ({
+          id: publication.id,
+          name: publication.name,
+        })),
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },
       isLoading: false,
     };
-  }, [data, isLoading]);
+  }, [data, isLoading, selectedDatasets, collections, publication_list]);
 }
 
 export function useExpressionSummary(version: 1 | 2 = 1): {
@@ -949,6 +1030,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
+
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
@@ -1028,13 +1110,20 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 function useWMGFiltersQueryRequestBody(
   version: 1 | 2 = 1
 ): FiltersQuery | null {
-  const { selectedTissues, selectedOrganismId, selectedFilters } =
-    useContext(StateContext);
+  const {
+    selectedTissues,
+    selectedOrganismId,
+    selectedFilters,
+    selectedPublicationFilter,
+  } = useContext(StateContext);
 
   const { data } = usePrimaryFilterDimensions(version);
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
+  const { publications } = selectedPublicationFilter;
+
+  const { data: collections } = useManyCollections({ ids: publications });
 
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
@@ -1057,9 +1146,27 @@ function useWMGFiltersQueryRequestBody(
         return tissuesByName[tissueName].id;
       }) ?? EMPTY_ARRAY;
 
+    const publicationDatasetIds: string[] = [];
+
+    collections?.map((collection: Collection | TombstonedCollection | null) => {
+      if (!collection || collection.tombstone) return;
+      for (const d of collection.datasets.values()) {
+        // Taking explorer_url and extracting the stable dataset IDs.
+        let url = d["dataset_deployments"][0].url.toString();
+        url = url.substring(51);
+        url = url.substring(0, url.length - 5);
+        publicationDatasetIds.push(url);
+      }
+    });
+
+    let intersect = publicationDatasetIds;
+    if (datasets.length > 0) {
+      intersect = datasets.filter((x) => publicationDatasetIds.includes(x));
+    }
+
     return {
       filter: {
-        dataset_ids: datasets,
+        dataset_ids: intersect,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
         organism_ontology_term_id: selectedOrganismId,
@@ -1077,6 +1184,7 @@ function useWMGFiltersQueryRequestBody(
     developmentStages,
     diseases,
     ethnicities,
+    collections,
     sexes,
     version,
   ]);
