@@ -1,6 +1,7 @@
 import numpy as np
 import tiledb
 
+
 def generate_schema(expression_summary_indexed_dims, expression_summary_non_indexed_dims):
     filters = [tiledb.ZstdFilter(level=+22)]
 
@@ -31,6 +32,7 @@ def generate_schema(expression_summary_indexed_dims, expression_summary_non_inde
     )
     return expression_summary_schema
 
+
 base_expression_summary_indexed_dims = [
     "cell_type_ontology_term_id",
     "tissue_ontology_term_id",
@@ -44,13 +46,12 @@ expression_summary_secondary_dims = [
     "sex_ontology_term_id",
 ]
 
-expression_summary_attrs = [
-    "gene_ontology_term_id"
-]
+expression_summary_attrs = ["gene_ontology_term_id"]
 
 schemas = {"default": generate_schema(base_expression_summary_indexed_dims, expression_summary_attrs)}
 for secondary_dim in expression_summary_secondary_dims:
-    expression_summary_indexed_dims = base_expression_summary_indexed_dims+[secondary_dim]
-    expression_summary_non_indexed_dims = [dim for dim in expression_summary_secondary_dims if dim != secondary_dim] + expression_summary_attrs
-    schemas[secondary_dim] = generate_schema(expression_summary_indexed_dims, expression_summary_non_indexed_dims)    
-
+    expression_summary_indexed_dims = base_expression_summary_indexed_dims + [secondary_dim]
+    expression_summary_non_indexed_dims = [
+        dim for dim in expression_summary_secondary_dims if dim != secondary_dim
+    ] + expression_summary_attrs
+    schemas[secondary_dim] = generate_schema(expression_summary_indexed_dims, expression_summary_non_indexed_dims)

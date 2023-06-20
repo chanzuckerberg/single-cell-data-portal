@@ -1,7 +1,6 @@
 import numpy as np
 import tiledb
 
-
 filters = [tiledb.ZstdFilter(level=+22)]
 
 # Cell Counts Array
