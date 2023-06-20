@@ -92,9 +92,19 @@ export interface DifferentialExpressionResult {
   p_value: number;
   effect_size: number;
 }
+
+export interface PathwayEnrichmentAnalysisResult {
+  gene_set: string;
+  gene_symbols: string;
+  p_value: number;
+  fdr_q_value: number;
+}
+
 interface DifferentialExpressionQueryResponse {
   differentialExpressionResults1: DifferentialExpressionResult[];
   differentialExpressionResults2: DifferentialExpressionResult[];
+  pathwayEnrichmentAnalysisResults1: PathwayEnrichmentAnalysisResult[];
+  pathwayEnrichmentAnalysisResults2: PathwayEnrichmentAnalysisResult[];
   successCode: number;
   snapshot_id: string;
 }
@@ -102,6 +112,8 @@ interface DifferentialExpressionQueryResponse {
 interface DifferentialExpressionQueryResult {
   differentialExpressionResults1: DifferentialExpressionResult[];
   differentialExpressionResults2: DifferentialExpressionResult[];
+  pathwayEnrichmentAnalysisResults1: PathwayEnrichmentAnalysisResult[];
+  pathwayEnrichmentAnalysisResults2: PathwayEnrichmentAnalysisResult[];
   successCode?: number;
 }
 
@@ -286,6 +298,8 @@ export function useDifferentialExpression(): {
         data: {
           differentialExpressionResults1: [],
           differentialExpressionResults2: [],
+          pathwayEnrichmentAnalysisResults1: [],
+          pathwayEnrichmentAnalysisResults2: [],
           successCode: data?.successCode ?? 0,
         },
         isLoading,
@@ -294,6 +308,10 @@ export function useDifferentialExpression(): {
       data: {
         differentialExpressionResults1: data.differentialExpressionResults1,
         differentialExpressionResults2: data.differentialExpressionResults2,
+        pathwayEnrichmentAnalysisResults1:
+          data.pathwayEnrichmentAnalysisResults1,
+        pathwayEnrichmentAnalysisResults2:
+          data.pathwayEnrichmentAnalysisResults2,
         successCode: 0,
       },
       isLoading: false,
