@@ -171,6 +171,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
 
   return (
     <div>
+      <div onClick={toggleShowEnrichedPathways}>Click me</div>
       {showEnrichedPathways
         ? [differentialExpressionResults1, differentialExpressionResults2].map(
             (results, index) => {
