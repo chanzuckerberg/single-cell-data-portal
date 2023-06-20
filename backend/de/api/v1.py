@@ -145,8 +145,8 @@ def run_differential_expression(q, criteria1, criteria2, pval_thr=1e-5, n_genes=
 
     n_cells1 = cell_counts1["n_total_cells"].sum()
     n_cells2 = cell_counts2["n_total_cells"].sum()
-    es_agg1 = q.expression_summary_fmg(criteria1).groupby("gene_ontology_term_id").sum(numeric_only=True)
-    es_agg2 = q.expression_summary_fmg(criteria2).groupby("gene_ontology_term_id").sum(numeric_only=True)
+    es_agg1 = q.expression_summary(criteria1).groupby("gene_ontology_term_id").sum(numeric_only=True)
+    es_agg2 = q.expression_summary(criteria2).groupby("gene_ontology_term_id").sum(numeric_only=True)
     genes = list(set(list(es_agg1.index) + list(es_agg2.index)))
 
     genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
