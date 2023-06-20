@@ -127,7 +127,7 @@ async function fetchFiltersQuery({
   if (!query) return;
 
   const url = API_URL + API.DE_FILTERS_QUERY;
-
+  console.log(query);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,

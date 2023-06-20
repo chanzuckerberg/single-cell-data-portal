@@ -10,7 +10,7 @@ import {
 } from "@czi-sds/components";
 
 export const Wrapper = styled.div`
-  height: 100%;
+  height: 200vh;
   width: 100%;
   display: flex;
   flex-direction: column;

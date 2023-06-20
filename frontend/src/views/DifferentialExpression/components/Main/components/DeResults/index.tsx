@@ -1,4 +1,4 @@
-import { Icon, Tag } from "@czi-sds/components";
+import { Button, Icon, Tag, Tooltip } from "@czi-sds/components";
 import { useState, useEffect, useContext } from "react";
 import { useDifferentialExpression } from "src/common/queries/differentialExpression";
 import {
@@ -14,6 +14,9 @@ import {
   NoDeGenesContainer,
   NoDeGenesDescription,
   NoDeGenesHeader,
+  DeGenesInGeneSetTooltipWrapper,
+  StyledLink,
+  ButtonWrapper,
 } from "./style";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import { clearSubmittedQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
@@ -171,8 +174,12 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
 
   return (
     <div>
-      <div onClick={toggleShowEnrichedPathways}>Click me</div>
-      {showEnrichedPathways
+      <ButtonWrapper>
+        <Button onClick={toggleShowEnrichedPathways}>
+          {showEnrichedPathways ? "Show DE Results" : "Show Enriched Pathways"}
+        </Button>
+      </ButtonWrapper>
+      {!showEnrichedPathways
         ? [differentialExpressionResults1, differentialExpressionResults2].map(
             (results, index) => {
               return (
@@ -280,22 +287,35 @@ const PathwayEnrichmentResultsTable = ({
               <td>Gene set </td>
               <td>P-value</td>
               <td>FDR Q-value</td>
-              {/* <td>DE genes</td> */}
             </tr>
           </thead>
           <tbody>
             {results.map((result) => {
-              const { geneSet, pValue, fdrQValue } = result;
+              const { geneSet, pValue, fdrQValue, geneSymbols } = result;
               return (
                 <tr key={geneSet}>
-                  <td>{geneSet}</td>
+                  <td>
+                    {
+                      <Tooltip
+                        sdsStyle="light"
+                        placement="left"
+                        width="wide"
+                        arrow
+                        leaveDelay={0}
+                        title={
+                          <DeGenesInGeneSetTooltipWrapper>
+                            {geneSymbols.map((geneSymbol) => (
+                              <Tag color="gray" label={geneSymbol} />
+                            ))}
+                          </DeGenesInGeneSetTooltipWrapper>
+                        }
+                      >
+                        <StyledLink>{geneSet}</StyledLink>
+                      </Tooltip>
+                    }
+                  </td>
                   <td>{pValue.toPrecision(4)}</td>
                   <td>{fdrQValue.toPrecision(4)}</td>
-                  {/* <td>
-                    {geneSymbols.map((geneSymbol) => (
-                      <Tag label={geneSymbol} />
-                    ))}
-                  </td> */}
                 </tr>
               );
             })}

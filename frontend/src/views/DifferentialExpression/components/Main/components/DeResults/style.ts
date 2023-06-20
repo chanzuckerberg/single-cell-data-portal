@@ -102,3 +102,24 @@ export const NoDeGenesDescription = styled("span")<Props>`
     `;
   }}
 `;
+
+export const DeGenesInGeneSetTooltipWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  column-gap: 4px;
+  flex-wrap: wrap;
+`;
+
+export const StyledLink = styled.a`
+  color: black;
+
+  &:hover {
+    color: black;
+    text-decoration: none;
+  }
+`;
+
+export const ButtonWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;

@@ -325,12 +325,12 @@ export default memo(function Filters({
       </TagWrapper>
       <StyledComplexFilter
         multiple
-        data-testid="de-qg-cell-type-filter"
+        data-testid="de-qg-tissue-filter"
         search
-        label="Cell Type"
-        options={cell_type_terms as unknown as DefaultMenuSelectOption[]}
-        onChange={handleCellTypesChange}
-        value={selectedCellTypes as unknown as DefaultMenuSelectOption[]}
+        label={"Tissue"}
+        options={tissue_terms as unknown as DefaultMenuSelectOption[]}
+        onChange={handleTissuesChange}
+        value={selectedTissues as unknown as DefaultMenuSelectOption[]}
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }
@@ -340,12 +340,12 @@ export default memo(function Filters({
       />
       <StyledComplexFilter
         multiple
-        data-testid="de-qg-tissue-filter"
+        data-testid="de-qg-cell-type-filter"
         search
-        label={"Tissue"}
-        options={tissue_terms as unknown as DefaultMenuSelectOption[]}
-        onChange={handleTissuesChange}
-        value={selectedTissues as unknown as DefaultMenuSelectOption[]}
+        label="Cell Type"
+        options={cell_type_terms as unknown as DefaultMenuSelectOption[]}
+        onChange={handleCellTypesChange}
+        value={selectedCellTypes as unknown as DefaultMenuSelectOption[]}
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }
