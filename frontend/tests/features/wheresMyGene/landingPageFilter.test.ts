@@ -2,12 +2,13 @@ import { expect, test } from "@playwright/test";
 import {
   checkPlotSize,
   checkSourceData,
+  conditionallyRunTests,
   deSelectSecondaryFilterOption,
   goToWMG,
   selectSecondaryFilterOption,
   selectTissueAndGeneOption,
 } from "../../utils/wmgUtils";
-import { isDevStagingProd, tryUntil } from "tests/utils/helpers";
+import { tryUntil } from "tests/utils/helpers";
 import {
   COLOR_SCALE_TOOLTIP_TEXT,
   GROUP_BY_TOOLTIP_TEXT,
@@ -17,10 +18,10 @@ import {
 
 const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
 
-const { describe, skip } = test;
+const { describe } = test;
 
 describe("Left side bar", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  conditionallyRunTests();
 
   test("Left side bar collapse and expand", async ({ page }) => {
     // navigate to gene expression page

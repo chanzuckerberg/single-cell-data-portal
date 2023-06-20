@@ -1,12 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { goToWMG } from "../../utils/wmgUtils";
-import { isDevStagingProd } from "tests/utils/helpers";
+import { conditionallyRunTests, goToWMG } from "../../utils/wmgUtils";
 
 import { SHARED_LINK_FILTER } from "tests/common/constants";
 import { getTestID } from "tests/utils/selectors";
-const { describe, skip } = test;
+const { describe } = test;
 describe("cell tooltip", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  conditionallyRunTests();
 
   test(`Should verify cell tooltip hover`, async ({ page }) => {
     // set app state
