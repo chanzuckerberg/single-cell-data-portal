@@ -1,4 +1,5 @@
 import RawDocument, { Head, Html, Main, NextScript } from "next/document";
+import { API_URL } from "src/configs/configs";
 
 const OG_PAGE_TITLE = "Cellxgene Data Portal";
 
@@ -63,7 +64,7 @@ export default class Document extends RawDocument {
             key="og:description"
           />
         </Head>
-        <body>
+        <body data-api-url={API_URL}>
           <Main />
           <NextScript />
         </body>

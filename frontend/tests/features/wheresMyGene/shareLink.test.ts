@@ -2,10 +2,14 @@
 import { Page, expect, test } from "@playwright/test";
 import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGene/components/GeneSearchBar/components/ShareButton/utils";
 import { TEST_URL } from "tests/common/constants";
-import { isDevStagingProd } from "tests/utils/helpers";
-import { goToWMG, addTissuesAndGenes } from "tests/utils/wmgUtils";
 
-const { describe, skip } = test;
+import {
+  goToWMG,
+  addTissuesAndGenes,
+  conditionallyRunTests,
+} from "tests/utils/wmgUtils";
+
+const { describe } = test;
 const SHARE_BUTTON = "share-button";
 const tissues = ["blood", "lung"];
 const genes = ["DPM1", "TNMD", "TSPAN6"];
@@ -48,7 +52,8 @@ const initialState =
   "datasets=c874f155-9bf9-4928-b821-f52c876b3e48%2Cdb59611b-42de-4035-93aa-1ed39f38b467%2Ceeacb0c1-2217-4cf6-b8ce-1f0fedf1b569%2C881fe679-c6e0-45a3-9427-c4e81be6921f%2Cea786a06-5855-48b7-80d7-0313a21a2044%2C456e8b9b-f872-488b-871d-94534090a865&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2&compare=disease";
 
 describe("Share link tests", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  conditionallyRunTests();
+
   test("Should share link with single tissue and single gene", async ({
     page,
     browserName,
