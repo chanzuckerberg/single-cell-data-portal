@@ -305,7 +305,7 @@ def lookup_collection(collection_id: str):
     """
     version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
     if version is None:
-        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id), get_tombstoned=True)
     return version
 
 

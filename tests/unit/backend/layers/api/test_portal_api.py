@@ -1070,7 +1070,7 @@ class TestCollectionDeletion(BaseAPIPortalTest):
             path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PUBLIC")
         )
         response = self.app.get(test_version_url.url, headers=headers)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 410)
         # body = json.loads(response.data)
         # datasets_tombstoned = [dataset["tombstone"] for dataset in body["datasets"]]
         # self.assertTrue(all(datasets_tombstoned))

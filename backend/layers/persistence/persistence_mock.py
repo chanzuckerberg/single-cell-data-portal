@@ -272,11 +272,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return self.datasets[dataset_id.id]
 
     def get_dataset_version(self, version_id: DatasetVersionId, get_tombstoned: bool = False) -> DatasetVersion:
-        version = self.datasets_versions.get(version_id.id)
-        if not get_tombstoned and self.datasets_versions[version_id.id].canonical_dataset.tombstoned:
-            return None
-        if version is not None:
-            return self._update_dataset_version_with_canonical(version)
+        dataset_version = self.datasets_versions.get(version_id.id)
+        if dataset_version:
+            if not get_tombstoned and dataset_version.canonical_dataset.tombstoned:
+                return None
+            return self._update_dataset_version_with_canonical(dataset_version)
 
     def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
