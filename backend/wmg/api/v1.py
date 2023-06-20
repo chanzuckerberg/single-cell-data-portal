@@ -140,13 +140,12 @@ def find_dimension_id_from_compare(compare: str) -> str:
 def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
     criteria = criteria.dict()
     for key in criteria:
-        if key != "organism_ontology_term_id":
-            if isinstance(criteria[key], list):
-                if len(criteria[key]) > 0:
-                    return False
-            else:
-                if criteria[key] != "":
-                    return False
+        if isinstance(criteria[key], list):
+            if len(criteria[key]) > 0:
+                return False
+        else:
+            if criteria[key] != "":
+                return False
     return True
 
 
@@ -190,6 +189,7 @@ def build_expression_summary(query_result: DataFrame, compare: str) -> dict:
 
 def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
+        "organism_ontology_term_id": "",
         "dataset_id": "",
         "disease_ontology_term_id": "",
         "sex_ontology_term_id": "",
