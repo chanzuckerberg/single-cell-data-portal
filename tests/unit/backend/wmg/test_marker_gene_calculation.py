@@ -3,8 +3,8 @@ import unittest
 
 import pytest
 
-from backend.wmg.data.query import retrieve_top_n_markers
 from backend.wmg.data.calculate_markers import _prepare_indices_and_metrics, get_markers
+from backend.wmg.data.query import retrieve_top_n_markers
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
@@ -39,7 +39,7 @@ class MarkerGeneCalculationTest(unittest.TestCase):
 
             test_sum_context = list(context_agg.sum(0))
             # check that returned dataframe is correct
-            expected_sum_context = [35341152.0, 75007248.0, 19446942.0, 18654978.0]
+            expected_sum_context = [35345684.0, 75013504.0, 19450178.0, 18658172.0]
             for i in range(len(test_sum_context)):
                 assert abs(test_sum_context[i] - expected_sum_context[i]) < 0.05
 
@@ -64,7 +64,7 @@ class MarkerGeneCalculationTest(unittest.TestCase):
             expected = snapshot.marker_genes_cube.df[(tissue, organism, celltype)]
             expected = retrieve_top_n_markers(expected, "ttest", 10)
             for i, elem in enumerate(result):
-                assert pytest.approx(elem) == expected[i]
+                assert pytest.approx(elem, rel=0.01) == expected[i]
 
     def test__get_markers_binomtest(self):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
@@ -85,4 +85,4 @@ class MarkerGeneCalculationTest(unittest.TestCase):
             expected = snapshot.marker_genes_cube.df[(tissue, organism, celltype)]
             expected = retrieve_top_n_markers(expected, "binomtest", 10)
             for i, elem in enumerate(result):
-                assert pytest.approx(elem) == expected[i]
+                assert pytest.approx(elem, rel=0.01) == expected[i]

@@ -586,6 +586,8 @@ paths:
                       type: string
                     tissue_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     dataset_ids:
                       type: array
                       items:
@@ -598,8 +600,6 @@ paths:
                     development_ontology_stage_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     self_reported_ethnicity_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    cell_type_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
               required:
                 - filter
@@ -641,9 +641,9 @@ paths:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                       self_reported_ethnicity_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                      tissue_terms:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                       cell_type_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      tissue_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
 
   /v1/markers:
@@ -714,136 +714,6 @@ paths:
                     items:
                       description: ->
                         Object with gene id and effect size.
-                      type: object
-                      properties:
-                        gene_ontology_term_id:
-                          description: gene ontology term id
-                          type: string
-                        p_value:
-                          description: adjusted p-value
-                          type: number
-                          format: float
-                          maxLength: 4
-                          minimum: 0.0
-                          maximum: 1.0
-                        effect_size:
-                          description: effect size
-                          type: number
-                          format: float
-                          maxLength: 4
-
-  /v1/differentialExpression:
-    post:
-      summary: Prototype ifferential expression endpoint.
-      tags:
-        - wmg
-      operationId: backend.wmg.api.v1.differentialExpression
-      parameters: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                queryGroup1Filters:
-                  type: object
-                  properties:
-                    organism_ontology_term_id:
-                      type: string
-                    tissue_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    dataset_ids:
-                      type: array
-                      items:
-                        type: string
-                        format: uuid
-                    disease_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    sex_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    development_ontology_stage_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    self_reported_ethnicity_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    cell_type_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                  required:
-                    - organism_ontology_term_id
-                queryGroup2Filters:
-                  type: object
-                  properties:
-                    organism_ontology_term_id:
-                      type: string
-                    tissue_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    dataset_ids:
-                      type: array
-                      items:
-                        type: string
-                        format: uuid
-                    disease_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    sex_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    development_ontology_stage_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    self_reported_ethnicity_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    cell_type_ontology_term_ids:
-                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                  required:
-                    - organism_ontology_term_id
-              required:
-                - queryGroup1Filters
-                - queryGroup2Filters
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - differentialExpressionResults1
-                  - differentialExpressionResults2
-                properties:
-                  snapshot_id:
-                    $ref: "#/components/schemas/wmg_snapshot_id"
-                  successCode:
-                    description: ->
-                      Code indicating whether the query returned too many cells to compute differential expression.
-                    type: integer
-                  differentialExpressionResults1:
-                    description: ->
-                      Differential expression results for cell group 1
-                    type: array
-                    items:
-                      description: ->
-                        Object with gene id, p-value, and effect size.
-                      type: object
-                      properties:
-                        gene_ontology_term_id:
-                          description: gene ontology term id
-                          type: string
-                        p_value:
-                          description: adjusted p-value
-                          type: number
-                          format: float
-                          maxLength: 4
-                          minimum: 0.0
-                          maximum: 1.0
-                        effect_size:
-                          description: effect size
-                          type: number
-                          format: float
-                          maxLength: 4
-                  differentialExpressionResults2:
-                    description: ->
-                      Differential expression results for cell group 2
-                    type: array
-                    items:
-                      description: ->
-                        Object with gene id, p-value, and effect size.
                       type: object
                       properties:
                         gene_ontology_term_id:

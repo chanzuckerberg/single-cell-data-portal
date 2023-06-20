@@ -5,7 +5,7 @@ import { Collection } from "src/common/entities";
 import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
-import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
+import { goToPage, isDevStaging, tryUntil } from "tests/utils/helpers";
 import datasets from "../../fixtures/datasets";
 import { getTestID } from "tests/utils/selectors";
 
@@ -34,8 +34,10 @@ type CollectionFormInput = Pick<
 describe("Collection", () => {
   describe("Logged In Tests", () => {
     skip(
-      !isDevStagingProd,
-      "Currently push-test runs against dev BE, so login doesn't work for local containers"
+      !isDevStaging,
+      `Currently push-test runs against dev BE, so login doesn't work for local containers.
+       We also only run the tests in dev and staging to avoid polluting prod.
+      `
     );
 
     test("creates and deletes a collection", async ({ page }) => {
@@ -91,7 +93,12 @@ describe("Collection", () => {
   });
 
   describe("Deployed Env Tests", () => {
-    skip(!isDevStagingProd, "BE DOI endpoints only work in dev, staging, prod");
+    skip(
+      !isDevStaging,
+      `BE DOI endpoints only work in dev, staging, and prod. And we also only run
+      the tests in dev and staging to avoid polluting prod.
+      `
+    );
 
     describe("invalid DOIs", () => {
       test("doesn't create a collection with a DOI in an invalid format", async ({
@@ -172,7 +179,7 @@ async function createCollection({
  * Display the collection form modal.
  */
 async function showCreateForm(page: Page) {
-  await goToPage(`${TEST_URL}${ROUTES.MY_COLLECTIONS}`, page);
+  await goToPage(`${TEST_URL}${ROUTES.COLLECTIONS}`, page);
   await page.getByText("Create Collection").click();
 }
 

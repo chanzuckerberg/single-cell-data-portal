@@ -21,10 +21,10 @@ class Validation:
         self.cell_count_path = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
         self.env = os.getenv("DEPLOYMENT_STAGE")
         self.validation_dataset_id = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
-        self.MIN_CUBE_SIZE_GB = 1
-        self.MIN_TISSUE_COUNT = 15
-        self.MIN_SPECIES_COUNT = 2
-        self.MIN_DATASET_COUNT = 50
+        self.MIN_CUBE_SIZE_GB = 2.3
+        self.MIN_TISSUE_COUNT = 53
+        self.MIN_SPECIES_COUNT = 4
+        self.MIN_DATASET_COUNT = 254
         self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80
         self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60
         self.MIN_MALAT1_RANKIT_EXPRESSION = 4

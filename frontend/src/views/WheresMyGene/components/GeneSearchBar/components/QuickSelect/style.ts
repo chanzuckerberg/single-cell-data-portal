@@ -12,6 +12,7 @@ export const StyledSelectButton = styled(Button)`
   min-width: 88px !important;
   width: 30px;
   height: 30px;
+  font-weight: 500;
 `;
 
 export const StyledButtonIcon = styled(ButtonIcon)`

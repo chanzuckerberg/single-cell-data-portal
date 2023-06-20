@@ -135,38 +135,38 @@ class TestCorpusLoad(unittest.TestCase):
             self.assertEqual(stats["gene_count"], expected_genes)
             self.assertEqual(stats["dataset_count"], expected_datasets)
 
-            cube_fixture = False  # TODO: generate a cube fixture for testing
-            if cube_fixture:
-                # check obs
-                with tiledb.open(f"{snapshot_path}/obs", "r") as obs:
-                    actual_obs_df = obs.df[:]
-                with tiledb.open(self.fixture_file_path("fixtures/small-corpus/obs"), "r") as obs:
-                    expected_obs_df = obs.df[:]
+            # check obs matrix
+            with tiledb.open(f"{snapshot_path}/obs", "r") as obs:
+                obs_df = obs.df[:]
 
-                self.assertTrue(
-                    expected_obs_df.development_stage_ontology_term_id.equals(
-                        actual_obs_df.development_stage_ontology_term_id
-                    )
-                )
-                self.assertTrue(expected_obs_df.obs_idx.equals(actual_obs_df.obs_idx))
-                self.assertTrue(expected_obs_df.dataset_id.equals(actual_obs_df.dataset_id))
-                self.assertTrue(expected_obs_df.dataset_local_cell_id.equals(actual_obs_df.dataset_local_cell_id))
+                # total number of rows should be the number of cells generated per dataset * number of datasets
+                assert len(obs_df) == generate_cells * expected_datasets
 
-                # check var
-                with tiledb.open(f"{self.corpus_path}/var", "r") as var:
-                    actual_var_df = var.df[:]
-                with tiledb.open(self.fixture_file_path("fixtures/small-corpus/var"), "r") as var:
-                    expected_var_df = var.df[:]
+                # two expected datasets: dataset_0 and dataset_1
+                assert (obs_df.obs_idx >= 0).all()
+                assert sorted(obs_df.dataset_id.unique()) == ["dataset_0", "dataset_1"]
 
-                self.assertTrue(expected_var_df.equals(actual_var_df))
+                # cell ids should be between Cell_0 and Cell_4999
+                assert (obs_df.dataset_local_cell_id.str.startswith("Cell_")).all()
+                assert obs_df.dataset_local_cell_id.nunique() == generate_cells
 
-                # check expression matrix
-                with tiledb.open(f"{self.corpus_path}/X", "r") as x:
-                    actual_x_df = x.df[:]
-                with tiledb.open(self.fixture_file_path("fixtures/small-corpus/X"), "r") as x:
-                    expected_x_df = x.df[:]
+                # these are fixed values indicating lung tissue
+                assert (obs_df.tissue_original_ontology_term_id == "UBERON:0000101").all()
+                assert (obs_df.tissue_ontology_term_id == "UBERON:0002048").all()
 
-                self.assertTrue(expected_x_df.equals(actual_x_df))
+            # check var matrix
+            with tiledb.open(f"{self.corpus_path}/var", "r") as var:
+                var_df = var.df[:]
+                assert len(var_df) == 0
+                expected_columns = ["feature_name", "feature_reference", "gene_ontology_term_id", "var_idx"]
+                assert sorted(var_df.columns) == expected_columns
+
+            # check integrated expression matrix
+            with tiledb.open(f"{self.corpus_path}/integrated", "r") as ie:
+                ie_df = ie.df[:]
+                assert len(var_df) == 0
+                expected_columns = ["obs_idx", "rankit", "var_idx"]
+                assert sorted(ie_df.columns) == expected_columns
 
     def test__filter_out_rankits_with_low_expression_counts__boundaries(self):
         row = [0, 1, 2]

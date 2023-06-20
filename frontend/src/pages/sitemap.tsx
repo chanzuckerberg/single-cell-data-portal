@@ -318,7 +318,6 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
                         </a>
                       </li>
                     ))}
-                    {console.log(dir.files)}
                   </ul>
                 ) : null}
                 <div>
