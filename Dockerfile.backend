@@ -20,7 +20,7 @@ EXPOSE 5000
 ADD tests /single-cell-data-portal/tests
 ADD scripts /single-cell-data-portal/scripts
 ADD backend /single-cell-data-portal/backend
-ADD container_init.sh /single-cell-data-portals/container_init.sh
+ADD container_init.sh /single-cell-data-portal/container_init.sh
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
