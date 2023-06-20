@@ -8,10 +8,11 @@ export const COMPARE_OPTIONS = [
   { id: undefined, name: "None" },
   { id: "disease", name: "Disease" },
   { id: "self_reported_ethnicity", name: "Ethnicity" },
+  { id: "publication", name: "Publication" },
   { id: "sex", name: "Sex" },
 ];
 
-export type CompareId = "disease" | "ethnicity" | "sex";
+export type CompareId = "disease" | "ethnicity" | "sex" | "publication";
 
 export const getCompareOptionNameById = (id?: CompareId) => {
   const option = COMPARE_OPTIONS.find((option) => option.id === id);

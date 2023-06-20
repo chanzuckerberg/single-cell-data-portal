@@ -135,6 +135,8 @@ def find_dimension_id_from_compare(compare: str) -> str:
         return "self_reported_ethnicity_ontology_term_id"
     elif compare == "disease":
         return "disease_ontology_term_id"
+    elif compare == "publication":
+        return "publication_id"
     else:
         return None
 
