@@ -57,9 +57,11 @@ class DataArtifactCorrectness(unittest.TestCase):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts = snapshot.cell_counts_cube.df[:]
             cell_counts = cell_counts.select_dtypes(exclude="number")
+            cell_counts = cell_counts[cell_counts["organism_ontology_term_id"] == "NCBITaxon:9606"]
             expected_filter_options = {dimension: list(set(cell_counts[dimension])) for dimension in cell_counts}
             test_filter_options = {
-                dimension: find_all_dim_option_values(snapshot, dimension) for dimension in cell_counts
+                dimension: find_all_dim_option_values(snapshot, "NCBITaxon:9606", dimension)
+                for dimension in cell_counts
             }
 
             for dimension in test_filter_options:
