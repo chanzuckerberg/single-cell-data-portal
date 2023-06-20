@@ -200,7 +200,6 @@ export default memo(function Filters({
     };
 
     if (isEqual(availableFilters, newAvailableFilters)) return;
-
     setAvailableFilters(newAvailableFilters);
   }, [
     rawDatasets,
