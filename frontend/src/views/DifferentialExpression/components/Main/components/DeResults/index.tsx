@@ -1,4 +1,4 @@
-import { Icon } from "@czi-sds/components";
+import { Icon, Tag } from "@czi-sds/components";
 import { useState, useEffect, useContext } from "react";
 import { useDifferentialExpression } from "src/common/queries/differentialExpression";
 import {
@@ -17,10 +17,18 @@ import {
 } from "./style";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import { clearSubmittedQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
+
 interface DifferentialExpressionRow {
   name: string;
   pValue: number;
   effectSize: number;
+}
+
+interface PathwayRow {
+  geneSet: string;
+  geneSymbols: string[];
+  pValue: number;
+  fdrQValue: number;
 }
 
 interface Props {
@@ -33,14 +41,29 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
   const {
     differentialExpressionResults1: rawDifferentialExpressionResults1,
     differentialExpressionResults2: rawDifferentialExpressionResults2,
-    successCode,
+    pathwayEnrichmentAnalysisResults1: rawPathwayEnrichmentAnalysisResults1,
+    pathwayEnrichmentAnalysisResults2: rawPathwayEnrichmentAnalysisResults2,
   } = rawDifferentialExpressionResults;
+
+  const [showEnrichedPathways, setShowEnrichedPathways] = useState(false);
 
   const [differentialExpressionResults1, setDifferentialExpressionResults1] =
     useState<DifferentialExpressionRow[]>([]);
 
   const [differentialExpressionResults2, setDifferentialExpressionResults2] =
     useState<DifferentialExpressionRow[]>([]);
+
+  const [pathwayEnrichmentResults1, setPathwayEnrichmentResults1] = useState<
+    PathwayRow[]
+  >([]);
+
+  const [pathwayEnrichmentResults2, setPathwayEnrichmentResults2] = useState<
+    PathwayRow[]
+  >([]);
+
+  const toggleShowEnrichedPathways = () => {
+    setShowEnrichedPathways(!showEnrichedPathways);
+  };
 
   const {
     organismId,
@@ -53,7 +76,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
     if (!organismId || isLoading) return;
 
     // map ids to name
-    const formattedResults1 = rawDifferentialExpressionResults1.map(
+    const formattedDeResults1 = rawDifferentialExpressionResults1.map(
       (diffExpResult) => {
         return {
           name: diffExpResult.gene_symbol,
@@ -63,7 +86,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
       }
     );
 
-    const formattedResults2 = rawDifferentialExpressionResults2.map(
+    const formattedDeResults2 = rawDifferentialExpressionResults2.map(
       (diffExpResult) => {
         return {
           name: diffExpResult.gene_symbol,
@@ -72,9 +95,39 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
         };
       }
     );
-    setDifferentialExpressionResults1(formattedResults1);
-    setDifferentialExpressionResults2(formattedResults2);
-  }, [rawDifferentialExpressionResults, isLoading]);
+    setDifferentialExpressionResults1(formattedDeResults1);
+    setDifferentialExpressionResults2(formattedDeResults2);
+
+    const formattedPathwayResults1 = rawPathwayEnrichmentAnalysisResults1.map(
+      (pathwayResult) => {
+        return {
+          geneSet: pathwayResult.gene_set,
+          pValue: pathwayResult.p_value,
+          fdrQValue: pathwayResult.fdr_q_value,
+          geneSymbols: pathwayResult.gene_symbols.split(";"),
+        };
+      }
+    );
+
+    const formattedPathwayResults2 = rawPathwayEnrichmentAnalysisResults2.map(
+      (pathwayResult) => {
+        return {
+          geneSet: pathwayResult.gene_set,
+          pValue: pathwayResult.p_value,
+          fdrQValue: pathwayResult.fdr_q_value,
+          geneSymbols: pathwayResult.gene_symbols.split(";"),
+        };
+      }
+    );
+    setPathwayEnrichmentResults1(formattedPathwayResults1);
+    setPathwayEnrichmentResults2(formattedPathwayResults2);
+  }, [
+    rawDifferentialExpressionResults1,
+    rawDifferentialExpressionResults2,
+    rawPathwayEnrichmentAnalysisResults1,
+    rawPathwayEnrichmentAnalysisResults2,
+    isLoading,
+  ]);
 
   const handleCopyGenes1 = () => {
     const genes = differentialExpressionResults1.map((result) => result.name);
@@ -107,9 +160,6 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
   }, [queryGroups, submittedQueryGroups]);
 
   const showEmpty = !submittedQueryGroups;
-  const tooManyCells1 = successCode === 1 || successCode === 3;
-  const tooManyCells2 = successCode === 2 || successCode === 3;
-  const tooManyCells = [tooManyCells1, tooManyCells2];
 
   useEffect(() => {
     setIsLoading(isLoading);
@@ -121,78 +171,143 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
 
   return (
     <div>
-      {[differentialExpressionResults1, differentialExpressionResults2].map(
-        (results, index) => {
-          return (
-            <div>
-              <QueryGroupTitle>Query Group {index + 1}</QueryGroupTitle>
-              <QueryGroupSubTitle>
-                {namesToShow[index].join(", ")}
-              </QueryGroupSubTitle>
-              <TableWrapper>
-                {results.length > 0 ? (
-                  <StyledHTMLTable condensed bordered={false}>
-                    <thead>
-                      <tr>
-                        <td>
-                          <CopyGenesButton
-                            onClick={copyGenesHandlers[index]}
-                            sdsType="primary"
-                            sdsStyle="minimal"
-                            isAllCaps={false}
-                            startIcon={
-                              <Icon
-                                sdsIcon="copy"
-                                sdsSize="s"
-                                sdsType="button"
-                              />
-                            }
-                          >
-                            Copy Genes
-                          </CopyGenesButton>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Gene </td>
-                        <td>P-value</td>
-                        <td>Effect size</td>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {results.map((result) => {
-                        const { name: symbol, pValue, effectSize } = result;
-                        return (
-                          <tr key={symbol}>
-                            <td>{symbol}</td>
-                            <td>{pValue.toPrecision(4)}</td>
-                            <td>{effectSize.toPrecision(4)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </StyledHTMLTable>
-                ) : tooManyCells[index] ? (
-                  <NoDeGenesContainer>
-                    <NoDeGenesDescription isError>
-                      This query group is too large. Please select a different
-                      query group.
-                    </NoDeGenesDescription>
-                  </NoDeGenesContainer>
-                ) : (
-                  <NoDeGenesContainer>
-                    <NoDeGenesHeader>
-                      No Differentially Expressed Genes
-                    </NoDeGenesHeader>
-                    <NoDeGenesDescription>
-                      No differentially expressed genes for this query group.
-                    </NoDeGenesDescription>
-                  </NoDeGenesContainer>
-                )}
-              </TableWrapper>
-            </div>
-          );
-        }
-      )}
+      {showEnrichedPathways
+        ? [differentialExpressionResults1, differentialExpressionResults2].map(
+            (results, index) => {
+              return (
+                <div>
+                  <QueryGroupTitle>Query Group {index + 1}</QueryGroupTitle>
+                  <QueryGroupSubTitle>
+                    {namesToShow[index].join(", ")}
+                  </QueryGroupSubTitle>
+                  <DifferentialExpressionResultsTable
+                    results={results}
+                    copyGeneHandler={copyGenesHandlers[index]}
+                  />
+                </div>
+              );
+            }
+          )
+        : [pathwayEnrichmentResults1, pathwayEnrichmentResults2].map(
+            (results, index) => {
+              return (
+                <div>
+                  <QueryGroupTitle>Query Group {index + 1}</QueryGroupTitle>
+                  <QueryGroupSubTitle>
+                    {namesToShow[index].join(", ")}
+                  </QueryGroupSubTitle>
+                  <PathwayEnrichmentResultsTable results={results} />
+                </div>
+              );
+            }
+          )}
     </div>
   );
 }
+
+interface DifferentialExpressionResultsTableProps {
+  results: DifferentialExpressionRow[];
+  copyGeneHandler: () => void;
+}
+const DifferentialExpressionResultsTable = ({
+  results,
+  copyGeneHandler,
+}: DifferentialExpressionResultsTableProps) => {
+  return (
+    <TableWrapper>
+      {results.length > 0 ? (
+        <StyledHTMLTable condensed bordered={false}>
+          <thead>
+            <tr>
+              <td>
+                <CopyGenesButton
+                  onClick={copyGeneHandler}
+                  sdsType="primary"
+                  sdsStyle="minimal"
+                  isAllCaps={false}
+                  startIcon={
+                    <Icon sdsIcon="copy" sdsSize="s" sdsType="button" />
+                  }
+                >
+                  Copy Genes
+                </CopyGenesButton>
+              </td>
+            </tr>
+            <tr>
+              <td>Gene </td>
+              <td>P-value</td>
+              <td>Effect size</td>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((result) => {
+              const { name: symbol, pValue, effectSize } = result;
+              return (
+                <tr key={symbol}>
+                  <td>{symbol}</td>
+                  <td>{pValue.toPrecision(4)}</td>
+                  <td>{effectSize.toPrecision(4)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </StyledHTMLTable>
+      ) : (
+        <NoDeGenesContainer>
+          <NoDeGenesHeader>No Differentially Expressed Genes</NoDeGenesHeader>
+          <NoDeGenesDescription>
+            No differentially expressed genes for this query group.
+          </NoDeGenesDescription>
+        </NoDeGenesContainer>
+      )}
+    </TableWrapper>
+  );
+};
+
+interface PathwayEnrichmentResultsTableProps {
+  results: PathwayRow[];
+}
+const PathwayEnrichmentResultsTable = ({
+  results,
+}: PathwayEnrichmentResultsTableProps) => {
+  return (
+    <TableWrapper>
+      {results.length > 0 ? (
+        <StyledHTMLTable condensed bordered={false}>
+          <thead>
+            <tr>
+              <td>Gene set </td>
+              <td>P-value</td>
+              <td>FDR Q-value</td>
+              <td>DE genes</td>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((result) => {
+              const { geneSet, pValue, fdrQValue, geneSymbols } = result;
+              return (
+                <tr key={geneSet}>
+                  <td>{geneSet}</td>
+                  <td>{pValue.toPrecision(4)}</td>
+                  <td>{fdrQValue.toPrecision(4)}</td>
+                  <td>
+                    {geneSymbols.map((geneSymbol) => (
+                      <Tag label={geneSymbol} />
+                    ))}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </StyledHTMLTable>
+      ) : (
+        <NoDeGenesContainer>
+          <NoDeGenesHeader>No Differentially Expressed Genes</NoDeGenesHeader>
+          <NoDeGenesDescription>
+            No differentially expressed genes for this query group.
+          </NoDeGenesDescription>
+        </NoDeGenesContainer>
+      )}
+    </TableWrapper>
+  );
+};
