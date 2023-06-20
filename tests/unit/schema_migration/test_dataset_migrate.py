@@ -1,7 +1,13 @@
 import os
 from unittest import mock
 
-from backend.layers.common.entities import DatasetArtifact, DatasetVersionId
+from backend.layers.common.entities import DatasetArtifact
+from tests.unit.schema_migration.pytest_fixtures import (
+    private,
+    published_collection,
+    revision,
+    schema_migrate_and_collections,
+)
 
 
 class TestDatasetMigrate:
@@ -13,13 +19,11 @@ class TestDatasetMigrate:
         schema_migrate.business_logic.get_dataset_artifacts.return_value = [
             DatasetArtifact(id=None, type="raw_h5ad", uri="s3://fake-bucket/object_key.h5ad")
         ]
-        dataset_version_id = DatasetVersionId().id
-        schema_migrate.business_logic.ingest_dataset.return_value = (
-            dataset_version_id,
-            private.datasets[0].dataset_id.id,
-        )
         with mock.patch("backend.schema_migration.migrate.cellxgene_schema"):
+            dataset_version_id = private.datasets[0].version_id.id
             response = schema_migrate.dataset_migrate(
-                private.collection_id.id, private.datasets[0].dataset_id.id, private.datasets[0].version_id.id
+                private.collection_id.id, private.datasets[0].dataset_id.id, dataset_version_id
             )
-            assert response["new_dataset_version_id"] == dataset_version_id
+            assert response["collection_id"] == private.collection_id.id
+            assert response["dataset_version_id"] == dataset_version_id
+            assert response["url"] == f"s3://upload_bucket/{dataset_version_id}/raw.h5ad"

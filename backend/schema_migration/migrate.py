@@ -23,18 +23,41 @@ class SchemaMigrate:
         self.business_logic = business_logic
         self.step_name = step_name
 
-    def gather_collections(self) -> Dict[str, Dict[str, List[str]]]:
+    def gather_collections(self) -> Dict[str, Dict[str, List[Dict[str, str]]]]:
         """
         This function is used to gather all the collections and their datasets that will be migrated
         :return: A dictionary with the following structure:
         {
-            "published": {"collection_id": ["dataset_id", "dataset_id", ...], ...},
-            "revision": {"collection_version_id": ["dataset_id", "dataset_id", ...], ...}
-            "private": {"collection_id": ["dataset_id", "dataset_id", ...], ...},
+            "published": {
+                "<collection_id>":
+                    [
+                        {"dataset_id": "<dataset_id>", "dataset_version_id": "<dataset_version_id>"},
+                        {...},
+                         ...
+                     ],
+                ...
+            },
+            "revision": {
+                "<collection_version_id>":
+                    [
+                        {"dataset_id": "<dataset_id>", "dataset_version_id": "<dataset_version_id>"},
+                        {...},
+                         ...
+                     ],
+                ...
+            },
+            "private": {
+                "<collection_id>":
+                    [
+                        {"dataset_id": "<dataset_id>", "dataset_version_id": "<dataset_version_id>"},
+                        {...},
+                         ...
+                     ],
+                ...
+            },
         }
         """
 
-        CollectionQueryFilter()
         published_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=True))
         unpublished_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=False))
 
@@ -70,15 +93,13 @@ class SchemaMigrate:
             if artifact.type == DatasetArtifactType.RAW_H5AD
         ]
         bucket_name, object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
-        self.business_logic.s3_provider.download_file(bucket_name, object_key, "raw.h5ad")
-        cellxgene_schema.migrate("raw.h5ad", "migrated.h5ad", collection_id, dataset_id)
-        # TODO: define where this upload bucket actually should be
-        upload_bucket_name = os.environ["UPLOAD_BUCKET"]
-        dst_uri = f"{dataset_version_id}/migrated.h5ad"
-        self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket_name, dst_uri)
-        url = f"s3://{upload_bucket_name}/{dst_uri}"
-        new_dataset_version_id, _ = self.business_logic.ingest_dataset(collection_id, url, None, dataset_version_id)
-        return {"new_dataset_version_id": new_dataset_version_id}
+        self.business_logic.s3_provider.download_file(bucket_name, object_key, "previous_schema.h5ad")
+        cellxgene_schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_id, dataset_id)
+        upload_bucket = os.environ["UPLOAD_BUCKET"]
+        dst_uri = f"{dataset_version_id}/raw.h5ad"
+        self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri)
+        url = f"s3://{upload_bucket}/{dst_uri}"
+        return {"collection_id": collection_id, "dataset_version_id": dataset_version_id, "url": url}
 
     def collection_migrate(
         self, collection_id: str, datasets: List[Dict[str, str]], can_open_revision: bool
@@ -95,16 +116,12 @@ class SchemaMigrate:
             for dataset in datasets
         ]
 
-    def corpus_migrate(self) -> bool:
-        self.gather_collections()
-        return True
-
     def migrate(self) -> bool:
         """
         Gets called by the step function at every different step, as defined by `step_name`
         """
         if self.step_name == "corpus_migrate":
-            self.corpus_migrate()
+            self.gather_collections()
         if self.step_name == "collection_migrate":
             collection_id = os.environ["collection_id"]
             datasets = json.loads(os.environ["datasets"])

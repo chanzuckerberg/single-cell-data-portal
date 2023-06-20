@@ -1,6 +1,12 @@
 from unittest import mock
 
 from backend.layers.common.entities import CollectionVersionId
+from tests.unit.schema_migration.pytest_fixtures import (
+    private,
+    published_collection,
+    revision,
+    schema_migrate_and_collections,
+)
 
 
 class TestCollectionMigrate:
