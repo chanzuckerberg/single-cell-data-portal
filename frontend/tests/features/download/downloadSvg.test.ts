@@ -4,8 +4,7 @@ import { SHARED_LINK, SIMPLE_SHARED_LINK } from "tests/common/constants";
 
 const { describe, skip } = test;
 
-describe.skip("SVG download tests", () => {
-  // skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+describe("SVG download tests", () => {
   skip(true, "Skip for now, because image diffing is hard");
 
   test(`Should verify SVG download without grouping`, async ({ page }) => {

@@ -492,8 +492,8 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         const ids: string[] = [];
         for (const d of collection.datasets.values()) {
           let url = d["dataset_deployments"][0].url.toString();
-          url = url.substring(51);
-          url = url.substring(0, url.length - 5);
+          url = url.split("/").at(-2) ?? "";
+          url = url.split(".cxg").at(0) ?? "";
           ids.push(url);
         }
         return [
@@ -517,8 +517,8 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       for (const d of collection.datasets.values()) {
         // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
         let url = d["dataset_deployments"][0].url.toString();
-        url = url.substring(51);
-        url = url.substring(0, url.length - 5);
+        url = url.split("/").at(-2) ?? "";
+        url = url.split(".cxg").at(0) ?? "";
         selectedPublicationDatasetIds.push(url);
       }
     });
@@ -533,14 +533,13 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
 
     let filteredPublications = allPublications;
 
-    if (selectedDatasets.length > 0) {
+    if (sortedDatasets.length > 0) {
       filteredPublications = filteredPublications.filter((coll) =>
-        selectedDatasets.some((datasetId) =>
-          coll.dataset_ids.includes(datasetId)
+        coll.dataset_ids.some((datasetId) =>
+          sortedDatasets.map((dataset) => dataset.id).includes(datasetId)
         )
       );
     }
-
     return {
       data: {
         datasets: intersect.map((dataset) => ({
@@ -568,7 +567,6 @@ export function useExpressionSummary(version: 1 | 2 = 1): {
   data: QueryResponse["expression_summary"];
 } {
   const requestBody = useWMGQueryRequestBody(version);
-
   const { data, isLoading } = useWMGQuery(requestBody, version);
 
   return useMemo(() => {
@@ -1024,7 +1022,10 @@ function useWMGQueryRequestBody(version: 1 | 2) {
     selectedTissues,
     selectedOrganismId,
     selectedFilters,
+    selectedPublicationFilter,
   } = useContext(StateContext);
+  const { publications } = selectedPublicationFilter;
+  const { data: collections } = useManyCollections({ ids: publications });
 
   const { data } = usePrimaryFilterDimensions(version);
 
@@ -1076,10 +1077,25 @@ function useWMGQueryRequestBody(version: 1 | 2) {
       return tissuesByName[tissueName].id;
     });
 
+    const selectedPublicationDatasetIds: string[] = [];
+    collections?.map((collection: Collection | TombstonedCollection | null) => {
+      if (!collection || collection.tombstone) return;
+      for (const d of collection.datasets.values()) {
+        // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
+        let url = d["dataset_deployments"][0].url.toString();
+        url = url.split("/").at(-2) ?? "";
+        url = url.split(".cxg").at(0) ?? "";
+        selectedPublicationDatasetIds.push(url);
+      }
+    });
+
+    const union = Array.from(
+      new Set([...datasets, ...selectedPublicationDatasetIds])
+    );
     return {
       compare,
       filter: {
-        dataset_ids: datasets,
+        dataset_ids: union,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
         gene_ontology_term_ids,
@@ -1104,6 +1120,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
     sexes,
     organismGenesByName,
     tissuesByName,
+    collections,
   ]);
 }
 
@@ -1159,7 +1176,10 @@ function useWMGFiltersQueryRequestBody(
       }
     });
 
-    const intersect = datasets.filter((x) => publicationDatasetIds.includes(x));
+    let intersect = publicationDatasetIds;
+    if (datasets.length > 0) {
+      intersect = datasets.filter((x) => publicationDatasetIds.includes(x));
+    }
 
     return {
       filter: {
