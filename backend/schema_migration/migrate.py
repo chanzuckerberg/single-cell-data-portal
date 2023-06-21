@@ -9,7 +9,13 @@ import cellxgene_schema
 
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
-from backend.layers.common.entities import DatasetArtifactType
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionVersionId,
+    DatasetArtifactType,
+    DatasetProcessingStatus,
+    DatasetVersionId,
+)
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing import logger
 from backend.layers.thirdparty.s3_provider import S3Provider
@@ -89,7 +95,7 @@ class SchemaMigrate:
     def dataset_migrate(self, collection_id: str, dataset_id: str, dataset_version_id: str) -> Dict[str, str]:
         raw_h5ad_uri = [
             artifact.uri
-            for artifact in self.business_logic.get_dataset_artifacts(dataset_version_id)
+            for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
             if artifact.type == DatasetArtifactType.RAW_H5AD
         ]
         bucket_name, object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
@@ -106,7 +112,9 @@ class SchemaMigrate:
     ) -> List[Dict[str, str]]:
         private_collection_id = collection_id
         if can_open_revision:
-            private_collection_id = self.business_logic.create_collection_version(collection_id).version_id.id
+            private_collection_id = self.business_logic.create_collection_version(
+                CollectionId(collection_id)
+            ).version_id.id
         return [
             {
                 "collection_id": private_collection_id,
@@ -115,6 +123,17 @@ class SchemaMigrate:
             }
             for dataset in datasets
         ]
+
+    def publish(self, collection_id: str) -> Dict[str, str]:
+        errors = dict()
+        collection_version_id = CollectionVersionId(collection_id)
+        collection_version = self.business_logic.get_collection_version(collection_version_id)
+        for dataset in collection_version.datasets:
+            if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
+                errors[dataset.version_id.id] = dataset.status.validation_message
+        if not errors:
+            self.business_logic.publish_collection_version(collection_version_id)
+        return errors
 
     def migrate(self) -> bool:
         """
@@ -132,6 +151,11 @@ class SchemaMigrate:
             dataset_id = os.environ["dataset_id"]
             dataset_version_id = os.envion["dataset_version_id"]
             self.dataset_migrate(collection_id, dataset_id, dataset_version_id)
+        if self.step_name == "publish":
+            collection_id = os.environ["collection_id"]
+            can_publish = os.environ["can_publish"].lower() == "true"
+            if can_publish:
+                self.publish(collection_id)
         return True
 
 
