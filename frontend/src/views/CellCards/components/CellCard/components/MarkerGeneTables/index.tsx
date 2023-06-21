@@ -203,51 +203,56 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
         if (tissue_general !== selectedOrgan) continue;
 
         // multiple publications for a single gene are joined by ";;"
-        const publications = Array.from(new Set(publication.split(";;")));
-        const publicationTitles = Array.from(
+        let publications = Array.from(new Set(publication.split(";;")));
+        let publicationTitles = Array.from(
           new Set(publication_titles.split(";;"))
         );
 
+        const sortedPublicationsAndTitles = publications
+          .map((pub, i) => [pub, publicationTitles[i]])
+          .sort((a, b) => {
+            return (
+              publicationTitlesToIndex.get(a[1]) -
+              publicationTitlesToIndex.get(b[1])
+            );
+          });
+
+        publications = sortedPublicationsAndTitles.map((pub) => pub[0]);
+        publicationTitles = sortedPublicationsAndTitles.map((pub) => pub[1]);
+
         const publicationLinks = (
           <PublicationLinkWrapper>
-            {publicationTitles
-              .sort((a, b) => {
+            {publicationTitles.map((publicationTitle, index) => {
+              if (publicationTitle && publications[index]) {
+                const referenceIndexLabel =
+                  publicationTitlesToIndex.get(publicationTitle) + 1;
                 return (
-                  publicationTitlesToIndex.get(a) -
-                  publicationTitlesToIndex.get(b)
+                  <Tooltip
+                    key={`${publications[index]}-${index}-tooltip`}
+                    placement="top"
+                    width="default"
+                    arrow={false}
+                    title={
+                      <div>
+                        {publicationTitle.split("\n\n").at(0)}
+                        <br />
+                        <br />
+                        <i>{publicationTitle.split("\n\n").at(1)}</i>
+                      </div>
+                    }
+                    leaveDelay={0}
+                  >
+                    <span key={`${publications[index]}-${index}-span`}>
+                      <Link
+                        key={`${publications[index]}-${index}`}
+                        label={`[${referenceIndexLabel}]`}
+                        url={`https://doi.org/${publications[index]}`}
+                      />
+                    </span>
+                  </Tooltip>
                 );
-              })
-              .map((publicationTitle, index) => {
-                if (publicationTitle && publications[index]) {
-                  const referenceIndexLabel =
-                    publicationTitlesToIndex.get(publicationTitle) + 1;
-                  return (
-                    <Tooltip
-                      key={`${publications[index]}-${index}-tooltip`}
-                      placement="top"
-                      width="default"
-                      arrow={false}
-                      title={
-                        <div>
-                          {publicationTitle.split("\n\n").at(0)}
-                          <br />
-                          <br />
-                          <i>{publicationTitle.split("\n\n").at(1)}</i>
-                        </div>
-                      }
-                      leaveDelay={0}
-                    >
-                      <span key={`${publications[index]}-${index}-span`}>
-                        <Link
-                          key={`${publications[index]}-${index}`}
-                          label={`[${referenceIndexLabel}]`}
-                          url={`https://doi.org/${publications[index]}`}
-                        />
-                      </span>
-                    </Tooltip>
-                  );
-                }
-              })}
+              }
+            })}
           </PublicationLinkWrapper>
         );
 
@@ -328,6 +333,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
   const tableComponent = activeTable ? (
     <Table<TableRowEnrichedGenes>
+      testId={CELL_CARD_ENRICHED_GENES_TABLE}
       columns={tableColumnsEnrichedGenes}
       rows={
         tableRows.slice(
@@ -339,6 +345,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
     />
   ) : (
     <Table<TableRowCanonicalGenes>
+      testId={CELL_CARD_CANONICAL_MARKER_GENES_TABLE}
       columns={tableColumnsCanonicalGenes}
       rows={
         tableRows.slice(
@@ -369,13 +376,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   };
 
   return (
-    <div
-      data-testid={
-        activeTable
-          ? CELL_CARD_ENRICHED_GENES_TABLE
-          : CELL_CARD_CANONICAL_MARKER_GENES_TABLE
-      }
-    >
+    <div>
       <TableTitleWrapper>
         <TableTitleOuterWrapper>
           <TableTitleInnerWrapper columnGap={4}>

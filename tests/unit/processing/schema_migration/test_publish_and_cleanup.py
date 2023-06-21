@@ -1,19 +1,11 @@
-# ruff: noqa
 import os
-
 from unittest import mock
 
-from tests.unit.schema_migration.pytest_fixtures import (
-    private,
-    published_collection,
-    revision,
-    schema_migrate_and_collections,
-)
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetVersionId
 
 
 @mock.patch.dict(os.environ, {"ARTIFACT_BUCKET": "upload_bucket"})
-@mock.patch("backend.schema_migration.migrate.cellxgene_schema")
+@mock.patch("backend.layers.processing.schema_migration.cellxgene_schema")
 class TestPublishAndCleanup:
     def test_publish_and_cleanup(self, mock_cellxgene_schema, schema_migrate_and_collections):
         schema_migrate, _ = schema_migrate_and_collections

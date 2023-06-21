@@ -2,7 +2,6 @@ import itertools
 import json
 import logging
 import os
-import sys
 from typing import Dict, List
 
 import cellxgene_schema
@@ -16,18 +15,14 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetVersionId,
 )
-from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing import logger
-from backend.layers.thirdparty.s3_provider import S3Provider
-from backend.layers.thirdparty.uri_provider import UriProvider
 
 logger.configure_logging(level=logging.INFO)
 
 
 class SchemaMigrate:
-    def __init__(self, business_logic: BusinessLogic, step_name: str):
+    def __init__(self, business_logic: BusinessLogic):
         self.business_logic = business_logic
-        self.step_name = step_name
 
     def gather_collections(self) -> Dict[str, Dict[str, List[Dict[str, str]]]]:
         """
@@ -101,7 +96,7 @@ class SchemaMigrate:
         bucket_name, object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.business_logic.s3_provider.download_file(bucket_name, object_key, "previous_schema.h5ad")
         cellxgene_schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_id, dataset_id)
-        upload_bucket = os.environ["UPLOAD_BUCKET"]
+        upload_bucket = os.environ["ARTIFACT_BUCKET"]
         dst_uri = f"{dataset_version_id}/migrated.h5ad"
         self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri)
         url = f"s3://{upload_bucket}/{dst_uri}"
@@ -146,18 +141,18 @@ class SchemaMigrate:
 
         return errors
 
-    def migrate(self) -> bool:
+    def migrate(self, step_name) -> bool:
         """
         Gets called by the step function at every different step, as defined by `step_name`
         """
-        if self.step_name == "corpus_migrate":
+        if step_name == "gather_collections":
             self.gather_collections()
-        if self.step_name == "collection_migrate":
+        if step_name == "collection_migrate":
             collection_id = os.environ["collection_id"]
             datasets = json.loads(os.environ["datasets"])
             can_open_revision = os.environ["can_open_revision"].lower() == "true"
             self.collection_migrate(collection_id, datasets, can_open_revision)
-        if self.step_name == "dataset_migrate":
+        if step_name == "dataset_migrate":
             collection_id = os.environ["collection_id"]
             dataset_id = os.environ["dataset_id"]
             dataset_version_id = os.envion["dataset_version_id"]
@@ -167,17 +162,3 @@ class SchemaMigrate:
             can_publish = os.environ["can_publish"].lower() == "true"
             self.publish_and_cleanup(collection_id, can_publish)
         return True
-
-
-if __name__ == "__main__":
-    business_logic = BusinessLogic(
-        DatabaseProvider(),
-        None,  # Not required
-        None,  # Not required
-        S3Provider(),
-        UriProvider(),
-    )
-    step_name = os.environ["STEP_NAME"]
-    schema_migrate = SchemaMigrate(business_logic, step_name)
-    rv = schema_migrate.migrate()
-    sys.exit(rv)

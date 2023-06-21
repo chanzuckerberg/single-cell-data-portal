@@ -59,6 +59,7 @@ describe("Cell Cards", () => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}`, page);
       const element = page.getByTestId(CELL_CARD_SEARCH_BAR_TEXT_INPUT);
       await waitForElementAndClick(element);
+      await waitForOptionsToLoad(page);
       // get number of elements with role option in dropdown
       const numOptionsBefore = await countLocator(page.getByRole("option"));
       // type in search bar
@@ -124,6 +125,7 @@ describe("Cell Cards", () => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}/CL_0000540`, page); // Neuron
       const element = page.getByTestId(CELL_CARD_SEARCH_BAR_TEXT_INPUT);
       await waitForElementAndClick(element);
+      await waitForOptionsToLoad(page);
       // get number of elements with role option in dropdown
       const numOptionsBefore = await countLocator(page.getByRole("option"));
       // type in search bar
@@ -585,4 +587,14 @@ async function waitForElementAndClick(locator: Locator) {
 
 async function countLocator(locator: Locator) {
   return (await locator.elementHandles()).length;
+}
+
+async function waitForOptionsToLoad(page: Page) {
+  await tryUntil(
+    async () => {
+      const numOptions = await countLocator(page.getByRole("option"));
+      expect(numOptions).toBeGreaterThan(0);
+    },
+    { page }
+  );
 }
