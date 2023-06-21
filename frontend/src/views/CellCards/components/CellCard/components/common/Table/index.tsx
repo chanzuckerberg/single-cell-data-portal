@@ -15,6 +15,7 @@ interface TableProps<T> {
   columns: Array<Extract<keyof T, string>>;
   rows: T[];
   columnIdToName?: Record<Extract<keyof T, string>, string>;
+  testid?: string;
 }
 
 export const EXPRESSION_SCORE_TOOLTIP_TEST_ID = "expression-score-tooltip";
@@ -25,6 +26,7 @@ function Table<T extends object>({
   columns,
   rows,
   columnIdToName,
+  testid,
 }: TableProps<T>) {
   const expressionScoreTooltip = (
     <HelpTooltip
@@ -68,7 +70,7 @@ function Table<T extends object>({
   );
 
   return (
-    <TableWrapper>
+    <TableWrapper data-testid={testid}>
       <StyledTable>
         <StyledHead>
           <tr>

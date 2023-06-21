@@ -328,6 +328,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
   const tableComponent = activeTable ? (
     <Table<TableRowEnrichedGenes>
+      testid={CELL_CARD_ENRICHED_GENES_TABLE}
       columns={tableColumnsEnrichedGenes}
       rows={
         tableRows.slice(
@@ -339,6 +340,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
     />
   ) : (
     <Table<TableRowCanonicalGenes>
+      testid={CELL_CARD_CANONICAL_MARKER_GENES_TABLE}
       columns={tableColumnsCanonicalGenes}
       rows={
         tableRows.slice(
@@ -369,13 +371,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   };
 
   return (
-    <div
-      data-testid={
-        activeTable
-          ? CELL_CARD_ENRICHED_GENES_TABLE
-          : CELL_CARD_CANONICAL_MARKER_GENES_TABLE
-      }
-    >
+    <div>
       <TableTitleWrapper>
         <TableTitleOuterWrapper>
           <TableTitleInnerWrapper columnGap={4}>
