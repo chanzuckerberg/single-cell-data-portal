@@ -130,7 +130,7 @@ class SchemaMigrate:
             object_keys_to_delete.append(f"{dataset_version_id}/migrated.h5ad")
             if dataset.metadata.schema_version != current_schema_version:
                 errors[dataset_version_id] = "Did Not Migrate."
-            if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
+            elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors[dataset_version_id] = dataset.status.validation_message
 
         if can_publish and not errors:
