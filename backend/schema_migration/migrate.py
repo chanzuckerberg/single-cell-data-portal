@@ -102,7 +102,7 @@ class SchemaMigrate:
         self.business_logic.s3_provider.download_file(bucket_name, object_key, "previous_schema.h5ad")
         cellxgene_schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_id, dataset_id)
         upload_bucket = os.environ["UPLOAD_BUCKET"]
-        dst_uri = f"{dataset_version_id}/raw.h5ad"
+        dst_uri = f"{dataset_version_id}/migrated.h5ad"
         self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri)
         url = f"s3://{upload_bucket}/{dst_uri}"
         return {"collection_id": collection_id, "dataset_version_id": dataset_version_id, "url": url}
@@ -124,15 +124,26 @@ class SchemaMigrate:
             for dataset in datasets
         ]
 
-    def publish(self, collection_id: str) -> Dict[str, str]:
+    def publish_and_cleanup(self, collection_id: str, can_publish: bool) -> Dict[str, str]:
         errors = dict()
         collection_version_id = CollectionVersionId(collection_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
+        current_schema_version = cellxgene_schema.get_current_schema_version()
+        object_keys_to_delete = []
         for dataset in collection_version.datasets:
+            dataset_version_id = dataset.version_id.id
+            object_keys_to_delete.append(f"{dataset_version_id}/migrated.h5ad")
+            if dataset.metadata.schema_version != current_schema_version:
+                errors[dataset_version_id] = "Did Not Migrate."
             if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                errors[dataset.version_id.id] = dataset.status.validation_message
-        if not errors:
+                errors[dataset_version_id] = dataset.status.validation_message
+
+        if can_publish and not errors:
             self.business_logic.publish_collection_version(collection_version_id)
+
+        artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+        self.business_logic.s3_provider.delete_files(artifact_bucket, object_keys_to_delete)
+
         return errors
 
     def migrate(self) -> bool:
@@ -151,11 +162,10 @@ class SchemaMigrate:
             dataset_id = os.environ["dataset_id"]
             dataset_version_id = os.envion["dataset_version_id"]
             self.dataset_migrate(collection_id, dataset_id, dataset_version_id)
-        if self.step_name == "publish":
+        if self.step_name == "publish_and_cleanup":
             collection_id = os.environ["collection_id"]
             can_publish = os.environ["can_publish"].lower() == "true"
-            if can_publish:
-                self.publish(collection_id)
+            self.publish_and_cleanup(collection_id, can_publish)
         return True
 
 
