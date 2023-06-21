@@ -517,8 +517,8 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       for (const d of collection.datasets.values()) {
         // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
         let url = d["dataset_deployments"][0].url.toString();
-        url = url.substring(51);
-        url = url.substring(0, url.length - 5);
+        url = url.split("/").at(-2) ?? "";
+        url = url.split(".cxg").at(0) ?? "";
         selectedPublicationDatasetIds.push(url);
       }
     });
@@ -567,7 +567,6 @@ export function useExpressionSummary(version: 1 | 2 = 1): {
   data: QueryResponse["expression_summary"];
 } {
   const requestBody = useWMGQueryRequestBody(version);
-
   const { data, isLoading } = useWMGQuery(requestBody, version);
 
   return useMemo(() => {
@@ -1023,7 +1022,10 @@ function useWMGQueryRequestBody(version: 1 | 2) {
     selectedTissues,
     selectedOrganismId,
     selectedFilters,
+    selectedPublicationFilter,
   } = useContext(StateContext);
+  const { publications } = selectedPublicationFilter;
+  const { data: collections } = useManyCollections({ ids: publications });
 
   const { data } = usePrimaryFilterDimensions(version);
 
@@ -1075,10 +1077,25 @@ function useWMGQueryRequestBody(version: 1 | 2) {
       return tissuesByName[tissueName].id;
     });
 
+    const selectedPublicationDatasetIds: string[] = [];
+    collections?.map((collection: Collection | TombstonedCollection | null) => {
+      if (!collection || collection.tombstone) return;
+      for (const d of collection.datasets.values()) {
+        // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
+        let url = d["dataset_deployments"][0].url.toString();
+        url = url.split("/").at(-2) ?? "";
+        url = url.split(".cxg").at(0) ?? "";
+        selectedPublicationDatasetIds.push(url);
+      }
+    });
+
+    const union = Array.from(
+      new Set([...datasets, ...selectedPublicationDatasetIds])
+    );
     return {
       compare,
       filter: {
-        dataset_ids: datasets,
+        dataset_ids: union,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
         gene_ontology_term_ids,
@@ -1103,6 +1120,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
     sexes,
     organismGenesByName,
     tissuesByName,
+    collections,
   ]);
 }
 
