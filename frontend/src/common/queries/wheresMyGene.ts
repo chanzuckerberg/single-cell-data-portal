@@ -492,8 +492,8 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         const ids: string[] = [];
         for (const d of collection.datasets.values()) {
           let url = d["dataset_deployments"][0].url.toString();
-          url = url.substring(51);
-          url = url.substring(0, url.length - 5);
+          url = url.split("/").at(-2) ?? "";
+          url = url.split(".cxg").at(0) ?? "";
           ids.push(url);
         }
         return [
@@ -540,7 +540,6 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         )
       );
     }
-
     return {
       data: {
         datasets: intersect.map((dataset) => ({
