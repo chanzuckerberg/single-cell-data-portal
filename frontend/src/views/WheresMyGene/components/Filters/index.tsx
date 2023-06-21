@@ -141,7 +141,7 @@ export default memo(function Filters({
   } = useFilterDimensions(isVersion2 ? 2 : 1);
 
   const isHeatmapShown =
-    (!selectedTissues || (selectedTissues && !!selectedTissues.length)) &&
+    (isVersion2 || (selectedTissues && !!selectedTissues.length)) &&
     !!selectedGenes.length;
 
   const InputDropdownProps = {

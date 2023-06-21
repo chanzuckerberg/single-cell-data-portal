@@ -202,7 +202,7 @@ export default memo(function HeatMap({
   useEffect(() => {
     setDisplayedCellTypes(initialDisplayedCellTypes);
     setExpandedTissues(new Set<string>());
-  }, [initialDisplayedCellTypes, setExpandedTissues]);
+  }, [initialDisplayedCellTypes, setExpandedTissues, selectedOrganismId]);
 
   const handleExpandCollapse = useCallback(
     (tissue: string) => {
