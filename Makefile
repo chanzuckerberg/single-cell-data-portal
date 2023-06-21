@@ -168,6 +168,11 @@ local-unit-test-processing: # Run processing-unittest target in `processing` Doc
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
 	bash -c "cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/processing/";
 
+.PHONY: local-unit-test-schema-migrate
+local-unit-test-schema-migration: # Run processing-unittest target in `schema_migration` Docker container
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T schema_migration \
+	bash -c "cd /single-cell-data-portal && pip install -r ./backend/schema_migration/requirements-dev.txt && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/schema_migration/";
+
 .PHONY: local-unit-test-wmg-processing
 local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container
 	echo "Running all wmg processing unit tests"; \

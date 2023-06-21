@@ -1682,7 +1682,7 @@ class TestDataset(BaseAPIPortalTest):
             # self.assertEqual(actual_dataset["revised_at"], persisted_dataset.revised_at.timestamp())
 
     def test__get_all_datasets_for_user_index(self):
-        # reurn the datasets related to the collections the user has WRITE access to.
+        # return the datasets related to the collections the user has WRITE access to.
 
         private_dataset = self.generate_dataset()
         public_dataset = self.generate_dataset(publish=True)
