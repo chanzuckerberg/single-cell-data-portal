@@ -454,10 +454,8 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
     VIEW_MODE.DEFAULT,
     "success"
   );
-  const { selectedPublicationFilter, selectedFilters } =
-    useContext(StateContext);
+  const { selectedPublicationFilter } = useContext(StateContext);
   const { publications } = selectedPublicationFilter;
-  const { datasets: selectedDatasets } = selectedFilters;
   const { data: collections } = useManyCollections({ ids: publications });
   const { data: publication_list } = useManyCollections({
     ids: rawPublications.map(({ id }) => id),
@@ -465,6 +463,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
 
   const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
+  const noPublication = "No Publication";
 
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
@@ -480,9 +479,11 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       tissue_terms,
     } = filter_dims;
 
+    let noPublicationIds: string[] = [];
+
     // Reconstructing rows into publication_list format, with collection id, name, and STABLE dataset ids.
     // (cchoi): This is a fix suggested by Emanuele to grab the stable dataset IDs without reconfiguring the cube or the API.
-    const allPublications: {
+    const prePublications: {
       id: string;
       name: string;
       dataset_ids: string[];
@@ -492,19 +493,38 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         const ids: string[] = [];
         for (const d of collection.datasets.values()) {
           let url = d["dataset_deployments"][0].url.toString();
-          url = url.split("/").at(-2) ?? "";
-          url = url.split(".cxg").at(0) ?? "";
+          url = url.substring(51);
+          url = url.substring(0, url.length - 5);
           ids.push(url);
         }
         return [
           {
             id: collection.id,
-            name: collection.summaryCitation || "",
+            name: collection.summaryCitation || noPublication,
             dataset_ids: ids,
           },
         ];
       }
     );
+
+    // Take all "No Publication"s and aggregate their dataset_ids:
+    for (const publication of prePublications) {
+      if (publication.name === noPublication) {
+        noPublicationIds = noPublicationIds.concat(publication.dataset_ids);
+      }
+    }
+
+    // Remove all "No Publication"s
+    const allPublications = prePublications.filter(
+      (publication) => publication.name !== noPublication
+    );
+
+    // Add a default "No Publication" with all of those dataset IDs aggregated
+    allPublications.push({
+      id: noPublication,
+      name: noPublication,
+      dataset_ids: noPublicationIds,
+    });
 
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
@@ -517,11 +537,15 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       for (const d of collection.datasets.values()) {
         // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
         let url = d["dataset_deployments"][0].url.toString();
-        url = url.split("/").at(-2) ?? "";
-        url = url.split(".cxg").at(0) ?? "";
+        url = url.substring(51);
+        url = url.substring(0, url.length - 5);
         selectedPublicationDatasetIds.push(url);
       }
     });
+
+    if (collections === undefined) {
+      selectedPublicationDatasetIds.push(...noPublicationIds);
+    }
 
     let intersect = sortedDatasets;
 
@@ -540,6 +564,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         )
       );
     }
+
     return {
       data: {
         datasets: intersect.map((dataset) => ({
@@ -559,7 +584,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       },
       isLoading: false,
     };
-  }, [data, isLoading, selectedDatasets, collections, publication_list]);
+  }, [data, isLoading, collections, publication_list]);
 }
 
 export function useExpressionSummary(version: 1 | 2 = 1): {
@@ -567,6 +592,7 @@ export function useExpressionSummary(version: 1 | 2 = 1): {
   data: QueryResponse["expression_summary"];
 } {
   const requestBody = useWMGQueryRequestBody(version);
+
   const { data, isLoading } = useWMGQuery(requestBody, version);
 
   return useMemo(() => {
@@ -1022,10 +1048,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
     selectedTissues,
     selectedOrganismId,
     selectedFilters,
-    selectedPublicationFilter,
   } = useContext(StateContext);
-  const { publications } = selectedPublicationFilter;
-  const { data: collections } = useManyCollections({ ids: publications });
 
   const { data } = usePrimaryFilterDimensions(version);
 
@@ -1077,25 +1100,10 @@ function useWMGQueryRequestBody(version: 1 | 2) {
       return tissuesByName[tissueName].id;
     });
 
-    const selectedPublicationDatasetIds: string[] = [];
-    collections?.map((collection: Collection | TombstonedCollection | null) => {
-      if (!collection || collection.tombstone) return;
-      for (const d of collection.datasets.values()) {
-        // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
-        let url = d["dataset_deployments"][0].url.toString();
-        url = url.split("/").at(-2) ?? "";
-        url = url.split(".cxg").at(0) ?? "";
-        selectedPublicationDatasetIds.push(url);
-      }
-    });
-
-    const union = Array.from(
-      new Set([...datasets, ...selectedPublicationDatasetIds])
-    );
     return {
       compare,
       filter: {
-        dataset_ids: union,
+        dataset_ids: datasets,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
         gene_ontology_term_ids,
@@ -1120,7 +1128,6 @@ function useWMGQueryRequestBody(version: 1 | 2) {
     sexes,
     organismGenesByName,
     tissuesByName,
-    collections,
   ]);
 }
 
