@@ -34,10 +34,11 @@ import DatasetsActionsCell from "src/components/Datasets/components/Grid/compone
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { DatasetsGrid } from "src/components/Datasets/components/Grid/components/DatasetsGrid/style";
 import SideBar from "src/components/common/SideBar";
-import { View } from "../globalStyle";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
 import { CATEGORY_FILTER_DENY_LIST } from "src/views/Datasets/common/constants";
-import { useViewMode } from "src/common/hooks/useViewMode";
+import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
+import { DatasetsView as View } from "./style";
+import Loader from "src/components/common/Grid/components/Loader";
 
 /**
  * Collection ID object key.
@@ -90,9 +91,15 @@ export default function Datasets(): JSX.Element {
   // Filterable datasets joined from datasets and collections responses.
   const {
     isError,
-    isLoading,
+    isSuccess,
     rows: datasetRows,
   } = useFetchDatasetRows(mode, status);
+
+  // Show datasets list when datasets are successfully loaded.
+  const shouldShowDatasets = !isError && isSuccess;
+
+  // Loading indicator for curator mode, when datasets are not yet successfully loaded.
+  const shouldShowLoader = mode === VIEW_MODE.CURATOR && !shouldShowDatasets;
 
   // Column configuration backing table.
   const columnConfig: Column<DatasetRow>[] = useMemo(
@@ -365,35 +372,39 @@ export default function Datasets(): JSX.Element {
       <Head>
         <title>CELL&times;GENE | Datasets</title>
       </Head>
-      {isError || isLoading ? null : (
-        <>
-          <SideBar
-            label="Filters"
-            isOpen={isSideBarOpen}
-            onToggle={storeIsSideBarOpen}
-          >
-            <Filter {...filterInstance} />
-          </SideBar>
-          <View>
-            {!rows || rows.length === 0 ? (
-              <GridHero>
-                <h3>No Results</h3>
-                <p>There are no datasets matching those filters.</p>
-              </GridHero>
-            ) : (
-              <DatasetsGrid
-                tableCountSummary={buildTableCountSummary(
-                  rows,
-                  preFilteredRows
-                )}
-                // @ts-expect-error -- revisit tableInstance typing
-                tableInstance={tableInstance}
-              />
-            )}
-          </View>
-          {/* May be added in the future after sign off */}
-          {/* <BottomBanner /> */}
-        </>
+      {isError ? null : shouldShowLoader ? (
+        <Loader />
+      ) : (
+        shouldShowDatasets && (
+          <>
+            <SideBar
+              label="Filters"
+              isOpen={isSideBarOpen}
+              onToggle={storeIsSideBarOpen}
+            >
+              <Filter {...filterInstance} />
+            </SideBar>
+            <View>
+              {!rows || rows.length === 0 ? (
+                <GridHero>
+                  <h3>No Results</h3>
+                  <p>There are no datasets matching those filters.</p>
+                </GridHero>
+              ) : (
+                <DatasetsGrid
+                  tableCountSummary={buildTableCountSummary(
+                    rows,
+                    preFilteredRows
+                  )}
+                  // @ts-expect-error -- revisit tableInstance typing
+                  tableInstance={tableInstance}
+                />
+              )}
+            </View>
+            {/* May be added in the future after sign off */}
+            {/* <BottomBanner /> */}
+          </>
+        )
       )}
     </>
   );

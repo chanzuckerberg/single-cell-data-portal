@@ -2,18 +2,13 @@ import { expect, Page, test, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import {
-  goToPage,
-  isDevStagingProd,
-  selectNthOption,
-  tryUntil,
-} from "tests/utils/helpers";
+import { goToPage, selectNthOption, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
-import { searchAndAddGene } from "tests/utils/wmgUtils";
+import { conditionallyRunTests, searchAndAddGene } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
@@ -62,10 +57,10 @@ const FILTERS_PANEL = "filters-panel";
 // Error messages
 const ERROR_NO_TESTID_OR_LOCATOR = "Either testId or locator must be defined";
 
-const { describe, skip } = test;
+const { describe } = test;
 
 describe("Where's My Gene", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  conditionallyRunTests();
 
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
@@ -154,16 +149,19 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDiseaseSelectorButton(),
+      locator: getDatasetSelectorButton(),
     });
-    const numberOfDiseasesBefore = await countLocator(page.getByRole("option"));
+    const numberOfDatasetsBefore = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDatasetSelectorButton(),
+      locator: getDiseaseSelectorButton(),
     });
-    const datasetOptions = await page.getByRole("option").elementHandles();
+    const datasetOptions = await page
+      .getByRole("option")
+      .getByText("acute kidney failure")
+      .elementHandles();
     await datasetOptions[0].click();
     await page.keyboard.press("Escape");
 
@@ -173,12 +171,12 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDiseaseSelectorButton(),
+      locator: getDatasetSelectorButton(),
     });
-    const numberOfDiseasesAfter = await countLocator(page.getByRole("option"));
+    const numberOfDatasetsAfter = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
-    expect(numberOfDiseasesBefore).toBeGreaterThan(numberOfDiseasesAfter);
+    expect(numberOfDatasetsBefore).toBeGreaterThan(numberOfDatasetsAfter);
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
 
     function getDiseaseSelector() {

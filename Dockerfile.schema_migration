@@ -1,0 +1,25 @@
+FROM python:3.10
+
+# For lighter weight Docker images
+ENV PIP_NO_CACHE_DIR=1
+
+COPY backend/schema_migration .
+
+RUN pip3 install -r requirements.txt
+
+COPY backend/layers/business ./backend/layers/business
+COPY backend/layers/persistence ./backend/layers/persistence
+COPY backend/layers/thirdparty ./backend/layers/thirdparty
+COPY backend/layers/common ./backend/layers/common
+COPY backend/common ./backend/common
+COPY backend/__init__.py ./backend/__init__.py
+COPY backend/layers/__init__.py ./backend/layers/__init__.py
+
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT=""
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+
+CMD ["python3", "-m", "migrate"]
