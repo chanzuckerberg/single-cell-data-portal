@@ -454,10 +454,8 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
     VIEW_MODE.DEFAULT,
     "success"
   );
-  const { selectedPublicationFilter, selectedFilters } =
-    useContext(StateContext);
+  const { selectedPublicationFilter } = useContext(StateContext);
   const { publications } = selectedPublicationFilter;
-  const { datasets: selectedDatasets } = selectedFilters;
   const { data: collections } = useManyCollections({ ids: publications });
   const { data: publication_list } = useManyCollections({
     ids: rawPublications.map(({ id }) => id),
