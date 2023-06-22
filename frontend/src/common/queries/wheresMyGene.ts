@@ -465,6 +465,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
 
   const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
+  const noPublicationStr = "No Publication";
 
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
@@ -501,7 +502,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         return [
           {
             id: collection.id,
-            name: collection.summaryCitation || "No Publication",
+            name: collection.summaryCitation || noPublicationStr,
             dataset_ids: ids,
           },
         ];
@@ -510,20 +511,20 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
 
     // Take all "No Publication"s and aggregate their dataset_ids:
     for (const publication of prePublications) {
-      if (publication.name === "No Publication") {
+      if (publication.name === noPublicationStr) {
         noPublicationIds = noPublicationIds.concat(publication.dataset_ids);
       }
     }
 
     // Remove all "No Publication"s
     const allPublications = prePublications.filter(
-      (publication) => publication.name !== "No Publication"
+      (publication) => publication.name !== noPublicationStr
     );
 
     // Add a default "No Publication" with all of those dataset IDs aggregated
     allPublications.push({
-      id: "No Publication",
-      name: "No Publication",
+      id: noPublicationStr,
+      name: noPublicationStr,
       dataset_ids: noPublicationIds,
     });
 
@@ -584,7 +585,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       },
       isLoading: false,
     };
-  }, [data, isLoading, selectedDatasets, collections, publication_list]);
+  }, [data, isLoading, collections, publication_list]);
 }
 
 export function useExpressionSummary(version: 1 | 2 = 1): {
