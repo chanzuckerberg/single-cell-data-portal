@@ -226,7 +226,9 @@ export default memo(function HeatMap({
               return (
                 <div
                   key={`y-axis-${hyphenize(tissue)}`}
-                  style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
+                  style={{
+                    height: `${height && height + X_AXIS_CHART_HEIGHT_PX}px`,
+                  }}
                 />
               );
             }
