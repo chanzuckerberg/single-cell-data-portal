@@ -21,7 +21,7 @@ class TestPublishAndCleanup:
                 )
             ]
         )
-        mock_cellxgene_schema.get_current_schema_version.return_value = "1.0.0"
+        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
 
         errors = schema_migrate.publish_and_cleanup("collection_version_id", True)
         assert errors == {}
@@ -58,7 +58,7 @@ class TestPublishAndCleanup:
                 ),
             ]
         )
-        mock_cellxgene_schema.get_current_schema_version.return_value = "1.0.0"
+        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
 
         errors = schema_migrate.publish_and_cleanup("collection_version_id", True)
         assert len(errors) == 2
@@ -88,7 +88,7 @@ class TestPublishAndCleanup:
                 )
             ]
         )
-        mock_cellxgene_schema.get_current_schema_version.return_value = "1.0.0"
+        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
 
         errors = schema_migrate.publish_and_cleanup("collection_version_id", False)
         assert errors == {}

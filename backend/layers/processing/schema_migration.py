@@ -123,7 +123,7 @@ class SchemaMigrate:
         errors = dict()
         collection_version_id = CollectionVersionId(collection_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
-        current_schema_version = cellxgene_schema.get_current_schema_version()
+        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
             dataset_version_id = dataset.version_id.id
