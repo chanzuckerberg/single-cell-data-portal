@@ -135,21 +135,34 @@ class SchemaMigrate:
 
         artifact_bucket = os.environ["ARTIFACT_BUCKET"]
         if errors:
-            execution_arn = os.environ["EXECUTION_ARN"]
-            with open("errors.json", "w") as f:
-                json.dump(errors, f)
-            self.business_logic.s3_provider.upload_file(
-                "errors.json", artifact_bucket, f"schema_migration/{execution_arn}/{collection_version_id}.json"
-            )
+            self._store_in_s3("report", collection_id, errors)
         elif can_publish:
             self.business_logic.publish_collection_version(collection_version_id)
         self.business_logic.s3_provider.delete_files(artifact_bucket, object_keys_to_delete)
         return errors
 
+    def _store_in_s3(self, step_name, file_name, response: Dict[str, str]):
+        """
+
+        :param step_name: The step that will use this file
+        :param file_name: a unique name to describe this job
+        :param response: the response to store as json.
+        """
+        execution_arn = os.environ["EXECUTION_ARN"]
+        with open("response.json", "w") as f:
+            json.dump(response, f)
+        self.business_logic.s3_provider.upload_file(
+            "response.json",
+            os.environ["ARTIFACT_BUCKET"],
+            f"schema_migration/{execution_arn}/{step_name}/{file_name}.json",
+        )
+
     def report(self):
         bucket = os.environ["ARTIFACT_BUCKET"]
         error_files = list(
-            self.business_logic.s3_provider.list_directory(bucket, f"schema_migration/{os.environ['EXECUTION_ARN']}")
+            self.business_logic.s3_provider.list_directory(
+                bucket, f"schema_migration/" f"{os.environ['EXECUTION_ARN']}/report"
+            )
         )
         for file in error_files:
             self.business_logic.s3_provider.download_file(bucket, file, file)
@@ -172,12 +185,12 @@ class SchemaMigrate:
         if step_name == "dataset_migrate":
             collection_id = os.environ["collection_id"]
             dataset_id = os.environ["dataset_id"]
-            dataset_version_id = os.envion["dataset_version_id"]
+            dataset_version_id = os.environ["dataset_version_id"]
             self.dataset_migrate(collection_id, dataset_id, dataset_version_id)
-        if self.step_name == "publish_and_cleanup":
+        if step_name == "publish_and_cleanup":
             collection_id = os.environ["collection_id"]
             can_publish = os.environ["can_publish"].lower() == "true"
             self.publish_and_cleanup(collection_id, can_publish)
-        if self.step_name == "report":
+        if step_name == "report":
             self.report()
         return True
