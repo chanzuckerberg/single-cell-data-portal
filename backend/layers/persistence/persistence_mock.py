@@ -147,6 +147,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def delete_canonical_collection(self, collection_id: CollectionId) -> None:
         collection = self.collections[collection_id.id]
         collection.tombstoned = True
+        # Tombstone Datasets individually as well
+        for collection_version in self.collections_versions.values():
+            if collection_version.collection_id == collection.id:
+                for dataset_version in collection_version.datasets:
+                    self.datasets[self.datasets_versions[dataset_version.id].dataset_id.id].tombstoned = True
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata

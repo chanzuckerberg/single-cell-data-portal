@@ -1874,6 +1874,13 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
             test_url = f"/curation/v1/dataset_versions/{unpublished_dataset_revision.dataset_version_id}"
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(404, response.status_code)
+        with self.subTest("Dataset is part of a tombstoned Collection"):
+            collection = self.generate_published_collection()
+            dataset = collection.datasets[0]
+            self.business_logic.tombstone_collection(collection.collection_id)
+            test_url = f"/curation/v1/dataset_versions/{dataset.version_id}"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(410, response.status_code)
 
 
 class TestGetDatasetIdVersions(BaseAPIPortalTest):
