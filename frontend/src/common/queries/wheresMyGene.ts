@@ -556,8 +556,6 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       );
     }
 
-    console.log(intersect);
-
     let filteredPublications = allPublications;
 
     if (sortedDatasets.length > 0) {
