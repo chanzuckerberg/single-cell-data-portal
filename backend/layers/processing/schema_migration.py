@@ -147,11 +147,16 @@ class SchemaMigrate:
         return errors
 
     def report(self):
-        errors = self.business_logic.s3_provider.list_directory(
-            os.environ["ARTIFACT_BUCKET"], f"schema_migration/{os.environ['EXECUTION_ARN']}"
+        bucket = os.environ["ARTIFACT_BUCKET"]
+        error_files = list(
+            self.business_logic.s3_provider.list_directory(bucket, f"schema_migration/{os.environ['EXECUTION_ARN']}")
         )
-        for _error in errors:
+        for file in error_files:
+            self.business_logic.s3_provider.download_file(bucket, file, file)
+            with open(file, "r") as f:
+                json.load(f)
             pass  # TODO generate a report from the errors.
+        self.business_logic.s3_provider.delete_files(bucket, error_files)
 
     def migrate(self, step_name) -> bool:
         """
