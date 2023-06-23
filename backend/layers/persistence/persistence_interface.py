@@ -227,7 +227,7 @@ class DatabaseProviderInterface:
         Replaces an existing mapping between a collection version and a dataset version
         """
 
-    def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+    def get_dataset_mapped_version(self, dataset_id: DatasetId, get_tombstoned: bool) -> Optional[DatasetVersion]:
         """
         Returns the dataset version mapped to a canonical dataset_id, or None if not existing
         """

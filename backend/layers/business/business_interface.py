@@ -21,6 +21,7 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetVersion,
     DatasetVersionId,
+    PublishedDatasetVersion,
 )
 
 
@@ -121,6 +122,12 @@ class BusinessLogicInterface:
         pass
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> DatasetVersion:
+        pass
+
+    def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[PublishedDatasetVersion]:
+        pass
+
+    def get_prior_published_dataset_version(self, dataset_version_id: DatasetVersionId) -> PublishedDatasetVersion:
         pass
 
     def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> DatasetVersion:

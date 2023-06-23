@@ -1881,6 +1881,15 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
             test_url = f"/curation/v1/dataset_versions/{dataset.version_id}"
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(410, response.status_code)
+        with self.subTest("Dataset version is prior published; Collection is tombstoned"):
+            collection = self.generate_published_collection(add_datasets=2)
+            dataset_version_id = collection.datasets[0].version_id
+            revision = self.generate_revision(collection.collection_id)
+            self.business_logic.publish_collection_version(revision.version_id)
+            self.business_logic.tombstone_collection(collection.collection_id)
+            test_url = f"/curation/v1/dataset_versions/{dataset_version_id}"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(410, response.status_code)
 
 
 class TestGetDatasetIdVersions(BaseAPIPortalTest):
@@ -1938,6 +1947,22 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             headers = self.make_owner_header()
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(404, response.status_code)
+        with self.subTest("Dataset is part of a tombstoned Collection"):
+            collection = self.generate_published_collection()
+            dataset = collection.datasets[0]
+            self.business_logic.tombstone_collection(collection.collection_id)
+            test_url = f"/curation/v1/datasets/{dataset.dataset_id}/versions"
+            response = self.app.get(test_url, headers=self.make_owner_header())
+            self.assertEqual(410, response.status_code)
+        with self.subTest("Dataset version is prior published; Collection is tombstoned"):
+            collection = self.generate_published_collection(add_datasets=2)
+            dataset_id = collection.datasets[0].dataset_id
+            revision = self.generate_revision(collection.collection_id)
+            self.business_logic.publish_collection_version(revision.version_id)
+            self.business_logic.tombstone_collection(collection.collection_id)
+            test_url = f"/curation/v1/datasets/{dataset_id}/versions"
+            response = self.app.get(test_url, headers=self.make_owner_header())
+            self.assertEqual(410, response.status_code)
 
 
 class TestPostDataset(BaseAPIPortalTest):

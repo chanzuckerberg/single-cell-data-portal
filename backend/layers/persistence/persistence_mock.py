@@ -435,8 +435,12 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         return copy.deepcopy(self.datasets_versions[version_id.id].status)
 
-    def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+    def get_dataset_mapped_version(
+        self, dataset_id: DatasetId, get_tombstoned: bool = False
+    ) -> Optional[DatasetVersion]:
         cd = self.datasets.get(dataset_id.id)
-        if cd is not None and not cd.tombstoned:
+        if cd is not None:
+            if not get_tombstoned and cd.tombstoned:
+                return None
             version = None if cd.dataset_version_id is None else self.datasets_versions[cd.dataset_version_id.id]
             return None if version is None else self._update_dataset_version_with_canonical(version)

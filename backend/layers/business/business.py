@@ -685,10 +685,12 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Given a canonical dataset id, return all its DatasetVersions that have been part of published CollectionVersions
         """
-        dataset_version = self.database_provider.get_dataset_mapped_version(dataset_id)
+        dataset_version = self.database_provider.get_dataset_mapped_version(dataset_id, get_tombstoned=True)
         if not dataset_version:
             return []
         collection_versions = self.database_provider.get_all_versions_for_collection(dataset_version.collection_id)
+        if collection_versions[0].canonical_collection.tombstoned:
+            raise DatasetIsTombstonedException()
         published_version_history = []
         found_version_ids = set()
         # sort to ensure we always find earliest instance of a dataset version first when iterating
