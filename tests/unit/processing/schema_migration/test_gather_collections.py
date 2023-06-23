@@ -1,12 +1,3 @@
-# ruff: noqa
-from tests.unit.schema_migration.pytest_fixtures import (
-    private,
-    published_collection,
-    revision,
-    schema_migrate_and_collections,
-)
-
-
 class TestGatherCollections:
     def test_with_revision(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
