@@ -1,0 +1,88 @@
+  pw:api => selectors.setTestIdAttribute started +9ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +67ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +0ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +32ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +6ms
+  pw:api   "commit" event fired +95ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +2ms
+  pw:api <= page.goto succeeded +654ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('add-tissue-btn') +342ms
+  pw:api   navigated to "about:blank" +34ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +52ms
+  pw:api attempting click action +13ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api     element is not enabled - waiting... +10ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +7s
+  pw:api   "networkidle" event fired +165ms
+  pw:api   element is visible, enabled and stable +891ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +28ms
+  pw:api   click action done +263ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +6ms
+  pw:api <= locator.click succeeded +23ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByRole('option').filter({ hasText: 'lung' }) +10ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-4-option-1" …>…</li> +31ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +30ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +17ms
+  pw:api   click action done +288ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +15ms
+  pw:api <= locator.click succeeded +50ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +83ms
+  pw:api => expect.not.toHaveCount started +10ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +13ms
+  pw:api waiting for getByTestId('cell-type-name') +0ms
+  pw:api   locator resolved to 0 elements +8ms
+  pw:api   unexpected value "0" +0ms
+  pw:api waiting for getByTestId('cell-type-name') +1ms
+  pw:api   locator resolved to 0 elements +3ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +201ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +255ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 157 elements +844ms
+  pw:api <= expect.not.toHaveCount succeeded +65ms
+  pw:api => locator.click started +4ms
+  pw:api waiting for getByRole('img', { name: 'display marker genes for club cell' }) +66ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +31ms
+  pw:api attempting click action +15ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +5ms
+  pw:api   performing click action +12ms
+  pw:api   click action done +398ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +45ms
+  pw:api <= locator.click succeeded +22ms
+  pw:api => locator.allTextContents started +0ms
+  pw:api <= locator.allTextContents succeeded +19ms
+  pw:api taking page screenshot +967ms
+  pw:api => browserContext.close started +95ms
+  pw:api <= browserContext.close succeeded +2s

@@ -1,0 +1,465 @@
+  pw:api => selectors.setTestIdAttribute started +12ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +41ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +6ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +48ms
+  pw:api => page.waitForResponse started +2ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +6ms
+  pw:api   "commit" event fired +305ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +3ms
+  pw:api <= page.goto succeeded +554ms
+  pw:api   navigated to "about:blank" +234ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +9s
+  pw:api   "networkidle" event fired +93ms
+  pw:api =>  started +633ms
+  pw:api <= page.waitForResponse succeeded +4ms
+  pw:api => locator.click started +1ms
+  pw:api <=  succeeded +14ms
+  pw:api waiting for getByTestId('add-tissue-btn') +9ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +26ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not enabled - waiting... +6ms
+  pw:api   element is visible, enabled and stable +258ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +6ms
+  pw:api   performing click action +17ms
+  pw:api   click action done +263ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +10ms
+  pw:api <= locator.click succeeded +27ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for locator('[data-option-index="0"]') +16ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-4-option-0" …>…</li> +10ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +56ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +9ms
+  pw:api   click action done +302ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +28ms
+  pw:api <= locator.click succeeded +20ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="1"]') +10ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-4-option-1" …>…</li> +30ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +51ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +20ms
+  pw:api   click action done +167ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +12ms
+  pw:api <= locator.click succeeded +25ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +72ms
+  pw:api => locator.waitFor started +0ms
+  pw:api waiting for locator('[id="heatmap-container-id"]') to be visible +23ms
+  pw:api   locator resolved to visible <div id="heatmap-container-id" class="css-2lc7o0-Cont…>…</div> +12ms
+  pw:api <= locator.waitFor succeeded +27ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('add-gene-btn') +9ms
+  pw:api   locator resolved to <button tabindex="0" type="button" sdssize="medium" id="…>…</button> +11ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +54ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +6ms
+  pw:api   performing click action +18ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +14ms
+  pw:api <= locator.click succeeded +4s
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="0"]') +52ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-5-option-0" …>…</li> +33ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +20ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +17ms
+  pw:api   click action done +4s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +19ms
+  pw:api <= locator.click succeeded +1s
+  pw:api => locator.click started +0ms
+  pw:api waiting for locator('[data-option-index="1"]') +2s
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-5-option-1" …>…</li> +673ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +43ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +13ms
+  pw:api   click action done +6s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +49ms
+  pw:api <= locator.click succeeded +81ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="2"]') +23ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-5-option-2" …>…</li> +40ms
+  pw:api attempting click action +11ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +82ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +16ms
+  pw:api   click action done +6s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +33ms
+  pw:api => keyboard.press started +9ms
+  pw:api <= keyboard.press succeeded +108ms
+  pw:api => locator.waitFor started +0ms
+  pw:api waiting for locator('[data-testid=\'gene-label-TSPAN6\']') to be visible +22ms
+  pw:api   locator resolved to visible <div id="gene-label-TSPAN6" data-testid="gene-label-T…>…</div> +60ms
+  pw:api <= locator.waitFor succeeded +60ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for locator('text=Loading') to be hidden +28ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +72ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +56ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +60ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +95ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +141ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +140ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +546ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +537ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +532ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +536ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +536ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +586ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +564ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +600ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +593ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +543ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +542ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +570ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +561ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +585ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +574ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +562ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +554ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +540ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +555ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +553ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +567ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +549ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +557ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +551ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +548ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +544ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +530ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +540ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +532ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +543ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +518ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +549ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +540ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +537ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +527ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +541ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +539ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +518ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +553ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +517ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +530ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +536ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +517ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +530ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +546ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +532ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +517ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +530ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +544ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +537ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +538ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +530ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +537ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +545ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +525ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +527ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +525ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +536ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +527ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +527ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +525ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +536ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +517ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +539ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +518ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +541ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +525ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +541ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +525ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +516ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +527ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +539ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +538ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +539ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +538ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +541ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +518ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +617ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +735ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +548ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +548ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +527ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +518ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +541ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +536ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +530ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +525ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +541ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +525ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +598ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +737ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +540ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +537ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +515ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +532ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +532ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +541ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +541ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +517ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +530ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +516ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +517ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +525ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +527ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +530ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +545ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +538ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +538ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +525ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +540ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +538ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +548ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +540ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +540ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +522ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +544ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +527ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +530ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +538ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +657ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +634ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +544ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +521ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +539ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +544ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +518ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +541ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +532ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +518ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +538ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +578ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +532ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +537ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +529ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +537ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +2s
+  pw:api <= locator.waitFor succeeded +532ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('side-bar-toggle-button') +12ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="side-bar…>…</button> +10ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +20ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +13ms
+  pw:api   click action done +22ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('add-organism') +11ms
+  pw:api <= locator.isVisible succeeded +48ms
+  pw:api taking page screenshot +5s
+  pw:api => browserContext.close started +224ms
+  pw:api <= browserContext.close succeeded +3s

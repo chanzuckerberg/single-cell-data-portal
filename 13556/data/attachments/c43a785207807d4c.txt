@@ -1,0 +1,237 @@
+  pw:api => selectors.setTestIdAttribute started +3ms
+  pw:api => browser.newContext started +0ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +41ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +6ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +41ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +6ms
+  pw:api   "commit" event fired +88ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +12ms
+  pw:api <= page.goto succeeded +427ms
+  pw:api   navigated to "about:blank" +263ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +7s
+  pw:api =>  started +696ms
+  pw:api <= page.waitForResponse succeeded +3ms
+  pw:api => locator.click started +1ms
+  pw:api <=  succeeded +25ms
+  pw:api waiting for getByTestId('add-tissue-btn') +10ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +52ms
+  pw:api attempting click action +8ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api     element is not enabled - waiting... +5ms
+  pw:api   element is visible, enabled and stable +308ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +15ms
+  pw:api   "networkidle" event fired +206ms
+  pw:api   click action done +61ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +13ms
+  pw:api <= locator.click succeeded +34ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for locator('[data-option-index="0"]') +33ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-4-option-0" …>…</li> +11ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +55ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +4ms
+  pw:api   performing click action +11ms
+  pw:api   click action done +315ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +14ms
+  pw:api <= locator.click succeeded +26ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="1"]') +6ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-4-option-1" …>…</li> +20ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +24ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +9ms
+  pw:api   click action done +171ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +14ms
+  pw:api <= locator.click succeeded +16ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +49ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for locator('[id="heatmap-container-id"]') to be visible +15ms
+  pw:api   locator resolved to visible <div id="heatmap-container-id" class="css-2lc7o0-Cont…>…</div> +8ms
+  pw:api <= locator.waitFor succeeded +11ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('add-gene-btn') +18ms
+  pw:api   locator resolved to <button tabindex="0" type="button" sdssize="medium" id="…>…</button> +16ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +36ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +11ms
+  pw:api   performing click action +13ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +16ms
+  pw:api <= locator.click succeeded +2s
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="0"]') +2s
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-5-option-0" …>…</li> +25ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +20ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +11ms
+  pw:api   click action done +5s
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +11ms
+  pw:api <= locator.click succeeded +3s
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="1"]') +672ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-5-option-1" …>…</li> +23ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +31ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +23ms
+  pw:api   click action done +5s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +51ms
+  pw:api <= locator.click succeeded +1s
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="2"]') +1s
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-5-option-2" …>…</li> +644ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +26ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +23ms
+  pw:api   click action done +7s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +23ms
+  pw:api <= locator.click succeeded +76ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +106ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for locator('[data-testid=\'gene-label-TSPAN6\']') to be visible +18ms
+  pw:api   locator resolved to visible <div id="gene-label-TSPAN6" data-testid="gene-label-T…>…</div> +22ms
+  pw:api <= locator.waitFor succeeded +52ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for locator('text=Loading') to be hidden +27ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +70ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +51ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +72ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +101ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +128ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +135ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +534ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +542ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +578ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +547ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +542ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +523ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +518ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +526ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +531ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +524ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +519ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +537ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +520ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +539ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +533ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +554ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +551ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +553ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +554ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +2s
+  pw:api <= locator.waitFor succeeded +534ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('group-by-tooltip-icon') +82ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="group-by…>…</button> +19ms
+  pw:api attempting hover action +3ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +35ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +16ms
+  pw:api   hover action done +38ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +41ms
+  pw:api <= locator.hover succeeded +32ms
+  pw:api => locator.hover started +3ms
+  pw:api waiting for getByTestId('color-scale-tooltip-icon') +18ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="color-sc…>…</button> +91ms
+  pw:api attempting hover action +20ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +41ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   <div role="banner" class="ecafy0i1 css-j72k4d-StyledB…>…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +65ms
+  pw:api retrying hover action, attempt #1 +0ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +68ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +6ms
+  pw:api   <div role="banner" class="ecafy0i1 css-j72k4d-StyledB…>…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +25ms
+  pw:api retrying hover action, attempt #2 +0ms
+  pw:api   waiting 20ms +0ms
+  pw:api   waiting for element to be visible and stable +22ms
+  pw:api   element is visible and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +37ms
+  pw:api   hover action done +76ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +22ms
+  pw:api <= locator.hover succeeded +18ms
+  pw:api => locator.hover started +2ms
+  pw:api waiting for getByTestId('sort-cell-types-tooltip-icon') +52ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +36ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +46ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +27ms
+  pw:api   hover action done +81ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +12ms
+  pw:api <= locator.hover succeeded +31ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('sort-genes-tooltip-icon') +34ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="sort-gen…>…</button> +33ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +25ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +26ms
+  pw:api   hover action done +62ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +21ms
+  pw:api <= locator.hover succeeded +34ms
+  pw:api taking page screenshot +2s
+  pw:api => browserContext.close started +89ms
+  pw:api <= browserContext.close succeeded +955ms
