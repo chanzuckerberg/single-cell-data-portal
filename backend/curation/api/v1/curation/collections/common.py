@@ -333,20 +333,20 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
     return return_status
 
 
-def get_inferred_collection_version(collection_id: str) -> CollectionVersionWithDatasets:
+def get_inferred_collection_version(_id: str) -> CollectionVersionWithDatasets:
     """
     Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion,
     if currently mapped published version or open unpublished version.
-    :param collection_id: identifies the collection version
+    :param _id: identifies the collection version, whether by canonical id or version id
     :return: The CollectionVersion if it exists.
     """
-    validate_uuid_else_forbidden(collection_id)
+    validate_uuid_else_forbidden(_id)
     business_logic = get_business_logic()
 
     # gets currently mapped collection version, or unpublished version if never published
-    version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+    version = business_logic.get_collection_version_from_canonical(CollectionId(_id))
     if version is None:
-        version = business_logic.get_collection_version(CollectionVersionId(collection_id), get_tombstoned=True)
+        version = business_logic.get_collection_version(CollectionVersionId(_id), get_tombstoned=True)
         if version is None:
             raise NotFoundHTTPException()
         # Only allow fetch by Collection Version ID if unpublished revision of published collection

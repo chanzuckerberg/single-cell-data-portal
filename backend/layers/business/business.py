@@ -190,7 +190,7 @@ class BusinessLogic(BusinessLogicInterface):
                 yield c_version
 
     def get_collection_version_from_canonical(
-        self, collection_id: CollectionId
+        self, collection_id: CollectionId, get_tombstoned: bool = False
     ) -> Optional[CollectionVersionWithDatasets]:
         """
         Returns the published collection version mapped to a canonical collection, if available.

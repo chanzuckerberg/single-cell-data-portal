@@ -115,7 +115,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         cc = self.collections.get(collection_id.id)
         if cc is not None:
-            return self.get_collection_version_with_datasets(cc.version_id)
+            return self.get_collection_version_with_datasets(cc.version_id, get_tombstoned=True)
 
     def get_all_collections_versions(
         self, get_tombstoned: bool = False
@@ -207,10 +207,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version = self.collections_versions.get(version_id.id)
         if not version:
             return None
+        version = self._update_version_with_canonical(version, update_datasets=True)
         if not get_tombstoned and version.canonical_collection.tombstoned:
             return None
-        if version is not None:
-            return self._update_version_with_canonical(version, update_datasets=True)
+        return version
 
     # MAYBE
     def finalize_collection_version(

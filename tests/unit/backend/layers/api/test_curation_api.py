@@ -1077,13 +1077,24 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
         with self.subTest("Query endpoint with non-UUID"):
             res = self.app.get("/curation/v1/collection_versions/bad-input-id", headers=self.make_owner_header())
             self.assertEqual(403, res.status_code)
-        with self.subTest("Collection Version is part of tombstoned Collection"):
+        with self.subTest("Attempting to access tombstoned Collection via Collection version id returns 410 Gone"):
             collection = self.generate_published_collection()
             self.business_logic.tombstone_collection(collection.collection_id)
             res = self.app.get(
                 f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
             )
             self.assertEqual(410, res.status_code)
+
+        with self.subTest("Cannot access prior versions for a tombstoned Collection with multiple published versions"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            self.business_logic.publish_collection_version(revision.version_id)
+            self.business_logic.tombstone_collection(collection.collection_id)
+            res = self.app.get(f"/curation/v1/collection_versions/{collection.version_id}")
+            self.assertEqual(410, res.status_code)
+            res = self.app.get(f"/curation/v1/collection_versions/{revision.version_id}")
+            self.assertEqual(410, res.status_code)
+
         with self.subTest("Collection Version is unpublished collection"):
             collection = self.generate_unpublished_collection()
             res = self.app.get(
