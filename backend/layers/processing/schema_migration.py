@@ -133,13 +133,25 @@ class SchemaMigrate:
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors[dataset_version_id] = dataset.status.validation_message
 
-        if can_publish and not errors:
-            self.business_logic.publish_collection_version(collection_version_id)
-
         artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+        if errors:
+            execution_arn = os.environ["EXECUTION_ARN"]
+            with open("errors.json", "w") as f:
+                json.dump(errors, f)
+            self.business_logic.s3_provider.upload_file(
+                "errors.json", artifact_bucket, f"schema_migration/{execution_arn}/{collection_version_id}.json"
+            )
+        elif can_publish:
+            self.business_logic.publish_collection_version(collection_version_id)
         self.business_logic.s3_provider.delete_files(artifact_bucket, object_keys_to_delete)
-
         return errors
+
+    def report(self):
+        errors = self.business_logic.s3_provider.list_directory(
+            os.environ["ARTIFACT_BUCKET"], f"schema_migration/{os.environ['EXECUTION_ARN']}"
+        )
+        for _error in errors:
+            pass  # TODO generate a report from the errors.
 
     def migrate(self, step_name) -> bool:
         """
@@ -161,4 +173,6 @@ class SchemaMigrate:
             collection_id = os.environ["collection_id"]
             can_publish = os.environ["can_publish"].lower() == "true"
             self.publish_and_cleanup(collection_id, can_publish)
+        if self.step_name == "report":
+            self.report()
         return True
