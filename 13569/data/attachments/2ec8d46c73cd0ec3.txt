@@ -1,0 +1,2301 @@
+  pw:api => selectors.setTestIdAttribute started +9ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +36ms
+  pw:api   "commit" event fired +10ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +6ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +35ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +4ms
+  pw:api   "commit" event fired +70ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +11ms
+  pw:api <= page.goto succeeded +506ms
+  pw:api   navigated to "about:blank" +410ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +6s
+  pw:api =>  started +689ms
+  pw:api <= page.waitForResponse succeeded +4ms
+  pw:api => locator.click started +1ms
+  pw:api <=  succeeded +14ms
+  pw:api waiting for getByTestId('add-tissue-btn') +7ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +14ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api     element is not enabled - waiting... +5ms
+  pw:api   element is visible, enabled and stable +284ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +22ms
+  pw:api   click action done +245ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +13ms
+  pw:api   "networkidle" event fired +12ms
+  pw:api <= locator.click succeeded +10ms
+  pw:api => keyboard.press started +5ms
+  pw:api <= keyboard.press succeeded +63ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +51ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +255ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +79ms
+  pw:api => expect.not.toBeVisible started +3ms
+  pw:api expect.not.toBeVisible with timeout 10000ms +18ms
+  pw:api waiting for getByText('STEP 1') +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +32ms
+  pw:api   unexpected value "visible" +0ms
+  pw:api waiting for getByText('STEP 1') +1ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +16ms
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +104ms
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +264ms
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +892ms
+  pw:api <= expect.not.toBeVisible succeeded +62ms
+  pw:api => expect.not.toBeVisible started +6ms
+  pw:api expect.not.toBeVisible with timeout 10000ms +55ms
+  pw:api waiting for getByTestId('Add Tissues') +0ms
+  pw:api <= expect.not.toBeVisible succeeded +28ms
+  pw:api => expect.toBeVisible started +1ms
+  pw:api expect.toBeVisible with timeout 10000ms +6ms
+  pw:api waiting for getByTestId('cell-type-labels-lung') +1ms
+  pw:api   locator resolved to <div height="3140" data-testid="cell-type-labels-lung…>…</div> +11ms
+  pw:api <= expect.toBeVisible succeeded +27ms
+  pw:api => locator.count started +0ms
+  pw:api <= locator.count succeeded +10ms
+  pw:api => locator.textContent started +0ms
+  pw:api waiting for getByTestId('cell-type-label-count').first().getByTestId('cell-count') +8ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>80k</div> +9ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').first().getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').first().getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">secretory cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(1).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>59.4k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(1).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(1).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">lung secretory cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(2).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.8k</div> +3ms
+  pw:api <= locator.textContent succeeded +12ms
+  pw:api => locator.textContent started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(2).getByTestId('cell-type-name') +13ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">lung goblet cell</div> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(3).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>57k</div> +3ms
+  pw:api <= locator.textContent succeeded +9ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +5ms
+  pw:api => locator.count started +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(3).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(3).getByTestId('marker-gene-button') +3ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">type II pneumocyte</div> +5ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(4).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>518</div> +7ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(4).getByTestId('cell-type-name') +8ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(4).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">lung neuroendocrine cell</div> +5ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(5).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +10ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>240</div> +6ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(5).getByTestId('cell-type-name') +17ms
+  pw:api expect.toBeVisible with timeout 10000ms +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(5).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">enteroendocrine cell</div> +5ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +8ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(6).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>805</div> +3ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(6).getByTestId('cell-type-name') +12ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(6).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">neuroendocrine cell</div> +5ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(7).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>39</div> +9ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +7ms
+  pw:api => locator.count started +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(7).getByTestId('cell-type-name') +8ms
+  pw:api expect.toBeVisible with timeout 10000ms +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(7).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">tracheobronchial serous cell</div> +6ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(8).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +9ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>15</div> +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(8).getByTestId('cell-type-name') +9ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">serous cell of epi...lium of bronchus</div> +9ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(9).getByTestId('cell-count') +7ms
+  pw:api <= locator.textContent succeeded +10ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>4.1k</div> +4ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(9).getByTestId('cell-type-name') +8ms
+  pw:api expect.toBeVisible with timeout 10000ms +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(9).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mucus secreting cell</div> +8ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(10).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +12ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.8k</div> +13ms
+  pw:api <= locator.textContent succeeded +10ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(10).getByTestId('cell-type-name') +15ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(10).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">goblet cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +12ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(11).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.5k</div> +3ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(11).getByTestId('cell-type-name') +13ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">respiratory goblet cell</div> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(12).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>5.9k</div> +3ms
+  pw:api <= locator.textContent succeeded +11ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(12).getByTestId('cell-type-name') +32ms
+  pw:api expect.toBeVisible with timeout 10000ms +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(12).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">club cell</div> +5ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(13).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>20</div> +6ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +0ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(13).getByTestId('cell-type-name') +7ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">platelet</div> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(14).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>7.6k</div> +4ms
+  pw:api <= locator.textContent succeeded +10ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(14).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(14).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mast cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(15).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +6ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.8k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(15).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(15).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">chondrocyte</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(16).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>11k</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(16).getByTestId('cell-type-name') +8ms
+  pw:api <= locator.count succeeded +9ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">ciliated cell</div> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(17).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>8.1k</div> +2ms
+  pw:api <= locator.textContent succeeded +10ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(17).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(17).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">lung ciliated cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(18).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.7k</div> +14ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(18).getByTestId('cell-type-name') +6ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">ciliated epithelial cell</div> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(19).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>685</div> +3ms
+  pw:api <= locator.textContent succeeded +8ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(19).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(19).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mesothelial cell</div> +6ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(20).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +8ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>29</div> +3ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(20).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(20).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mesothelial cell of pleura</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +7ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(21).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +8ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>46.2k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(21).getByTestId('cell-type-name') +9ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(21).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">endothelial cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(22).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>27.4k</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(22).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(22).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">endothelial cell of vascular tree</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(23).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +8ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>3.3k</div> +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(23).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(23).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">endothelial cell of lymphatic vessel</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +7ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(24).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>484</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(24).getByTestId('cell-type-name') +10ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(24).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">lung microvascular endothelial cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(25).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>20.2k</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(25).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(25).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">blood vessel endothelial cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(26).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +9ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>11.7k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(26).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(26).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">capillary endothelial cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +10ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(27).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.6k</div> +3ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(27).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(27).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">endothelial cell of artery</div> +10ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(28).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>3k</div> +14ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(28).getByTestId('cell-type-name') +6ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">vein endothelial cell</div> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(29).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>116.1k</div> +3ms
+  pw:api <= locator.textContent succeeded +9ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(29).getByTestId('cell-type-name') +68ms
+  pw:api expect.toBeVisible with timeout 10000ms +19ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(29).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +19ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">macrophage</div> +6ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +8ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(30).getByTestId('cell-count') +35ms
+  pw:api <= locator.textContent succeeded +55ms
+  pw:api <= expect.toBeVisible succeeded +54ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>56.2k</div> +16ms
+  pw:api <= locator.textContent succeeded +33ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(30).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(30).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +8ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">alveolar macrophage</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(31).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +7ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>61.5k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(31).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(31).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">lung macrophage</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +7ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(32).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>44</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(32).getByTestId('cell-type-name') +10ms
+  pw:api expect.toBeVisible with timeout 10000ms +8ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(32).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">elicited macrophage</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(33).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>19.2k</div> +3ms
+  pw:api <= locator.textContent succeeded +8ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(33).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(33).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">classical monocyte</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(34).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +8ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>12.1k</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(34).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(34).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD14-positive, C...ssical monocyte</div> +8ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +7ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(35).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>11.6k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(35).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(35).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">pulmonary interstitial fibroblast</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(36).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>3.2k</div> +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(36).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(36).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">alveolar type 2 fibroblast cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(37).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>229.7k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(37).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(37).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">epithelial cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(38).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>105.3k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(38).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(38).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">epithelial cell of lung</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(39).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>92k</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(39).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(39).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">epithelial cell of alveolus of lung</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(40).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>74.1k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(40).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(40).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">pneumocyte</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +7ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(41).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>11.8k</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(41).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(41).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">type I pneumocyte</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(42).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>41</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(42).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(42).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +2ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">pulmonary ionocyte</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(43).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +10ms
+  pw:api <= expect.toBeVisible succeeded +1ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>21.5k</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +2ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(43).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(43).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">squamous epithelial cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(44).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(44).getByTestId('cell-type-name') +7ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">intestinal epithelial cell</div> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(45).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>103</div> +2ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(45).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(45).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">brush cell of trachebronchial tree</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(46).getByTestId('cell-count') +3ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>41.9k</div> +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(46).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(46).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">respiratory epithelial cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(47).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>38.5k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(47).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(47).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">epithelial cell of l... respiratory tract</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(48).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>532</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(48).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(48).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">bronchial epithelial cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(49).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.9k</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(49).getByTestId('cell-type-name') +4ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">respiratory basal cell</div> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(50).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +0ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(50).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">hepatocyte</div> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(51).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +10ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>412</div> +0ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(51).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(51).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">glial cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(52).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +6ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>170</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(52).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(52).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">Schwann cell</div> +6ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(53).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>31</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(53).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(53).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">immature Schwann cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(54).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.8k</div> +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(54).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(54).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">neuron</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(55).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>93</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(55).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(55).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">peripheral nervous system neuron</div> +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(56).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>80</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(56).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(56).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">visceromotor neuron</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(57).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>7k</div> +4ms
+  pw:api <= locator.textContent succeeded +9ms
+  pw:api => locator.textContent started +0ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(57).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">pericyte</div> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(58).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>692</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(58).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(58).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">basophil</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(59).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +6ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>13</div> +2ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(59).getByTestId('cell-type-name') +7ms
+  pw:api <= locator.count succeeded +1ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">eosinophil</div> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(60).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.2k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(60).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">neutrophil</div> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(61).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>302</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(61).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(61).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">erythrocyte</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(62).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>202</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(62).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(62).getByTestId('marker-gene-button') +6ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">enucleate erythrocyte</div> +4ms
+  pw:api <= locator.count succeeded +0ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(63).getByTestId('cell-count') +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>182.4k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(63).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(63).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">myeloid cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(64).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>141</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(64).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(64).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">megakaryocyte</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(65).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>124</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(65).getByTestId('cell-type-name') +27ms
+  pw:api expect.toBeVisible with timeout 10000ms +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(65).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">promonocyte</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(66).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>33</div> +5ms
+  pw:api <= expect.toBeVisible succeeded +0ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(66).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(66).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">promyelocyte</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(67).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>28</div> +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(67).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(67).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">megakaryocyte-e...id progenitor cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(68).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>263</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(68).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(68).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">primitive red blood cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(69).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>181</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(69).getByTestId('cell-type-name') +11ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(69).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">erythroblast</div> +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(70).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>223</div> +4ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(70).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(70).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">reticulocyte</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(71).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>28</div> +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +5ms
+  pw:api => locator.count started +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(71).getByTestId('cell-type-name') +9ms
+  pw:api expect.toBeVisible with timeout 10000ms +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(71).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +2ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">granulocyte mon...te progenitor cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(72).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +11ms
+  pw:api <= expect.toBeVisible succeeded +1ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>180.9k</div> +0ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +2ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(72).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(72).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">myeloid leukocyte</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(73).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>236</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(73).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(73).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD1c-positive myeloid dendritic cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(74).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>130</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(74).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(74).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">myeloid dendritic cell, human</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(75).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +9ms
+  pw:api <= expect.toBeVisible succeeded +0ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>52.3k</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(75).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(75).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +2ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">monocyte</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(76).getByTestId('cell-count') +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>440</div> +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(76).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(76).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">intermediate monocyte</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(77).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>532</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(77).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(77).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD14-positive, C...ositive monocyte</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(78).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.8k</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(78).getByTestId('cell-type-name') +21ms
+  pw:api expect.toBeVisible with timeout 10000ms +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(78).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +1ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">non-classical monocyte</div> +7ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +13ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(79).getByTestId('cell-count') +1ms
+  pw:api <= locator.textContent succeeded +1ms
+  pw:api <= expect.toBeVisible succeeded +2ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>135</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(79).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(79).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">pro-B cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(80).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>7</div> +2ms
+  pw:api <= locator.textContent succeeded +8ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(80).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">common myeloid progenitor</div> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(81).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>21</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(81).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">early lymphoid progenitor</div> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(82).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>29</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(82).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(82).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">hematopoietic stem cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(83).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>10.8k</div> +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(83).getByTestId('cell-type-name') +9ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(83).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">dendritic cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(84).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>937</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(84).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(84).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">conventional dendritic cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(85).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>366</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(85).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(85).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">plasmacytoid dendritic cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(86).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>116</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(86).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(86).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">plasmacytoid dendritic cell, human</div> +6ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(87).getByTestId('cell-count') +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>528</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(87).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(87).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">dendritic cell, human</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(88).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>555</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(88).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(88).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">B-1b B cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(89).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>279</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(89).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(89).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +1ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">B-1a B cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(90).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>143</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(90).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(90).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">memory B cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(91).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>79</div> +3ms
+  pw:api <= locator.textContent succeeded +8ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(91).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(91).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">naive B cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(92).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>4</div> +7ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(92).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">germinal center B cell</div> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(93).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>36</div> +3ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(93).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(93).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">plasmablast</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(94).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +6ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>217.4k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(94).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(94).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mononuclear cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(95).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>154k</div> +3ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +5ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(95).getByTestId('cell-type-name') +12ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(95).getByTestId('marker-gene-button') +5ms
+  pw:api <= locator.count succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">lymphocyte</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(96).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>29.7k</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(96).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(96).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">innate lymphoid cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(97).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>29.1k</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(97).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(97).getByTestId('marker-gene-button') +2ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">natural killer cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(98).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.2k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(98).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD16-negative, C...killer cell, human</div> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(99).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>3.5k</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(99).getByTestId('cell-type-name') +9ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(99).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD16-positive, C...killer cell, human</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(100).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>80</div> +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(100).getByTestId('cell-type-name') +12ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(100).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +1ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD34-positive, C...recursor, human</div> +0ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(101).getByTestId('cell-count') +8ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>175</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(101).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(101).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">group 3 innate lymphoid cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(102).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>149</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(102).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(102).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">group 2 innate lymphoid cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(103).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>102.3k</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +4ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(103).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(103).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">T cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(104).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.5k</div> +2ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(104).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">naive thymus-der... alpha-beta T cell</div> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(105).getByTestId('cell-count') +3ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>473</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(105).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(105).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">naive thymus-der... alpha-beta T cell</div> +4ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(106).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>80</div> +2ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(106).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(106).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">effector CD8-pos... alpha-beta T cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(107).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>132</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(107).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(107).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">effector CD4-pos... alpha-beta T cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(108).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.2k</div> +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(108).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">regulatory T cell</div> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(109).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.2k</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(109).getByTestId('cell-type-name') +4ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD8-positive, alp...ta memory T cell</div> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(110).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.2k</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(110).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD8-positive, alp...CD45RO-positive</div> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(111).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>771</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(111).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(111).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">effector memory ... alpha-beta T cell</div> +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +6ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(112).getByTestId('cell-count') +7ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>945</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(112).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(112).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">effector memory ...ally differentiated</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(113).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>3.4k</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(113).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(113).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">effector memory ... alpha-beta T cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(114).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>46.6k</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(114).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(114).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mature alpha-beta T cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(115).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>18.7k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(115).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(115).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD8-positive, alpha-beta T cell</div> +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(116).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>5.1k</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(116).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(116).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD8-positive, alp...a cytotoxic T cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(117).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>124</div> +6ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(117).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(117).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mucosal invariant T cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(118).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>19.4k</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(118).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(118).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD4-positive, alpha-beta T cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(119).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.1k</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(119).getByTestId('cell-type-name') +6ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD4-positive helper T cell</div> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(120).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>167</div> +3ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(120).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(120).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">T-helper 17 cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(121).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>79</div> +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(121).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(121).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">T follicular helper cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(122).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.1k</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(122).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mature NK T cell</div> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(123).getByTestId('cell-count') +3ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>82</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(123).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(123).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mature gamma-delta T cell</div> +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(124).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>53.2k</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(124).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(124).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +3ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">alpha-beta T cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(125).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>6.4k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(125).getByTestId('cell-type-name') +10ms
+  pw:api expect.toBeVisible with timeout 10000ms +0ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(125).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">immature alpha-beta T cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(126).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>3.3k</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(126).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(126).getByTestId('marker-gene-button') +7ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD8-positive, alpha-beta thymocyte</div> +1ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +6ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(127).getByTestId('cell-count') +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>3k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(127).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">CD4-positive, alpha-beta thymocyte</div> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(128).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>247</div> +2ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(128).getByTestId('cell-type-name') +8ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(128).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">gamma-delta T cell</div> +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(129).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>6.3k</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(129).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(129).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +2ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">thymocyte</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(130).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>6.2k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +4ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(130).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(130).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">plasma cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(131).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +30ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>526</div> +0ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +4ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(131).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(131).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">immature B cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(132).getByTestId('cell-count') +3ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>2.6k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(132).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(132).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">precursor B cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(133).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>541</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(133).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(133).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">pre-B-I cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(134).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>449</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(134).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(134).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">late pro-B cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(135).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>546</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(135).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(135).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">large pre-B-II cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(136).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>453</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(136).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(136).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +1ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">small pre-B-II cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(137).getByTestId('cell-count') +6ms
+  pw:api <= locator.textContent succeeded +1ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>15.5k</div> +5ms
+  pw:api <= locator.textContent succeeded +9ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(137).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(137).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">B cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(138).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +8ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>11.2k</div> +3ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(138).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(138).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">stromal cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +8ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(139).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>67k</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(139).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(139).getByTestId('marker-gene-button') +2ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">fibroblast</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(140).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>212</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(140).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(140).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mesothelial fibroblast</div> +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(141).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>27.5k</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(141).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(141).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">fibroblast of lung</div> +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(142).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>309</div> +2ms
+  pw:api <= locator.textContent succeeded +8ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(142).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(142).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">bronchus fibroblast of lung</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(143).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>373</div> +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(143).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(143).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">adventitial cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(144).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.7k</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(144).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">myofibroblast cell</div> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(145).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>5.4k</div> +2ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(145).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(145).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">basal cell</div> +5ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(146).getByTestId('cell-count') +3ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>33.2k</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(146).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(146).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +3ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">mesenchymal cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(147).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>7.9k</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(147).getByTestId('cell-type-name') +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(147).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">muscle cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(148).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= expect.toBeVisible succeeded +6ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>7.1k</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(148).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(148).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">smooth muscle cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(149).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>4.3k</div> +2ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(149).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(149).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">tracheobronchial...ooth muscle cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(150).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>772</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(150).getByTestId('cell-type-name') +6ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(150).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">bronchial smooth muscle cell</div> +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(151).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>1.8k</div> +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(151).getByTestId('cell-type-name') +5ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">vascular associa...ooth muscle cell</div> +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(152).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>37</div> +3ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +7ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(152).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(152).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">bone marrow cell</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(153).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +8ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>15</div> +3ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +0ms
+  pw:api => locator.count started +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(153).getByTestId('cell-type-name') +4ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +0ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">neural progenitor cell</div> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(154).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>192</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(154).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(154).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +3ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">Schwann cell precursor</div> +3ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(155).getByTestId('cell-count') +5ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>16.7k</div> +2ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.textContent started +1ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(155).getByTestId('cell-type-name') +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +3ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(155).getByTestId('marker-gene-button') +0ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">contractile cell</div> +2ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +5ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(156).getByTestId('cell-count') +4ms
+  pw:api <= locator.textContent succeeded +3ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api   locator resolved to <div id="cell-count" data-testid="cell-count" class="…>59k</div> +2ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.textContent started +0ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(156).getByTestId('cell-type-name') +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(156).getByTestId('marker-gene-button') +1ms
+  pw:api <= locator.count succeeded +2ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">progenitor cell</div> +7ms
+  pw:api <= locator.textContent succeeded +13ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" data-test…/> +1ms
+  pw:api <= expect.toBeVisible succeeded +1ms
+  pw:api taking page screenshot +869ms
+  pw:api => browserContext.close started +88ms
+  pw:api <= browserContext.close succeeded +4s
