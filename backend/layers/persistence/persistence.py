@@ -517,21 +517,18 @@ class DatabaseProvider(DatabaseProviderInterface):
             ]
 
             # finalize collection version's dataset versions
-            version_ids_for_datasets_to_tombstone = []
+            dataset_ids_to_tombstone = []
             if previous_c_v_id:
                 # Publishing a revision; Datasets could have been removed
                 previous_collection_version = self.get_collection_version_with_datasets(
                     CollectionVersionId(previous_c_v_id)
                 )
-                previous_d_v_ids = [d.dataset_id.id for d in previous_collection_version.datasets]
-                for previous_d_v_id in previous_d_v_ids:
-                    if previous_d_v_id not in dataset_ids_for_new_collection_version:
-                        version_ids_for_datasets_to_tombstone.append(previous_d_v_id)
-
-            if version_ids_for_datasets_to_tombstone:
-                datasets = session.query(DatasetTable).filter(
-                    DatasetTable.version_id.in_(version_ids_for_datasets_to_tombstone)
-                )
+                previous_d_ids = [d.dataset_id.id for d in previous_collection_version.datasets]
+                for previous_d_id in previous_d_ids:
+                    if previous_d_id not in dataset_ids_for_new_collection_version:
+                        dataset_ids_to_tombstone.append(previous_d_id)
+            if dataset_ids_to_tombstone:
+                datasets = session.query(DatasetTable).filter(DatasetTable.id.in_(dataset_ids_to_tombstone)).all()
                 for dataset in datasets:
                     dataset.tombstone = True
 
@@ -799,7 +796,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             canonical_dataset = session.query(DatasetTable).filter_by(id=dataset_id.id)
             if not get_tombstoned:
-                canonical_dataset = canonical_dataset.filter_by(tombstone=get_tombstoned)
+                canonical_dataset = canonical_dataset.filter_by(tombstone=False)
             canonical_dataset = canonical_dataset.one_or_none()
 
             if canonical_dataset is None:

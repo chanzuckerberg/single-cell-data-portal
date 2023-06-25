@@ -1527,6 +1527,32 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(200, response.status_code)
             self.assertEqual(dataset_id, response.json["dataset_id"])
 
+    def test_get_dataset_in_a_tombstoned_collection_410(self):
+        collection = self.generate_published_collection(add_datasets=2)
+        dataset = collection.datasets[0]
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        self.assertEqual(200, response.status_code)
+        self.business_logic.tombstone_collection(collection.collection_id)
+        response = self.app.get(test_url)
+        self.assertEqual(410, response.status_code)
+
+    def test_get_tombstoned_dataset_in_a_collection_410(self):
+        collection = self.generate_published_collection(add_datasets=2)
+        self.assertEqual(2, len(collection.datasets))
+        dataset = collection.datasets[0]
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        self.assertEqual(200, response.status_code)
+        revision = self.generate_revision(collection.collection_id)
+        self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id)
+        self.business_logic.publish_collection_version(revision.version_id)
+        new_published_version = self.database_provider.get_collection_version(revision.version_id)
+        self.assertEqual(1, len(new_published_version.datasets))
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        self.assertEqual(410, response.status_code)
+
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
     def test_get_dataset_shape(self, mock_config: Mock):
         # retrieve a private dataset

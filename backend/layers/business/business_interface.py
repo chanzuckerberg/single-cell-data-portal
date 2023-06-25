@@ -130,5 +130,5 @@ class BusinessLogicInterface:
     def get_prior_published_dataset_version(self, dataset_version_id: DatasetVersionId) -> PublishedDatasetVersion:
         pass
 
-    def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> DatasetVersion:
+    def get_dataset_version_from_canonical(self, dataset_id: DatasetId, get_tombstoned: bool) -> DatasetVersion:
         pass
