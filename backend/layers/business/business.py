@@ -690,6 +690,8 @@ class BusinessLogic(BusinessLogicInterface):
         dataset_version = self.database_provider.get_dataset_mapped_version(dataset_id, get_tombstoned=True)
         if not dataset_version:
             return []
+        if dataset_version.canonical_dataset.tombstoned:
+            raise DatasetIsTombstonedException()
         collection_versions = self.database_provider.get_all_versions_for_collection(dataset_version.collection_id)
         if collection_versions[0].canonical_collection.tombstoned:
             raise DatasetIsTombstonedException()

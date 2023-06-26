@@ -1989,6 +1989,15 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             test_url = f"/curation/v1/datasets/{dataset_id}/versions"
             response = self.app.get(test_url, headers=self.make_owner_header())
             self.assertEqual(410, response.status_code)
+        with self.subTest("Dataset is tombstoned"):
+            collection = self.generate_published_collection(add_datasets=2)
+            dataset = collection.datasets[0]
+            revision = self.generate_revision(collection.collection_id)
+            self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id)
+            self.business_logic.publish_collection_version(revision.version_id)
+            test_url = f"/curation/v1/datasets/{dataset.dataset_id}/versions"
+            response = self.app.get(test_url, headers=self.make_owner_header())
+            self.assertEqual(410, response.status_code)
 
 
 class TestPostDataset(BaseAPIPortalTest):
