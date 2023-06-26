@@ -654,9 +654,11 @@ class BusinessLogic(BusinessLogicInterface):
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
-        self.database_provider.finalize_collection_version(
+        dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
             version.collection_id, version_id, update_revised_at=has_dataset_revisions
         )
+
+        self.delete_dataset_versions_from_bucket(dataset_version_ids_to_delete_from_s3, os.getenv("DATASETS_BUCKET"))
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         """

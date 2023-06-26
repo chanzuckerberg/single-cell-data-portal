@@ -491,9 +491,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> None:
+    ) -> List[str]:
         """
-        Finalizes a collection version
+        Finalizes a collection version. Returns a list of ids for all Dataset Versions for any/all tombstoned Datasets.
         """
         published_at = published_at if published_at else datetime.utcnow()
         with self._manage_session() as session:
@@ -527,10 +527,13 @@ class DatabaseProvider(DatabaseProviderInterface):
                 for previous_d_id in previous_d_ids:
                     if previous_d_id not in dataset_ids_for_new_collection_version:
                         dataset_ids_to_tombstone.append(previous_d_id)
+            dataset_version_ids_to_delete_from_s3 = []
             if dataset_ids_to_tombstone:
                 datasets = session.query(DatasetTable).filter(DatasetTable.id.in_(dataset_ids_to_tombstone)).all()
                 for dataset in datasets:
                     dataset.tombstone = True
+                    dataset_all_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset.id).all()
+                    dataset_version_ids_to_delete_from_s3.extend([dv.id for dv in dataset_all_versions])
 
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
             for dataset_version, dataset in (
@@ -542,6 +545,8 @@ class DatabaseProvider(DatabaseProviderInterface):
                 dataset.version_id = dataset_version.id
                 if dataset.published_at is None:
                     dataset.published_at = published_at
+
+            return dataset_version_ids_to_delete_from_s3
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool = False) -> DatasetVersion:
         """

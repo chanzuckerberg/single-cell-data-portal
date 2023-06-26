@@ -116,7 +116,7 @@ class DatabaseProviderInterface:
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> None:
+    ) -> List[str]:
         """
         Finalizes a collection version. This is equivalent to calling:
         1. update_collection_version_mapping

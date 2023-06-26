@@ -224,7 +224,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> None:
+    ) -> List[str]:
 
         published_at = published_at if published_at else datetime.utcnow()
 
@@ -239,6 +239,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_version.canonical_dataset.dataset_version_id = dataset_version.version_id
             dataset_ids_for_new_collection_version.append(dataset_version.dataset_id.id)
         cc = self.collections.get(collection_id.id)
+
+        dataset_ids_to_tombstone = []
         if cc is None:
             self.collections[collection_id.id] = CanonicalCollection(
                 id=collection_id,
@@ -258,6 +260,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 if current_dataset_id not in dataset_ids_for_new_collection_version:
                     # Dataset has been removed and needs to be tombstoned
                     self.datasets[current_dataset_id].tombstoned = True
+                    for dataset_version in self.datasets_versions.values():
+                        if dataset_version.dataset_id == current_dataset_id:
+                            dataset_ids_to_tombstone.append(dataset_version.dataset_id.id)
 
             new_cc = copy.deepcopy(cc)
             new_cc.version_id = version_id
@@ -265,6 +270,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 new_cc.revised_at = published_at
             self.collections[collection_id.id] = new_cc
         self.collections_versions[version_id.id].published_at = published_at
+
+        return dataset_ids_to_tombstone
 
     # OR
     # def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId) -> None:
