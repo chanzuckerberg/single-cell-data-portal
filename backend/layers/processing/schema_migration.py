@@ -148,17 +148,17 @@ class SchemaMigrate:
         :param file_name: a unique name to describe this job
         :param response: the response to store as json.
         """
-        execution_arn = os.environ["EXECUTION_ARN"]
+        execution_arn = os.environ.get("EXECUTION_ARN", "test-execution-arn")
         with open("response.json", "w") as f:
             json.dump(response, f)
         self.business_logic.s3_provider.upload_file(
             "response.json",
-            os.environ["ARTIFACT_BUCKET"],
+            os.environ.get("ARTIFACT_BUCKET", "test-artifact-bucket"),
             f"schema_migration/{execution_arn}/{step_name}/{file_name}.json",
         )
 
     def report(self):
-        bucket = os.environ["ARTIFACT_BUCKET"]
+        bucket = os.environ.get("ARTIFACT_BUCKET", "test-artifact-bucket")
         error_files = list(
             self.business_logic.s3_provider.list_directory(
                 bucket, f"schema_migration/" f"{os.environ['EXECUTION_ARN']}/report"
