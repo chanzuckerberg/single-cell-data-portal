@@ -63,6 +63,7 @@ locals {
   ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
   sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
   lambda_execution_role        = local.secret["service_roles"]["lambda_errorhandler"]
+  schema_migration_sfn_role_arn = local.secret["service_roles"]["schema_migration_sfn_service"]
 
   frontend_url = try(join("", ["https://", module.frontend_dns[0].dns_prefix, ".", local.external_dns]), var.frontend_url)
   backend_url  = try(join("", ["https://", module.backend_dns[0].dns_prefix, ".", local.external_dns]), var.backend_url)
@@ -253,6 +254,21 @@ module dataset_submissions_lambda {
   step_function_arn          = module.upload_sfn.step_function_arn
   subnets                    = local.subnets
   security_groups            = local.security_groups
+}
+
+module schema_migration {
+  source                     = "../schema_migration"
+  image             = "${local.upload_image_repo}:${local.image_tag}"
+  batch_role_arn    = local.batch_role_arn
+  cmd               = ""
+  custom_stack_name = local.custom_stack_name
+  remote_dev_prefix = local.remote_dev_prefix
+  deployment_stage  = local.deployment_stage
+  artifact_bucket   = local.artifact_bucket
+  batch_container_memory_limit = local.batch_container_memory_limit
+  job_queue_arn     = local.job_queue_arn
+  sfn_role_arn               = local.schema_migration_sfn_role_arn
+
 }
 
 resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
