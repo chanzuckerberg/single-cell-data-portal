@@ -172,14 +172,7 @@ export default memo(function Filters({
         : a.name.localeCompare(b.name)
     );
 
-    const newPublications: FilterOption[] = [];
-
-    for (const publication of rawPublications) {
-      if (publication.name != "") {
-        newPublications.push(mapTermToFilterOption(publication));
-      }
-    }
-
+    const newPublications = rawPublications.map(mapTermToFilterOption);
     newPublications.sort((a, b) => a.name.localeCompare(b.name));
 
     const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
