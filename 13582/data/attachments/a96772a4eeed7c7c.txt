@@ -1,0 +1,107 @@
+  pw:api => selectors.setTestIdAttribute started +11ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +49ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +0ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +44ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +3ms
+  pw:api   "commit" event fired +100ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +12ms
+  pw:api <= page.goto succeeded +498ms
+  pw:api   navigated to "about:blank" +395ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +6s
+  pw:api =>  started +662ms
+  pw:api <= page.waitForResponse succeeded +3ms
+  pw:api => locator.click started +1ms
+  pw:api <=  succeeded +12ms
+  pw:api waiting for getByTestId('add-tissue-btn') +7ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +26ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not enabled - waiting... +5ms
+  pw:api   element is visible, enabled and stable +280ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +22ms
+  pw:api   click action done +262ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api   "networkidle" event fired +3ms
+  pw:api <= locator.click succeeded +18ms
+  pw:api => locator.type started +1ms
+  pw:api waiting for getByPlaceholder('Search') +9ms
+  pw:api   locator resolved to <input value="" id="mui-4" type="search" role="combobox…/> +13ms
+  pw:api elementHandle.type("blood") +1ms
+  pw:api <= locator.type succeeded +285ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByText('blood') +15ms
+  pw:api   locator resolved to <span class="primary-text css-g93qdt">blood</span> +49ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +25ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +8ms
+  pw:api   click action done +301ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +13ms
+  pw:api <= locator.click succeeded +19ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +85ms
+  pw:api => expect.not.toBeVisible started +1ms
+  pw:api expect.not.toBeVisible with timeout 10000ms +16ms
+  pw:api waiting for getByText('STEP 1') +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +8ms
+  pw:api   unexpected value "visible" +0ms
+  pw:api waiting for getByText('STEP 1') +1ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +20ms
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +104ms
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +301ms
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +505ms
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +1s
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +1s
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +1s
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +1s
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +1s
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +1s
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +1s
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +1s
+  pw:api   unexpected value "visible" +0ms
+  pw:api   locator resolved to <span class="css-v0y9l1-Header e1cocjb41">STEP 1</span> +1s
+  pw:api   unexpected value "visible" +1ms
+  pw:api <= expect.not.toBeVisible succeeded +19ms
+  pw:api => page.screenshot started +4ms
+  pw:api taking page screenshot +8ms
+  pw:api <= page.screenshot succeeded +170ms
+  pw:api => browserContext.close started +2s
+  pw:api <= browserContext.close succeeded +2s
+  pw:api => video.saveAs started +3ms
+  pw:api <= video.saveAs succeeded +1ms
+  pw:api => browser.close started +1s
+  pw:api <= browser.close succeeded +47ms

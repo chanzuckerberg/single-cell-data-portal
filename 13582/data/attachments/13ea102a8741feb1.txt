@@ -1,0 +1,73 @@
+  pw:api => selectors.setTestIdAttribute started +138ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +40ms
+  pw:api   "commit" event fired +11ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +44ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +2ms
+  pw:api   "commit" event fired +98ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +2ms
+  pw:api <= page.goto succeeded +558ms
+  pw:api => locator.click started +30ms
+  pw:api waiting for getByTestId('add-tissue-btn') +197ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +84ms
+  pw:api attempting click action +19ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not enabled - waiting... +25ms
+  pw:api   navigated to "about:blank" +307ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +6s
+  pw:api   element is visible, enabled and stable +1s
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +5ms
+  pw:api   performing click action +34ms
+  pw:api   click action done +254ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +22ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +67ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +50ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +316ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +85ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('add-gene-btn') +10ms
+  pw:api   locator resolved to <button tabindex="0" type="button" sdssize="medium" id="…>…</button> +14ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +24ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +18ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +4s
+  pw:api <= locator.click succeeded +83ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +45ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +43ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +4s
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +2s
+  pw:api taking page screenshot +876ms
+  pw:api => browserContext.close started +84ms
+  pw:api <= browserContext.close succeeded +1s
