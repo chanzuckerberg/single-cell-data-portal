@@ -23,6 +23,8 @@ logger.configure_logging(level=logging.INFO)
 class SchemaMigrate:
     def __init__(self, business_logic: BusinessLogic):
         self.business_logic = business_logic
+        self.bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
+        self.execution_arn = os.environ.get("EXECUTION_ARN", "test-execution-arn")
 
     def gather_collections(self) -> Dict[str, Dict[str, List[Dict[str, str]]]]:
         """
@@ -148,28 +150,32 @@ class SchemaMigrate:
         :param file_name: a unique name to describe this job
         :param response: the response to store as json.
         """
-        execution_arn = os.environ.get("EXECUTION_ARN", "test-execution-arn")
         with open("response.json", "w") as f:
             json.dump(response, f)
         self.business_logic.s3_provider.upload_file(
             "response.json",
-            os.environ.get("ARTIFACT_BUCKET", "test-artifact-bucket"),
-            f"schema_migration/{execution_arn}/{step_name}/{file_name}.json",
+            self.bucket,
+            f"schema_migration/{self.execution_arn}/{step_name}/{file_name}.json",
         )
 
-    def report(self):
-        bucket = os.environ.get("ARTIFACT_BUCKET", "test-artifact-bucket")
+    def report(self, local_path: str) -> str:
+        report = dict(errors=[])
         error_files = list(
             self.business_logic.s3_provider.list_directory(
-                bucket, f"schema_migration/" f"{os.environ['EXECUTION_ARN']}/report"
+                self.bucket, f"schema_migration/" f"{self.execution_arn}/report"
             )
         )
         for file in error_files:
-            self.business_logic.s3_provider.download_file(bucket, file, file)
-            with open(file, "r") as f:
-                json.load(f)
-            pass  # TODO generate a report from the errors.
-        self.business_logic.s3_provider.delete_files(bucket, error_files)
+            local_file = os.path.join(local_path, file)
+            self.business_logic.s3_provider.download_file(self.bucket, file, local_file)
+            with open(local_file, "r") as f:
+                jn = json.load(f)
+            report["errors"].append(jn)
+        report_path = os.path.join(local_path, "report.json")
+        with open(report_path, "w") as f:
+            json.dump(report, f)
+        self.business_logic.s3_provider.delete_files(self.bucket, error_files)
+        return report_path
 
     def migrate(self, step_name) -> bool:
         """
