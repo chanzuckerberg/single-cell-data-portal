@@ -536,9 +536,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
 
     collections?.map((collection: Collection | TombstonedCollection | null) => {
       if (!collection || collection.tombstone) return;
-      console.log(collection);
       for (const d of collection.datasets.values()) {
-        console.log(d);
         // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
         let url = d["dataset_deployments"][0].url.toString();
         url = url.split("/").at(-2) ?? "";
