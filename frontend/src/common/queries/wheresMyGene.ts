@@ -587,7 +587,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       },
       isLoading: false,
     };
-  }, [data, isLoading, collections, publication_list]);
+  }, [data, isLoading, collections, publications, publication_list]);
 }
 
 export function useExpressionSummary(version: 1 | 2 = 1): {
