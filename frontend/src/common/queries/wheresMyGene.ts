@@ -456,7 +456,9 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
   );
   const { selectedPublicationFilter } = useContext(StateContext);
   const { publications } = selectedPublicationFilter;
-  const { data: collections } = useManyCollections({ ids: publications });
+  const { data: collections } = useManyCollections({
+    ids: publications.filter((id) => id !== "No Publication"),
+  }); // Ignore when "No Publication" is selected!
   const { data: publication_list } = useManyCollections({
     ids: rawPublications.map(({ id }) => id),
   });
@@ -534,7 +536,9 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
 
     collections?.map((collection: Collection | TombstonedCollection | null) => {
       if (!collection || collection.tombstone) return;
+      console.log(collection);
       for (const d of collection.datasets.values()) {
+        console.log(d);
         // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
         let url = d["dataset_deployments"][0].url.toString();
         url = url.split("/").at(-2) ?? "";
@@ -543,7 +547,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       }
     });
 
-    if (collections === undefined) {
+    if (publications.includes(noPublicationStr)) {
       selectedPublicationDatasetIds.push(...noPublicationIds);
     }
 
