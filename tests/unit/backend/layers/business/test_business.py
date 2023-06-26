@@ -1578,7 +1578,9 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
                 self.assertTrue(self.s3_provider.uri_exists(f"s3://fake-bucket/{key}"))
                 expected_delete_keys.update([f"{d_v_id}.{file_type}"])
         actual_delete_keys = set(
-            self.business_logic.delete_datasets_from_bucket(published_collection.collection_id, "fake-bucket")
+            self.business_logic.delete_all_dataset_versions_from_bucket_for_collection(
+                published_collection.collection_id, "fake-bucket"
+            )
         )
         self.assertTrue(self.s3_provider.is_empty())
         self.assertTrue(len(expected_delete_keys) > 0)

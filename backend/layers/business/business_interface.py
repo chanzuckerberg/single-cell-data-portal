@@ -55,7 +55,9 @@ class BusinessLogicInterface:
     ) -> CollectionVersion:
         pass
 
-    def delete_datasets_from_bucket(self, collection_id: CollectionId, bucket: str) -> List[str]:
+    def delete_all_dataset_versions_from_bucket_for_collection(
+        self, collection_id: CollectionId, bucket: str
+    ) -> List[str]:
         pass
 
     def delete_collection(self, collection_id: CollectionId) -> None:
