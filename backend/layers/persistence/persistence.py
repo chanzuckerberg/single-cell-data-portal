@@ -284,12 +284,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             if collection_version is None:
                 return None
             if not get_tombstoned:
-                collection = (
-                    session.query(CollectionTable)
+                collection_exists = (
+                    session.query(CollectionTable.id)
                     .filter_by(id=collection_version.collection_id, tombstone=False)
                     .one_or_none()
                 )
-                if not collection:
+                if not collection_exists:
                     return None
             collection_id = CollectionId(str(collection_version.collection_id))
             canonical_collection = self.get_canonical_collection(collection_id)
@@ -568,10 +568,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             if dataset_version is None:
                 return None
             if not get_tombstoned:
-                dataset = (
-                    session.query(DatasetTable).filter_by(id=dataset_version.dataset_id, tombstone=False).one_or_none()
+                dataset_exists = (
+                    session.query(DatasetTable.id)
+                    .filter_by(id=dataset_version.dataset_id, tombstone=False)
+                    .one_or_none()
                 )
-                if dataset is None:
+                if not dataset_exists:
                     return None
             return self._hydrate_dataset_version(dataset_version)
 
