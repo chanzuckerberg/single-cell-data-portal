@@ -10,6 +10,7 @@ import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
 import { EMPTY_ARRAY, EMPTY_SET } from "src/common/constants/utils";
+import { LoadStateFromURLPayload } from "src/views/WheresMyGene/common/store/reducer";
 
 interface Props {
   isScaled: boolean;
@@ -27,6 +28,9 @@ interface Props {
   availableFilters: Partial<FilterDimensions>;
   tissues?: string[];
   expandedTissues?: Set<string>;
+  setLoadedStateFromUrl: React.Dispatch<
+    React.SetStateAction<LoadStateFromURLPayload | null>
+  >;
 }
 
 export default memo(function Legend({
@@ -41,6 +45,7 @@ export default memo(function Legend({
   availableFilters,
   tissues,
   expandedTissues,
+  setLoadedStateFromUrl,
 }: Props): JSX.Element {
   return (
     <LegendWrapper data-testid="legend-wrapper">
@@ -55,7 +60,7 @@ export default memo(function Legend({
             allChartProps={allChartProps}
             availableFilters={availableFilters}
           />
-          <ShareButton />
+          <ShareButton setLoadedStateFromUrl={setLoadedStateFromUrl} />
         </>
       ) : (
         <>

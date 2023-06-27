@@ -65,6 +65,7 @@ import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
+import { LoadStateFromURLPayload } from "src/views/WheresMyGene/common/store/reducer";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -297,6 +298,9 @@ export default function WheresMyGene(): JSX.Element {
     return Object.keys(tissuesByName);
   }, [tissuesByName]);
 
+  const [loadedStateFromUrl, setLoadedStateFromUrl] =
+    useState<LoadStateFromURLPayload | null>(null);
+
   return (
     <>
       <Head>
@@ -317,6 +321,7 @@ export default function WheresMyGene(): JSX.Element {
           availableFilters={availableFilters}
           setAvailableFilters={setAvailableFilters}
           setIsScaled={setIsScaled}
+          loadedStateFromUrl={loadedStateFromUrl}
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
@@ -377,6 +382,7 @@ export default function WheresMyGene(): JSX.Element {
               availableFilters={availableFilters}
               tissues={sortedTissues}
               expandedTissues={expandedTissues}
+              setLoadedStateFromUrl={setLoadedStateFromUrl}
             />
           </Top>
 

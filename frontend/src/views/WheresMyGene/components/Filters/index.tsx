@@ -13,6 +13,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -22,12 +23,11 @@ import {
   RawDataset,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import { DispatchContext, StateContext } from "../../common/store";
+import { DispatchContext, State, StateContext } from "../../common/store";
 import {
   selectFilters,
   selectPublicationFilter,
 } from "../../common/store/actions";
-import { Filters as IFilters } from "../../common/types";
 import Organism from "./components/Organism";
 import Compare from "./components/Compare";
 import Sort from "./components/Sort";
@@ -40,28 +40,46 @@ import {
 import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
 import { useRouter } from "next/router";
+import { LoadStateFromURLPayload } from "../../common/store/reducer";
 
-const ANALYTICS_MAPPING: {
-  [key in keyof IFilters]: { eventName: EVENTS; label: string };
+export type IFilters = Omit<State["selectedFilters"], "developmentStages">;
+
+export const ANALYTICS_MAPPING: {
+  [key in keyof IFilters]: {
+    eventName: EVENTS;
+    eventNameBefore: EVENTS;
+    eventNameAfter: EVENTS;
+    label: string;
+  };
 } = {
   datasets: {
     eventName: EVENTS.FILTER_SELECT_DATASET,
+    eventNameBefore: EVENTS.FILTER_SELECT_DATASET_BEFORE_HEATMAP,
+    eventNameAfter: EVENTS.FILTER_SELECT_DATASET_AFTER_HEATMAP,
     label: "dataset_name",
   },
   diseases: {
     eventName: EVENTS.FILTER_SELECT_DISEASE,
+    eventNameBefore: EVENTS.FILTER_SELECT_DISEASE_BEFORE_HEATMAP,
+    eventNameAfter: EVENTS.FILTER_SELECT_DISEASE_AFTER_HEATMAP,
     label: "disease",
   },
   ethnicities: {
     eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
+    eventNameBefore: EVENTS.FILTER_SELECT_ETHNICITY_BEFORE_HEATMAP,
+    eventNameAfter: EVENTS.FILTER_SELECT_ETHNICITY_AFTER_HEATMAP,
     label: "ethnicity",
   },
   publications: {
     eventName: EVENTS.FILTER_SELECT_PUBLICATION,
+    eventNameBefore: EVENTS.FILTER_SELECT_PUBLICATION_BEFORE_HEATMAP,
+    eventNameAfter: EVENTS.FILTER_SELECT_PUBLICATION_AFTER_HEATMAP,
     label: "publication",
   },
   sexes: {
     eventName: EVENTS.FILTER_SELECT_SEX,
+    eventNameBefore: EVENTS.FILTER_SELECT_SEX_BEFORE_HEATMAP,
+    eventNameAfter: EVENTS.FILTER_SELECT_SEX_AFTER_HEATMAP,
     label: "gender",
   },
 };
@@ -103,6 +121,7 @@ export interface Props {
   availableFilters: availableFilters;
   setAvailableFilters: Dispatch<SetStateAction<availableFilters>>;
   setIsScaled: Dispatch<SetStateAction<boolean>>;
+  loadedStateFromUrl: LoadStateFromURLPayload | null;
 }
 
 export default memo(function Filters({
@@ -110,6 +129,7 @@ export default memo(function Filters({
   availableFilters,
   setAvailableFilters,
   setIsScaled,
+  loadedStateFromUrl,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
@@ -242,7 +262,10 @@ export default memo(function Filters({
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
   }, [sex_terms, sexes]);
 
-  const handlePublicationFilterChange = useCallback(
+  // Used to check if the filters were applied once from URL state
+  const [filtersAppliedOnce, setFiltersAppliedOnce] = useState(false);
+
+  const handleFilterChange = useCallback(
     function handleFilterChange_(
       key: keyof (IFilters & {
         publications?: DefaultMenuSelectOption[];
@@ -270,10 +293,25 @@ export default memo(function Filters({
         // If there are newly selected filters, send an analytic event for each of them
         if (newlySelected.length) {
           newlySelected.forEach((selected) => {
-            const { eventName, label } = ANALYTICS_MAPPING[key]!;
-            track(eventName, {
-              [label]: selected.name,
-            });
+            const { eventName, eventNameBefore, eventNameAfter, label } =
+              ANALYTICS_MAPPING[key];
+
+            if (!isHeatmapShown) {
+              track(eventName, {
+                [label]: selected.name,
+              });
+            } else if (loadedStateFromUrl && !filtersAppliedOnce) {
+              // If there was a loaded state and filters have not been applied yet, then send 'before' event
+              // Loading state from the URL will trigger this callback which changes state to apply filters
+              track(eventNameBefore, {
+                [label]: selected.name,
+              });
+            } else {
+              // Filters were applied at least once
+              track(eventNameAfter, {
+                [label]: selected.name,
+              });
+            }
           });
         }
 
@@ -294,34 +332,36 @@ export default memo(function Filters({
             )
           );
         }
+
+        setFiltersAppliedOnce(true);
       };
     },
-    [dispatch]
+    [dispatch, filtersAppliedOnce, isHeatmapShown, loadedStateFromUrl]
   );
 
   const handleDatasetsChange = useMemo(
-    () => handlePublicationFilterChange("datasets"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("datasets"),
+    [handleFilterChange]
   );
 
   const handleDiseasesChange = useMemo(
-    () => handlePublicationFilterChange("diseases"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("diseases"),
+    [handleFilterChange]
   );
 
   const handleEthnicitiesChange = useMemo(
-    () => handlePublicationFilterChange("ethnicities"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("ethnicities"),
+    [handleFilterChange]
   );
 
   const handleSexesChange = useMemo(
-    () => handlePublicationFilterChange("sexes"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("sexes"),
+    [handleFilterChange]
   );
 
   const handlePublicationsChange = useMemo(
-    () => handlePublicationFilterChange("publications"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("publications"),
+    [handleFilterChange]
   );
 
   return (

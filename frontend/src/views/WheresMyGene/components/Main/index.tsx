@@ -45,6 +45,7 @@ import RightSideBar from "../../../../components/common/RightSideBar";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
+import { LoadStateFromURLPayload } from "../../common/store/reducer";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -278,6 +279,9 @@ export default function WheresMyGene(): JSX.Element {
     dispatch(addGeneInfoGene(gene));
   };
 
+  const [loadedStateFromUrl, setLoadedStateFromUrl] =
+    useState<LoadStateFromURLPayload | null>(null);
+
   return (
     <>
       <Head>
@@ -298,6 +302,7 @@ export default function WheresMyGene(): JSX.Element {
           availableFilters={availableFilters}
           setAvailableFilters={setAvailableFilters}
           setIsScaled={setIsScaled}
+          loadedStateFromUrl={loadedStateFromUrl}
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
@@ -357,6 +362,7 @@ export default function WheresMyGene(): JSX.Element {
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
               availableFilters={availableFilters}
+              setLoadedStateFromUrl={setLoadedStateFromUrl}
             />
           </Top>
 

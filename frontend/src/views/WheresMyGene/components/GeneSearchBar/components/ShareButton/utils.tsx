@@ -127,8 +127,6 @@ export const loadStateFromQueryParams = (
   const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
 
-  removeParams(paramsToRemove);
-
   // If there are no filters, tissues, or genes selected, don't update the state
   if (
     Object.values(Object.keys(newSelectedFilters)).length === 0 &&
@@ -155,6 +153,8 @@ export const loadStateFromQueryParams = (
       genes: newSelectedGenes,
     })
   );
+
+  removeParams(paramsToRemove);
 
   return {
     compare: newCompare,
