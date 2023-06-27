@@ -38,7 +38,7 @@ const RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID = "right-sidebar-close-button";
 const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 
 // Export constants
-const CSV_START_FROM_ROW_NUM = 9; // This is the number of metadata rows + 1
+const CSV_START_FROM_ROW_NUM = 10; // This is the number of metadata rows + 1
 const PNG_CHECKBOX_ID = "png-checkbox";
 const CSV_CHECKBOX_ID = "csv-checkbox";
 const SVG_CHECKBOX_ID = "svg-checkbox";
