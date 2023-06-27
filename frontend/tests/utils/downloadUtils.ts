@@ -220,6 +220,7 @@ const verifyFilterValues = (
   let datasetFilterValue = noSelectionText;
   let diseaseFilterValue = noSelectionText;
   let ethnicityFilterValue = noSelectionText;
+  let publicationFilterValue = noSelectionText;
   let sexFilterValue = noSelectionText;
 
   switch (filterValue) {
@@ -231,6 +232,9 @@ const verifyFilterValues = (
       break;
     case "self-reported-ethnicity-filter":
       ethnicityFilterValue = filterText || noSelectionText;
+      break;
+    case "publication-filter":
+      publicationFilterValue = filterText || noSelectionText;
       break;
     case "sex-filter":
       sexFilterValue = filterText || noSelectionText;
@@ -253,7 +257,10 @@ const verifyFilterValues = (
     )
   ).toBeTruthy();
   expect(
-    data[6].includes(`# Sex Filter Values: ${sexFilterValue}`)
+    data[6].includes(`# Publication Filter Values: ${publicationFilterValue}`)
+  ).toBeTruthy();
+  expect(
+    data[7].includes(`# Sex Filter Values: ${sexFilterValue}`)
   ).toBeTruthy();
 };
 interface MetadataVerificationOptions {
