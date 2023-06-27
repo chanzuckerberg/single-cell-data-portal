@@ -56,6 +56,10 @@ const ANALYTICS_MAPPING: {
     eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
     label: "ethnicity",
   },
+  publications: {
+    eventName: EVENTS.FILTER_SELECT_PUBLICATION,
+    label: "publication",
+  },
   sexes: {
     eventName: EVENTS.FILTER_SELECT_SEX,
     label: "gender",
@@ -266,19 +270,10 @@ export default memo(function Filters({
         // If there are newly selected filters, send an analytic event for each of them
         if (newlySelected.length) {
           newlySelected.forEach((selected) => {
-            if (key != "publications") {
-              const { eventName, label } = ANALYTICS_MAPPING[key]!;
-              track(eventName, {
-                [label]: selected.name,
-              });
-            } else {
-              // (cchoi): We can delete this once Amanda finishes analytics mapping for publications
-              const { eventName, label } = {
-                eventName: "Publication Selected!",
-                label: "publication",
-              }!;
-              console.log(eventName, selected.name, label);
-            }
+            const { eventName, label } = ANALYTICS_MAPPING[key]!;
+            track(eventName, {
+              [label]: selected.name,
+            });
           });
         }
 
