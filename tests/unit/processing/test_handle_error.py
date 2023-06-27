@@ -80,7 +80,12 @@ def test_parse_event_with_error_cause():
         '{"JobName": "Step1", "JobId": "789", "Container": {"Environment": [{"Name": "AWS_DEFAULT_REGION", '
         '"Value": "us-east-1"}]}}'
     )
-    event = {"execution": "arn", "dataset_id": "123", "collection_id": "456", "error": {"Cause": expected_error_cause}}
+    event = {
+        "execution_id": "arn",
+        "dataset_id": "123",
+        "collection_id": "456",
+        "error": {"Cause": expected_error_cause},
+    }
     (
         dataset_id,
         collection_version_id,

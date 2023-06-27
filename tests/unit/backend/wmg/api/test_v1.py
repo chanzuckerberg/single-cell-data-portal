@@ -544,7 +544,7 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
-    def test__query_request_with_filter_dims__returns_valid_filter_dims__base_case(
+    def test__filter_request_with_filter_dims__returns_valid_filter_dims__base_case(
         self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
         # mock the functions in the ontology_labels module, so we can assert deterministic values in the
@@ -599,7 +599,7 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
-    def test__query_request_with_filter_dims__returns_valid_filter_dims(
+    def test__filter_request_with_filter_dims__returns_valid_filter_dims(
         self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
         # mock the functions in the ontology_labels module, so we can assert deterministic values in the

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getColors, getSpacings } from "@czi-sds/components";
+import { fontBodyS, getColors, getSpaces } from "@czi-sds/components";
 
 export const StyledTable = styled.table`
   width: 100%;
@@ -12,7 +12,6 @@ export const TableWrapper = styled.div`
 `;
 
 export const StyledHead = styled.thead`
-  border-top: 0.5px solid #cccccc;
   height: 24px;
   cursor: default;
 `;
@@ -22,12 +21,17 @@ export const StyledHeadCell = styled.th`
   font-weight: 500;
   ${(props) => {
     const colors = getColors(props);
-    const spacings = getSpacings(props);
+    const spacings = getSpaces(props);
 
     return `
     color: ${colors?.gray[500]};
     padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;`;
   }}
+`;
+
+export const StyledHeadCellContent = styled.div`
+  display: flex;
+  flex-direction: row;
 `;
 
 interface StyledRowProps {
@@ -41,7 +45,7 @@ export const StyledCell = styled.td`
   ${fontBodyS}
   font-weight: 400;
   ${(props) => {
-    const spacings = getSpacings(props);
+    const spacings = getSpaces(props);
     return `padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;
     `;
   }}

@@ -3,7 +3,6 @@ import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
-  Tooltip,
 } from "@czi-sds/components";
 import isEqual from "lodash/isEqual";
 import {
@@ -24,7 +23,10 @@ import {
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { DispatchContext, StateContext } from "../../common/store";
-import { selectFilters } from "../../common/store/actions";
+import {
+  selectFilters,
+  selectPublicationFilter,
+} from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
 import Organism from "./components/Organism";
 import Compare from "./components/Compare";
@@ -37,6 +39,7 @@ import {
 } from "./style";
 import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
+import { useRouter } from "next/router";
 
 const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };
@@ -52,6 +55,10 @@ const ANALYTICS_MAPPING: {
   ethnicities: {
     eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
     label: "ethnicity",
+  },
+  publications: {
+    eventName: EVENTS.FILTER_SELECT_PUBLICATION,
+    label: "publication",
   },
   sexes: {
     eventName: EVENTS.FILTER_SELECT_SEX,
@@ -86,10 +93,15 @@ const mapTermToFilterOption = (term: {
   };
 };
 
+// (cchoi): Created new type for the publication filter to avoid touching anything used in other files
+type availableFilters = Partial<FilterDimensions> & {
+  publicationFilter?: { id: string | string[]; name: string }[];
+};
+
 export interface Props {
   isLoading: boolean;
-  availableFilters: Partial<FilterDimensions>;
-  setAvailableFilters: Dispatch<SetStateAction<Partial<FilterDimensions>>>;
+  availableFilters: availableFilters;
+  setAvailableFilters: Dispatch<SetStateAction<availableFilters>>;
   setIsScaled: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -102,7 +114,12 @@ export default memo(function Filters({
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
 
-  const { selectedFilters, selectedTissues, selectedGenes } = state;
+  const {
+    selectedFilters,
+    selectedPublicationFilter,
+    selectedTissues,
+    selectedGenes,
+  } = state;
 
   const {
     datasets: datasetIds,
@@ -110,6 +127,10 @@ export default memo(function Filters({
     ethnicities,
     sexes,
   } = selectedFilters;
+  const { pathname } = useRouter();
+  const isVersion2 = pathname.includes("v2");
+
+  const { publications } = selectedPublicationFilter;
 
   const {
     data: {
@@ -117,12 +138,15 @@ export default memo(function Filters({
       development_stage_terms: rawDevelopmentStages,
       disease_terms: rawDiseases,
       self_reported_ethnicity_terms: rawEthnicities,
+      publicationFilter: rawPublications,
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions();
+  } = useFilterDimensions(isVersion2 ? 2 : 1);
 
-  const isHeatmapShown = !!selectedTissues.length && !!selectedGenes.length;
+  const isHeatmapShown =
+    (!selectedTissues || (selectedTissues && !!selectedTissues.length)) &&
+    !!selectedGenes.length;
 
   const InputDropdownProps = {
     sdsStyle: "minimal",
@@ -152,6 +176,9 @@ export default memo(function Filters({
         : a.name.localeCompare(b.name)
     );
 
+    const newPublications = rawPublications.map(mapTermToFilterOption);
+    newPublications.sort((a, b) => a.name.localeCompare(b.name));
+
     const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
     newEthnicities.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -165,17 +192,18 @@ export default memo(function Filters({
       development_stage_terms: newDevelopmentStages,
       disease_terms: newDiseases,
       self_reported_ethnicity_terms: newEthnicities,
+      publicationFilter: newPublications,
       sex_terms: newSexes,
     };
 
     if (isEqual(availableFilters, newAvailableFilters)) return;
-
     setAvailableFilters(newAvailableFilters);
   }, [
     rawDatasets,
     rawDevelopmentStages,
     rawDiseases,
     rawEthnicities,
+    rawPublications,
     rawSexes,
     rawIsLoading,
     availableFilters,
@@ -186,6 +214,7 @@ export default memo(function Filters({
     datasets = EMPTY_ARRAY,
     disease_terms = EMPTY_ARRAY,
     self_reported_ethnicity_terms = EMPTY_ARRAY,
+    publicationFilter = EMPTY_ARRAY,
     sex_terms = EMPTY_ARRAY,
   } = availableFilters;
 
@@ -203,13 +232,21 @@ export default memo(function Filters({
     );
   }, [self_reported_ethnicity_terms, ethnicities]);
 
+  const selectedPublications = useMemo(() => {
+    return publicationFilter.filter((publication) =>
+      publications?.includes(publication.id)
+    );
+  }, [publicationFilter, publications]);
+
   const selectedSexes = useMemo(() => {
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
   }, [sex_terms, sexes]);
 
-  const handleFilterChange = useCallback(
+  const handlePublicationFilterChange = useCallback(
     function handleFilterChange_(
-      key: keyof IFilters
+      key: keyof (IFilters & {
+        publications?: DefaultMenuSelectOption[];
+      })
     ): (options: DefaultMenuSelectOption[] | null) => void {
       let currentOptions: DefaultMenuSelectOption[] | null = null;
 
@@ -242,35 +279,49 @@ export default memo(function Filters({
 
         currentOptions = options;
 
-        dispatch(
-          selectFilters(
-            key,
-            options.map((option) => (option as unknown as { id: string }).id)
-          )
-        );
+        if (key == "publications") {
+          dispatch(
+            selectPublicationFilter(
+              key,
+              options.map((option) => (option as unknown as { id: string }).id)
+            )
+          );
+        } else {
+          dispatch(
+            selectFilters(
+              key,
+              options.map((option) => (option as unknown as { id: string }).id)
+            )
+          );
+        }
       };
     },
     [dispatch]
   );
 
   const handleDatasetsChange = useMemo(
-    () => handleFilterChange("datasets"),
-    [handleFilterChange]
+    () => handlePublicationFilterChange("datasets"),
+    [handlePublicationFilterChange]
   );
 
   const handleDiseasesChange = useMemo(
-    () => handleFilterChange("diseases"),
-    [handleFilterChange]
+    () => handlePublicationFilterChange("diseases"),
+    [handlePublicationFilterChange]
   );
 
   const handleEthnicitiesChange = useMemo(
-    () => handleFilterChange("ethnicities"),
-    [handleFilterChange]
+    () => handlePublicationFilterChange("ethnicities"),
+    [handlePublicationFilterChange]
   );
 
   const handleSexesChange = useMemo(
-    () => handleFilterChange("sexes"),
-    [handleFilterChange]
+    () => handlePublicationFilterChange("sexes"),
+    [handlePublicationFilterChange]
+  );
+
+  const handlePublicationsChange = useMemo(
+    () => handlePublicationFilterChange("publications"),
+    [handlePublicationFilterChange]
   );
 
   return (
@@ -320,6 +371,22 @@ export default memo(function Filters({
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
+
+        <StyledComplexFilter
+          multiple
+          data-testid="publication-filter"
+          search
+          label="Publication"
+          options={publicationFilter as unknown as DefaultMenuSelectOption[]}
+          onChange={handlePublicationsChange}
+          value={selectedPublications as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          DropdownMenuProps={DropdownMenuProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+
         <StyledComplexFilter
           multiple
           data-testid="sex-filter"
@@ -338,36 +405,12 @@ export default memo(function Filters({
 
       <Organism isLoading={isLoading} />
 
-      <Tooltip
-        sdsStyle="dark"
-        arrow
-        placement="right"
-        title={"Please select at least one tissue and gene to use this option."}
-        disableHoverListener={isHeatmapShown}
-        disableFocusListener={isHeatmapShown}
-      >
-        <div>
-          <Compare areFiltersDisabled={!isHeatmapShown} />
-        </div>
-      </Tooltip>
+      <Compare areFiltersDisabled={!isHeatmapShown} />
 
       <div>
         <ViewOptionsLabel>View Options</ViewOptionsLabel>
         <ViewOptionsWrapper>
-          <Tooltip
-            sdsStyle="dark"
-            arrow
-            placement="right"
-            title={
-              "Please select at least one tissue and gene to use this option."
-            }
-            disableHoverListener={isHeatmapShown}
-            disableFocusListener={isHeatmapShown}
-          >
-            <div>
-              <Sort areFiltersDisabled={!isHeatmapShown} />
-            </div>
-          </Tooltip>
+          <Sort areFiltersDisabled={!isHeatmapShown} />
           <ColorScale setIsScaled={setIsScaled} />
         </ViewOptionsWrapper>
       </div>

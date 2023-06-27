@@ -175,7 +175,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "InputPath": "$",
         "Resource": "${var.lambda_error_handler}",
         "Parameters": {
-          "execution.$": "$$.Execution.Id",
+          "execution_id.$": "$$.Execution.Id",
           "error.$": "$.error",
           "dataset_id.$": "$.dataset_id",
           "collection_id.$": "$.collection_id"

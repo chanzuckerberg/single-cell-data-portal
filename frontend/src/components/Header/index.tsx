@@ -63,11 +63,6 @@ const Header: FC = () => {
             ref={dropdownRef}
             open={dropdownOpen}
             anchorEl={anchorEl}
-            // (thuang): MUI types require `onResize` and `onResizeCapture` for
-            // some reason. Please recheck if we can remove them in the future
-            // (charles-testco): commenting out as it is causing linting errors
-            // onResize={noop}
-            // onResizeCapture={noop}
           >
             <MenuSelect
               search={false}

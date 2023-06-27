@@ -1,5 +1,7 @@
 import { DefaultMenuSelectOption } from "@czi-sds/components";
 import { CSSProperties } from "react";
+import { ChartFormat } from "../components/HeatMap/components/Chart/components/Chart/hooks/utils";
+import { CellTypeMetadata } from "../components/HeatMap/utils";
 
 export interface Organism {
   id: string;
@@ -96,6 +98,7 @@ export interface Filters {
   developmentStages?: DefaultMenuSelectOption[];
   diseases?: DefaultMenuSelectOption[];
   ethnicities?: DefaultMenuSelectOption[];
+  publications?: DefaultMenuSelectOption[];
   sexes?: DefaultMenuSelectOption[];
 }
 
@@ -105,4 +108,10 @@ export enum SORT_BY {
   USER_ENTERED = "USER_ENTERED",
   COLOR_SCALED = "SCALED",
   COLOR_UNSCALED = "UNSCALED",
+}
+
+export interface ChartProps {
+  chartData: ChartFormat[];
+  geneNames: string[];
+  cellTypeMetadata: CellTypeMetadata[];
 }

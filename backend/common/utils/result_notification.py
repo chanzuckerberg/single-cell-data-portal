@@ -53,10 +53,17 @@ def gen_wmg_pipeline_failure_message(failure_info: str) -> dict:
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"WMG Snapshot Generation Pipeline FAILED:fire: @sc-oncall-eng \n{failure_info}",
+                    "text": "WMG Snapshot Generation Pipeline FAILED:fire:",
                     "emoji": True,
                 },
-            }
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"WMG Snapshot Generation Pipeline failure @sc-oncall-eng \n{failure_info}",
+                },
+            },
         ]
     }
 
@@ -68,12 +75,18 @@ def gen_wmg_pipeline_success_message(snapshot_path: str, dataset_count: int, cel
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"WMG Snapshot Generation Pipeline Succeeded:tada: "
-                    f"\n* WMG snapshot stored in {snapshot_path}"
-                    f"\n* The cube contains {cell_count} cells from {dataset_count} "
-                    f"\n  datasets, with expression scores across {gene_count} genes.",
+                    "text": "WMG Snapshot Generation Pipeline Succeeded:tada: ",
                     "emoji": True,
                 },
-            }
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"\n* WMG snapshot stored in {snapshot_path}"
+                    f"\n* The cube contains {cell_count} cells from {dataset_count} "
+                    f"\n  datasets, with expression scores across {gene_count} genes.",
+                },
+            },
         ]
     }

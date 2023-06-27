@@ -37,7 +37,7 @@ def parse_event(event: dict):
     dataset_id = event.get("dataset_id")
     collection_version_id = event.get("collection_id")
     error_cause = event.get("error", {}).get("Cause", "")
-    execution_arn = event.get("execution")
+    execution_arn = event.get("execution_id")
     try:
         error_cause_dict = json.loads(error_cause)
     except json.decoder.JSONDecodeError:
@@ -159,10 +159,11 @@ def trigger_slack_notification(
 def cleanup_artifacts(dataset_id: str, error_step_name: str) -> None:
     """Clean up artifacts depending on error; default to full clean-up if error step is unknown"""
     with logger.LogSuppressed(Exception, message="Failed to clean up artifacts."):
-        object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id)
+        object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
         if not error_step_name or error_step_name == "download-validate":
             delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], object_key + "/")
             delete_many_from_s3(os.environ["DATASET_BUCKET"], object_key + ".")
+
         if not error_step_name or error_step_name == "cxg":
             cellxgene_bucket = os.getenv(
                 "CELLXGENE_BUCKET", default=f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"

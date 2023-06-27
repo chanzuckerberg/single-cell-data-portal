@@ -43,6 +43,7 @@ import AnimatedNodes from "./components/AnimatedNodes";
 import AnimatedLinks from "./components/AnimatedLinks";
 import {
   LEFT_RIGHT_PADDING_PX,
+  LEFT_RIGHT_PADDING_PX_SKINNY_MODE,
   SIDEBAR_COLUMN_GAP_PX,
 } from "../../CellCard/style";
 
@@ -123,9 +124,14 @@ export default function OntologyDagView({
   // Handle the resizing of the ontology view when the screen is resized
   useEffect(() => {
     const skinnyAdjustment = skinnyMode ? 0 : SIDEBAR_COLUMN_GAP_PX + 240;
+
+    const leftRightPadding = skinnyMode
+      ? LEFT_RIGHT_PADDING_PX_SKINNY_MODE
+      : LEFT_RIGHT_PADDING_PX;
+
     const width = Math.min(
       defaultWidth,
-      window.innerWidth - LEFT_RIGHT_PADDING_PX * 2 - skinnyAdjustment
+      window.innerWidth - leftRightPadding * 2 - skinnyAdjustment
     );
     setResizeWidth(width);
     if (!isFullScreen) setWidth(width);
@@ -136,7 +142,7 @@ export default function OntologyDagView({
       // Account for the padding on the left and right of the CellCard component
       const width = Math.min(
         defaultWidth,
-        window.innerWidth - LEFT_RIGHT_PADDING_PX * 2 - skinnyAdjustment
+        window.innerWidth - leftRightPadding * 2 - skinnyAdjustment
       );
       // Always set the resize width, but only set the width if not in full screen mode
       setResizeWidth(width);

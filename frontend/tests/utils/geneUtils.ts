@@ -71,10 +71,11 @@ export async function verifyAddedGene(page: Page, geneName: string) {
     geneName
   );
 
+  await page.getByTestId(`gene-name-${geneName}`).hover();
+
   // info icon
   await expect(page.getByTestId(`gene-info-icon-${geneName}`)).toBeVisible();
 
   // delete button
-  await page.getByTestId(`gene-name-${geneName}`).hover();
   await expect(page.getByTestId(`gene-delete-icon-${geneName}`)).toBeVisible();
 }

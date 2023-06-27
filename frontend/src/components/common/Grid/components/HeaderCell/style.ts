@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
-import { CommonThemeProps, getSpaces, getColors } from "@czi-sds/components";
+import { CommonThemeProps, getColors, getSpaces } from "@czi-sds/components";
 import { css } from "@emotion/react";
 
 const grey400 = (props: CommonThemeProps) => getColors(props)?.gray[400];
@@ -33,8 +33,6 @@ export const SortIcon = styled.span`
 
   .MuiSvgIcon-root {
     color: ${grey400};
-    height: 10px;
-    width: 10px;
   }
 `;
 
@@ -54,18 +52,22 @@ const sortableHeaderCss = css`
 
 const sortedHeaderCss = (props: Props) => css`
   ${Header} {
-    color: ${primary400(props)};
+    color: #000000;
+
+    ${SortIcon} .MuiSvgIcon-root {
+      color: ${primary400(props)};
+    }
 
     &:hover {
-      color: ${primary500(props)};
+      ${SortIcon} .MuiSvgIcon-root {
+        color: ${primary500(props)};
+      }
     }
 
     &:active {
-      color: ${primary600(props)};
-    }
-
-    ${SortIcon} .MuiSvgIcon-root {
-      color: inherit;
+      ${SortIcon} .MuiSvgIcon-root {
+        color: ${primary600(props)};
+      }
     }
   }
 `;

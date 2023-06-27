@@ -2,17 +2,14 @@ import { expect, Page, test, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import {
-  goToPage,
-  isDevStagingProd,
-  selectNthOption,
-  tryUntil,
-} from "tests/utils/helpers";
+import { goToPage, selectNthOption, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
+import { conditionallyRunTests, searchAndAddGene } from "tests/utils/wmgUtils";
+import { getCurrentDate } from "tests/utils/downloadUtils";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -41,7 +38,7 @@ const RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID = "right-sidebar-close-button";
 const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 
 // Export constants
-const CSV_START_FROM_ROW_NUM = 9; // This is the number of metadata rows + 1
+const CSV_START_FROM_ROW_NUM = 10; // This is the number of metadata rows + 1
 const PNG_CHECKBOX_ID = "png-checkbox";
 const CSV_CHECKBOX_ID = "csv-checkbox";
 const SVG_CHECKBOX_ID = "svg-checkbox";
@@ -60,10 +57,10 @@ const FILTERS_PANEL = "filters-panel";
 // Error messages
 const ERROR_NO_TESTID_OR_LOCATOR = "Either testId or locator must be defined";
 
-const { describe, skip } = test;
+const { describe } = test;
 
 describe("Where's My Gene", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  conditionallyRunTests();
 
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
@@ -152,16 +149,19 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDiseaseSelectorButton(),
+      locator: getDatasetSelectorButton(),
     });
-    const numberOfDiseasesBefore = await countLocator(page.getByRole("option"));
+    const numberOfDatasetsBefore = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDatasetSelectorButton(),
+      locator: getDiseaseSelectorButton(),
     });
-    const datasetOptions = await page.getByRole("option").elementHandles();
+    const datasetOptions = await page
+      .getByRole("option")
+      .getByText("acute kidney failure")
+      .elementHandles();
     await datasetOptions[0].click();
     await page.keyboard.press("Escape");
 
@@ -171,12 +171,12 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDiseaseSelectorButton(),
+      locator: getDatasetSelectorButton(),
     });
-    const numberOfDiseasesAfter = await countLocator(page.getByRole("option"));
+    const numberOfDatasetsAfter = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
-    expect(numberOfDiseasesBefore).toBeGreaterThan(numberOfDiseasesAfter);
+    expect(numberOfDatasetsBefore).toBeGreaterThan(numberOfDatasetsAfter);
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
 
     function getDiseaseSelector() {
@@ -501,16 +501,20 @@ describe("Where's My Gene", () => {
   });
 
   describe("Gene info", () => {
+    const TEST_GENE = "DMP1";
+
     test("Display gene info panel in sidebar", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
       await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
       await selectFirstNOptions(1, page);
 
-      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-      await selectFirstNOptions(3, page);
+      await searchAndAddGene(page, TEST_GENE);
 
       await waitForHeatmapToRender(page);
+
+      // hover over gene label
+      await page.getByTestId(`gene-name-${TEST_GENE}`).hover();
 
       await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
 
@@ -535,8 +539,12 @@ describe("Where's My Gene", () => {
         name: "lung",
       });
 
-      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-      await selectFirstNOptions(3, page);
+      await searchAndAddGene(page, TEST_GENE);
+
+      await waitForHeatmapToRender(page);
+
+      // hover over gene label
+      await page.getByTestId(`gene-name-${TEST_GENE}`).hover();
 
       await waitForHeatmapToRender(page);
 
@@ -556,6 +564,9 @@ describe("Where's My Gene", () => {
       await getButtonAndClick(page, RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID);
 
       await waitForElementToBeRemoved(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
+
+      // hover over gene label
+      await page.getByTestId(`gene-name-${TEST_GENE}`).hover();
 
       await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
 
@@ -723,7 +734,7 @@ describe("Where's My Gene", () => {
 
       const files = ["blood.csv", "blood.png", "blood.svg"];
 
-      expect(zipEntries.length).toBe(3);
+      expect(zipEntries.length).toBe(files.length);
 
       for (const entry of zipEntries) {
         expect(files.includes(entry.name)).toBe(true);
@@ -779,15 +790,14 @@ describe("Where's My Gene", () => {
       const zipEntries = zip.getEntries();
 
       const files = [
-        "blood.csv",
+        `CELLxGENE_gene_expression_${getCurrentDate()}.csv`,
         "blood.png",
         "blood.svg",
-        "lung.csv",
         "lung.png",
         "lung.svg",
       ];
 
-      expect(zipEntries.length).toBe(6);
+      expect(zipEntries.length).toBe(files.length);
 
       for (const entry of zipEntries) {
         expect(files.includes(entry.name)).toBe(true);
