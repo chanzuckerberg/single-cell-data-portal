@@ -3,6 +3,7 @@ import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
+  ComplexFilterProps,
 } from "@czi-sds/components";
 import isEqual from "lodash/isEqual";
 import {
@@ -67,10 +68,15 @@ const filterOptions = createFilterOptions({
     `${option.label} ${option.collection_label}`,
 });
 
+function isOptionEqualToValue(option: FilterOption, value: FilterOption) {
+  return option.id === value.id;
+}
+
 const DropdownMenuProps = {
   filterOptions,
   getOptionSelected,
-};
+  isOptionEqualToValue,
+} as ComplexFilterProps<true>["DropdownMenuProps"];
 
 interface FilterOption {
   name: string;
