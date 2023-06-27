@@ -225,7 +225,7 @@ export default memo(function HeatMap({
                 <div
                   key={`y-axis-${hyphenize(tissue)}`}
                   style={{
-                    // If the element height is not found, then set the heatmap height as 0. Else render the height normally
+                    // If the height is 0, then set the heatmap height as 0. Else render the height normally
                     height: `${height && height + X_AXIS_CHART_HEIGHT_PX}px`,
                   }}
                 />
