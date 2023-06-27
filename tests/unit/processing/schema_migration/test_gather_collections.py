@@ -1,6 +1,3 @@
-# ruff: noqa
-
-
 class TestGatherCollections:
     def test_with_revision(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections

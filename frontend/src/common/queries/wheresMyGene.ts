@@ -454,17 +454,18 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
     VIEW_MODE.DEFAULT,
     "success"
   );
-  const { selectedPublicationFilter, selectedFilters } =
-    useContext(StateContext);
+  const { selectedPublicationFilter } = useContext(StateContext);
   const { publications } = selectedPublicationFilter;
-  const { datasets: selectedDatasets } = selectedFilters;
-  const { data: collections } = useManyCollections({ ids: publications });
+  const { data: collections } = useManyCollections({
+    ids: publications.filter((id) => id !== "No Publication"),
+  }); // Ignore when "No Publication" is selected!
   const { data: publication_list } = useManyCollections({
     ids: rawPublications.map(({ id }) => id),
   });
 
   const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
+  const noPublicationStr = "No Publication";
 
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
@@ -480,9 +481,11 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       tissue_terms,
     } = filter_dims;
 
+    let noPublicationIds: string[] = [];
+
     // Reconstructing rows into publication_list format, with collection id, name, and STABLE dataset ids.
     // (cchoi): This is a fix suggested by Emanuele to grab the stable dataset IDs without reconfiguring the cube or the API.
-    const allPublications: {
+    const prePublications: {
       id: string;
       name: string;
       dataset_ids: string[];
@@ -499,12 +502,31 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         return [
           {
             id: collection.id,
-            name: collection.summaryCitation || "",
+            name: collection.summaryCitation || noPublicationStr,
             dataset_ids: ids,
           },
         ];
       }
     );
+
+    // Take all "No Publication"s and aggregate their dataset_ids:
+    for (const publication of prePublications) {
+      if (publication.name === noPublicationStr) {
+        noPublicationIds = noPublicationIds.concat(publication.dataset_ids);
+      }
+    }
+
+    // Remove all "No Publication"s
+    const allPublications = prePublications.filter(
+      (publication) => publication.name !== noPublicationStr
+    );
+
+    // Add a default "No Publication" with all of those dataset IDs aggregated
+    allPublications.push({
+      id: noPublicationStr,
+      name: noPublicationStr,
+      dataset_ids: noPublicationIds,
+    });
 
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
@@ -522,6 +544,10 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         selectedPublicationDatasetIds.push(url);
       }
     });
+
+    if (publications.includes(noPublicationStr)) {
+      selectedPublicationDatasetIds.push(...noPublicationIds);
+    }
 
     let intersect = sortedDatasets;
 
@@ -559,7 +585,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       },
       isLoading: false,
     };
-  }, [data, isLoading, selectedDatasets, collections, publication_list]);
+  }, [data, isLoading, collections, publications, publication_list]);
 }
 
 export function useExpressionSummary(version: 1 | 2 = 1): {

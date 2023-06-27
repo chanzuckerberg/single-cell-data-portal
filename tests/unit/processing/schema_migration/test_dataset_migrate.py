@@ -1,4 +1,3 @@
-# ruff: noqa
 import os
 from unittest import mock
 
@@ -21,4 +20,4 @@ class TestDatasetMigrate:
             )
             assert response["collection_id"] == private.collection_id.id
             assert response["dataset_version_id"] == dataset_version_id
-            assert response["url"] == f"s3://upload_bucket/{dataset_version_id}/raw.h5ad"
+            assert response["url"] == f"s3://upload_bucket/{dataset_version_id}/migrated.h5ad"
