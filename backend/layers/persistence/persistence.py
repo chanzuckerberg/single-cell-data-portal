@@ -249,7 +249,11 @@ class DatabaseProvider(DatabaseProviderInterface):
             if get_tombstoned:
                 canonical_dataset_query = session.query(DatasetTable).filter(DatasetTable.id.in_(canonical_ids))
             else:
-                canonical_dataset_query = session.query(DatasetTable).filter(DatasetTable.tombstone.is_(False))
+                canonical_dataset_query = (
+                    session.query(DatasetTable)
+                    .filter(DatasetTable.id.in_(canonical_ids))
+                    .filter(DatasetTable.tombstone.is_(False))
+                )
             canonical_datasets = canonical_dataset_query.all()
 
             canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
@@ -809,7 +813,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             if get_tombstoned:
                 canonical_dataset = session.query(DatasetTable).filter_by(id=dataset_id.id)
             else:
-                canonical_dataset = session.query(DatasetTable).filter_by(tombstone=False)
+                canonical_dataset = session.query(DatasetTable).filter_by(id=dataset_id.id).filter_by(tombstone=False)
             canonical_dataset = canonical_dataset.one_or_none()
 
             if canonical_dataset is None:
