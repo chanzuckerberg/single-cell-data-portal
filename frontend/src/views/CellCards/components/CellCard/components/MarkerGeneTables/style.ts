@@ -47,16 +47,8 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
     left: 0;
     width: 100%;
     height: 2px;
-    background-color: ${gray200};
+    background-color: ${(props) =>
+      `${props.isActive ? getColors(props)?.primary[400] : gray200}`};
     transition: background-color 0.3s ease;
   }
-
-  ${(props) =>
-    props.isActive &&
-    css`
-      &::after {
-        background-color: ${getColors(props)
-          ?.primary[400]}; /* Color for the active tab */
-      }
-    `}
 `;
