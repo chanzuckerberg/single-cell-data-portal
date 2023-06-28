@@ -1,5 +1,4 @@
 import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 const DIVIDER_WIDTH = 2;
