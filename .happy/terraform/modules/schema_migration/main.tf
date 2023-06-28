@@ -60,7 +60,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "Type": "Task",
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
-        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
         "JobName": "gather_collections",
         "JobQueue": "${var.job_queue_arn}",
         "Timeout": {
@@ -107,7 +107,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Task",
             "Resource": "arn:aws:states:::batch:submitJob.sync",
             "Parameters": {
-              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
               "JobName": "collection_migration",
               "JobQueue": "${var.job_queue_arn}",
               "Timeout": {
@@ -162,7 +162,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::batch:submitJob.sync",
                   "Parameters": {
-                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
                     "JobName": "dataset_migration",
                     "JobQueue": "${var.job_queue_arn}",
                     "Timeout": {
@@ -208,7 +208,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
                       "url": "$.url",
                       "dataset_id": "$.dataset_version_id",
-                      "collection_id": "$.collection_id",
+                      "collection_id": "$.collection_id"
                     }
                   },
                   "End": true
@@ -223,7 +223,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Task",
             "Resource": "arn:aws:states:::batch:submitJob",
             "Parameters": {
-              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
               "JobName": "collection_publish",
               "JobQueue": "${var.job_queue_arn}",
               "Timeout": {
@@ -276,7 +276,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "Type": "Task",
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
-        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
         "JobName": "report",
         "JobQueue": "${var.job_queue_arn}",
         "Timeout": {

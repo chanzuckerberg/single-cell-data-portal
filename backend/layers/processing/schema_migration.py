@@ -157,7 +157,7 @@ class SchemaMigrate:
             dataset_id = os.environ["dataset_id"]
             dataset_version_id = os.envion["dataset_version_id"]
             self.dataset_migrate(collection_id, dataset_id, dataset_version_id)
-        if self.step_name == "publish_and_cleanup":
+        if step_name == "publish_and_cleanup":
             collection_id = os.environ["collection_id"]
             can_publish = os.environ["can_publish"].lower() == "true"
             self.publish_and_cleanup(collection_id, can_publish)
