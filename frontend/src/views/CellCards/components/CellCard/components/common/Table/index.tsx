@@ -28,6 +28,27 @@ function Table<T extends object>({
   columnIdToName,
   testId,
 }: TableProps<T>) {
+  const markerScoreTooltip = (
+    <HelpTooltip
+      dark
+      buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
+      text={
+        <div>
+          Percentage of cells expressing a gene in the cell type. These numbers
+          are calculated after cells with{" "}
+          <a
+            href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            low coverage and low expression values
+          </a>{" "}
+          have been filtered out.
+        </div>
+      }
+    />
+  );
+
   const expressionScoreTooltip = (
     <HelpTooltip
       dark
@@ -85,7 +106,9 @@ function Table<T extends object>({
                     <div>{columnName}</div>
                     {columnName === "Expression Score"
                       ? expressionScoreTooltip
-                      : columnName === "% of Cells" && percentOfCellsTooltip}
+                      : columnName === "% of Cells"
+                      ? percentOfCellsTooltip
+                      : columnName === "Marker Score" && markerScoreTooltip}
                   </StyledHeadCellContent>
                 </StyledHeadCell>
               );

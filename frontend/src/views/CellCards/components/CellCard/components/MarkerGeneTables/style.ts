@@ -1,5 +1,10 @@
 import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
+
+const DIVIDER_WIDTH = 2;
+
+const gray200 = (props: CommonThemeProps) => getColors(props)?.gray[200];
 
 export const TableTitleOuterWrapper = styled.div`
   display: flex;
@@ -16,7 +21,8 @@ export const PublicationLinkWrapper = styled.div`
 export const TableSelectorRow = styled.div`
   display: flex;
   flex-direction: row;
-  column-gap: 16px;
+  gap: 16px;
+  border-bottom: ${DIVIDER_WIDTH}px solid ${gray200};
 `;
 
 interface TableSelectorButtonProps extends CommonThemeProps {
@@ -24,17 +30,33 @@ interface TableSelectorButtonProps extends CommonThemeProps {
 }
 export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
   ${fontBodyS}
+  position: relative;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
   margin: 0;
   font-weight: 600;
+  color: ${(props) =>
+    `${props.isActive ? "#000000" : getColors(props)?.gray[500]}`};
 
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${props.isActive ? "#000000" : colors?.gray[500]};
-    `;
-  }}
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: ${gray200};
+    transition: background-color 0.3s ease;
+  }
+
+  ${(props) =>
+    props.isActive &&
+    css`
+      &::after {
+        background-color: ${getColors(props)
+          ?.primary[400]}; /* Color for the active tab */
+      }
+    `}
 `;
