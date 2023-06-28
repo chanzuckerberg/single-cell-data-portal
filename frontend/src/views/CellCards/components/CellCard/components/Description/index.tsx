@@ -55,7 +55,7 @@ export default function Description({
         <Source>
           <div>
             <em>
-              We are currently in the process of validating all ChatGTP
+              We are currently in the process of validating all ChatGPT
               descriptions via our Biocurator team. Once a description is
               validated, we will link references below each description with a
               validation icon.
