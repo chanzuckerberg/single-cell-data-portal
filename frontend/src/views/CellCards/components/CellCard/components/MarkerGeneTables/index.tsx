@@ -421,7 +421,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             setActiveTable(0);
           }}
         >
-          Canonical
+          Canonical (HuBMAP)
         </TableSelectorButton>
         <TableSelectorButton
           data-testid={CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR}
@@ -431,7 +431,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             setActiveTable(1);
           }}
         >
-          Computational
+          Computational (CZI)
         </TableSelectorButton>
       </TableSelectorRow>
       <StyledDivider />
