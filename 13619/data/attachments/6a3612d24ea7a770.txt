@@ -1,0 +1,87 @@
+  pw:api => selectors.setTestIdAttribute started +8ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +42ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +33ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +8ms
+  pw:api   "commit" event fired +13s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +0ms
+  pw:api   "networkidle" event fired +6s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +18ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +8ms
+  pw:api <= page.goto succeeded +653ms
+  pw:api   navigated to "about:blank" +284ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease" +12s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease" +107ms
+  pw:api =>  started +828ms
+  pw:api <= page.waitForResponse succeeded +3ms
+  pw:api => locator.waitFor started +0ms
+  pw:api <=  succeeded +11ms
+  pw:api waiting for getByTestId('cell-type-name').first() to be visible +443ms
+  pw:api   "networkidle" event fired +2s
+  pw:api   locator resolved to visible <div id="cell-type-name" data-testid="cell-type-name">club cell</div> +6s
+  pw:api <= locator.waitFor succeeded +191ms
+  pw:api => locator.allInnerTexts started +2ms
+  pw:api <= locator.allInnerTexts succeeded +89ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(12).getByTestId('cell-type-full-name') +16ms
+  pw:api   locator resolved to <div data-testid="cell-type-full-name" class="css-neg…>    common variable immunodeficiency</div> +14ms
+  pw:api <= locator.textContent succeeded +18ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('cell-type-name').nth(12) +38ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">    common varia...munodeficiency</div> +15ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +15ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +20ms
+  pw:api   hover action done +6ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.hover succeeded +20ms
+  pw:api => expect.toBeVisible started +9ms
+  pw:api expect.toBeVisible with timeout 10000ms +18ms
+  pw:api waiting for locator('[data-testid="cell-type-name-tooltip"]').getByText('    common variable immunodeficiency') +2ms
+  pw:api waiting for locator('[data-testid="cell-type-name-tooltip"]').getByText('    common variable immunodeficiency') +9ms
+  pw:api   locator resolved to <div data-testid="cell-type-name-tooltip" class="css-…>    common variable immunodeficiency</div> +129ms
+  pw:api <= expect.toBeVisible succeeded +50ms
+  pw:api => locator.textContent started +0ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(20).getByTestId('cell-type-full-name') +50ms
+  pw:api   locator resolved to <div data-testid="cell-type-full-name" class="css-neg…>    common variable immunodeficiency</div> +22ms
+  pw:api <= locator.textContent succeeded +19ms
+  pw:api => locator.hover started +0ms
+  pw:api waiting for getByTestId('cell-type-name').nth(20) +19ms
+  pw:api   locator resolved to <div id="cell-type-name" data-testid="cell-type-name">    common varia...munodeficiency</div> +12ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +31ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +0ms
+  pw:api   performing hover action +27ms
+  pw:api   hover action done +5ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.hover succeeded +12ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +16ms
+  pw:api waiting for locator('[data-testid="cell-type-name-tooltip"]').getByText('    common variable immunodeficiency') +1ms
+  pw:api   locator resolved to <div data-testid="cell-type-name-tooltip" class="css-…>    common variable immunodeficiency</div> +7ms
+  pw:api <= expect.toBeVisible succeeded +14ms
+  pw:api taking page screenshot +1s
+  pw:api => browserContext.close started +94ms
+  pw:api <= browserContext.close succeeded +2s
