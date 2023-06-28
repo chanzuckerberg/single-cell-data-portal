@@ -41,12 +41,14 @@ export const CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR =
 interface TableRowEnrichedGenes {
   symbol: ReactNode;
   name: string;
+  effect_size: string;
   me: string;
   pc: string;
 }
 const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> = [
   "symbol",
   "name",
+  "effect_size",
   "me",
   "pc",
 ];
@@ -57,6 +59,7 @@ const tableColumnNamesEnrichedGenes: Record<
 > = {
   symbol: "Symbol",
   name: "Name",
+  effect_size: "Marker Score",
   me: "Expression Score",
   pc: "% of Cells",
 };
@@ -143,6 +146,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             </>
           ),
           name,
+          effect_size: "",
           me: me.toFixed(2),
           pc: (pc * 100).toFixed(1),
         });
