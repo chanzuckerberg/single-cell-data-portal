@@ -21,6 +21,7 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetVersion,
     DatasetVersionId,
+    PublishedDatasetVersion,
 )
 
 
@@ -36,7 +37,9 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
-    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
+    def get_collection_version(
+        self, version_id: CollectionVersionId, get_tombstoned: bool
+    ) -> CollectionVersionWithDatasets:
         pass
 
     def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
@@ -52,7 +55,12 @@ class BusinessLogicInterface:
     ) -> CollectionVersion:
         pass
 
-    def delete_datasets_from_bucket(self, collection_id: CollectionId, bucket: str) -> List[str]:
+    def delete_dataset_versions_from_bucket(self, dataset_version_ids: List[str], bucket: str) -> List[str]:
+        pass
+
+    def delete_all_dataset_versions_from_bucket_for_collection(
+        self, collection_id: CollectionId, bucket: str
+    ) -> List[str]:
         pass
 
     def delete_collection(self, collection_id: CollectionId) -> None:
@@ -121,5 +129,11 @@ class BusinessLogicInterface:
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> DatasetVersion:
         pass
 
-    def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> DatasetVersion:
+    def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[PublishedDatasetVersion]:
+        pass
+
+    def get_prior_published_dataset_version(self, dataset_version_id: DatasetVersionId) -> PublishedDatasetVersion:
+        pass
+
+    def get_dataset_version_from_canonical(self, dataset_id: DatasetId, get_tombstoned: bool) -> DatasetVersion:
         pass

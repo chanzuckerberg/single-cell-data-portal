@@ -5,6 +5,7 @@ from flask import Response, jsonify, make_response
 from backend.common.utils.exceptions import MaxFileSizeExceededException
 from backend.common.utils.http_exceptions import (
     ForbiddenHTTPException,
+    GoneHTTPException,
     InvalidParametersHTTPException,
     MethodNotAllowedException,
     NotFoundHTTPException,
@@ -21,11 +22,13 @@ from backend.layers.business.exceptions import (
     CollectionNotFoundException,
     CollectionUpdateException,
     DatasetInWrongStatusException,
+    DatasetIsTombstonedException,
     DatasetNotFoundException,
     InvalidURIException,
 )
 from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
+    DatasetId,
     DatasetVersion,
 )
 from backend.portal.api.providers import get_business_logic
@@ -63,6 +66,10 @@ def _get_collection_and_dataset(
         if dataset.version_id.id == dataset_id:
             raise ForbiddenHTTPException from None
     if dataset_version is None:
+        try:
+            get_business_logic().get_dataset_version_from_canonical(DatasetId(dataset_id), get_tombstoned=True)
+        except DatasetIsTombstonedException:
+            raise GoneHTTPException() from None
         raise NotFoundHTTPException() from None
 
     return collection_version, dataset_version
