@@ -1,0 +1,68 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +39ms
+  pw:api   "commit" event fired +11ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +46ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +8ms
+  pw:api   "commit" event fired +80ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +2ms
+  pw:api <= page.goto succeeded +652ms
+  pw:api => locator.click started +2ms
+  pw:api   navigated to "about:blank" +362ms
+  pw:api waiting for getByTestId('add-tissue-btn') +3ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +827ms
+  pw:api attempting click action +42ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not enabled - waiting... +22ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +4s
+  pw:api   "networkidle" event fired +174ms
+  pw:api   element is visible, enabled and stable +947ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +17ms
+  pw:api   performing click action +20ms
+  pw:api   click action done +243ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +38ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +123ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +36ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +321ms
+  pw:api => keyboard.press started +9ms
+  pw:api <= keyboard.press succeeded +99ms
+  pw:api => expect.not.toHaveCount started +3ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +15ms
+  pw:api waiting for getByTestId('cell-type-name') +0ms
+  pw:api   locator resolved to 0 elements +12ms
+  pw:api   unexpected value "0" +0ms
+  pw:api waiting for getByTestId('cell-type-name') +0ms
+  pw:api   locator resolved to 0 elements +7ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +104ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +273ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 128 elements +506ms
+  pw:api <= expect.not.toHaveCount succeeded +34ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +249ms
+  pw:api taking page screenshot +925ms
+  pw:api => browserContext.close started +104ms
+  pw:api <= browserContext.close succeeded +3s
