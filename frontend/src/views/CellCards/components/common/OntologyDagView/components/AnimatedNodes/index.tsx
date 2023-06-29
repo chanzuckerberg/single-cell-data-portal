@@ -6,6 +6,8 @@ import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { TreeNodeWithState } from "../../common/types";
 import { useCellTypesById } from "src/common/queries/cellCards";
 import { NODE_SPACINGS, TREE_ANIMATION_DURATION } from "../../common/constants";
+import { EVENTS } from "src/common/analytics/events";
+import { track } from "src/common/analytics";
 
 interface AnimatedNodesProps {
   tree: HierarchyPointNode<TreeNodeWithState>;
@@ -118,11 +120,22 @@ export default function AnimatedNodes({
                     if (duration === 0) {
                       setDuration(TREE_ANIMATION_DURATION);
                     }
+
+                    // If node id starts with dummy-child then it's multiple cell types
                     if (node.data.id.startsWith("dummy-child")) {
+                      track(EVENTS.CG_TREE_NODE_CLICKED, {
+                        cell_type: "multiple cell types",
+                      });
+
                       if (node.parent) {
                         node.parent.data.showAllChildren = true;
                       }
+                    } else {
+                      track(EVENTS.CG_TREE_NODE_CLICKED, {
+                        cell_type: node.data.name,
+                      });
                     }
+
                     node.data.isExpanded = !node.data.isExpanded;
                     if (!node.data.isExpanded) {
                       node.data.showAllChildren = false;

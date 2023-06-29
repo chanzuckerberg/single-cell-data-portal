@@ -4,6 +4,8 @@ import { useDescription, useClDescription } from "src/common/queries/cellCards";
 import { Tooltip } from "@czi-sds/components";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const CELL_CARD_CL_DESCRIPTION = "cell-card-cl-description";
 export const CELL_CARD_GPT_DESCRIPTION = "cell-card-gpt-description";
@@ -93,6 +95,9 @@ export default function Description({
                 href={"https://platform.openai.com/docs/models/gpt-3-5"}
                 target="_blank"
                 data-testid={CELL_CARD_GPT_TOOLTIP_LINK}
+                onMouseOver={() => {
+                  track(EVENTS.CG_CHAT_GPT_HOVER);
+                }}
               >
                 ChatGPT
               </StyledLink>
