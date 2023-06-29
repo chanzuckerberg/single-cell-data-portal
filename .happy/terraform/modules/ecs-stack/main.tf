@@ -259,14 +259,16 @@ module dataset_submissions_lambda {
 module schema_migration {
   source                     = "../schema_migration"
   image             = "${local.upload_image_repo}:${local.image_tag}"
-  batch_role_arn    = local.batch_role_arn
+  # TODO: needs to be defined in single-cell-infra
+  batch_role_arn    = "arn:aws:iam::699936264352:role/schema_migration-rdev-job-role" # local.batch_role_arn
   cmd               = ""
   custom_stack_name = local.custom_stack_name
   remote_dev_prefix = local.remote_dev_prefix
   deployment_stage  = local.deployment_stage
   artifact_bucket   = local.artifact_bucket
   batch_container_memory_limit = local.batch_container_memory_limit
-  job_queue_arn     = local.job_queue_arn
+  # TODO: needs to be defined in single-cell-infra
+  job_queue_arn     = "arn:aws:batch:us-west-2:699936264352:job-queue/schema_migration-rdev" # local.job_queue_arn
   sfn_role_arn               = local.schema_migration_sfn_role_arn
 
 }
