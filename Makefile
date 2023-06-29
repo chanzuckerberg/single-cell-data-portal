@@ -168,11 +168,6 @@ local-unit-test-processing: # Run processing-unittest target in `processing` Doc
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
 	bash -c "cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/processing/";
 
-.PHONY: local-unit-test-schema-migrate
-local-unit-test-schema-migration: # Run processing-unittest target in `schema_migration` Docker container
-	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T schema_migration \
-	bash -c "cd /single-cell-data-portal && pip install -r ./backend/schema_migration/requirements-dev.txt && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/schema_migration/";
-
 .PHONY: local-unit-test-wmg-processing
 local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container
 	echo "Running all wmg processing unit tests"; \
@@ -225,10 +220,6 @@ local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id
 local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id and cause
 	docker-compose $(COMPOSE_OPTS) up -d upload_success
 	curl -v -XPOST "http://127.0.0.1:9001/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)"}'
-
-.PHONY: local-rebuild-schema-migration
-local-rebuild-schema-migration: .env.ecr local-ecr-login
-	docker-compose $(COMPOSE_OPTS) build schema_migration
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
