@@ -112,6 +112,12 @@ variable backend_memory {
   default     = 2048
 }
 
+variable "backend_cpus" {
+  type        = number
+  description = "CPU shares (1cpu=1024) per task"
+  default     = 2
+}
+
 variable frontend_memory {
   type        = number
   description = "Memory reservation for the backend task"
