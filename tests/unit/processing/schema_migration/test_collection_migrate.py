@@ -15,7 +15,7 @@ class TestCollectionMigrate:
             {"dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
             for dataset in published.datasets
         ]
-        response = schema_migrate.collection_migrate(published.collection_id.id, datasets, True)
+        response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, True)
         for i in range(len(response)):
             assert response[i]["collection_id"] == collection_version_id.id
             response[i].pop("collection_id")
@@ -28,7 +28,7 @@ class TestCollectionMigrate:
             {"dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
             for dataset in private.datasets
         ]
-        response = schema_migrate.collection_migrate(private.collection_id.id, datasets, False)
+        response = schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
         for i in range(len(response)):
             assert response[i]["collection_id"] == private.collection_id.id
             response[i].pop("collection_id")
