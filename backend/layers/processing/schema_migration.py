@@ -23,6 +23,8 @@ logger.configure_logging(level=logging.INFO)
 class SchemaMigrate:
     def __init__(self, business_logic: BusinessLogic):
         self.business_logic = business_logic
+        self.bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
+        self.execution_arn = os.environ.get("EXECUTION_ARN", "test-execution-arn")
 
     def gather_collections(self) -> Dict[str, Dict[str, List[Dict[str, str]]]]:
         """
@@ -133,13 +135,48 @@ class SchemaMigrate:
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors[dataset_version_id] = dataset.status.validation_message
 
-        if can_publish and not errors:
-            self.business_logic.publish_collection_version(collection_version_id)
-
         artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+        if errors:
+            self._store_in_s3("report", collection_id, errors)
+        elif can_publish:
+            self.business_logic.publish_collection_version(collection_version_id)
         self.business_logic.s3_provider.delete_files(artifact_bucket, object_keys_to_delete)
-
         return errors
+
+    def _store_in_s3(self, step_name, file_name, response: Dict[str, str]):
+        """
+
+        :param step_name: The step that will use this file
+        :param file_name: a unique name to describe this job
+        :param response: the response to store as json.
+        """
+        with open("response.json", "w") as f:
+            json.dump(response, f)
+        self.business_logic.s3_provider.upload_file(
+            "response.json",
+            self.bucket,
+            f"schema_migration/{self.execution_arn}/{step_name}/{file_name}.json",
+        )
+
+    def report(self, local_path: str) -> str:
+        report = dict(errors=[])
+        error_files = list(
+            self.business_logic.s3_provider.list_directory(
+                self.bucket, f"schema_migration/" f"{self.execution_arn}/report"
+            )
+        )
+        for file in error_files:
+            local_file = os.path.join(local_path, file)
+            self.business_logic.s3_provider.download_file(self.bucket, file, local_file)
+            with open(local_file, "r") as f:
+                jn = json.load(f)
+            report["errors"].append(jn)
+        report_path = os.path.join(local_path, "report.json")
+        with open(report_path, "w") as f:
+            json.dump(report, f)
+        # TODO output the files to slack.
+        self.business_logic.s3_provider.delete_files(self.bucket, error_files)
+        return report_path
 
     def migrate(self, step_name) -> bool:
         """
@@ -155,10 +192,12 @@ class SchemaMigrate:
         if step_name == "dataset_migrate":
             collection_id = os.environ["collection_id"]
             dataset_id = os.environ["dataset_id"]
-            dataset_version_id = os.envion["dataset_version_id"]
+            dataset_version_id = os.environ["dataset_version_id"]
             self.dataset_migrate(collection_id, dataset_id, dataset_version_id)
-        if self.step_name == "publish_and_cleanup":
+        if step_name == "publish_and_cleanup":
             collection_id = os.environ["collection_id"]
             can_publish = os.environ["can_publish"].lower() == "true"
             self.publish_and_cleanup(collection_id, can_publish)
+        if step_name == "report":
+            self.report()
         return True
