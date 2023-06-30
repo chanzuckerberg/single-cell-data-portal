@@ -114,7 +114,7 @@ variable backend_memory {
 
 variable "backend_cpus" {
   type        = number
-  description = "CPU shares (1cpu=1024) per task"
+  description = "CPUs for the backend task"
   default     = 2
 }
 
