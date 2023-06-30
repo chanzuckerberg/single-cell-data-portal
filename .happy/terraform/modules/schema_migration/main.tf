@@ -207,12 +207,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::states:startExecution.sync:2",
                   "Parameters": {
-                    "StateMachineArn": "arn:aws:states:REGION:ACCOUNT_ID:stateMachine:STATE_MACHINE_NAME",
+                    "StateMachineArn": "arn:aws:states:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:stateMachine:dp-${var.deployment_stage}-${var.custom_stack_name}-sfn",
                     "Input": {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
-                      "url": "$.url",
-                      "dataset_id": "$.dataset_version_id",
-                      "collection_id": "$.collection_id"
+                      "url.$": "$.url",
+                      "dataset_id.$": "$.dataset_version_id",
+                      "collection_id.$": "$.collection_id"
                     }
                   },
                   "End": true
@@ -225,7 +225,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
           },
           "CollectionPublish": {
             "Type": "Task",
-            "Resource": "arn:aws:states:::batch:submitJob",
+            "Resource": "arn:aws:states:::batch:submitJob.sync",
             "Parameters": {
               "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
               "JobName": "collection_publish",
@@ -255,15 +255,15 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   },
                   {
                     "Name": "COLLECTION_ID",
-                    "Value": "$.collection_id"
+                    "Value.$": "$[0].Input.collection_id"
                   },
                   {
                     "Name": "CAN_PUBLISH",
-                    "Value": "$.can_publish"
+                    "Value": "true"
                   },
                   {
-                      "Name": "TASK_TOKEN",
-                      "Value.$": "$$.Task.Token"
+                    "Name": "TASK_TOKEN",
+                    "Value.$": "$$.Task.Token"
                   }
                 ]
               }
@@ -305,6 +305,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "MIGRATE",
               "Value": "True"
+            },
+            {
+              "Name": "TASK_TOKEN",
+              "Value.$": "$$.Task.Token"
             }
           ]
         }
