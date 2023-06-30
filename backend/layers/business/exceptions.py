@@ -101,3 +101,11 @@ class CollectionDeleteException(BusinessException):
     """
     Raised when an attempt to delete a Collection fails
     """
+
+
+class CollectionIsTombstonedException(BusinessException):
+    pass
+
+
+class DatasetIsTombstonedException(BusinessException):
+    pass
