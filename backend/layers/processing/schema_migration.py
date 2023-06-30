@@ -174,6 +174,7 @@ class SchemaMigrate:
         report_path = os.path.join(local_path, "report.json")
         with open(report_path, "w") as f:
             json.dump(report, f)
+        # TODO output the files to slack.
         self.business_logic.s3_provider.delete_files(self.bucket, error_files)
         return report_path
 
