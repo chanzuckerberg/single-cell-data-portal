@@ -1,0 +1,157 @@
+  pw:api => selectors.setTestIdAttribute started +11ms
+  pw:api => browser.newContext started +0ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +41ms
+  pw:api   "commit" event fired +12ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +0ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +33ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +6ms
+  pw:api   "commit" event fired +304ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +4ms
+  pw:api <= page.goto succeeded +751ms
+  pw:api   navigated to "about:blank" +260ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +5s
+  pw:api =>  started +681ms
+  pw:api <= page.waitForResponse succeeded +2ms
+  pw:api => locator.click started +1ms
+  pw:api <=  succeeded +12ms
+  pw:api waiting for getByTestId('add-tissue-btn') +8ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +14ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api     element is not enabled - waiting... +4ms
+  pw:api   element is visible, enabled and stable +254ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +5ms
+  pw:api   performing click action +29ms
+  pw:api   click action done +251ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api   "networkidle" event fired +43ms
+  pw:api <= locator.click succeeded +34ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="0"]') +39ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-4-option-0" …>…</li> +8ms
+  pw:api attempting click action +17ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +97ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +11ms
+  pw:api   click action done +217ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +24ms
+  pw:api <= locator.click succeeded +23ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="1"]') +18ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-4-option-1" …>…</li> +26ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +25ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +20ms
+  pw:api   click action done +117ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +12ms
+  pw:api <= locator.click succeeded +11ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +48ms
+  pw:api => locator.waitFor started +0ms
+  pw:api waiting for locator('[id="heatmap-container-id"]') to be visible +15ms
+  pw:api   locator resolved to visible <div id="heatmap-container-id" class="css-2lc7o0-Cont…>…</div> +8ms
+  pw:api <= locator.waitFor succeeded +6ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('add-gene-btn') +3ms
+  pw:api   locator resolved to <button tabindex="0" type="button" sdssize="medium" id="…>…</button> +7ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +29ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +13ms
+  pw:api   click action done +999ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +4ms
+  pw:api <= locator.click succeeded +18ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for locator('[data-option-index="0"]') +5ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-5-option-0" …>…</li> +32ms
+  pw:api attempting click action +9ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +30ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +3ms
+  pw:api   performing click action +6ms
+  pw:api   click action done +3s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +21ms
+  pw:api <= locator.click succeeded +2s
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-option-index="1"]') +50ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-5-option-1" …>…</li> +3s
+  pw:api attempting click action +653ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +37ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +89ms
+  pw:api   click action done +5s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2s
+  pw:api <= locator.click succeeded +553ms
+  pw:api => locator.click started +7ms
+  pw:api waiting for locator('[data-option-index="2"]') +31ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-5-option-2" …>…</li> +7ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +29ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +10ms
+  pw:api   click action done +6s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +35ms
+  pw:api <= locator.click succeeded +1s
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +2s
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for locator('[data-testid=\'gene-label-TSPAN6\']') to be visible +15ms
+  pw:api   locator resolved to visible <div id="gene-label-TSPAN6" data-testid="gene-label-T…>…</div> +8ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for locator('text=Loading') to be hidden +7ms
+  pw:api <= locator.waitFor succeeded +29ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('side-bar-toggle-button') +15ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="side-bar…>…</button> +6ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +33ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +15ms
+  pw:api   click action done +35ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +10ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByTestId('add-organism') +14ms
+  pw:api <= locator.isVisible succeeded +15ms
+  pw:api taking page screenshot +1s
+  pw:api => browserContext.close started +195ms
+  pw:api <= browserContext.close succeeded +938ms

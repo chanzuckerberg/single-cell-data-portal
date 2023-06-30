@@ -1,0 +1,36 @@
+  pw:api => selectors.setTestIdAttribute started +3ms
+  pw:api => browser.newContext started +0ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +38ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +6ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +36ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +7ms
+  pw:api waiting for response "**/primary_filter_dimensions" +2ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +3ms
+  pw:api   "commit" event fired +85ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +21ms
+  pw:api <= page.goto succeeded +454ms
+  pw:api   navigated to "about:blank" +251ms
+  pw:api =>  started +9s
+  pw:api <= page.waitForResponse succeeded +3ms
+  pw:api => response.json started +6ms
+  pw:api <=  succeeded +20ms
+  pw:api <= response.json succeeded +3s
+  pw:api taking page screenshot +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +275ms
+  pw:api => browserContext.close started +180ms
+  pw:api <= browserContext.close succeeded +2s
