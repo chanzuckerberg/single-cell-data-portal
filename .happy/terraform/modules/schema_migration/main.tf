@@ -259,7 +259,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   },
                   {
                     "Name": "CAN_PUBLISH",
-                    "Value": "true"
+                    "Value.$": "$.can_open_revision"
                   },
                   {
                     "Name": "TASK_TOKEN",
