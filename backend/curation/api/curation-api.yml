@@ -205,6 +205,8 @@ paths:
                   - $ref: "#/components/schemas/collection"
         "403":
           $ref: "#/components/responses/403"
+        "410":
+          $ref: "#/components/responses/410"
     patch:
       summary: Update a Collection's metadata.
       description: |
@@ -411,6 +413,8 @@ paths:
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
     put:
       summary: Upload a Dataset by providing a link
       description: |
@@ -536,6 +540,8 @@ paths:
                     type: string
         "401":
           $ref: "#/components/responses/401"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/collections/{collection_id}/versions:
     get:
@@ -633,6 +639,8 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/dataset_versions/{dataset_version_id}:
     get:
@@ -656,6 +664,8 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
 
 components:
   schemas:

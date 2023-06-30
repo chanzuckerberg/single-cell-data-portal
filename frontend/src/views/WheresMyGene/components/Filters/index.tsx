@@ -3,6 +3,7 @@ import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
+  ComplexFilterProps,
 } from "@czi-sds/components";
 import isEqual from "lodash/isEqual";
 import {
@@ -56,6 +57,10 @@ const ANALYTICS_MAPPING: {
     eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
     label: "ethnicity",
   },
+  publications: {
+    eventName: EVENTS.FILTER_SELECT_PUBLICATION,
+    label: "publication",
+  },
   sexes: {
     eventName: EVENTS.FILTER_SELECT_SEX,
     label: "gender",
@@ -67,10 +72,15 @@ const filterOptions = createFilterOptions({
     `${option.label} ${option.collection_label}`,
 });
 
+function isOptionEqualToValue(option: FilterOption, value: FilterOption) {
+  return option.id === value.id;
+}
+
 const DropdownMenuProps = {
   filterOptions,
   getOptionSelected,
-};
+  isOptionEqualToValue,
+} as ComplexFilterProps<true>["DropdownMenuProps"];
 
 interface FilterOption {
   name: string;
@@ -172,14 +182,7 @@ export default memo(function Filters({
         : a.name.localeCompare(b.name)
     );
 
-    const newPublications: FilterOption[] = [];
-
-    for (const publication of rawPublications) {
-      if (publication.name != "") {
-        newPublications.push(mapTermToFilterOption(publication));
-      }
-    }
-
+    const newPublications = rawPublications.map(mapTermToFilterOption);
     newPublications.sort((a, b) => a.name.localeCompare(b.name));
 
     const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
@@ -273,19 +276,10 @@ export default memo(function Filters({
         // If there are newly selected filters, send an analytic event for each of them
         if (newlySelected.length) {
           newlySelected.forEach((selected) => {
-            if (key != "publications") {
-              const { eventName, label } = ANALYTICS_MAPPING[key]!;
-              track(eventName, {
-                [label]: selected.name,
-              });
-            } else {
-              // (cchoi): We can delete this once Amanda finishes analytics mapping for publications
-              const { eventName, label } = {
-                eventName: "Publication Selected!",
-                label: "publication",
-              }!;
-              console.log(eventName, selected.name, label);
-            }
+            const { eventName, label } = ANALYTICS_MAPPING[key]!;
+            track(eventName, {
+              [label]: selected.name,
+            });
           });
         }
 
