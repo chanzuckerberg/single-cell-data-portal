@@ -54,13 +54,13 @@ resource aws_sfn_state_machine sfn_schema_migration {
   definition = <<EOF
 {
   "Comment": "Schema Migration State Machine",
-  "StartAt": "gather collections",
+  "StartAt": "GatherCollections",
   "States": {
-    "gather collections": {
+    "GatherCollections": {
       "Type": "Task",
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
-        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
         "JobName": "gather_collections",
         "JobQueue": "${var.job_queue_arn}",
         "Timeout": {
@@ -93,21 +93,21 @@ resource aws_sfn_state_machine sfn_schema_migration {
           ]
         }
       },
-      "Next": "span collections"
+      "Next": "SpanCollections"
     },
-    "span collections": {
+    "SpanCollections": {
       "Type": "Map",
       "ItemProcessor": {
         "ProcessorConfig": {
           "Mode": "INLINE"
         },
-        "StartAt": "collection migration",
+        "StartAt": "CollectionMigration",
         "States": {
-          "collection migration": {
+          "CollectionMigration": {
             "Type": "Task",
             "Resource": "arn:aws:states:::batch:submitJob.sync",
             "Parameters": {
-              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
               "JobName": "collection_migration",
               "JobQueue": "${var.job_queue_arn}",
               "Timeout": {
@@ -138,31 +138,35 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Value.$": "$.collection_id"
                   },
                   {
+                    "Name": "COLLECTION_VERSION_ID",
+                    "Value.$": "$.collection_version_id"
+                  },
+                  {
                     "Name": "CAN_OPEN_REVISION",
                     "Value.$": "$.can_open_revision"
                   },
                   {
-                      "Name": "TASK_TOKEN",
-                      "Value.$": "$$.Task.Token"
+                    "Name": "TASK_TOKEN",
+                    "Value.$": "$$.Task.Token"
                   }
                 ]
               }
             },
-            "Next": "span datasets"
+            "Next": "SpanDatasets"
           },
-          "span datasets": {
+          "SpanDatasets": {
             "Type": "Map",
             "ItemProcessor": {
               "ProcessorConfig": {
                 "Mode": "INLINE"
               },
-              "StartAt": "dataset_migration",
+              "StartAt": "DatasetMigration",
               "States": {
-                "dataset_migration": {
+                "DatasetMigration": {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::batch:submitJob.sync",
                   "Parameters": {
-                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
                     "JobName": "dataset_migration",
                     "JobQueue": "${var.job_queue_arn}",
                     "Timeout": {
@@ -179,10 +183,6 @@ resource aws_sfn_state_machine sfn_schema_migration {
                           "Value": "True"
                         },
                         {
-                          "Name": "COLLECTION_VERSION_ID",
-                          "Value.$": "$.collection_version_id"
-                        },
-                        {
                           "Name": "DATASET_ID",
                           "Value.$": "$.dataset_id"
                         },
@@ -191,39 +191,43 @@ resource aws_sfn_state_machine sfn_schema_migration {
                           "Value.$": "$.dataset_version_id"
                         },
                         {
+                          "Name": "COLLECTION_ID",
+                          "Value.$": "$.collection_id"
+                        },
+                        {
                             "Name": "TASK_TOKEN",
                             "Value.$": "$$.Task.Token"
                         }
                       ]
                     }
                   },
-                  "Next": "Step Functions StartExecution"
+                  "Next": "StepFunctionsStartExecution"
                 },
-                "Step Functions StartExecution": {
+                "StepFunctionsStartExecution": {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::states:startExecution.sync:2",
                   "Parameters": {
-                    "StateMachineArn": "arn:aws:states:REGION:ACCOUNT_ID:stateMachine:STATE_MACHINE_NAME",
+                    "StateMachineArn": "arn:aws:states:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:stateMachine:dp-${var.deployment_stage}-${var.custom_stack_name}-sfn",
                     "Input": {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
-                      "url": "$.url",
-                      "dataset_id": "$.dataset_version_id",
-                      "collection_id": "$.collection_id",
+                      "url.$": "$.url",
+                      "dataset_id.$": "$.dataset_version_id",
+                      "collection_id.$": "$.collection_id"
                     }
                   },
                   "End": true
                 }
               }
             },
-            "ItemsPath": "$.datasets",
-            "Next": "collection publish",
+            "ItemsPath": "$",
+            "Next": "CollectionPublish",
             "MaxConcurrency": 40
           },
-          "collection publish": {
+          "CollectionPublish": {
             "Type": "Task",
-            "Resource": "arn:aws:states:::batch:submitJob",
+            "Resource": "arn:aws:states:::batch:submitJob.sync",
             "Parameters": {
-              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
               "JobName": "collection_publish",
               "JobQueue": "${var.job_queue_arn}",
               "Timeout": {
@@ -251,15 +255,15 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   },
                   {
                     "Name": "COLLECTION_ID",
-                    "Value": "$.collection_id"
+                    "Value.$": "$[0].Input.collection_id"
                   },
                   {
                     "Name": "CAN_PUBLISH",
-                    "Value": "$.can_publish"
+                    "Value": "true"
                   },
                   {
-                      "Name": "TASK_TOKEN",
-                      "Value.$": "$$.Task.Token"
+                    "Name": "TASK_TOKEN",
+                    "Value.$": "$$.Task.Token"
                   }
                 ]
               }
@@ -268,7 +272,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
           }
         }
       },
-      "ItemsPath": "$.collections",
+      "ItemsPath": "$",
       "MaxConcurrency": 40,
       "Next": "report"
     },
@@ -276,7 +280,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "Type": "Task",
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
-        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}:$LATEST",
+        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
         "JobName": "report",
         "JobQueue": "${var.job_queue_arn}",
         "Timeout": {
@@ -301,6 +305,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "MIGRATE",
               "Value": "True"
+            },
+            {
+              "Name": "TASK_TOKEN",
+              "Value.$": "$$.Task.Token"
             }
           ]
         }
