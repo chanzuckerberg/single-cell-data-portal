@@ -185,6 +185,7 @@ class DatasetMetadata:
 class CanonicalDataset:
     dataset_id: DatasetId
     dataset_version_id: Optional[DatasetVersionId]
+    tombstoned: bool
     published_at: Optional[datetime] = None
     revised_at: Optional[datetime] = None  # The last time this Dataset Version was Published
 
