@@ -1,0 +1,139 @@
+  pw:api => selectors.setTestIdAttribute started +5ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +43ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +53ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +14ms
+  pw:api   "commit" event fired +88ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +2ms
+  pw:api <= page.goto succeeded +371ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('add-tissue-btn') +340ms
+  pw:api   navigated to "about:blank" +97ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +35ms
+  pw:api attempting click action +20ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not enabled - waiting... +19ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +12s
+  pw:api   element is visible, enabled and stable +983ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +12ms
+  pw:api   performing click action +24ms
+  pw:api   "networkidle" event fired +257ms
+  pw:api   click action done +13ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +14ms
+  pw:api <= locator.click succeeded +34ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +83ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +70ms
+  pw:api => keyboard.press started +10ms
+  pw:api <= keyboard.press succeeded +73ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('filters-panel').getByTestId('dataset-filter').getByRole('button') +5ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Dataset" class…>…</button> +10ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +19ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +8ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +67ms
+  pw:api => locator.elementHandles started +7ms
+  pw:api <= locator.elementHandles succeeded +356ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +367ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +92ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('filters-panel').getByTestId('disease-filter').getByRole('button') +20ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Disease" class…>…</button> +6ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +35ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +6ms
+  pw:api   click action done +166ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +13ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +94ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +70ms
+  pw:api => elementHandle.click started +1ms
+  pw:api attempting click action +10ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +18ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +10ms
+  pw:api   click action done +134ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +5ms
+  pw:api <= elementHandle.click succeeded +25ms
+  pw:api => keyboard.press started +1ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +150ms
+  pw:api <= keyboard.press succeeded +56ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('add-tissue-btn') +18ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" sdssize="me…>…</button> +17ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not enabled - waiting... +8ms
+  pw:api   element is visible, enabled and stable +245ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +27ms
+  pw:api   click action done +114ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +25ms
+  pw:api => locator.elementHandles started +0ms
+  pw:api <= locator.elementHandles succeeded +67ms
+  pw:api => locator.elementHandles started +0ms
+  pw:api <= locator.elementHandles succeeded +41ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +69ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('filters-panel').getByTestId('dataset-filter').getByRole('button') +6ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Dataset" class…>…</button> +6ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +9ms
+  pw:api   click action done +99ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +26ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +44ms
+  pw:api => locator.elementHandles started +0ms
+  pw:api <= locator.elementHandles succeeded +19ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +74ms
+  pw:api taking page screenshot +1s
+  pw:api => browserContext.close started +90ms
+  pw:api <= browserContext.close succeeded +946ms
