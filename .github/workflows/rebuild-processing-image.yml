@@ -36,9 +36,9 @@ jobs:
         with:
           ref: main
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.6.0
         with:
-          happy_version: "0.85.1"
+          happy_version: "0.91.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -63,9 +63,9 @@ jobs:
         with:
           ref: staging
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.6.0
         with:
-          happy_version: "0.85.1"
+          happy_version: "0.91.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -90,9 +90,9 @@ jobs:
         with:
           ref: prod
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.6.0
         with:
-          happy_version: "0.85.1"
+          happy_version: "0.91.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |

@@ -37,14 +37,14 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.6.0
         with:
-          happy_version: "0.59.0"
+          happy_version: "0.91.1"
       - name: Push images
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-          happy push --docker-compose-env-file envfile --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
+          happy push "" --docker-compose-env-file envfile --aws-profile "" --tag sha-${GITHUB_SHA:0:8} --slice frontendAndBackend
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -69,13 +69,13 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.6.0
         with:
-          happy_version: "0.59.0"
+          happy_version: "0.91.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} upload_failures upload_success dataset_submissions processing wmg_processing
+          happy push "" --aws-profile "" --tag sha-${GITHUB_SHA:0:8} --slice allBatch
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -103,9 +103,9 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.6.0
         with:
-          happy_version: "0.59.0"
+          happy_version: "0.91.1"
       - name: Docker re-tag
         shell: bash
         run: |
