@@ -81,7 +81,9 @@ const tableColumnNamesCanonicalGenes: Record<
   references: "References",
 };
 
-type TableRow = TableRowEnrichedGenes | TableRowCanonicalGenes;
+type TableRow = (TableRowEnrichedGenes | TableRowCanonicalGenes) & {
+  symbolId: string;
+};
 
 interface Props {
   cellTypeId: string;
@@ -126,11 +128,12 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
 
     tableRows = useMemo(() => {
       if (!genes) return [];
-      const rows = [];
+      const rows: TableRow[] = [];
       for (const markerGene of genes) {
         const { pc, me, name, symbol, organism } = markerGene;
         if (organism !== selectedOrganism) continue;
         rows.push({
+          symbolId: symbol,
           symbol: (
             <>
               {symbol}{" "}
@@ -174,12 +177,9 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
 
     tableRows = useMemo(() => {
       if (!genes) return [];
-      const rows: {
-        name: string;
-        symbol: JSX.Element;
-        references: JSX.Element;
+      const rows: (TableRow & {
         numReferences: number;
-      }[] = [];
+      })[] = [];
 
       const publicationTitlesToIndex = new Map();
       let index = 0;
@@ -266,6 +266,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
 
         rows.push({
           name,
+          symbolId: symbol,
           symbol: (
             <>
               {symbol}{" "}
@@ -311,7 +312,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
     setPage(1);
   }, [cellTypeId]);
 
-  const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
+  const genesForShareUrl = tableRows.map((row) => row.symbolId).join("%2C");
 
   const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
     setSelectedOrganism(event.target.value as string);
