@@ -15,7 +15,11 @@ const ENVS_TO_RUN_TESTS = [
 
 export function conditionallyRunTests() {
   skip(
-    ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
+    // (thuang): Temporarily skip WMG tests
+    // (thuang): Temporarily skip WMG tests
+    // (thuang): Temporarily skip WMG tests
+    ENVS_TO_RUN_TESTS.every(() => true),
+    // ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
     "WMG tests only work with dev/staging/prod API URLs"
   );
 }

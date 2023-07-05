@@ -83,7 +83,9 @@ const tableColumnNamesCanonicalGenes: Record<
   references: "References",
 };
 
-type TableRow = TableRowEnrichedGenes | TableRowCanonicalGenes;
+type TableRow = (TableRowEnrichedGenes | TableRowCanonicalGenes) & {
+  symbolId: string;
+};
 
 interface Props {
   cellTypeId: string;
@@ -128,11 +130,12 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
 
     tableRows = useMemo(() => {
       if (!genes) return [];
-      const rows = [];
+      const rows: TableRow[] = [];
       for (const markerGene of genes) {
         const { pc, me, name, symbol, organism } = markerGene;
         if (organism !== selectedOrganism) continue;
         rows.push({
+          symbolId: symbol,
           symbol: (
             <>
               {symbol}{" "}
@@ -176,7 +179,9 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
 
     tableRows = useMemo(() => {
       if (!genes) return [];
-      const rows = [];
+      const rows: (TableRow & {
+        numReferences: number;
+      })[] = [];
 
       const publicationTitlesToIndex = new Map();
       let index = 0;
@@ -217,6 +222,9 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
               publicationTitlesToIndex.get(a[1]) -
               publicationTitlesToIndex.get(b[1])
             );
+          })
+          .filter((publicationTitle, index) => {
+            return publicationTitle && publications[index];
           });
 
         publications = sortedPublicationsAndTitles.map((pub) => pub[0]);
@@ -260,6 +268,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
 
         rows.push({
           name,
+          symbolId: symbol,
           symbol: (
             <>
               {symbol}{" "}
@@ -273,8 +282,17 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             </>
           ),
           references: publicationLinks,
+          numReferences: sortedPublicationsAndTitles.length,
         });
       }
+
+      // Sort rows by number of references
+      if (rows.length) {
+        rows.sort((a, b) => {
+          return b.numReferences - a.numReferences;
+        });
+      }
+
       return rows;
     }, [genes, selectedOrgan, setGeneInfoGene]);
   }
@@ -291,7 +309,12 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
     };
   }, []);
 
-  const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
+  // Handle cell type change, set marker genes table page back to 1
+  useEffect(() => {
+    setPage(1);
+  }, [cellTypeId]);
+
+  const genesForShareUrl = tableRows.map((row) => row.symbolId).join("%2C");
 
   const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
     setSelectedOrganism(event.target.value as string);
