@@ -41,3 +41,7 @@ export const ListSubheader = styled.li`
     `;
   }}
 `;
+
+export const InfoText = styled.div`
+  margin-bottom: 16px;
+`;
