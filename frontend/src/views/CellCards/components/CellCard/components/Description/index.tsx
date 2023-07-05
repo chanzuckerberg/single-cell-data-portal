@@ -37,7 +37,6 @@ export default function Description({
       const selectedText = window.getSelection()?.toString().trim();
 
       if (selectedText !== "") {
-        console.log("Highlighted Text:", selectedText);
         track(EVENTS.CG_COPY_CELL_TYPE_DESCRIPTION);
       }
     }
