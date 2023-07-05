@@ -539,10 +539,10 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
         # Confirm fields are present on Collection version body but ignore equality comparison for timestamps
         self.assertIn("created_at", received_body)
         self.assertIn("published_at", received_body)
-        [self.assertIn("published_at", d) for d in received_body["datasets"]]
+        [self.assertIn("published_at", d) for d in received_body["dataset_versions"]]
         received_body.pop("created_at")
         received_body.pop("published_at")
-        [d.pop("published_at") for d in received_body["datasets"]]
+        [d.pop("published_at") for d in received_body["dataset_versions"]]
 
     def test__get_collection_versions__200(self):
         # Create published collection with 2 published revisions and 1 unpublished revision
@@ -996,7 +996,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             "contact_email": "john.doe@email.com",
             "contact_name": "john doe",
             "curator_name": "Jane Smith",
-            "datasets": [
+            "dataset_versions": [
                 {
                     "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
                     "assets": [
@@ -1053,8 +1053,8 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
         received_body.pop("created_at")
         self.assertIn("published_at", received_body)
         received_body.pop("published_at")
-        [self.assertIn("published_at", d) for d in received_body["datasets"]]
-        [d.pop("published_at") for d in received_body["datasets"]]
+        [self.assertIn("published_at", d) for d in received_body["dataset_versions"]]
+        [d.pop("published_at") for d in received_body["dataset_versions"]]
 
         self.assertEqual(received_body, expected_body)
 

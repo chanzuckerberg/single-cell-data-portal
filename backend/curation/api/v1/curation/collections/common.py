@@ -148,7 +148,6 @@ def reshape_for_curation_api(
         contact_name=collection_version.metadata.contact_name,
         created_at=collection_version.created_at,
         curator_name=collection_version.curator_name,
-        datasets=response_datasets,
         description=collection_version.metadata.description,
         doi=doi,
         links=links,
@@ -157,7 +156,10 @@ def reshape_for_curation_api(
         publisher_metadata=collection_version.publisher_metadata,
         visibility=get_visibility(collection_version),
     )
-    if not reshape_for_version_endpoint:
+    if reshape_for_version_endpoint:
+        response["dataset_versions"] = response_datasets
+    else:
+        response["datasets"] = response_datasets
         response.update(
             revised_at=collection_version.canonical_collection.revised_at,
             revising_in=revising_in,
