@@ -32,10 +32,24 @@ export default function Description({
     else setDescriptionCl("");
   }, [rawDescriptionGpt, rawDescriptionCl]);
 
+  const copyHandler = () => {
+    if (window) {
+      const selectedText = window.getSelection()?.toString().trim();
+
+      if (selectedText !== "") {
+        console.log("Highlighted Text:", selectedText);
+        track(EVENTS.CG_COPY_CELL_TYPE_DESCRIPTION);
+      }
+    }
+  };
+
   return (
     <Wrapper>
       {descriptionCl && (
-        <CellCardDescription data-testid={CELL_CARD_CL_DESCRIPTION}>
+        <CellCardDescription
+          data-testid={CELL_CARD_CL_DESCRIPTION}
+          onCopy={copyHandler}
+        >
           {descriptionCl}
           <Source>
             <SourceLink>
@@ -52,7 +66,10 @@ export default function Description({
         </CellCardDescription>
       )}
       <br />
-      <CellCardDescription data-testid={CELL_CARD_GPT_DESCRIPTION}>
+      <CellCardDescription
+        data-testid={CELL_CARD_GPT_DESCRIPTION}
+        onCopy={copyHandler}
+      >
         {descriptionGpt}
         <Source>
           <div>
