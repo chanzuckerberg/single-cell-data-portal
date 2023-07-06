@@ -35,8 +35,12 @@ def get_collections_base_url():
 def extract_dataset_assets(dataset_version: DatasetVersion):
     base_url = CorporaConfig().dataset_assets_base_url
     asset_list = list()
+    included_asset_types = set()
     for asset in dataset_version.artifacts:
         if asset.type not in allowed_dataset_asset_types:
+            continue
+        if asset.type in included_asset_types:
+            # Include only one asset of any given type; handles errant duplicate asset row bug
             continue
         filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
         if filesize is None:
@@ -48,6 +52,7 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
             "url": url,
         }
         asset_list.append(result)
+        included_asset_types.add(asset.type)
     return asset_list
 
 
