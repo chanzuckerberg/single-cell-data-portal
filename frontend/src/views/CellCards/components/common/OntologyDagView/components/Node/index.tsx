@@ -44,14 +44,12 @@ export default function Node({
 }: NodeProps) {
   const router = useRouter();
 
+  const onClick = node.data.name.startsWith("dummy-child")
+    ? undefined
+    : handleClick;
+
   return (
-    <StyledGroup
-      top={top}
-      left={left}
-      key={animationKey}
-      opacity={opacity}
-      onClick={handleClick}
-    >
+    <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
       {isInCorpus ? (
         <g
           data-testid={`${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-${node.data.id}`}
@@ -73,15 +71,18 @@ export default function Node({
           </a>
         </g>
       ) : (
-        <Text
-          isInCorpus={isInCorpus}
-          name={node.data.name}
-          maxWidth={maxWidth}
-        />
+        <g onClick={onClick}>
+          <Text
+            isInCorpus={isInCorpus}
+            name={node.data.name}
+            maxWidth={maxWidth}
+          />
+        </g>
       )}
       <RectOrCircle
         animationKey={`${animationKey}-rect-or-circle`}
         node={node.data}
+        handleClick={handleClick}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
