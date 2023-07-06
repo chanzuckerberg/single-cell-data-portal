@@ -17,6 +17,15 @@ from backend.wmg.data.snapshot import (
 from backend.wmg.pipeline.summary_cubes.cell_count import create_filter_relationships_graph
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 
+"""
+This generates realistic test data. It should be re-run every time you make changes
+to our cube schemas.
+
+Assuming you have a local pull of our data snapshot living in the same direcotyr as single-cell-data-portal,
+run this script from the root directory of single-cell-data-portal:
+python3 scripts/generate_realistic_test_snapshot.py ../snapshot tests/unit/backend/wmg/fixtures/realistic-test-snapshot
+"""
+
 test_tissue = "UBERON:0002048"
 test_organism = "NCBITaxon:9606"
 test_genes = [
