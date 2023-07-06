@@ -12,9 +12,6 @@
     "backend": {
         "profile": "backend"
     },
-    "frontendAndBackend":{
-        "profile": "frontendAndBackend"
-    },
     "processing": {
         "profile": "processing"
     },
@@ -29,9 +26,6 @@
     },
     "upload_success": {
         "profile": "upload_success"
-    },
-    "allBatch": {
-      "profile": "allBatch"
     }
   },
   "environments": {
