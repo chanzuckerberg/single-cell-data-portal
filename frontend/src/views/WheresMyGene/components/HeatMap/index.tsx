@@ -48,7 +48,7 @@ import {
   XAxisWrapper,
   YAxisWrapper,
 } from "./style";
-import { hyphenize } from "./utils";
+import { HEAT_MAP_BASE_CELL_PX, hyphenize } from "./utils";
 
 interface Props {
   className?: string;
@@ -220,13 +220,14 @@ export default memo(function HeatMap({
              */
 
             if (!selectedGeneData?.length) {
-              const height =
-                document.getElementById(`y-axis-${hyphenize(tissue)}`)
-                  ?.clientHeight ?? 0;
+              const height = tissueCellTypes.length * HEAT_MAP_BASE_CELL_PX;
               return (
                 <div
                   key={`y-axis-${hyphenize(tissue)}`}
-                  style={{ height: `${height + X_AXIS_CHART_HEIGHT_PX}px` }}
+                  style={{
+                    // If the height is 0, then set the heatmap height as 0. Else render the height normally
+                    height: `${height && height + X_AXIS_CHART_HEIGHT_PX}px`,
+                  }}
                 />
               );
             }

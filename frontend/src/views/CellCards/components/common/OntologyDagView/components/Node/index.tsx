@@ -1,11 +1,11 @@
 import { MouseEventHandler } from "react";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
-import { Group } from "@visx/group";
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
 import { TreeNodeWithState } from "../../common/types";
 import Text from "./components/Text";
 import RectOrCircle from "./components/RectOrCircle";
+import { StyledGroup } from "./style";
 
 export const CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL =
   "cell-card-ontology-dag-view-clickable-text-label";
@@ -45,7 +45,13 @@ export default function Node({
   const router = useRouter();
 
   return (
-    <Group top={top} left={left} key={animationKey} opacity={opacity}>
+    <StyledGroup
+      top={top}
+      left={left}
+      key={animationKey}
+      opacity={opacity}
+      onClick={handleClick}
+    >
       {isInCorpus ? (
         <g
           data-testid={`${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-${node.data.id}`}
@@ -76,11 +82,10 @@ export default function Node({
       <RectOrCircle
         animationKey={`${animationKey}-rect-or-circle`}
         node={node.data}
-        handleClick={handleClick}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
       />
-    </Group>
+    </StyledGroup>
   );
 }
