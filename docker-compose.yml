@@ -39,7 +39,6 @@ services:
     platform: linux/amd64
     profiles:
       - frontend
-      - frontendAndBackend
     build:
       context: frontend
       cache_from:
@@ -75,7 +74,6 @@ services:
     platform: linux/amd64
     profiles:
       - upload_failures
-      - allBatch
     build:
       context: .
       cache_from:
@@ -113,7 +111,6 @@ services:
     platform: linux/amd64
     profiles:
       - upload_success
-      - allBatch
     build:
       context: .
       cache_from:
@@ -151,7 +148,6 @@ services:
     platform: linux/amd64
     profiles:
       - dataset_submissions
-      - allBatch
     build:
       context: .
       cache_from:
@@ -188,7 +184,6 @@ services:
     platform: linux/amd64
     profiles:
       - processing
-      - allBatch
     build:
       context: .
       cache_from:
@@ -226,7 +221,6 @@ services:
     platform: linux/amd64
     profiles:
       - wmg_processing
-      - allBatch
     build:
       context: .
       cache_from:
@@ -262,7 +256,6 @@ services:
     platform: linux/amd64
     profiles:
       - backend
-      - frontendAndBackend
     build:
       context: .
       cache_from:
