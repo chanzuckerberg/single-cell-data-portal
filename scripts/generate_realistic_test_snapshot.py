@@ -5,17 +5,17 @@ import sys
 
 import tiledb
 
+# Add the root directory to the Python module search path so you can reference backend
+# without needing to move this script to the root directory to run it.
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(root_dir)
+
 from backend.wmg.data.snapshot import (
     DATASET_TO_GENE_IDS_FILENAME,
     FILTER_RELATIONSHIPS_FILENAME,
 )
 from backend.wmg.pipeline.summary_cubes.cell_count import create_filter_relationships_graph
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
-
-# Add the root directory to the Python module search path so you can reference backend
-# without needing to move this script to the root directory to run it.
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(root_dir)
 
 test_tissue = "UBERON:0002048"
 test_organism = "NCBITaxon:9606"
