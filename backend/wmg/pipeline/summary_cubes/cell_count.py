@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import tiledb
 
+from backend.wmg.data.utils import get_datasets_from_curation_api, get_collections_from_curation_api
+
 from backend.wmg.data.schemas.corpus_schema import (
     FILTER_RELATIONSHIPS_NAME,
     OBS_ARRAY_NAME,
@@ -68,6 +70,18 @@ def create_cell_count_cube(corpus_path: str):
     """
     obs = extract(corpus_path)
     df = transform(obs)
+
+    # cchoi: modifying the dataframe to contain publication coll IDs
+    datasets = get_datasets_from_curation_api()
+    collections = get_collections_from_curation_api()
+    collections_dict = {collection["collection_id"]: collection for collection in collections}
+    print(collections_dict)
+    dataset_dict = {}
+    for dataset in datasets:
+        dataset_id = dataset["dataset_id"]
+        dataset_dict[dataset_id] = "{formatted_citation}"
+    
+    df["publication_citation"] = df["dataset_id"].map(dataset_dict)
 
     n_cells = df["n_cells"].to_numpy()
     df["n_cells"] = n_cells
