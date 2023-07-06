@@ -44,9 +44,10 @@ export default function Node({
 }: NodeProps) {
   const router = useRouter();
 
-  const onClick = node.data.name.startsWith("dummy-child")
-    ? undefined
-    : handleClick;
+  // text labels should only collapse/expand node for dummy nodes
+  const onClick = node.data.id.startsWith("dummy-child")
+    ? handleClick
+    : undefined;
 
   return (
     <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
