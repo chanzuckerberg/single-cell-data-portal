@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import sys
 
 import tiledb
@@ -555,15 +556,10 @@ if __name__ == "__main__":
         with open(f"{new_snapshot}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as new_fr_file:
             json.dump(filter_relationships, new_fr_file)
 
-        tiledb.Array.create(f"{new_snapshot}/expression_summary", es_arr.schema, overwrite=True)
-        tiledb.Array.create(f"{new_snapshot}/expression_summary_fmg", esfmg_arr.schema, overwrite=True)
-        tiledb.Array.create(f"{new_snapshot}/expression_summary_default", es_def_arr.schema, overwrite=True)
-        tiledb.Array.create(f"{new_snapshot}/cell_counts", cc_arr.schema, overwrite=True)
-
-        tiledb.from_pandas(f"{new_snapshot}/expression_summary", es, mode="append")
-        tiledb.from_pandas(f"{new_snapshot}/expression_summary_fmg", esfmg, mode="append")
-        tiledb.from_pandas(f"{new_snapshot}/expression_summary_default", esdef, mode="append")
-        tiledb.from_pandas(f"{new_snapshot}/cell_counts", cc, mode="append")
+        es.to_csv(f"{new_snapshot}/expression_summary.csv.gz")
+        esdef.to_csv(f"{new_snapshot}/expression_summary_default.csv.gz")
+        esfmg.to_csv(f"{new_snapshot}/expression_summary_fmg.csv.gz")
+        cc.to_csv(f"{new_snapshot}/cell_counts.csv.gz")
 
         dtg = json.load(dtg_file)
         genes = set(es["gene_ontology_term_id"])
@@ -574,3 +570,7 @@ if __name__ == "__main__":
 
     print("Creating marker genes cube...")
     create_marker_genes_cube(new_snapshot)
+    with tiledb.open(f"{new_snapshot}/marker_genes") as mg_arr:
+        mg = mg_arr.df[:]
+        mg.to_csv(f"{new_snapshot}/marker_genes.csv.gz")
+        shutil.rmtree(f"{new_snapshot}/marker_genes")
