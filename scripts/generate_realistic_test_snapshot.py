@@ -12,6 +12,11 @@ from backend.wmg.data.snapshot import (
 from backend.wmg.pipeline.summary_cubes.cell_count import create_filter_relationships_graph
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 
+# Add the root directory to the Python module search path so you can reference backend
+# without needing to move this script to the root directory to run it.
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(root_dir)
+
 test_tissue = "UBERON:0002048"
 test_organism = "NCBITaxon:9606"
 test_genes = [
@@ -559,6 +564,16 @@ if __name__ == "__main__":
         esfmg.to_csv(f"{new_snapshot}/expression_summary_fmg.csv.gz")
         cc.to_csv(f"{new_snapshot}/cell_counts.csv.gz")
 
+        tiledb.Array.create(f"{new_snapshot}/expression_summary", es_arr.schema, overwrite=True)
+        tiledb.Array.create(f"{new_snapshot}/expression_summary_fmg", esfmg_arr.schema, overwrite=True)
+        tiledb.Array.create(f"{new_snapshot}/expression_summary_default", es_def_arr.schema, overwrite=True)
+        tiledb.Array.create(f"{new_snapshot}/cell_counts", cc_arr.schema, overwrite=True)
+
+        tiledb.from_pandas(f"{new_snapshot}/expression_summary", es, mode="append")
+        tiledb.from_pandas(f"{new_snapshot}/expression_summary_fmg", esfmg, mode="append")
+        tiledb.from_pandas(f"{new_snapshot}/expression_summary_default", esdef, mode="append")
+        tiledb.from_pandas(f"{new_snapshot}/cell_counts", cc, mode="append")
+
         dtg = json.load(dtg_file)
         genes = set(es["gene_ontology_term_id"])
         for k in dtg:
@@ -572,3 +587,7 @@ if __name__ == "__main__":
         mg = mg_arr.df[:]
         mg.to_csv(f"{new_snapshot}/marker_genes.csv.gz")
         shutil.rmtree(f"{new_snapshot}/marker_genes")
+        shutil.rmtree(f"{new_snapshot}/expression_summary")
+        shutil.rmtree(f"{new_snapshot}/expression_summary_fmg")
+        shutil.rmtree(f"{new_snapshot}/expression_summary_default")
+        shutil.rmtree(f"{new_snapshot}/cell_counts")
