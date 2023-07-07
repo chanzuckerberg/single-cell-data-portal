@@ -5,8 +5,8 @@ import os
 from typing import Dict, List
 
 import boto3
-from cellxgene_schema.migrate import migrate as cxg_migrate
 from cellxgene_schema import schema
+from cellxgene_schema.migrate import migrate as cxg_migrate
 
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
@@ -204,6 +204,8 @@ class SchemaMigrate:
             collection_id = os.environ["COLLECTION_ID"]
             can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
             response = self.publish_and_cleanup(collection_id, can_publish)
+        elif step_name == "report":
+            self.report()
         sfn_client = boto3.client("stepfunctions")
         sfn_client.send_task_success(taskToken=os.environ["TASK_TOKEN"], output=json.dumps(response))
         return True
