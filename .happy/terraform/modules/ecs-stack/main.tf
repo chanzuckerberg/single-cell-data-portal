@@ -24,7 +24,10 @@ locals {
   frontend_cmd                 = []
   # TODO: Assess whether this is safe for Portal API as well. Trying 1 worker in rdev portal backend containers, to minimize use of memory by TileDB (allocates multi-GB per process)
   # Note: keep-alive timeout should always be greater than the idle timeout of the load balancer (60 seconds)
-  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "61", "--log-level", "info"]
+  backend_workers              = var.backend_cpus * 2 + 1 # Number of backend workers to run. Using the flask formula 2*cpu+1
+  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_workers}",
+    "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180",
+    "--keep-alive", "61", "--log-level", "info"]
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_2023.sql"
 
   vpc_id                          = local.secret["cloud_env"]["vpc_id"]
@@ -134,7 +137,7 @@ module backend_service {
   task_role_arn              = local.ecs_role_arn
   service_port               = 5000
   memory                     = var.backend_memory
-  cpu                        = 2048
+  cpu                        = var.backend_cpus * 1024
   cmd                        = local.backend_cmd
   deployment_stage           = local.deployment_stage
   step_function_arn          = module.upload_sfn.step_function_arn
