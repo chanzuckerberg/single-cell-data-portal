@@ -1,4 +1,4 @@
-cellxgene
+cellxgene-schema
 dataclasses-json
 matplotlib==3.6.3 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
 numba==0.56.2
