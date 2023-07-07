@@ -62,7 +62,6 @@ export const MarkerStrengthContainer = styled("div")`
   flex-direction: row;
   gap: 10px;
   justify-content: flex-end;
-  white-space: nowrap;
 `;
 
 export const MarkerStrengthLabel = styled("div")`

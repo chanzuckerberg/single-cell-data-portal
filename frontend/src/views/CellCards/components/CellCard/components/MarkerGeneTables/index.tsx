@@ -32,10 +32,6 @@ import {
 } from "src/common/queries/cellCards";
 import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
-import {
-  MarkerStrengthContainer,
-  MarkerStrengthLabel,
-} from "src/views/WheresMyGene/components/CellInfoSideBar/style";
 
 export const CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM =
   "cell-card-marker-genes-table-dropdown-organism";
