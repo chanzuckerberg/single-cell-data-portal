@@ -48,6 +48,9 @@ export default function Node({
   const onClick = node.data.id.startsWith("dummy-child")
     ? handleClick
     : undefined;
+  const textCursor = node.data.id.startsWith("dummy-child")
+    ? "pointer"
+    : "default";
 
   return (
     <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
@@ -77,6 +80,7 @@ export default function Node({
             isInCorpus={isInCorpus}
             name={node.data.name}
             maxWidth={maxWidth}
+            cursor={textCursor}
           />
         </g>
       )}
