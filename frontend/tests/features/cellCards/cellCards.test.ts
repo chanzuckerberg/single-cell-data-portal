@@ -116,7 +116,7 @@ describe("Cell Cards", () => {
       await page.getByTestId(CELL_CARD_GPT_TOOLTIP_LINK).hover();
       await checkTooltipContent(
         page,
-        `This summary on "neuron" was generated with ChatGPT, powered by the GPT3.5 Turbo model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below.`
+        `This summary on "neuron" was generated with ChatGPT, powered by the GPT4 model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below.`
       );
     });
     test("Cell type search bar filters properly and links to a CellCard", async ({
