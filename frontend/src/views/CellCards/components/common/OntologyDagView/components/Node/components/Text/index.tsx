@@ -5,8 +5,14 @@ interface TextProps {
   name: string;
   maxWidth: number;
   isInCorpus: boolean;
+  cursor?: string;
 }
-export default function Text({ isInCorpus, name, maxWidth }: TextProps) {
+export default function Text({
+  isInCorpus,
+  name,
+  maxWidth,
+  cursor = "pointer",
+}: TextProps) {
   const textRef = useRef<SVGTextElement>(null);
 
   useEffect(() => {
@@ -32,6 +38,7 @@ export default function Text({ isInCorpus, name, maxWidth }: TextProps) {
       }
       fontWeight={isInCorpus ? "bold" : "normal"}
       fill={defaultTextColor}
+      cursor={cursor}
       dx={10}
     >
       {name}
