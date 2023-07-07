@@ -532,7 +532,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             onClick={() => {
               setPage(1);
               setActiveTable(0);
-              track(EVENTS.CELL_GUIDE_CANONICAL_TAB_CLICKED);              
+              track(EVENTS.CG_CANONICAL_TAB_CLICKED);
             }}
           >
             Canonical (HuBMAP)
@@ -543,7 +543,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             onClick={() => {
               setPage(1);
               setActiveTable(1);
-              track(EVENTS.CELL_GUIDE_COMPUTATIONAL_TAB_CLICKED);              
+              track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED);
             }}
           >
             Computational (CZI)
