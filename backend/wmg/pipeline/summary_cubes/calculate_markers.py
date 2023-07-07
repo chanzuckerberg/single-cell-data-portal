@@ -501,7 +501,8 @@ def _post_process_stats(
         1 x M array of number of nonzero expressions for target population (> 0)
 
     test - str, optional, default "ttest"
-        The statistical test used ("ttest" or "binomtest").
+        The statistical test used. Historically "ttest" or "binomtest" were both supported, currently
+        only "ttest" is supported.
 
     min_num_expr_cells - int, optional, default 25
         The minimum number of nonzero expressing cells required for marker genes
@@ -623,106 +624,6 @@ def _get_markers_ttest(target_filters, context_filters, corpus=None, n_markers=1
     )
 
 
-def _run_binom(nnz_thr1, n1, nnz_thr2, n2):
-    """
-    Calculate binomial test statistics.
-
-    Arguments
-    ---------
-    nnz_thr1 - np.ndarray (1 x M)
-        Array of number of nonzero expressions greater than a threshold (1) for target pop for each gene
-    n1 - np.ndarray (1 x M)
-        Number of cells in target population for each gene
-    nnz_thr2 - np.ndarray (N x M)
-        Array of number of nonzero expressions greater than a threshold (1) for context pops for each gene
-    n2 - np.ndarray (N x M)
-        Number of cells in context populations for each gene
-
-    Returns
-    -------
-    pvals_adj - np.ndarray
-        adjusted p-values for each comparison for each gene
-    effects - np.ndarray
-        effect sizes for each comparison for each gene
-    """
-    with np.errstate(divide="ignore", invalid="ignore"):
-        p_query = n1 / (n1 + n2)
-        size = nnz_thr1 + nnz_thr2
-        pvals = stats.binom.sf(nnz_thr1 + 1, size + 2, p_query)
-        mean_n = (n1 + n2) / 2
-        pn1 = n1 / mean_n
-        pn2 = n2 / mean_n
-        effects = np.log2((nnz_thr1 + pn1) / (n1 + 2 * pn1)) - np.log2((nnz_thr2 + pn2) / (n2 + 2 * pn2))
-
-    return pvals, effects
-
-
-def _get_markers_binomtest(target_filters, context_filters, corpus=None, n_markers=10, percentile=0.8):
-    """
-    Calculate marker genes using the binomial test.
-
-    Arguments
-    ---------
-    target_filters - dict
-        Dictionary of filters for the target population
-
-    context_filters - dict
-        Dictionary of filters describing the context
-
-    corpus - str or WmgSnapshot, optional, default None
-        If string, it is the path to the snapshot.
-        If WmgSnapshot, it is the snapshot object.
-        If None, the snapshot will be fetched from AWS.
-
-    n_markers - int, optional, default 10
-        Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
-
-    percentile - float, optional, default 0.8
-        The percentile of effect sizes to select as the representative effect size.
-
-    Returns
-    -------
-    Dictionary of marker genes as keys and a dictionary of p-value and effect size as values.
-    """
-
-    (
-        context_agg,
-        target_agg,
-        groups_index_context,
-        n_target,
-        n_context,
-        target_data_nnz,
-        genes,
-        groups_indices_context,
-        genes_indices_context,
-        genes_indices_target,
-    ) = _prepare_indices_and_metrics(target_filters, context_filters, corpus=corpus)
-    target_data_nnz_thr = np.zeros((1, len(genes)))
-    target_data_nnz_thr[0, genes_indices_target] = list(target_agg["nnz_thr"])
-    context_data_nnz_thr = np.zeros((len(groups_index_context), len(genes)))
-    context_data_nnz_thr[groups_indices_context, genes_indices_context] = list(context_agg["nnz_thr"])
-
-    pvals, effects = _run_binom(target_data_nnz_thr, n_target, context_data_nnz_thr, n_context)
-
-    if "cell_type_ontology_term_ids" in target_filters:
-        cell_type_target = target_filters["cell_type_ontology_term_ids"][0]
-        cell_types_context = groups_index_context.get_level_values("cell_type_ontology_term_id")
-    else:
-        cell_type_target = None
-        cell_types_context = None
-    return _post_process_stats(
-        cell_type_target,
-        cell_types_context,
-        genes,
-        pvals,
-        effects,
-        target_data_nnz,
-        test="binomtest",
-        n_markers=n_markers,
-        percentile=percentile,
-    )
-
-
 def get_markers(target_filters, context_filters, corpus=None, test="ttest", n_markers=10, percentile=0.15):
     """
     Calculate marker genes using the t-test.
@@ -741,7 +642,8 @@ def get_markers(target_filters, context_filters, corpus=None, test="ttest", n_ma
         If None, the snapshot will be fetched from AWS.
 
     test - str, optional, default "ttest"
-        The statistical test to be used ("ttest" or "binomtest").
+        The statistical test used. Historically "ttest" or "binomtest" were both supported, currently
+        only "ttest" is supported.
 
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
@@ -756,14 +658,6 @@ def get_markers(target_filters, context_filters, corpus=None, test="ttest", n_ma
 
     if test == "ttest":
         return _get_markers_ttest(
-            target_filters,
-            context_filters,
-            corpus=corpus,
-            n_markers=n_markers,
-            percentile=percentile,
-        )
-    elif test == "binomtest":
-        return _get_markers_binomtest(
             target_filters,
             context_filters,
             corpus=corpus,
