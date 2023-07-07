@@ -178,7 +178,7 @@ export const USE_ENRICHED_GENES_QUERY = {
 interface EnrichedGenesQueryResponseEntry {
   me: number;
   pc: number;
-  effect_size: number;
+  marker_score: number;
   symbol: string;
   name: string;
   organism: string;

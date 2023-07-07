@@ -42,7 +42,7 @@ import {
 import {
   EXPRESSION_SCORE_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
-} from "src/views/CellCards/components/CellCard/components/common/Table";
+} from "src/views/CellCards/components/CellCard/components/MarkerGeneTables";
 
 const { describe } = test;
 

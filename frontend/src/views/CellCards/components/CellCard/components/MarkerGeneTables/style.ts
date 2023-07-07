@@ -17,6 +17,11 @@ export const PublicationLinkWrapper = styled.div`
   column-gap: 2px;
 `;
 
+export const StyledHeadCellContent = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
 export const TableSelectorRow = styled.div`
   display: flex;
   flex-direction: row;

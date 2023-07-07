@@ -6,20 +6,17 @@ import {
   StyledRow,
   StyledCell,
   TableWrapper,
-  StyledHeadCellContent,
 } from "./style";
-import HelpTooltip from "../HelpTooltip";
-import { ROUTES } from "src/common/constants/routes";
 
 interface TableProps<T> {
   columns: Array<Extract<keyof T, string>>;
   rows: T[];
-  columnIdToName?: Record<Extract<keyof T, string>, string>;
+  columnIdToName?: Record<
+    Extract<keyof T, string>,
+    string | React.ReactElement
+  >;
   testId?: string;
 }
-
-export const EXPRESSION_SCORE_TOOLTIP_TEST_ID = "expression-score-tooltip";
-export const PERCENT_OF_CELLS_TOOLTIP_TEST_ID = "percent-of-cells-tooltip";
 
 // This is a generic table component that can be used to render any type of data.
 function Table<T extends object>({
@@ -28,68 +25,6 @@ function Table<T extends object>({
   columnIdToName,
   testId,
 }: TableProps<T>) {
-  const markerScoreTooltip = (
-    <HelpTooltip
-      dark
-      buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
-      text={
-        <>
-          <div>
-            Marker genes are highly and uniquely expressed in the cell type
-            relative to all other cell types.
-          </div>
-          <br />
-          <div>
-            <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
-              Click to read more about the identification method.
-            </a>
-          </div>
-        </>
-      }
-    />
-  );
-
-  const expressionScoreTooltip = (
-    <HelpTooltip
-      dark
-      buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
-      text={
-        <div>
-          The expression score is the average{" "}
-          <a
-            href={ROUTES.WMG_DOCS_DATA_PROCESSING}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            rankit-normalized gene expression
-          </a>{" "}
-          among cells in the cell type that have non-zero values.
-        </div>
-      }
-    />
-  );
-
-  const percentOfCellsTooltip = (
-    <HelpTooltip
-      dark
-      buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
-      text={
-        <div>
-          Percentage of cells expressing a gene in the cell type. These numbers
-          are calculated after cells with{" "}
-          <a
-            href={ROUTES.WMG_DOCS_DATA_PROCESSING}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            low coverage and low expression values
-          </a>{" "}
-          have been filtered out.
-        </div>
-      }
-    />
-  );
-
   return (
     <TableWrapper data-testid={testId}>
       <StyledTable>
@@ -102,14 +37,7 @@ function Table<T extends object>({
 
               return (
                 <StyledHeadCell key={index} id={`${columnName}-header-cell`}>
-                  <StyledHeadCellContent>
-                    <div>{columnName}</div>
-                    {columnName === "Expression Score"
-                      ? expressionScoreTooltip
-                      : columnName === "% of Cells"
-                      ? percentOfCellsTooltip
-                      : columnName === "Marker Score" && markerScoreTooltip}
-                  </StyledHeadCellContent>
+                  {columnName}
                 </StyledHeadCell>
               );
             })}
