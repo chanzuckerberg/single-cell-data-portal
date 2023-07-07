@@ -48,7 +48,18 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
             "url": url,
         }
         asset_list.append(result)
-    return asset_list
+    return _with_duplicates_removed(asset_list)  # TODO: de-dupe on DatasetArtifact insertion via unique constraint
+
+
+def _with_duplicates_removed(asset_list: List[dict]) -> List[dict]:
+    asset_types = set()
+    assets = []
+    for asset in asset_list:
+        if asset["filetype"] in asset_types:
+            continue
+        asset_types.add(asset["filetype"])
+        assets.append(asset)
+    return assets
 
 
 def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]]:
