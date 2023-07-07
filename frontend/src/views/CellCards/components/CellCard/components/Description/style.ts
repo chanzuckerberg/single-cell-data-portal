@@ -21,13 +21,18 @@ export const Wrapper = styled.div`
 
 export const Source = styled.div`
   ${fontBodyS}
+  margin-top: 16px;
   display: flex;
   justify-content: flex-end;
-  margin-top: 4px;
+  gap: 40px;
   ${(props) => {
     const colors = getColors(props);
     return `
       color: ${colors?.gray[500]};
     `;
   }}
+`;
+
+export const SourceLink = styled.div`
+  white-space: nowrap;
 `;

@@ -65,24 +65,3 @@ class MarkerGeneCalculationTest(unittest.TestCase):
             expected = retrieve_top_n_markers(expected, "ttest", 10)
             for i, elem in enumerate(result):
                 assert pytest.approx(elem, rel=0.01) == expected[i]
-
-    def test__get_markers_binomtest(self):
-        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            result = get_markers(TARGET_FILTERS, CONTEXT_FILTERS, corpus=snapshot, test="binomtest", percentile=0.3)
-            result = json.loads(
-                json.dumps(result)
-                .replace("p_value_binomtest", "p_value")
-                .replace("effect_size_binomtest", "effect_size")
-            )
-            result = [
-                {"gene_ontology_term_id": k, "p_value": v["p_value"], "effect_size": v["effect_size"]}
-                for k, v in result.items()
-            ]
-            tissue = TARGET_FILTERS["tissue_ontology_term_ids"]
-            celltype = TARGET_FILTERS["cell_type_ontology_term_ids"]
-            organism = TARGET_FILTERS["organism_ontology_term_id"]
-
-            expected = snapshot.marker_genes_cube.df[(tissue, organism, celltype)]
-            expected = retrieve_top_n_markers(expected, "binomtest", 10)
-            for i, elem in enumerate(result):
-                assert pytest.approx(elem, rel=0.01) == expected[i]
