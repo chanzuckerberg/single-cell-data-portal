@@ -33,6 +33,8 @@ import {
 } from "src/common/queries/cellCards";
 import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM =
   "cell-card-marker-genes-table-dropdown-organism";
@@ -530,6 +532,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             onClick={() => {
               setPage(1);
               setActiveTable(0);
+              track(EVENTS.CG_CANONICAL_TAB_CLICKED);
             }}
           >
             Canonical (HuBMAP)
@@ -540,13 +543,13 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             onClick={() => {
               setPage(1);
               setActiveTable(1);
+              track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED);
             }}
           >
             Computational (CZI)
           </TableSelectorButton>
         </TableSelectorRow>
       </TableTitleOuterWrapper>
-
       {tableRows.length > 0 ? (
         <div>
           {tableComponent}
