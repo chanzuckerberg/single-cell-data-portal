@@ -35,12 +35,12 @@ export default function Description({
   }, [rawDescriptionGpt, rawDescriptionCl]);
 
   const copyHandler = () => {
-    if (window) {
-      const selectedText = window.getSelection()?.toString().trim();
+    if (!window) return;
 
-      if (selectedText !== "") {
-        track(EVENTS.CG_COPY_CELL_TYPE_DESCRIPTION);
-      }
+    const selectedText = window.getSelection()?.toString().trim();
+
+    if (selectedText !== "") {
+      track(EVENTS.CG_COPY_CELL_TYPE_DESCRIPTION);
     }
   };
 
