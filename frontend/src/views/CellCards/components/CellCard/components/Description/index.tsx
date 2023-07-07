@@ -22,6 +22,8 @@ export default function Description({
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
   const [descriptionCl, setDescriptionCl] = useState<string>("");
 
+  const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For chatgpt hover event
+
   const { data: rawDescriptionGpt } = useDescription(cellTypeId);
   const { data: rawDescriptionCl } = useClDescription(cellTypeId);
 
@@ -112,7 +114,16 @@ export default function Description({
                 target="_blank"
                 data-testid={CELL_CARD_GPT_TOOLTIP_LINK}
                 onMouseOver={() => {
-                  track(EVENTS.CG_CHAT_GPT_HOVER);
+                  const id = setTimeout(() => {
+                    track(EVENTS.CG_CHAT_GPT_HOVER);
+                  }, 2000);
+                  setTimerId(id);
+                }}
+                onMouseOut={() => {
+                  if (timerId) {
+                    clearTimeout(timerId);
+                    setTimerId(null);
+                  }
                 }}
               >
                 ChatGPT
