@@ -64,7 +64,6 @@ export default function CellCardSearchBar(): JSX.Element {
       }
     }
   }
-
   return (
     <div data-testid={CELL_CARD_SEARCH_BAR}>
       <StyledAutocomplete
@@ -169,10 +168,10 @@ export default function CellCardSearchBar(): JSX.Element {
 
               // If neither or both start with the search term, then sort by "CL:" vs "UBERON:"
               if (isA_CL && !isB_CL) {
-                return 1;
+                return -1;
               }
               if (!isA_CL && isB_CL) {
-                return -1;
+                return 1;
               }
 
               // If they are both "CL:" or both "UBERON:", then sort alphabetically
