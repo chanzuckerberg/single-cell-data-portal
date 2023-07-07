@@ -21,6 +21,7 @@ import {
   TableSelectorRow,
   TableTitleOuterWrapper,
   StyledHeadCellContent,
+  MarkerStrengthContainer,
 } from "./style";
 import Table from "../common/Table";
 import DropdownSelect from "../common/DropdownSelect";
@@ -82,8 +83,9 @@ const tableColumnNamesEnrichedGenes: Record<
             <>
               Marker score interpretation:
               <br />
-              {"Low: <1 Medium: 1-2 High: >2"}
-              <br />
+              <MarkerStrengthContainer>
+                {"Low: <1 | Medium: 1-2 | High: >2"}
+              </MarkerStrengthContainer>
               <br />
               <div>
                 Marker genes are highly and uniquely expressed in the cell type

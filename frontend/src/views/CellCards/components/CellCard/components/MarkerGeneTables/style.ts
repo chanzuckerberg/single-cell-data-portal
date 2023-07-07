@@ -1,4 +1,9 @@
-import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
+import {
+  CommonThemeProps,
+  fontBodyS,
+  fontBodyXxs,
+  getColors,
+} from "@czi-sds/components";
 import styled from "@emotion/styled";
 
 const DIVIDER_WIDTH = 2;
@@ -27,6 +32,10 @@ export const TableSelectorRow = styled.div`
   flex-direction: row;
   gap: 16px;
   border-bottom: ${DIVIDER_WIDTH}px solid ${gray200};
+`;
+
+export const MarkerStrengthContainer = styled.div`
+  ${fontBodyXxs}
 `;
 
 interface TableSelectorButtonProps extends CommonThemeProps {
