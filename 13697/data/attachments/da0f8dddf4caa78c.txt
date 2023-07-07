@@ -1,0 +1,71 @@
+  pw:api => selectors.setTestIdAttribute started +4ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +38ms
+  pw:api   "commit" event fired +12ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +4ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +38ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +13ms
+  pw:api   "commit" event fired +99ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +3ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +3ms
+  pw:api   "networkidle" event fired +532ms
+  pw:api <= page.goto succeeded +411ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view-hover-container') to be visible +234ms
+  pw:api   locator resolved to visible <div width="840" height="500" class="css-10w6wy2-Hove…>…</div> +42ms
+  pw:api <= locator.waitFor succeeded +20ms
+  pw:api => locator.boundingBox started +1ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view-hover-container') +14ms
+  pw:api   locator resolved to visible <div width="840" height="500" class="css-10w6wy2-Hove…>…</div> +8ms
+  pw:api <= locator.boundingBox succeeded +16ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view-hover-container') +7ms
+  pw:api   locator resolved to <div width="840" height="500" class="css-10w6wy2-Hove…>…</div> +6ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +14ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +12ms
+  pw:api   hover action done +177ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +79ms
+  pw:api <= locator.hover succeeded +34ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view-fullscreen-button') to be visible +25ms
+  pw:api   locator resolved to visible <button tabindex="0" type="button" data-testid="cell-car…>…</button> +66ms
+  pw:api <= locator.waitFor succeeded +28ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view-fullscreen-button') +16ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="cell-car…>…</button> +32ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +48ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +13ms
+  pw:api   click action done +407ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +11ms
+  pw:api => locator.boundingBox started +0ms
+  pw:api waiting for getByTestId('cell-card-ontology-dag-view-hover-container') +16ms
+  pw:api   locator resolved to visible <div height="720" width="1280" class="css-2wuz6t-Hove…>…</div> +118ms
+  pw:api <= locator.boundingBox succeeded +21ms
+  pw:api taking page screenshot +176ms
+  pw:api => browserContext.close started +118ms
+  pw:api <= browserContext.close succeeded +5s
