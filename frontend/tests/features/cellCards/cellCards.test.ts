@@ -226,6 +226,7 @@ describe("Cell Cards", () => {
         expect(columnHeaders).toEqual([
           "Symbol",
           "Name",
+          "Marker Score",
           "Expression Score",
           "% of Cells",
         ]);
