@@ -6,7 +6,6 @@ from typing import Dict, List
 
 import boto3
 from cellxgene_schema import schema
-from cellxgene_schema.migrate import migrate as h5ad_migrate
 
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
@@ -90,7 +89,7 @@ class SchemaMigrate:
         ][0]
         bucket_name, object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.business_logic.s3_provider.download_file(bucket_name, object_key, "previous_schema.h5ad")
-        h5ad_migrate("previous_schema.h5ad", "migrated.h5ad", collection_id, dataset_id)
+        schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_id, dataset_id)
         upload_bucket = os.environ["ARTIFACT_BUCKET"]
         dst_uri = f"{dataset_version_id}/migrated.h5ad"
         self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri, {})
