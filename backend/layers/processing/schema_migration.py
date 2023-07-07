@@ -51,12 +51,6 @@ class SchemaMigrate:
         has_revision = []  # list of collections to skip if published with an active revision
         for collection in collections:
 
-            # TODO <testing code>
-            if not collection.metadata.name.startswith("TestSchemaMigrate"):
-                print("Skipping collection")
-                continue
-            # TODO </testing code>
-
             if collection.is_published() and collection.collection_id not in has_revision:
                 # published collection without an active revision
                 response.append(
