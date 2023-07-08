@@ -205,7 +205,7 @@ class SchemaMigrate:
         """
         Gets called by the step function at every different step, as defined by `step_name`
         """
-        logger.info(f"Starting {step_name}", extra={"step": step_name})
+        self.logger.info(f"Starting {step_name}", extra={"step": step_name})
         if step_name == "gather_collections":
             gather_collections = self.error_decorator(self.gather_collections, "gather_collections")
             response = gather_collections()
