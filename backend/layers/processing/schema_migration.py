@@ -169,31 +169,38 @@ class SchemaMigrate:
     def error_decorator(self, func, file_name: str):
         def wrapper(*args, **kwargs):
             try:
-                return self.error_wrapper(func, *args, **kwargs)
+                return func(*args, **kwargs)
             except Exception as e:
+                self.logger.exception(f"Error in {func.__name__}", extra={"args": args, "kwargs": kwargs})
                 self._store_in_s3(
-                    func.__name__, file_name, {"step": func.__name__, "error": str(e), args: args, kwargs: kwargs}
+                    func.__name__, file_name, {"step": func.__name__, "error": str(e), "args": args, "kwargs": kwargs}
                 )
                 raise e
 
         return wrapper
 
     def report(self, local_path: str = ".") -> str:
-        report = dict(errors=[])
-        error_files = list(
-            self.business_logic.s3_provider.list_directory(self.bucket, f"schema_migration/{self.execution_arn}/report")
-        )
-        for file in error_files:
-            local_file = os.path.join(local_path, file)
-            self.business_logic.s3_provider.download_file(self.bucket, file, local_file)
-            with open(local_file, "r") as f:
-                jn = json.load(f)
-            report["errors"].append(jn)
-        self.logger.info("Report", extra=report)
-        report_str = json.dumps(report)
-        self.business_logic.s3_provider.delete_files(self.bucket, error_files)
-        self._upload_to_slack("schema_migration_report.json", report_str, "Schema migration results.")
-        return report
+        try:
+            report = dict(errors=[])
+            error_files = list(
+                self.business_logic.s3_provider.list_directory(
+                    self.bucket, f"schema_migration/{self.execution_arn}/report"
+                )
+            )
+            for file in error_files:
+                local_file = os.path.join(local_path, file)
+                self.business_logic.s3_provider.download_file(self.bucket, file, local_file)
+                with open(local_file, "r") as f:
+                    jn = json.load(f)
+                report["errors"].append(jn)
+            self.logger.info("Report", extra=report)
+            report_str = json.dumps(report)
+            self.business_logic.s3_provider.delete_files(self.bucket, error_files)
+            self._upload_to_slack("schema_migration_report.json", report_str, "Schema migration results.")
+            return report
+        except Exception as e:
+            self.logger.exception("Failed to generate report")
+            raise e
 
     def _upload_to_slack(self, filename: str, contents, initial_comment: str) -> None:
         slack_token = CorporaConfig().slack_reporter_secret
