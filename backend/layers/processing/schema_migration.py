@@ -162,9 +162,7 @@ class SchemaMigrate:
         with open(file_name, "w") as f:
             json.dump(response, f)
         self.business_logic.s3_provider.upload_file(
-            file_name,
-            self.bucket,
-            f"schema_migration/{self.execution_arn}/{step_name}/{file_name}",
+            file_name, self.bucket, f"schema_migration/{self.execution_arn}/{step_name}/{file_name}", {}
         )
 
     def error_decorator(self, func, file_name: str):

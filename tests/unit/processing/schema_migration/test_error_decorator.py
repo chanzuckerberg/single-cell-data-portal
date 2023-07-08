@@ -16,5 +16,5 @@ def test_error_decorator(schema_migrate_and_collections, tmpdir):
         schema_migrate.error_decorator(func, filename)(1, b=2)
     assert os.path.isfile(expected_file)
     schema_migrate.business_logic.s3_provider.upload_file.assert_called_once_with(
-        expected_file, "artifact-bucket", f"schema_migration/test-execution-arn/func/{expected_file}"
+        expected_file, "artifact-bucket", f"schema_migration/test-execution-arn/func/{expected_file}", {}
     )
