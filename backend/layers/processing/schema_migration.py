@@ -4,9 +4,10 @@ import logging
 import os
 from typing import Dict, List
 
-import boto3
 from cellxgene_schema import schema
 
+from backend.common.corpora_config import CorporaConfig
+from backend.common.utils.result_notification import upload_to_slack
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.common.entities import (
@@ -17,6 +18,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.processing import logger
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 
 logger.configure_logging(level=logging.INFO)
 
@@ -26,6 +28,7 @@ class SchemaMigrate:
         self.business_logic = business_logic
         self.bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
         self.execution_arn = os.environ.get("EXECUTION_ARN", "test-execution-arn")
+        self.logger = logging.getLogger(__name__)
 
     def gather_collections(self) -> List[Dict[str, str]]:
         """
@@ -163,12 +166,22 @@ class SchemaMigrate:
             f"schema_migration/{self.execution_arn}/{step_name}/{file_name}.json",
         )
 
-    def report(self, local_path: str) -> str:
+    def error_decorator(self, func, file_name: str):
+        def wrapper(*args, **kwargs):
+            try:
+                return self.error_wrapper(func, *args, **kwargs)
+            except Exception as e:
+                self._store_in_s3(
+                    func.__name__, file_name, {"step": func.__name__, "error": str(e), args: args, kwargs: kwargs}
+                )
+                raise e
+
+        return wrapper
+
+    def report(self, local_path: str = ".") -> str:
         report = dict(errors=[])
         error_files = list(
-            self.business_logic.s3_provider.list_directory(
-                self.bucket, f"schema_migration/" f"{self.execution_arn}/report"
-            )
+            self.business_logic.s3_provider.list_directory(self.bucket, f"schema_migration/{self.execution_arn}/report")
         )
         for file in error_files:
             local_file = os.path.join(local_path, file)
@@ -176,35 +189,52 @@ class SchemaMigrate:
             with open(local_file, "r") as f:
                 jn = json.load(f)
             report["errors"].append(jn)
-        report_path = os.path.join(local_path, "report.json")
-        with open(report_path, "w") as f:
-            json.dump(report, f)
-        # TODO output the files to slack.
+        self.logger.info("Report", extra=report)
+        report_str = json.dumps(report)
         self.business_logic.s3_provider.delete_files(self.bucket, error_files)
-        return report_path
+        self._upload_to_slack("schema_migration_report.json", report_str, "Schema migration results.")
+        return report
+
+    def _upload_to_slack(self, filename: str, contents, initial_comment: str) -> None:
+        slack_token = CorporaConfig().slack_reporter_secret
+        slack_channel = CorporaConfig().slack_reporter_channel
+        response = upload_to_slack(filename, contents, initial_comment, slack_channel, slack_token)
+        return response
 
     def migrate(self, step_name) -> bool:
         """
         Gets called by the step function at every different step, as defined by `step_name`
         """
+        logger.info(f"Starting {step_name}", extra={"step": step_name})
         if step_name == "gather_collections":
-            response = self.gather_collections()
+            gather_collections = self.error_decorator(self.gather_collections, "gather_collections")
+            response = gather_collections()
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
             can_open_revision = os.environ["CAN_OPEN_REVISION"].lower() == "true"
-            response = self.collection_migrate(collection_id, collection_version_id, can_open_revision)
+            collection_migrate = self.error_decorator(self.collection_migrate, collection_id)
+            response = collection_migrate(
+                collection_id=collection_id,
+                collection_version_id=collection_version_id,
+                can_open_revision=can_open_revision,
+            )
         elif step_name == "dataset_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             dataset_id = os.environ["DATASET_ID"]
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
-            response = self.dataset_migrate(collection_id, dataset_id, dataset_version_id)
+            dataset_migrate = self.error_decorator(self.dataset_migrate, f"{collection_id}_{dataset_id}")
+            response = dataset_migrate(
+                collection_id=collection_id, dataset_id=dataset_id, dataset_version_id=dataset_version_id
+            )
         elif step_name == "collection_publish":
             collection_id = os.environ["COLLECTION_ID"]
             can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
-            response = self.publish_and_cleanup(collection_id, can_publish)
+            publish_and_cleanup = self.error_decorator(self.publish_and_cleanup, collection_id)
+            response = publish_and_cleanup(collection_id=collection_id, can_publish=can_publish)
         elif step_name == "report":
-            self.report()
-        sfn_client = boto3.client("stepfunctions")
+            response = self.report()
+        self.logger.info("Response", extra=response)
+        sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(taskToken=os.environ["TASK_TOKEN"], output=json.dumps(response))
         return True
