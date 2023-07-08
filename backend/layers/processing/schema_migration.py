@@ -158,12 +158,13 @@ class SchemaMigrate:
         :param file_name: a unique name to describe this job
         :param response: the response to store as json.
         """
-        with open("response.json", "w") as f:
+        file_name = f"{file_name}.json"
+        with open(file_name, "w") as f:
             json.dump(response, f)
         self.business_logic.s3_provider.upload_file(
-            "response.json",
+            file_name,
             self.bucket,
-            f"schema_migration/{self.execution_arn}/{step_name}/{file_name}.json",
+            f"schema_migration/{self.execution_arn}/{step_name}/{file_name}",
         )
 
     def error_decorator(self, func, file_name: str):
@@ -171,7 +172,7 @@ class SchemaMigrate:
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                self.logger.exception(f"Error in {func.__name__}", extra={"args": args, "kwargs": kwargs})
+                self.logger.exception(f"Error in {func.__name__}", extra={"input": {"args": args, "kwargs": kwargs}})
                 self._store_in_s3(
                     func.__name__, file_name, {"step": func.__name__, "error": str(e), "args": args, "kwargs": kwargs}
                 )
