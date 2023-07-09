@@ -28,7 +28,7 @@ locals {
   backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_workers}",
     "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180",
     "--keep-alive", "61", "--log-level", "info"]
-  data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_2023.sql"
+  data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_03_98cf7564214f.sql"
 
   vpc_id                          = local.secret["cloud_env"]["vpc_id"]
   subnets                         = local.secret["cloud_env"]["private_subnets"]
