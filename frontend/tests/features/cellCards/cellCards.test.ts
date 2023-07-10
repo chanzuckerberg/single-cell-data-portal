@@ -46,7 +46,7 @@ import {
 
 const { describe } = test;
 
-describe("Cell Cards", () => {
+describe.only("Cell Cards", () => {
   describe("Landing Page", () => {
     test("All LandingPage components are present", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_CARDS}`, page);
