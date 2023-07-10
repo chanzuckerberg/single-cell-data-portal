@@ -35,6 +35,7 @@ import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 
 export const CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM =
   "cell-card-marker-genes-table-dropdown-organism";
@@ -220,6 +221,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
       for (const markerGene of genes) {
         const { pc, me, name, symbol, organism, marker_score } = markerGene;
         if (organism !== selectedOrganism) continue;
+        if (marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
         rows.push({
           symbolId: symbol,
           symbol: (
@@ -230,7 +232,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
                 sdsIcon="infoCircle"
                 sdsSize="small"
                 sdsType="secondary"
-                onClick={() => setGeneInfoGene(symbol)}
+                onClick={() => setGeneInfoGene(symbol.toUpperCase())}
               />
             </>
           ),
@@ -364,7 +366,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
                 sdsIcon="infoCircle"
                 sdsSize="small"
                 sdsType="secondary"
-                onClick={() => setGeneInfoGene(symbol)}
+                onClick={() => setGeneInfoGene(symbol.toUpperCase())}
               />
             </>
           ),
@@ -437,7 +439,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
       <br />
       <i>
         Quardokus, Ellen, Bruce W. Herr II, Lisel Record, Katy Börner. 2022.
-        HuBMAP ASCT+B Tables. Accessed May 16, 2023.
+        HuBMAP ASCT+B Tables. Accessed July 10, 2023.
       </i>
     </div>
   );
@@ -504,18 +506,22 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
           </TableTitleInnerWrapper>
           {tableRows.length > 0 && (
             <TableTitleInnerWrapper>
-              <DropdownSelect
-                handleChange={handleChangeOrganism}
-                options={uniqueOrganisms}
-                selectedOption={selectedOrganism}
-                testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
-              />
-              <DropdownSelect
-                handleChange={handleChangeOrgan}
-                options={uniqueOrgans}
-                selectedOption={selectedOrgan}
-                testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
-              />
+              {activeTable === 1 && (
+                <DropdownSelect
+                  handleChange={handleChangeOrganism}
+                  options={uniqueOrganisms}
+                  selectedOption={selectedOrganism}
+                  testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
+                />
+              )}
+              {activeTable === 0 && (
+                <DropdownSelect
+                  handleChange={handleChangeOrgan}
+                  options={uniqueOrgans}
+                  selectedOption={selectedOrgan}
+                  testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
+                />
+              )}
               <Link
                 url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"

@@ -91,7 +91,7 @@ export default function Description({
               arrow
               title={
                 <div>
-                  {`This summary on \"${cellTypeName}\" was generated with ChatGPT, powered by the GPT4 model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below. CZI is currently offering this as a pilot feature and we may update or change this feature in our discretion.`}
+                  {`This summary on \"${cellTypeName}\" was generated with ChatGPT, powered by the GPT4 model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below. CZI is currently offering this as a pilot feature and we may update or change this feature at our discretion.`}
                   <br />
                   <br />
                   <b>System role</b>
@@ -110,7 +110,7 @@ export default function Description({
               }
             >
               <StyledLink
-                href={"https://platform.openai.com/docs/models/gpt-3-5"}
+                href={"https://platform.openai.com/docs/models/gpt-4"}
                 target="_blank"
                 data-testid={CELL_CARD_GPT_TOOLTIP_LINK}
                 onMouseOver={() => {
