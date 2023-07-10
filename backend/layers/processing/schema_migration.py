@@ -5,7 +5,7 @@ import os
 from typing import Dict, List
 
 import boto3
-import cellxgene_schema
+from cellxgene_schema import schema
 
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
@@ -49,11 +49,12 @@ class SchemaMigrate:
         # evaluate unpublished collections first, so that published versions are skipped if there is an active revision
         has_revision = []  # list of collections to skip if published with an active revision
         for collection in collections:
+
             if collection.is_published() and collection.collection_id not in has_revision:
                 # published collection without an active revision
                 response.append(
                     dict(
-                        can_open_revision=True,
+                        can_open_revision="True",
                         collection_id=collection.collection_id.id,
                         collection_version_id=collection.version_id.id,
                     )
@@ -63,7 +64,7 @@ class SchemaMigrate:
                 has_revision.append(collection.collection_id)  # revision found, skip published version
                 response.append(
                     dict(
-                        can_open_revision=False,
+                        can_open_revision="False",
                         collection_id=collection.collection_id.id,
                         collection_version_id=collection.version_id.id,
                     )
@@ -73,7 +74,7 @@ class SchemaMigrate:
                 # unpublished collection
                 response.append(
                     dict(
-                        can_open_revision=False,
+                        can_open_revision="False",
                         collection_id=collection.collection_id.id,
                         collection_version_id=collection.version_id.id,
                     )
@@ -85,20 +86,20 @@ class SchemaMigrate:
             artifact.uri
             for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
             if artifact.type == DatasetArtifactType.RAW_H5AD
-        ]
+        ][0]
         bucket_name, object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.business_logic.s3_provider.download_file(bucket_name, object_key, "previous_schema.h5ad")
-        cellxgene_schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_id, dataset_id)
+        schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_id, dataset_id)
         upload_bucket = os.environ["ARTIFACT_BUCKET"]
         dst_uri = f"{dataset_version_id}/migrated.h5ad"
-        self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri)
+        self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri, {})
         url = f"s3://{upload_bucket}/{dst_uri}"
         return {"collection_id": collection_id, "dataset_version_id": dataset_version_id, "url": url}
 
     def collection_migrate(
         self, collection_id: str, collection_version_id: str, can_open_revision: bool
     ) -> List[Dict[str, str]]:
-        private_collection_id = collection_id
+        private_collection_id = collection_version_id
 
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
@@ -123,7 +124,7 @@ class SchemaMigrate:
         errors = dict()
         collection_version_id = CollectionVersionId(collection_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
-        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
+        current_schema_version = schema.get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
             dataset_version_id = dataset.version_id.id
@@ -184,15 +185,15 @@ class SchemaMigrate:
             response = self.gather_collections()
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
-            datasets = json.loads(os.environ["DATASETS"])
+            collection_version_id = os.environ["COLLECTION_VERSION_ID"]
             can_open_revision = os.environ["CAN_OPEN_REVISION"].lower() == "true"
-            response = self.collection_migrate(collection_id, datasets, can_open_revision)
+            response = self.collection_migrate(collection_id, collection_version_id, can_open_revision)
         elif step_name == "dataset_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             dataset_id = os.environ["DATASET_ID"]
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
             response = self.dataset_migrate(collection_id, dataset_id, dataset_version_id)
-        elif step_name == "publish_and_cleanup":
+        elif step_name == "collection_publish":
             collection_id = os.environ["COLLECTION_ID"]
             can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
             response = self.publish_and_cleanup(collection_id, can_publish)

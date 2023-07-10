@@ -48,7 +48,18 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
             "url": url,
         }
         asset_list.append(result)
-    return asset_list
+    return _with_duplicates_removed(asset_list)  # TODO: de-dupe on DatasetArtifact insertion via unique constraint
+
+
+def _with_duplicates_removed(asset_list: List[dict]) -> List[dict]:
+    asset_types = set()
+    assets = []
+    for asset in asset_list:
+        if asset["filetype"] in asset_types:
+            continue
+        asset_types.add(asset["filetype"])
+        assets.append(asset)
+    return assets
 
 
 def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]]:
@@ -148,7 +159,6 @@ def reshape_for_curation_api(
         contact_name=collection_version.metadata.contact_name,
         created_at=collection_version.created_at,
         curator_name=collection_version.curator_name,
-        datasets=response_datasets,
         description=collection_version.metadata.description,
         doi=doi,
         links=links,
@@ -157,7 +167,10 @@ def reshape_for_curation_api(
         publisher_metadata=collection_version.publisher_metadata,
         visibility=get_visibility(collection_version),
     )
-    if not reshape_for_version_endpoint:
+    if reshape_for_version_endpoint:
+        response["dataset_versions"] = response_datasets
+    else:
+        response["datasets"] = response_datasets
         response.update(
             revised_at=collection_version.canonical_collection.revised_at,
             revising_in=revising_in,

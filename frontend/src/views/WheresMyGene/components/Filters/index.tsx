@@ -454,7 +454,7 @@ export default memo(function Filters({
 
       <Organism isLoading={isLoading} />
 
-      <Compare areFiltersDisabled={!isHeatmapShown} />
+      <Compare areFiltersDisabled={!isHeatmapShown && !isVersion2} />
 
       <div>
         <ViewOptionsLabel>View Options</ViewOptionsLabel>

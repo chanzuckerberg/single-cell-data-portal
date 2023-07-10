@@ -24,6 +24,8 @@ import CellCardSidebar from "./components/CellCardSidebar";
 import { Gene } from "src/views/WheresMyGene/common/types";
 import { throttle } from "lodash";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const CELL_CARD_HEADER_NAME = "cell-card-header-name";
 export const CELL_CARD_HEADER_TAG = "cell-card-header-tag";
@@ -115,7 +117,13 @@ export default function CellCard(): JSX.Element {
               target="_blank"
               rel="noreferrer noopener"
             >
-              <SuggestChangeButton sdsType="primary" sdsStyle="minimal">
+              <SuggestChangeButton
+                sdsType="primary"
+                sdsStyle="minimal"
+                onClick={() => {
+                  track(EVENTS.SUGGEST_CHANGE_CLICKED);
+                }}
+              >
                 Suggest Change
               </SuggestChangeButton>
             </a>
