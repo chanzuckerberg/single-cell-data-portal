@@ -506,18 +506,22 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
           </TableTitleInnerWrapper>
           {tableRows.length > 0 && (
             <TableTitleInnerWrapper>
-              <DropdownSelect
-                handleChange={handleChangeOrganism}
-                options={uniqueOrganisms}
-                selectedOption={selectedOrganism}
-                testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
-              />
-              <DropdownSelect
-                handleChange={handleChangeOrgan}
-                options={uniqueOrgans}
-                selectedOption={selectedOrgan}
-                testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
-              />
+              {activeTable === 1 && (
+                <DropdownSelect
+                  handleChange={handleChangeOrganism}
+                  options={uniqueOrganisms}
+                  selectedOption={selectedOrganism}
+                  testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
+                />
+              )}
+              {activeTable === 0 && (
+                <DropdownSelect
+                  handleChange={handleChangeOrgan}
+                  options={uniqueOrgans}
+                  selectedOption={selectedOrgan}
+                  testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
+                />
+              )}
               <Link
                 url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"
