@@ -99,7 +99,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "ErrorEquals": [
             "States.ALL"
           ],
-          "Next": "report"
+          "Next": "report",
+          "ResultPath": null
         }
       ]
     },
@@ -163,8 +164,11 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Next": "SpanDatasets",
             "Catch": [
               {
-                "ErrorEquals": [],
-                "Next": "CollectionPublish"
+                "ErrorEquals": [
+                  "States.ALL"
+                ],
+                "Next": "CollectionError",
+                "ResultPath": "$.error"
               }
             ]
           },
@@ -221,11 +225,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       "ErrorEquals": [
                         "States.ALL"
                       ],
-                      "Next": "Dataset Error"
+                      "Next": "DatasetError",
+                      "ResultPath": "$.error"
                     }
                   ]
                 },
-                "Dataset Error": {
+                "DatasetError": {
                   "Type": "Pass",
                   "End": true
                 },
@@ -247,7 +252,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       "ErrorEquals": [
                         "States.ALL"
                       ],
-                      "Next": "Dataset Error"
+                      "Next": "DatasetError",
+                      "ResultPath": "$.error"
                     }
                   ]
                 }
@@ -261,7 +267,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "ErrorEquals": [
                   "States.ALL"
                 ],
-                "Next": "CollectionPublish"
+                "Next": "CollectionPublish",
+                "ResultPath": "$.error"
               }
             ]
           },
@@ -297,11 +304,11 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   },
                   {
                     "Name": "COLLECTION_ID",
-                    "Value.$": "$[0].Input.collection_id"
+                    "Value.$": "$[0].collection_id"
                   },
                   {
                     "Name": "CAN_PUBLISH",
-                    "Value.$": "$.can_open_revision"
+                    "Value.$": "$[0].can_open_revision"
                   },
                   {
                     "Name": "TASK_TOKEN",
@@ -316,11 +323,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "ErrorEquals": [
                   "States.ALL"
                 ],
-                "Next": "Collection Error"
+                "Next": "CollectionError",
+                "ResultPath": null
               }
             ]
           },
-          "Collection Error": {
+          "CollectionError": {
             "Type": "Pass",
             "End": true
           }
@@ -329,22 +337,13 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "ItemsPath": "$",
       "MaxConcurrency": 40,
       "Next": "report",
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "BackoffRate": 2,
-          "IntervalSeconds": 1,
-          "MaxAttempts": 0
-        }
-      ],
       "Catch": [
         {
           "ErrorEquals": [
             "States.ALL"
           ],
-          "Next": "report"
+          "Next": "report",
+          "ResultPath": null
         }
       ]
     },
