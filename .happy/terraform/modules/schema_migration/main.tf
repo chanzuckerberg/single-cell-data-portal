@@ -151,8 +151,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Value.$": "$.collection_version_id"
                   },
                   {
-                    "Name": "CAN_OPEN_REVISION",
-                    "Value.$": "$.can_open_revision"
+                    "Name": "CAN_PUBLISH",
+                    "Value.$": "$.can_publish"
                   },
                   {
                     "Name": "TASK_TOKEN",
@@ -167,7 +167,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "ErrorEquals": [
                   "States.ALL"
                 ],
-                "Next": "CollectionError",
+                "Next": "CollectionPublish",
                 "ResultPath": "$.error"
               }
             ]
@@ -228,7 +228,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       "Next": "DatasetError",
                       "ResultPath": "$.error"
                     }
-                  ]
+                  ],
+                  "ResultPath": "$.result"
                 },
                 "DatasetError": {
                   "Type": "Pass",
@@ -255,7 +256,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       "Next": "DatasetError",
                       "ResultPath": "$.error"
                     }
-                  ]
+                  ],
+                  "ResultPath": "$.result"
                 }
               }
             },
@@ -304,11 +306,11 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   },
                   {
                     "Name": "COLLECTION_ID",
-                    "Value.$": "$[0].collection_id"
+                    "Value.$": "$.collection_id"
                   },
                   {
                     "Name": "CAN_PUBLISH",
-                    "Value.$": "$[0].can_open_revision"
+                    "Value.$": "$.can_publish"
                   },
                   {
                     "Name": "TASK_TOKEN",

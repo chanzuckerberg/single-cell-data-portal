@@ -35,10 +35,10 @@ class SchemaMigrate:
         This function is used to gather all the collections and their datasets that will be migrated
         :return: A dictionary with the following structure:
         [
-            {"can_open_revision": True, "collection_id": "<collection_id>"},
-            {"can_open_revision": False, "collection_id": "<collection_id>", "collection_version_id":
+            {"can_publish": True, "collection_id": "<collection_id>"},
+            {"can_publish": False, "collection_id": "<collection_id>", "collection_version_id":
             "<collection_version_id>"},
-            {"can_open_revision": False, "collection_id": "<collection_id>"},
+            {"can_publish": False, "collection_id": "<collection_id>"},
             ...
         ]
         """
@@ -63,7 +63,7 @@ class SchemaMigrate:
                 # published collection without an active revision
                 response.append(
                     dict(
-                        can_open_revision="True",
+                        can_publish="True",
                         collection_id=collection.collection_id.id,
                         collection_version_id=collection.version_id.id,
                     )
@@ -73,7 +73,7 @@ class SchemaMigrate:
                 has_revision.append(collection.collection_id)  # revision found, skip published version
                 response.append(
                     dict(
-                        can_open_revision="False",
+                        can_publish="False",
                         collection_id=collection.collection_id.id,
                         collection_version_id=collection.version_id.id,
                     )
@@ -83,7 +83,7 @@ class SchemaMigrate:
                 # unpublished collection
                 response.append(
                     dict(
-                        can_open_revision="False",
+                        can_publish="False",
                         collection_id=collection.collection_id.id,
                         collection_version_id=collection.version_id.id,
                     )
@@ -106,7 +106,7 @@ class SchemaMigrate:
         return {"collection_id": collection_id, "dataset_version_id": dataset_version_id, "url": url}
 
     def collection_migrate(
-        self, collection_id: str, collection_version_id: str, can_open_revision: bool
+        self, collection_id: str, collection_version_id: str, can_publish: bool
     ) -> List[Dict[str, str]]:
         private_collection_id = collection_version_id
 
@@ -116,12 +116,13 @@ class SchemaMigrate:
         for dataset in version.datasets:
             datasets.append({"dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id})
 
-        if can_open_revision:
+        if can_publish:
             private_collection_id = self.business_logic.create_collection_version(
                 CollectionId(collection_id)
             ).version_id.id
         return [
             {
+                "can_publish": "true" if can_publish else "false",
                 "collection_id": private_collection_id,
                 "dataset_id": dataset["dataset_id"],
                 "dataset_version_id": dataset["dataset_version_id"],
@@ -218,12 +219,12 @@ class SchemaMigrate:
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
-            can_open_revision = os.environ["CAN_OPEN_REVISION"].lower() == "true"
+            can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
             collection_migrate = self.error_decorator(self.collection_migrate, collection_id)
             response = collection_migrate(
                 collection_id=collection_id,
                 collection_version_id=collection_version_id,
-                can_open_revision=can_open_revision,
+                can_publish=can_publish,
             )
         elif step_name == "dataset_migrate":
             collection_id = os.environ["COLLECTION_ID"]
@@ -240,7 +241,7 @@ class SchemaMigrate:
             response = publish_and_cleanup(collection_id=collection_id, can_publish=can_publish)
         elif step_name == "report":
             response = self.report()
-        self.logger.info("Response", extra=response)
+        self.logger.info("output", extra={"response": response})
         sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(taskToken=os.environ["TASK_TOKEN"], output=json.dumps(response))
         return True

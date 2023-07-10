@@ -4,7 +4,7 @@ from backend.layers.common.entities import CollectionVersionId
 
 
 class TestCollectionMigrate:
-    def test_can_open_revision_true(self, schema_migrate_and_collections):
+    def test_can_publish_true(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         published = collections["published"][0]
         collection_version_id = CollectionVersionId()
@@ -21,7 +21,7 @@ class TestCollectionMigrate:
             response[i].pop("collection_id")
             assert response[i] == datasets[i]
 
-    def test_can_open_revision_false(self, schema_migrate_and_collections):
+    def test_can_publish_false(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         private = collections["private"][0]
         datasets = [
