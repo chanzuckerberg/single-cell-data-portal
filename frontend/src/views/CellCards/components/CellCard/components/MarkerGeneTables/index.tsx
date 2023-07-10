@@ -232,7 +232,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
                 sdsIcon="infoCircle"
                 sdsSize="small"
                 sdsType="secondary"
-                onClick={() => setGeneInfoGene(symbol)}
+                onClick={() => setGeneInfoGene(symbol.toUpperCase())}
               />
             </>
           ),
@@ -366,7 +366,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
                 sdsIcon="infoCircle"
                 sdsSize="small"
                 sdsType="secondary"
-                onClick={() => setGeneInfoGene(symbol)}
+                onClick={() => setGeneInfoGene(symbol.toUpperCase())}
               />
             </>
           ),
