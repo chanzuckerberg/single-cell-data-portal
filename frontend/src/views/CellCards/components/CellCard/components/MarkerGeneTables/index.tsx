@@ -35,6 +35,7 @@ import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 
 export const CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM =
   "cell-card-marker-genes-table-dropdown-organism";
@@ -220,6 +221,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
       for (const markerGene of genes) {
         const { pc, me, name, symbol, organism, marker_score } = markerGene;
         if (organism !== selectedOrganism) continue;
+        if (marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
         rows.push({
           symbolId: symbol,
           symbol: (
