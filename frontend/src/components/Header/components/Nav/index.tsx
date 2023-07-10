@@ -8,7 +8,7 @@ import NavDivider from "src/components/Header/components/Nav/components/NavDivid
 import { isRouteActive } from "src/components/Header";
 import { LinkWrapper, Nav as NavWrapper } from "./style";
 
-const CENSUS_LINK = "https://cellxgene-census.readthedocs.io/en/latest";
+const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
 
 interface Props {
   className?: string;
@@ -65,7 +65,7 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
             href="passHref"
             minimal
             onClick={() => {
-              track(EVENTS.CELL_CARDS_CLICK_NAV);
+              track(EVENTS.CELL_GUIDE_CLICK_NAV);
             }}
             text="Cell Cards"
           />

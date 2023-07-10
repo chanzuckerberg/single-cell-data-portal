@@ -1,11 +1,13 @@
 import { MouseEventHandler } from "react";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
-import { Group } from "@visx/group";
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
 import { TreeNodeWithState } from "../../common/types";
 import Text from "./components/Text";
 import RectOrCircle from "./components/RectOrCircle";
+import { StyledGroup } from "./style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL =
   "cell-card-ontology-dag-view-clickable-text-label";
@@ -44,12 +46,23 @@ export default function Node({
 }: NodeProps) {
   const router = useRouter();
 
+  // text labels should only collapse/expand node for dummy nodes
+  const onClick = node.data.id.startsWith("dummy-child")
+    ? handleClick
+    : undefined;
+  const textCursor = node.data.id.startsWith("dummy-child")
+    ? "pointer"
+    : "default";
+
   return (
-    <Group top={top} left={left} key={animationKey} opacity={opacity}>
+    <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
       {isInCorpus ? (
         <g
           data-testid={`${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-${node.data.id}`}
           onClick={() => {
+            track(EVENTS.CG_TREE_CELL_TYPE_CLICKED, {
+              cell_type: node.data.name,
+            });
             router.push(
               `${ROUTES.CELL_CARDS}/${node.data.id
                 .replace(":", "_")
@@ -67,11 +80,14 @@ export default function Node({
           </a>
         </g>
       ) : (
-        <Text
-          isInCorpus={isInCorpus}
-          name={node.data.name}
-          maxWidth={maxWidth}
-        />
+        <g onClick={onClick}>
+          <Text
+            isInCorpus={isInCorpus}
+            name={node.data.name}
+            maxWidth={maxWidth}
+            cursor={textCursor}
+          />
+        </g>
       )}
       <RectOrCircle
         animationKey={`${animationKey}-rect-or-circle`}
@@ -81,6 +97,6 @@ export default function Node({
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
       />
-    </Group>
+    </StyledGroup>
   );
 }

@@ -5,9 +5,9 @@ from backend.layers.common.entities import DatasetProcessingStatus, DatasetVersi
 
 
 @mock.patch.dict(os.environ, {"ARTIFACT_BUCKET": "upload_bucket"})
-@mock.patch("backend.layers.processing.schema_migration.cellxgene_schema")
+@mock.patch("backend.layers.processing.schema_migration.schema")
 class TestPublishAndCleanup:
-    def test_publish_and_cleanup(self, mock_cellxgene_schema, schema_migrate_and_collections):
+    def test_publish_and_cleanup(self, mock_schema, schema_migrate_and_collections):
         schema_migrate, _ = schema_migrate_and_collections
         dataset_status = mock.Mock(processing_status=DatasetProcessingStatus.SUCCESS)
         metadata = mock.Mock(schema_version="1.0.0")
@@ -21,7 +21,7 @@ class TestPublishAndCleanup:
                 )
             ]
         )
-        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
+        mock_schema.get_current_schema_version.return_value = "1.0.0"
 
         errors = schema_migrate.publish_and_cleanup("collection_version_id", True)
         assert errors == {}
@@ -30,7 +30,7 @@ class TestPublishAndCleanup:
             "upload_bucket", ["successful_dataset_version_id/migrated.h5ad"]
         )
 
-    def test_publish_and_cleanup__with_errors(self, mock_cellxgene_schema, schema_migrate_and_collections):
+    def test_publish_and_cleanup__with_errors(self, mock_schema, schema_migrate_and_collections):
         schema_migrate, _ = schema_migrate_and_collections
         dataset_status_success = mock.Mock(processing_status=DatasetProcessingStatus.SUCCESS)
         dataset_status_failure = mock.Mock(
@@ -58,7 +58,7 @@ class TestPublishAndCleanup:
                 ),
             ]
         )
-        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
+        mock_schema.get_current_schema_version.return_value = "1.0.0"
 
         errors = schema_migrate.publish_and_cleanup("collection_version_id", True)
         assert len(errors) == 2
@@ -74,7 +74,7 @@ class TestPublishAndCleanup:
             ],
         )
 
-    def test_publish_and_cleanup__can_not_publish(self, mock_cellxgene_schema, schema_migrate_and_collections):
+    def test_publish_and_cleanup__can_not_publish(self, mock_schema, schema_migrate_and_collections):
         schema_migrate, _ = schema_migrate_and_collections
         dataset_status = mock.Mock(processing_status=DatasetProcessingStatus.SUCCESS)
         metadata = mock.Mock(schema_version="1.0.0")
@@ -88,7 +88,7 @@ class TestPublishAndCleanup:
                 )
             ]
         )
-        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
+        mock_schema.get_current_schema_version.return_value = "1.0.0"
 
         errors = schema_migrate.publish_and_cleanup("collection_version_id", False)
         assert errors == {}
