@@ -272,7 +272,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "Next": "CollectionPublish",
                 "ResultPath": "$.error"
               }
-            ]
+            ],
+            "OutputPath": "$[0]"
           },
           "CollectionPublish": {
             "Type": "Task",
