@@ -39,7 +39,7 @@ interface Props {
   tissue: Tissue;
   tissueID: string;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
-  handleExpandCollapse: (tissue: Tissue) => void;
+  handleExpandCollapse: (tissueID: string, tissueName: Tissue) => void;
   expandedTissues: Set<Tissue>;
   selectedOrganismId: string;
 }
@@ -99,9 +99,10 @@ export default memo(function YAxisChart({
                   key={`${cellType}-cell-type-button`}
                   formattedName={paddedName}
                   metadata={cellType}
-                  tissue={tissue}
+                  tissueID={tissueID}
                   generateMarkerGenes={generateMarkerGenes}
                   expanded={expanded}
+                  tissueName={name}
                   handleExpandCollapse={handleExpandCollapse}
                   data-testid="cell-type-label"
                 />
@@ -128,15 +129,17 @@ export default memo(function YAxisChart({
 const TissueHeaderButton = ({
   formattedName,
   metadata,
-  tissue,
   handleExpandCollapse,
   expanded,
+  tissueID,
+  tissueName,
 }: {
   formattedName: string;
   metadata: CellTypeMetadata;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
-  tissue: Tissue;
-  handleExpandCollapse: (tissue: Tissue) => void;
+  tissueID: string;
+  tissueName: Tissue;
+  handleExpandCollapse: (tissueID: string, tissueName: Tissue) => void;
   expanded: boolean;
 }) => {
   const { total_count } = deserializeCellTypeMetadata(metadata);
@@ -153,8 +156,8 @@ const TissueHeaderButton = ({
     >
       <FlexRow
         onClick={useCallback(() => {
-          handleExpandCollapse(tissue);
-        }, [tissue, handleExpandCollapse])}
+          handleExpandCollapse(tissueID, tissueName);
+        }, [tissueID, tissueName, handleExpandCollapse])}
       >
         <Icon
           sdsIcon={expanded ? "triangleDown" : "triangleRight"}

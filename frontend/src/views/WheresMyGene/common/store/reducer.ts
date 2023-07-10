@@ -17,6 +17,7 @@ export interface State {
     diseases: string[];
     ethnicities: string[];
     sexes: string[];
+    tissues: string[];
   };
 
   // New state for publication filter
@@ -46,6 +47,7 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   diseases: [],
   ethnicities: [],
   sexes: [],
+  tissues: [],
 };
 
 // Need this to initialize selectedPublicationFilter

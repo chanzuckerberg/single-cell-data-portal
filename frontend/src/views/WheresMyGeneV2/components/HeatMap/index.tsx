@@ -108,7 +108,10 @@ export default memo(function HeatMap({
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes });
 
-  const { xAxisHeight } = useContext(StateContext);
+  const {
+    xAxisHeight,
+    selectedFilters: { tissues: filteredTissues },
+  } = useContext(StateContext);
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const chartWrapperRef = useRef<HTMLDivElement>(null);
@@ -186,11 +189,16 @@ export default memo(function HeatMap({
 
   const initialDisplayedCellTypes = useMemo(
     () =>
-      Object.entries(tissuesByName).reduce((acc, [tissue]) => {
-        acc.add(tissue + tissue);
+      Object.entries(tissuesByName).reduce((acc, [_, { id }]) => {
+        if (
+          (filteredTissues.length > 0 && filteredTissues.includes(id)) ||
+          filteredTissues.length === 0
+        ) {
+          acc.add(id + id);
+        }
         return acc;
       }, new Set<string>()),
-    [tissuesByName]
+    [tissuesByName, filteredTissues]
   );
 
   // set of tissue names that are visible and set of cell types that are visible
@@ -205,24 +213,27 @@ export default memo(function HeatMap({
   }, [initialDisplayedCellTypes, setExpandedTissues, selectedOrganismId]);
 
   const handleExpandCollapse = useCallback(
-    (tissue: string) => {
+    (tissueID: string, tissueName: Tissue) => {
       const newDisplayedCellTypes = new Set<string>(displayedCellTypes);
       const newExpandedTissues = new Set<string>(expandedTissues);
       let addedTissue = false;
 
-      if (expandedTissues.has(tissue)) {
-        newExpandedTissues.delete(tissue);
+      if (expandedTissues.has(tissueID)) {
+        newExpandedTissues.delete(tissueID);
       } else {
-        newExpandedTissues.add(tissue);
+        newExpandedTissues.add(tissueID);
         addedTissue = true;
       }
       if (addedTissue) {
-        sortedCellTypesByTissueName[tissue].forEach((cellType) => {
-          newDisplayedCellTypes.add(tissue + cellType.cellTypeName);
+        sortedCellTypesByTissueName[tissueName].forEach((cellType) => {
+          newDisplayedCellTypes.add(tissueID + cellType.cellTypeName);
         });
       } else {
         [...newDisplayedCellTypes].forEach((cellType) => {
-          if (cellType.includes(tissue) && cellType !== `${tissue}${tissue}`) {
+          if (
+            cellType.includes(tissueID) &&
+            cellType !== `${tissueID}${tissueID}`
+          ) {
             newDisplayedCellTypes.delete(cellType);
           }
         });
@@ -262,6 +273,7 @@ export default memo(function HeatMap({
                   cellTypes,
                   sortedCellTypesByTissueName,
                   tissue: tissue.name,
+                  tissueID: tissue.id,
                   displayedCellTypes,
                 });
 
@@ -293,6 +305,7 @@ export default memo(function HeatMap({
                   cellTypes,
                   sortedCellTypesByTissueName,
                   tissue: tissue.name,
+                  tissueID: tissue.id,
                   displayedCellTypes: displayedCellTypes,
                 });
 
@@ -359,12 +372,14 @@ function getTissueCellTypes({
   cellTypes,
   sortedCellTypesByTissueName,
   tissue,
+  tissueID,
   cellTypeSortBy,
   displayedCellTypes,
 }: {
   cellTypes: { [tissue: Tissue]: CellTypeRow[] };
   sortedCellTypesByTissueName: { [tissue: string]: CellTypeRow[] };
   tissue: Tissue;
+  tissueID: string;
   cellTypeSortBy: SORT_BY;
   displayedCellTypes: Set<string>;
 }) {
@@ -378,7 +393,7 @@ function getTissueCellTypes({
       : sortedTissueCellTypes) || EMPTY_ARRAY;
 
   ret = ret.filter((cellType) =>
-    displayedCellTypes.has(tissue + cellType.cellTypeName)
+    displayedCellTypes.has(tissueID + cellType.cellTypeName)
   );
 
   return ret;
@@ -390,12 +405,13 @@ const memoizedGetTissueCellTypes = memoize(
     cellTypes,
     sortedCellTypesByTissueName,
     tissue,
+    tissueID,
     cellTypeSortBy,
     displayedCellTypes,
   }) => {
-    return `${tissue}-${cellTypeSortBy}-${[...displayedCellTypes]?.join(
-      ""
-    )}-${cellTypes[tissue]
+    return `${tissue}-${tissueID}-${cellTypeSortBy}-${[
+      ...displayedCellTypes,
+    ]?.join("")}-${cellTypes[tissue]
       ?.map((cellType) => cellType.viewId)
       .join("")}-${sortedCellTypesByTissueName[tissue]?.join("")}`;
   }
