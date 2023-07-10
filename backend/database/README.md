@@ -27,6 +27,8 @@
    2. In your PR, change the `data_load_path` local variable [in the ecs-stack module](../../.happy/terraform/modules/ecs-stack/main.tf) to reflect the new dump file above that you have written to s3.
 10. Once the PR is merged, migrations will be run as part of the deployment process to each env.
 
+While migrations should run automatically as part of our deployment process, if a manual migration is required: 11. [Connect to Remote RDS](#connect-to-remote-rds) to single-cell-dev 12. In a new terminal, complete the migration in the single-cell-dev test env by running:
+
 ```shell
 cd $REPO_ROOT/backend
 DEPLOYMENT_STAGE=test make db/migrate
