@@ -392,6 +392,32 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
         self.assertIsNotNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
 
+    def test_get_collection_version_for_tombstoned_collection(self):
+        """
+        A tombstoned Collection's versions can only be obtained if the `get_tombstoned` flag is explicitly set to True
+        """
+        version = self.initialize_published_collection()
+        revision_version = self.business_logic.create_collection_version(version.collection_id)
+        self.business_logic.publish_collection_version(revision_version.version_id)
+        published_versions = self.business_logic.get_all_published_collection_versions_from_canonical(
+            version.collection_id
+        )
+        self.assertEqual(2, len(list(published_versions)))
+
+        # Tombstone the Collection
+        self.business_logic.tombstone_collection(version.collection_id)
+
+        with self.subTest("Does not retrieve tombstoned Collection version without get_tombstoned=True"):
+            past_version_none = self.business_logic.get_collection_version(version.version_id)
+            self.assertIsNone(past_version_none)
+
+        with self.subTest("Retreives tombstoned Collection version when get_tombstoned=True"):
+            past_version_tombstoned = self.business_logic.get_collection_version(
+                version.version_id, get_tombstoned=True
+            )
+            self.assertIsNotNone(past_version_tombstoned)
+            self.assertEqual(True, past_version_tombstoned.canonical_collection.tombstoned)
+
 
 class TestGetAllCollections(BaseBusinessLogicTestCase):
     def test_get_all_collections_unfiltered_ok(self):
@@ -1146,7 +1172,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.business_logic.tombstone_collection(published_collection.collection_id)
 
         # The collection version canonical collection has tombstoned marked as True
-        collection_version = self.business_logic.get_collection_version(published_collection.version_id)
+        collection_version = self.business_logic.get_collection_version(
+            published_collection.version_id, get_tombstoned=True
+        )
         self.assertTrue(collection_version.canonical_collection.tombstoned)
 
     def test_publish_version_fails_on_published_collection(self):
@@ -1550,7 +1578,9 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
                 self.assertTrue(self.s3_provider.uri_exists(f"s3://fake-bucket/{key}"))
                 expected_delete_keys.update([f"{d_v_id}.{file_type}"])
         actual_delete_keys = set(
-            self.business_logic.delete_datasets_from_bucket(published_collection.collection_id, "fake-bucket")
+            self.business_logic.delete_all_dataset_versions_from_bucket_for_collection(
+                published_collection.collection_id, "fake-bucket"
+            )
         )
         self.assertTrue(self.s3_provider.is_empty())
         self.assertTrue(len(expected_delete_keys) > 0)

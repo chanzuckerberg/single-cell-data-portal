@@ -112,9 +112,20 @@ variable backend_memory {
   default     = 2048
 }
 
+variable "backend_cpus" {
+  type        = number
+  description = "CPUs for the backend task"
+  default     = 2
+}
+
 variable frontend_memory {
   type        = number
   description = "Memory reservation for the backend task"
   default     = 4096
 }
 
+variable schema_migration_ecs_memory {
+  type        = number
+  description = "Memory reservation for the schema_migration ecs task"
+  default     = 2048
+}

@@ -1,4 +1,10 @@
-import React, { ReactNode, useEffect, useMemo, useState } from "react";
+import React, {
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ButtonIcon, Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
@@ -7,7 +13,6 @@ import {
   TableUnavailableHeader,
   TableUnavailableDescription,
   TableTitleInnerWrapper,
-  StyledDivider,
 } from "../common/style";
 import Link from "../common/Link";
 import {
@@ -15,6 +20,8 @@ import {
   TableSelectorButton,
   TableSelectorRow,
   TableTitleOuterWrapper,
+  StyledHeadCellContent,
+  MarkerStrengthContainer,
 } from "./style";
 import Table from "../common/Table";
 import DropdownSelect from "../common/DropdownSelect";
@@ -26,6 +33,9 @@ import {
 } from "src/common/queries/cellCards";
 import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 
 export const CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM =
   "cell-card-marker-genes-table-dropdown-organism";
@@ -39,27 +49,106 @@ export const CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR =
 export const CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR =
   "cell-card-enriched-genes-table-selector";
 
+export const EXPRESSION_SCORE_TOOLTIP_TEST_ID =
+  "cell-card-expression-score-tooltip";
+export const PERCENT_OF_CELLS_TOOLTIP_TEST_ID =
+  "cell-card-percent-of-cells-tooltip";
+export const MARKER_SCORE_TOOLTIP_TEST_ID = "cell-card-marker-score-tooltip";
+
 interface TableRowEnrichedGenes {
   symbol: ReactNode;
   name: string;
+  marker_score: string;
   me: string;
   pc: string;
 }
 const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> = [
   "symbol",
   "name",
+  "marker_score",
   "me",
   "pc",
 ];
 
 const tableColumnNamesEnrichedGenes: Record<
   keyof TableRowEnrichedGenes,
-  string
+  ReactElement | string
 > = {
   symbol: "Symbol",
   name: "Name",
-  me: "Expression Score",
-  pc: "% of Cells",
+  marker_score: (
+    <div>
+      <StyledHeadCellContent>
+        Marker Score
+        <HelpTooltipWrapper
+          buttonDataTestId={MARKER_SCORE_TOOLTIP_TEST_ID}
+          content={
+            <>
+              Marker score interpretation:
+              <br />
+              <MarkerStrengthContainer>
+                {"Low: <1 | Medium: 1-2 | High: >2"}
+              </MarkerStrengthContainer>
+              <br />
+              <div>
+                Marker genes are highly and uniquely expressed in the cell type
+                relative to all other cell types.
+              </div>
+              <br />
+              <div>
+                <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
+                  Click to read more about the identification method.
+                </a>
+              </div>
+            </>
+          }
+        />
+      </StyledHeadCellContent>
+    </div>
+  ),
+  me: (
+    <StyledHeadCellContent>
+      Expression Score
+      <HelpTooltipWrapper
+        buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
+        content={
+          <div>
+            The expression score is the average{" "}
+            <a
+              href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              rankit-normalized gene expression
+            </a>{" "}
+            among cells in the cell type that have non-zero values.
+          </div>
+        }
+      />
+    </StyledHeadCellContent>
+  ),
+  pc: (
+    <StyledHeadCellContent>
+      % of Cells
+      <HelpTooltipWrapper
+        buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
+        content={
+          <div>
+            Percentage of cells expressing a gene in the cell type. These
+            numbers are calculated after cells with{" "}
+            <a
+              href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              low coverage and low expression values
+            </a>{" "}
+            have been filtered out.
+          </div>
+        }
+      />
+    </StyledHeadCellContent>
+  ),
 };
 
 interface TableRowCanonicalGenes {
@@ -81,7 +170,9 @@ const tableColumnNamesCanonicalGenes: Record<
   references: "References",
 };
 
-type TableRow = TableRowEnrichedGenes | TableRowCanonicalGenes;
+type TableRow = (TableRowEnrichedGenes | TableRowCanonicalGenes) & {
+  symbolId: string;
+};
 
 interface Props {
   cellTypeId: string;
@@ -126,11 +217,13 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
 
     tableRows = useMemo(() => {
       if (!genes) return [];
-      const rows = [];
+      const rows: TableRow[] = [];
       for (const markerGene of genes) {
-        const { pc, me, name, symbol, organism } = markerGene;
+        const { pc, me, name, symbol, organism, marker_score } = markerGene;
         if (organism !== selectedOrganism) continue;
+        if (marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
         rows.push({
+          symbolId: symbol,
           symbol: (
             <>
               {symbol}{" "}
@@ -139,11 +232,12 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
                 sdsIcon="infoCircle"
                 sdsSize="small"
                 sdsType="secondary"
-                onClick={() => setGeneInfoGene(symbol)}
+                onClick={() => setGeneInfoGene(symbol.toUpperCase())}
               />
             </>
           ),
           name,
+          marker_score: marker_score.toFixed(2),
           me: me.toFixed(2),
           pc: (pc * 100).toFixed(1),
         });
@@ -174,7 +268,9 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
 
     tableRows = useMemo(() => {
       if (!genes) return [];
-      const rows = [];
+      const rows: (TableRow & {
+        numReferences: number;
+      })[] = [];
 
       const publicationTitlesToIndex = new Map();
       let index = 0;
@@ -215,6 +311,9 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
               publicationTitlesToIndex.get(a[1]) -
               publicationTitlesToIndex.get(b[1])
             );
+          })
+          .filter((publicationTitle, index) => {
+            return publicationTitle && publications[index];
           });
 
         publications = sortedPublicationsAndTitles.map((pub) => pub[0]);
@@ -258,6 +357,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
 
         rows.push({
           name,
+          symbolId: symbol,
           symbol: (
             <>
               {symbol}{" "}
@@ -266,13 +366,22 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
                 sdsIcon="infoCircle"
                 sdsSize="small"
                 sdsType="secondary"
-                onClick={() => setGeneInfoGene(symbol)}
+                onClick={() => setGeneInfoGene(symbol.toUpperCase())}
               />
             </>
           ),
           references: publicationLinks,
+          numReferences: sortedPublicationsAndTitles.length,
         });
       }
+
+      // Sort rows by number of references
+      if (rows.length) {
+        rows.sort((a, b) => {
+          return b.numReferences - a.numReferences;
+        });
+      }
+
       return rows;
     }, [genes, selectedOrgan, setGeneInfoGene]);
   }
@@ -289,7 +398,12 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
     };
   }, []);
 
-  const genesForShareUrl = tableRows.map((row) => row.symbol).join("%2C");
+  // Handle cell type change, set marker genes table page back to 1
+  useEffect(() => {
+    setPage(1);
+  }, [cellTypeId]);
+
+  const genesForShareUrl = tableRows.map((row) => row.symbolId).join("%2C");
 
   const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
     setSelectedOrganism(event.target.value as string);
@@ -325,7 +439,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
       <br />
       <i>
         Quardokus, Ellen, Bruce W. Herr II, Lisel Record, Katy Börner. 2022.
-        HuBMAP ASCT+B Tables. Accessed May 16, 2023.
+        HuBMAP ASCT+B Tables. Accessed July 10, 2023.
       </i>
     </div>
   );
@@ -392,18 +506,22 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
           </TableTitleInnerWrapper>
           {tableRows.length > 0 && (
             <TableTitleInnerWrapper>
-              <DropdownSelect
-                handleChange={handleChangeOrganism}
-                options={uniqueOrganisms}
-                selectedOption={selectedOrganism}
-                testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
-              />
-              <DropdownSelect
-                handleChange={handleChangeOrgan}
-                options={uniqueOrgans}
-                selectedOption={selectedOrgan}
-                testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
-              />
+              {activeTable === 1 && (
+                <DropdownSelect
+                  handleChange={handleChangeOrganism}
+                  options={uniqueOrganisms}
+                  selectedOption={selectedOrganism}
+                  testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
+                />
+              )}
+              {activeTable === 0 && (
+                <DropdownSelect
+                  handleChange={handleChangeOrgan}
+                  options={uniqueOrgans}
+                  selectedOption={selectedOrgan}
+                  testId={CELL_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
+                />
+              )}
               <Link
                 url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"
@@ -412,29 +530,32 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
           )}
         </TableTitleOuterWrapper>
       </TableTitleWrapper>
-      <TableSelectorRow>
-        <TableSelectorButton
-          data-testid={CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR}
-          isActive={activeTable === 0}
-          onClick={() => {
-            setPage(1);
-            setActiveTable(0);
-          }}
-        >
-          Canonical
-        </TableSelectorButton>
-        <TableSelectorButton
-          data-testid={CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR}
-          isActive={activeTable === 1}
-          onClick={() => {
-            setPage(1);
-            setActiveTable(1);
-          }}
-        >
-          Computational
-        </TableSelectorButton>
-      </TableSelectorRow>
-      <StyledDivider />
+      <TableTitleOuterWrapper>
+        <TableSelectorRow>
+          <TableSelectorButton
+            data-testid={CELL_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR}
+            isActive={activeTable === 0}
+            onClick={() => {
+              setPage(1);
+              setActiveTable(0);
+              track(EVENTS.CG_CANONICAL_TAB_CLICKED);
+            }}
+          >
+            Canonical (HuBMAP)
+          </TableSelectorButton>
+          <TableSelectorButton
+            data-testid={CELL_CARD_ENRICHED_GENES_TABLE_SELECTOR}
+            isActive={activeTable === 1}
+            onClick={() => {
+              setPage(1);
+              setActiveTable(1);
+              track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED);
+            }}
+          >
+            Computational (CZI)
+          </TableSelectorButton>
+        </TableSelectorRow>
+      </TableTitleOuterWrapper>
       {tableRows.length > 0 ? (
         <div>
           {tableComponent}
@@ -450,4 +571,18 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
     </div>
   );
 };
+
+interface HelpTooltipWrapperProps {
+  buttonDataTestId: string;
+  content: ReactElement;
+}
+function HelpTooltipWrapper({
+  buttonDataTestId,
+  content,
+}: HelpTooltipWrapperProps) {
+  return (
+    <HelpTooltip dark buttonDataTestId={buttonDataTestId} text={content} />
+  );
+}
+
 export default MarkerGeneTables;

@@ -46,6 +46,7 @@ class DatasetTable:
     id = Column(UUID(as_uuid=True), primary_key=True)
     version_id = Column(UUID(as_uuid=True))
     published_at = Column(DateTime)
+    tombstone = Column(BOOLEAN)
 
 
 @mapper_registry.mapped
