@@ -6,6 +6,9 @@ import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { TreeNodeWithState } from "../../common/types";
 import { useCellTypesById } from "src/common/queries/cellCards";
 import { NODE_SPACINGS, TREE_ANIMATION_DURATION } from "../../common/constants";
+import { EVENTS } from "src/common/analytics/events";
+import { track } from "src/common/analytics";
+import { useState } from "react";
 
 interface AnimatedNodesProps {
   tree: HierarchyPointNode<TreeNodeWithState>;
@@ -32,11 +35,20 @@ export default function AnimatedNodes({
   showTooltip,
   hideTooltip,
 }: AnimatedNodesProps) {
+  const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
+
   const cellTypesById = useCellTypesById() || {};
   const handleMouseOver = (
     event: React.MouseEvent<SVGElement>,
     datum: TreeNodeWithState
   ) => {
+    const id = setTimeout(() => {
+      track(EVENTS.CG_TREE_NODE_HOVER, {
+        cell_type: datum.name,
+      });
+    }, 2000);
+    setTimerId(id);
+
     if (event.target instanceof SVGElement) {
       if (event.target.ownerSVGElement !== null) {
         const coords = localPoint(event.target.ownerSVGElement, event);
@@ -109,7 +121,13 @@ export default function AnimatedNodes({
                   node={node}
                   isTargetNode={cellTypeId === node.data.id.split("__").at(0)}
                   handleMouseOver={handleMouseOver}
-                  handleMouseOut={hideTooltip}
+                  handleMouseOut={() => {
+                    hideTooltip();
+                    if (timerId) {
+                      clearTimeout(timerId);
+                      setTimerId(null);
+                    }
+                  }}
                   maxWidth={NODE_SPACINGS[1] - 20}
                   left={state.left}
                   top={state.top}
@@ -118,11 +136,22 @@ export default function AnimatedNodes({
                     if (duration === 0) {
                       setDuration(TREE_ANIMATION_DURATION);
                     }
+
+                    // If node id starts with dummy-child then it's multiple cell types
                     if (node.data.id.startsWith("dummy-child")) {
+                      track(EVENTS.CG_TREE_NODE_CLICKED, {
+                        cell_type: "multiple cell types",
+                      });
+
                       if (node.parent) {
                         node.parent.data.showAllChildren = true;
                       }
+                    } else {
+                      track(EVENTS.CG_TREE_NODE_CLICKED, {
+                        cell_type: node.data.name,
+                      });
                     }
+
                     node.data.isExpanded = !node.data.isExpanded;
                     if (!node.data.isExpanded) {
                       node.data.showAllChildren = false;
