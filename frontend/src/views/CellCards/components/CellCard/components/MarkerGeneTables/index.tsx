@@ -439,7 +439,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
       <br />
       <i>
         Quardokus, Ellen, Bruce W. Herr II, Lisel Record, Katy Börner. 2022.
-        HuBMAP ASCT+B Tables. Accessed May 16, 2023.
+        HuBMAP ASCT+B Tables. Accessed July 10, 2023.
       </i>
     </div>
   );
