@@ -202,7 +202,7 @@ export default memo(function HeatMap({
   useEffect(() => {
     setDisplayedCellTypes(initialDisplayedCellTypes);
     setExpandedTissues(new Set<string>());
-  }, [initialDisplayedCellTypes, setExpandedTissues]);
+  }, [initialDisplayedCellTypes, setExpandedTissues, selectedOrganismId]);
 
   const handleExpandCollapse = useCallback(
     (tissue: string) => {
@@ -218,7 +218,7 @@ export default memo(function HeatMap({
       }
       if (addedTissue) {
         sortedCellTypesByTissueName[tissue].forEach((cellType) => {
-          newDisplayedCellTypes.add(tissue + cellType.name);
+          newDisplayedCellTypes.add(tissue + cellType.cellTypeName);
         });
       } else {
         [...newDisplayedCellTypes].forEach((cellType) => {
@@ -378,8 +378,9 @@ function getTissueCellTypes({
       : sortedTissueCellTypes) || EMPTY_ARRAY;
 
   ret = ret.filter((cellType) =>
-    displayedCellTypes.has(tissue + cellType.name)
+    displayedCellTypes.has(tissue + cellType.cellTypeName)
   );
+
   return ret;
 }
 
@@ -394,9 +395,9 @@ const memoizedGetTissueCellTypes = memoize(
   }) => {
     return `${tissue}-${cellTypeSortBy}-${[...displayedCellTypes]?.join(
       ""
-    )}-${cellTypes[tissue]?.join("")}-${sortedCellTypesByTissueName[
-      tissue
-    ]?.join("")}`;
+    )}-${cellTypes[tissue]
+      ?.map((cellType) => cellType.viewId)
+      .join("")}-${sortedCellTypesByTissueName[tissue]?.join("")}`;
   }
 );
 

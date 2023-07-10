@@ -151,7 +151,7 @@ export default memo(function Filters({
   } = useFilterDimensions(isVersion2 ? 2 : 1);
 
   const isHeatmapShown =
-    (!selectedTissues || (selectedTissues && !!selectedTissues.length)) &&
+    (isVersion2 || (selectedTissues && !!selectedTissues.length)) &&
     !!selectedGenes.length;
 
   const InputDropdownProps = {
@@ -411,7 +411,7 @@ export default memo(function Filters({
 
       <Organism isLoading={isLoading} />
 
-      <Compare areFiltersDisabled={!isHeatmapShown} />
+      <Compare areFiltersDisabled={!isHeatmapShown && !isVersion2} />
 
       <div>
         <ViewOptionsLabel>View Options</ViewOptionsLabel>
