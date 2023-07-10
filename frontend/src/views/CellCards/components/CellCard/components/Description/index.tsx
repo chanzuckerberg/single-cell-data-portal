@@ -110,7 +110,7 @@ export default function Description({
               }
             >
               <StyledLink
-                href={"https://platform.openai.com/docs/models/gpt-3-5"}
+                href={"https://platform.openai.com/docs/models/gpt-4"}
                 target="_blank"
                 data-testid={CELL_CARD_GPT_TOOLTIP_LINK}
                 onMouseOver={() => {
