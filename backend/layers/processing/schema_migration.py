@@ -198,7 +198,7 @@ class SchemaMigrate:
                     jn = json.load(f)
                 report["errors"].append(jn)
             self.logger.info("Report", extra=report)
-            report_str = json.dumps(report)
+            report_str = json.dumps(report, indent=4, sort_keys=True)
             self.business_logic.s3_provider.delete_files(self.bucket, error_files)
             self._upload_to_slack("schema_migration_report.json", report_str, "Schema migration results.")
             return report
