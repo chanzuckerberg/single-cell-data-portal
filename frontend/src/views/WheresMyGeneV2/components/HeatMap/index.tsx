@@ -61,6 +61,8 @@ import Loader from "src/views/WheresMyGene/components/Loader";
 import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { InputAdornment, TextField } from "@mui/material";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 
@@ -232,6 +234,7 @@ export default memo(function HeatMap({
       } else {
         newExpandedTissues.add(tissueID);
         addedTissue = true;
+        track(EVENTS.WMG_TISSUE_EXPAND, { tissue: tissueName });
       }
       if (addedTissue) {
         sortedCellTypesByTissueName[tissueName].forEach((cellType) => {

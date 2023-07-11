@@ -718,7 +718,7 @@ function download_({
         self_reported_ethnicity_filter: selectedFilters.ethnicities,
         sex_filter: selectedFilters.sexes,
         group_by_option: getCompareOptionNameById(compare),
-
+        tissues_expanded: expandedTissues,
         genes: selectedGenes,
       });
     } catch (error) {
