@@ -240,7 +240,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 ]
               }
             },
-            "Next": "SpanDatasets",
+            "End": true,
             "Catch": [
               {
                 "ErrorEquals": [

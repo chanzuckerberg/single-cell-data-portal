@@ -176,7 +176,7 @@ class SchemaMigrate:
             except Exception as e:
                 self.logger.exception(f"Error in {func.__name__}", extra={"input": {"args": args, "kwargs": kwargs}})
                 self._store_in_s3(
-                    func.__name__, file_name, {"step": func.__name__, "error": str(e), "args": args, "kwargs": kwargs}
+                    "report", file_name, {"step": func.__name__, "error": str(e), "args": args, "kwargs": kwargs}
                 )
                 raise e
 
@@ -190,6 +190,7 @@ class SchemaMigrate:
                     self.bucket, f"schema_migration/{self.execution_id}/report"
                 )
             )
+            self.logger.info("Error files found", extra={"error_files": len(error_files)})
             for file in error_files:
                 local_file = os.path.join(local_path, file)
                 self.business_logic.s3_provider.download_file(self.bucket, file, local_file)
