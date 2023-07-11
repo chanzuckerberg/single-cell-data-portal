@@ -58,21 +58,23 @@ class SchemaMigrate:
             #     print("Skipping collection")
             #     continue
             # # TODO </testing code>
-
-            _resp = dict(
-                collection_id=collection.collection_id.id,
-                collection_version_id=collection.version_id.id,
-            )
+            _resp = {}
             if collection.is_published() and collection.collection_id not in has_revision:
                 # published collection without an active revision
                 _resp["can_publish"] = str(True)
             elif collection.is_unpublished_version():
-                # published collection with an active revision
+                # active revision of a published collection.
                 has_revision.append(collection.collection_id)  # revision found, skip published version
                 _resp["can_publish"] = str(False)
             elif collection.is_initial_unpublished_version():
                 # unpublished collection
                 _resp["can_publish"] = str(False)
+            else:
+                continue  # skip published version with an active revision
+            _resp.update(
+                collection_id=collection.collection_id.id,
+                collection_version_id=collection.version_id.id,
+            )
             response.append(_resp)
         return response
 
