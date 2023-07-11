@@ -32,13 +32,13 @@ jobs:
           git config user.email github-actions@github.com
       - name: Pull Ontology Mappings from S3 and write to data-portal
         run: |
+          aws s3 sync s3://cellxgene-schema-ref-files-prod/ontology-mappings/gzips backend/common/ontology_files 
           aws s3 sync s3://cellxgene-schema-ref-files-prod/ontology-mappings/backend backend/common/utils/ontology_mappings/fixtures
           aws s3 sync s3://cellxgene-schema-ref-files-prod/ontology-mappings/frontend frontend/src/components/common/Filter/descendant_mappings
-          aws s3 sync s3://cellxgene-schema-ref-files-prod/ontology-mappings/gzips backend/common/ontology_files
       - name: Commit
         run: |
-          git add backend/common/utils/ontology_mappings/fixtures
           git add backend/common/ontology_files
+          git add backend/common/utils/ontology_mappings/fixtures
           git add frontend/src/components/common/Filter/descendant_mappings
           git commit -m "AUTO: pull latest ontology files after schema migration"
           git push
