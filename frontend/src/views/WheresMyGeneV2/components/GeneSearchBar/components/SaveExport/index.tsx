@@ -719,6 +719,7 @@ function download_({
         sex_filter: selectedFilters.sexes,
         group_by_option: getCompareOptionNameById(compare),
         tissues_expanded: expandedTissues,
+        tissue_filter: selectedFilters.tissues,
         genes: selectedGenes,
       });
     } catch (error) {
