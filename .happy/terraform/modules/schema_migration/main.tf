@@ -176,7 +176,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "States.ALL"
                 ],
                 "ResultPath": "$.error",
-                "Next": CollectionPublish
+                "Next": "CollectionPublish"
               }
             ]
           },
@@ -344,7 +344,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 }
               }
             },
-            "ItemsPath": "$",
+            "ItemsPath": "$.datasets",
             "Next": "CollectionPublish",
             "MaxConcurrency": 40,
             "Catch": [
@@ -356,8 +356,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "ResultPath": "$.error"
               }
             ],
-            "OutputPath": "$[0]",
-            "Next": "CollectionPublish"
+            "OutputPath": "$[0]"
           },
           "CollectionError": {
             "Type": "Pass",
@@ -365,7 +364,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
           }
         }
       },
-      "ItemsPath": "$.datasets",
+      "ItemsPath": "$",
       "MaxConcurrency": 40,
       "Next": "report",
       "Catch": [

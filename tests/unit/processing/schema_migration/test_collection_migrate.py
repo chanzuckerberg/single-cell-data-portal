@@ -12,7 +12,7 @@ class TestCollectionMigrate:
             version_id=collection_version_id
         )
         datasets = [
-            {"can_publish": True, "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
+            {"can_publish": "True", "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
             for dataset in published.datasets
         ]
         response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, True)
@@ -28,7 +28,7 @@ class TestCollectionMigrate:
         schema_migrate, collections = schema_migrate_and_collections
         private = collections["private"][0]
         datasets = [
-            {"can_publish": False, "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
+            {"can_publish": "False", "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
             for dataset in private.datasets
         ]
         response = schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
@@ -50,4 +50,4 @@ class TestCollectionMigrate:
         response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
         assert response["collection_version_id"] == published.version_id.id
         assert not response["datasets"]
-        assert response["no_datasets"] is True
+        assert response["no_datasets"] == "True"

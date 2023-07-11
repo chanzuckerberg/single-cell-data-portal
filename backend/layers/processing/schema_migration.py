@@ -35,9 +35,9 @@ class SchemaMigrate:
         This function is used to gather all the collections and their datasets that will be migrated
         :return: A dictionary with the following structure:
         [
-            {"can_publish": True, "collection_id": "<collection_id>", "collection_version_id":
+            {"can_publish": "true", "collection_id": "<collection_id>", "collection_version_id":
             "<collection_version_id>"},
-            {"can_publish": False, "collection_id": "<collection_id>", "collection_version_id":
+            {"can_publish": "false", "collection_id": "<collection_id>", "collection_version_id":
             "<collection_version_id>"}
             ...
         ]
@@ -65,14 +65,14 @@ class SchemaMigrate:
             )
             if collection.is_published() and collection.collection_id not in has_revision:
                 # published collection without an active revision
-                _resp["can_publish"] = True
+                _resp["can_publish"] = str(True)
             elif collection.is_unpublished_version():
                 # published collection with an active revision
                 has_revision.append(collection.collection_id)  # revision found, skip published version
-                _resp["can_publish"] = False
+                _resp["can_publish"] = str(False)
             elif collection.is_initial_unpublished_version():
                 # unpublished collection
-                _resp["can_publish"] = False
+                _resp["can_publish"] = str(False)
             response.append(_resp)
         return response
 
@@ -111,12 +111,12 @@ class SchemaMigrate:
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         response = {
-            "can_publish": can_publish,
+            "can_publish": str(can_publish),
             "collection_version_id": private_collection_version_id,
             # ^^^ The top level fields are used for handling error cases in the AWS SFN.
             "datasets": [
                 {
-                    "can_publish": can_publish,
+                    "can_publish": str(can_publish),
                     "collection_version_id": private_collection_version_id,
                     "dataset_id": dataset.dataset_id.id,
                     "dataset_version_id": dataset.version_id.id,
@@ -128,7 +128,7 @@ class SchemaMigrate:
 
         if not response["datasets"]:
             # Handles the case were the collection has no datasets
-            response["no_datasets"] = True
+            response["no_datasets"] = str(True)
         return response
 
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
@@ -220,7 +220,7 @@ class SchemaMigrate:
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
-            can_publish = os.environ["CAN_PUBLISH"]
+            can_publish = os.environ["CAN_PUBLISH"].lower == "true"
             collection_migrate = self.error_wrapper(self.collection_migrate, collection_id)
             response = collection_migrate(
                 collection_id=collection_id,
@@ -239,7 +239,7 @@ class SchemaMigrate:
             )
         elif step_name == "collection_publish":
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
-            can_publish = os.environ["CAN_PUBLISH"]
+            can_publish = os.environ["CAN_PUBLISH"].lower == "true"
             publish_and_cleanup = self.error_wrapper(self.publish_and_cleanup, collection_version_id)
             response = publish_and_cleanup(collection_version_id=collection_version_id, can_publish=can_publish)
         elif step_name == "report":
