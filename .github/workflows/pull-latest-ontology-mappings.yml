@@ -38,6 +38,7 @@ jobs:
       - name: Commit
         run: |
           git add backend/common/utils/ontology_mappings/fixtures
+          git add backend/common/ontology_files
           git add frontend/src/components/common/Filter/descendant_mappings
           git commit -m "AUTO: pull latest ontology files after schema migration"
           git push
