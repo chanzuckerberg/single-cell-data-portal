@@ -3,6 +3,7 @@ version: "3.8"
 services:
   database:
     image: postgres:13.0
+    platform: linux/amd64
     ports:
       - "5432:5432"
     environment:
@@ -35,6 +36,7 @@ services:
           - localstack.corporanet.local
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
+    platform: linux/amd64
     profiles:
       - frontend
     build:
@@ -69,6 +71,7 @@ services:
           - frontend.corporanet.local
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
+    platform: linux/amd64
     profiles:
       - upload_failures
     build:
@@ -105,6 +108,7 @@ services:
           - uploadfailures.corporanet.local
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
+    platform: linux/amd64
     profiles:
       - upload_success
     build:
@@ -141,6 +145,7 @@ services:
           - uploadsuccess.corporanet.local
   dataset_submissions:
     image: "${DOCKER_REPO}dataset-submissions"
+    platform: linux/amd64
     profiles:
       - dataset_submissions
     build:
@@ -176,6 +181,7 @@ services:
           - dataset_submissions.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
+    platform: linux/amd64
     profiles:
       - processing
     build:
@@ -212,6 +218,7 @@ services:
           - processing.corporanet.local
   wmg_processing:
     image: "${DOCKER_REPO}wmg-processing"
+    platform: linux/amd64
     profiles:
       - wmg_processing
     build:
@@ -246,6 +253,7 @@ services:
           - processing.corporanet.local
   backend:
     image: "${DOCKER_REPO}corpora-backend"
+    platform: linux/amd64
     profiles:
       - backend
     build:
