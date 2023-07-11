@@ -14,6 +14,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useState,
 } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -291,6 +292,8 @@ export default memo(function Filters({
     return tissue_terms.filter((tissue) => tissues?.includes(tissue.id));
   }, [tissue_terms, tissues]);
 
+  const [loadedFromState, setLoadedFromState] = useState(false);
+
   const handleFilterChange = useCallback(
     function handleFilterChange_(
       key: keyof (IFilters & {
@@ -322,17 +325,18 @@ export default memo(function Filters({
             const { eventName, eventNameBefore, eventNameAfter, label } =
               ANALYTICS_MAPPING[key];
 
-            if (!isHeatmapShown) {
+            if (!isHeatmapShown && !isLoading) {
               track(eventName, {
                 [label]: selected.name,
               });
-            } else if (loadedStateFromUrl) {
+            } else if (loadedStateFromUrl && !loadedFromState) {
               // If there was a loaded state and filters have not been applied yet, then send 'before' event
-              // Loading state from the URL will trigger this callback which changes state to apply filters
+              // Loading a state from the URL will trigger this callback which changes state to apply filters
               track(eventNameBefore, {
                 [label]: selected.name,
               });
-            } else {
+              setLoadedFromState(true);
+            } else if (loadedFromState && isHeatmapShown && !isLoading) {
               // Filters were applied at least once
               track(eventNameAfter, {
                 [label]: selected.name,
@@ -360,7 +364,7 @@ export default memo(function Filters({
         }
       };
     },
-    [dispatch, isHeatmapShown, loadedStateFromUrl]
+    [dispatch, isHeatmapShown, isLoading, loadedFromState, loadedStateFromUrl]
   );
 
   const handleDatasetsChange = useMemo(
