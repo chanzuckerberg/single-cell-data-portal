@@ -94,6 +94,8 @@ interface Props {
   >;
   expandedTissues: Set<string>;
   setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
+  filteredCellTypes: string[];
+  setFilteredCellTypes: Dispatch<SetStateAction<string[]>>;
 }
 
 export default memo(function HeatMap({
@@ -114,9 +116,9 @@ export default memo(function HeatMap({
   setTissuesByName,
   expandedTissues,
   setExpandedTissues,
+  filteredCellTypes,
+  setFilteredCellTypes,
 }: Props): JSX.Element {
-  useTrackHeatMapLoaded({ selectedGenes: genes });
-
   const {
     xAxisHeight,
     selectedFilters: { tissues: filteredTissues },
@@ -216,8 +218,6 @@ export default memo(function HeatMap({
     initialDisplayedCellTypes
   );
 
-  const [value, setValue] = useState<string[]>([]);
-
   useEffect(() => {
     setDisplayedCellTypes(initialDisplayedCellTypes);
     setExpandedTissues(new Set<string>());
@@ -239,8 +239,9 @@ export default memo(function HeatMap({
       if (addedTissue) {
         sortedCellTypesByTissueName[tissueName].forEach((cellType) => {
           if (
-            value.length == 0 ||
-            (value.length > 0 && value.includes(cellType.cellTypeName))
+            filteredCellTypes.length == 0 ||
+            (filteredCellTypes.length > 0 &&
+              filteredCellTypes.includes(cellType.cellTypeName))
           )
             newDisplayedCellTypes.add(tissueID + cellType.cellTypeName);
         });
@@ -262,7 +263,7 @@ export default memo(function HeatMap({
       expandedTissues,
       setExpandedTissues,
       sortedCellTypesByTissueName,
-      value,
+      filteredCellTypes,
     ]
   );
 
@@ -278,7 +279,7 @@ export default memo(function HeatMap({
 
   // update displayedCellTypes and expandedTissues
   useEffect(() => {
-    if (value.length === 0) {
+    if (filteredCellTypes.length === 0) {
       setDisplayedCellTypes(initialDisplayedCellTypes);
       setExpandedTissues(new Set<string>());
       return;
@@ -293,7 +294,7 @@ export default memo(function HeatMap({
         )
           return;
         cellTypes.forEach((cellType) => {
-          if (value.includes(cellType.name)) {
+          if (filteredCellTypes.includes(cellType.name)) {
             newDisplayedCellTypes.add(
               tissuesByName[tissue].id + tissuesByName[tissue].id
             );
@@ -311,28 +312,39 @@ export default memo(function HeatMap({
     setExpandedTissues,
     sortedCellTypesByTissueName,
     tissuesByName,
-    value,
+    filteredCellTypes,
     filteredTissues,
   ]);
 
   const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
-    const newValue = value.filter(
+    const newValue = filteredCellTypes.filter(
       (cellType) => !cellTypeToDelete.includes(cellType)
     );
-    setValue(newValue);
+    setFilteredCellTypes(newValue);
   };
+
+  useTrackHeatMapLoaded({
+    selectedGenes: genes,
+    displayedCellTypes,
+    selectedCellTypes: filteredCellTypes,
+  });
 
   return (
     <>
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
-          <CellTypeFilterContainer id="celltype-filter-container">
+          <CellTypeFilterContainer
+            id="celltype-filter-container"
+            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+          >
             <StyledAutocomplete
-              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               multiple
-              value={value}
+              value={filteredCellTypes}
               onChange={(_, newValue) => {
-                setValue(newValue as string[]);
+                setFilteredCellTypes(newValue as string[]);
+                track(EVENTS.WMG_SELECT_CELL_TYPE, {
+                  cell_types: newValue as string[],
+                });
               }}
               renderInput={(params) => (
                 <TextField
@@ -351,8 +363,8 @@ export default memo(function HeatMap({
               )}
               options={uniqueCellTypes}
             />
-            <CellTypeTagContainer className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
-              {value.map((cellType) => (
+            <CellTypeTagContainer>
+              {filteredCellTypes.map((cellType) => (
                 <StyledTag
                   label={cellType}
                   key={cellType}

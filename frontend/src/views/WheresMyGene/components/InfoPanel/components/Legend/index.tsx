@@ -27,6 +27,7 @@ interface Props {
   availableFilters: Partial<FilterDimensions>;
   tissues?: string[];
   expandedTissues?: Set<string>;
+  filteredCellTypes?: string[];
 }
 
 export default memo(function Legend({
@@ -41,6 +42,7 @@ export default memo(function Legend({
   availableFilters,
   tissues,
   expandedTissues,
+  filteredCellTypes,
 }: Props): JSX.Element {
   return (
     <LegendWrapper data-testid="legend-wrapper">
@@ -68,6 +70,7 @@ export default memo(function Legend({
             availableFilters={availableFilters}
             tissues={tissues || EMPTY_ARRAY}
             expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
+            filteredCellTypes={filteredCellTypes ?? EMPTY_ARRAY}
           />
           <ShareButtonV2 />
         </>
