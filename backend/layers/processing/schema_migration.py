@@ -192,7 +192,7 @@ class SchemaMigrate:
             )
             self.logger.info("Error files found", extra={"error_files": len(error_files)})
             for file in error_files:
-                local_file = os.path.join(local_path, file)
+                local_file = os.path.join(local_path, "data.json")
                 self.business_logic.s3_provider.download_file(self.bucket, file, local_file)
                 with open(local_file, "r") as f:
                     jn = json.load(f)
