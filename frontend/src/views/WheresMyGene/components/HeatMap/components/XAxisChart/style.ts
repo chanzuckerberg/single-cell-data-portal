@@ -1,9 +1,6 @@
 import styled from "@emotion/styled";
 import { SELECTED_STYLE } from "../../style";
-import {
-  HEAT_MAP_BASE_CELL_WIDTH_PX,
-  Y_AXIS_CHART_WIDTH_PX,
-} from "../../utils";
+import { HEAT_MAP_BASE_CELL_WIDTH_PX } from "../../utils";
 
 export const ECHART_AXIS_LABEL_COLOR_HEX = "#000000";
 export const ECHART_AXIS_LABEL_FONT_SIZE_PX = 12;

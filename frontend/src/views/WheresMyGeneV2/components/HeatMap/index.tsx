@@ -33,7 +33,7 @@ import {
 } from "src/views/WheresMyGene/common/types";
 import YAxisChart from "./components/YAxisChart";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { memoize, set } from "lodash";
+import { memoize } from "lodash";
 import {
   useSortedGeneNames,
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
@@ -60,7 +60,6 @@ import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAx
 import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { InputAdornment, TextField } from "@mui/material";
-import { Tag } from "@czi-sds/components";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 
 interface Props {
