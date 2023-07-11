@@ -323,11 +323,9 @@ export default memo(function HeatMap({
     <>
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
-          <CellTypeFilterContainer
-            id="celltype-filter-container"
-            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-          >
+          <CellTypeFilterContainer id="celltype-filter-container">
             <StyledAutocomplete
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               multiple
               value={value}
               onChange={(_, newValue) => {
@@ -350,7 +348,7 @@ export default memo(function HeatMap({
               )}
               options={uniqueCellTypes}
             />
-            <CellTypeTagContainer>
+            <CellTypeTagContainer className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
               {value.map((cellType) => (
                 <StyledTag
                   label={cellType}

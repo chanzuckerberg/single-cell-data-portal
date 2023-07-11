@@ -32,6 +32,7 @@ import {
   StyledImage,
   TissueHeaderLabelStyle,
   Wrapper,
+  TissueLabel,
 } from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
 
 interface Props {
@@ -167,9 +168,12 @@ const TissueHeaderButton = ({
         />
         <TissueHeaderLabelStyle>
           <div>
-            <div className="cell-type-name" data-testid="cell-type-name">
+            <TissueLabel
+              className="cell-type-name"
+              data-testid="cell-type-name"
+            >
               {capitalize(formattedName)}
-            </div>
+            </TissueLabel>
           </div>
         </TissueHeaderLabelStyle>
       </FlexRow>
@@ -245,10 +249,6 @@ const CellTypeButton = ({
           cellType.optionId === COMPARE_OPTION_ID_FOR_AGGREGATED && (
             <InfoButtonWrapper
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-              style={{
-                cursor: "pointer",
-                margin: "auto",
-              }}
               onClick={() => {
                 if (cellType) {
                   generateMarkerGenes(cellType, tissueID);
@@ -261,6 +261,11 @@ const CellTypeButton = ({
               <StyledImage
                 data-testid="marker-gene-button"
                 src={InfoSVG.src}
+                /**
+                 * (thuang): https://nextjs.org/docs/pages/api-reference/components/image-legacy#layout
+                 * Use the <StyledImage /> width and height, since default is `intrinsic`
+                 */
+                layout="fixed"
                 width="10"
                 height="10"
                 alt={`display marker genes for ${cellType.name}`}
