@@ -271,7 +271,7 @@ export default memo(function HeatMap({
     return [...result].sort();
   }, [sortedCellTypesByTissueName]);
 
-// update displayedCellTypes and expandedTissues
+  // update displayedCellTypes and expandedTissues
   useEffect(() => {
     if (value.length === 0) {
       setDisplayedCellTypes(initialDisplayedCellTypes);
