@@ -7,13 +7,14 @@ import sys
 import click
 from click import Context
 
+from backend.layers.persistence.persistence import DatabaseProvider
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
 from urllib.parse import urlparse
 
 from backend.common.corpora_config import CorporaDbConfig
-from backend.common.utils.db_session import DBSessionMaker
 from scripts.cxg_admin_scripts import dataset_details, deletions, migrate, reprocess_datafile, tombstones, updates
 
 logging.basicConfig()
@@ -46,7 +47,8 @@ def cli(ctx, deployment):
     """
     os.environ["DEPLOYMENT_STAGE"] = deployment
     ctx.obj["deployment"] = deployment
-    DBSessionMaker(get_database_uri())
+    ctx.obj["database_provider"] = DatabaseProvider(database_uri=get_database_uri())
+    # DBSessionMaker(get_database_uri())
 
 
 # Commands to delete artifacts (collections or datasets)

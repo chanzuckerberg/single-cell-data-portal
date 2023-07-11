@@ -22,6 +22,11 @@ def tombstone_collection(ctx: Context, uuid: str):
     :param ctx: command context
     :param uuid: ID that identifies the collection to tombstone
     """
+    print(f"Testing DJH context: {ctx} uuid: {uuid}")
+    import pprint
+
+    pprint.pprint(ctx.obj)
+    print(os.environ["DEPLOYMENT_STAGE"])
     pass
 
 
