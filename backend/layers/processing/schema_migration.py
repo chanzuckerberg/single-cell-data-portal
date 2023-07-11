@@ -35,10 +35,10 @@ class SchemaMigrate:
         This function is used to gather all the collections and their datasets that will be migrated
         :return: A dictionary with the following structure:
         [
-            {"can_publish": True, "collection_id": "<collection_id>"},
-            {"can_publish": False, "collection_id": "<collection_id>", "collection_version_id":
+            {"can_publish": True, "collection_id": "<collection_id>", "collection_version_id":
             "<collection_version_id>"},
-            {"can_publish": False, "collection_id": "<collection_id>"},
+            {"can_publish": False, "collection_id": "<collection_id>", "collection_version_id":
+            "<collection_version_id>"}
             ...
         ]
         """
@@ -167,7 +167,7 @@ class SchemaMigrate:
         self.business_logic.s3_provider.upload_file(file_name, self.bucket, key, {})
         self.logger.info("Uploaded to S3", extra={"file_name": file_name, "bucket": self.bucket, "key": key})
 
-    def error_decorator(self, func, file_name: str):
+    def error_wrapper(self, func, file_name: str):
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
@@ -215,13 +215,13 @@ class SchemaMigrate:
         """
         self.logger.info(f"Starting {step_name}", extra={"step": step_name})
         if step_name == "gather_collections":
-            gather_collections = self.error_decorator(self.gather_collections, "gather_collections")
+            gather_collections = self.error_wrapper(self.gather_collections, "gather_collections")
             response = gather_collections()
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
             can_publish = os.environ["CAN_PUBLISH"]
-            collection_migrate = self.error_decorator(self.collection_migrate, collection_id)
+            collection_migrate = self.error_wrapper(self.collection_migrate, collection_id)
             response = collection_migrate(
                 collection_id=collection_id,
                 collection_version_id=collection_version_id,
@@ -231,7 +231,7 @@ class SchemaMigrate:
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
             dataset_id = os.environ["DATASET_ID"]
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
-            dataset_migrate = self.error_decorator(self.dataset_migrate, f"{collection_version_id}_{dataset_id}")
+            dataset_migrate = self.error_wrapper(self.dataset_migrate, f"{collection_version_id}_{dataset_id}")
             response = dataset_migrate(
                 collection_version_id=collection_version_id,
                 dataset_id=dataset_id,
@@ -240,7 +240,7 @@ class SchemaMigrate:
         elif step_name == "collection_publish":
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
             can_publish = os.environ["CAN_PUBLISH"]
-            publish_and_cleanup = self.error_decorator(self.publish_and_cleanup, collection_version_id)
+            publish_and_cleanup = self.error_wrapper(self.publish_and_cleanup, collection_version_id)
             response = publish_and_cleanup(collection_version_id=collection_version_id, can_publish=can_publish)
         elif step_name == "report":
             response = self.report()

@@ -18,6 +18,6 @@ class TestDatasetMigrate:
             response = schema_migrate.dataset_migrate(
                 private.collection_id.id, private.datasets[0].dataset_id.id, dataset_version_id
             )
-            assert response["collection_id"] == private.collection_id.id
+            assert response["collection_version_id"] == private.collection_id.id
             assert response["dataset_version_id"] == dataset_version_id
             assert response["url"] == f"s3://upload_bucket/{dataset_version_id}/migrated.h5ad"

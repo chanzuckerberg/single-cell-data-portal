@@ -3,7 +3,7 @@ import os
 from unittest.mock import Mock
 
 
-def test_error_decorator(schema_migrate_and_collections, tmpdir):
+def test_error_wrapper(schema_migrate_and_collections, tmpdir):
     schema_migrate, collections = schema_migrate_and_collections
     schema_migrate.business_logic.s3_provider.upload_file = Mock()
     filename = os.path.join(tmpdir, "test_file")
@@ -13,7 +13,7 @@ def test_error_decorator(schema_migrate_and_collections, tmpdir):
         raise Exception("error")
 
     with contextlib.suppress(Exception):
-        schema_migrate.error_decorator(func, filename)(1, b=2)
+        schema_migrate.error_wrapper(func, filename)(1, b=2)
     assert os.path.isfile(expected_file)
     schema_migrate.business_logic.s3_provider.upload_file.assert_called_once_with(
         expected_file, "artifact-bucket", f"schema_migration/test-execution-arn/func/{expected_file}", {}
