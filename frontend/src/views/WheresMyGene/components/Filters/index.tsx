@@ -40,7 +40,6 @@ import {
 } from "./style";
 import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
-import { useRouter } from "next/router";
 
 const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };
@@ -124,12 +123,7 @@ export default memo(function Filters({
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
 
-  const {
-    selectedFilters,
-    selectedPublicationFilter,
-    selectedTissues: oldSelectedTissues,
-    selectedGenes,
-  } = state;
+  const { selectedFilters, selectedPublicationFilter, selectedGenes } = state;
 
   const {
     datasets: datasetIds,
@@ -138,8 +132,6 @@ export default memo(function Filters({
     sexes,
     tissues,
   } = selectedFilters;
-  const { pathname } = useRouter();
-  const isVersion2 = pathname.includes("v2");
 
   const { publications } = selectedPublicationFilter;
 
@@ -154,11 +146,9 @@ export default memo(function Filters({
       tissue_terms: rawTissues,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions(isVersion2 ? 2 : 1);
+  } = useFilterDimensions(2);
 
-  const isHeatmapShown =
-    (isVersion2 || (oldSelectedTissues && !!oldSelectedTissues.length)) &&
-    !!selectedGenes.length;
+  const isHeatmapShown = !!selectedGenes.length;
 
   const InputDropdownProps = {
     sdsStyle: "minimal",
@@ -434,27 +424,25 @@ export default memo(function Filters({
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
-        {isVersion2 && (
-          <StyledComplexFilter
-            multiple
-            data-testid="tissue-filter"
-            search
-            label="Tissue"
-            options={tissue_terms as unknown as DefaultMenuSelectOption[]}
-            onChange={handleTissuesChange}
-            value={selectedTissues as unknown as DefaultMenuSelectOption[]}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            DropdownMenuProps={DropdownMenuProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-        )}
+        <StyledComplexFilter
+          multiple
+          data-testid="tissue-filter"
+          search
+          label="Tissue"
+          options={tissue_terms as unknown as DefaultMenuSelectOption[]}
+          onChange={handleTissuesChange}
+          value={selectedTissues as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          DropdownMenuProps={DropdownMenuProps}
+          InputDropdownProps={InputDropdownProps}
+        />
       </div>
 
       <Organism isLoading={isLoading} />
 
-      <Compare areFiltersDisabled={!isHeatmapShown && !isVersion2} />
+      <Compare areFiltersDisabled={false} />
 
       <div>
         <ViewOptionsLabel>View Options</ViewOptionsLabel>

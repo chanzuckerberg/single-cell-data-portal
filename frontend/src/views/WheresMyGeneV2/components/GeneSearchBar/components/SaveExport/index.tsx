@@ -109,7 +109,7 @@ export interface Props {
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
-  tissues: string[];
+  tissues: { [name: string]: OntologyTerm };
   expandedTissues: Set<string>;
   filteredCellTypes: string[];
 }
@@ -328,13 +328,15 @@ export default function SaveExport({
 function generateSvg({
   svg,
   heatmapWidth,
-  tissues,
+  tissueNames,
+  tissuesByName,
   selectedCellTypes,
   expandedTissues,
 }: {
   svg: string;
   heatmapWidth: number;
-  tissues: string[];
+  tissueNames: string[];
+  tissuesByName: { [name: string]: OntologyTerm };
   selectedCellTypes: Props["selectedCellTypes"];
   expandedTissues: Set<string>;
 }) {
@@ -367,10 +369,11 @@ function generateSvg({
   });
 
   // Build heatmaps for all tissues for wmg v2
-  const tissueSVGs = tissues.map((tissueName) => {
+  const tissueSVGs = tissueNames.map((tissueName) => {
     // If tissue is expanded, then use the heatmap height + padding
     // If tissue is NOT expanded, then just add padding
-    const heatmapHeight = expandedTissues.has(tissueName)
+
+    const heatmapHeight = expandedTissues.has(tissuesByName[tissueName].id)
       ? getHeatmapHeight(selectedCellTypes[tissueName]) + X_AXIS_CHART_HEIGHT_PX
       : X_AXIS_CHART_HEIGHT_PX;
 
@@ -502,7 +505,8 @@ async function generateImage({
   heatmapNode,
   heatmapWidth,
   isMultipleFormatDownload,
-  tissues,
+  tissueNames,
+  tissuesByName,
   selectedCellTypes,
   expandedTissues,
 }: {
@@ -510,7 +514,8 @@ async function generateImage({
   heatmapNode: HTMLDivElement;
   heatmapWidth: number;
   isMultipleFormatDownload: boolean;
-  tissues: string[];
+  tissueNames: string[];
+  tissuesByName: { [name: string]: OntologyTerm };
   selectedCellTypes: Props["selectedCellTypes"];
   expandedTissues: Set<string>;
 }): Promise<string | ArrayBuffer> {
@@ -530,7 +535,8 @@ async function generateImage({
     input = generateSvg({
       heatmapWidth,
       svg: decodeURIComponent(imageURL.split(",")[1]),
-      tissues,
+      tissueNames,
+      tissuesByName,
       selectedCellTypes,
       expandedTissues,
     });
@@ -618,7 +624,7 @@ function download_({
     }>
   >;
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
-  tissues: string[];
+  tissues: { [name: string]: OntologyTerm };
   expandedTissues: Set<string>;
   filteredCellTypes: string[];
 }) {
@@ -656,9 +662,9 @@ function download_({
 
       // Do not include tissues that are not in selectedCellTypes
       // For example if DOM is not displaying a certain tissue because it has no cell types (ex. urethra, central nervous system)
-      const tissues = rawTissues.filter((tissueName) =>
-        unorderedTissues.includes(tissueName)
-      );
+      const tissueNames = Object.keys(rawTissues)
+        .filter((tissueName: string) => unorderedTissues.includes(tissueName))
+        .sort();
 
       const exports: ExportData[] =
         // Generate exports for each filetype
@@ -676,7 +682,7 @@ function download_({
                   selectedFilters,
                   selectedOrganismId,
                   availableOrganisms,
-                  tissues,
+                  tissues: tissueNames,
                 });
               } else {
                 input = await generateImage({
@@ -684,7 +690,8 @@ function download_({
                   heatmapNode,
                   heatmapWidth,
                   isMultipleFormatDownload: selectedFileTypes.length > 1,
-                  tissues,
+                  tissueNames,
+                  tissuesByName: rawTissues,
                   selectedCellTypes,
                   expandedTissues,
                 });
