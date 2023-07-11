@@ -53,12 +53,6 @@ class SchemaMigrate:
         # evaluate unpublished collections first, so that published versions are skipped if there is an active revision
         has_revision = []  # list of collections to skip if published with an active revision
         for collection in collections:
-
-            # # TODO <testing code>
-            # if not collection.metadata.name.startswith("TestSchemaMigrate"):
-            #     print("Skipping collection")
-            #     continue
-            # # TODO </testing code>
             _resp = {}
             if collection.is_published() and collection.collection_id not in has_revision:
                 # published collection without an active revision
@@ -80,9 +74,6 @@ class SchemaMigrate:
         return response
 
     def dataset_migrate(self, collection_version_id: str, dataset_id: str, dataset_version_id: str) -> Dict[str, str]:
-        # TODO remove test case
-        if dataset_id == "e04daea4-4412-45b5-989e-76a9be070a89":
-            raise Exception("Test exception dataset_migrate")
         raw_h5ad_uri = [
             artifact.uri
             for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
@@ -100,9 +91,6 @@ class SchemaMigrate:
     def collection_migrate(
         self, collection_id: str, collection_version_id: str, can_publish: bool
     ) -> Union[Dict[str, Any]]:
-        # TODO remove test case
-        if collection_id == "45f0f67d-4b69-4a3c-a4e8-a63b962e843f":
-            raise Exception("Test exception collection_migrate")
 
         if can_publish:
             private_collection_version_id = self.business_logic.create_collection_version(
