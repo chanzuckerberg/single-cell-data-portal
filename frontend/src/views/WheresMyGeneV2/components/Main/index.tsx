@@ -293,10 +293,6 @@ export default function WheresMyGene(): JSX.Element {
     dispatch(addGeneInfoGene(gene));
   };
 
-  const sortedTissues = useMemo(() => {
-    return Object.keys(tissuesByName);
-  }, [tissuesByName]);
-
   return (
     <>
       <Head>
@@ -375,7 +371,7 @@ export default function WheresMyGene(): JSX.Element {
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
               availableFilters={availableFilters}
-              tissues={sortedTissues}
+              tissues={tissuesByName}
               expandedTissues={expandedTissues}
             />
           </Top>
