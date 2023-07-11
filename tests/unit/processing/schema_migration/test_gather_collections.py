@@ -7,7 +7,7 @@ class TestGatherCollections:
         response = schema_migrate.gather_collections()
         assert {"can_open_revision": True, "collection_id": published.collection_id.id} not in response
         assert {
-            "can_open_revision": False,
+            "can_open_revision": "False",
             "collection_id": revision.collection_id.id,
             "collection_version_id": revision.version_id.id,
         } in response
@@ -19,7 +19,7 @@ class TestGatherCollections:
         schema_migrate.business_logic.get_collections.side_effect = [published, []]
         response = schema_migrate.gather_collections()
         assert {
-            "can_open_revision": True,
+            "can_open_revision": "True",
             "collection_id": published[0].collection_id.id,
             "collection_version_id": published[0].version_id.id,
         } in response
@@ -31,7 +31,7 @@ class TestGatherCollections:
         schema_migrate.business_logic.get_collections.side_effect = [[], private]
         response = schema_migrate.gather_collections()
         assert {
-            "can_open_revision": False,
+            "can_open_revision": "False",
             "collection_id": private[0].collection_id.id,
             "collection_version_id": private[0].version_id.id,
         } in response

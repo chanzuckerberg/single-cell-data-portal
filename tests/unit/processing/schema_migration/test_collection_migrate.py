@@ -30,6 +30,6 @@ class TestCollectionMigrate:
         ]
         response = schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
         for i in range(len(response)):
-            assert response[i]["collection_id"] == private.collection_id.id
+            assert response[i]["collection_id"] == private.version_id.id
             response[i].pop("collection_id")
             assert response[i] == datasets[i]
