@@ -9,6 +9,8 @@ import { NavigationJumpTo } from "@czi-sds/components";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { Global } from "@emotion/react";
 import { useEffect, useState } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const CELL_CARD_NAVIGATION_SIDEBAR = "cell-card-navigation-sidebar";
 
@@ -42,6 +44,11 @@ export default function CellCardSidebar({
           <NavigationJumpTo
             items={items}
             offsetTop={HEADER_HEIGHT_PX} // Used to account for header height
+            onClick={(event) => {
+              track(EVENTS.CG_VIEW_SECTION, {
+                section: (event.target as HTMLElement).innerText,
+              });
+            }}
           />
         )}
       </StickyWrapper>

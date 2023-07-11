@@ -65,6 +65,10 @@ const ANALYTICS_MAPPING: {
     eventName: EVENTS.FILTER_SELECT_SEX,
     label: "gender",
   },
+  tissues: {
+    eventName: EVENTS.FILTER_SELECT_TISSUE,
+    label: "tissue",
+  },
 };
 
 const filterOptions = createFilterOptions({
@@ -123,7 +127,7 @@ export default memo(function Filters({
   const {
     selectedFilters,
     selectedPublicationFilter,
-    selectedTissues,
+    selectedTissues: oldSelectedTissues,
     selectedGenes,
   } = state;
 
@@ -132,6 +136,7 @@ export default memo(function Filters({
     diseases,
     ethnicities,
     sexes,
+    tissues,
   } = selectedFilters;
   const { pathname } = useRouter();
   const isVersion2 = pathname.includes("v2");
@@ -146,12 +151,13 @@ export default memo(function Filters({
       self_reported_ethnicity_terms: rawEthnicities,
       publicationFilter: rawPublications,
       sex_terms: rawSexes,
+      tissue_terms: rawTissues,
     },
     isLoading: rawIsLoading,
   } = useFilterDimensions(isVersion2 ? 2 : 1);
 
   const isHeatmapShown =
-    (!selectedTissues || (selectedTissues && !!selectedTissues.length)) &&
+    (isVersion2 || (oldSelectedTissues && !!oldSelectedTissues.length)) &&
     !!selectedGenes.length;
 
   const InputDropdownProps = {
@@ -193,6 +199,15 @@ export default memo(function Filters({
     );
     newDevelopmentStages.sort((a, b) => a.name.localeCompare(b.name));
 
+    const newTissues = rawTissues
+      .filter((tissue) => {
+        // (thuang): Product requirement to exclude "cell culture" from the list
+        // https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/2335
+        return !tissue.name.includes("(cell culture)");
+      })
+      .map(mapTermToFilterOption);
+    newTissues.sort((a, b) => a.name.localeCompare(b.name));
+
     const newAvailableFilters = {
       datasets: newDatasets,
       development_stage_terms: newDevelopmentStages,
@@ -200,6 +215,7 @@ export default memo(function Filters({
       self_reported_ethnicity_terms: newEthnicities,
       publicationFilter: newPublications,
       sex_terms: newSexes,
+      tissue_terms: newTissues,
     };
 
     if (isEqual(availableFilters, newAvailableFilters)) return;
@@ -214,6 +230,7 @@ export default memo(function Filters({
     rawIsLoading,
     availableFilters,
     setAvailableFilters,
+    rawTissues,
   ]);
 
   const {
@@ -222,6 +239,7 @@ export default memo(function Filters({
     self_reported_ethnicity_terms = EMPTY_ARRAY,
     publicationFilter = EMPTY_ARRAY,
     sex_terms = EMPTY_ARRAY,
+    tissue_terms = EMPTY_ARRAY,
   } = availableFilters;
 
   const selectedDatasets = useMemo(() => {
@@ -248,7 +266,11 @@ export default memo(function Filters({
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
   }, [sex_terms, sexes]);
 
-  const handlePublicationFilterChange = useCallback(
+  const selectedTissues = useMemo(() => {
+    return tissue_terms.filter((tissue) => tissues?.includes(tissue.id));
+  }, [tissue_terms, tissues]);
+
+  const handleFilterChange = useCallback(
     function handleFilterChange_(
       key: keyof (IFilters & {
         publications?: DefaultMenuSelectOption[];
@@ -306,28 +328,33 @@ export default memo(function Filters({
   );
 
   const handleDatasetsChange = useMemo(
-    () => handlePublicationFilterChange("datasets"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("datasets"),
+    [handleFilterChange]
   );
 
   const handleDiseasesChange = useMemo(
-    () => handlePublicationFilterChange("diseases"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("diseases"),
+    [handleFilterChange]
   );
 
   const handleEthnicitiesChange = useMemo(
-    () => handlePublicationFilterChange("ethnicities"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("ethnicities"),
+    [handleFilterChange]
   );
 
   const handleSexesChange = useMemo(
-    () => handlePublicationFilterChange("sexes"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("sexes"),
+    [handleFilterChange]
   );
 
   const handlePublicationsChange = useMemo(
-    () => handlePublicationFilterChange("publications"),
-    [handlePublicationFilterChange]
+    () => handleFilterChange("publications"),
+    [handleFilterChange]
+  );
+
+  const handleTissuesChange = useMemo(
+    () => handleFilterChange("tissues"),
+    [handleFilterChange]
   );
 
   return (
@@ -407,11 +434,27 @@ export default memo(function Filters({
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
+        {isVersion2 && (
+          <StyledComplexFilter
+            multiple
+            data-testid="tissue-filter"
+            search
+            label="Tissue"
+            options={tissue_terms as unknown as DefaultMenuSelectOption[]}
+            onChange={handleTissuesChange}
+            value={selectedTissues as unknown as DefaultMenuSelectOption[]}
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            DropdownMenuProps={DropdownMenuProps}
+            InputDropdownProps={InputDropdownProps}
+          />
+        )}
       </div>
 
       <Organism isLoading={isLoading} />
 
-      <Compare areFiltersDisabled={!isHeatmapShown} />
+      <Compare areFiltersDisabled={!isHeatmapShown && !isVersion2} />
 
       <div>
         <ViewOptionsLabel>View Options</ViewOptionsLabel>
