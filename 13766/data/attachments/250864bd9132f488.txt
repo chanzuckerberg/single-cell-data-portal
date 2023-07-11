@@ -1,0 +1,89 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +109ms
+  pw:api   "commit" event fired +32ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +27ms
+  pw:api   "domcontentloaded" event fired +10ms
+  pw:api <= browser.newContext succeeded +29ms
+  pw:api => tracing.start started +7ms
+  pw:api <= tracing.start succeeded +89ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +60ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/cell-guide", waiting until "load" +5ms
+  pw:api   "commit" event fired +216ms
+  pw:api   navigated to "https://localhost:3000/cell-guide" +1ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide" +2ms
+  pw:api <= page.goto succeeded +238ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-card-search-bar-text-input') to be visible +9ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +27ms
+  pw:api <= locator.waitFor succeeded +32ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-card-search-bar-text-input') +6ms
+  pw:api   locator resolved to <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +5ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +23ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +11ms
+  pw:api   "networkidle" event fired +158ms
+  pw:api   click action done +268ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +116ms
+  pw:api => locator.elementHandles started +3ms
+  pw:api <= locator.elementHandles succeeded +2s
+  pw:api => locator.elementHandles started +4ms
+  pw:api <= locator.elementHandles succeeded +2s
+  pw:api => locator.type started +6ms
+  pw:api waiting for getByTestId('cell-card-search-bar-text-input') +306ms
+  pw:api   locator resolved to <div data-testid="cell-card-search-bar-text-input" cl…>…</div> +23ms
+  pw:api elementHandle.type("neuron") +11ms
+  pw:api <= locator.type succeeded +956ms
+  pw:api => locator.elementHandles started +3ms
+  pw:api <= locator.elementHandles succeeded +135ms
+  pw:api => locator.elementHandles started +11ms
+  pw:api <= locator.elementHandles succeeded +138ms
+  pw:api => elementHandle.textContent started +6ms
+  pw:api <= elementHandle.textContent succeeded +34ms
+  pw:api => elementHandle.click started +2ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +16ms
+  pw:api   click action done +196ms
+  pw:api   waiting for scheduled navigations to finish +3ms
+  pw:api   navigations have finished +1ms
+  pw:api <= elementHandle.click succeeded +12ms
+  pw:api => page.waitForURL started +3ms
+  pw:api waiting for navigation to "https://localhost:3000/cell-guide/CL_0000540" until "load" +38ms
+  pw:api   "commit" event fired +38s
+  pw:api   navigated to "https://localhost:3000/cell-guide" +0ms
+  pw:api   navigated to "https://localhost:3000/cell-guide" +29ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/cell-guide" +14ms
+  pw:api   navigated to "https://localhost:3000/cell-guide" +46ms
+  pw:api   "networkidle" event fired +475ms
+  pw:api => page.screenshot started +4m
+  pw:api taking page screenshot +74ms
+  pw:api <= page.screenshot succeeded +113ms
+  pw:api => browserContext.close started +798ms
+  pw:api <= page.waitForURL failed +74ms
+  pw:api <= browserContext.close succeeded +3m
+  pw:api => video.saveAs started +3ms
+  pw:api <= video.saveAs succeeded +16ms
+  pw:api => browser.close started +687ms
+  pw:api <= browser.close succeeded +25ms
