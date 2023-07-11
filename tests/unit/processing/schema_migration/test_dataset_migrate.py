@@ -13,7 +13,7 @@ class TestDatasetMigrate:
         schema_migrate.business_logic.get_dataset_artifacts.return_value = [
             DatasetArtifact(id=None, type="raw_h5ad", uri="s3://fake-bucket/object_key.h5ad")
         ]
-        with mock.patch("backend.layers.processing.schema_migration.schema"):
+        with mock.patch("backend.layers.processing.schema_migration.migrate"):
             dataset_version_id = private.datasets[0].version_id.id
             response = schema_migrate.dataset_migrate(
                 private.collection_id.id, private.datasets[0].dataset_id.id, dataset_version_id

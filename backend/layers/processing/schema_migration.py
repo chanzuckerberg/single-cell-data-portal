@@ -4,7 +4,8 @@ import logging
 import os
 from typing import Any, Dict, List, Union
 
-from cellxgene_schema import schema
+from cellxgene_schema.migrate import migrate
+from cellxgene_schema.schema import get_current_schema_version
 
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.result_notification import upload_to_slack
@@ -89,7 +90,7 @@ class SchemaMigrate:
         ][0]
         bucket_name, object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.business_logic.s3_provider.download_file(bucket_name, object_key, "previous_schema.h5ad")
-        schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_version_id, dataset_id)
+        migrate("previous_schema.h5ad", "migrated.h5ad", collection_version_id, dataset_id)
         upload_bucket = os.environ["ARTIFACT_BUCKET"]
         dst_uri = f"{dataset_version_id}/migrated.h5ad"
         self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri, {})
@@ -137,7 +138,7 @@ class SchemaMigrate:
         errors = dict()
         collection_version_id = CollectionVersionId(collection_version_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
-        current_schema_version = schema.get_current_schema_version()
+        current_schema_version = get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
             dataset_version_id = dataset.version_id.id
