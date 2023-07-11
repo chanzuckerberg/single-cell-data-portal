@@ -284,6 +284,11 @@ export default memo(function HeatMap({
     const newExpandedTissues = new Set<string>();
     Object.entries(sortedCellTypesByTissueName).forEach(
       ([tissue, cellTypes]) => {
+        if (
+          filteredTissues.length > 0 &&
+          !filteredTissues.includes(tissuesByName[tissue].id)
+        )
+          return;
         cellTypes.forEach((cellType) => {
           if (value.includes(cellType.name)) {
             newDisplayedCellTypes.add(
@@ -304,6 +309,7 @@ export default memo(function HeatMap({
     sortedCellTypesByTissueName,
     tissuesByName,
     value,
+    filteredTissues,
   ]);
 
   const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
