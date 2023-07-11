@@ -1,5 +1,10 @@
 name: Pull Ontology Mappings from S3 and Commit
 
+permissions:
+  id-token: write
+  contents: write
+  deployments: write
+
 on:
   repository_dispatch:
     types: [pull-ontology-mappings]
