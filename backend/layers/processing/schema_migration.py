@@ -2,7 +2,7 @@ import itertools
 import json
 import logging
 import os
-from typing import Dict, List
+from typing import Any, Dict, List, Union
 
 from cellxgene_schema import schema
 
@@ -53,44 +53,33 @@ class SchemaMigrate:
         has_revision = []  # list of collections to skip if published with an active revision
         for collection in collections:
 
-            # TODO <testing code>
-            if not collection.metadata.name.startswith("TestSchemaMigrate"):
-                print("Skipping collection")
-                continue
-            # TODO </testing code>
+            # # TODO <testing code>
+            # if not collection.metadata.name.startswith("TestSchemaMigrate"):
+            #     print("Skipping collection")
+            #     continue
+            # # TODO </testing code>
 
+            _resp = dict(
+                collection_id=collection.collection_id.id,
+                collection_version_id=collection.version_id.id,
+            )
             if collection.is_published() and collection.collection_id not in has_revision:
                 # published collection without an active revision
-                response.append(
-                    dict(
-                        can_publish="True",
-                        collection_id=collection.collection_id.id,
-                        collection_version_id=collection.version_id.id,
-                    )
-                )
+                _resp["can_publish"] = True
             elif collection.is_unpublished_version():
                 # published collection with an active revision
                 has_revision.append(collection.collection_id)  # revision found, skip published version
-                response.append(
-                    dict(
-                        can_publish="False",
-                        collection_id=collection.collection_id.id,
-                        collection_version_id=collection.version_id.id,
-                    )
-                )
-                # include collection version id
+                _resp["can_publish"] = False
             elif collection.is_initial_unpublished_version():
                 # unpublished collection
-                response.append(
-                    dict(
-                        can_publish="False",
-                        collection_id=collection.collection_id.id,
-                        collection_version_id=collection.version_id.id,
-                    )
-                )
+                _resp["can_publish"] = False
+            response.append(_resp)
         return response
 
-    def dataset_migrate(self, collection_id: str, dataset_id: str, dataset_version_id: str) -> Dict[str, str]:
+    def dataset_migrate(self, collection_version_id: str, dataset_id: str, dataset_version_id: str) -> Dict[str, str]:
+        # TODO remove test case
+        if dataset_id == "e04daea4-4412-45b5-989e-76a9be070a89":
+            raise Exception("Test exception dataset_migrate")
         raw_h5ad_uri = [
             artifact.uri
             for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
@@ -98,41 +87,53 @@ class SchemaMigrate:
         ][0]
         bucket_name, object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.business_logic.s3_provider.download_file(bucket_name, object_key, "previous_schema.h5ad")
-        schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_id, dataset_id)
+        schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_version_id, dataset_id)
         upload_bucket = os.environ["ARTIFACT_BUCKET"]
         dst_uri = f"{dataset_version_id}/migrated.h5ad"
         self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri, {})
         url = f"s3://{upload_bucket}/{dst_uri}"
-        return {"collection_id": collection_id, "dataset_version_id": dataset_version_id, "url": url}
+        return {"collection_version_id": collection_version_id, "dataset_version_id": dataset_version_id, "url": url}
 
     def collection_migrate(
         self, collection_id: str, collection_version_id: str, can_publish: bool
-    ) -> List[Dict[str, str]]:
-        private_collection_id = collection_version_id
+    ) -> Union[Dict[str, Any]]:
+        # TODO remove test case
+        if collection_id == "45f0f67d-4b69-4a3c-a4e8-a63b962e843f":
+            raise Exception("Test exception collection_migrate")
+
+        if can_publish:
+            private_collection_version_id = self.business_logic.create_collection_version(
+                CollectionId(collection_id)
+            ).version_id.id
+        else:
+            private_collection_version_id = collection_version_id
 
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
-        datasets = []
-        for dataset in version.datasets:
-            datasets.append({"dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id})
+        response = {
+            "can_publish": can_publish,
+            "collection_version_id": private_collection_version_id,
+            # ^^^ The top level fields are used for handling error cases in the AWS SFN.
+            "datasets": [
+                {
+                    "can_publish": can_publish,
+                    "collection_version_id": private_collection_version_id,
+                    "dataset_id": dataset.dataset_id.id,
+                    "dataset_version_id": dataset.version_id.id,
+                }
+                for dataset in version.datasets
+            ]
+            # The repeated fields in datasets is required for the AWS SFN job that uses it.
+        }
 
-        if can_publish:
-            private_collection_id = self.business_logic.create_collection_version(
-                CollectionId(collection_id)
-            ).version_id.id
-        return [
-            {
-                "can_publish": "true" if can_publish else "false",
-                "collection_id": private_collection_id,
-                "dataset_id": dataset["dataset_id"],
-                "dataset_version_id": dataset["dataset_version_id"],
-            }
-            for dataset in datasets
-        ]
+        if not response["datasets"]:
+            # Handles the case were the collection has no datasets
+            response["no_datasets"] = True
+        return response
 
-    def publish_and_cleanup(self, collection_id: str, can_publish: bool) -> Dict[str, str]:
+    def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
         errors = dict()
-        collection_version_id = CollectionVersionId(collection_id)
+        collection_version_id = CollectionVersionId(collection_version_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
         current_schema_version = schema.get_current_schema_version()
         object_keys_to_delete = []
@@ -146,7 +147,7 @@ class SchemaMigrate:
 
         artifact_bucket = os.environ["ARTIFACT_BUCKET"]
         if errors:
-            self._store_in_s3("report", collection_id, errors)
+            self._store_in_s3("report", collection_version_id, errors)
         elif can_publish:
             self.business_logic.publish_collection_version(collection_version_id)
         self.business_logic.s3_provider.delete_files(artifact_bucket, object_keys_to_delete)
@@ -219,7 +220,7 @@ class SchemaMigrate:
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
-            can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
+            can_publish = os.environ["CAN_PUBLISH"]
             collection_migrate = self.error_decorator(self.collection_migrate, collection_id)
             response = collection_migrate(
                 collection_id=collection_id,
@@ -227,18 +228,20 @@ class SchemaMigrate:
                 can_publish=can_publish,
             )
         elif step_name == "dataset_migrate":
-            collection_id = os.environ["COLLECTION_ID"]
+            collection_version_id = os.environ["COLLECTION_VERSION_ID"]
             dataset_id = os.environ["DATASET_ID"]
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
-            dataset_migrate = self.error_decorator(self.dataset_migrate, f"{collection_id}_{dataset_id}")
+            dataset_migrate = self.error_decorator(self.dataset_migrate, f"{collection_version_id}_{dataset_id}")
             response = dataset_migrate(
-                collection_id=collection_id, dataset_id=dataset_id, dataset_version_id=dataset_version_id
+                collection_version_id=collection_version_id,
+                dataset_id=dataset_id,
+                dataset_version_id=dataset_version_id,
             )
         elif step_name == "collection_publish":
-            collection_id = os.environ["COLLECTION_ID"]
-            can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
-            publish_and_cleanup = self.error_decorator(self.publish_and_cleanup, collection_id)
-            response = publish_and_cleanup(collection_id=collection_id, can_publish=can_publish)
+            collection_version_id = os.environ["COLLECTION_VERSION_ID"]
+            can_publish = os.environ["CAN_PUBLISH"]
+            publish_and_cleanup = self.error_decorator(self.publish_and_cleanup, collection_version_id)
+            response = publish_and_cleanup(collection_version_id=collection_version_id, can_publish=can_publish)
         elif step_name == "report":
             response = self.report()
         self.logger.info("output", extra={"response": response})
