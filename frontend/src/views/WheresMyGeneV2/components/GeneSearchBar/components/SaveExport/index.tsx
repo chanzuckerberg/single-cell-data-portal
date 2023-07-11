@@ -111,6 +111,7 @@ export interface Props {
   availableFilters: Partial<FilterDimensions>;
   tissues: { [name: string]: OntologyTerm };
   expandedTissues: Set<string>;
+  filteredCellTypes: string[];
 }
 
 interface ExportData {
@@ -127,6 +128,7 @@ export default function SaveExport({
   availableFilters,
   tissues,
   expandedTissues,
+  filteredCellTypes,
 }: Props): JSX.Element {
   const { selectedFilters, selectedOrganismId, compare } =
     useContext(StateContext);
@@ -202,6 +204,7 @@ export default function SaveExport({
         setDownloadStatus,
         tissues,
         expandedTissues,
+        filteredCellTypes,
       }),
       MUTATION_OBSERVER_TIMEOUT
     );
@@ -232,6 +235,7 @@ export default function SaveExport({
     setEchartsRendererMode,
     tissues,
     expandedTissues,
+    filteredCellTypes,
   ]);
 
   return (
@@ -600,6 +604,7 @@ function download_({
   setEchartsRendererMode,
   tissues: rawTissues,
   expandedTissues,
+  filteredCellTypes,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
@@ -621,6 +626,7 @@ function download_({
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
   tissues: { [name: string]: OntologyTerm };
   expandedTissues: Set<string>;
+  filteredCellTypes: string[];
 }) {
   return async () => {
     try {
@@ -725,8 +731,10 @@ function download_({
         self_reported_ethnicity_filter: selectedFilters.ethnicities,
         sex_filter: selectedFilters.sexes,
         group_by_option: getCompareOptionNameById(compare),
-
+        tissues_expanded: expandedTissues,
+        tissue_filter: selectedFilters.tissues,
         genes: selectedGenes,
+        cell_types_selected: filteredCellTypes,
       });
     } catch (error) {
       console.error(error);

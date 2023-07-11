@@ -102,6 +102,9 @@ export default function WheresMyGene(): JSX.Element {
     EMPTY_SET as Set<Tissue>
   );
 
+  const [filteredCellTypes, setFilteredCellTypes] =
+    useState<string[]>(EMPTY_ARRAY);
+
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
 
@@ -373,6 +376,7 @@ export default function WheresMyGene(): JSX.Element {
               availableFilters={availableFilters}
               tissues={tissuesByName}
               expandedTissues={expandedTissues}
+              filteredCellTypes={filteredCellTypes}
             />
           </Top>
 
@@ -409,6 +413,8 @@ export default function WheresMyGene(): JSX.Element {
             setTissuesByName={setTissuesByName}
             expandedTissues={expandedTissues}
             setExpandedTissues={setExpandedTissues}
+            filteredCellTypes={filteredCellTypes}
+            setFilteredCellTypes={setFilteredCellTypes}
           />
         </Wrapper>
       </View>
