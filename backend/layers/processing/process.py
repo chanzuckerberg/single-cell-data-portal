@@ -145,7 +145,7 @@ class ProcessMain(ProcessingLogic):
         step_name = os.environ["STEP_NAME"]
         if os.environ.get("MIGRATE"):
             self.logger.info("Migrating schema")
-            self.schema_migrate.migrate(step_name)
+            rv = self.schema_migrate.migrate(step_name)
         else:
             dataset_id = os.environ["DATASET_ID"]
 

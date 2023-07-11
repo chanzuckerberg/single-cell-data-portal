@@ -88,7 +88,11 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str) -> Union[Tuple[str
         return None, None
 
     # extract
-    anndata_object = extract.extract_h5ad(h5ad_path=h5ad_path)
+    try:
+        anndata_object = extract.extract_h5ad(h5ad_path=h5ad_path)
+    except Exception as e:
+        logger.error(f"Failed to extract h5ad file {h5ad_path} with error: {e}")
+        return None, None
 
     # transform
     apply_pre_concatenation_filters(anndata_object)
