@@ -30,6 +30,30 @@ def upload_artifacts_to_s3(
     information about the data schema version, the snapshot id, and the location
     of the snapshot.
 
+    TODO(prathap): This part of the docstring will be modified when work starts on ticket:
+    https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
+
+    Specifically:
+
+    1. Snapshot artifacts are stored in s3://<environment_bucket_name>/<snapshot_id>/
+       A. Note that, as of now, <snapshot_id> is a integer representing the time elapsed
+          in seconds since epoch
+       B. If the snapshot generation pipeline is run in a "remote dev environment", then the snapshot
+          is stored in s3://<environment_bucket_name>/<remote_stack_name>/<snapshot_id>/
+       C. If validation checks on the snapshot fails, the data artifact will be stored in
+          s3://<environment_bucket_name>/<snapshot_id>_validation_failed_snapshot/
+          (or s3://<environment_bucket_name>/<remote_stack_name>/<snapshot_id>_validation_failed_snapshot/)
+
+    2. The file, s3://<environment_bucket_name>/latest_snapshot_identifer, contains the latest <snapshot_id>
+       that has passed validation. If snapshot generation pipeline is run in a "remote dev environment"
+       then the file will be at path: s3://<environment_bucket_name>/<remote_stack_name>/latest_snapshot_identifer
+
+       NOTE that `latest_snapshot_identifier` will not be updated if validation checks fails on a newly generated
+       data artifact
+
+    3. After each generation of the data artifact and successful validation checks, all but the two latest
+       snapshots are deleted
+
     Parameters
     ----------
     snapshot_source_path: The current source path of the cubes that need to be uploaded to s3
