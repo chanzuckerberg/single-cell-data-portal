@@ -40,6 +40,8 @@ import {
 } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedGeneNames";
 import { useSortedCellTypesByTissueName } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedCellTypesByTissueName";
 import {
+  CellTypeFilterContainer,
+  CellTypeTagContainer,
   ChartWrapper,
   Container,
   ContainerWrapper,
@@ -315,7 +317,10 @@ export default memo(function HeatMap({
     <>
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
-          <div className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
+          <CellTypeFilterContainer
+            id="celltype-filter-container"
+            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+          >
             <StyledAutocomplete
               multiple
               value={value}
@@ -339,14 +344,16 @@ export default memo(function HeatMap({
               )}
               options={uniqueCellTypes}
             />
-            {value.map((cellType) => (
-              <StyledTag
-                label={cellType}
-                key={cellType}
-                onDelete={handleCellTypeDelete(cellType)}
-              />
-            ))}
-          </div>
+            <CellTypeTagContainer>
+              {value.map((cellType) => (
+                <StyledTag
+                  label={cellType}
+                  key={cellType}
+                  onDelete={handleCellTypeDelete(cellType)}
+                />
+              ))}
+            </CellTypeTagContainer>
+          </CellTypeFilterContainer>
           <CellCountLabel>Cell Count</CellCountLabel>
         </TopLeftCornerMask>
         <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>

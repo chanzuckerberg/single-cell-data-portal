@@ -77,12 +77,23 @@ export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
   top: 0px;
   left: 0px;
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  height: fit-content;
+  height: ${(props) => props.height || X_AXIS_CHART_HEIGHT_PX}px;
   min-height: ${(props) => props.height}px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: end;
+`;
+
+export const CellTypeFilterContainer = styled.div`
+  height: 100%;
+`;
+
+const CELL_TYPE_SEARCH_BOX_HEIGHT_PX = 37;
+
+export const CellTypeTagContainer = styled.div`
+  overflow-y: scroll;
+  height: calc(100% - ${CELL_TYPE_SEARCH_BOX_HEIGHT_PX}px);
 `;
 
 interface YAxisWrapperProps {
