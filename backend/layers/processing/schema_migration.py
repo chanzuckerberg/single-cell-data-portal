@@ -27,7 +27,7 @@ class SchemaMigrate:
     def __init__(self, business_logic: BusinessLogic):
         self.business_logic = business_logic
         self.bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
-        self.execution_arn = os.environ.get("EXECUTION_ARN", "test-execution-arn")
+        self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
         self.logger = logging.getLogger(__name__)
 
     def gather_collections(self) -> List[Dict[str, str]]:
@@ -160,11 +160,11 @@ class SchemaMigrate:
         :param response: the response to store as json.
         """
         file_name = f"{file_name}.json"
+        key = f"schema_migration/{self.execution_id}/{step_name}/{file_name}"
         with open(file_name, "w") as f:
             json.dump(response, f)
-        self.business_logic.s3_provider.upload_file(
-            file_name, self.bucket, f"schema_migration/{self.execution_arn}/{step_name}/{file_name}", {}
-        )
+        self.business_logic.s3_provider.upload_file(file_name, self.bucket, key, {})
+        self.logger.info("Uploaded to S3", extra={"file_name": file_name, "bucket": self.bucket, "key": key})
 
     def error_decorator(self, func, file_name: str):
         def wrapper(*args, **kwargs):
@@ -184,7 +184,7 @@ class SchemaMigrate:
             report = dict(errors=[])
             error_files = list(
                 self.business_logic.s3_provider.list_directory(
-                    self.bucket, f"schema_migration/{self.execution_arn}/report"
+                    self.bucket, f"schema_migration/{self.execution_id}/report"
                 )
             )
             for file in error_files:
@@ -206,7 +206,7 @@ class SchemaMigrate:
         slack_token = CorporaConfig().slack_reporter_secret
         slack_channel = CorporaConfig().slack_reporter_channel
         response = upload_to_slack(filename, contents, initial_comment, slack_channel, slack_token)
-        return response
+        self.logger.info("Uploaded to slack", extra={"response": response})
 
     def migrate(self, step_name) -> bool:
         """

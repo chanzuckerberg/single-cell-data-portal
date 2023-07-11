@@ -89,6 +89,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "TASK_TOKEN",
               "Value.$": "$$.Task.Token"
+            },
+            {
+              "Name": "EXECUTION_ID",
+              "Value.$": "$$.Execution.Name"
             }
           ]
         }
@@ -215,6 +219,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         {
                           "Name": "TASK_TOKEN",
                           "Value.$": "$$.Task.Token"
+                        },
+                        {
+                          "Name": "EXECUTION_ID",
+                          "Value.$": "$$.Execution.Name"
                         }
                       ]
                     }
@@ -383,6 +391,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "TASK_TOKEN",
               "Value.$": "$$.Task.Token"
+            },
+            {
+              "Name": "EXECUTION_ID",
+              "Value.$": "$$.Execution.Name"
             }
           ]
         }
