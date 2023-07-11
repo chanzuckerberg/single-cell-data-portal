@@ -1,7 +1,0 @@
-ERROR    root:logger.py:35 Failed to clean up artifacts.
-Traceback (most recent call last):
-  File "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py", line 164, in cleanup_artifacts
-    delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], object_key + "/")
-  File "/usr/lib/python3.8/os.py", line 675, in __getitem__
-    raise KeyError(key) from None
-KeyError: 'ARTIFACT_BUCKET'
