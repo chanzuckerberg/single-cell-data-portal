@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import SearchIcon from "@mui/icons-material/Search";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   CellTypeRow,
@@ -32,7 +33,7 @@ import {
 } from "src/views/WheresMyGene/common/types";
 import YAxisChart from "./components/YAxisChart";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { memoize } from "lodash";
+import { memoize, set } from "lodash";
 import {
   useSortedGeneNames,
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
@@ -42,6 +43,8 @@ import {
   ChartWrapper,
   Container,
   ContainerWrapper,
+  StyledAutocomplete,
+  StyledTag,
   TopLeftCornerMask,
   XAxisMask,
   XAxisWrapper,
@@ -56,6 +59,9 @@ import Loader from "src/views/WheresMyGene/components/Loader";
 import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
+import { InputAdornment, TextField } from "@mui/material";
+import { Tag } from "@czi-sds/components";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 
 interface Props {
   className?: string;
@@ -207,6 +213,8 @@ export default memo(function HeatMap({
     initialDisplayedCellTypes
   );
 
+  const [value, setValue] = useState<string[]>([]);
+
   useEffect(() => {
     setDisplayedCellTypes(initialDisplayedCellTypes);
     setExpandedTissues(new Set<string>());
@@ -226,7 +234,11 @@ export default memo(function HeatMap({
       }
       if (addedTissue) {
         sortedCellTypesByTissueName[tissueName].forEach((cellType) => {
-          newDisplayedCellTypes.add(tissueID + cellType.cellTypeName);
+          if (
+            value.length == 0 ||
+            (value.length > 0 && value.includes(cellType.cellTypeName))
+          )
+            newDisplayedCellTypes.add(tissueID + cellType.cellTypeName);
         });
       } else {
         [...newDisplayedCellTypes].forEach((cellType) => {
@@ -246,13 +258,95 @@ export default memo(function HeatMap({
       expandedTissues,
       setExpandedTissues,
       sortedCellTypesByTissueName,
+      value,
     ]
   );
+
+  const uniqueCellTypes = useMemo(() => {
+    const result: Set<string> = new Set<string>();
+    Object.values(sortedCellTypesByTissueName).forEach((cellTypes) => {
+      cellTypes.forEach((cellType) => {
+        result.add(cellType.cellTypeName);
+      });
+    });
+    return [...result].sort();
+  }, [sortedCellTypesByTissueName]);
+
+  useEffect(() => {
+    if (value.length === 0) {
+      setDisplayedCellTypes(initialDisplayedCellTypes);
+      setExpandedTissues(new Set<string>());
+      return;
+    }
+    const newDisplayedCellTypes = new Set<string>();
+    const newExpandedTissues = new Set<string>();
+    Object.entries(sortedCellTypesByTissueName).forEach(
+      ([tissue, cellTypes]) => {
+        cellTypes.forEach((cellType) => {
+          if (value.includes(cellType.name)) {
+            newDisplayedCellTypes.add(
+              tissuesByName[tissue].id + tissuesByName[tissue].id
+            );
+            newDisplayedCellTypes.add(tissuesByName[tissue].id + cellType.name);
+            newExpandedTissues.add(tissuesByName[tissue].id);
+          }
+        });
+      }
+    );
+
+    setDisplayedCellTypes(newDisplayedCellTypes);
+    setExpandedTissues(newExpandedTissues);
+  }, [
+    initialDisplayedCellTypes,
+    setExpandedTissues,
+    sortedCellTypesByTissueName,
+    tissuesByName,
+    value,
+  ]);
+
+  const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
+    const newValue = value.filter(
+      (cellType) => !cellTypeToDelete.includes(cellType)
+    );
+    setValue(newValue);
+  };
 
   return (
     <>
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
+          <div className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
+            <StyledAutocomplete
+              multiple
+              value={value}
+              onChange={(_, newValue) => {
+                setValue(newValue as string[]);
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                    endAdornment: undefined,
+                  }}
+                  placeholder="Search cell types"
+                ></TextField>
+              )}
+              options={uniqueCellTypes}
+            />
+            {value.map((cellType) => (
+              <StyledTag
+                label={cellType}
+                key={cellType}
+                onDelete={handleCellTypeDelete(cellType)}
+              />
+            ))}
+          </div>
           <CellCountLabel>Cell Count</CellCountLabel>
         </TopLeftCornerMask>
         <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>

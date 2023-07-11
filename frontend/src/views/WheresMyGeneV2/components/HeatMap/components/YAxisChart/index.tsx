@@ -86,7 +86,7 @@ export default memo(function YAxisChart({
 
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
-            const expanded = expandedTissues.has(tissue);
+            const expanded = expandedTissues.has(tissueID);
 
             const { text: paddedName } = formatLabel(
               name,
