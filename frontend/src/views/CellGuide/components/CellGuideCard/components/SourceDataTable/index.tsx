@@ -18,7 +18,7 @@ export const CELL_GUIDE_CARD_SOURCE_DATA_TABLE =
 
 interface TableRow {
   collection: ReactElement;
-  publication: ReactElement;
+  publication: ReactElement | string;
   tissue: ReactElement;
   disease: ReactElement;
   organism: ReactElement;
@@ -58,7 +58,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
       const organismNames = collection.organism.map(
         (organism) => organism.label
       );
-
+      console.log(collection.publication_title, collection.publication_url);
       rows.push({
         collection: (
           <Link
@@ -67,12 +67,14 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
             url={collection.collection_url}
           />
         ),
-        publication: (
+        publication: collection.publication_url ? (
           <Link
             key={`publication-url-${collection.publication_title}-${index}`}
             label={collection.publication_title}
             url={`https://doi.org/${collection.publication_url}`}
           />
+        ) : (
+          "No publication"
         ),
         tissue:
           tissueNames.length <= 2 ? (
