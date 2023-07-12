@@ -86,7 +86,14 @@ class SchemaMigrate:
         dst_uri = f"{dataset_version_id}/migrated.h5ad"
         self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri, {})
         url = f"s3://{upload_bucket}/{dst_uri}"
-        return {"collection_version_id": collection_version_id, "dataset_version_id": dataset_version_id, "url": url}
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id, url, existing_dataset_version_id=dataset_version_id, start_step_function=False
+        )
+        return {
+            "collection_version_id": collection_version_id,
+            "dataset_version_id": new_dataset_version_id.id,
+            "url": url,
+        }
 
     def collection_migrate(
         self, collection_id: str, collection_version_id: str, can_publish: bool

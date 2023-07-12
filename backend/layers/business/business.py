@@ -329,6 +329,7 @@ class BusinessLogic(BusinessLogicInterface):
         url: str,
         file_size: Optional[int],
         existing_dataset_version_id: Optional[DatasetVersionId],
+        start_step_function: bool = True,
     ) -> Tuple[DatasetVersionId, DatasetId]:
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
@@ -402,7 +403,8 @@ class BusinessLogic(BusinessLogicInterface):
         )
 
         # Starts the step function process
-        self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
+        if start_step_function:
+            self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
 
