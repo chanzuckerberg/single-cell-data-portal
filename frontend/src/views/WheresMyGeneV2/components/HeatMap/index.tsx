@@ -278,10 +278,15 @@ export default memo(function HeatMap({
   }, [sortedCellTypesByTissueName]);
 
   // update displayedCellTypes and expandedTissues
-  useEffect(() => {
-    if (filteredCellTypes.length === 0) {
+  const handleFilteredCellTypesChange = (
+    _,
+    rawNewFilteredCellTypes: unknown
+  ) => {
+    const newFilteredCellTypes = rawNewFilteredCellTypes as string[];
+    if (newFilteredCellTypes.length === 0) {
       setDisplayedCellTypes(initialDisplayedCellTypes);
       setExpandedTissues(new Set<string>());
+      setFilteredCellTypes(newFilteredCellTypes);
       return;
     }
     const newDisplayedCellTypes = new Set<string>();
@@ -294,7 +299,7 @@ export default memo(function HeatMap({
         )
           return;
         cellTypes.forEach((cellType) => {
-          if (filteredCellTypes.includes(cellType.name)) {
+          if (newFilteredCellTypes.includes(cellType.name)) {
             newDisplayedCellTypes.add(
               tissuesByName[tissue].id + tissuesByName[tissue].id
             );
@@ -304,23 +309,21 @@ export default memo(function HeatMap({
         });
       }
     );
+    if (newFilteredCellTypes.length > filteredCellTypes.length)
+      track(EVENTS.WMG_SELECT_CELL_TYPE, {
+        cell_types: newFilteredCellTypes as string[],
+      });
 
     setDisplayedCellTypes(newDisplayedCellTypes);
     setExpandedTissues(newExpandedTissues);
-  }, [
-    initialDisplayedCellTypes,
-    setExpandedTissues,
-    sortedCellTypesByTissueName,
-    tissuesByName,
-    filteredCellTypes,
-    filteredTissues,
-  ]);
+    setFilteredCellTypes(newFilteredCellTypes);
+  };
 
   const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
     const newValue = filteredCellTypes.filter(
-      (cellType) => !cellTypeToDelete.includes(cellType)
+      (cellType) => !(cellTypeToDelete === cellType)
     );
-    setFilteredCellTypes(newValue);
+    handleFilteredCellTypesChange(null, newValue);
   };
 
   useTrackHeatMapLoaded({
@@ -340,12 +343,7 @@ export default memo(function HeatMap({
             <StyledAutocomplete
               multiple
               value={filteredCellTypes}
-              onChange={(_, newValue) => {
-                setFilteredCellTypes(newValue as string[]);
-                track(EVENTS.WMG_SELECT_CELL_TYPE, {
-                  cell_types: newValue as string[],
-                });
-              }}
+              onChange={handleFilteredCellTypesChange}
               renderInput={(params) => (
                 <TextField
                   {...params}
