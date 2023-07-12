@@ -5,7 +5,7 @@ import { getTestID, getText } from "tests/utils/selectors";
 import { selectFirstOption, tryUntil } from "./helpers";
 import { ADD_GENE_BTN, ADD_TISSUE_BTN } from "../common/constants";
 
-const { skip } = test;
+const { skip, beforeEach } = test;
 
 const ENVS_TO_RUN_TESTS = [
   "api.cellxgene.dev.single-cell.czi.technology",
@@ -14,14 +14,16 @@ const ENVS_TO_RUN_TESTS = [
 ];
 
 export function conditionallyRunTests() {
-  skip(
-    // (thuang): Temporarily skip WMG tests
-    // (thuang): Temporarily skip WMG tests
-    // (thuang): Temporarily skip WMG tests
-    ENVS_TO_RUN_TESTS.every(() => true),
-    // ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
-    "WMG tests only work with dev/staging/prod API URLs"
-  );
+  beforeEach(() => {
+    skip(
+      // (thuang): Temporarily skip WMG tests
+      // (thuang): Temporarily skip WMG tests
+      // (thuang): Temporarily skip WMG tests
+      ENVS_TO_RUN_TESTS.every(() => true),
+      // ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
+      "WMG tests only work with dev/staging/prod API URLs"
+    );
+  });
 }
 
 /**
