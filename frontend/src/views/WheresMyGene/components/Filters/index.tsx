@@ -292,7 +292,40 @@ export default memo(function Filters({
     return tissue_terms.filter((tissue) => tissues?.includes(tissue.id));
   }, [tissue_terms, tissues]);
 
-  const [loadedFromState, setLoadedFromState] = useState(false);
+  const [currentOptions, setCurrentOptions] = useState<{
+    [key: string]: string[];
+  }>({});
+
+  const filterIsSelected = useMemo(() => {
+    for (const filter of Object.values(currentOptions)) {
+      if (filter.length) {
+        return true;
+      }
+    }
+    return false;
+  }, [currentOptions]);
+
+  const [filterBeforeAfterEventSent, setFilterBeforeAfterEventSent] =
+    useState(false);
+
+  // When the heatmap is shown, check if filters are selected
+  // If filters are selected, send the "before" event
+  useEffect(() => {
+    if (filterIsSelected && isHeatmapShown && !filterBeforeAfterEventSent) {
+      for (const key of Object.keys(currentOptions)) {
+        if (currentOptions[key] && currentOptions[key].length) {
+          const { eventNameBefore } = ANALYTICS_MAPPING[key as keyof IFilters];
+          track(eventNameBefore);
+          setFilterBeforeAfterEventSent(true);
+        }
+      }
+    }
+  }, [
+    filterBeforeAfterEventSent,
+    currentOptions,
+    filterIsSelected,
+    isHeatmapShown,
+  ]);
 
   const handleFilterChange = useCallback(
     function handleFilterChange_(
@@ -300,52 +333,51 @@ export default memo(function Filters({
         publications?: DefaultMenuSelectOption[];
       })
     ): (options: DefaultMenuSelectOption[] | null) => void {
-      let currentOptions: DefaultMenuSelectOption[] | null = null;
-
       return (options: DefaultMenuSelectOption[] | null): void => {
+        if (!dispatch || !options) {
+          return;
+        }
+
+        const selectedOptionNames = options.map((option) => option.name);
+
         if (
-          !dispatch ||
-          !options ||
           // If the options are the same
-          JSON.stringify(options.sort(sortOptions)) ===
-            JSON.stringify(currentOptions?.sort(sortOptions)) ||
-          // If the options change from null to [], which is the default value
-          (currentOptions === null && JSON.stringify(options) === "[]")
+          JSON.stringify(selectedOptionNames.sort()) ===
+          JSON.stringify(currentOptions[key]?.sort())
         ) {
           return;
         }
 
-        const newlySelected = options.filter(
-          (selected) => !currentOptions?.includes(selected)
+        const newlySelected = selectedOptionNames.filter(
+          (selected) => !currentOptions[key].includes(selected)
         );
 
         // If there are newly selected filters, send an analytic event for each of them
         if (newlySelected.length) {
           newlySelected.forEach((selected) => {
-            const { eventName, eventNameBefore, eventNameAfter, label } =
-              ANALYTICS_MAPPING[key];
+            const { eventName, eventNameAfter, label } = ANALYTICS_MAPPING[key];
 
-            if (!isHeatmapShown && !isLoading) {
-              track(eventName, {
-                [label]: selected.name,
-              });
-            } else if (loadedStateFromUrl && !loadedFromState) {
-              // If there was a loaded state and filters have not been applied yet, then send 'before' event
-              // Loading a state from the URL will trigger this callback which changes state to apply filters
-              track(eventNameBefore, {
-                [label]: selected.name,
-              });
-              setLoadedFromState(true);
-            } else if (loadedFromState && isHeatmapShown && !isLoading) {
-              // Filters were applied at least once
-              track(eventNameAfter, {
-                [label]: selected.name,
-              });
+            // When a filter is selected, check if previous filters were applied
+            // If no previous filters were applied, send the "after" event
+            if (
+              !filterIsSelected &&
+              isHeatmapShown &&
+              !filterBeforeAfterEventSent
+            ) {
+              track(eventNameAfter);
+              setFilterBeforeAfterEventSent(true);
             }
+
+            track(eventName, {
+              [label]: selected,
+            });
           });
         }
 
-        currentOptions = options;
+        setCurrentOptions((prev) => ({
+          ...prev,
+          [key]: selectedOptionNames,
+        }));
 
         if (key == "publications") {
           dispatch(
@@ -364,7 +396,13 @@ export default memo(function Filters({
         }
       };
     },
-    [dispatch, isHeatmapShown, isLoading, loadedFromState, loadedStateFromUrl]
+    [
+      filterBeforeAfterEventSent,
+      currentOptions,
+      dispatch,
+      filterIsSelected,
+      isHeatmapShown,
+    ]
   );
 
   const handleDatasetsChange = useMemo(
@@ -514,12 +552,12 @@ function getOptionSelected(
   return option.id === value.id;
 }
 
-function sortOptions(a: DefaultMenuSelectOption, b: DefaultMenuSelectOption) {
-  if (a.name < b.name) {
-    return -1;
-  }
-  if (a.name > b.name) {
-    return 1;
-  }
-  return 0;
-}
+// function sortOptions(a: DefaultMenuSelectOption, b: DefaultMenuSelectOption) {
+//   if (a.name < b.name) {
+//     return -1;
+//   }
+//   if (a.name > b.name) {
+//     return 1;
+//   }
+//   return 0;
+// }
