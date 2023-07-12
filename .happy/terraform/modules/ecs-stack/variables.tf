@@ -115,7 +115,7 @@ variable backend_memory {
 variable "backend_cpus" {
   type        = number
   description = "CPUs for the backend task"
-  default     = 2
+  default     = 8
 }
 
 variable frontend_memory {
