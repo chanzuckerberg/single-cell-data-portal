@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -10,15 +11,22 @@ from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import CollectionId
 
 
-def tombstone_collection(ctx: Context, uuid: str) -> None:
+def tombstone_collection(ctx: Context, collection_id: str) -> None:
     """
     Tombstones the collection specified by uuid.
     :param ctx: command context
     :param uuid: ID that identifies the collection to tombstone
     """
     business_logic: BusinessLogic = ctx.obj["business_logic"]
-    business_logic.tombstone_collection(CollectionId(uuid))
-    print(f"Successfully tombstoned Collection {uuid}")
+    collection = business_logic.get_canonical_collection(CollectionId(collection_id))
+    if not collection:
+        logging.error(f"Collection {collection_id} does not exist")
+        exit(1)
+    elif collection.tombstoned:
+        logging.error(f"Collection {collection_id} is already tombstoned")
+        exit(1)
+    business_logic.tombstone_collection(CollectionId(collection_id))
+    print(f"Successfully tombstoned Collection {collection_id}")
 
 
 def tombstone_dataset(ctx, uuid):
