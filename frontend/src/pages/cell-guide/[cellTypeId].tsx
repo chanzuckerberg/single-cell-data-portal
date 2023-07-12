@@ -1,5 +1,5 @@
-import CellCard from "src/views/CellCards/components/CellCard";
+import CellGuideCard from "src/views/CellGuide/components/CellGuideCard";
 
-const Page = (): JSX.Element => <CellCard />;
+const Page = (): JSX.Element => <CellGuideCard />;
 
 export default Page;

@@ -3,6 +3,7 @@ import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
+  ComplexFilterProps,
 } from "@czi-sds/components";
 import isEqual from "lodash/isEqual";
 import {
@@ -23,7 +24,10 @@ import {
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { DispatchContext, StateContext } from "../../common/store";
-import { selectFilters } from "../../common/store/actions";
+import {
+  selectFilters,
+  selectPublicationFilter,
+} from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
 import Organism from "./components/Organism";
 import Compare from "./components/Compare";
@@ -36,7 +40,6 @@ import {
 } from "./style";
 import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
-import { useRouter } from "next/router";
 
 const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };
@@ -53,9 +56,17 @@ const ANALYTICS_MAPPING: {
     eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
     label: "ethnicity",
   },
+  publications: {
+    eventName: EVENTS.FILTER_SELECT_PUBLICATION,
+    label: "publication",
+  },
   sexes: {
     eventName: EVENTS.FILTER_SELECT_SEX,
     label: "gender",
+  },
+  tissues: {
+    eventName: EVENTS.FILTER_SELECT_TISSUE,
+    label: "tissue",
   },
 };
 
@@ -64,10 +75,15 @@ const filterOptions = createFilterOptions({
     `${option.label} ${option.collection_label}`,
 });
 
+function isOptionEqualToValue(option: FilterOption, value: FilterOption) {
+  return option.id === value.id;
+}
+
 const DropdownMenuProps = {
   filterOptions,
   getOptionSelected,
-};
+  isOptionEqualToValue,
+} as ComplexFilterProps<true>["DropdownMenuProps"];
 
 interface FilterOption {
   name: string;
@@ -86,10 +102,15 @@ const mapTermToFilterOption = (term: {
   };
 };
 
+// (cchoi): Created new type for the publication filter to avoid touching anything used in other files
+type availableFilters = Partial<FilterDimensions> & {
+  publicationFilter?: { id: string | string[]; name: string }[];
+};
+
 export interface Props {
   isLoading: boolean;
-  availableFilters: Partial<FilterDimensions>;
-  setAvailableFilters: Dispatch<SetStateAction<Partial<FilterDimensions>>>;
+  availableFilters: availableFilters;
+  setAvailableFilters: Dispatch<SetStateAction<availableFilters>>;
   setIsScaled: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -102,16 +123,17 @@ export default memo(function Filters({
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
 
-  const { selectedFilters, selectedTissues, selectedGenes } = state;
+  const { selectedFilters, selectedPublicationFilter, selectedGenes } = state;
 
   const {
     datasets: datasetIds,
     diseases,
     ethnicities,
     sexes,
+    tissues,
   } = selectedFilters;
-  const { pathname } = useRouter();
-  const isVersion2 = pathname.includes("v2");
+
+  const { publications } = selectedPublicationFilter;
 
   const {
     data: {
@@ -119,14 +141,14 @@ export default memo(function Filters({
       development_stage_terms: rawDevelopmentStages,
       disease_terms: rawDiseases,
       self_reported_ethnicity_terms: rawEthnicities,
+      publicationFilter: rawPublications,
       sex_terms: rawSexes,
+      tissue_terms: rawTissues,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions(isVersion2 ? 2 : 1);
+  } = useFilterDimensions(2);
 
-  const isHeatmapShown =
-    (!selectedTissues || (selectedTissues && !!selectedTissues.length)) &&
-    !!selectedGenes.length;
+  const isHeatmapShown = !!selectedGenes.length;
 
   const InputDropdownProps = {
     sdsStyle: "minimal",
@@ -156,6 +178,9 @@ export default memo(function Filters({
         : a.name.localeCompare(b.name)
     );
 
+    const newPublications = rawPublications.map(mapTermToFilterOption);
+    newPublications.sort((a, b) => a.name.localeCompare(b.name));
+
     const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
     newEthnicities.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -164,33 +189,47 @@ export default memo(function Filters({
     );
     newDevelopmentStages.sort((a, b) => a.name.localeCompare(b.name));
 
+    const newTissues = rawTissues
+      .filter((tissue) => {
+        // (thuang): Product requirement to exclude "cell culture" from the list
+        // https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/2335
+        return !tissue.name.includes("(cell culture)");
+      })
+      .map(mapTermToFilterOption);
+    newTissues.sort((a, b) => a.name.localeCompare(b.name));
+
     const newAvailableFilters = {
       datasets: newDatasets,
       development_stage_terms: newDevelopmentStages,
       disease_terms: newDiseases,
       self_reported_ethnicity_terms: newEthnicities,
+      publicationFilter: newPublications,
       sex_terms: newSexes,
+      tissue_terms: newTissues,
     };
 
     if (isEqual(availableFilters, newAvailableFilters)) return;
-
     setAvailableFilters(newAvailableFilters);
   }, [
     rawDatasets,
     rawDevelopmentStages,
     rawDiseases,
     rawEthnicities,
+    rawPublications,
     rawSexes,
     rawIsLoading,
     availableFilters,
     setAvailableFilters,
+    rawTissues,
   ]);
 
   const {
     datasets = EMPTY_ARRAY,
     disease_terms = EMPTY_ARRAY,
     self_reported_ethnicity_terms = EMPTY_ARRAY,
+    publicationFilter = EMPTY_ARRAY,
     sex_terms = EMPTY_ARRAY,
+    tissue_terms = EMPTY_ARRAY,
   } = availableFilters;
 
   const selectedDatasets = useMemo(() => {
@@ -207,13 +246,25 @@ export default memo(function Filters({
     );
   }, [self_reported_ethnicity_terms, ethnicities]);
 
+  const selectedPublications = useMemo(() => {
+    return publicationFilter.filter((publication) =>
+      publications?.includes(publication.id)
+    );
+  }, [publicationFilter, publications]);
+
   const selectedSexes = useMemo(() => {
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
   }, [sex_terms, sexes]);
 
+  const selectedTissues = useMemo(() => {
+    return tissue_terms.filter((tissue) => tissues?.includes(tissue.id));
+  }, [tissue_terms, tissues]);
+
   const handleFilterChange = useCallback(
     function handleFilterChange_(
-      key: keyof IFilters
+      key: keyof (IFilters & {
+        publications?: DefaultMenuSelectOption[];
+      })
     ): (options: DefaultMenuSelectOption[] | null) => void {
       let currentOptions: DefaultMenuSelectOption[] | null = null;
 
@@ -246,12 +297,21 @@ export default memo(function Filters({
 
         currentOptions = options;
 
-        dispatch(
-          selectFilters(
-            key,
-            options.map((option) => (option as unknown as { id: string }).id)
-          )
-        );
+        if (key == "publications") {
+          dispatch(
+            selectPublicationFilter(
+              key,
+              options.map((option) => (option as unknown as { id: string }).id)
+            )
+          );
+        } else {
+          dispatch(
+            selectFilters(
+              key,
+              options.map((option) => (option as unknown as { id: string }).id)
+            )
+          );
+        }
       };
     },
     [dispatch]
@@ -274,6 +334,16 @@ export default memo(function Filters({
 
   const handleSexesChange = useMemo(
     () => handleFilterChange("sexes"),
+    [handleFilterChange]
+  );
+
+  const handlePublicationsChange = useMemo(
+    () => handleFilterChange("publications"),
+    [handleFilterChange]
+  );
+
+  const handleTissuesChange = useMemo(
+    () => handleFilterChange("tissues"),
     [handleFilterChange]
   );
 
@@ -324,6 +394,22 @@ export default memo(function Filters({
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
+
+        <StyledComplexFilter
+          multiple
+          data-testid="publication-filter"
+          search
+          label="Publication"
+          options={publicationFilter as unknown as DefaultMenuSelectOption[]}
+          onChange={handlePublicationsChange}
+          value={selectedPublications as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          DropdownMenuProps={DropdownMenuProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+
         <StyledComplexFilter
           multiple
           data-testid="sex-filter"
@@ -338,11 +424,25 @@ export default memo(function Filters({
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
+        <StyledComplexFilter
+          multiple
+          data-testid="tissue-filter"
+          search
+          label="Tissue"
+          options={tissue_terms as unknown as DefaultMenuSelectOption[]}
+          onChange={handleTissuesChange}
+          value={selectedTissues as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          DropdownMenuProps={DropdownMenuProps}
+          InputDropdownProps={InputDropdownProps}
+        />
       </div>
 
       <Organism isLoading={isLoading} />
 
-      <Compare areFiltersDisabled={!isHeatmapShown} />
+      <Compare areFiltersDisabled={false} />
 
       <div>
         <ViewOptionsLabel>View Options</ViewOptionsLabel>

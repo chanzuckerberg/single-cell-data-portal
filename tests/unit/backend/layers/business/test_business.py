@@ -2,6 +2,7 @@ import os
 import unittest
 import uuid
 from datetime import datetime
+from typing import Tuple
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
@@ -202,6 +203,31 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
 
+    def initialize_collection_with_a_published_revision(
+        self, owner: str = test_user_name, curator_name: str = test_curator_name, published_at: datetime = None
+    ) -> Tuple[CollectionVersionWithDatasets]:
+
+        # Published with a published revision.
+        published_version = self.initialize_published_collection(owner, curator_name, published_at)
+        revision = self.business_logic.create_collection_version(published_version.collection_id)
+        self.business_logic.publish_collection_version(revision.version_id)
+        return (
+            self.database_provider.get_collection_version_with_datasets(published_version.version_id),
+            self.database_provider.get_collection_version_with_datasets(revision.version_id),
+        )
+
+    def initialize_collection_with_an_unpublished_revision(
+        self, owner: str = test_user_name, curator_name: str = test_curator_name, published_at: datetime = None
+    ) -> Tuple[CollectionVersionWithDatasets]:
+
+        # Published with an unpublished revision
+        published_version = self.initialize_published_collection(owner, curator_name, published_at)
+        revision = self.business_logic.create_collection_version(published_version.collection_id)
+        return (
+            self.database_provider.get_collection_version_with_datasets(published_version.version_id),
+            self.database_provider.get_collection_version_with_datasets(revision.version_id),
+        )
+
     def complete_dataset_processing_with_success(self, dataset_version_id: DatasetVersionId) -> None:
         """
         Test method that "completes" a dataset processing. This is necessary since dataset ingestion
@@ -366,23 +392,50 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
         self.assertIsNotNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
 
+    def test_get_collection_version_for_tombstoned_collection(self):
+        """
+        A tombstoned Collection's versions can only be obtained if the `get_tombstoned` flag is explicitly set to True
+        """
+        version = self.initialize_published_collection()
+        revision_version = self.business_logic.create_collection_version(version.collection_id)
+        self.business_logic.publish_collection_version(revision_version.version_id)
+        published_versions = self.business_logic.get_all_published_collection_versions_from_canonical(
+            version.collection_id
+        )
+        self.assertEqual(2, len(list(published_versions)))
+
+        # Tombstone the Collection
+        self.business_logic.tombstone_collection(version.collection_id)
+
+        with self.subTest("Does not retrieve tombstoned Collection version without get_tombstoned=True"):
+            past_version_none = self.business_logic.get_collection_version(version.version_id)
+            self.assertIsNone(past_version_none)
+
+        with self.subTest("Retreives tombstoned Collection version when get_tombstoned=True"):
+            past_version_tombstoned = self.business_logic.get_collection_version(
+                version.version_id, get_tombstoned=True
+            )
+            self.assertIsNotNone(past_version_tombstoned)
+            self.assertEqual(True, past_version_tombstoned.canonical_collection.tombstoned)
+
 
 class TestGetAllCollections(BaseBusinessLogicTestCase):
     def test_get_all_collections_unfiltered_ok(self):
         """
-        All the collection versions should be returned by `get_collections`, including published, unpublished,
-        and all owners
+        All the collection versions for all collections should be returned by `get_collections`, including published,
+        unpublished, and all owners.
         """
         self.initialize_unpublished_collection()
         self.initialize_unpublished_collection(owner="test_user_2")
-        self.initialize_published_collection()
         self.initialize_published_collection(owner="test_user_2")
+        self.initialize_collection_with_an_unpublished_revision()
+        self.initialize_collection_with_a_published_revision()
 
         # TODO: this method should NOT be used without at least one filter. Maybe add an assertion to block it?
         filter = CollectionQueryFilter()
         versions = self.business_logic.get_collections(filter)
 
-        self.assertEqual(4, len(list(versions)))
+        self.assertEqual(7, len(list(versions)))
 
     def test_get_all_collections_with_owner_ok(self):
         """
@@ -404,7 +457,9 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
         If published filter flag is True, only published, non-tombstoned collections should be returned
         """
         self.initialize_unpublished_collection()
+        self.initialize_collection_with_an_unpublished_revision()
         self.initialize_published_collection()
+        self.initialize_collection_with_a_published_revision()
 
         # Add a tombstoned Collection
         collection_version_to_tombstone: CollectionVersionWithDatasets = self.initialize_published_collection()
@@ -412,15 +467,15 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
 
         # Confirm tombstoned Collection is in place
         all_collections_including_tombstones = self.database_provider.get_all_collections_versions(get_tombstoned=True)
-        self.assertEqual(3, len(list(all_collections_including_tombstones)))
+        self.assertEqual(7, len(list(all_collections_including_tombstones)))
 
         all_collections_no_tombstones = self.database_provider.get_all_collections_versions()
-        self.assertEqual(2, len(list(all_collections_no_tombstones)))
+        self.assertEqual(6, len(list(all_collections_no_tombstones)))
 
         filter = CollectionQueryFilter(is_published=True)
         versions = list(self.business_logic.get_collections(filter))
 
-        self.assertEqual(1, len(versions))
+        self.assertEqual(3, len(versions))
         for version in versions:
             self.assertIsNotNone(version.published_at)
 
@@ -429,8 +484,9 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
         If published filter flag is False, only unpublished collections should be returned
         """
         self.initialize_unpublished_collection()
-        self.initialize_unpublished_collection()
+        self.initialize_collection_with_an_unpublished_revision()
         self.initialize_published_collection()
+        self.initialize_collection_with_a_published_revision()
 
         filter = CollectionQueryFilter(is_published=False)
         versions = list(self.business_logic.get_collections(filter))
@@ -1116,7 +1172,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.business_logic.tombstone_collection(published_collection.collection_id)
 
         # The collection version canonical collection has tombstoned marked as True
-        collection_version = self.business_logic.get_collection_version(published_collection.version_id)
+        collection_version = self.business_logic.get_collection_version(
+            published_collection.version_id, get_tombstoned=True
+        )
         self.assertTrue(collection_version.canonical_collection.tombstoned)
 
     def test_publish_version_fails_on_published_collection(self):
@@ -1520,7 +1578,9 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
                 self.assertTrue(self.s3_provider.uri_exists(f"s3://fake-bucket/{key}"))
                 expected_delete_keys.update([f"{d_v_id}.{file_type}"])
         actual_delete_keys = set(
-            self.business_logic.delete_datasets_from_bucket(published_collection.collection_id, "fake-bucket")
+            self.business_logic.delete_all_dataset_versions_from_bucket_for_collection(
+                published_collection.collection_id, "fake-bucket"
+            )
         )
         self.assertTrue(self.s3_provider.is_empty())
         self.assertTrue(len(expected_delete_keys) > 0)

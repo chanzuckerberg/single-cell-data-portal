@@ -98,7 +98,9 @@ export interface Filters {
   developmentStages?: DefaultMenuSelectOption[];
   diseases?: DefaultMenuSelectOption[];
   ethnicities?: DefaultMenuSelectOption[];
+  publications?: DefaultMenuSelectOption[];
   sexes?: DefaultMenuSelectOption[];
+  tissues?: DefaultMenuSelectOption[];
 }
 
 export enum SORT_BY {

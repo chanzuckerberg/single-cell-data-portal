@@ -1,7 +1,7 @@
 import logging
 import os
 import subprocess
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 from urllib.parse import urlparse
 
 import boto3
@@ -100,3 +100,8 @@ class S3Provider(S3ProviderInterface):
             command,
             check=True,
         )
+
+    def list_directory(self, bucket_name: str, src_dir: str) -> Iterable[str]:
+        paginator = self.client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket_name, Prefix=src_dir):
+            yield from (content["Key"] for content in page.get("Contents", []))
