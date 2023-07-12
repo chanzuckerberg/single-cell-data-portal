@@ -82,10 +82,19 @@ class SchemaMigrate:
         bucket_name, object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.business_logic.s3_provider.download_file(bucket_name, object_key, "previous_schema.h5ad")
         migrate("previous_schema.h5ad", "migrated.h5ad", collection_version_id, dataset_id)
-        upload_bucket = os.environ["ARTIFACT_BUCKET"]
+        upload_bucket = self.bucket
         dst_uri = f"{dataset_version_id}/migrated.h5ad"
+        self.logger.info("Uploading migrated dataset", extra={"upload_bucket": upload_bucket, "dst_uri": dst_uri})
         self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri, {})
         url = f"s3://{upload_bucket}/{dst_uri}"
+        self.logger.info(
+            "Start ingestion",
+            extra=dict(
+                collection_version_id=collection_version_id,
+                url=url,
+                existing_dataset_version_id=dataset_version_id,
+            ),
+        )
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id,
             url,
