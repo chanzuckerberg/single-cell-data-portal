@@ -145,6 +145,16 @@ export default memo(function HeatMap({
     return result;
   }, [data, setTissuesByName]);
 
+  const cellTypesByName = useMemo(() => {
+    const result: { [name: string]: CellType } = {};
+    Object.values(cellTypes).forEach((cellTypes) => {
+      cellTypes.forEach((cellType) => {
+        result[cellType.cellTypeName] = cellType;
+      });
+    });
+    return result;
+  }, [cellTypes]);
+
   const generateMarkerGenes = (cellType: CellType, tissueID: string) => {
     if (!dispatch) return;
     dispatch(addCellInfoCellType({ cellType, tissueID }));
@@ -309,10 +319,14 @@ export default memo(function HeatMap({
         });
       }
     );
-    if (newFilteredCellTypes.length > filteredCellTypes.length)
+    if (newFilteredCellTypes.length > filteredCellTypes.length) {
+      const filteredCellTypeIDs = newFilteredCellTypes.map(
+        (cellType) => cellTypesByName[cellType].id
+      );
       track(EVENTS.WMG_SELECT_CELL_TYPE, {
-        cell_types: newFilteredCellTypes as string[],
+        cell_types: filteredCellTypeIDs,
       });
+    }
 
     setDisplayedCellTypes(newDisplayedCellTypes);
     setExpandedTissues(newExpandedTissues);

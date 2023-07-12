@@ -734,7 +734,7 @@ function download_({
         tissues_expanded: expandedTissues,
         tissue_filter: selectedFilters.tissues,
         genes: selectedGenes,
-        cell_types_selected: filteredCellTypes,
+        cell_types_selected: [...filteredCellTypes],
       });
     } catch (error) {
       console.error(error);
