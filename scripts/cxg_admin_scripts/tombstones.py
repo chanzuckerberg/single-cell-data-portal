@@ -4,6 +4,8 @@ import sys
 
 from click import Context
 
+from backend.curation.api.v1.curation.collections.common import validate_uuid_else_forbidden
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
@@ -17,6 +19,11 @@ def tombstone_collection(ctx: Context, collection_id: str) -> None:
     :param ctx: command context
     :param uuid: ID that identifies the collection to tombstone
     """
+    try:
+        validate_uuid_else_forbidden(collection_id)
+    except Exception:
+        logging.error(f"{collection_id} is not a valid uuid")
+        exit(1)
     business_logic: BusinessLogic = ctx.obj["business_logic"]
     collection = business_logic.get_canonical_collection(CollectionId(collection_id))
     if not collection:
