@@ -21,15 +21,8 @@ import {
   StyledNotificationWrapper,
 } from "./style";
 import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
-import { LoadStateFromURLPayload } from "src/views/WheresMyGene/common/store/reducer";
 
-export default function ShareButton({
-  setLoadedStateFromUrl,
-}: {
-  setLoadedStateFromUrl: React.Dispatch<
-    React.SetStateAction<LoadStateFromURLPayload | null>
-  >;
-}): JSX.Element {
+export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
 
   const {
@@ -93,8 +86,6 @@ export default function ShareButton({
       );
 
       if (loadedState) {
-        setLoadedStateFromUrl(loadedState);
-
         track(EVENTS.WMG_SHARE_LOADED, {
           tissues: loadedState.tissues,
           genes: loadedState.genes,
@@ -108,7 +99,7 @@ export default function ShareButton({
         });
       }
     }
-  }, [isLoadingFilterDims, dispatch, selectedFilters, setLoadedStateFromUrl]);
+  }, [isLoadingFilterDims, dispatch, selectedFilters]);
 
   return (
     <>

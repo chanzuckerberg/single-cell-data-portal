@@ -13,7 +13,6 @@ import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
 import { EMPTY_ARRAY, EMPTY_SET } from "src/common/constants/utils";
-import { LoadStateFromURLPayload } from "src/views/WheresMyGene/common/store/reducer";
 
 interface Props {
   isScaled: boolean;
@@ -31,9 +30,6 @@ interface Props {
   availableFilters: Partial<FilterDimensions>;
   tissues?: { [name: string]: OntologyTerm };
   expandedTissues?: Set<string>;
-  setLoadedStateFromUrl: React.Dispatch<
-    React.SetStateAction<LoadStateFromURLPayload | null>
-  >;
   filteredCellTypes?: string[];
 }
 
@@ -49,7 +45,6 @@ export default memo(function Legend({
   availableFilters,
   tissues,
   expandedTissues,
-  setLoadedStateFromUrl,
   filteredCellTypes,
 }: Props): JSX.Element {
   return (
@@ -65,7 +60,7 @@ export default memo(function Legend({
             allChartProps={allChartProps}
             availableFilters={availableFilters}
           />
-          <ShareButton setLoadedStateFromUrl={setLoadedStateFromUrl} />
+          <ShareButton />
         </>
       ) : (
         <>

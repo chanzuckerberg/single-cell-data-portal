@@ -40,7 +40,6 @@ import {
 } from "./style";
 import ColorScale from "./components/ColorScale";
 import { ViewOptionsWrapper } from "./components/Sort/style";
-import { LoadStateFromURLPayload } from "../../common/store/reducer";
 
 export type IFilters = Omit<State["selectedFilters"], "developmentStages">;
 
@@ -132,7 +131,6 @@ export interface Props {
   availableFilters: availableFilters;
   setAvailableFilters: Dispatch<SetStateAction<availableFilters>>;
   setIsScaled: Dispatch<SetStateAction<boolean>>;
-  loadedStateFromUrl: LoadStateFromURLPayload | null;
 }
 
 export default memo(function Filters({
@@ -140,7 +138,6 @@ export default memo(function Filters({
   availableFilters,
   setAvailableFilters,
   setIsScaled,
-  loadedStateFromUrl,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
