@@ -1,0 +1,42 @@
+  pw:api => selectors.setTestIdAttribute started +9s
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +11ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +54ms
+  pw:api   "commit" event fired +19ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +5ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +12ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +70ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide", waiting until "load" +12ms
+  pw:api   "commit" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide" +22ms
+  pw:api <= page.goto succeeded +178ms
+  pw:api => locator.waitFor started +5ms
+  pw:api waiting for getByTestId('landing-page-header') to be visible +44ms
+  pw:api   locator resolved to visible <div data-testid="landing-page-header" class="css-1tx…>CellGuide is a comprehensive resource for knowled…</div> +54ms
+  pw:api <= locator.waitFor succeeded +19ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByTestId('landing-page-header') +8ms
+  pw:api <= locator.isVisible succeeded +7ms
+  pw:api => locator.waitFor started +4ms
+  pw:api waiting for getByTestId('cell-card-search-bar') to be visible +5ms
+  pw:api   locator resolved to visible <div data-testid="cell-card-search-bar">…</div> +3ms
+  pw:api <= locator.waitFor succeeded +7ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-card-search-bar') +4ms
+  pw:api <= locator.isVisible succeeded +4ms
+  pw:api taking page screenshot +96ms
+  pw:api   "networkidle" event fired +98ms
+  pw:api => browserContext.close started +6ms
+  pw:api <= browserContext.close succeeded +8s
