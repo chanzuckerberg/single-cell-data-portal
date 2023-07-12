@@ -107,15 +107,15 @@ variable backend_instance_count {
 }
 
 variable backend_memory {
-  type        = number
+  type        = string
   description = "Memory reservation for the backend task"
-  default     = 2048
+  default     = "2 GB"
 }
 
 variable "backend_cpus" {
   type        = number
   description = "CPUs for the backend task"
-  default     = 8
+  default     = 2
 }
 
 variable frontend_memory {
