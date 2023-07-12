@@ -5,15 +5,18 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.utils import get_datasets_from_curation_api, get_collections_from_curation_api
-
 from backend.wmg.data.schemas.corpus_schema import (
     FILTER_RELATIONSHIPS_NAME,
     OBS_ARRAY_NAME,
 )
 from backend.wmg.data.schemas.cube_schema import cell_counts_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
-from backend.wmg.data.utils import create_empty_cube, log_func_runtime
+from backend.wmg.data.utils import (
+    create_empty_cube,
+    get_collections_from_curation_api,
+    get_datasets_from_curation_api,
+    log_func_runtime,
+)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -78,27 +81,27 @@ def create_cell_count_cube(corpus_path: str):
 
     # cchoi: creating a helper function to format citations properly
     def create_formatted_citation(collection):
-        publisher_metadata = collection['publisher_metadata']
-        if (publisher_metadata is None):
+        publisher_metadata = collection["publisher_metadata"]
+        if publisher_metadata is None:
             return "No Publication"
-        first_author = collection['publisher_metadata']['authors'][0]
+        first_author = collection["publisher_metadata"]["authors"][0]
         # first_author could be either 'family' or 'name'
         citation = f"{first_author['family'] if 'family' in first_author else first_author['name']} et al. {collection['publisher_metadata']['journal']} {collection['publisher_metadata']['published_year']}"
-        formatted_citation = "No Publication" if collection['publisher_metadata']['is_preprint'] else citation
-        return formatted_citation    
-    
+        formatted_citation = "No Publication" if collection["publisher_metadata"]["is_preprint"] else citation
+        return formatted_citation
+
     dataset_dict = {}
     for dataset in datasets:
         dataset_id = dataset["dataset_id"]
         collection = collections_dict[dataset["collection_id"]]
         dataset_dict[dataset_id] = create_formatted_citation(collection)
-    
-    df["publication_citation"] = df["dataset_id"].map(dataset_dict) 
 
-    n_cells = df["n_cells"].to_numpy() 
+    df["publication_citation"] = df["dataset_id"].map(lambda x: dataset_dict.get(x, "No Publication"))
+
+    n_cells = df["n_cells"].to_numpy()
     df["n_cells"] = n_cells
 
-    filter_relationships_linked_list = create_filter_relationships_graph(df) #investigating
+    filter_relationships_linked_list = create_filter_relationships_graph(df)
 
     with open(f"{corpus_path}/{FILTER_RELATIONSHIPS_NAME}.json", "w") as f:
         json.dump(filter_relationships_linked_list, f)
@@ -107,6 +110,7 @@ def create_cell_count_cube(corpus_path: str):
     cell_count = df.n_cells.sum()
     logger.info(f"{cell_count=}")
     logger.info(f"Cell count cube created and stored at {uri}")
+
 
 def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
     """
