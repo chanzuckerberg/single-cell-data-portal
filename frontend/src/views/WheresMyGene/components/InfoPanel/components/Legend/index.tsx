@@ -1,5 +1,8 @@
 import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
-import { FilterDimensions } from "src/common/queries/wheresMyGene";
+import {
+  FilterDimensions,
+  OntologyTerm,
+} from "src/common/queries/wheresMyGene";
 import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
 import SaveExport from "../../../GeneSearchBar/components/SaveExport";
 import SaveExportV2 from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
@@ -26,11 +29,12 @@ interface Props {
   setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
-  tissues?: string[];
+  tissues?: { [name: string]: OntologyTerm };
   expandedTissues?: Set<string>;
   setLoadedStateFromUrl: React.Dispatch<
     React.SetStateAction<LoadStateFromURLPayload | null>
   >;
+  filteredCellTypes?: string[];
 }
 
 export default memo(function Legend({
@@ -46,6 +50,7 @@ export default memo(function Legend({
   tissues,
   expandedTissues,
   setLoadedStateFromUrl,
+  filteredCellTypes,
 }: Props): JSX.Element {
   return (
     <LegendWrapper data-testid="legend-wrapper">
@@ -71,8 +76,9 @@ export default memo(function Legend({
             setEchartsRendererMode={setEchartsRendererMode}
             allChartProps={allChartProps}
             availableFilters={availableFilters}
-            tissues={tissues || EMPTY_ARRAY}
+            tissues={tissues || {}}
             expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
+            filteredCellTypes={filteredCellTypes ?? EMPTY_ARRAY}
           />
           <ShareButtonV2 />
         </>
