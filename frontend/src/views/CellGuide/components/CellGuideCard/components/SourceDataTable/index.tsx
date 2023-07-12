@@ -58,7 +58,6 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
       const organismNames = collection.organism.map(
         (organism) => organism.label
       );
-      console.log(collection.publication_title, collection.publication_url);
       rows.push({
         collection: (
           <Link
