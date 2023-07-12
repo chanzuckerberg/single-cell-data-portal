@@ -1,11 +1,9 @@
-import os
 from unittest import mock
 
 from backend.layers.common.entities import DatasetArtifact, DatasetVersionId
 
 
 class TestDatasetMigrate:
-    @mock.patch.dict(os.environ, {"ARTIFACT_BUCKET": "upload_bucket"})
     def test_dataset_migrate_private(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         private = collections["private"][0]
@@ -26,9 +24,8 @@ class TestDatasetMigrate:
             assert response["collection_version_id"] == private.collection_id.id
             assert response["dataset_version_id"] == new_dataset_version_id.id
             assert dataset_version_id != new_dataset_version_id.id
-            assert response["url"] == f"s3://upload_bucket/{dataset_version_id}/migrated.h5ad"
+            assert response["url"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
 
-    @mock.patch.dict(os.environ, {"ARTIFACT_BUCKET": "upload_bucket"})
     def test_dataset_migrate_published(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         published = collections["published"][0]
@@ -49,9 +46,8 @@ class TestDatasetMigrate:
             assert response["collection_version_id"] == published.collection_id.id
             assert response["dataset_version_id"] == new_dataset_version_id.id
             assert dataset_version_id != new_dataset_version_id.id
-            assert response["url"] == f"s3://upload_bucket/{dataset_version_id}/migrated.h5ad"
+            assert response["url"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
 
-    @mock.patch.dict(os.environ, {"ARTIFACT_BUCKET": "upload_bucket"})
     def test_dataset_migrate_revision(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         revision = collections["revision"][0]
@@ -72,4 +68,4 @@ class TestDatasetMigrate:
             assert response["collection_version_id"] == revision.collection_id.id
             assert response["dataset_version_id"] == new_dataset_version_id.id
             assert dataset_version_id != new_dataset_version_id.id
-            assert response["url"] == f"s3://upload_bucket/{dataset_version_id}/migrated.h5ad"
+            assert response["url"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"

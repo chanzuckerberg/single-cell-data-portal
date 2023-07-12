@@ -161,6 +161,9 @@ class SchemaMigrate:
             self._store_in_s3("report", collection_version_id, errors)
         elif can_publish:
             self.business_logic.publish_collection_version(collection_version_id)
+        self.logger.info(
+            "Deleting files", extra={"artifact_bucket": artifact_bucket, "object_keys": object_keys_to_delete}
+        )
         self.business_logic.s3_provider.delete_files(artifact_bucket, object_keys_to_delete)
         return errors
 
