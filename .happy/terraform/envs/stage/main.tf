@@ -16,7 +16,12 @@ module stack {
   batch_container_memory_limit = 300000
   wmg_batch_container_memory_limit = 248000
   wmg_desired_vcpus                = 128
+<<<<<<< Updated upstream
   backend_memory               = 60000
+=======
+  backend_memory               = "60 GB"
+  backend_cpus                 = 8
+>>>>>>> Stashed changes
   frontend_memory              = 4096
   backend_instance_count       = 4
 
