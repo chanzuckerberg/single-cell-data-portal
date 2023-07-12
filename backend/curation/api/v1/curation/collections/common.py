@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from uuid import UUID
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.utils.http_exceptions import ForbiddenHTTPException, NotFoundHTTPException
+from backend.common.utils.http_exceptions import ForbiddenHTTPException, GoneHTTPException, NotFoundHTTPException
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.common.entities import (
     CollectionId,
@@ -48,7 +48,18 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
             "url": url,
         }
         asset_list.append(result)
-    return asset_list
+    return _with_duplicates_removed(asset_list)  # TODO: de-dupe on DatasetArtifact insertion via unique constraint
+
+
+def _with_duplicates_removed(asset_list: List[dict]) -> List[dict]:
+    asset_types = set()
+    assets = []
+    for asset in asset_list:
+        if asset["filetype"] in asset_types:
+            continue
+        asset_types.add(asset["filetype"])
+        assets.append(asset)
+    return assets
 
 
 def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]]:
@@ -148,7 +159,6 @@ def reshape_for_curation_api(
         contact_name=collection_version.metadata.contact_name,
         created_at=collection_version.created_at,
         curator_name=collection_version.curator_name,
-        datasets=response_datasets,
         description=collection_version.metadata.description,
         doi=doi,
         links=links,
@@ -157,7 +167,10 @@ def reshape_for_curation_api(
         publisher_metadata=collection_version.publisher_metadata,
         visibility=get_visibility(collection_version),
     )
-    if not reshape_for_version_endpoint:
+    if reshape_for_version_endpoint:
+        response["dataset_versions"] = response_datasets
+    else:
+        response["datasets"] = response_datasets
         response.update(
             revised_at=collection_version.canonical_collection.revised_at,
             revising_in=revising_in,
@@ -213,7 +226,6 @@ def reshape_dataset_for_curation_api(
     if not preview:
         ds["assets"] = extract_dataset_assets(dataset_version)
         ds["title"] = ds.pop("name", None)
-        ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
         if dataset_version.metadata is not None:
             ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
@@ -235,6 +247,7 @@ def reshape_dataset_for_curation_api(
         if as_canonical:
             ds["published_at"] = dataset_version.canonical_dataset.published_at
             ds["revised_at"] = dataset_version.canonical_dataset.revised_at
+            ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
     return ds
 
 
@@ -333,20 +346,20 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
     return return_status
 
 
-def get_inferred_collection_version(collection_id: str) -> CollectionVersionWithDatasets:
+def get_inferred_collection_version(_id: str) -> CollectionVersionWithDatasets:
     """
     Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion,
     if currently mapped published version or open unpublished version.
-    :param collection_id: identifies the collection version
+    :param _id: identifies the collection version, whether by canonical id or version id
     :return: The CollectionVersion if it exists.
     """
-    validate_uuid_else_forbidden(collection_id)
+    validate_uuid_else_forbidden(_id)
     business_logic = get_business_logic()
 
     # gets currently mapped collection version, or unpublished version if never published
-    version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+    version = business_logic.get_collection_version_from_canonical(CollectionId(_id))
     if version is None:
-        version = business_logic.get_collection_version(CollectionVersionId(collection_id))
+        version = business_logic.get_collection_version(CollectionVersionId(_id), get_tombstoned=True)
         if version is None:
             raise NotFoundHTTPException()
         # Only allow fetch by Collection Version ID if unpublished revision of published collection
@@ -354,7 +367,7 @@ def get_inferred_collection_version(collection_id: str) -> CollectionVersionWith
             raise ForbiddenHTTPException()
 
     if version.canonical_collection.tombstoned is True:
-        raise ForbiddenHTTPException()
+        raise GoneHTTPException()
     return version
 
 

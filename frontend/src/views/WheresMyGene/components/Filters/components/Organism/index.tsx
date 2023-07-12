@@ -1,7 +1,7 @@
 import {
   DefaultMenuSelectOption,
   InputDropdownProps as RawInputDropdownProps,
-} from "czifui";
+} from "@czi-sds/components";
 import { useContext, useEffect, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -26,7 +26,8 @@ interface Props {
 export default function Organism({ isLoading }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedOrganismId } = useContext(StateContext);
-  const { data: organisms } = useAvailableOrganisms();
+
+  const { data: organisms } = useAvailableOrganisms(2);
 
   // (thuang): Default to "Homo sapiens" on first load
   useEffect(() => {

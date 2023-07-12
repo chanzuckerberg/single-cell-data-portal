@@ -1,5 +1,5 @@
 import isEqual from "lodash/isEqual";
-import { CompareId } from "../constants";
+import { CompareId, X_AXIS_CHART_HEIGHT_PX } from "../constants";
 import { CellType, SORT_BY } from "../types";
 
 export interface PayloadAction<Payload> {
@@ -10,14 +10,21 @@ export interface State {
   genesToDelete: string[];
   selectedGenes: string[];
   selectedOrganismId: string | null;
-  selectedTissues: string[];
+  selectedTissues?: string[];
   selectedFilters: {
     datasets: string[];
     developmentStages: string[];
     diseases: string[];
     ethnicities: string[];
     sexes: string[];
+    tissues: string[];
   };
+
+  // New state for publication filter
+  selectedPublicationFilter: {
+    publications: string[];
+  };
+
   /**
    * (thuang): BE API response always returns a snapshot ID. When the ID changes,
    * FE needs refresh the queries
@@ -31,6 +38,7 @@ export interface State {
   } | null;
   geneInfoGene: string | null;
   compare?: CompareId;
+  xAxisHeight: number;
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -39,6 +47,12 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   diseases: [],
   ethnicities: [],
   sexes: [],
+  tissues: [],
+};
+
+// Need this to initialize selectedPublicationFilter
+const EMPTY_PUBLICATION_FILTER: State["selectedPublicationFilter"] = {
+  publications: [],
 };
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -48,6 +62,7 @@ export const INITIAL_STATE: State = {
   geneInfoGene: null,
   genesToDelete: [],
   selectedFilters: EMPTY_FILTERS,
+  selectedPublicationFilter: EMPTY_PUBLICATION_FILTER,
   selectedGenes: [],
   selectedOrganismId: null,
   selectedTissues: [],
@@ -57,6 +72,7 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
+  xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
 };
 
 export const REDUCERS = {
@@ -68,10 +84,12 @@ export const REDUCERS = {
   addSelectedGenes,
   deleteSelectedGenes,
   deleteSingleGene,
+  deleteAllGenes,
   loadStateFromURL,
   selectCompare,
   resetGenesToDelete,
   selectFilters,
+  selectPublicationFilter, // Added to the reducer here
   selectGenes,
   selectGeneInfoFromXAxis,
   selectOrganism,
@@ -79,6 +97,7 @@ export const REDUCERS = {
   selectTissues,
   setSnapshotId,
   toggleGeneToDelete,
+  setXAxisHeight,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -122,6 +141,15 @@ function deleteSingleGene(
   return {
     ...state,
     selectedGenes: newSelectedGenes,
+    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+  };
+}
+
+function deleteAllGenes(state: State, _: PayloadAction<null>): State {
+  return {
+    ...state,
+    selectedGenes: [],
+    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
   };
 }
 
@@ -250,6 +278,31 @@ function selectFilters(
   };
 }
 
+// (cchoi): We  are using a single filter for all publications to avoid touching the backend / reconfiguring the cube
+function selectPublicationFilter(
+  state: State,
+  action: PayloadAction<{
+    key: keyof State["selectedPublicationFilter"];
+    options: string[];
+  }>
+): State {
+  const { key, options } = action.payload;
+
+  const { selectedPublicationFilter } = state;
+
+  if (isEqual(selectedPublicationFilter[key], options)) return state;
+
+  const newSelectedFilters = {
+    ...state.selectedPublicationFilter,
+    [key]: options,
+  };
+
+  return {
+    ...state,
+    selectedPublicationFilter: newSelectedFilters,
+  };
+}
+
 function setSnapshotId(
   state: State,
   action: PayloadAction<State["snapshotId"]>
@@ -350,8 +403,9 @@ function closeRightSidebar(state: State, _: PayloadAction<null>): State {
 export interface LoadStateFromURLPayload {
   compare: State["compare"];
   filters: Partial<State["selectedFilters"]>;
+  publications: State["selectedPublicationFilter"]["publications"];
   organism: State["selectedOrganismId"];
-  tissues: State["selectedTissues"];
+  tissues?: State["selectedTissues"];
   genes: State["selectedGenes"];
 }
 
@@ -361,12 +415,13 @@ function loadStateFromURL(
 ): State {
   const { payload } = action;
 
-  const { compare, filters, genes, tissues } = payload;
+  const { compare, filters, publications, genes, tissues } = payload;
 
   return {
     ...state,
     compare,
     selectedFilters: { ...state.selectedFilters, ...filters },
+    selectedPublicationFilter: { publications },
     selectedGenes: genes,
     selectedTissues: tissues,
     selectedOrganismId: payload.organism,
@@ -380,5 +435,12 @@ function selectCompare(
   return {
     ...state,
     compare: action.payload,
+  };
+}
+
+function setXAxisHeight(state: State, action: PayloadAction<number>): State {
+  return {
+    ...state,
+    xAxisHeight: action.payload,
   };
 }

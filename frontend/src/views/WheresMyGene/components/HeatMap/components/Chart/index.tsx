@@ -1,5 +1,5 @@
-import { Tooltip } from "czifui";
-import { ECharts, init } from "echarts";
+import { Tooltip } from "@czi-sds/components";
+import { ECharts, ElementEvent } from "echarts";
 import { capitalize } from "lodash";
 import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
@@ -8,6 +8,7 @@ import {
   Dispatch,
   memo,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -16,7 +17,7 @@ import {
 } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { EMPTY_ARRAY, EMPTY_OBJECT, noop } from "src/common/constants/utils";
+import { EMPTY_ARRAY, noop } from "src/common/constants/utils";
 import {
   CellTypeRow,
   COMPARE_OPTION_ID_FOR_AGGREGATED,
@@ -28,20 +29,32 @@ import {
   CellType,
   CellTypeGeneExpressionSummaryData,
   CellTypeSummary,
+  ChartProps,
   GeneExpressionSummary,
   Tissue,
   ViewId,
 } from "src/views/WheresMyGene/common/types";
-import { ChartProps } from "../../hooks/common/types";
-import { useUpdateChart } from "../../hooks/useUpdateChart";
+
 import {
-  dataToChartFormat,
   getAllSerializedCellTypeMetadata,
   getGeneNames,
   getHeatmapHeight,
   getHeatmapWidth,
+  hyphenize,
 } from "../../utils";
-import { ChartContainer, StyledTooltipTable, tooltipCss } from "./style";
+import { StyledTooltipTable, tooltipCss } from "./style";
+import RawChart from "./components/Chart";
+import {
+  dataToChartFormat,
+  grid,
+  symbolSize,
+  useChartItemStyle,
+} from "./utils";
+
+const CHART_DATA_TO_AXIS_ENCODING = {
+  x: "geneIndex",
+  y: "cellTypeIndex",
+};
 
 interface Props {
   cellTypes: CellTypeRow[];
@@ -87,9 +100,6 @@ export default memo(function Chart({
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
 
-  const [isChartInitialized, setIsChartInitialized] = useState(false);
-
-  const [chart, setChart] = useState<ECharts | null>(null);
   const ref = useRef<HTMLDivElement | null>(null);
 
   const [heatmapWidth, setHeatmapWidth] = useState(
@@ -101,13 +111,17 @@ export default memo(function Chart({
   );
 
   useEffect(() => {
-    setIsLoading((isLoading) => ({ ...isLoading, [tissue]: true }));
+    setIsLoading((isLoading) => {
+      if (isLoading[tissue]) return isLoading;
+
+      return { ...isLoading, [tissue]: true };
+    });
   }, [cellTypes, selectedGeneData, setIsLoading, tissue]);
 
-  const throttledSetCurrentIndices = useMemo(() => {
-    return throttle((params, chart: ECharts) => {
+  const handleChartMouseMove = useMemo(() => {
+    return throttle((params: ElementEvent, chart: ECharts) => {
       const { offsetX, offsetY, event } = params;
-      const { pageX, pageY } = event;
+      const { pageX, pageY } = event as MouseEvent;
 
       if (!chart) return;
 
@@ -118,52 +132,11 @@ export default memo(function Chart({
     }, TOOLTIP_THROTTLE_MS);
   }, []);
 
-  // Initialize charts
-  useEffect(() => {
-    const { current } = ref;
-
-    if (
-      !current ||
-      isChartInitialized ||
-      // (thuang): echart's `init()` will throw error if the container has 0 width or height
-      current?.getAttribute("height") === "0" ||
-      current?.getAttribute("width") === "0"
-    ) {
-      return;
-    }
-
-    setIsChartInitialized(true);
-
-    const chart = init(current, EMPTY_OBJECT, {
-      renderer: echartsRendererMode,
-      useDirtyRect: true,
-    });
-
-    chart.getZr().on("mousemove", function (params) {
-      throttledSetCurrentIndices(params, chart);
-    });
-
-    setChart(chart);
-  }, [
-    ref,
-    isChartInitialized,
-    throttledSetCurrentIndices,
-    echartsRendererMode,
-  ]);
-
   // Update heatmap size
   useEffect(() => {
     setHeatmapWidth(getHeatmapWidth(selectedGeneData));
     setHeatmapHeight(getHeatmapHeight(cellTypes));
   }, [cellTypes, selectedGeneData]);
-
-  useUpdateChart({
-    chart,
-    chartProps,
-    heatmapHeight,
-    heatmapWidth,
-    isScaled,
-  });
 
   // Calculate cellTypeSummaries
   /**
@@ -220,7 +193,7 @@ export default memo(function Chart({
           }>
         >;
       }) => {
-        const result = {
+        const result: ChartProps = {
           cellTypeMetadata: getAllSerializedCellTypeMetadata(
             cellTypeSummaries,
             tissue
@@ -239,7 +212,11 @@ export default memo(function Chart({
           return allChartProps;
         });
 
-        setIsLoading((isLoading) => ({ ...isLoading, [tissue]: false }));
+        setIsLoading((isLoading) => {
+          if (!isLoading[tissue]) return isLoading;
+
+          return { ...isLoading, [tissue]: false };
+        });
       },
       getDebounceMs(selectedGeneData.length),
       { leading: false }
@@ -269,6 +246,13 @@ export default memo(function Chart({
   useEffect(() => {
     return () => debouncedDataToChartFormat.cancel();
   }, [debouncedDataToChartFormat]);
+
+  const handleMouseLeave = useCallback(() => {
+    // Handles race condition when a timeout is set after clearing
+    setTimeout(() => {
+      clearTimeout(handleDotHoverAnalytic);
+    }, 100);
+  }, []);
 
   const [hoveredGeneIndex, hoveredCellTypeIndex] = currentIndices;
 
@@ -361,6 +345,45 @@ export default memo(function Chart({
 
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
 
+  const tooltipPopperProps = useMemo(() => {
+    return {
+      anchorEl: {
+        getBoundingClientRect: () => ({
+          bottom: cursorOffset[1],
+          height: 0,
+          left: cursorOffset[0],
+          right: cursorOffset[0],
+          toJSON: noop,
+          top: cursorOffset[1],
+          width: 0,
+          x: cursorOffset[0],
+          y: cursorOffset[1],
+        }),
+      },
+      modifiers: [
+        {
+          name: "offset",
+          options: {
+            offset: [0, 5],
+          },
+        },
+      ],
+    };
+  }, [cursorOffset]);
+
+  const handleMouseMove = useCallback(() => {
+    clearInterval(handleDotHoverAnalytic);
+    if (tooltipContent?.props.data) {
+      handleDotHoverAnalytic = setTimeout(() => {
+        track(EVENTS.WMG_HEATMAP_DOT_HOVER);
+      }, 2 * 1000);
+    }
+  }, [tooltipContent]);
+
+  const { chartData, cellTypeMetadata, geneNames } = chartProps || {};
+
+  const itemStyle = useChartItemStyle(isScaled);
+
   return (
     <Tooltip
       width="wide"
@@ -368,49 +391,24 @@ export default memo(function Chart({
       title={tooltipContent || <>No data</>}
       leaveDelay={0}
       placement="right-end"
-      onMouseMove={() => {
-        clearInterval(handleDotHoverAnalytic);
-        if (tooltipContent?.props.data) {
-          handleDotHoverAnalytic = setTimeout(() => {
-            track(EVENTS.WMG_HEATMAP_DOT_HOVER);
-          }, 2 * 1000);
-        }
-      }}
-      PopperProps={{
-        anchorEl: {
-          getBoundingClientRect: () => ({
-            bottom: cursorOffset[1],
-            height: 0,
-            left: cursorOffset[0],
-            right: cursorOffset[0],
-            toJSON: noop,
-            top: cursorOffset[1],
-            width: 0,
-            x: cursorOffset[0],
-            y: cursorOffset[1],
-          }),
-        },
-        modifiers: [
-          {
-            name: "offset",
-            options: {
-              offset: [0, 5],
-            },
-          },
-        ],
-      }}
+      onMouseMove={handleMouseMove}
+      PopperProps={tooltipPopperProps}
     >
-      <ChartContainer
+      <RawChart
         height={heatmapHeight}
         width={heatmapWidth}
         ref={ref}
-        id={`${tissue.replace(/\s+/g, "-")}-chart`}
-        onMouseLeave={() => {
-          // Handles race condition when a timeout is set after clearing
-          setTimeout(() => {
-            clearTimeout(handleDotHoverAnalytic);
-          }, 100);
-        }}
+        id={`${hyphenize(tissue)}-chart`}
+        onMouseLeave={handleMouseLeave}
+        data={chartData}
+        yAxisData={cellTypeMetadata}
+        xAxisData={geneNames}
+        echartsRendererMode={echartsRendererMode}
+        onChartMouseMove={handleChartMouseMove}
+        encode={CHART_DATA_TO_AXIS_ENCODING}
+        itemStyle={itemStyle}
+        symbolSize={symbolSize}
+        grid={grid}
       />
     </Tooltip>
   );

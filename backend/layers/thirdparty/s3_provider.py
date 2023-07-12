@@ -1,7 +1,7 @@
 import logging
 import os
 import subprocess
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 from urllib.parse import urlparse
 
 import boto3
@@ -18,7 +18,7 @@ class S3Provider(S3ProviderInterface):
     def __init__(self) -> None:
         self.client = boto3.client("s3")
 
-    def _parse_s3_uri(self, s3_uri: str) -> Tuple[str, str]:
+    def parse_s3_uri(self, s3_uri: str) -> Tuple[str, str]:
         parsed_url = urlparse(s3_uri)
         return parsed_url.netloc, parsed_url.path[1:]
 
@@ -26,7 +26,7 @@ class S3Provider(S3ProviderInterface):
         """
         Returns the file size of an S3 object located at `path`
         """
-        bucket, key = self._parse_s3_uri(path)
+        bucket, key = self.parse_s3_uri(path)
         try:
             response = self.client.head_object(Bucket=bucket, Key=key)
         except Exception:
@@ -37,7 +37,7 @@ class S3Provider(S3ProviderInterface):
         """
         Generates a presigned url that can be used to download the S3 object located at `path`
         """
-        bucket, key = self._parse_s3_uri(path)
+        bucket, key = self.parse_s3_uri(path)
         return self.client.generate_presigned_url(
             "get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=expiration
         )
@@ -100,3 +100,8 @@ class S3Provider(S3ProviderInterface):
             command,
             check=True,
         )
+
+    def list_directory(self, bucket_name: str, src_dir: str) -> Iterable[str]:
+        paginator = self.client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket_name, Prefix=src_dir):
+            yield from (content["Key"] for content in page.get("Contents", []))

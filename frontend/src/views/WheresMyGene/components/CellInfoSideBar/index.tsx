@@ -1,4 +1,4 @@
-import { Button, Icon, Tooltip } from "czifui";
+import { Button, Icon, Tooltip } from "@czi-sds/components";
 import React, { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -25,7 +25,7 @@ import {
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { StyledImage } from "../HeatMap/components/YAxisChart/style";
 import InfoSVG from "../HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
-import { RightSidebarProperties } from "../RightSideBar";
+import { RightSidebarProperties } from "../../../../components/common/RightSideBar";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 
 const MARKER_GENE_LABEL = "marker genes";

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontBodyXxxs, getColors } from "czifui";
+import { fontBodyS, fontBodyXxxs, getColors } from "@czi-sds/components";
 import {
   Content as CommonContent,
   Header as CommonHeader,
@@ -40,4 +40,8 @@ export const ListSubheader = styled.li`
       color: ${colors?.gray[600]};
     `;
   }}
+`;
+
+export const InfoText = styled.div`
+  margin-bottom: 16px;
 `;

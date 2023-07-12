@@ -52,13 +52,10 @@ def create_empty_cube(uri: str, schema):
     tiledb.Array.create(uri, schema, overwrite=True)
 
 
-def find_all_dim_option_values(snapshot, dimension: str) -> list:
+def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
     all_filter_options = set()
-    for key in snapshot.filter_relationships:
-        if key.startswith(dimension):
-            all_filter_options.add(key)
-        if dimension in snapshot.filter_relationships[key]:
-            all_filter_options = set(all_filter_options).union(snapshot.filter_relationships[key][dimension])
+    organism_key = "organism_ontology_term_id__" + organism
+    all_filter_options = snapshot.filter_relationships[organism_key][dimension]
     return [option.split("__")[1] for option in all_filter_options]
 
 
@@ -97,7 +94,7 @@ def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
                     # get the set of filters for the specified dimension that are linked to `attr`
                     linked_filter_set = set()
                     for attr in prefixed_attributes:
-                        if dimension in snapshot.filter_relationships[attr]:
+                        if dimension in snapshot.filter_relationships.get(attr, {}):
                             linked_filter_set = linked_filter_set.union(
                                 set(snapshot.filter_relationships[attr][dimension])
                             )
@@ -107,7 +104,7 @@ def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
                 if attrs != "":
                     prefixed_attribute = key + "__" + attrs
                     all_criteria_attributes.add(prefixed_attribute)
-                    if dimension in snapshot.filter_relationships[prefixed_attribute]:
+                    if dimension in snapshot.filter_relationships.get(prefixed_attribute, {}):
                         linked_filter_sets.append(set(snapshot.filter_relationships[prefixed_attribute][dimension]))
 
     # the candidate options are the intersection of the sets of linked filters for each criteria key
@@ -121,7 +118,7 @@ def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
     # the intersection will be null.
     valid_options = []
     for v in candidate_options:
-        loop_back_options = snapshot.filter_relationships[v]
+        loop_back_options = snapshot.filter_relationships.get(v, {})
         all_loop_back_options = []
         for dim in loop_back_options:
             all_loop_back_options.extend(loop_back_options[dim])

@@ -11,8 +11,11 @@ import {
 
 const HUMAN_ORGANISM_ID = "NCBITaxon:9606";
 
+export const LATEST_SHARE_LINK_VERSION = "2";
+
 export const generateAndCopyShareUrl = ({
   filters,
+  publicationFilter,
   organism,
   tissues,
   genes,
@@ -20,6 +23,7 @@ export const generateAndCopyShareUrl = ({
   copyToClipboard = true,
 }: {
   filters: State["selectedFilters"];
+  publicationFilter: State["selectedPublicationFilter"];
   organism: State["selectedOrganismId"];
   tissues: State["selectedTissues"];
   genes: State["selectedGenes"];
@@ -36,9 +40,15 @@ export const generateAndCopyShareUrl = ({
   Object.entries(stripEmptyFilters(filters)).forEach(([key, value]) => {
     url.searchParams.set(key, value.join(","));
   });
-  url.searchParams.set("tissues", tissues.join(","));
+  if (publicationFilter.publications.length > 0) {
+    url.searchParams.set(
+      "publicationFilter",
+      publicationFilter.publications.join(",")
+    );
+  }
+  if (tissues) url.searchParams.set("tissues", tissues.join(","));
   url.searchParams.set("genes", genes.join(","));
-  url.searchParams.set("ver", "2");
+  url.searchParams.set("ver", LATEST_SHARE_LINK_VERSION);
 
   if (compare) {
     url.searchParams.set("compare", compare);
@@ -98,6 +108,11 @@ export const loadStateFromQueryParams = (
     }
   });
 
+  // Check for publication filter
+  const newSelectedPublications =
+    params.get("publicationFilter")?.split(delimiter) || [];
+  if (newSelectedPublications) paramsToRemove.push("publicationFilter");
+
   //Check for organism
   const newSelectedOrganism = params.get("organism") || HUMAN_ORGANISM_ID;
   if (newSelectedOrganism) {
@@ -134,6 +149,7 @@ export const loadStateFromQueryParams = (
     loadStateFromURL({
       compare: newCompare,
       filters: newSelectedFilters,
+      publications: newSelectedPublications,
       organism: newSelectedOrganism,
       tissues: newSelectedTissues,
       genes: newSelectedGenes,
@@ -143,6 +159,7 @@ export const loadStateFromQueryParams = (
   return {
     compare: newCompare,
     filters: newSelectedFilters,
+    publications: newSelectedPublications,
     organism: newSelectedOrganism,
     tissues: newSelectedTissues,
     genes: newSelectedGenes,

@@ -1,13 +1,34 @@
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
-import { expect, Page } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-import { tryUntil } from "./helpers";
+import { selectFirstOption, tryUntil } from "./helpers";
+import { ADD_GENE_BTN, ADD_TISSUE_BTN } from "../common/constants";
+
+const { skip } = test;
+
+const ENVS_TO_RUN_TESTS = [
+  "api.cellxgene.dev.single-cell.czi.technology",
+  "api.cellxgene.staging.single-cell.czi.technology",
+  "api.cellxgene.cziscience.com",
+];
+
+export function conditionallyRunTests() {
+  skip(
+    // (thuang): Temporarily skip WMG tests
+    // (thuang): Temporarily skip WMG tests
+    // (thuang): Temporarily skip WMG tests
+    ENVS_TO_RUN_TESTS.every(() => true),
+    // ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
+    "WMG tests only work with dev/staging/prod API URLs"
+  );
+}
 
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
  */
-export async function goToWMG(page: Page) {
+export async function goToWMG(page: Page, url?: string) {
+  const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
   return await tryUntil(
     async () => {
       await Promise.all([
@@ -15,30 +36,54 @@ export async function goToWMG(page: Page) {
           (resp: { url: () => string | string[]; status: () => number }) =>
             resp.url().includes("/wmg/v1/filters") && resp.status() === 200
         ),
-        page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
+        page.goto(targetUrl),
       ]);
     },
     { page }
   );
 }
+export async function searchAndAddTissue(page: Page, tissueName: string) {
+  // click +Tissue button
+  await page.getByTestId(ADD_TISSUE_BTN).click();
+  await page.getByPlaceholder("Search").type(tissueName);
+  await page.getByText(tissueName).click();
 
-export const selectFilterOption = async (page: Page, filterName: string) => {
-  // click the filter at the corner this is done due to the fact that the default click is being intercepted by another element
+  // close dropdown
+  await page.keyboard.press("Escape");
+}
+
+export async function addTissuesAndGenes(
+  page: Page,
+  tissues: string[],
+  genes: string[]
+) {
+  for await (const tissue of tissues) {
+    await searchAndAddTissue(page, tissue);
+  }
+  for await (const gene of genes) {
+    await searchAndAddGene(page, gene);
+  }
+}
+export const selectSecondaryFilterOption = async (
+  page: Page,
+  filterName: string
+) => {
   await page.getByTestId(filterName).getByRole("button").click();
 
   // select the first option
-  await page.locator("[data-option-index='0']").click();
+  await selectFirstOption(page);
 
-  // close the pop-up
-  await page.getByTestId("dataset-filter").click();
+  // close the secondary filter pop-up
+  await page.keyboard.press("Escape");
 
   const filter_label = `${getTestID(filterName)} [role="button"]`;
-  // expect the selected filter to be visible
+  // expect the selected filter chip to be visible under the dropdown button
   await expect(page.locator(filter_label)).toBeVisible();
 
   //wait till loading is complete
   await page.locator(getText("Loading")).waitFor({ state: "hidden" });
 };
+
 export const pickOptions = async (page: Page, n: number) => {
   for (let i = 0; i < n; i++) {
     // select the nth option
@@ -46,7 +91,10 @@ export const pickOptions = async (page: Page, n: number) => {
   }
 };
 
-export const deSelectFilterOption = async (page: Page, filterName: string) => {
+export const deSelectSecondaryFilterOption = async (
+  page: Page,
+  filterName: string
+) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
   // expect the selected filter to be visible
   await expect(page.locator(filter_label)).toBeVisible();
@@ -59,14 +107,9 @@ export const deSelectFilterOption = async (page: Page, filterName: string) => {
   expect(visibility).toBeFalsy();
 };
 
-export const selectOption = async (page: Page, filterName: string) => {
-  // click the filter
-  await page.getByTestId(filterName).click();
-};
-
 export const selectTissueAndGeneOption = async (page: Page) => {
   // click Tissue button
-  await selectOption(page, "add-tissue-btn");
+  await page.getByTestId(ADD_TISSUE_BTN).click();
 
   //pick the first 2 elements in tissue
   await pickOptions(page, 2);
@@ -78,7 +121,7 @@ export const selectTissueAndGeneOption = async (page: Page) => {
   await page.locator('[id="heatmap-container-id"]').waitFor();
 
   // click Gene button
-  await selectOption(page, "add-gene-btn");
+  await page.getByTestId(ADD_GENE_BTN).click();
 
   //pick the first n elements in tissue
   await pickOptions(page, 3);
@@ -145,3 +188,17 @@ export const checkPlotSize = async (page: Page) => {
   }
   return sumOfHeights;
 };
+
+/**
+ * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
+ */
+
+export async function searchAndAddGene(page: Page, geneName: string) {
+  // click +Tissue button
+  await page.getByTestId(ADD_GENE_BTN).click();
+  await page.getByPlaceholder("Search").type(geneName);
+  await page.getByText(geneName).click();
+
+  // close dropdown
+  await page.keyboard.press("Escape");
+}

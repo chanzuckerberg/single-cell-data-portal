@@ -9,12 +9,10 @@ import {
 } from "src/views/WheresMyGene/common/constants";
 import { State } from "src/views/WheresMyGene/common/store";
 import { Props } from ".";
-import { ChartProps } from "../../../HeatMap/hooks/common/types";
-import {
-  ChartFormat,
-  deserializeCellTypeMetadata,
-} from "../../../HeatMap/utils";
+import { deserializeCellTypeMetadata } from "../../../HeatMap/utils";
 import { generateAndCopyShareUrl } from "../ShareButton/utils";
+import { ChartProps } from "src/views/WheresMyGene/common/types";
+import { ChartFormat } from "../../../HeatMap/components/Chart/components/Chart/hooks/utils";
 
 const NO_SELECTION_STRING = "No selection";
 
@@ -33,6 +31,7 @@ export function csvHeaders({
   availableFilters,
   availableOrganisms,
   selectedFilters,
+  selectedPublicationFilter,
   selectedGenes,
   selectedOrganismId,
   selectedTissues,
@@ -41,12 +40,18 @@ export function csvHeaders({
   availableFilters: Partial<FilterDimensions>;
   availableOrganisms: OntologyTerm[] | null | undefined;
   selectedFilters: State["selectedFilters"];
+  selectedPublicationFilter: State["selectedPublicationFilter"];
   selectedGenes: Props["selectedGenes"];
   selectedOrganismId: string | null;
   selectedTissues: Props["selectedTissues"];
 }) {
-  const { datasets, disease_terms, self_reported_ethnicity_terms, sex_terms } =
-    availableFilters;
+  const {
+    datasets,
+    disease_terms,
+    self_reported_ethnicity_terms,
+    publicationFilter,
+    sex_terms,
+  } = availableFilters;
 
   const output: string[][] = [];
 
@@ -61,6 +66,7 @@ export function csvHeaders({
     `# Link Generated: ${generateAndCopyShareUrl({
       compare,
       filters: selectedFilters,
+      publicationFilter: selectedPublicationFilter,
       organism: selectedOrganismId,
       tissues: selectedTissues,
       genes: selectedGenes,
@@ -98,6 +104,18 @@ export function csvHeaders({
       self_reported_ethnicity_terms
         ?.filter((option) => {
           return selectedFilters.ethnicities.includes(option.id);
+        })
+        .map((selected) => selected.name)
+        .join(", ") || NO_SELECTION_STRING
+    }`,
+  ]);
+
+  // Publication
+  output.push([
+    `# Publication Filter Values: ${
+      publicationFilter
+        ?.filter((option) => {
+          return selectedPublicationFilter.publications.includes(option.id);
         })
         .map((selected) => selected.name)
         .join(", ") || NO_SELECTION_STRING
@@ -239,4 +257,14 @@ export function buildCellTypeIdToMetadataMapping(
   }
 
   return cellTypeIdMapping;
+}
+
+// Gets the date in mmddyy format
+export function getCurrentDate() {
+  const today = new Date();
+  const month = (today.getMonth() + 1).toString().padStart(2, "0");
+  const day = today.getDate().toString().padStart(2, "0");
+  const year = today.getFullYear().toString().slice(-2);
+
+  return month + day + year;
 }

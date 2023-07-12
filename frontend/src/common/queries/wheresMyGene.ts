@@ -20,10 +20,17 @@ import {
   Organism as IOrganism,
 } from "src/views/WheresMyGene/common/types";
 import { API } from "../API";
+import { APIV2 } from "src/common/tempAPIV2";
+
 import { ROUTES } from "../constants/routes";
-import { EMPTY_OBJECT } from "../constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
+import { useFetchCollectionRows } from "./filter";
+import { TombstonedCollection, useManyCollections } from "./collections";
+import { Collection } from "../entities";
+import { VIEW_MODE } from "src/common/hooks/useViewMode";
+import { Dataset } from "@mui/icons-material";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -54,8 +61,14 @@ export interface PrimaryFilterDimensionsResponse {
   tissues: OntologyTermsByOrganism;
 }
 
-export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
-  const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
+function replaceV1WithV2(version: 1 | 2) {
+  return version === 1 ? API : APIV2;
+}
+
+export async function fetchPrimaryFilterDimensions(
+  version: 1 | 2
+): Promise<PrimaryFilterDimensionsResponse> {
+  const url = API_URL + replaceV1WithV2(version).WMG_PRIMARY_FILTER_DIMENSIONS;
 
   const response: RawPrimaryFilterDimensionsResponse = await (
     await fetch(url, DEFAULT_FETCH_OPTIONS)
@@ -108,15 +121,17 @@ export const USE_PRIMARY_FILTER_DIMENSIONS = {
   id: "wmg-primaryFilterDimensions",
 };
 
-export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimensionsResponse> {
+export function usePrimaryFilterDimensions(
+  version: 1 | 2 = 1
+): UseQueryResult<PrimaryFilterDimensionsResponse> {
   const dispatch = useContext(DispatchContext);
 
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
 
   return useQuery<PrimaryFilterDimensionsResponse>(
-    [USE_PRIMARY_FILTER_DIMENSIONS, currentSnapshotId],
-    fetchPrimaryFilterDimensions,
+    [USE_PRIMARY_FILTER_DIMENSIONS, currentSnapshotId, version],
+    () => fetchPrimaryFilterDimensions(version),
     {
       onSuccess(response) {
         if (!response || !dispatch) return;
@@ -135,8 +150,8 @@ export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimens
 
 const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
 
-export function useAvailableOrganisms() {
-  const { data, isLoading } = usePrimaryFilterDimensions();
+export function useAvailableOrganisms(version: 1 | 2 = 1) {
+  const { data, isLoading } = usePrimaryFilterDimensions(version);
 
   if (isLoading) {
     return { isLoading, data: null };
@@ -150,7 +165,7 @@ export function useAvailableOrganisms() {
   };
 }
 
-interface Filter {
+interface FilterV1 {
   gene_ontology_term_ids: string[];
   organism_ontology_term_id: string;
   tissue_ontology_term_ids: string[];
@@ -161,9 +176,21 @@ interface Filter {
   self_reported_ethnicity_ontology_term_ids: string[];
 }
 
+interface FilterV2 {
+  gene_ontology_term_ids: string[];
+  organism_ontology_term_id: string;
+  dataset_ids: string[];
+  disease_ontology_term_ids: string[];
+  sex_ontology_term_ids: string[];
+  development_stage_ontology_term_ids: string[];
+  self_reported_ethnicity_ontology_term_ids: string[];
+}
+
+type Filter = FilterV1 | FilterV2;
+
 interface FilterSecondary {
   organism_ontology_term_id: string;
-  tissue_ontology_term_ids: string[];
+  tissue_ontology_term_ids?: string[];
   dataset_ids: string[];
   disease_ontology_term_ids: string[];
   sex_ontology_term_ids: string[];
@@ -187,6 +214,10 @@ export interface QueryResponse {
     // gene_ontology_term_id
     [geneId: string]: {
       [tissueId: string]: {
+        tissue_stats: {
+          aggregated: RawCellTypeGeneExpressionSummaryData;
+        };
+      } & {
         [cellTypeId: CellTypeId]: {
           aggregated: RawCellTypeGeneExpressionSummaryData;
           [
@@ -199,21 +230,45 @@ export interface QueryResponse {
   snapshot_id: string;
   term_id_labels: {
     cell_types: {
-      [tissue_type_ontology_term_id: string]: {
-        [cell_type_ontology_term_id: string]: {
-          [compareOptionId: CompareOptionId]: {
-            name: string;
-            cell_type_ontology_term_id: CellTypeId;
-            order: number;
-            total_count: number;
-          };
-        };
-      };
+      [tissue_type_ontology_term_id: string]: TissueStats & CellTypeStats;
     };
     genes: {
       [id: string]: string;
     }[];
   };
+}
+
+interface TissueStats {
+  tissue_stats: {
+    aggregated: {
+      name: string;
+      order: -1;
+      tissue_ontology_term_id: CellTypeId;
+      total_count: number;
+    };
+  };
+}
+
+interface CellTypeStats {
+  [cell_type_ontology_term_id: string]: {
+    [compareOptionId: CompareOptionId]: {
+      name: string;
+      cell_type_ontology_term_id: CellTypeId;
+      order: number;
+      total_count: number;
+    };
+  };
+}
+
+function isTissueStats(
+  stats:
+    | TissueStats["tissue_stats"]["aggregated"]
+    | CellTypeStats[string][CompareOptionId]
+): stats is TissueStats["tissue_stats"]["aggregated"] {
+  return (
+    (stats as TissueStats["tissue_stats"]["aggregated"])
+      .tissue_ontology_term_id !== undefined
+  );
 }
 
 interface FiltersQueryResponse {
@@ -236,13 +291,15 @@ interface FiltersQueryResponse {
 async function fetchFiltersQuery({
   query,
   signal,
+  version,
 }: {
   query: FiltersQuery | null;
   signal?: AbortSignal;
+  version: 1 | 2;
 }): Promise<FiltersQueryResponse | undefined> {
   if (!query) return;
 
-  const url = API_URL + API.WMG_FILTERS_QUERY;
+  const url = API_URL + replaceV1WithV2(version).WMG_FILTERS_QUERY;
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -263,13 +320,15 @@ async function fetchFiltersQuery({
 async function fetchQuery({
   query,
   signal,
+  version,
 }: {
   query: Query | null;
   signal?: AbortSignal;
+  version: 1 | 2;
 }): Promise<QueryResponse | undefined> {
   if (!query) return;
 
-  const url = API_URL + API.WMG_QUERY;
+  const url = API_URL + replaceV1WithV2(version).WMG_QUERY;
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -298,7 +357,8 @@ export const USE_FILTERS_QUERY = {
 };
 
 export function useWMGQuery(
-  query: Query | null
+  query: Query | null,
+  version: 1 | 2 = 1
 ): UseQueryResult<QueryResponse> {
   const dispatch = useContext(DispatchContext);
 
@@ -312,7 +372,7 @@ export function useWMGQuery(
 
   return useQuery(
     [USE_QUERY, query, currentSnapshotId],
-    ({ signal }) => fetchQuery({ query, signal }),
+    ({ signal }) => fetchQuery({ query, signal, version }),
     {
       enabled: Boolean(query),
       onSuccess(response) {
@@ -331,7 +391,8 @@ export function useWMGQuery(
 }
 
 export function useWMGFiltersQuery(
-  query: FiltersQuery | null
+  query: FiltersQuery | null,
+  version: 1 | 2 = 1
 ): UseQueryResult<FiltersQueryResponse> {
   const dispatch = useContext(DispatchContext);
 
@@ -340,7 +401,7 @@ export function useWMGFiltersQuery(
 
   return useQuery(
     [USE_FILTERS_QUERY, query, currentSnapshotId],
-    ({ signal }) => fetchFiltersQuery({ query, signal }),
+    ({ signal }) => fetchFiltersQuery({ query, signal, version }),
     {
       enabled: Boolean(query),
       onSuccess(response) {
@@ -363,6 +424,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   development_stage_terms: [],
   disease_terms: [],
   self_reported_ethnicity_terms: [],
+  publicationFilter: [],
   sex_terms: [],
   tissue_terms: [],
 };
@@ -373,22 +435,37 @@ export interface RawDataset {
   id: string;
   label: string;
 }
-
 export interface FilterDimensions {
   datasets: RawDataset[];
   development_stage_terms: { id: string; name: string }[];
   disease_terms: { id: string; name: string }[];
   self_reported_ethnicity_terms: { id: string; name: string }[];
+  publicationFilter: { id: string; name: string }[];
   sex_terms: { id: string; name: string }[];
   tissue_terms: { id: string; name: string }[];
 }
 
-export function useFilterDimensions(): {
+export function useFilterDimensions(version: 1 | 2 = 1): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const requestBody = useWMGFiltersQueryRequestBody();
+  // Extracting row metadata from collections
+  const { rows: rawPublications } = useFetchCollectionRows(
+    VIEW_MODE.DEFAULT,
+    "success"
+  );
+  const { selectedPublicationFilter } = useContext(StateContext);
+  const { publications } = selectedPublicationFilter;
+  const { data: collections } = useManyCollections({
+    ids: publications.filter((id) => id !== "No Publication"),
+  }); // Ignore when "No Publication" is selected!
+  const { data: publication_list } = useManyCollections({
+    ids: rawPublications.map(({ id }) => id),
+  });
+
+  const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
+  const noPublicationStr = "No Publication";
 
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
@@ -404,13 +481,94 @@ export function useFilterDimensions(): {
       tissue_terms,
     } = filter_dims;
 
+    let noPublicationIds: string[] = [];
+
+    // Reconstructing rows into publication_list format, with collection id, name, and STABLE dataset ids.
+    // (cchoi): This is a fix suggested by Emanuele to grab the stable dataset IDs without reconfiguring the cube or the API.
+    const prePublications: {
+      id: string;
+      name: string;
+      dataset_ids: string[];
+    }[] = (publication_list ?? []).flatMap(
+      (collection: Collection | TombstonedCollection | null) => {
+        if (!collection || collection.tombstone) return [];
+        const ids: string[] = [];
+        for (const d of collection.datasets.values()) {
+          let url = d["dataset_deployments"][0].url.toString();
+          url = url.split("/").at(-2) ?? "";
+          url = url.split(".cxg").at(0) ?? "";
+          ids.push(url);
+        }
+        return [
+          {
+            id: collection.id,
+            name: collection.summaryCitation || noPublicationStr,
+            dataset_ids: ids,
+          },
+        ];
+      }
+    );
+
+    // Take all "No Publication"s and aggregate their dataset_ids:
+    for (const publication of prePublications) {
+      if (publication.name === noPublicationStr) {
+        noPublicationIds = noPublicationIds.concat(publication.dataset_ids);
+      }
+    }
+
+    // Remove all "No Publication"s
+    const allPublications = prePublications.filter(
+      (publication) => publication.name !== noPublicationStr
+    );
+
+    // Add a default "No Publication" with all of those dataset IDs aggregated
+    allPublications.push({
+      id: noPublicationStr,
+      name: noPublicationStr,
+      dataset_ids: noPublicationIds,
+    });
+
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
 
+    const selectedPublicationDatasetIds: string[] = [];
+
+    collections?.map((collection: Collection | TombstonedCollection | null) => {
+      if (!collection || collection.tombstone) return;
+      for (const d of collection.datasets.values()) {
+        // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
+        let url = d["dataset_deployments"][0].url.toString();
+        url = url.split("/").at(-2) ?? "";
+        url = url.split(".cxg").at(0) ?? "";
+        selectedPublicationDatasetIds.push(url);
+      }
+    });
+
+    if (publications.includes(noPublicationStr)) {
+      selectedPublicationDatasetIds.push(...noPublicationIds);
+    }
+
+    let intersect = sortedDatasets;
+
+    if (selectedPublicationDatasetIds.length > 0) {
+      intersect = sortedDatasets.filter((coll) =>
+        selectedPublicationDatasetIds.includes(coll.id)
+      );
+    }
+
+    let filteredPublications = allPublications;
+
+    if (sortedDatasets.length > 0) {
+      filteredPublications = filteredPublications.filter((coll) =>
+        coll.dataset_ids.some((datasetId) =>
+          sortedDatasets.map((dataset) => dataset.id).includes(datasetId)
+        )
+      );
+    }
     return {
       data: {
-        datasets: sortedDatasets.map((dataset) => ({
+        datasets: intersect.map((dataset) => ({
           ...dataset,
           name: dataset.label,
         })),
@@ -418,21 +576,24 @@ export function useFilterDimensions(): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
+        publicationFilter: filteredPublications.map((publication) => ({
+          id: publication.id,
+          name: publication.name,
+        })),
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },
       isLoading: false,
     };
-  }, [data, isLoading]);
+  }, [data, isLoading, collections, publications, publication_list]);
 }
 
-export function useExpressionSummary(): {
+export function useExpressionSummary(version: 1 | 2 = 1): {
   isLoading: boolean;
   data: QueryResponse["expression_summary"];
 } {
-  const requestBody = useWMGQueryRequestBody();
-
-  const { data, isLoading } = useWMGQuery(requestBody);
+  const requestBody = useWMGQueryRequestBody(version);
+  const { data, isLoading } = useWMGQuery(requestBody, version);
 
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_OBJECT, isLoading };
@@ -450,19 +611,27 @@ export interface CellTypeByTissueName {
   [tissueName: string]: CellTypeRow[];
 }
 
-export function useCellTypesByTissueName(): {
+// Cell types that we want to exclude from each tissue
+
+const FILTERED_CELL_TYPE_ONTOLOGY_IDS = [
+  "CL:0000003", // Native cell
+  "CL:0000255", // Eukaryotic cell
+  "CL:0000548", // Animal cell
+];
+
+export function useCellTypesByTissueName(version: 1 | 2 = 1): {
   isLoading: boolean;
   data: CellTypeByTissueName;
 } {
-  const { isLoading } = useExpressionSummary();
+  const { isLoading } = useExpressionSummary(version);
 
   const {
     data: primaryFilterDimensions,
     isLoading: isLoadingPrimaryFilterDimensions,
-  } = usePrimaryFilterDimensions();
+  } = usePrimaryFilterDimensions(version);
 
   const { data: termIdLabels, isLoading: isLoadingTermIdLabels } =
-    useTermIdLabels();
+    useTermIdLabels(version);
 
   return useMemo(() => {
     if (
@@ -490,11 +659,11 @@ export function useCellTypesByTissueName(): {
         // (thuang): Reverse the order, so the first cell type is at the top of
         // the heat map
         .reverse()
-        .map(([cellTypeId, cellTypeName]) => {
-          return {
-            id: cellTypeId,
-            ...cellTypeName,
-          };
+        .filter(([_, cellTypeRow]) => {
+          return !FILTERED_CELL_TYPE_ONTOLOGY_IDS.includes(cellTypeRow.id);
+        })
+        .map(([_, cellTypeName]) => {
+          return cellTypeName;
         });
 
       cellTypesByTissueName[tissueName] = tissueCellTypes;
@@ -517,19 +686,18 @@ export interface GeneExpressionSummariesByTissueName {
   [tissueName: string]: { [geneName: string]: GeneExpressionSummary };
 }
 
-export function useGeneExpressionSummariesByTissueName(): {
+export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 1): {
   data: GeneExpressionSummariesByTissueName;
   isLoading: boolean;
 } {
-  const { data, isLoading } = useExpressionSummary();
-
+  const { data, isLoading } = useExpressionSummary(version);
   const {
     data: primaryFilterDimensions,
     isLoading: isLoadingPrimaryFilterDimensions,
-  } = usePrimaryFilterDimensions();
+  } = usePrimaryFilterDimensions(version);
 
   const { data: termIdLabels, isLoading: isLoadingTermIdLabels } =
-    useTermIdLabels();
+    useTermIdLabels(version);
 
   return useMemo(() => {
     if (
@@ -572,7 +740,10 @@ export function useGeneExpressionSummariesByTissueName(): {
             mergedExpressionSummaries.push(
               transformCellTypeGeneExpressionSummaryData({
                 ...expressionSummary,
-                viewId: getCellTypeViewId(cellTypeId, compareOptionId),
+                viewId: getCellTypeViewId(
+                  cellTypeId === "tissue_stats" ? tissueId : cellTypeId,
+                  compareOptionId
+                ),
               })
             );
           }
@@ -628,6 +799,7 @@ interface TermIdLabels {
   cell_types: {
     [tissueID: string]: {
       [viewId: ViewId]: {
+        id: string;
         name: string;
         order: number;
         total_count: number;
@@ -661,13 +833,13 @@ export interface CellTypeRow {
   cellTypeName: string;
 }
 
-export function useTermIdLabels(): {
+export function useTermIdLabels(version: 1 | 2 = 1): {
   data: TermIdLabels;
   isLoading: boolean;
 } {
-  const requestBody = useWMGQueryRequestBody();
+  const requestBody = useWMGQueryRequestBody(version);
 
-  const { data, isLoading } = useWMGQuery(requestBody);
+  const { data, isLoading } = useWMGQuery(requestBody, version);
 
   return useMemo(() => {
     if (isLoading || !data) {
@@ -693,6 +865,16 @@ export function useTermIdLabels(): {
         const result: {
           [viewId: CellTypeRow["viewId"]]: CellTypeRow;
         } = {};
+        if (tissueCellTypesWithCompareOptions["tissue_stats"])
+          addCellTypeRowToResult({
+            result,
+            sortedCellTypeCompareOptions: [
+              [
+                "aggregated",
+                tissueCellTypesWithCompareOptions["tissue_stats"]["aggregated"],
+              ],
+            ],
+          });
 
         for (const cellTypeWithCompareOptions of sortedTissueCellTypesWithCompareOptions) {
           const sortedCellTypeCompareOptions = getSortedCellTypeCompareOptions(
@@ -723,9 +905,10 @@ export function useTermIdLabels(): {
  * (thuang): This function sorts a tissue's cellTypeWithCompareOptions objects
  * by `order`
  */
-function getSortedTissueCellTypesWithCompareOptions(
-  tissueCellTypesWithCompareOptions: QueryResponse["term_id_labels"]["cell_types"][string]
-): QueryResponse["term_id_labels"]["cell_types"][string][string][] {
+function getSortedTissueCellTypesWithCompareOptions({
+  tissue_stats: _,
+  ...tissueCellTypesWithCompareOptions
+}: QueryResponse["term_id_labels"]["cell_types"][string]): QueryResponse["term_id_labels"]["cell_types"][string][string][] {
   return Object.values(tissueCellTypesWithCompareOptions).sort((a, b) => {
     const aAggregated = a.aggregated;
     const bAggregated = b.aggregated;
@@ -804,7 +987,10 @@ function addCellTypeRowToResult({
   sortedCellTypeCompareOptions: [
     // compareOptionId
     string,
-    QueryResponse["term_id_labels"]["cell_types"][string][string][string]
+    (
+      | CellTypeStats[string][CompareOptionId]
+      | TissueStats["tissue_stats"]["aggregated"]
+    )
   ][];
 }) {
   let cellTypeName = "";
@@ -815,12 +1001,13 @@ function addCellTypeRowToResult({
   ] of sortedCellTypeCompareOptions) {
     const isAggregated = compareOptionId === COMPARE_OPTION_ID_FOR_AGGREGATED;
 
-    const {
-      cell_type_ontology_term_id,
-      name: rawName,
-      total_count,
-      order,
-    } = compareOptionData;
+    const { name: rawName, total_count, order } = compareOptionData;
+
+    const termIsTissueStats = isTissueStats(compareOptionData);
+
+    const termID = isTissueStats(compareOptionData)
+      ? compareOptionData.tissue_ontology_term_id
+      : compareOptionData.cell_type_ontology_term_id;
 
     /**
      * (thuang): We manually indent 4 spaces instead of using CSS, so we don't
@@ -836,14 +1023,11 @@ function addCellTypeRowToResult({
       cellTypeName = rawName;
     }
 
-    const viewId = getCellTypeViewId(
-      cell_type_ontology_term_id,
-      compareOptionId
-    );
+    const viewId = getCellTypeViewId(termID, compareOptionId);
 
     result[viewId] = {
-      cellTypeName,
-      id: cell_type_ontology_term_id,
+      cellTypeName: termIsTissueStats ? termID : cellTypeName,
+      id: termID,
       isAggregated,
       name,
       order,
@@ -859,18 +1043,23 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-function useWMGQueryRequestBody() {
+function useWMGQueryRequestBody(version: 1 | 2) {
   const {
     compare,
     selectedGenes,
     selectedTissues,
     selectedOrganismId,
     selectedFilters,
+    selectedPublicationFilter,
   } = useContext(StateContext);
-  const { data } = usePrimaryFilterDimensions();
+  const { publications } = selectedPublicationFilter;
+  const { data: collections } = useManyCollections({ ids: publications });
+
+  const { data } = usePrimaryFilterDimensions(version);
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
+
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
@@ -901,54 +1090,85 @@ function useWMGQueryRequestBody() {
   }, [data]);
 
   return useMemo(() => {
-    if (!data || !selectedOrganismId || !selectedTissues.length) {
+    if (
+      !data ||
+      !selectedOrganismId ||
+      (version === 1 && !selectedTissues?.length)
+    ) {
       return null;
     }
     const gene_ontology_term_ids = selectedGenes.map((geneName) => {
       return organismGenesByName[geneName].id;
     });
     if (!gene_ontology_term_ids.length) gene_ontology_term_ids.push(".");
-    const tissue_ontology_term_ids = selectedTissues.map((tissueName) => {
+    const tissue_ontology_term_ids = selectedTissues?.map((tissueName) => {
       return tissuesByName[tissueName].id;
     });
 
+    const selectedPublicationDatasetIds: string[] = [];
+    collections?.map((collection: Collection | TombstonedCollection | null) => {
+      if (!collection || collection.tombstone) return;
+      for (const d of collection.datasets.values()) {
+        // (cchoi): Taking explorer_url and extracting the stable dataset IDs. Same reasoning as before.
+        let url = d["dataset_deployments"][0].url.toString();
+        url = url.split("/").at(-2) ?? "";
+        url = url.split(".cxg").at(0) ?? "";
+        selectedPublicationDatasetIds.push(url);
+      }
+    });
+
+    const union = Array.from(
+      new Set([...datasets, ...selectedPublicationDatasetIds])
+    );
     return {
       compare,
       filter: {
-        dataset_ids: datasets,
+        dataset_ids: union,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
         gene_ontology_term_ids,
         organism_ontology_term_id: selectedOrganismId,
         self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
-        tissue_ontology_term_ids,
+        ...(version === 1 && { tissue_ontology_term_ids }),
       },
       is_rollup: true, // this could be made toggleable by users in the future
     };
   }, [
-    selectedGenes,
-    selectedTissues,
-    selectedOrganismId,
     data,
-    organismGenesByName,
-    tissuesByName,
+    selectedOrganismId,
+    version,
+    selectedTissues,
+    selectedGenes,
+    compare,
     datasets,
     developmentStages,
     diseases,
     ethnicities,
     sexes,
-    compare,
+    organismGenesByName,
+    tissuesByName,
+    collections,
   ]);
 }
 
-function useWMGFiltersQueryRequestBody() {
-  const { selectedTissues, selectedOrganismId, selectedFilters } =
-    useContext(StateContext);
-  const { data } = usePrimaryFilterDimensions();
+function useWMGFiltersQueryRequestBody(
+  version: 1 | 2 = 1
+): FiltersQuery | null {
+  const {
+    selectedTissues,
+    selectedOrganismId,
+    selectedFilters,
+    selectedPublicationFilter,
+  } = useContext(StateContext);
+
+  const { data } = usePrimaryFilterDimensions(version);
 
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
+  const { publications } = selectedPublicationFilter;
+
+  const { data: collections } = useManyCollections({ ids: publications });
 
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
@@ -966,13 +1186,32 @@ function useWMGFiltersQueryRequestBody() {
     if (!data || !selectedOrganismId) {
       return null;
     }
-    const tissue_ontology_term_ids = selectedTissues.map((tissueName) => {
-      return tissuesByName[tissueName].id;
+    const tissue_ontology_term_ids =
+      selectedTissues?.map((tissueName) => {
+        return tissuesByName[tissueName].id;
+      }) ?? EMPTY_ARRAY;
+
+    const publicationDatasetIds: string[] = [];
+
+    collections?.map((collection: Collection | TombstonedCollection | null) => {
+      if (!collection || collection.tombstone) return;
+      for (const d of collection.datasets.values()) {
+        // Taking explorer_url and extracting the stable dataset IDs.
+        let url = d["dataset_deployments"][0].url.toString();
+        url = url.substring(51);
+        url = url.substring(0, url.length - 5);
+        publicationDatasetIds.push(url);
+      }
     });
+
+    let intersect = publicationDatasetIds;
+    if (datasets.length > 0) {
+      intersect = datasets.filter((x) => publicationDatasetIds.includes(x));
+    }
 
     return {
       filter: {
-        dataset_ids: datasets,
+        dataset_ids: intersect,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
         organism_ontology_term_id: selectedOrganismId,
@@ -990,15 +1229,19 @@ function useWMGFiltersQueryRequestBody() {
     developmentStages,
     diseases,
     ethnicities,
+    collections,
     sexes,
+    version,
   ]);
 }
 
 let prevQuery: Query | null;
 
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+
 function clobberQueryIfSubsetOfPrev(
   query: Query | null,
-  filtersToCheck: (keyof Filter)[]
+  filtersToCheck: KeysOfUnion<Filter>[]
 ): Query | null {
   if (prevQuery == query) return prevQuery;
   if (!prevQuery || !query) {
@@ -1115,6 +1358,7 @@ export interface FetchMarkerGeneParams {
   tissueID: string;
   organismID: string;
   test?: "ttest" | "binomtest";
+  version?: 1 | 2;
 }
 
 export interface FetchGeneInfoParams {
@@ -1128,8 +1372,9 @@ export async function fetchMarkerGenes({
   organismID,
   tissueID,
   test = "ttest",
+  version = 1,
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
-  const url = API_URL + API.WMG_MARKER_GENES;
+  const url = API_URL + replaceV1WithV2(version).WMG_MARKER_GENES;
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -1197,8 +1442,9 @@ export function useMarkerGenes({
   organismID,
   tissueID,
   test,
+  version = 1,
 }: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse<MarkerGene>> {
-  const { data } = usePrimaryFilterDimensions();
+  const { data } = usePrimaryFilterDimensions(version);
   const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
     let result: { [name: string]: OntologyTerm } = {};
 
@@ -1223,13 +1469,14 @@ export function useMarkerGenes({
      * so React Query can cache responses correctly without running into
      * issues like #4161
      */
-    [USE_MARKER_GENES, cellTypeID, organismID, test, tissueID],
+    [USE_MARKER_GENES, cellTypeID, organismID, test, tissueID, version],
     async () => {
       const output = await fetchMarkerGenes({
         cellTypeID,
         organismID,
         test,
         tissueID,
+        version,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
         filterMarkerGenes(output.marker_genes).reduce(
@@ -1252,8 +1499,11 @@ export function useMarkerGenes({
   );
 }
 
-export function useGeneInfo(geneSymbol: string): UseQueryResult<GeneInfo> {
-  const { data } = usePrimaryFilterDimensions();
+export function useGeneInfo(
+  geneSymbol: string,
+  version: 1 | 2 = 1
+): UseQueryResult<GeneInfo> {
+  const { data } = usePrimaryFilterDimensions(version);
   const genesByName = useMemo((): { [name: string]: OntologyTerm } => {
     let result: { [name: string]: OntologyTerm } = {};
 

@@ -1,15 +1,18 @@
 import { expect, test } from "@playwright/test";
-import { ADD_GENE_BTN } from "tests/utils/constants";
+import { ADD_GENE_BTN } from "tests/common/constants";
 import {
   goToWMG,
   searchAndAddGene,
   verifyAddedGene,
 } from "tests/utils/geneUtils";
 import { selectNthOption } from "tests/utils/helpers";
+import { conditionallyRunTests } from "tests/utils/wmgUtils";
 import uaParser from "ua-parser-js";
 const { describe } = test;
 
 describe("Manage gene tests", () => {
+  conditionallyRunTests();
+
   test("Should select gene using keyboard arrow key to select", async ({
     page,
   }) => {

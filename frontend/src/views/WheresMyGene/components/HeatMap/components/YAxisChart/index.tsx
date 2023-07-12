@@ -6,6 +6,7 @@ import {
   formatLabel,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
+  hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
 import InfoSVG from "./icons/info-sign-icon.svg";
@@ -28,7 +29,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { COMPARE_OPTION_ID_FOR_AGGREGATED } from "src/common/queries/wheresMyGene";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
-import { Tooltip } from "czifui";
+import { Tooltip } from "@czi-sds/components";
 
 interface Props {
   cellTypes?: CellType[];
@@ -47,7 +48,7 @@ export default memo(function YAxisChart({
   generateMarkerGenes,
   tissueID,
 }: Props): JSX.Element {
-  const tissueKey = tissue.replace(/\s+/g, "-");
+  const tissueKey = hyphenize(tissue);
 
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
@@ -63,7 +64,7 @@ export default memo(function YAxisChart({
   }, [cellTypes, tissue]);
 
   return (
-    <Wrapper id={`${tissue.replace(/\s+/g, "-")}-y-axis`}>
+    <Wrapper>
       <TissueWrapper height={heatmapHeight}>
         <TissueName>{capitalize(tissue)}</TissueName>
       </TissueWrapper>
@@ -81,7 +82,7 @@ export default memo(function YAxisChart({
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
 
-            const paddedName = formatLabel(
+            const { text: paddedName } = formatLabel(
               name,
               Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
               selectedFont // prevents selected style from overlapping count
@@ -131,14 +132,19 @@ const CellTypeButton = ({
   const isTruncated = formattedName.includes("...");
 
   return (
-    <FlexRowJustified data-testid="cell-type-label-count">
+    <FlexRowJustified
+      id="cell-type-label-count"
+      data-testid="cell-type-label-count"
+    >
       <FlexRow>
         <CellTypeLabelStyle>
           <Tooltip
             title={
               // Set tooltip content only if name is truncated
               isTruncated ? (
-                <CellTypeLabelTooltipStyle>{name}</CellTypeLabelTooltipStyle>
+                <CellTypeLabelTooltipStyle data-testid="cell-type-name-tooltip">
+                  {name}
+                </CellTypeLabelTooltipStyle>
               ) : null
             }
             sdsStyle="light"
@@ -154,7 +160,9 @@ const CellTypeButton = ({
                   {name}
                 </HiddenCellTypeLabelStyle>
               )}
-              <div data-testid="cell-type-name">{formattedName}</div>
+              <div id="cell-type-name" data-testid="cell-type-name">
+                {formattedName}
+              </div>
             </div>
           </Tooltip>
         </CellTypeLabelStyle>
@@ -188,7 +196,7 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle data-testid="cell-count">
+      <CellCountLabelStyle id="cell-count" data-testid="cell-count">
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>

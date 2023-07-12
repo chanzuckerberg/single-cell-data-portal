@@ -1,4 +1,4 @@
-import { List, ListItem } from "czifui";
+import { List, ListItem } from "@czi-sds/components";
 import { useContext, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -7,7 +7,8 @@ import {
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { StateContext } from "src/views/WheresMyGene/common/store";
-import { Content, ListSubheader, Wrapper } from "./style";
+import { Content, InfoText, ListSubheader, Wrapper } from "./style";
+import { ROUTES } from "src/common/constants/routes";
 
 interface Collection {
   name: string;
@@ -34,6 +35,18 @@ export default function SourceData(): JSX.Element {
   return (
     <Wrapper>
       <Content>
+        <InfoText>
+          Gene Expression is powered by primary data submitted to CZ CELLxGENE
+          Discover. See exceptions and processing notes{" "}
+          <a
+            href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            here
+          </a>
+          .
+        </InfoText>
         <List ordered data-testid="source-data-list">
           {Object.values(collections).map(({ name, url, datasets }) => {
             return (

@@ -1,4 +1,7 @@
-import { InputDropdownProps as IInputDropdownProps, Tooltip } from "czifui";
+import {
+  InputDropdownProps as IInputDropdownProps,
+  Tooltip,
+} from "@czi-sds/components";
 import { useContext, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -17,6 +20,7 @@ import {
   TooltipButton,
   StyledTooltip,
 } from "../../../CellInfoSideBar/style";
+import { COLOR_SCALE_TOOLTIP_TEXT } from "src/views/WheresMyGene/common/constants";
 
 interface Props {
   setIsScaled: (prevIsScaled: boolean) => void;
@@ -73,15 +77,12 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
           arrow
           title={
             <StyledTooltip>
-              <div>
-                Expression is scaled to the range [0,1]. Scaling is done by
-                assigning the minimum value in the current view to 0 and the max
-                is assigned to 1.
-              </div>
+              <div>{COLOR_SCALE_TOOLTIP_TEXT}</div>
             </StyledTooltip>
           }
         >
           <TooltipButton
+            data-testid="color-scale-tooltip-icon"
             sdsStyle="minimal"
             sdsType="secondary"
             isAllCaps={false}

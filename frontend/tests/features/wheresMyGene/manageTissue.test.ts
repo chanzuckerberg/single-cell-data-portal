@@ -1,11 +1,14 @@
 import { test } from "@playwright/test";
-import { ADD_TISSUE_BTN } from "tests/utils/constants";
+import { ADD_TISSUE_BTN } from "tests/common/constants";
 import { goToWMG, verifyAddedTissue } from "tests/utils/geneUtils";
 import { selectNthOption } from "tests/utils/helpers";
+import { conditionallyRunTests } from "tests/utils/wmgUtils";
 
 const { describe } = test;
 
 describe("Add tissue tests", () => {
+  conditionallyRunTests();
+
   test("Should select tissue using keyboard arrow key to select", async ({
     page,
   }) => {

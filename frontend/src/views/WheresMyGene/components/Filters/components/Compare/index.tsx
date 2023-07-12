@@ -1,7 +1,7 @@
 import {
   DefaultDropdownMenuOption,
   InputDropdownProps as IInputDropdownProps,
-} from "czifui";
+} from "@czi-sds/components";
 import { useContext, useMemo } from "react";
 import {
   DispatchContext,
@@ -13,7 +13,18 @@ import { Wrapper, Label, StyledDropdown } from "../common/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { LabelWrapper, NewChip } from "./style";
-import { COMPARE_OPTIONS } from "src/views/WheresMyGene/common/constants";
+import {
+  COMPARE_OPTIONS,
+  GROUP_BY_TOOLTIP_TEXT,
+  SELECT_TISSUE_GENE_TEXT,
+} from "src/views/WheresMyGene/common/constants";
+import { Tooltip } from "@czi-sds/components";
+import {
+  StyledIconImage,
+  StyledTooltip,
+  TooltipButton,
+} from "../../../CellInfoSideBar/style";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -45,7 +56,35 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
   return (
     <div>
       <LabelWrapper>
-        <Label>Group By</Label>
+        <Label>
+          Group By
+          <Tooltip
+            className="group-by-tooltip-icon"
+            sdsStyle="dark"
+            placement="right"
+            width="default"
+            arrow
+            title={
+              <StyledTooltip>
+                {areFiltersDisabled && (
+                  <p>
+                    <em>{SELECT_TISSUE_GENE_TEXT}</em>
+                  </p>
+                )}
+                <div>{GROUP_BY_TOOLTIP_TEXT}</div>
+              </StyledTooltip>
+            }
+          >
+            <TooltipButton
+              data-testid="group-by-tooltip-icon"
+              sdsStyle="minimal"
+              sdsType="secondary"
+              isAllCaps={false}
+            >
+              <StyledIconImage src={questionMarkIcon} />
+            </TooltipButton>
+          </Tooltip>
+        </Label>
         <NewChip label="NEW" />
       </LabelWrapper>
       <Wrapper>

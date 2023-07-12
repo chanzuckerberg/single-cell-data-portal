@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { StateContext } from "../../common/store";
 import Step from "./components/Step";
 import {
   ColumnOne,
@@ -23,6 +24,8 @@ export default function GetStarted({
   isLoading,
   geneSelected,
 }: Props): JSX.Element | null {
+  const { xAxisHeight } = useContext(StateContext);
+
   if (!tissueHasLoadedOnce && tissueSelected && !isLoading) {
     tissueHasLoadedOnce = true;
   }
@@ -50,6 +53,7 @@ export default function GetStarted({
 
           <ColumnTwo data-testid="column-two">
             <StyledStepTwo
+              minHeight={xAxisHeight}
               isHidden={geneHasLoadedOnce}
               data-testid="get-started-step-2"
             >
