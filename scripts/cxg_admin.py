@@ -50,6 +50,8 @@ def cli(ctx, deployment):
     You must first set DEPLOYMENT_STAGE as an env var before running
 
     """
+    if deployment == "test":
+        return
     if deployment not in ("dev", "staging", "prod"):
         logging.error("The deployment arg must be one of 'dev', 'staging', or 'prod'")
         exit(1)
