@@ -6,28 +6,19 @@ from click import Context
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
+from backend.layers.business.business import BusinessLogic
+from backend.layers.common.entities import CollectionId
 
-def tombstone_collection(ctx: Context, uuid: str):
+
+def tombstone_collection(ctx: Context, uuid: str) -> None:
     """
-    Tombstones the collection specified by ID.
-
-    Before running, create a tunnel to the database, e.g.:
-
-        AWS_PROFILE=single-cell-prod DEPLOYMENT_STAGE=prod make db/tunnel
-
-    Then run as:
-
-        ./scripts/cxg_admin.py --deployment prod tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
-
+    Tombstones the collection specified by uuid.
     :param ctx: command context
     :param uuid: ID that identifies the collection to tombstone
     """
-    print(f"Testing DJH context: {ctx} uuid: {uuid}")
-    import pprint
-
-    pprint.pprint(ctx.obj)
-    print(os.environ["DEPLOYMENT_STAGE"])
-    pass
+    business_logic: BusinessLogic = ctx.obj["business_logic"]
+    business_logic.tombstone_collection(CollectionId(uuid))
+    print(f"Successfully tombstoned Collection {uuid}")
 
 
 def tombstone_dataset(ctx, uuid):
