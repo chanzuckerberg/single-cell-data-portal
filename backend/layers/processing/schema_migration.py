@@ -89,10 +89,10 @@ class SchemaMigrate(ProcessingLogic):
         key_prefix = self.get_key_prefix(dataset_version_id)
         uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            collection_version_id,
+            CollectionVersionId(collection_version_id),
             uri,
             file_size=0,  # TODO: this shouldn't be needed but it gets around a 404 for HeadObject
-            existing_dataset_version_id=dataset_version_id,
+            existing_dataset_version_id=DatasetVersionId(dataset_version_id),
             start_step_function=False,
         )
         return {
