@@ -127,8 +127,6 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
         for dataset_id in dataset_ids
     ]
 
-# def fetch_publications_metadata... 
-
 def find_dimension_id_from_compare(compare: str) -> str:
     if compare == "sex":
         return "sex_ontology_term_id"
@@ -137,7 +135,7 @@ def find_dimension_id_from_compare(compare: str) -> str:
     elif compare == "disease":
         return "disease_ontology_term_id"
     elif compare == "publication":
-        return "disease_ontology_term_id"
+        return "publication_citation"
     else:
         return None
 
