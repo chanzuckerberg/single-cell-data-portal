@@ -38,6 +38,7 @@ import { CELL_GUIDE_CARD_NAVIGATION_SIDEBAR } from "src/views/CellGuide/componen
 import {
   TISSUE_CARD_HEADER_NAME,
   TISSUE_CARD_HEADER_TAG,
+  TISSUE_CARD_UBERON_DESCRIPTION,
 } from "src/views/CellGuide/components/TissueCard";
 import {
   EXPRESSION_SCORE_TOOLTIP_TEST_ID,
@@ -423,6 +424,7 @@ describe("Cell Guide", () => {
         await isElementVisible(page, TISSUE_CARD_HEADER_TAG);
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);
         await isElementVisible(page, CELL_GUIDE_CARD_SEARCH_BAR);
+        await isElementVisible(page, TISSUE_CARD_UBERON_DESCRIPTION);
         const headerName = page.getByTestId(TISSUE_CARD_HEADER_NAME);
         const headerNameText = await headerName.textContent();
         expect(headerNameText).toBe("Lung");
