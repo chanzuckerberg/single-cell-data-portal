@@ -12,7 +12,12 @@ from backend.wmg.data.schemas.corpus_schema import (
 from backend.wmg.data.utils import log_func_runtime
 
 stack_name = os.environ.get("REMOTE_DEV_PREFIX")
+
+# root directory in the s3 bucket under which the data artifact directories will be written to
+wmg_s3_root_dir_path = stack_name.strip("/") if stack_name else ""
+
 wmg_bucket_name = os.environ.get("WMG_BUCKET")
+wmg_s3_bucket_uri = f"s3://{wmg_bucket_name}"
 
 # TODO(prathap): The functionality to fully integrate `snapshot_schema_version` will be done
 # in a future ticket:
@@ -88,48 +93,20 @@ def upload_artifacts_to_s3(
 ###################################### PRIVATE FUNCTIONS #################################
 
 
-def _get_latest_snapshot_identifier_file_s3_key(snapshot_schema_version: str) -> str:
-    """
-    Return s3 key of latest_snapshot_identifier file
-    """
-    data_root_path = _get_wmg_s3_root_dir_path()
-    _get_wmg_s3_data_schema_dir_path(snapshot_schema_version)
-    file_name = "latest_snapshot_identifier"
-
-    # TODO(prathap) - change to: return f"{data_root_path}/{data_schema_dir_path}/{file_name}"
-    # when working on: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
-    return f"{data_root_path}/{file_name}"
-
-
-def _get_latest_snapshot_run_file_s3_key() -> str:
-    """
-    Return s3 key of latest_snapshot_run file
-    """
-    data_root_path = _get_wmg_s3_root_dir_path()
-    file_name = "latest_snapshot_run"
-
-    return f"{data_root_path}/{file_name}"
-
-
-def _get_wmg_s3_bucket_uri():
-    """
-    Get s3 bucket uri
-    """
-    return f"s3://{wmg_bucket_name}"
-
-
-def _get_wmg_s3_root_dir_path():
-    """
-    Get root directory in the s3 bucket under which the data artifact directories will be written to
-    """
-    return stack_name.strip("/") if stack_name else ""
-
-
 def _get_wmg_s3_data_schema_dir_path(snapshot_schema_version: str) -> str:
     """
     Get path for a particular data schema version under which data should be located
     """
-    return f"snapshots/{snapshot_schema_version}"
+    data_schema_dir_path = f"snapshots/{snapshot_schema_version}"
+
+    if wmg_s3_root_dir_path:
+        data_schema_dir_path = f"{wmg_s3_root_dir_path}/{data_schema_dir_path}"
+
+    # TODO(prathap) - change to using data_schema_dir_path by uncommenting the below 'return' statement
+    # when working on: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
+    # return data_schema_dir_path
+
+    return wmg_s3_root_dir_path
 
 
 def _get_wmg_snapshot_s3_path(
@@ -140,12 +117,9 @@ def _get_wmg_snapshot_s3_path(
     """
     snapshot_dir = snapshot_id if is_snapshot_validation_successful else f"{snapshot_id}_validation_failed_snapshot"
 
-    data_root_path = _get_wmg_s3_root_dir_path()
-    _get_wmg_s3_data_schema_dir_path(snapshot_schema_version)
+    data_schema_dir_path = _get_wmg_s3_data_schema_dir_path(snapshot_schema_version)
 
-    # TODO(prathap) - change to: return f"{data_root_path}/{data_schema_dir_path}/{snapshot_dir}"
-    # when working on: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
-    return f"{data_root_path}/{snapshot_dir}"
+    return f"{data_schema_dir_path}/{snapshot_dir}" if data_schema_dir_path else snapshot_dir
 
 
 def _get_wmg_snapshot_s3_fullpath(
@@ -156,7 +130,7 @@ def _get_wmg_snapshot_s3_fullpath(
     """
     snapshot_path = _get_wmg_snapshot_s3_path(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)
 
-    return f"{_get_wmg_s3_bucket_uri()}/{snapshot_path}"
+    return f"{wmg_s3_bucket_uri}/{snapshot_path}"
 
 
 def _make_snapshot_active(snapshot_schema_version, snapshot_id):
@@ -165,17 +139,12 @@ def _make_snapshot_active(snapshot_schema_version, snapshot_id):
     """
     _write_latest_snapshot_identifier_file(snapshot_schema_version, snapshot_id)
 
-    data_root_path = _get_wmg_s3_root_dir_path()
-    _get_wmg_s3_data_schema_dir_path(snapshot_schema_version)
+    data_schema_dir_path = _get_wmg_s3_data_schema_dir_path(snapshot_schema_version)
 
-    # TODO(prathap): Change to - s3_key_prefix = f"{data_root_path}/{data_schema_dir_path}"
-    # when working on: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
-    s3_key_prefix = data_root_path
-
-    _remove_oldest_datasets(s3_key_prefix)
+    _remove_oldest_datasets(s3_key_prefix=data_schema_dir_path)
 
 
-def _remove_oldest_datasets(s3_key_prefix):
+def _remove_oldest_datasets(*, s3_key_prefix):
     """
     Remove all snapshots that are older the 2 most recent snapshots
     """
@@ -224,7 +193,10 @@ def _write_latest_snapshot_identifier_file(snapshot_schema_version: str, snapsho
     """
     Update latest_snapshot_identifier file with latest snapshot_id
     """
-    key_path = _get_latest_snapshot_identifier_file_s3_key(snapshot_schema_version)
+    data_schema_dir_path = _get_wmg_s3_data_schema_dir_path(snapshot_schema_version)
+    file_name = "latest_snapshot_identifier"
+
+    key_path = f"{data_schema_dir_path}/{file_name}" if data_schema_dir_path else file_name
 
     _write_value_to_s3_key(key_path=key_path, value=snapshot_id)
 
@@ -235,7 +207,9 @@ def _write_latest_snapshot_run_file(
     """
     Update latest_snapshot_run file with the path to the latest snapshot folder generated
     """
-    key_path = _get_latest_snapshot_run_file_s3_key()
+    file_name = "latest_snapshot_run"
+
+    key_path = f"{wmg_s3_root_dir_path}/{file_name}" if wmg_s3_root_dir_path else file_name
     snapshot_path = _get_wmg_snapshot_s3_path(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)
 
     _write_value_to_s3_key(key_path=key_path, value=snapshot_path)
