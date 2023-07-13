@@ -3,6 +3,8 @@ import logging
 import numpy as np
 import pandas as pd
 
+from backend.wmg.pipeline.summary_cubes.cell_count import return_dataset_dict_w_publications
+
 logger = logging.getLogger(__name__)
 
 
@@ -57,9 +59,17 @@ def build_in_mem_cube(
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
 
-        for i, k in enumerate(other_cube_attrs):
-            vals[k][idx : idx + n_vals] = attr_values[i]
+        dataset_index = 0
 
+        for i, k in enumerate(other_cube_attrs):
+            if k == "dataset_id":
+                dataset_index = i
+            if k != "publication_citation": 
+                vals[k][idx : idx + n_vals] = attr_values[i]
+        
+        dataset_dict = return_dataset_dict_w_publications()
+        vals["publication_citation"][idx : idx + n_vals] = dataset_dict(attr_values[dataset_index])
+                                                                        
         idx += n_vals
 
     return dims, vals
