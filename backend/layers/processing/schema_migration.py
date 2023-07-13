@@ -143,8 +143,8 @@ class SchemaMigrate(ProcessingLogic):
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
             dataset_version_id = dataset.version_id.id
-            key_name = self.get_key_prefix(dataset_version_id)
-            object_keys_to_delete.append(f"{key_name}/migrated.h5ad")
+            key_prefix = self.get_key_prefix(dataset_version_id)
+            object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if dataset.metadata.schema_version != current_schema_version:
                 errors[dataset_version_id] = "Did Not Migrate."
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
