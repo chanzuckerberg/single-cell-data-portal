@@ -87,14 +87,21 @@ export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
   align-items: end;
 `;
 
+/**
+ * (thuang): Instead of using the full width, we only want enough space for the
+ * filter box + the widest scrollbar across different browsers.
+ */
+const CELL_TYPE_FILTER_WIDTH_PX = 300;
+
 export const CellTypeFilterContainer = styled.div`
   height: 100%;
+  width: ${CELL_TYPE_FILTER_WIDTH_PX}px;
 `;
 
 const CELL_TYPE_SEARCH_BOX_HEIGHT_PX = 37;
 
 export const CellTypeTagContainer = styled.div`
-  overflow-y: scroll;
+  overflow-y: auto;
   height: calc(100% - ${CELL_TYPE_SEARCH_BOX_HEIGHT_PX}px);
   padding: ${spacesS}px;
 `;
