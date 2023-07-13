@@ -60,9 +60,9 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
     def setUp(self):
         super().setUp()
 
-        # TODO: this can be improved, but the current authorization method requires it
-        self.mock = patch("backend.common.corpora_config.CorporaAuthConfig.__getattr__", return_value="mock_audience")
-        self.mock.start()
+        # # TODO: this can be improved, but the current authorization method requires it
+        # self.mock = patch("backend.common.corpora_config.CorporaAuthConfig.__getattr__", return_value=None)
+        # self.mock.start()
 
         self.cloudfront_provider = CDNProviderInterface()
 
