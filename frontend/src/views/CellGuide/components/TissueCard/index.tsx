@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useTissuesById } from "src/common/queries/cellGuide";
+import {
+  useTissuesById,
+  useUberonDescription,
+} from "src/common/queries/cellGuide";
 import {
   TISSUE_CARD_MAX_WIDTH,
   TissueCardHeader,
@@ -9,13 +12,22 @@ import {
   StyledTag,
   Wrapper,
   SearchBarWrapper,
+  DescriptionWrapper,
+  LEFT_RIGHT_PADDING_PX,
 } from "./style";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import OntologyDagView from "../common/OntologyDagView";
 import FullScreenProvider from "../common/FullScreenProvider";
+import {
+  CellGuideCardDescription,
+  Source,
+  SourceLink,
+} from "../CellGuideCard/components/Description/style";
+import Link from "../CellGuideCard/components/common/Link";
 
 export const TISSUE_CARD_HEADER_NAME = "tissue-card-header-name";
 export const TISSUE_CARD_HEADER_TAG = "tissue-card-header-tag";
+export const TISSUE_CARD_UBERON_DESCRIPTION = "tissue-card-uberon-description";
 
 export default function TissueCard(): JSX.Element {
   const router = useRouter();
@@ -35,6 +47,14 @@ export default function TissueCard(): JSX.Element {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  const [descriptionUberon, setDescriptionUberon] = useState<string>("");
+  const { data: rawDescriptionUberon } = useUberonDescription(tissueId);
+
+  useEffect(() => {
+    if (rawDescriptionUberon) setDescriptionUberon(rawDescriptionUberon);
+    else setDescriptionUberon("");
+  }, [rawDescriptionUberon]);
 
   return (
     <Wrapper>
@@ -61,12 +81,26 @@ export default function TissueCard(): JSX.Element {
       <SearchBarWrapper>
         <CellGuideCardSearchBar />
       </SearchBarWrapper>
+      <DescriptionWrapper>
+        <CellGuideCardDescription data-testid={TISSUE_CARD_UBERON_DESCRIPTION}>
+          {descriptionUberon}
+          <Source>
+            <SourceLink>
+              {"Source: "}
+              <Link
+                url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${tissueIdRaw}`}
+                label={"UBERON Ontology"}
+              />
+            </SourceLink>
+          </Source>
+        </CellGuideCardDescription>
+      </DescriptionWrapper>
       <FullScreenProvider>
         <OntologyDagView
           tissueId={tissueId}
           tissueName={tissueName}
           skinnyMode={false}
-          initialWidth={TISSUE_CARD_MAX_WIDTH}
+          initialWidth={TISSUE_CARD_MAX_WIDTH - LEFT_RIGHT_PADDING_PX * 2}
           initialHeight={height}
         />
       </FullScreenProvider>
