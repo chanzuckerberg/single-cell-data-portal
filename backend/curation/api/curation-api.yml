@@ -605,6 +605,8 @@ paths:
       description: |
         List all public Datasets with full metadata as well as Collection name and Collection doi.
       operationId: backend.curation.api.v1.curation.datasets.actions.get
+      parameters:
+        - $ref: "#/components/parameters/schema_version"
       responses:
         "200":
           description: OK
@@ -1457,6 +1459,14 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/dataset_version_id"
+    schema_version:
+      description: Filter to fetch latest version of dataset with the given CELLxGENE schema version
+      in: query
+      name: schema_version
+      required: false
+      schema:
+        type: string
+        example: "3.0.0"
   responses:
     "200":
       description: OK
