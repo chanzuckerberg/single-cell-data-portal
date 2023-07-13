@@ -18,7 +18,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
-from backend.layers.processing.logger import log_parameters_on_error, logit
+from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
@@ -160,7 +160,6 @@ class ProcessDownloadValidate(ProcessingLogic):
             suspension_type=adata.obs["suspension_type"].unique(),
         )
 
-    @log_parameters_on_error
     def wrapped_download_from_s3(
         self, dataset_id: DatasetVersionId, bucket_name: str, object_key: str, local_filename: str
     ):

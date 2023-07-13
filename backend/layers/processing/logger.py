@@ -25,19 +25,6 @@ def logit(func):
     return wrapper
 
 
-def log_parameters_on_error(func):
-    def wrapper(*arg, **kw):
-        """Logging the input paramters to an exception if it occurs."""
-        try:
-            res = func(*arg, **kw)
-        except Exception as e:
-            logging.error(f"Exception {func.__name__}", extra={"kwargs": kw, "args": arg})
-            raise e
-        return res
-
-    return wrapper
-
-
 class LogSuppressed(suppress):
     def __init__(self, *args, message="Suppressed Exception"):
         super().__init__(*args)
