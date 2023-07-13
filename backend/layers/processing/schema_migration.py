@@ -230,7 +230,7 @@ class SchemaMigrate(ProcessingLogic):
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
-            can_publish = os.environ["CAN_PUBLISH"].lower == "true"
+            can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
             collection_migrate = self.error_wrapper(self.collection_migrate, collection_id)
             response = collection_migrate(
                 collection_id=collection_id,
@@ -249,7 +249,7 @@ class SchemaMigrate(ProcessingLogic):
             )
         elif step_name == "collection_publish":
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
-            can_publish = os.environ["CAN_PUBLISH"].lower == "true"
+            can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
             publish_and_cleanup = self.error_wrapper(self.publish_and_cleanup, collection_version_id)
             response = publish_and_cleanup(collection_version_id=collection_version_id, can_publish=can_publish)
         elif step_name == "report":
