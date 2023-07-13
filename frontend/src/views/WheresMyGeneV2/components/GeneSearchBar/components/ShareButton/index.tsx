@@ -50,6 +50,7 @@ export default function ShareButton(): JSX.Element {
       group_by_option: getCompareOptionNameById(compare),
       self_reported_ethnicity_filter: selectedFilters.ethnicities,
       sex_filter: selectedFilters.sexes,
+      tissue_filter: selectedFilters.tissues,
     });
 
     setShowURLCopyNotification((prev) => prev + 1);

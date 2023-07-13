@@ -6,6 +6,8 @@ import { TreeNodeWithState } from "../../common/types";
 import Text from "./components/Text";
 import RectOrCircle from "./components/RectOrCircle";
 import { StyledGroup } from "./style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL =
   "cell-card-ontology-dag-view-clickable-text-label";
@@ -44,18 +46,23 @@ export default function Node({
 }: NodeProps) {
   const router = useRouter();
 
+  // text labels should only collapse/expand node for dummy nodes
+  const onClick = node.data.id.startsWith("dummy-child")
+    ? handleClick
+    : undefined;
+  const textCursor = node.data.id.startsWith("dummy-child")
+    ? "pointer"
+    : "default";
+
   return (
-    <StyledGroup
-      top={top}
-      left={left}
-      key={animationKey}
-      opacity={opacity}
-      onClick={handleClick}
-    >
+    <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
       {isInCorpus ? (
         <g
           data-testid={`${CELL_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-${node.data.id}`}
           onClick={() => {
+            track(EVENTS.CG_TREE_CELL_TYPE_CLICKED, {
+              cell_type: node.data.name,
+            });
             router.push(
               `${ROUTES.CELL_CARDS}/${node.data.id
                 .replace(":", "_")
@@ -73,15 +80,19 @@ export default function Node({
           </a>
         </g>
       ) : (
-        <Text
-          isInCorpus={isInCorpus}
-          name={node.data.name}
-          maxWidth={maxWidth}
-        />
+        <g onClick={onClick}>
+          <Text
+            isInCorpus={isInCorpus}
+            name={node.data.name}
+            maxWidth={maxWidth}
+            cursor={textCursor}
+          />
+        </g>
       )}
       <RectOrCircle
         animationKey={`${animationKey}-rect-or-circle`}
         node={node.data}
+        handleClick={handleClick}
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}

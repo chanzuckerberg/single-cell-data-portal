@@ -4,6 +4,8 @@ import { useDescription, useClDescription } from "src/common/queries/cellCards";
 import { Tooltip } from "@czi-sds/components";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const CELL_CARD_CL_DESCRIPTION = "cell-card-cl-description";
 export const CELL_CARD_GPT_DESCRIPTION = "cell-card-gpt-description";
@@ -20,6 +22,8 @@ export default function Description({
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
   const [descriptionCl, setDescriptionCl] = useState<string>("");
 
+  const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For chatgpt hover event
+
   const { data: rawDescriptionGpt } = useDescription(cellTypeId);
   const { data: rawDescriptionCl } = useClDescription(cellTypeId);
 
@@ -30,10 +34,23 @@ export default function Description({
     else setDescriptionCl("");
   }, [rawDescriptionGpt, rawDescriptionCl]);
 
+  const copyHandler = () => {
+    if (!window) return;
+
+    const selectedText = window.getSelection()?.toString().trim();
+
+    if (selectedText !== "") {
+      track(EVENTS.CG_COPY_CELL_TYPE_DESCRIPTION);
+    }
+  };
+
   return (
     <Wrapper>
       {descriptionCl && (
-        <CellCardDescription data-testid={CELL_CARD_CL_DESCRIPTION}>
+        <CellCardDescription
+          data-testid={CELL_CARD_CL_DESCRIPTION}
+          onCopy={copyHandler}
+        >
           {descriptionCl}
           <Source>
             <SourceLink>
@@ -50,7 +67,10 @@ export default function Description({
         </CellCardDescription>
       )}
       <br />
-      <CellCardDescription data-testid={CELL_CARD_GPT_DESCRIPTION}>
+      <CellCardDescription
+        data-testid={CELL_CARD_GPT_DESCRIPTION}
+        onCopy={copyHandler}
+      >
         {descriptionGpt}
         <Source>
           <div>
@@ -71,7 +91,7 @@ export default function Description({
               arrow
               title={
                 <div>
-                  {`This summary on \"${cellTypeName}\" was generated with ChatGPT, powered by the GPT3.5 Turbo model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below. CZI is currently offering this as a pilot feature and we may update or change this feature in our discretion.`}
+                  {`This summary on \"${cellTypeName}\" was generated with ChatGPT, powered by the GPT4 model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below. CZI is currently offering this as a pilot feature and we may update or change this feature at our discretion.`}
                   <br />
                   <br />
                   <b>System role</b>
@@ -90,9 +110,21 @@ export default function Description({
               }
             >
               <StyledLink
-                href={"https://platform.openai.com/docs/models/gpt-3-5"}
+                href={"https://platform.openai.com/docs/models/gpt-4"}
                 target="_blank"
                 data-testid={CELL_CARD_GPT_TOOLTIP_LINK}
+                onMouseOver={() => {
+                  const id = setTimeout(() => {
+                    track(EVENTS.CG_CHAT_GPT_HOVER);
+                  }, 2000);
+                  setTimerId(id);
+                }}
+                onMouseOut={() => {
+                  if (timerId) {
+                    clearTimeout(timerId);
+                    setTimerId(null);
+                  }
+                }}
               >
                 ChatGPT
               </StyledLink>

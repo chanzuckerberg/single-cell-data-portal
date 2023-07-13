@@ -8,10 +8,18 @@ import {
   DispatchContext,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
-import { selectGenes } from "src/views/WheresMyGene/common/store/actions";
+import {
+  deleteAllGenes,
+  selectGenes,
+} from "src/views/WheresMyGene/common/store/actions";
 import { Gene } from "src/views/WheresMyGene/common/types";
 import QuickSelect from "./components/QuickSelect";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
+import {
+  StyledButtonWrapper,
+  StyledClearButton,
+} from "src/views/WheresMyGene/components/GeneSearchBar/style";
+import { track } from "src/common/analytics";
 
 export default function GeneSearchBar({
   className,
@@ -71,6 +79,27 @@ export default function GeneSearchBar({
           isLoading={isLoadingPrimaryFilters}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
+        {/* Clear Genes button */}
+        {!selectedGenes.length || (
+          <StyledButtonWrapper
+            onClick={() => {
+              if (dispatch) {
+                track(EVENTS.WMG_CLEAR_GENES_CLICKED);
+
+                dispatch(deleteAllGenes());
+              }
+            }}
+          >
+            <StyledClearButton
+              data-testid="clear-genes-button"
+              sdsType="primary"
+              sdsStyle="minimal"
+              isAllCaps={false}
+            >
+              Clear Genes
+            </StyledClearButton>
+          </StyledButtonWrapper>
+        )}
 
         {isLoadingPrimaryFilters && (
           <LoadingIndicatorWrapper>

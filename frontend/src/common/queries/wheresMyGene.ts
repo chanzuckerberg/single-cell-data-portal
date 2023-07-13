@@ -1003,6 +1003,8 @@ function addCellTypeRowToResult({
 
     const { name: rawName, total_count, order } = compareOptionData;
 
+    const termIsTissueStats = isTissueStats(compareOptionData);
+
     const termID = isTissueStats(compareOptionData)
       ? compareOptionData.tissue_ontology_term_id
       : compareOptionData.cell_type_ontology_term_id;
@@ -1024,7 +1026,7 @@ function addCellTypeRowToResult({
     const viewId = getCellTypeViewId(termID, compareOptionId);
 
     result[viewId] = {
-      cellTypeName,
+      cellTypeName: termIsTissueStats ? termID : cellTypeName,
       id: termID,
       isAggregated,
       name,

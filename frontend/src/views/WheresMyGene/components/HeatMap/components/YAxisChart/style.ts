@@ -115,3 +115,7 @@ export const StyledImage = styled(Image)`
     filter: brightness(0);
   }
 `;
+
+export const TissueLabel = styled.div`
+  white-space: nowrap;
+`;

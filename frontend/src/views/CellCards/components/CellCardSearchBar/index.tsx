@@ -6,6 +6,8 @@ import { SectionItem, SectionTitle, StyledAutocomplete } from "./style";
 import { ROUTES } from "src/common/constants/routes";
 import { useCellCards, useTissueCards } from "src/common/queries/cellCards";
 import { useRouter } from "next/router";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const CELL_CARD_SEARCH_BAR_TEXT_INPUT =
   "cell-card-search-bar-text-input";
@@ -13,6 +15,7 @@ export const CELL_CARD_SEARCH_BAR = "cell-card-search-bar";
 
 interface Entity {
   id: string;
+  cell_types?: string[];
   label: string;
 }
 
@@ -64,7 +67,6 @@ export default function CellCardSearchBar(): JSX.Element {
       }
     }
   }
-
   return (
     <div data-testid={CELL_CARD_SEARCH_BAR}>
       <StyledAutocomplete
@@ -123,6 +125,17 @@ export default function CellCardSearchBar(): JSX.Element {
               {...props}
               key={entity.id}
               onClick={() => {
+                // Only tissues have cell_types
+                if (!entity.cell_types) {
+                  track(EVENTS.CG_SEARCH_CT_TISSUE, {
+                    cell_type: entity.label,
+                  });
+                } else {
+                  track(EVENTS.CG_SEARCH_CT_TISSUE, {
+                    tissue: entity.label,
+                  });
+                }
+
                 changeEntity(entity.id);
               }}
             >
@@ -169,10 +182,10 @@ export default function CellCardSearchBar(): JSX.Element {
 
               // If neither or both start with the search term, then sort by "CL:" vs "UBERON:"
               if (isA_CL && !isB_CL) {
-                return 1;
+                return -1;
               }
               if (!isA_CL && isB_CL) {
-                return -1;
+                return 1;
               }
 
               // If they are both "CL:" or both "UBERON:", then sort alphabetically
