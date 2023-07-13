@@ -19,6 +19,7 @@ class WmgQueryCriteria(BaseModel):
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    compare_dimension: str = Field(default=None, required=False)
 
 
 class WmgQueryCriteriaV2(BaseModel):
@@ -33,6 +34,7 @@ class WmgQueryCriteriaV2(BaseModel):
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    compare_dimension: str = Field(default=None, required=False)
 
 
 class WmgFiltersQueryCriteria(BaseModel):
@@ -153,7 +155,17 @@ class WmgQuery:
 
         tiledb_dims_query = tuple(tiledb_dims_query)
 
-        query_result_df = cube.query(cond=query_cond or None, use_arrow=True).df[tiledb_dims_query]
+        attributes = ["cell_type_ontology_term_id"]
+
+        if not isinstance(criteria, FmgQueryCriteria) and criteria.compare_dimension is not None:
+            attributes.append(criteria.compare_dimension)
+
+        query_result_df = cube.query(
+            cond=query_cond or None,
+            use_arrow=True,
+            dims=["tissue_ontology_term_id", "gene_ontology_term_id"],
+            attrs=attributes,
+        ).df[tiledb_dims_query]
         return query_result_df
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):

@@ -39,6 +39,7 @@ def query():
         compare = find_dimension_id_from_compare(compare)
 
     criteria = WmgQueryCriteriaV2(**request["filter"])
+    criteria.compare_dimension = compare
 
     with ServerTiming.time("query and build response"):
         snapshot: WmgSnapshot = load_snapshot()
