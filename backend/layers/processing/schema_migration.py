@@ -91,7 +91,7 @@ class SchemaMigrate(ProcessingLogic):
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id,
             uri,
-            file_size=None,
+            file_size=0,  # TODO: this shouldn't be needed but it gets around a 404 for HeadObject
             existing_dataset_version_id=dataset_version_id,
             start_step_function=False,
         )
