@@ -289,7 +289,7 @@ export default memo(function HeatMap({
 
   // update displayedCellTypes and expandedTissues
   const handleFilteredCellTypesChange = (
-    _,
+    _: unknown,
     rawNewFilteredCellTypes: unknown
   ) => {
     const newFilteredCellTypes = rawNewFilteredCellTypes as string[];
