@@ -1,0 +1,89 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +60ms
+  pw:api   "commit" event fired +19ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +13ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +58ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +9ms
+  pw:api   "commit" event fired +653ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +1ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +10ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +8ms
+  pw:api <= page.goto succeeded +2s
+  pw:api => locator.waitFor started +11ms
+  pw:api waiting for getByTestId('cell-guide-card-header-name') to be visible +156ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-header-name" class=…>Neuron</div> +201ms
+  pw:api <= locator.waitFor succeeded +56ms
+  pw:api => locator.isVisible started +4ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-header-name') +24ms
+  pw:api <= locator.isVisible succeeded +35ms
+  pw:api => locator.waitFor started +5ms
+  pw:api waiting for getByTestId('cell-guide-card-header-tag') to be visible +19ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-header-tag" class="…>…</div> +8ms
+  pw:api <= locator.waitFor succeeded +13ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-header-tag') +9ms
+  pw:api <= locator.isVisible succeeded +17ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-cl-description') to be visible +16ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-cl-description" cla…>…</div> +11ms
+  pw:api <= locator.waitFor succeeded +12ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-cl-description') +8ms
+  pw:api <= locator.isVisible succeeded +11ms
+  pw:api => locator.waitFor started +2ms
+  pw:api   "networkidle" event fired +25ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-description') to be visible +5ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-gpt-description" cl…>…</div> +7ms
+  pw:api <= locator.waitFor succeeded +17ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-gpt-description') +9ms
+  pw:api <= locator.isVisible succeeded +12ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') to be visible +21ms
+  pw:api   locator resolved to visible <a target="_blank" data-mui-internal-clone-element=…>ChatGPT</a> +7ms
+  pw:api <= locator.waitFor succeeded +14ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-gpt-tooltip-link') +10ms
+  pw:api <= locator.isVisible succeeded +11ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar') to be visible +41ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-search-bar">…</div> +8ms
+  pw:api <= locator.waitFor succeeded +13ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-search-bar') +10ms
+  pw:api <= locator.isVisible succeeded +15ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-canonical-marker-genes-table') to be visible +22ms
+  pw:api   locator resolved to visible <div class="css-1ufxa56-TableWrapper e161gt4e1" data-…>…</div> +7ms
+  pw:api <= locator.waitFor succeeded +16ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-canonical-marker-genes-table') +10ms
+  pw:api <= locator.isVisible succeeded +11ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +31ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +10ms
+  pw:api <= locator.waitFor succeeded +13ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-ontology-dag-view') +10ms
+  pw:api <= locator.isVisible succeeded +15ms
+  pw:api => locator.textContent started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-header-name') +31ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-header-name" class=…>Neuron</div> +6ms
+  pw:api <= locator.textContent succeeded +25ms
+  pw:api taking page screenshot +242ms
+  pw:api => browserContext.close started +134ms
+  pw:api <= browserContext.close succeeded +8s
