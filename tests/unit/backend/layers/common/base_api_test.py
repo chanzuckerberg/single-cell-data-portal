@@ -24,6 +24,9 @@ class BaseAuthAPITest(unittest.TestCase):
         )
         self.mock_config.start()
 
+        self.mock = patch("backend.common.corpora_config.CorporaAuthConfig.__getattr__", return_value="mock_audience")
+        self.mock.start()
+
     def tearDown(self):
         super().tearDown()
         self.mock_assert_authorized_token.stop()
