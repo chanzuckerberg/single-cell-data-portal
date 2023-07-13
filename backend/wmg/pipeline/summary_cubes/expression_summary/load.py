@@ -64,12 +64,12 @@ def build_in_mem_cube(
         for i, k in enumerate(other_cube_attrs):
             if k == "dataset_id":
                 dataset_index = i
-            if k != "publication_citation": 
+            if k != "publication_citation":
                 vals[k][idx : idx + n_vals] = attr_values[i]
-        
+
         dataset_dict = return_dataset_dict_w_publications()
         vals["publication_citation"][idx : idx + n_vals] = dataset_dict(attr_values[dataset_index])
-                                                                        
+
         idx += n_vals
 
     return dims, vals
