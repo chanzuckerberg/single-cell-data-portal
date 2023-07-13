@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 
@@ -13,8 +13,6 @@ export function useTrackHeatMapLoaded({
   selectedCellTypes,
   displayedCellTypes,
 }: Props): void {
-  const isHeatMapEventFired = useRef(false);
-
   /**
    * (thuang): We only want to send `WMG_HEATMAP_LOADED` event when at least
    * one gene are selected, and if the flag `isHeatMapEventFired` is `false`.
@@ -36,17 +34,11 @@ export function useTrackHeatMapLoaded({
   useEffect(() => {
     const hasSelectedGenes = selectedGenes.length > 0;
 
-    if (!hasSelectedGenes) {
-      isHeatMapEventFired.current = false;
-      return;
-    }
+    if (!hasSelectedGenes) return;
 
-    if (!isHeatMapEventFired.current && hasSelectedGenes) {
-      track(EVENTS.WMG_HEATMAP_LOADED, {
-        num_cell_types_selected: selectedCellTypes.length,
-        num_rows_include: displayedCellTypes.size,
-      });
-      isHeatMapEventFired.current = true;
-    }
+    track(EVENTS.WMG_HEATMAP_LOADED, {
+      num_cell_types_selected: selectedCellTypes.length,
+      num_rows_include: displayedCellTypes.size,
+    });
   }, [selectedGenes, selectedCellTypes, displayedCellTypes]);
 }

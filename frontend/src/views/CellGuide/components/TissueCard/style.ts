@@ -22,6 +22,10 @@ export const TissueCardHeaderInnerWrapper = styled.div`
   align-items: center;
 `;
 
+export const DescriptionWrapper = styled.div`
+  margin-bottom: 16px;
+`;
+
 export const TissueCardHeader = styled.div`
   display: flex;
   column-gap: 8px;
