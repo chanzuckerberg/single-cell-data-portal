@@ -1,10 +1,8 @@
-import os
 from unittest import mock
 
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetVersionId
 
 
-@mock.patch.dict(os.environ, {"ARTIFACT_BUCKET": "upload_bucket"})
 @mock.patch("backend.layers.processing.schema_migration.get_current_schema_version", return_value="1.0.0")
 class TestPublishAndCleanup:
     def test_publish_and_cleanup(self, mock_get_schema_vesion, schema_migrate_and_collections):
@@ -25,8 +23,8 @@ class TestPublishAndCleanup:
         errors = schema_migrate.publish_and_cleanup("collection_version_id", True)
         assert errors == {}
         schema_migrate.business_logic.publish_collection_version.assert_called_once()
-        schema_migrate.business_logic.s3_provider.delete_files.assert_called_once_with(
-            "upload_bucket", ["successful_dataset_version_id/migrated.h5ad"]
+        schema_migrate.s3_provider.delete_files.assert_called_once_with(
+            "artifact-bucket", ["successful_dataset_version_id/migrated.h5ad"]
         )
 
     def test_publish_and_cleanup__with_errors(self, mock_cellxgene_schema, schema_migrate_and_collections):
@@ -63,8 +61,8 @@ class TestPublishAndCleanup:
         assert errors["failed_dataset_version_id"] == "rds conversion failed"
         assert errors["non_migrated_dataset_version_id"] == "Did Not Migrate."
         schema_migrate.business_logic.publish_collection_version.assert_not_called()
-        schema_migrate.business_logic.s3_provider.delete_files.assert_called_once_with(
-            "upload_bucket",
+        schema_migrate.s3_provider.delete_files.assert_called_once_with(
+            "artifact-bucket",
             [
                 "successful_dataset_version_id/migrated.h5ad",
                 "failed_dataset_version_id/migrated.h5ad",
@@ -90,6 +88,6 @@ class TestPublishAndCleanup:
         errors = schema_migrate.publish_and_cleanup("collection_version_id", False)
         assert errors == {}
         schema_migrate.business_logic.publish_collection_version.assert_not_called()
-        schema_migrate.business_logic.s3_provider.delete_files.assert_called_once_with(
-            "upload_bucket", ["successful_dataset_version_id/migrated.h5ad"]
+        schema_migrate.s3_provider.delete_files.assert_called_once_with(
+            "artifact-bucket", ["successful_dataset_version_id/migrated.h5ad"]
         )

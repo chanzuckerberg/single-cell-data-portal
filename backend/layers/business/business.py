@@ -71,6 +71,8 @@ from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
+logger = logging.getLogger(__name__)
+
 
 class BusinessLogic(BusinessLogicInterface):
     database_provider: DatabaseProviderInterface
@@ -335,6 +337,14 @@ class BusinessLogic(BusinessLogicInterface):
         Creates a canonical dataset and starts its ingestion by invoking the step function
         If `size` is not provided, it will be inferred automatically
         """
+        logger.info(
+            {
+                "message": "ingesting dataset",
+                "collection_version_id": collection_version_id,
+                "url": url,
+                "existing_dataset_version_id": existing_dataset_version_id,
+            }
+        )
         if not self.uri_provider.validate(url):
             raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 

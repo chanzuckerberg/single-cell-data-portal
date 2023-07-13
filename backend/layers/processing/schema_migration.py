@@ -19,14 +19,17 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.processing import logger
+from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 
 logger.configure_logging(level=logging.INFO)
 
 
-class SchemaMigrate:
+class SchemaMigrate(ProcessingLogic):
     def __init__(self, business_logic: BusinessLogic):
+        # TODO: remove dependecies on ProcessingLogic
         self.business_logic = business_logic
+        self.s3_provider = business_logic.s3_provider  # For compatiblity with ProcessingLogic
         self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
         self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
         self.logger = logging.getLogger(__name__)
@@ -79,26 +82,15 @@ class SchemaMigrate:
             for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
             if artifact.type == DatasetArtifactType.RAW_H5AD
         ][0]
-        source_bucket_name, source_object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
-        self.business_logic.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
-        migrate("previous_schema.h5ad", "migrated.h5ad", collection_version_id, dataset_id)
-        dst_uri = f"{dataset_version_id}/migrated.h5ad"
-        self.logger.info(
-            "Uploading migrated dataset", extra={"upload_bucket": self.artifact_bucket, "dst_uri": dst_uri}
-        )
-        self.business_logic.s3_provider.upload_file("migrated.h5ad", self.artifact_bucket, dst_uri, {})
-        url = f"s3://{self.artifact_bucket}/{dst_uri}"
-        self.logger.info(
-            "Start ingestion",
-            extra=dict(
-                collection_version_id=collection_version_id,
-                url=url,
-                existing_dataset_version_id=dataset_version_id,
-            ),
-        )
+        source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
+        self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
+        migrated_file = "migrated.h5ad"
+        migrate("previous_schema.h5ad", migrated_file, collection_version_id, dataset_id)
+        key_prefix = self.get_key_prefix(dataset_version_id)
+        uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id,
-            url,
+            uri,
             file_size=None,
             existing_dataset_version_id=dataset_version_id,
             start_step_function=False,
@@ -106,7 +98,7 @@ class SchemaMigrate:
         return {
             "collection_version_id": collection_version_id,
             "dataset_version_id": new_dataset_version_id.id,
-            "url": url,
+            "uri": uri,
         }
 
     def collection_migrate(
@@ -151,23 +143,24 @@ class SchemaMigrate:
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
             dataset_version_id = dataset.version_id.id
-            object_keys_to_delete.append(f"{dataset_version_id}/migrated.h5ad")
+            key_name = self.get_key_prefix(dataset_version_id)
+            object_keys_to_delete.append(f"{key_name}/migrated.h5ad")
             if dataset.metadata.schema_version != current_schema_version:
                 errors[dataset_version_id] = "Did Not Migrate."
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors[dataset_version_id] = dataset.status.validation_message
 
         if errors:
-            self._store_in_s3("report", collection_version_id, errors)
+            self._store_sfn_response("report", collection_version_id, errors)
         elif can_publish:
             self.business_logic.publish_collection_version(collection_version_id)
         self.logger.info(
             "Deleting files", extra={"artifact_bucket": self.artifact_bucket, "object_keys": object_keys_to_delete}
         )
-        self.business_logic.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
+        self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
         return errors
 
-    def _store_in_s3(self, step_name, file_name, response: Dict[str, str]):
+    def _store_sfn_response(self, step_name, file_name, response: Dict[str, str]):
         """
 
         :param step_name: The step that will use this file
@@ -175,11 +168,13 @@ class SchemaMigrate:
         :param response: the response to store as json.
         """
         file_name = f"{file_name}.json"
-        key = f"schema_migration/{self.execution_id}/{step_name}/{file_name}"
+        key_name = self.get_key_prefix(f"schema_migration/{self.execution_id}/{step_name}/{file_name}")
         with open(file_name, "w") as f:
             json.dump(response, f)
-        self.business_logic.s3_provider.upload_file(file_name, self.artifact_bucket, key, {})
-        self.logger.info("Uploaded to S3", extra={"file_name": file_name, "bucket": self.artifact_bucket, "key": key})
+        self.s3_provider.upload_file(file_name, self.artifact_bucket, key_name, {})
+        self.logger.info(
+            "Uploaded to S3", extra={"file_name": file_name, "bucket": self.artifact_bucket, "key": key_name}
+        )
 
     def error_wrapper(self, func, file_name: str):
         def wrapper(*args, **kwargs):
@@ -187,7 +182,7 @@ class SchemaMigrate:
                 return func(*args, **kwargs)
             except Exception as e:
                 self.logger.exception(f"Error in {func.__name__}", extra={"input": {"args": args, "kwargs": kwargs}})
-                self._store_in_s3(
+                self._store_sfn_response(
                     "report", file_name, {"step": func.__name__, "error": str(e), "args": args, "kwargs": kwargs}
                 )
                 raise e
@@ -198,20 +193,20 @@ class SchemaMigrate:
         try:
             report = dict(errors=[])
             error_files = list(
-                self.business_logic.s3_provider.list_directory(
-                    self.artifact_bucket, f"schema_migration/{self.execution_id}/report"
+                self.s3_provider.list_directory(
+                    self.artifact_bucket, self.get_key_prefix(f"schema_migration/{self.execution_id}/report")
                 )
             )
             self.logger.info("Error files found", extra={"error_files": len(error_files)})
             for file in error_files:
                 local_file = os.path.join(local_path, "data.json")
-                self.business_logic.s3_provider.download_file(self.artifact_bucket, file, local_file)
+                self.s3_provider.download_file(self.artifact_bucket, file, local_file)
                 with open(local_file, "r") as f:
                     jn = json.load(f)
                 report["errors"].append(jn)
             self.logger.info("Report", extra=report)
             report_str = json.dumps(report, indent=4, sort_keys=True)
-            self.business_logic.s3_provider.delete_files(self.artifact_bucket, error_files)
+            self.s3_provider.delete_files(self.artifact_bucket, error_files)
             self._upload_to_slack("schema_migration_report.json", report_str, "Schema migration results.")
             return report
         except Exception as e:

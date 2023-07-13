@@ -24,7 +24,7 @@ class TestDatasetMigrate:
             assert response["collection_version_id"] == private.collection_id.id
             assert response["dataset_version_id"] == new_dataset_version_id.id
             assert dataset_version_id != new_dataset_version_id.id
-            assert response["url"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+            assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
 
     def test_dataset_migrate_published(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
@@ -46,7 +46,7 @@ class TestDatasetMigrate:
             assert response["collection_version_id"] == published.collection_id.id
             assert response["dataset_version_id"] == new_dataset_version_id.id
             assert dataset_version_id != new_dataset_version_id.id
-            assert response["url"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+            assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
 
     def test_dataset_migrate_revision(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
@@ -68,4 +68,4 @@ class TestDatasetMigrate:
             assert response["collection_version_id"] == revision.collection_id.id
             assert response["dataset_version_id"] == new_dataset_version_id.id
             assert dataset_version_id != new_dataset_version_id.id
-            assert response["url"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+            assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
