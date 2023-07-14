@@ -3,6 +3,7 @@ import {
   expect,
   PlaywrightTestConfig,
   ReporterDescription,
+  defineConfig,
 } from "@playwright/test";
 import { matchers } from "expect-playwright";
 import fs from "fs";
@@ -84,15 +85,18 @@ const config: PlaywrightTestConfig = {
   /* Run tests in files in parallel */
   fullyParallel: true,
 
-  globalSetup: require.resolve("./playwright-globalSetup"),
-
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: "playwright-report/",
 
   /* Configure projects for major browsers */
   projects: [
     {
+      name: "setup",
+      testMatch: "**/*.setup.ts",
+    },
+    {
       name: "chromium",
+      dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
@@ -101,6 +105,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       name: "firefox",
+      dependencies: ["setup"],
       use: {
         ...devices["Desktop Firefox"],
         userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
@@ -108,6 +113,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       name: "edge",
+      dependencies: ["setup"],
       use: {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
@@ -220,4 +226,4 @@ function getStorageState(): {
   return storageState;
 }
 
-export default config;
+export default defineConfig(config);

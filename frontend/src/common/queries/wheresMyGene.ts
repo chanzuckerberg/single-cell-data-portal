@@ -1444,7 +1444,7 @@ export function useMarkerGenes({
   test,
   version = 1,
 }: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse<MarkerGene>> {
-  const { data } = usePrimaryFilterDimensions(version);
+  const { data } = usePrimaryFilterDimensions(2);
   const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
     let result: { [name: string]: OntologyTerm } = {};
 
@@ -1469,7 +1469,7 @@ export function useMarkerGenes({
      * so React Query can cache responses correctly without running into
      * issues like #4161
      */
-    [USE_MARKER_GENES, cellTypeID, organismID, test, tissueID, version],
+    [USE_MARKER_GENES, cellTypeID, organismID, test, tissueID, 2],
     async () => {
       const output = await fetchMarkerGenes({
         cellTypeID,
