@@ -155,7 +155,10 @@ class WmgQuery:
 
         tiledb_dims_query = tuple(tiledb_dims_query)
 
-        if not isinstance(criteria, FmgQueryCriteria) and criteria.compare_dimension is not None:
+        if isinstance(criteria, FmgQueryCriteria):
+            # fmg queries retain existing behavior of pulling all dims and attrs
+            query_result_df = cube.query(cond=query_cond or None, use_arrow=True).df[tiledb_dims_query]
+        elif criteria.compare_dimension is not None:
             # if the compare param is specified, then we need to query for the dimension it specifies
             query_result_df = cube.query(
                 cond=query_cond or None,
