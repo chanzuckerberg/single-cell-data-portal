@@ -68,7 +68,7 @@ def build_in_mem_cube(
                 vals[k][idx : idx + n_vals] = attr_values[i]
 
         dataset_dict = return_dataset_dict_w_publications()
-        vals["publication_citation"][idx : idx + n_vals] = dataset_dict(attr_values[dataset_index])
+        vals["publication_citation"][idx : idx + n_vals] = dataset_dict[attr_values[dataset_index]]
 
         idx += n_vals
 
