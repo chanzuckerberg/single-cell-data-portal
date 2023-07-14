@@ -236,7 +236,7 @@ class BaseTest(unittest.TestCase):
     def generate_dataset(
         self,
         owner: str = "test_user_id",
-        collection_version: Optional[CollectionVersion] = None,
+        collection_version: Optional[typing.Union[CollectionVersion, CollectionVersionWithDatasets]] = None,
         metadata: Optional[DatasetMetadata] = None,
         name: Optional[str] = None,
         statuses: List[DatasetStatusUpdate] = None,
