@@ -109,7 +109,7 @@ def tombstone_collection(ctx: click.Context, id: str):
     :param id: ID that identifies the collection to tombstone
     """
     with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        warnings.filterwarnings("ignore", category=RuntimeWarning)  # Suppress type-related warnings from db operations
         tombstones.tombstone_collection(ctx, id)
 
 
