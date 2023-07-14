@@ -1,6 +1,7 @@
 import os
 import unittest
 import uuid
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Tuple
 from unittest.mock import Mock, patch
@@ -49,6 +50,7 @@ from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterfac
 from tests.unit.backend.layers.fixtures import test_user_name
 
 test_curator_name = "Test User"
+mock_config_dict = {"upload_max_file_size_gb": 30}
 
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
@@ -57,6 +59,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     test_user_name = "test_user_1"
     test_curator_name = "Test User"
+
+    # Mock CorporaConfig
+    # TODO: deduplicate with base_api
+    @staticmethod
+    def mock_config_fn(name):
+        return mock_config_dict.get(name)
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -72,13 +80,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         else:
             self.database_provider = DatabaseProviderMock()
 
-        # Mock CorporaConfig
-        # TODO: deduplicate with base_api
-        def mock_config_fn(name):
-            if name == "upload_max_file_size_gb":
-                return 30
-
-        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=self.mock_config_fn)
         mock_config.start()
 
         # TODO: also deduplicate with base test
@@ -151,6 +153,13 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     def tearDownClass(cls) -> None:
         if cls.run_as_integration:
             cls.database_provider._engine.dispose()
+
+    @classmethod
+    @contextmanager
+    def cxg_admin_privileges(cls) -> None:
+        mock_config_dict["is_cxg_admin"] = "1"
+        yield
+        del mock_config_dict["is_cxg_admin"]
 
     def initialize_empty_unpublished_collection(
         self, owner: str = test_user_name, curator_name: str = test_curator_name
@@ -1262,7 +1271,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_version_to_remove = new_version.datasets[0]
         dataset_version_to_keep = new_version.datasets[1]
 
-        self.business_logic.remove_dataset_version(new_version.version_id, dataset_version_to_remove.version_id)
+        with self.cxg_admin_privileges():
+            self.business_logic.remove_dataset_version(new_version.version_id, dataset_version_to_remove.version_id)
 
         # The new version should have only one dataset (before publishing)
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)

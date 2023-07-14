@@ -1545,7 +1545,8 @@ class TestGetDatasets(BaseAPIPortalTest):
         response = self.app.get(test_url)
         self.assertEqual(200, response.status_code)
         revision = self.generate_revision(collection.collection_id)
-        self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id)
+        with self.cxg_admin_privileges():
+            self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id)
         self.business_logic.publish_collection_version(revision.version_id)
         new_published_version = self.database_provider.get_collection_version(revision.version_id)
         self.assertEqual(1, len(new_published_version.datasets))
@@ -1993,7 +1994,8 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             collection = self.generate_published_collection(add_datasets=2)
             dataset = collection.datasets[0]
             revision = self.generate_revision(collection.collection_id)
-            self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id)
+            with self.cxg_admin_privileges():
+                self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id)
             self.business_logic.publish_collection_version(revision.version_id)
             test_url = f"/curation/v1/datasets/{dataset.dataset_id}/versions"
             response = self.app.get(test_url, headers=self.make_owner_header())

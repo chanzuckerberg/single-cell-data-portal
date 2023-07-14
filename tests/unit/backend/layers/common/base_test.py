@@ -2,6 +2,7 @@ import copy
 import os
 import typing
 import unittest
+from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import List, Optional
 from unittest.mock import Mock, patch
@@ -57,6 +58,9 @@ class DatasetData:
     artifact_ids: List[str]
 
 
+mock_config_dict = {"upload_max_file_size_gb": 30}
+
+
 class BaseTest(unittest.TestCase):
 
     business_logic: BusinessLogic
@@ -65,6 +69,12 @@ class BaseTest(unittest.TestCase):
 
     sample_dataset_metadata: DatasetMetadata
     sample_collection_metadata: CollectionMetadata
+
+    # Mock CorporaConfig
+    # TODO: deduplicate with BaseBusinessLogicTestCase
+    @staticmethod
+    def mock_config_fn(name):
+        return mock_config_dict.get(name)
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -80,11 +90,8 @@ class BaseTest(unittest.TestCase):
 
         # Mock CorporaConfig
         # TODO: deduplicate with base_api
-        def mock_config_fn(name):
-            if name == "upload_max_file_size_gb":
-                return 30
 
-        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=self.mock_config_fn)
         mock_config.start()
 
         from backend.layers.common import validation
@@ -156,6 +163,13 @@ class BaseTest(unittest.TestCase):
     def tearDownClass(cls) -> None:
         if cls.run_as_integration:
             cls.database_provider._engine.dispose()
+
+    @classmethod
+    @contextmanager
+    def cxg_admin_privileges(cls) -> None:
+        mock_config_dict["is_cxg_admin"] = "1"
+        yield
+        del mock_config_dict["is_cxg_admin"]
 
     def get_sample_dataset_metadata(self):
         """

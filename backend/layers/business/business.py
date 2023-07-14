@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
 
+from backend.common.corpora_config import CorporaConfig
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
@@ -413,6 +414,10 @@ class BusinessLogic(BusinessLogicInterface):
         Removes a dataset version from an existing collection version
         """
         self._assert_collection_version_unpublished(collection_version_id)
+        dv = self.database_provider.get_dataset_version(dataset_version_id)
+        if not CorporaConfig().is_cxg_admin and dv.canonical_dataset.published_at:
+            raise CollectionUpdateException from None
+
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:

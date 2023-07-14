@@ -31,6 +31,7 @@ class CorporaConfig(SecretConfig):
             "submission_bucket": os.getenv("DATASET_SUBMISSIONS_BUCKET", "cellxgene-dataset-submissions-test"),
             "collections_base_url": collections_base_url,
             "dataset_assets_base_url": dataset_assets_base_url,
+            "is_cxg_admin": None,
         }
         upload_snf_arn = os.getenv("UPLOAD_SFN_ARN")
         if upload_snf_arn:
