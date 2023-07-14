@@ -1,0 +1,54 @@
+  pw:api => selectors.setTestIdAttribute started +4ms
+  pw:api => browser.newContext started +0ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +38ms
+  pw:api   "commit" event fired +10ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +7ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +36ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/cell-guide/CL_0000540", waiting until "load" +8ms
+  pw:api   "commit" event fired +84ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +4s
+  pw:api <= page.goto succeeded +60ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-canonical-marker-genes-table-selector') +4ms
+  pw:api   locator resolved to <button class="css-1t3feg1-TableSelectorButton e1mdzv35"…>Canonical (HuBMAP)</button> +19ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api     element is not visible - waiting... +7ms
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +4s
+  pw:api   navigated to "https://localhost:3000/cell-guide/CL_0000540" +477ms
+  pw:api   "networkidle" event fired +1s
+  pw:api     element is not stable - waiting... +103ms
+  pw:api   element is visible, enabled and stable +598ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +7ms
+  pw:api   performing click action +320ms
+  pw:api   click action done +17ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +5ms
+  pw:api <= locator.click succeeded +27ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +32ms
+  pw:api => elementHandle.textContent started +1ms
+  pw:api => elementHandle.textContent started +1ms
+  pw:api => elementHandle.textContent started +1ms
+  pw:api <= elementHandle.textContent succeeded +49ms
+  pw:api <= elementHandle.textContent succeeded +4ms
+  pw:api <= elementHandle.textContent succeeded +4ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +26ms
+  pw:api taking page screenshot +168ms
+  pw:api => browserContext.close started +164ms
+  pw:api <= browserContext.close succeeded +4s
