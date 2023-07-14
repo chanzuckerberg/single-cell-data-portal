@@ -2,7 +2,7 @@ import { Button, Intent, UL } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { FC, useCallback, useState } from "react";
 import { useQueryClient } from "react-query";
-import { Collection, Dataset } from "src/common/entities";
+import { ACCESS_TYPE, Collection, Dataset } from "src/common/entities";
 import {
   USE_COLLECTION,
   useCollection,
@@ -41,6 +41,8 @@ const DatasetTab: FC<Props> = ({
   const queryClient = useQueryClient();
 
   if (isTombstonedCollection(collection)) return null;
+
+  const hasWriteAccess = collection?.access_type === ACCESS_TYPE.WRITE;
 
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
@@ -90,29 +92,33 @@ const DatasetTab: FC<Props> = ({
         <EmptyModal
           title="No datasets uploaded"
           content={
-            <div>
-              Before you begin uploading dataset files:
-              <UL>
-                <li>
-                  You must validate your dataset locally. We provide a local CLI
-                  script to do this.{" "}
-                  <StyledLink href={CLI_README_LINK}>Learn More</StyledLink>
-                </li>
-                <li>
-                  We only support adding datasets in the h5ad format at this
-                  time.
-                </li>
-              </UL>
-            </div>
+            hasWriteAccess ? (
+              <div>
+                Before you begin uploading dataset files:
+                <UL>
+                  <li>
+                    You must validate your dataset locally. We provide a local
+                    CLI script to do this.{" "}
+                    <StyledLink href={CLI_README_LINK}>Learn More</StyledLink>
+                  </li>
+                  <li>
+                    We only support adding datasets in the h5ad format at this
+                    time.
+                  </li>
+                </UL>
+              </div>
+            ) : undefined
           }
           button={
-            <DropboxChooser onUploadFile={addNewFile()}>
-              <Button
-                intent={Intent.PRIMARY}
-                outlined
-                text={"Add Dataset from Dropbox"}
-              />
-            </DropboxChooser>
+            hasWriteAccess ? (
+              <DropboxChooser onUploadFile={addNewFile()}>
+                <Button
+                  intent={Intent.PRIMARY}
+                  outlined
+                  text={"Add Dataset from Dropbox"}
+                />
+              </DropboxChooser>
+            ) : undefined
           }
         />
       )}

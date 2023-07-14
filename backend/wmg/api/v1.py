@@ -200,7 +200,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     }
     for dim in dims:
         dims[dim] = (
-            find_all_dim_option_values(snapshot, dim)
+            find_all_dim_option_values(snapshot, criteria.organism_ontology_term_id, dim)
             if is_criteria_empty(criteria)
             else find_dim_option_values(criteria, snapshot, dim)
         )
