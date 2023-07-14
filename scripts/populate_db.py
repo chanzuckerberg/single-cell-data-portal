@@ -1,18 +1,13 @@
 #!/usr/bin/env python
+
 import os
-import sys
 
 import click
-
-pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
-sys.path.insert(0, pkg_root)  # noqa
-
 from sqlalchemy import create_engine
-from sqlalchemy_utils import database_exists
-
-from backend.common.corpora_config import CorporaDbConfig
+from sqlalchemy_utils import create_database, database_exists, drop_database
 
 env = os.environ.get("DEPLOYMENT_STAGE")
+from backend.common.corpora_config import CorporaDbConfig
 
 # Importing tests.unit overwrites our deployment stage env var.
 # So we're putting it back here.
@@ -27,11 +22,10 @@ os.environ["DEPLOYMENT_STAGE"] = env
 def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
     # Create schema.
     if create_schema:
-        print(CorporaDbConfig().database_uri)
         engine = create_engine(CorporaDbConfig().database_uri)
         if not database_exists(engine.url):
             print("Database does not exist, creating database")
-            # create_database(engine.url)
+            create_database(engine.url)
         else:
             print("Database already exists")
             exit(1)
@@ -41,7 +35,7 @@ def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
         engine = create_engine(CorporaDbConfig().database_uri)
         if database_exists(engine.url):
             print("Database exists, dropping database")
-            # drop_database(engine.url)
+            drop_database(engine.url)
         else:
             print("Database does not exists")
             exit(1)
