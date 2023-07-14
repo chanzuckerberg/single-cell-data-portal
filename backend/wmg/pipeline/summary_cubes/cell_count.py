@@ -67,7 +67,6 @@ def load(corpus_path: str, df: pd.DataFrame) -> str:
 
 
 def return_dataset_dict_w_publications():
-    # cchoi: modifying the dataframe to contain publication coll IDs
     datasets = get_datasets_from_curation_api()
     collections = get_collections_from_curation_api()
     collections_dict = {collection["collection_id"]: collection for collection in collections}
