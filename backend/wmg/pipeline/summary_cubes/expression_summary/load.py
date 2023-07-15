@@ -36,7 +36,7 @@ def build_in_mem_cube(
 
     # populate buffers
     idx = 0
-
+    dataset_dict = return_dataset_dict_w_publications()
     for grp in cube_index.to_records():
         (
             tissue_ontology_term_id,
@@ -67,7 +67,6 @@ def build_in_mem_cube(
             if k != "publication_citation":
                 vals[k][idx : idx + n_vals] = attr_values[i]
 
-        dataset_dict = return_dataset_dict_w_publications()
         vals["publication_citation"][idx : idx + n_vals] = dataset_dict[attr_values[dataset_index]]
 
         idx += n_vals
