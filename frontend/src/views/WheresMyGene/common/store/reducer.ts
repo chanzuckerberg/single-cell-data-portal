@@ -17,6 +17,7 @@ export interface State {
     diseases: string[];
     ethnicities: string[];
     sexes: string[];
+    tissues: string[];
   };
 
   // New state for publication filter
@@ -46,6 +47,7 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   diseases: [],
   ethnicities: [],
   sexes: [],
+  tissues: [],
 };
 
 // Need this to initialize selectedPublicationFilter
@@ -401,6 +403,7 @@ function closeRightSidebar(state: State, _: PayloadAction<null>): State {
 export interface LoadStateFromURLPayload {
   compare: State["compare"];
   filters: Partial<State["selectedFilters"]>;
+  publications: State["selectedPublicationFilter"]["publications"];
   organism: State["selectedOrganismId"];
   tissues?: State["selectedTissues"];
   genes: State["selectedGenes"];
@@ -412,12 +415,13 @@ function loadStateFromURL(
 ): State {
   const { payload } = action;
 
-  const { compare, filters, genes, tissues } = payload;
+  const { compare, filters, publications, genes, tissues } = payload;
 
   return {
     ...state,
     compare,
     selectedFilters: { ...state.selectedFilters, ...filters },
+    selectedPublicationFilter: { publications },
     selectedGenes: genes,
     selectedTissues: tissues,
     selectedOrganismId: payload.organism,

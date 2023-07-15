@@ -1,5 +1,6 @@
 from typing import Dict, List, Union
 
+import pandas as pd
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
@@ -153,7 +154,10 @@ class WmgQuery:
 
         tiledb_dims_query = tuple(tiledb_dims_query)
 
-        query_result_df = cube.query(cond=query_cond or None, use_arrow=True).df[tiledb_dims_query]
+        query_result_df = pd.concat(
+            cube.query(cond=query_cond or None, use_arrow=True, return_incomplete=True).df[tiledb_dims_query]
+        )
+
         return query_result_df
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
@@ -192,12 +196,16 @@ def retrieve_top_n_markers(query_result, test, n_markers):
         The result of a marker genes query
 
     test: str
-        The test used to determine the top n markers
+        The test used to determine the top n markers. Historically, we supported both ttest
+        and binomtest. Currently, only ttest is supported.
 
     n_markers: int
         The number of top markers to retrieve. If n_markers is 0,
         all markers are retrieved.
     """
+    if test == "binomtest":
+        raise ValueError("binomtest is not supported anymore")
+
     attrs = [f"p_value_{test}", f"effect_size_{test}"]
     col_names = ["p_value", "effect_size"]
     markers = query_result[["gene_ontology_term_id"] + attrs].rename(columns=dict(zip(attrs, col_names)))

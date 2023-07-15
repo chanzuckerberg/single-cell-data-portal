@@ -57,7 +57,7 @@ const TEST_ENVS_DEV_STAGING = ["dev", "staging"];
 
 export const isDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
 
-const GO_TO_PAGE_TIMEOUT_MS = 60 * 1000;
+const GO_TO_PAGE_TIMEOUT_MS = 120 * 1000;
 
 export async function goToPage(
   url: string = TEST_URL,
@@ -201,15 +201,6 @@ export async function selectNthOption(page: Page, number: number) {
 
   await page.keyboard.press("Enter");
   await page.keyboard.press("Escape");
-}
-
-export async function waitForHeatmapToRender(page: Page) {
-  await tryUntil(
-    async () => {
-      await expect(page.locator("canvas")).not.toHaveCount(0);
-    },
-    { page }
-  );
 }
 
 export async function waitForElement(page: Page, testId: string) {

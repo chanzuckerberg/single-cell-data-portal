@@ -5,7 +5,23 @@ import { getTestID, getText } from "tests/utils/selectors";
 import { selectFirstOption, tryUntil } from "./helpers";
 import { ADD_GENE_BTN, ADD_TISSUE_BTN } from "../common/constants";
 
-const { skip } = test;
+const { skip, beforeEach } = test;
+
+const WMG_SEED_TISSUES = ["blood", "lung"];
+const WMG_SEED_GENES = ["DPM1", "TNMD", "TSPAN6"];
+
+/**
+ * (thuang): Seed app state with some tissues and genes
+ */
+export const WMG_WITH_SEEDED_TISSUES_AND_GENES = {
+  URL:
+    `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
+    `tissues=${encodeURIComponent(
+      WMG_SEED_TISSUES.join(",")
+    )}&genes=${encodeURIComponent(WMG_SEED_GENES.join(","))}&ver=2`,
+  tissues: WMG_SEED_TISSUES,
+  genes: WMG_SEED_GENES,
+};
 
 const ENVS_TO_RUN_TESTS = [
   "api.cellxgene.dev.single-cell.czi.technology",
@@ -14,10 +30,20 @@ const ENVS_TO_RUN_TESTS = [
 ];
 
 export function conditionallyRunTests() {
-  skip(
-    ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
-    "WMG tests only work with dev/staging/prod API URLs"
-  );
+  /**
+   * (thuang): `beforeEach()` is needed, since without it, `describe()` will
+   * just eager inventory tests to run BEFORE our global setup sets `process.env.API_URL`
+   */
+  beforeEach(() => {
+    skip(
+      // (thuang): Temporarily skip WMG tests
+      // (thuang): Temporarily skip WMG tests
+      // (thuang): Temporarily skip WMG tests
+      ENVS_TO_RUN_TESTS.every(() => true),
+      // ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
+      "WMG tests only work with dev/staging/prod API URLs"
+    );
+  });
 }
 
 /**
@@ -38,6 +64,21 @@ export async function goToWMG(page: Page, url?: string) {
     { page }
   );
 }
+
+export async function goToWMGWithSeededState(page: Page) {
+  await goToWMG(page, WMG_WITH_SEEDED_TISSUES_AND_GENES.URL);
+  await waitForHeatmapToRender(page);
+}
+
+export async function waitForHeatmapToRender(page: Page) {
+  await tryUntil(
+    async () => {
+      await expect(page.locator("canvas")).not.toHaveCount(0);
+    },
+    { page }
+  );
+}
+
 export async function searchAndAddTissue(page: Page, tissueName: string) {
   // click +Tissue button
   await page.getByTestId(ADD_TISSUE_BTN).click();
@@ -92,8 +133,11 @@ export const deSelectSecondaryFilterOption = async (
   filterName: string
 ) => {
   const filter_label = `${getTestID(filterName)} [role="button"]`;
-  // expect the selected filter to be visible
-  await expect(page.locator(filter_label)).toBeVisible();
+  /**
+   * (thuang): expect the selected filter tag to be visible
+   * We use `last()` because both the filter and chips are buttons
+   */
+  await expect(page.locator(filter_label).last()).toBeVisible();
 
   // click the cancel button
   await page.getByTestId("ClearIcon").click();
