@@ -67,7 +67,9 @@ def build_in_mem_cube(
             if k != "publication_citation":
                 vals[k][idx : idx + n_vals] = attr_values[i]
 
-        vals["publication_citation"][idx : idx + n_vals] = dataset_dict[attr_values[dataset_index]]
+        vals["publication_citation"][idx : idx + n_vals] = dataset_dict.get(
+            attr_values[dataset_index], "No Publication"
+        )
 
         idx += n_vals
 
