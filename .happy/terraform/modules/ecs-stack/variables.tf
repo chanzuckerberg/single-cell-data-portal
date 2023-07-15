@@ -124,3 +124,8 @@ variable frontend_memory {
   default     = 4096
 }
 
+variable schema_migration_ecs_memory {
+  type        = number
+  description = "Memory reservation for the schema_migration ecs task"
+  default     = 2048
+}

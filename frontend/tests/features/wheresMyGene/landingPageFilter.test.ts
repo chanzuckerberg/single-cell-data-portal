@@ -5,9 +5,10 @@ import {
   conditionallyRunTests,
   deSelectSecondaryFilterOption,
   goToWMG,
+  goToWMGWithSeededState,
   selectSecondaryFilterOption,
   selectTissueAndGeneOption,
-} from "../../utils/wmgUtils";
+} from "tests/utils/wmgUtils";
 import { tryUntil } from "tests/utils/helpers";
 import {
   COLOR_SCALE_TOOLTIP_TEXT,
@@ -24,11 +25,7 @@ describe("Left side bar", () => {
   conditionallyRunTests();
 
   test("Left side bar collapse and expand", async ({ page }) => {
-    // navigate to gene expression page
-    await goToWMG(page);
-
-    //select tissue and gene
-    await selectTissueAndGeneOption(page);
+    await goToWMGWithSeededState(page);
 
     // click chevron left to collapse the left tab
     await page.getByTestId(SIDE_BAR_TOGGLE_BUTTON_ID).click();
@@ -46,11 +43,7 @@ describe("Left side bar", () => {
     test(`Should be able select and de-select options for ${filterOption} filter`, async ({
       page,
     }) => {
-      // navigate to gene expression page
-      await goToWMG(page);
-
-      //select tissue and gene
-      await selectTissueAndGeneOption(page);
+      await goToWMGWithSeededState(page);
 
       await tryUntil(
         async () => {

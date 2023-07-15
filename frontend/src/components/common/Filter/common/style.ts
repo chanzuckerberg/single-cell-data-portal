@@ -4,6 +4,7 @@ import { CommonThemeProps, getShadows, getSpaces } from "@czi-sds/components";
 
 const shadowM = (props: CommonThemeProps) => getShadows(props)?.m;
 const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
+const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
 
 export const Filter = styled.div`
   display: grid;
@@ -24,8 +25,8 @@ export const FilterPopover = styled(Popover)`
 `;
 
 export const InfoButtonWrapper = styled.span`
-  padding-left: 4px;
   cursor: pointer;
+  margin-left: ${spacesXxs}px;
 `;
 
 export const NotificationWrapper = styled.div`

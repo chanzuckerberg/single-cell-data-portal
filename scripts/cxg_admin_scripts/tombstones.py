@@ -1,28 +1,39 @@
+import logging
 import os
 import sys
 
 from click import Context
 
+from backend.curation.api.v1.curation.collections.common import validate_uuid_else_forbidden
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
+from backend.layers.business.business import BusinessLogic
+from backend.layers.common.entities import CollectionId
 
-def tombstone_collection(ctx: Context, uuid: str):
+
+def tombstone_collection(ctx: Context, collection_id: str) -> None:
     """
-    Tombstones the collection specified by ID.
-
-    Before running, create a tunnel to the database, e.g.:
-
-        AWS_PROFILE=single-cell-prod DEPLOYMENT_STAGE=prod make db/tunnel
-
-    Then run as:
-
-        ./scripts/cxg_admin.py --deployment prod tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
-
+    Tombstones the collection specified by uuid.
     :param ctx: command context
     :param uuid: ID that identifies the collection to tombstone
     """
-    pass
+    try:
+        validate_uuid_else_forbidden(collection_id)
+    except Exception:
+        logging.error(f"{collection_id} is not a valid uuid")
+        exit(1)
+    business_logic: BusinessLogic = ctx.obj["business_logic"]
+    collection = business_logic.get_canonical_collection(CollectionId(collection_id))
+    if not collection:
+        logging.error(f"Collection {collection_id} does not exist")
+        exit(1)
+    elif collection.tombstoned:
+        logging.error(f"Collection {collection_id} is already tombstoned")
+        exit(1)
+    business_logic.tombstone_collection(CollectionId(collection_id))
+    print(f"Successfully tombstoned Collection {collection_id}")
 
 
 def tombstone_dataset(ctx, uuid):
