@@ -203,7 +203,7 @@ const DirectoryListItem = ({
     return containsActiveFile(directory, activeFile)
       ? ExpandedValue.DEFAULT_EXPAND
       : ExpandedValue.DEFAULT_COLLAPSE;
-  }, [directory.files, activeFile]);
+  }, [directory, activeFile]);
 
   const [isExpanded, setIsExpanded] = useState<ExpandedValue>(initialState);
 
@@ -292,7 +292,7 @@ const Directory = memo(function RenderDirectory({
 
 interface Props {
   activeFile: string;
-  frontMatter: Record<string, any>;
+  frontMatter: Record<string, unknown>;
   mdxSource: MDXRemoteSerializeResult;
   slug: Array<string>;
   filePath: Directory;
