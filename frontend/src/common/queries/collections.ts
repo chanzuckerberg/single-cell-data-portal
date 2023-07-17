@@ -202,22 +202,6 @@ export function useCollection({
   );
 }
 
-// (cchoi): Writing a new function that takes more than one collection id input at a time.
-export function useManyCollections({
-  ids = [],
-}: {
-  ids?: string[];
-}): UseQueryResult<(Collection | TombstonedCollection | null)[]> {
-  const queryFn = fetchCollection();
-  return useQuery<(Collection | TombstonedCollection | null)[]>(
-    [USE_COLLECTION, ids],
-    () => Promise.all(ids.map((id) => queryFn(id))),
-    {
-      ...DEFAULT_QUERY_OPTIONS,
-    }
-  );
-}
-
 export async function createCollection(
   payload: string
 ): Promise<CollectionCreateResponse> {
