@@ -292,6 +292,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
                           "Value.$": "$.collection_version_id"
                         },
                         {
+                          "Name": "COLLECTION_ID",
+                          "Value.$": "$.collection_id"
+                        },
+                        {
                           "Name": "TASK_TOKEN",
                           "Value.$": "$$.Task.Token"
                         },

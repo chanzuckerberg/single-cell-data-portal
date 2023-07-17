@@ -74,7 +74,9 @@ class SchemaMigrate(ProcessingLogic):
             response.append(_resp)
         return response
 
-    def dataset_migrate(self, collection_version_id: str, dataset_id: str, dataset_version_id: str) -> Dict[str, str]:
+    def dataset_migrate(
+        self, collection_version_id: str, collection_id: str, dataset_id: str, dataset_version_id: str
+    ) -> Dict[str, str]:
         raw_h5ad_uri = [
             artifact.uri
             for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
@@ -83,7 +85,7 @@ class SchemaMigrate(ProcessingLogic):
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
         migrated_file = "migrated.h5ad"
-        cellxgene_schema.migrate.migrate("previous_schema.h5ad", migrated_file, collection_version_id, dataset_id)
+        cellxgene_schema.migrate.migrate("previous_schema.h5ad", migrated_file, collection_id, dataset_id)
         key_prefix = self.get_key_prefix(dataset_version_id)
         uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -117,6 +119,7 @@ class SchemaMigrate(ProcessingLogic):
             "datasets": [
                 {
                     "can_publish": str(can_publish),
+                    "collection_id": collection_id,
                     "collection_version_id": private_collection_version_id,
                     "dataset_id": dataset.dataset_id.id,
                     "dataset_version_id": dataset.version_id.id,
@@ -235,11 +238,13 @@ class SchemaMigrate(ProcessingLogic):
             )
         elif step_name == "dataset_migrate":
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
+            collection_id = os.environ["COLLECTION_ID"]
             dataset_id = os.environ["DATASET_ID"]
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
             dataset_migrate = self.error_wrapper(self.dataset_migrate, f"{collection_version_id}_{dataset_id}")
             response = dataset_migrate(
                 collection_version_id=collection_version_id,
+                collection_id=collection_id,
                 dataset_id=dataset_id,
                 dataset_version_id=dataset_version_id,
             )

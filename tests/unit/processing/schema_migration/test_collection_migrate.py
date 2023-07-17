@@ -20,8 +20,8 @@ class TestCollectionMigrate:
         assert "no_datasets" not in response
         actual_datasets = response["datasets"]
         for i in range(len(actual_datasets)):
-            assert actual_datasets[i]["collection_version_id"] == collection_version_id.id
-            actual_datasets[i].pop("collection_version_id")
+            assert actual_datasets[i].pop("collection_version_id") == collection_version_id.id
+            assert actual_datasets[i].pop("collection_id") == published.collection_id.id
             assert actual_datasets[i] == datasets[i]
 
     def test_can_publish_false(self, schema_migrate_and_collections):
@@ -36,8 +36,8 @@ class TestCollectionMigrate:
         assert "no_datasets" not in response
         actual_datasets = response["datasets"]
         for i in range(len(actual_datasets)):
-            assert actual_datasets[i]["collection_version_id"] == private.version_id.id
-            actual_datasets[i].pop("collection_version_id")
+            assert actual_datasets[i].pop("collection_version_id") == private.version_id.id
+            assert actual_datasets[i].pop("collection_id") == private.collection_id.id
             assert actual_datasets[i] == datasets[i]
 
     def test_can_publish_false_and_no_datasets(self, schema_migrate_and_collections):
