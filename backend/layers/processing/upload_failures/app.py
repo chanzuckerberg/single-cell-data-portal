@@ -160,10 +160,11 @@ def cleanup_artifacts(dataset_id: str) -> None:
     """Clean up artifacts"""
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
     with logger.LogSuppressed(Exception, message="Failed to clean up artifacts."):
-        delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], object_key + "/")
-    with logger.LogSuppressed(Exception, message="Failed to clean up artifacts."):
-        delete_many_from_s3(os.environ["DATASET_BUCKET"], object_key + ".")
-
-    cellxgene_bucket = os.getenv("CELLXGENE_BUCKET", default=f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
-    with logger.LogSuppressed(Exception, message="Failed to clean up artifacts."):
+        artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+        delete_many_from_s3(artifact_bucket, object_key + "/")
+    with logger.LogSuppressed(Exception, message="Failed to clean up datasets."):
+        dataset_bucket = os.environ["DATASET_BUCKET"]
+        delete_many_from_s3(dataset_bucket, object_key + ".")
+    with logger.LogSuppressed(Exception, message="Failed to clean up cxgs."):
+        cellxgene_bucket = os.environ["CELLXGENE_BUCKET"]
         delete_many_from_s3(cellxgene_bucket, object_key + ".cxg/")

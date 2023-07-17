@@ -377,61 +377,35 @@ def mock_env_vars():
     return {"ARTIFACT_BUCKET": "artifact_bucket", "DATASET_BUCKET": "dataset_bucket", "CELLXGENE_BUCKET": "cxg_bucket"}
 
 
-def test_cleanup_artifacts__download_validate(mock_env_vars):
+def test_cleanup_artifacts__OK(mock_env_vars):
     dataset_id = "example_dataset"
-    error_step_name = "download-validate"
 
     with patch(f"{module_path}.delete_many_from_s3") as mock_delete_many_from_s3, patch.dict(os.environ, mock_env_vars):
-        cleanup_artifacts(dataset_id, error_step_name)
+        cleanup_artifacts(dataset_id)
 
         # Assertions
         mock_delete_many_from_s3.assert_any_call(os.environ["ARTIFACT_BUCKET"], dataset_id + "/")
         mock_delete_many_from_s3.assert_any_call(os.environ["DATASET_BUCKET"], dataset_id + ".")
+        mock_delete_many_from_s3.assert_any_call(os.environ["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
+        assert mock_delete_many_from_s3.call_count == 3
 
 
 def test_cleanup_artifacts__download_validate_no_bucket(caplog):
     dataset_id = "example_dataset"
-    error_step_name = "download-validate"
 
     with patch(f"{module_path}.delete_many_from_s3") as mock_delete_many_from_s3, patch.dict(os.environ, clear=True):
-        cleanup_artifacts(dataset_id, error_step_name)
+        cleanup_artifacts(dataset_id)
 
         # Assertions
         mock_delete_many_from_s3.assert_not_called()
         assert "Failed to clean up artifacts." in caplog.text
 
 
-def test_cleanup_artifacts__cxg_default_bucket():
-    dataset_id = "example_dataset"
-
-    with patch(f"{module_path}.delete_many_from_s3") as mock_delete_many_from_s3, patch.dict(
-        os.environ, {"DEPLOYMENT_STAGE": "test"}, clear=True
-    ):
-        cleanup_artifacts(dataset_id, "cxg")
-
-        # Assertions
-        cellxgene_bucket = f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"
-        mock_delete_many_from_s3.assert_called_once_with(cellxgene_bucket, dataset_id + ".cxg/")
-
-
 def test_cleanup_artifacts__cxg_specified_bucket(mock_env_vars):
     dataset_id = "example_dataset"
 
     with patch(f"{module_path}.delete_many_from_s3") as mock_delete_many_from_s3, patch.dict(os.environ, mock_env_vars):
-        cleanup_artifacts(dataset_id, "cxg")
+        cleanup_artifacts(dataset_id)
 
         # Assertions
-        mock_delete_many_from_s3.assert_called_once_with(os.environ["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
-
-
-def test_cleanup_artifacts__unknown_error_step(mock_env_vars):
-    dataset_id = "example_dataset"
-    error_step_name = ""
-
-    with patch(f"{module_path}.delete_many_from_s3") as mock_delete_many_from_s3, patch.dict(os.environ, mock_env_vars):
-        cleanup_artifacts(dataset_id, error_step_name)
-
-        # Assertions
-        mock_delete_many_from_s3.assert_any_call(os.environ["ARTIFACT_BUCKET"], dataset_id + "/")
-        mock_delete_many_from_s3.assert_any_call(os.environ["DATASET_BUCKET"], dataset_id + ".")
-        mock_delete_many_from_s3.assert_any_call(os.environ["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
+        mock_delete_many_from_s3.assert_called_with(os.environ["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
