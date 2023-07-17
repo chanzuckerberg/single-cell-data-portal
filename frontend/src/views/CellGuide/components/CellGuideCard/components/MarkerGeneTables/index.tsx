@@ -36,6 +36,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { CENSUS_LINK } from "src/components/Header/components/Nav";
 
 export const CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM =
   "cell-guide-card-marker-genes-table-dropdown-organism";
@@ -183,7 +184,10 @@ interface Props {
 
 const ROWS_PER_PAGE = 10;
 
-export const MARKER_GENES_TOOLTIP_TEST_ID = "marker-genes-help-tooltip";
+export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
+  "marker-genes-computational-help-tooltip";
+export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =
+  "marker-genes-canonical-help-tooltip";
 
 const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   const [selectedOrganism, setSelectedOrganism] = useState("");
@@ -415,8 +419,8 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   };
   const enrichedGenesTooltipComponent = (
     <div>
-      {"The marker genes listed below are computationally derived from the "}
-      <Link label={"CELLxGENE corpus"} url={ROUTES.DATASETS} />
+      {"Computational marker genes are derived from the "}
+      <Link label={"CELLxGENE Census"} url={CENSUS_LINK} />
       {". They are computed utilizing the same methodology as featured in our "}
       <Link
         label={"Find Marker Genes feature from the Gene Expression application"}
@@ -428,7 +432,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   const canonicalMarkerGenesTooltipComponent = (
     <div>
       {
-        "The below marker genes and associated publications were derived from the "
+        "Canonical marker genes and associated publications were derived from the "
       }
       <Link
         label={"Anatomical Structures, Cell Types and Biomarkers (ASCT+B)"}
@@ -497,14 +501,6 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
         <TableTitleOuterWrapper>
           <TableTitleInnerWrapper columnGap={4}>
             <TableTitle>Marker Genes</TableTitle>
-            <HelpTooltip
-              buttonDataTestId={MARKER_GENES_TOOLTIP_TEST_ID}
-              text={
-                activeTable
-                  ? enrichedGenesTooltipComponent
-                  : canonicalMarkerGenesTooltipComponent
-              }
-            />
           </TableTitleInnerWrapper>
           {tableRows.length > 0 && (
             <TableTitleInnerWrapper>
@@ -544,6 +540,10 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             }}
           >
             Canonical (HuBMAP)
+            <HelpTooltip
+              buttonDataTestId={MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID}
+              text={canonicalMarkerGenesTooltipComponent}
+            />
           </TableSelectorButton>
           <TableSelectorButton
             data-testid={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR}
@@ -555,6 +555,10 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
             }}
           >
             Computational (CZI)
+            <HelpTooltip
+              buttonDataTestId={MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID}
+              text={enrichedGenesTooltipComponent}
+            />
           </TableSelectorButton>
         </TableSelectorRow>
       </TableTitleOuterWrapper>

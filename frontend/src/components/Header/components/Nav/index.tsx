@@ -8,7 +8,7 @@ import NavDivider from "src/components/Header/components/Nav/components/NavDivid
 import { isRouteActive } from "src/components/Header";
 import { LinkWrapper, Nav as NavWrapper } from "./style";
 
-const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
+export const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
 
 interface Props {
   className?: string;
