@@ -1493,6 +1493,22 @@ class TestDeleteDataset(BaseAPIPortalTest):
                 response = self._delete(auth, dataset.collection_id, dataset.dataset_id)
                 self.assertEqual(expected_status_code, response.status_code)
 
+    def test__delete_published_dataset__405(self):
+        """
+        A Dataset that has been published cannot be deleted via the API
+        """
+        for auth_func in (self.make_super_curator_header, self.make_owner_header):
+            with self.subTest("Cannot delete published Dataset in a revision"):
+                collection = self.generate_published_collection()
+                revision = self.generate_revision(collection.collection_id)
+                dataset_id, dataset_version_id = revision.datasets[0].dataset_id, revision.datasets[0].version_id
+                response = self._delete(auth_func, revision.collection_id, dataset_id)
+                self.assertEqual(405, response.status_code)
+            with self.subTest("Cannot delete published Dataset in a revision even after it has been updated"):
+                self.generate_dataset(collection_version=revision, replace_dataset_version_id=dataset_version_id)
+                response = self._delete(auth_func, revision.collection_id, dataset_id)
+                self.assertEqual(405, response.status_code)
+
 
 class TestGetDatasets(BaseAPIPortalTest):
     def test_get_dataset_in_a_collection(self):

@@ -94,7 +94,7 @@ class BusinessLogicInterface:
         pass
 
     def remove_dataset_version(
-        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
+        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, delete_published: bool
     ) -> None:
         pass
 
