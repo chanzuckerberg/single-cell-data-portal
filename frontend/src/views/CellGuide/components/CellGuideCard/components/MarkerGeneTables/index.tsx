@@ -440,7 +440,7 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
         url={"https://humanatlas.io/asctb-tables"}
       />
       {
-        " tables (v1.4). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+        " tables from the 5th Human Reference Atlas release (July 2023). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
       }
       <br />
       <br />
