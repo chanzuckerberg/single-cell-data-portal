@@ -206,7 +206,10 @@ class SchemaMigrate(ProcessingLogic):
             self.logger.info("Report", extra=report)
             report_str = json.dumps(report, indent=4, sort_keys=True)
             self.s3_provider.delete_files(self.artifact_bucket, error_files)
-            self._upload_to_slack("schema_migration_report.json", report_str, "Schema migration results.")
+            report_message = "Schema migration results."
+            if report["errors"]:
+                report_message += " @sc-oncall-eng"
+            self._upload_to_slack("schema_migration_report.json", report_str, report_message)
             return report
         except Exception as e:
             self.logger.exception("Failed to generate report")
