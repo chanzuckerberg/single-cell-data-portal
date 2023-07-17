@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { CellGuideCardDescription, Source, SourceLink, Wrapper } from "./style";
+import {
+  CellGuideCardDescription,
+  DescriptionHeader,
+  Source,
+  SourceLink,
+  Wrapper,
+} from "./style";
 import { useDescription, useClDescription } from "src/common/queries/cellGuide";
 import { Tooltip } from "@czi-sds/components";
 import Link from "../common/Link";
@@ -73,6 +79,7 @@ export default function Description({
         data-testid={CELL_GUIDE_CARD_GPT_DESCRIPTION}
         onCopy={copyHandler}
       >
+        <DescriptionHeader>Experimental Description</DescriptionHeader>
         {descriptionGpt}
         <Source>
           <div>

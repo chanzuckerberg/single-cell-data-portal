@@ -23,7 +23,7 @@ import { API } from "../API";
 import { APIV2 } from "src/common/tempAPIV2";
 
 import { ROUTES } from "../constants/routes";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "../constants/utils";
+import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { Dataset } from "@mui/icons-material";
@@ -1030,12 +1030,12 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 function useWMGFiltersQueryRequestBody(
   version: 1 | 2 = 1
 ): FiltersQuery | null {
-  const { selectedTissues, selectedOrganismId, selectedFilters } =
+  const { selectedOrganismId, selectedFilters } =
     useContext(StateContext);
 
   const { data } = usePrimaryFilterDimensions(version);
 
-  const { datasets, developmentStages, diseases, ethnicities, sexes } =
+  const { tissues, datasets, developmentStages, diseases, ethnicities, sexes } =
     selectedFilters;
 
   const tissuesByName = useMemo(() => {
@@ -1054,10 +1054,6 @@ function useWMGFiltersQueryRequestBody(
     if (!data || !selectedOrganismId) {
       return null;
     }
-    const tissue_ontology_term_ids =
-      selectedTissues?.map((tissueName) => {
-        return tissuesByName[tissueName].id;
-      }) ?? EMPTY_ARRAY;
 
     return {
       filter: {
@@ -1067,11 +1063,11 @@ function useWMGFiltersQueryRequestBody(
         organism_ontology_term_id: selectedOrganismId,
         self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
-        tissue_ontology_term_ids,
+        tissue_ontology_term_ids: tissues,
       },
     };
   }, [
-    selectedTissues,
+    tissues,
     selectedOrganismId,
     data,
     tissuesByName,
