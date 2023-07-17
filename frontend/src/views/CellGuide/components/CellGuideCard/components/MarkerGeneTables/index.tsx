@@ -446,8 +446,9 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
       <Link
         label={
           <i>
-            Quardokus, Ellen, Bruce W. Herr II, Lisel Record, Katy Börner. 2022.
-            HuBMAP ASCT+B Tables. Accessed July 10, 2023.
+            Börner, Katy, et al. "Anatomical structures, cell types and
+            biomarkers of the Human Reference Atlas." Nature cell biology 23.11
+            (2021): 1117-1128.
           </i>
         }
         url={"https://www.nature.com/articles/s41556-021-00788-6"}
