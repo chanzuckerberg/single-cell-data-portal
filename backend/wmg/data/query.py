@@ -157,7 +157,6 @@ class WmgQuery:
         tiledb_dims_query = tuple(tiledb_dims_query)
 
         if isinstance(criteria, FmgQueryCriteria):
-            # fmg queries retain existing behavior of pulling all dims and attrs
             query_result_df = pd.concat(
                 cube.query(
                     cond=query_cond or None,
@@ -168,7 +167,6 @@ class WmgQuery:
                 ).df[tiledb_dims_query]
             )
         elif criteria.compare_dimension is not None:
-            # if the compare param is specified, then we need to query for the dimension it specifies
             query_result_df = pd.concat(
                 cube.query(
                     cond=query_cond or None,
@@ -178,8 +176,6 @@ class WmgQuery:
                 ).df[tiledb_dims_query]
             )
         else:
-            # otherwise, we just query for the cell type ontology term attribute, and we know that
-            # only two dimensions are required
             query_result_df = pd.concat(
                 cube.query(
                     cond=query_cond or None,
