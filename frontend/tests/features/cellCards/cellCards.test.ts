@@ -111,7 +111,7 @@ describe("Cell Guide", () => {
       await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);
       const headerName = page.getByTestId(CELL_GUIDE_CARD_HEADER_NAME);
       const headerNameText = await headerName.textContent();
-      expect(headerNameText).toBe("Neuron");
+      expect(headerNameText).toBe("neuron");
     });
     test("CellGuide card GPT description tooltip displays disclaimer", async ({
       page,
