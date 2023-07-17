@@ -1030,8 +1030,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 function useWMGFiltersQueryRequestBody(
   version: 1 | 2 = 1
 ): FiltersQuery | null {
-  const { selectedOrganismId, selectedFilters } =
-    useContext(StateContext);
+  const { selectedOrganismId, selectedFilters } = useContext(StateContext);
 
   const { data } = usePrimaryFilterDimensions(version);
 
