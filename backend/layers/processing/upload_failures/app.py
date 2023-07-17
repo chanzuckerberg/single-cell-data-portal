@@ -27,7 +27,7 @@ def handle_failure(event: dict, context) -> None:
         dataset_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
     )
     update_dataset_processing_status_to_failed(dataset_id)
-    cleanup_artifacts(event)
+    cleanup_artifacts(dataset_id, error_step_name)
 
 
 # write test cases using pytest to test the parse_event function

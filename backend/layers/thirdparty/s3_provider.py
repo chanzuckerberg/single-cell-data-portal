@@ -18,7 +18,8 @@ class S3Provider(S3ProviderInterface):
     def __init__(self) -> None:
         self.client = boto3.client("s3")
 
-    def parse_s3_uri(self, s3_uri: str) -> Tuple[str, str]:
+    @staticmethod
+    def parse_s3_uri(s3_uri: str) -> Tuple[str, str]:
         parsed_url = urlparse(s3_uri)
         return parsed_url.netloc, parsed_url.path[1:]
 
@@ -46,7 +47,15 @@ class S3Provider(S3ProviderInterface):
         """
         Uploads the local `src_file` to an S3 object in the `bucket_name` bucket with object key `dst_file`
         """
-
+        logger.info(
+            {
+                "message": "Uploading file",
+                "bucket_name": bucket_name,
+                "dst_file": dst_file,
+                "src_file": src_file,
+                "extra_args": extra_args,
+            }
+        )
         self.client.upload_file(
             src_file,
             bucket_name,
