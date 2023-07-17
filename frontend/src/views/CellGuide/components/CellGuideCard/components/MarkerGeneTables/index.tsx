@@ -13,6 +13,7 @@ import {
   TableUnavailableHeader,
   TableUnavailableDescription,
   TableTitleInnerWrapper,
+  FlexRow,
 } from "../common/style";
 import Link from "../common/Link";
 import {
@@ -536,36 +537,42 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
       </TableTitleWrapper>
       <TableTitleOuterWrapper>
         <TableSelectorRow>
-          <TableSelectorButton
-            data-testid={CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR}
-            isActive={activeTable === 0}
-            onClick={() => {
-              setPage(1);
-              setActiveTable(0);
-              track(EVENTS.CG_CANONICAL_TAB_CLICKED);
-            }}
-          >
-            Canonical (HuBMAP)
+          <FlexRow>
+            <TableSelectorButton
+              data-testid={
+                CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR
+              }
+              isActive={activeTable === 0}
+              onClick={() => {
+                setPage(1);
+                setActiveTable(0);
+                track(EVENTS.CG_CANONICAL_TAB_CLICKED);
+              }}
+            >
+              Canonical (HuBMAP)
+            </TableSelectorButton>
             <HelpTooltip
               buttonDataTestId={MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID}
               text={canonicalMarkerGenesTooltipComponent}
             />
-          </TableSelectorButton>
-          <TableSelectorButton
-            data-testid={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR}
-            isActive={activeTable === 1}
-            onClick={() => {
-              setPage(1);
-              setActiveTable(1);
-              track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED);
-            }}
-          >
-            Computational (CZI)
+          </FlexRow>
+          <FlexRow>
+            <TableSelectorButton
+              data-testid={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR}
+              isActive={activeTable === 1}
+              onClick={() => {
+                setPage(1);
+                setActiveTable(1);
+                track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED);
+              }}
+            >
+              Computational (CZI)
+            </TableSelectorButton>
             <HelpTooltip
               buttonDataTestId={MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID}
               text={enrichedGenesTooltipComponent}
             />
-          </TableSelectorButton>
+          </FlexRow>
         </TableSelectorRow>
       </TableTitleOuterWrapper>
       {tableRows.length > 0 ? (
