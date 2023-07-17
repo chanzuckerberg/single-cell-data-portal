@@ -863,7 +863,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
         self.assertNotIn(dataset_version_id_to_remove.id, dataset_version_id_strs)
 
-    def test_delete_new_dataset_in_revision_ok(self):
+    def test_delete_new_dataset_in_revision__ok(self):
         collection, revision = self.initialize_collection_with_an_unpublished_revision()
         new_dataset_version_id, _ = self.business_logic.create_empty_dataset(revision.version_id)
         revision = self.business_logic.get_collection_version(revision.version_id)
@@ -875,7 +875,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         # Dataset is removed
         self.assertEqual(len(collection.datasets), len(revision.datasets))
 
-    def test_delete_published_dataset_fail(self):
+    def test_delete_published_dataset__fail(self):
         collection, revision = self.initialize_collection_with_an_unpublished_revision()
         with self.assertRaises(CollectionUpdateException):
             self.business_logic.remove_dataset_version(revision.version_id, revision.datasets[0].version_id)
