@@ -2,7 +2,7 @@ import itertools
 import json
 import logging
 import os
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 
 from cellxgene_schema.migrate import migrate
 from cellxgene_schema.schema import get_current_schema_version
@@ -27,7 +27,6 @@ logger.configure_logging(level=logging.INFO)
 
 class SchemaMigrate(ProcessingLogic):
     def __init__(self, business_logic: BusinessLogic):
-        # TODO: remove dependecies on ProcessingLogic
         self.business_logic = business_logic
         self.s3_provider = business_logic.s3_provider  # For compatiblity with ProcessingLogic
         self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
@@ -101,9 +100,7 @@ class SchemaMigrate(ProcessingLogic):
             "uri": uri,
         }
 
-    def collection_migrate(
-        self, collection_id: str, collection_version_id: str, can_publish: bool
-    ) -> Union[Dict[str, Any]]:
+    def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
 
         if can_publish:
             private_collection_version_id = self.business_logic.create_collection_version(
