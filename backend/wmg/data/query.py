@@ -111,9 +111,9 @@ class WmgQuery:
             cube=self._snapshot.marker_genes_cube,
             criteria=criteria,
             indexed_dims=[
-                "tissue_ontology_term_id",
+                "tissue_ontology_term_ids",
                 "organism_ontology_term_id",
-                "cell_type_ontology_term_id",
+                "cell_type_ontology_term_ids",
             ],
         )
 
@@ -156,7 +156,18 @@ class WmgQuery:
 
         tiledb_dims_query = tuple(tiledb_dims_query)
 
-        if criteria.compare_dimension is not None:
+        if isinstance(criteria, FmgQueryCriteria):
+            # fmg queries retain existing behavior of pulling all dims and attrs
+            query_result_df = pd.concat(
+                cube.query(
+                    cond=query_cond or None,
+                    return_incomplete=True,
+                    use_arrow=True,
+                    attrs=["gene_ontology_term_id"],
+                    dims=["tissue_ontology_term_id", "cell_type_ontology_term_id"],
+                ).df[tiledb_dims_query]
+            )
+        elif criteria.compare_dimension is not None:
             # if the compare param is specified, then we need to query for the dimension it specifies
             query_result_df = pd.concat(
                 cube.query(
@@ -175,7 +186,7 @@ class WmgQuery:
                     return_incomplete=True,
                     use_arrow=True,
                     attrs=["cell_type_ontology_term_id"],
-                    dims=[i for i in indexed_dims if i in ["tissue_ontology_term_id", "gene_ontology_term_id"]],
+                    dims=["tissue_ontology_term_id", "gene_ontology_term_id"],
                 ).df[tiledb_dims_query]
             )
         return query_result_df
