@@ -853,7 +853,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
 
 class TestDeleteDataset(BaseBusinessLogicTestCase):
-    def test_delete_dataset_ok(self):
+    def test_delete_dataset_in_private_collection__ok(self):
         collection = self.initialize_unpublished_collection()
         dataset_version_id_to_remove = collection.datasets[0].version_id
         dataset_version_id_strs = [dv.version_id.id for dv in collection.datasets]
