@@ -32,6 +32,7 @@ import {
   StyledImage,
   TissueHeaderLabelStyle,
   Wrapper,
+  TissueLabel,
 } from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
 
 interface Props {
@@ -39,7 +40,7 @@ interface Props {
   tissue: Tissue;
   tissueID: string;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
-  handleExpandCollapse: (tissue: Tissue) => void;
+  handleExpandCollapse: (tissueID: string, tissueName: Tissue) => void;
   expandedTissues: Set<Tissue>;
   selectedOrganismId: string;
 }
@@ -86,7 +87,7 @@ export default memo(function YAxisChart({
 
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
-            const expanded = expandedTissues.has(tissue);
+            const expanded = expandedTissues.has(tissueID);
 
             const { text: paddedName } = formatLabel(
               name,
@@ -99,9 +100,10 @@ export default memo(function YAxisChart({
                   key={`${cellType}-cell-type-button`}
                   formattedName={paddedName}
                   metadata={cellType}
-                  tissue={tissue}
+                  tissueID={tissueID}
                   generateMarkerGenes={generateMarkerGenes}
                   expanded={expanded}
+                  tissueName={name}
                   handleExpandCollapse={handleExpandCollapse}
                   data-testid="cell-type-label"
                 />
@@ -128,15 +130,17 @@ export default memo(function YAxisChart({
 const TissueHeaderButton = ({
   formattedName,
   metadata,
-  tissue,
   handleExpandCollapse,
   expanded,
+  tissueID,
+  tissueName,
 }: {
   formattedName: string;
   metadata: CellTypeMetadata;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
-  tissue: Tissue;
-  handleExpandCollapse: (tissue: Tissue) => void;
+  tissueID: string;
+  tissueName: Tissue;
+  handleExpandCollapse: (tissueID: string, tissueName: Tissue) => void;
   expanded: boolean;
 }) => {
   const { total_count } = deserializeCellTypeMetadata(metadata);
@@ -153,8 +157,8 @@ const TissueHeaderButton = ({
     >
       <FlexRow
         onClick={useCallback(() => {
-          handleExpandCollapse(tissue);
-        }, [tissue, handleExpandCollapse])}
+          handleExpandCollapse(tissueID, tissueName);
+        }, [tissueID, tissueName, handleExpandCollapse])}
       >
         <Icon
           sdsIcon={expanded ? "triangleDown" : "triangleRight"}
@@ -164,9 +168,12 @@ const TissueHeaderButton = ({
         />
         <TissueHeaderLabelStyle>
           <div>
-            <div className="cell-type-name" data-testid="cell-type-name">
+            <TissueLabel
+              className="cell-type-name"
+              data-testid="cell-type-name"
+            >
               {capitalize(formattedName)}
-            </div>
+            </TissueLabel>
           </div>
         </TissueHeaderLabelStyle>
       </FlexRow>
@@ -242,10 +249,6 @@ const CellTypeButton = ({
           cellType.optionId === COMPARE_OPTION_ID_FOR_AGGREGATED && (
             <InfoButtonWrapper
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-              style={{
-                cursor: "pointer",
-                margin: "auto",
-              }}
               onClick={() => {
                 if (cellType) {
                   generateMarkerGenes(cellType, tissueID);
@@ -258,6 +261,11 @@ const CellTypeButton = ({
               <StyledImage
                 data-testid="marker-gene-button"
                 src={InfoSVG.src}
+                /**
+                 * (thuang): https://nextjs.org/docs/pages/api-reference/components/image-legacy#layout
+                 * Use the <StyledImage /> width and height, since default is `intrinsic`
+                 */
+                layout="fixed"
                 width="10"
                 height="10"
                 alt={`display marker genes for ${cellType.name}`}

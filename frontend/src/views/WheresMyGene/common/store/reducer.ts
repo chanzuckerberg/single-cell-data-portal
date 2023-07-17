@@ -17,6 +17,7 @@ export interface State {
     diseases: string[];
     ethnicities: string[];
     sexes: string[];
+    tissues: string[];
   };
 
   /**
@@ -41,6 +42,7 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   diseases: [],
   ethnicities: [],
   sexes: [],
+  tissues: [],
 };
 
 // (thuang): If you have derived states based on the state, use `useMemo`

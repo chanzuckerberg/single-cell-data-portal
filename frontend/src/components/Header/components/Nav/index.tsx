@@ -7,8 +7,9 @@ import { EVENTS } from "src/common/analytics/events";
 import NavDivider from "src/components/Header/components/Nav/components/NavDivider";
 import { isRouteActive } from "src/components/Header";
 import { LinkWrapper, Nav as NavWrapper } from "./style";
+import { BetaChip } from "../../style";
 
-const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
+export const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
 
 interface Props {
   className?: string;
@@ -58,19 +59,20 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
           />
         </Link>
       </LinkWrapper>
-      {/* <LinkWrapper>
-        <Link href={ROUTES.CELL_CARDS} passHref>
+      <LinkWrapper>
+        <Link href={ROUTES.CELL_GUIDE} passHref>
           <AnchorButton
-            active={isRouteActive(pathname, ROUTES.CELL_CARDS)}
+            active={isRouteActive(pathname, ROUTES.CELL_GUIDE)}
             href="passHref"
             minimal
             onClick={() => {
               track(EVENTS.CELL_GUIDE_CLICK_NAV);
             }}
-            text="Cell Cards"
+            text="Cell Guide"
           />
         </Link>
-      </LinkWrapper> */}
+        <BetaChip label="Beta" size="small" />
+      </LinkWrapper>
       <NavDivider />
       <LinkWrapper>
         <AnchorButton

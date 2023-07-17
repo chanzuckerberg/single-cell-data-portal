@@ -897,6 +897,8 @@ function addCellTypeRowToResult({
 
     const { name: rawName, total_count, order } = compareOptionData;
 
+    const termIsTissueStats = isTissueStats(compareOptionData);
+
     const termID = isTissueStats(compareOptionData)
       ? compareOptionData.tissue_ontology_term_id
       : compareOptionData.cell_type_ontology_term_id;
@@ -918,7 +920,7 @@ function addCellTypeRowToResult({
     const viewId = getCellTypeViewId(termID, compareOptionId);
 
     result[viewId] = {
-      cellTypeName,
+      cellTypeName: termIsTissueStats ? termID : cellTypeName,
       id: termID,
       isAggregated,
       name,
@@ -1291,7 +1293,7 @@ export function useMarkerGenes({
   test,
   version = 1,
 }: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse<MarkerGene>> {
-  const { data } = usePrimaryFilterDimensions(version);
+  const { data } = usePrimaryFilterDimensions(2);
   const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
     let result: { [name: string]: OntologyTerm } = {};
 
@@ -1316,7 +1318,7 @@ export function useMarkerGenes({
      * so React Query can cache responses correctly without running into
      * issues like #4161
      */
-    [USE_MARKER_GENES, cellTypeID, organismID, test, tissueID, version],
+    [USE_MARKER_GENES, cellTypeID, organismID, test, tissueID, 2],
     async () => {
       const output = await fetchMarkerGenes({
         cellTypeID,

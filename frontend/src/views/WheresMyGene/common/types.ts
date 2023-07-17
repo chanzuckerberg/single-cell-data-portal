@@ -100,6 +100,7 @@ export interface Filters {
   ethnicities?: DefaultMenuSelectOption[];
   // publications?: DefaultMenuSelectOption[];
   sexes?: DefaultMenuSelectOption[];
+  tissues?: DefaultMenuSelectOption[];
 }
 
 export enum SORT_BY {
