@@ -92,7 +92,7 @@ export default function CellGuideCard(): JSX.Element {
           <CellGuideCardHeader>
             <CellGuideCardHeaderInnerWrapper>
               <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
-                {cellTypeName.charAt(0).toUpperCase() + cellTypeName.slice(1)}
+                {cellTypeName}
               </CellGuideCardName>
               <a
                 href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}

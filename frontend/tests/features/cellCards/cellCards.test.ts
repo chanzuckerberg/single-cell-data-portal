@@ -23,7 +23,8 @@ import {
   CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
   CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR,
-  MARKER_GENES_TOOLTIP_TEST_ID,
+  MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
+  MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables";
 import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW,
@@ -110,7 +111,7 @@ describe("Cell Guide", () => {
       await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);
       const headerName = page.getByTestId(CELL_GUIDE_CARD_HEADER_NAME);
       const headerNameText = await headerName.textContent();
-      expect(headerNameText).toBe("Neuron");
+      expect(headerNameText).toBe("neuron");
     });
     test("CellGuide card GPT description tooltip displays disclaimer", async ({
       page,
@@ -513,12 +514,12 @@ describe("Cell Guide", () => {
     test("Marker Genes help tooltip - Canonical", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000540`, page); // Neuron
 
-      await isElementVisible(page, MARKER_GENES_TOOLTIP_TEST_ID);
-      await page.getByTestId(MARKER_GENES_TOOLTIP_TEST_ID).hover();
+      await isElementVisible(page, MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID);
+      await page.getByTestId(MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID).hover();
 
       await checkTooltipContent(
         page,
-        "The below marker genes and associated publications were derived from the Anatomical Structures, Cell Types and Biomarkers (ASCT+B) tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+        "Canonical marker genes and associated publications were derived from the Anatomical Structures, Cell Types and Biomarkers (ASCT+B) tables (v1.4). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
       );
     });
 
@@ -527,12 +528,14 @@ describe("Cell Guide", () => {
 
       await page.getByTestId(computationalTabButton).click();
 
-      await isElementVisible(page, MARKER_GENES_TOOLTIP_TEST_ID);
-      await page.getByTestId(MARKER_GENES_TOOLTIP_TEST_ID).hover();
+      await isElementVisible(page, MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID);
+      await page
+        .getByTestId(MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID)
+        .hover();
 
       await checkTooltipContent(
         page,
-        "The marker genes listed below are computationally derived from the CELLxGENE corpus. They are computed utilizing the same methodology as featured in our Find Marker Genes feature from the Gene Expression application."
+        "Computational marker genes are derived from the CELLxGENE Census. They are computed utilizing the same methodology as featured in our Find Marker Genes feature from the Gene Expression application."
       );
     });
 
@@ -552,7 +555,6 @@ describe("Cell Guide", () => {
     });
 
     test("Percent of Cells tooltip", async ({ page }) => {
-      // MARKER_GENES_TOOLTIP_TEST_ID
       await goToPage(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000540`, page); // Neuron
 
       await page.getByTestId(computationalTabButton).click();

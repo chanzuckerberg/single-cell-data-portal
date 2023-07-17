@@ -9,7 +9,7 @@ import { isRouteActive } from "src/components/Header";
 import { LinkWrapper, Nav as NavWrapper } from "./style";
 import { BetaChip } from "../../style";
 
-const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
+export const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
 
 interface Props {
   className?: string;

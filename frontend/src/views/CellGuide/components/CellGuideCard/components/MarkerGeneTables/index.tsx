@@ -13,6 +13,7 @@ import {
   TableUnavailableHeader,
   TableUnavailableDescription,
   TableTitleInnerWrapper,
+  FlexRow,
 } from "../common/style";
 import Link from "../common/Link";
 import {
@@ -36,6 +37,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { CENSUS_LINK } from "src/components/Header/components/Nav";
 
 export const CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM =
   "cell-guide-card-marker-genes-table-dropdown-organism";
@@ -183,7 +185,10 @@ interface Props {
 
 const ROWS_PER_PAGE = 10;
 
-export const MARKER_GENES_TOOLTIP_TEST_ID = "marker-genes-help-tooltip";
+export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
+  "marker-genes-computational-help-tooltip";
+export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =
+  "marker-genes-canonical-help-tooltip";
 
 const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   const [selectedOrganism, setSelectedOrganism] = useState("");
@@ -415,8 +420,8 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   };
   const enrichedGenesTooltipComponent = (
     <div>
-      {"The marker genes listed below are computationally derived from the "}
-      <Link label={"CELLxGENE corpus"} url={ROUTES.DATASETS} />
+      {"Computational marker genes are derived from the "}
+      <Link label={"CELLxGENE Census"} url={CENSUS_LINK} />
       {". They are computed utilizing the same methodology as featured in our "}
       <Link
         label={"Find Marker Genes feature from the Gene Expression application"}
@@ -428,21 +433,27 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
   const canonicalMarkerGenesTooltipComponent = (
     <div>
       {
-        "The below marker genes and associated publications were derived from the "
+        "Canonical marker genes and associated publications were derived from the "
       }
       <Link
         label={"Anatomical Structures, Cell Types and Biomarkers (ASCT+B)"}
         url={"https://humanatlas.io/asctb-tables"}
       />
       {
-        " tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+        " tables (v1.4). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
       }
       <br />
       <br />
-      <i>
-        Quardokus, Ellen, Bruce W. Herr II, Lisel Record, Katy Börner. 2022.
-        HuBMAP ASCT+B Tables. Accessed July 10, 2023.
-      </i>
+      <Link
+        label={
+          <i>
+            Börner, Katy, et al. "Anatomical structures, cell types and
+            biomarkers of the Human Reference Atlas." Nature cell biology 23.11
+            (2021): 1117-1128.
+          </i>
+        }
+        url={"https://www.nature.com/articles/s41556-021-00788-6"}
+      />
     </div>
   );
 
@@ -497,14 +508,6 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
         <TableTitleOuterWrapper>
           <TableTitleInnerWrapper columnGap={4}>
             <TableTitle>Marker Genes</TableTitle>
-            <HelpTooltip
-              buttonDataTestId={MARKER_GENES_TOOLTIP_TEST_ID}
-              text={
-                activeTable
-                  ? enrichedGenesTooltipComponent
-                  : canonicalMarkerGenesTooltipComponent
-              }
-            />
           </TableTitleInnerWrapper>
           {tableRows.length > 0 && (
             <TableTitleInnerWrapper>
@@ -534,28 +537,42 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
       </TableTitleWrapper>
       <TableTitleOuterWrapper>
         <TableSelectorRow>
-          <TableSelectorButton
-            data-testid={CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR}
-            isActive={activeTable === 0}
-            onClick={() => {
-              setPage(1);
-              setActiveTable(0);
-              track(EVENTS.CG_CANONICAL_TAB_CLICKED);
-            }}
-          >
-            Canonical (HuBMAP)
-          </TableSelectorButton>
-          <TableSelectorButton
-            data-testid={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR}
-            isActive={activeTable === 1}
-            onClick={() => {
-              setPage(1);
-              setActiveTable(1);
-              track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED);
-            }}
-          >
-            Computational (CZI)
-          </TableSelectorButton>
+          <FlexRow>
+            <TableSelectorButton
+              data-testid={
+                CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR
+              }
+              isActive={activeTable === 0}
+              onClick={() => {
+                setPage(1);
+                setActiveTable(0);
+                track(EVENTS.CG_CANONICAL_TAB_CLICKED);
+              }}
+            >
+              Canonical (HuBMAP)
+            </TableSelectorButton>
+            <HelpTooltip
+              buttonDataTestId={MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID}
+              text={canonicalMarkerGenesTooltipComponent}
+            />
+          </FlexRow>
+          <FlexRow>
+            <TableSelectorButton
+              data-testid={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR}
+              isActive={activeTable === 1}
+              onClick={() => {
+                setPage(1);
+                setActiveTable(1);
+                track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED);
+              }}
+            >
+              Computational (CZI)
+            </TableSelectorButton>
+            <HelpTooltip
+              buttonDataTestId={MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID}
+              text={enrichedGenesTooltipComponent}
+            />
+          </FlexRow>
         </TableSelectorRow>
       </TableTitleOuterWrapper>
       {tableRows.length > 0 ? (
