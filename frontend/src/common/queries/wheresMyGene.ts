@@ -277,6 +277,7 @@ interface FiltersQueryResponse {
     }[];
     disease_terms: { [id: string]: string }[];
     sex_terms: { [id: string]: string }[];
+    publication_citations: { [id: string]: string }[];
     development_stage_terms: { [id: string]: string }[];
     self_reported_ethnicity_terms: { [id: string]: string }[];
     tissue_terms: { [id: string]: string }[];
@@ -420,6 +421,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   development_stage_terms: [],
   disease_terms: [],
   self_reported_ethnicity_terms: [],
+  publication_citations: [],
   sex_terms: [],
   tissue_terms: [],
 };
@@ -435,6 +437,7 @@ export interface FilterDimensions {
   development_stage_terms: { id: string; name: string }[];
   disease_terms: { id: string; name: string }[];
   self_reported_ethnicity_terms: { id: string; name: string }[];
+  publication_citations: { id: string; name: string }[];
   sex_terms: { id: string; name: string }[];
   tissue_terms: { id: string; name: string }[];
 }
@@ -456,6 +459,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
       development_stage_terms,
       disease_terms,
       self_reported_ethnicity_terms,
+      publication_citations,
       sex_terms,
       tissue_terms,
     } = filter_dims;
@@ -474,6 +478,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
+        publication_citations: publication_citations.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },

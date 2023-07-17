@@ -53,10 +53,10 @@ const ANALYTICS_MAPPING: {
     eventName: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
     label: "ethnicity",
   },
-  // publications: {
-  //   eventName: EVENTS.FILTER_SELECT_PUBLICATION,
-  //   label: "publication",
-  // },
+  publications: {
+    eventName: EVENTS.FILTER_SELECT_PUBLICATION,
+    label: "publication",
+  },
   sexes: {
     eventName: EVENTS.FILTER_SELECT_SEX,
     label: "gender",
@@ -121,6 +121,7 @@ export default memo(function Filters({
     datasets: datasetIds,
     diseases,
     ethnicities,
+    publications,
     sexes,
     tissues,
   } = selectedFilters;
@@ -131,6 +132,7 @@ export default memo(function Filters({
       development_stage_terms: rawDevelopmentStages,
       disease_terms: rawDiseases,
       self_reported_ethnicity_terms: rawEthnicities,
+      publication_citations: rawPublications,
       sex_terms: rawSexes,
       tissue_terms: rawTissues,
     },
@@ -170,6 +172,9 @@ export default memo(function Filters({
     const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
     newEthnicities.sort((a, b) => a.name.localeCompare(b.name));
 
+    const newPublications = rawPublications.map(mapTermToFilterOption);
+    newPublications.sort((a, b) => a.name.localeCompare(b.name));
+
     const newDevelopmentStages = rawDevelopmentStages.map(
       mapTermToFilterOption
     );
@@ -189,6 +194,7 @@ export default memo(function Filters({
       development_stage_terms: newDevelopmentStages,
       disease_terms: newDiseases,
       self_reported_ethnicity_terms: newEthnicities,
+      publication_citations: newPublications,
       sex_terms: newSexes,
       tissue_terms: newTissues,
     };
@@ -200,6 +206,7 @@ export default memo(function Filters({
     rawDevelopmentStages,
     rawDiseases,
     rawEthnicities,
+    rawPublications,
     rawSexes,
     rawIsLoading,
     availableFilters,
@@ -211,6 +218,7 @@ export default memo(function Filters({
     datasets = EMPTY_ARRAY,
     disease_terms = EMPTY_ARRAY,
     self_reported_ethnicity_terms = EMPTY_ARRAY,
+    publication_citations = EMPTY_ARRAY,
     sex_terms = EMPTY_ARRAY,
     tissue_terms = EMPTY_ARRAY,
   } = availableFilters;
@@ -228,6 +236,12 @@ export default memo(function Filters({
       ethnicities?.includes(ethnicity.id)
     );
   }, [self_reported_ethnicity_terms, ethnicities]);
+
+  const selectedPublications = useMemo(() => {
+    return publication_citations.filter((publication) =>
+      publications?.includes(publication.id)
+    );
+  }, [publication_citations, publications]);
 
   const selectedSexes = useMemo(() => {
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
@@ -298,6 +312,11 @@ export default memo(function Filters({
     [handleFilterChange]
   );
 
+  const handlePublicationsChange = useMemo(
+    () => handleFilterChange("publications"),
+    [handleFilterChange]
+  );
+
   const handleSexesChange = useMemo(
     () => handleFilterChange("sexes"),
     [handleFilterChange]
@@ -356,12 +375,14 @@ export default memo(function Filters({
           InputDropdownProps={InputDropdownProps}
         />
 
-        {/* <StyledComplexFilter
+        <StyledComplexFilter
           multiple
           data-testid="publication-filter"
           search
           label="Publication"
-          options={publicationFilter as unknown as DefaultMenuSelectOption[]}
+          options={
+            publication_citations as unknown as DefaultMenuSelectOption[]
+          }
           onChange={handlePublicationsChange}
           value={selectedPublications as unknown as DefaultMenuSelectOption[]}
           InputDropdownComponent={
@@ -369,7 +390,7 @@ export default memo(function Filters({
           }
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
-        /> */}
+        />
 
         <StyledComplexFilter
           multiple
