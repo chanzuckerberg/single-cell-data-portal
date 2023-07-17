@@ -77,10 +77,23 @@ export default function Description({
         <Source>
           <div>
             <em>
-              We are currently in the process of validating all ChatGPT
-              descriptions via our Biocurator team. Once a description is
-              validated, we will link references below each description with a
-              validation icon.
+              We're still validating ChatGPT descriptions with our Biocurator
+              team. Once a description is validated, we'll add references and a
+              validation icon. If you believe a description is inaccurate,
+              please{" "}
+              <a
+                href="https://airtable.com/shrEReYLtRTAAsNiE"
+                target="_blank"
+                rel="noreferrer noopener"
+                onClick={() => {
+                  track(EVENTS.SUGGEST_CHANGE_CLICKED, {
+                    cell_type_name: cellTypeName,
+                  });
+                }}
+              >
+                submit a correction
+              </a>
+              .
             </em>
           </div>
 

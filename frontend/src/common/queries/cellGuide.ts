@@ -14,6 +14,7 @@ export enum TYPES {
   CELL_GUIDE = "CELL_GUIDE",
   INITIAL_CELL_ONTOLOGY_TREE_TISSUE = "INITIAL_CELL_ONTOLOGY_TREE_TISSUE",
   TISSUE_CARDS = "TISSUE_CARDS",
+  UBERON_DESCRIPTION = "UBERON_DESCRIPTION",
 }
 
 interface CellGuideQuery {
@@ -32,7 +33,8 @@ export type CellGuideResponse =
   | CanonicalMarkersQueryResponse
   | ClDescriptionQueryResponse
   | DescriptionQueryResponse
-  | CellGuideQueryResponse;
+  | CellGuideQueryResponse
+  | UberonDescriptionQueryResponse;
 
 /**
  * Generic fetch function
@@ -239,6 +241,20 @@ export const useClDescription = (entityId: string): UseQueryResult<string> => {
   return useCellGuideQuery<string>(TYPES.CL_DESCRIPTION, entityId);
 };
 
+/* ========== UBERON description ========== */
+export const USE_UBERON_DESCRIPTION_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_UBERON_DESCRIPTION],
+  id: "cell-guide-uberon-description-query",
+};
+
+export type UberonDescriptionQueryResponse = string;
+
+export const useUberonDescription = (
+  entityId: string
+): UseQueryResult<string> => {
+  return useCellGuideQuery<string>(TYPES.UBERON_DESCRIPTION, entityId);
+};
+
 /* ========== description ========== */
 export const USE_DESCRIPTION_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_DESCRIPTION],
@@ -354,6 +370,10 @@ const QUERY_MAPPING: {
   CL_DESCRIPTION: {
     queryKey: USE_CL_DESCRIPTION_QUERY,
     url: `/api/cl_description?entityId=%s`,
+  },
+  UBERON_DESCRIPTION: {
+    queryKey: USE_UBERON_DESCRIPTION_QUERY,
+    url: `/api/uberon_description?entityId=%s`,
   },
   DESCRIPTION: {
     queryKey: USE_DESCRIPTION_QUERY,

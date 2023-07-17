@@ -18,7 +18,7 @@ export const CELL_GUIDE_CARD_SOURCE_DATA_TABLE =
 
 interface TableRow {
   collection: ReactElement;
-  publication: ReactElement;
+  publication: ReactElement | string;
   tissue: ReactElement;
   disease: ReactElement;
   organism: ReactElement;
@@ -58,7 +58,6 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
       const organismNames = collection.organism.map(
         (organism) => organism.label
       );
-
       rows.push({
         collection: (
           <Link
@@ -67,22 +66,20 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
             url={collection.collection_url}
           />
         ),
-        publication: (
+        publication: collection.publication_url ? (
           <Link
             key={`publication-url-${collection.publication_title}-${index}`}
             label={collection.publication_title}
             url={`https://doi.org/${collection.publication_url}`}
           />
+        ) : (
+          "No publication"
         ),
         tissue:
           tissueNames.length <= 2 ? (
             <div>
               {tissueNames.map((tissue) => {
-                return (
-                  <div key={`tissue-${tissue}-${index}`}>
-                    {tissue.charAt(0).toUpperCase() + tissue.slice(1)}
-                  </div>
-                );
+                return <div key={`tissue-${tissue}-${index}`}>{tissue}</div>;
               })}
             </div>
           ) : (
@@ -95,9 +92,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
                 <div>
                   {tissueNames.map((tissue) => {
                     return (
-                      <div key={`tissue-${tissue}-${index}`}>
-                        {tissue.charAt(0).toUpperCase() + tissue.slice(1)}
-                      </div>
+                      <div key={`tissue-${tissue}-${index}`}>{tissue}</div>
                     );
                   })}
                 </div>
@@ -115,11 +110,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
         disease: (
           <div>
             {diseaseNames.map((disease) => {
-              return (
-                <div key={`disease-${disease}-${index}`}>
-                  {disease.charAt(0).toUpperCase() + disease.slice(1)}
-                </div>
-              );
+              return <div key={`disease-${disease}-${index}`}>{disease}</div>;
             })}
           </div>
         ),
