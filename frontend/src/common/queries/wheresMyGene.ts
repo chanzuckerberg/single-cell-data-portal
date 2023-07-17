@@ -23,7 +23,7 @@ import { API } from "../API";
 import { APIV2 } from "src/common/tempAPIV2";
 
 import { ROUTES } from "../constants/routes";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "../constants/utils";
+import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { useFetchCollectionRows } from "./filter";
