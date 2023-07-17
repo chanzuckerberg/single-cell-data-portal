@@ -7,6 +7,7 @@ import { EVENTS } from "src/common/analytics/events";
 import NavDivider from "src/components/Header/components/Nav/components/NavDivider";
 import { isRouteActive } from "src/components/Header";
 import { LinkWrapper, Nav as NavWrapper } from "./style";
+import { BetaChip } from "../../style";
 
 const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
 
@@ -58,7 +59,7 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
           />
         </Link>
       </LinkWrapper>
-      {/* <LinkWrapper>
+      <LinkWrapper>
         <Link href={ROUTES.CELL_GUIDE} passHref>
           <AnchorButton
             active={isRouteActive(pathname, ROUTES.CELL_GUIDE)}
@@ -70,7 +71,8 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
             text="Cell Guide"
           />
         </Link>
-      </LinkWrapper> */}
+        <BetaChip label="Beta" size="small" />
+      </LinkWrapper>
       <NavDivider />
       <LinkWrapper>
         <AnchorButton
