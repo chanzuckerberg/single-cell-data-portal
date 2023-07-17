@@ -1,0 +1,96 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api <= browserType.launch succeeded +348ms
+  pw:api => browser.newContext started +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +70ms
+  pw:api   "commit" event fired +34ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +5ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +17ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +8ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +51ms
+  pw:api => page.goto started +19ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +25ms
+  pw:api   "commit" event fired +25s
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "networkidle" event fired +11s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/" +11ms
+  pw:api   navigated to "about:blank" +30ms
+  pw:api <= page.goto succeeded +59ms
+  pw:api => page.evaluate started +2ms
+  pw:api <= page.evaluate succeeded +56ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +7ms
+  pw:api   "commit" event fired +108ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/" +16ms
+  pw:api   navigated to "about:blank" +12ms
+  pw:api <= page.goto succeeded +53ms
+AccessDeniedException: User: arn:aws:sts::699936264352:assumed-role/cellxgene-github-actions-dev/GitHubActions is not authorized to perform: secretsmanager:GetSecretValue on resource: corpora/backend/test/auth0-secret because no identity-based policy allows the secretsmanager:GetSecretValue action
+    at throwDefaultError (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@aws-sdk/smithy-client/dist-cjs/default-error-handler.js:8:22)
+    at deserializeAws_json1_1GetSecretValueCommandError (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@aws-sdk/client-secrets-manager/dist-cjs/protocols/Aws_json1_1.js:580:51)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@aws-sdk/middleware-serde/dist-cjs/deserializerMiddleware.js:7:24
+    at /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@aws-sdk/middleware-signing/dist-cjs/middleware.js:13:20
+    at StandardRetryStrategy.retry (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@aws-sdk/middleware-retry/dist-cjs/StandardRetryStrategy.js:51:46)
+    at /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@aws-sdk/middleware-logger/dist-cjs/loggerMiddleware.js:6:22
+    at getTestUsernameAndPassword (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/tests/utils/helpers.ts:153:8)
+    at login (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/tests/utils/helpers.ts:72:34)
+    at /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/tests/common/playwright.global.setup.ts:39:9
+    at /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@playwright/test/lib/worker/workerMain.js:354:9
+    at TestInfoImpl._runFn (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@playwright/test/lib/worker/testInfo.js:152:7)
+    at /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@playwright/test/lib/worker/workerMain.js:309:26
+    at TimeoutRunner.run (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/playwright-core/lib/utils/timeoutRunner.js:46:14)
+    at TimeoutManager.runWithTimeout (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@playwright/test/lib/worker/timeoutManager.js:62:7)
+    at TestInfoImpl._runWithTimeout (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@playwright/test/lib/worker/testInfo.js:139:26)
+    at WorkerMain._runTest (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@playwright/test/lib/worker/workerMain.js:289:5)
+    at WorkerMain.runTestGroup (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@playwright/test/lib/worker/workerMain.js:213:11)
+    at process.<anonymous> (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@playwright/test/lib/common/process.js:88:22) {
+  '$fault': 'client',
+  '$metadata': {
+    httpStatusCode: 400,
+    requestId: '69eb392d-2e31-48c3-998f-6a067a05679c',
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  __type: 'AccessDeniedException'
+}
+  pw:api => locator.click started +221ms
+  pw:api waiting for getByText('Log In') +25ms
+  pw:api   locator resolved to <span class="bp4-button-text">Log In</span> +46ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +25ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +14ms
+  pw:api   click action done +809ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   "commit" event fired +2ms
+  pw:api   navigated to "https://login.cellxgene.dev.single-cell.czi.technology/login?state=hKFo2SBMZlg4WFBnOWxwQ19pbU41eFRsZXBKUVlxR1FkMUxrUqFupWxvZ2luo3RpZNkgMUxySGd1Q0lqcklWeFpyUlZFVGtrRDJLelRydUFOUFajY2lk2SBSNkd3eGtDVDVKd0k4dWRMZGxPdEwzcmVWdnk0MVFXNQ&client=R6GwxkCT5JwI8udLdlOtL3reVvy41QW5&protocol=oauth2&response_type=code&redirect_uri=https%3A%2F%2Fapi.cellxgene.dev.single-cell.czi.technology%2Fdp%2Fv1%2Foauth2%2Fcallback&scope=openid%20profile%20email%20offline_access%20write%3Acollections&audience=api.cellxgene.dev.single-cell.czi.technology&nonce=utfEUwXuAeDtwc7QbM7z" +1ms
+  pw:api   navigated to "https://login.cellxgene.dev.single-cell.czi.technology/login?state=hKFo2SBMZlg4WFBnOWxwQ19pbU41eFRsZXBKUVlxR1FkMUxrUqFupWxvZ2luo3RpZNkgMUxySGd1Q0lqcklWeFpyUlZFVGtrRDJLelRydUFOUFajY2lk2SBSNkd3eGtDVDVKd0k4dWRMZGxPdEwzcmVWdnk0MVFXNQ&client=R6GwxkCT5JwI8udLdlOtL3reVvy41QW5&protocol=oauth2&response_type=code&redirect_uri=https%3A%2F%2Fapi.cellxgene.dev.single-cell.czi.technology%2Fdp%2Fv1%2Foauth2%2Fcallback&scope=openid%20profile%20email%20offline_access%20write%3Acollections&audience=api.cellxgene.dev.single-cell.czi.technology&nonce=utfEUwXuAeDtwc7QbM7z" +0ms
+  pw:api   navigations have finished +6ms
+  pw:api <= locator.click succeeded +2ms
+  pw:api => page.fill started +1ms
+  pw:api <= page.fill failed +1ms
+ValidationError: page.fill: value: expected string, got object
+    at login (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/tests/utils/helpers.ts:78:14)
+    at /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/tests/common/playwright.global.setup.ts:39:9
+  pw:api => tracing.stopChunk started +5ms
+  pw:api <= tracing.stopChunk succeeded +3ms
+  pw:api => tracing.stopChunk started +1ms
+  pw:api   "domcontentloaded" event fired +189ms
+  pw:api <= tracing.stopChunk succeeded +46ms
