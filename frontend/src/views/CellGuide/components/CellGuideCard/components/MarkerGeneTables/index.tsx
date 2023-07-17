@@ -439,14 +439,19 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
         url={"https://humanatlas.io/asctb-tables"}
       />
       {
-        " tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+        " tables (v1.4). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
       }
       <br />
       <br />
-      <i>
-        Quardokus, Ellen, Bruce W. Herr II, Lisel Record, Katy Börner. 2022.
-        HuBMAP ASCT+B Tables. Accessed July 10, 2023.
-      </i>
+      <Link
+        label={
+          <i>
+            Quardokus, Ellen, Bruce W. Herr II, Lisel Record, Katy Börner. 2022.
+            HuBMAP ASCT+B Tables. Accessed July 10, 2023.
+          </i>
+        }
+        url={"https://www.nature.com/articles/s41556-021-00788-6"}
+      />
     </div>
   );
 

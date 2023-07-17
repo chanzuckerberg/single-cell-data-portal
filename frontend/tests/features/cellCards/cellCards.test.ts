@@ -519,7 +519,7 @@ describe("Cell Guide", () => {
 
       await checkTooltipContent(
         page,
-        "Canonical marker genes and associated publications were derived from the Anatomical Structures, Cell Types and Biomarkers (ASCT+B) tables. The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+        "Canonical marker genes and associated publications were derived from the Anatomical Structures, Cell Types and Biomarkers (ASCT+B) tables (v1.4). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
       );
     });
 
