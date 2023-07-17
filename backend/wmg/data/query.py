@@ -156,26 +156,28 @@ class WmgQuery:
 
         tiledb_dims_query = tuple(tiledb_dims_query)
 
-        if isinstance(criteria, FmgQueryCriteria):
-            # fmg queries retain existing behavior of pulling all dims and attrs
-            query_result_df = cube.query(cond=query_cond or None, use_arrow=True).df[tiledb_dims_query]
-        elif criteria.compare_dimension is not None:
+        if criteria.compare_dimension is not None:
             # if the compare param is specified, then we need to query for the dimension it specifies
-            query_result_df = cube.query(
-                cond=query_cond or None,
-                use_arrow=True,
-                attrs=["cell_type_ontology_term_id", criteria.compare_dimension],
-            ).df[tiledb_dims_query]
+            query_result_df = pd.concat(
+                cube.query(
+                    cond=query_cond or None,
+                    return_incomplete=True,
+                    use_arrow=True,
+                    attrs=["cell_type_ontology_term_id", criteria.compare_dimension],
+                ).df[tiledb_dims_query]
+            )
         else:
             # otherwise, we just query for the cell type ontology term attribute, and we know that
             # only two dimensions are required
-            query_result_df = pd.concat(cube.query(
-                cond=query_cond or None,
-                return_incomplete=True,
-                use_arrow=True,
-                attrs=["cell_type_ontology_term_id"],
-                dims=["tissue_ontology_term_id", "gene_ontology_term_id"],
-            ).df[tiledb_dims_query])
+            query_result_df = pd.concat(
+                cube.query(
+                    cond=query_cond or None,
+                    return_incomplete=True,
+                    use_arrow=True,
+                    attrs=["cell_type_ontology_term_id"],
+                    dims=[i for i in indexed_dims if i in ["tissue_ontology_term_id", "gene_ontology_term_id"]],
+                ).df[tiledb_dims_query]
+            )
         return query_result_df
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
