@@ -38,7 +38,7 @@ export const SourceLink = styled.div`
 `;
 
 export const DescriptionHeader = styled.div`
-  ${fontCapsXxs};
+  ${fontCapsXxs}
   font-weight: 600;
   ${(props) => {
     const colors = getColors(props);
