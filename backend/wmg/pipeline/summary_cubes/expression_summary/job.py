@@ -68,6 +68,7 @@ def create_expression_summary_cube(corpus_path: str, default=False):
     else:
         uri = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         cube_dims = expression_summary_indexed_dims_no_gene_ontology + expression_summary_non_indexed_dims
+        cube_dims = [dim for dim in cube_dims if dim != "publication_citation"]
 
     ctx = create_ctx()
 

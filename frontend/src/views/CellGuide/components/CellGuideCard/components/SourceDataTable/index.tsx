@@ -79,11 +79,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
           tissueNames.length <= 2 ? (
             <div>
               {tissueNames.map((tissue) => {
-                return (
-                  <div key={`tissue-${tissue}-${index}`}>
-                    {tissue.charAt(0).toUpperCase() + tissue.slice(1)}
-                  </div>
-                );
+                return <div key={`tissue-${tissue}-${index}`}>{tissue}</div>;
               })}
             </div>
           ) : (
@@ -96,9 +92,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
                 <div>
                   {tissueNames.map((tissue) => {
                     return (
-                      <div key={`tissue-${tissue}-${index}`}>
-                        {tissue.charAt(0).toUpperCase() + tissue.slice(1)}
-                      </div>
+                      <div key={`tissue-${tissue}-${index}`}>{tissue}</div>
                     );
                   })}
                 </div>
@@ -116,11 +110,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
         disease: (
           <div>
             {diseaseNames.map((disease) => {
-              return (
-                <div key={`disease-${disease}-${index}`}>
-                  {disease.charAt(0).toUpperCase() + disease.slice(1)}
-                </div>
-              );
+              return <div key={`disease-${disease}-${index}`}>{disease}</div>;
             })}
           </div>
         ),

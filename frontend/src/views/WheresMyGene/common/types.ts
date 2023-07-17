@@ -98,7 +98,7 @@ export interface Filters {
   developmentStages?: DefaultMenuSelectOption[];
   diseases?: DefaultMenuSelectOption[];
   ethnicities?: DefaultMenuSelectOption[];
-  publications?: DefaultMenuSelectOption[];
+  // publications?: DefaultMenuSelectOption[];
   sexes?: DefaultMenuSelectOption[];
   tissues?: DefaultMenuSelectOption[];
 }

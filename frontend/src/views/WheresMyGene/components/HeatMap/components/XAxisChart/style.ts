@@ -96,6 +96,7 @@ export const CellCountLabel = styled.div`
   width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
   writing-mode: vertical-rl;
   transform: scale(-1, -1);
+  margin-left: auto;
 `;
 
 function xAxisWidthAndOffset({ width, left }: { width: number; left: number }) {
