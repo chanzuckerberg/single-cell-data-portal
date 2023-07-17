@@ -27,7 +27,6 @@ export default function ShareButton(): JSX.Element {
 
   const {
     selectedFilters,
-    selectedPublicationFilter,
     selectedTissues,
     selectedGenes,
     selectedOrganismId,
@@ -44,7 +43,6 @@ export default function ShareButton(): JSX.Element {
     generateAndCopyShareUrl({
       compare,
       filters: selectedFilters,
-      publicationFilter: selectedPublicationFilter,
       organism: selectedOrganismId,
       tissues: selectedTissues,
       genes: selectedGenes,
@@ -57,7 +55,6 @@ export default function ShareButton(): JSX.Element {
       genes: selectedGenes,
       group_by_option: getCompareOptionNameById(compare),
       self_reported_ethnicity_filter: selectedFilters.ethnicities,
-      publication_filter: selectedPublicationFilter.publications,
       sex_filter: selectedFilters.sexes,
       tissues: selectedTissues,
     });
@@ -65,7 +62,6 @@ export default function ShareButton(): JSX.Element {
     setShowURLCopyNotification((prev) => prev + 1);
   }, [
     selectedFilters,
-    selectedPublicationFilter,
     selectedTissues,
     selectedGenes,
     selectedOrganismId,
@@ -94,7 +90,6 @@ export default function ShareButton(): JSX.Element {
           disease_filter: loadedState.filters.diseases,
           group_by_option: getCompareOptionNameById(loadedState.compare),
           self_reported_ethnicity_filter: loadedState.filters.ethnicities,
-          publication_filter: loadedState.publications,
           sex_filter: loadedState.filters.sexes,
         });
       }
