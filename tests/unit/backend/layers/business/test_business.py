@@ -2,7 +2,6 @@ import os
 import unittest
 import uuid
 from datetime import datetime
-from typing import Tuple
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
@@ -205,7 +204,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     def initialize_collection_with_a_published_revision(
         self, owner: str = test_user_name, curator_name: str = test_curator_name, published_at: datetime = None
-    ) -> Tuple[CollectionVersionWithDatasets]:
+    ) -> tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
 
         # Published with a published revision.
         published_version = self.initialize_published_collection(owner, curator_name, published_at)
@@ -218,7 +217,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     def initialize_collection_with_an_unpublished_revision(
         self, owner: str = test_user_name, curator_name: str = test_curator_name, published_at: datetime = None
-    ) -> Tuple[CollectionVersionWithDatasets]:
+    ) -> tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
 
         # Published with an unpublished revision
         published_version = self.initialize_published_collection(owner, curator_name, published_at)
@@ -851,6 +850,44 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         )
 
         self.step_function_provider.start_step_function.assert_not_called()
+
+
+class TestDeleteDataset(BaseBusinessLogicTestCase):
+    def test_delete_dataset_ok(self):
+        collection = self.initialize_unpublished_collection()
+        dataset_version_id_to_remove = collection.datasets[0].version_id
+        dataset_version_id_strs = [dv.version_id.id for dv in collection.datasets]
+        self.assertIn(dataset_version_id_to_remove.id, dataset_version_id_strs)
+        self.business_logic.remove_dataset_version(collection.version_id, dataset_version_id_to_remove)
+        updated_collection = self.business_logic.get_collection_version(collection.version_id)
+        dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
+        self.assertNotIn(dataset_version_id_to_remove.id, dataset_version_id_strs)
+
+    def test_delete_new_dataset_in_revision_ok(self):
+        collection, revision = self.initialize_collection_with_an_unpublished_revision()
+        new_dataset_version_id, _ = self.business_logic.create_empty_dataset(revision.version_id)
+        revision = self.business_logic.get_collection_version(revision.version_id)
+        self.complete_dataset_processing_with_success(new_dataset_version_id)
+        # Dataset is added
+        self.assertEqual(len(collection.datasets) + 1, len(revision.datasets))
+        self.business_logic.remove_dataset_version(revision.version_id, new_dataset_version_id)
+        revision = self.business_logic.get_collection_version(revision.version_id)
+        # Dataset is removed
+        self.assertEqual(len(collection.datasets), len(revision.datasets))
+
+    def test_delete_published_dataset_fail(self):
+        collection, revision = self.initialize_collection_with_an_unpublished_revision()
+        with self.assertRaises(CollectionUpdateException):
+            self.business_logic.remove_dataset_version(revision.version_id, revision.datasets[0].version_id)
+
+    def test_delete_published_dataset_success(self):
+        collection, revision = self.initialize_collection_with_an_unpublished_revision()
+        dataset_version_id_to_delete = revision.datasets[0].version_id
+        self.business_logic.remove_dataset_version(
+            revision.version_id, dataset_version_id_to_delete, delete_published=True
+        )
+        revision = self.business_logic.get_collection_version(revision.version_id)
+        self.assertNotIn(dataset_version_id_to_delete.id, [dv.version_id.id for dv in revision.datasets])
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
