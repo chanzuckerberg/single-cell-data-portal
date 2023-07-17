@@ -1,10 +1,11 @@
-from unittest import mock
+from unittest.mock import patch
 
 from backend.layers.common.entities import DatasetArtifact, DatasetVersionId
 
 
+@patch("backend.layers.processing.schema_migration.cellxgene_schema")
 class TestDatasetMigrate:
-    def test_dataset_migrate_private(self, schema_migrate_and_collections):
+    def test_dataset_migrate_private(self, mock_cellxgene_schema, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         private = collections["private"][0]
         schema_migrate.business_logic.s3_provider.parse_s3_uri.return_value = ("fake-bucket", "object_key.h5ad")
@@ -16,17 +17,19 @@ class TestDatasetMigrate:
             new_dataset_version_id,
             private.datasets[0].dataset_id.id,
         )
-        with mock.patch("backend.layers.processing.schema_migration.migrate"):
-            dataset_version_id = private.datasets[0].version_id.id
-            response = schema_migrate.dataset_migrate(
-                private.collection_id.id, private.datasets[0].dataset_id.id, dataset_version_id
-            )
-            assert response["collection_version_id"] == private.collection_id.id
-            assert response["dataset_version_id"] == new_dataset_version_id.id
-            assert dataset_version_id != new_dataset_version_id.id
-            assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        dataset_version_id = private.datasets[0].version_id.id
+        response = schema_migrate.dataset_migrate(
+            private.collection_id.id, private.datasets[0].dataset_id.id, dataset_version_id
+        )
+        assert response["collection_version_id"] == private.collection_id.id
+        assert response["dataset_version_id"] == new_dataset_version_id.id
+        assert dataset_version_id != new_dataset_version_id.id
+        assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        mock_cellxgene_schema.migrate.migrate.assert_called_once_with(
+            "previous_schema.h5ad", "migrated.h5ad", private.collection_id.id, private.datasets[0].dataset_id.id
+        )
 
-    def test_dataset_migrate_published(self, schema_migrate_and_collections):
+    def test_dataset_migrate_published(self, mock_cellxgene_schema, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         published = collections["published"][0]
         schema_migrate.business_logic.s3_provider.parse_s3_uri.return_value = ("fake-bucket", "object_key.h5ad")
@@ -38,17 +41,19 @@ class TestDatasetMigrate:
             new_dataset_version_id,
             published.datasets[0].dataset_id.id,
         )
-        with mock.patch("backend.layers.processing.schema_migration.migrate"):
-            dataset_version_id = published.datasets[0].version_id.id
-            response = schema_migrate.dataset_migrate(
-                published.collection_id.id, published.datasets[0].dataset_id.id, dataset_version_id
-            )
-            assert response["collection_version_id"] == published.collection_id.id
-            assert response["dataset_version_id"] == new_dataset_version_id.id
-            assert dataset_version_id != new_dataset_version_id.id
-            assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        dataset_version_id = published.datasets[0].version_id.id
+        response = schema_migrate.dataset_migrate(
+            published.collection_id.id, published.datasets[0].dataset_id.id, dataset_version_id
+        )
+        assert response["collection_version_id"] == published.collection_id.id
+        assert response["dataset_version_id"] == new_dataset_version_id.id
+        assert dataset_version_id != new_dataset_version_id.id
+        assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        mock_cellxgene_schema.migrate.migrate.assert_called_once_with(
+            "previous_schema.h5ad", "migrated.h5ad", published.collection_id.id, published.datasets[0].dataset_id.id
+        )
 
-    def test_dataset_migrate_revision(self, schema_migrate_and_collections):
+    def test_dataset_migrate_revision(self, mock_cellxgene_schema, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         revision = collections["revision"][0]
         schema_migrate.business_logic.s3_provider.parse_s3_uri.return_value = ("fake-bucket", "object_key.h5ad")
@@ -60,12 +65,14 @@ class TestDatasetMigrate:
             new_dataset_version_id,
             revision.datasets[0].dataset_id.id,
         )
-        with mock.patch("backend.layers.processing.schema_migration.migrate"):
-            dataset_version_id = revision.datasets[0].version_id.id
-            response = schema_migrate.dataset_migrate(
-                revision.collection_id.id, revision.datasets[0].dataset_id.id, dataset_version_id
-            )
-            assert response["collection_version_id"] == revision.collection_id.id
-            assert response["dataset_version_id"] == new_dataset_version_id.id
-            assert dataset_version_id != new_dataset_version_id.id
-            assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        dataset_version_id = revision.datasets[0].version_id.id
+        response = schema_migrate.dataset_migrate(
+            revision.collection_id.id, revision.datasets[0].dataset_id.id, dataset_version_id
+        )
+        assert response["collection_version_id"] == revision.collection_id.id
+        assert response["dataset_version_id"] == new_dataset_version_id.id
+        assert dataset_version_id != new_dataset_version_id.id
+        assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        mock_cellxgene_schema.migrate.migrate.assert_called_once_with(
+            "previous_schema.h5ad", "migrated.h5ad", revision.collection_id.id, revision.datasets[0].dataset_id.id
+        )
