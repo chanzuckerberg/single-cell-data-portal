@@ -9,7 +9,6 @@ import {
   CellGuideCardHeaderInnerWrapper,
   SearchBarWrapper,
   LEFT_RIGHT_PADDING_PX,
-  SuggestChangeButton,
   SearchBarPositioner,
   StyledRightSideBar,
 } from "./style";
@@ -24,8 +23,6 @@ import CellGuideCardSidebar from "./components/CellGuideCardSidebar";
 import { Gene } from "src/views/WheresMyGene/common/types";
 import { throttle } from "lodash";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
-import { track } from "src/common/analytics";
-import { EVENTS } from "src/common/analytics/events";
 
 export const CELL_GUIDE_CARD_HEADER_NAME = "cell-guide-card-header-name";
 export const CELL_GUIDE_CARD_HEADER_TAG = "cell-guide-card-header-tag";
@@ -112,21 +109,6 @@ export default function CellGuideCard(): JSX.Element {
                 />
               </a>
             </CellGuideCardHeaderInnerWrapper>
-            <a
-              href="https://airtable.com/shrEReYLtRTAAsNiE"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              <SuggestChangeButton
-                sdsType="primary"
-                sdsStyle="minimal"
-                onClick={() => {
-                  track(EVENTS.SUGGEST_CHANGE_CLICKED);
-                }}
-              >
-                Suggest Change
-              </SuggestChangeButton>
-            </a>
           </CellGuideCardHeader>
           <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
 
