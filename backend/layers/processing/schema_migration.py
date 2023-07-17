@@ -92,7 +92,7 @@ class SchemaMigrate(ProcessingLogic):
             uri,
             file_size=0,  # TODO: this shouldn't be needed but it gets around a 404 for HeadObject
             existing_dataset_version_id=DatasetVersionId(dataset_version_id),
-            start_step_function=False,
+            start_step_function=False,  # The schema_migration sfn will start the ingest sfn
         )
         return {
             "collection_version_id": collection_version_id,
