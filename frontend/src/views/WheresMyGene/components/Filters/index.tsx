@@ -115,7 +115,7 @@ export default memo(function Filters({
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
 
-  const { selectedFilters, selectedTissues, selectedGenes } = state;
+  const { selectedFilters, selectedGenes } = state;
 
   const {
     datasets: datasetIds,
