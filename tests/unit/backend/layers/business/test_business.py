@@ -1262,7 +1262,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_version_to_remove = new_version.datasets[0]
         dataset_version_to_keep = new_version.datasets[1]
 
-        self.business_logic.remove_dataset_version(new_version.version_id, dataset_version_to_remove.version_id)
+        self.business_logic.remove_dataset_version(
+            new_version.version_id, dataset_version_to_remove.version_id, delete_published=True
+        )
 
         # The new version should have only one dataset (before publishing)
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)
