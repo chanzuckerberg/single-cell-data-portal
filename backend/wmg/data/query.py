@@ -1,5 +1,6 @@
 from typing import Dict, List, Union
 
+import pandas as pd
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
@@ -168,12 +169,13 @@ class WmgQuery:
         else:
             # otherwise, we just query for the cell type ontology term attribute, and we know that
             # only two dimensions are required
-            query_result_df = cube.query(
+            query_result_df = pd.concat(cube.query(
                 cond=query_cond or None,
+                return_incomplete=True,
                 use_arrow=True,
                 attrs=["cell_type_ontology_term_id"],
                 dims=["tissue_ontology_term_id", "gene_ontology_term_id"],
-            ).df[tiledb_dims_query]
+            ).df[tiledb_dims_query])
         return query_result_df
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):

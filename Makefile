@@ -145,7 +145,7 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 	docker-compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
-local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-wmg-processing local-unit-test-processing
+local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-wmg-processing local-unit-test-processing local-unit-test-cxg-admin
 # Run all backend and processing unit tests in the dev environment, with code coverage
 
 .PHONY: local-unit-test-backend
@@ -173,6 +173,11 @@ local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_process
 	echo "Running all wmg processing unit tests"; \
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T wmg_processing \
 	bash -c "cd /single-cell-data-portal && make wmg-processing-unittest;"
+
+.PHONY: local-unit-test-cxg-admin
+local-unit-test-cxg-admin:
+	docker-compose run --rm -T backend bash -c \
+	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/scripts/";
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.

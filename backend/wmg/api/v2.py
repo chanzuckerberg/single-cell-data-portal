@@ -241,31 +241,50 @@ def build_expression_summary(
         ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
     ).agg({"nnz": "sum", "sum": "sum", "n_cells_cell_type": "sum", "n_cells_tissue": "first"})
 
-    for i in range(gene_expr_grouped_df.shape[0]):
-        row = gene_expr_grouped_df.iloc[i]
-        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
-            "aggregated"
-        ] = dict(
-            n=int(row["nnz"]),
-            me=(float(row["sum"] / row["nnz"]) if row["nnz"] else 0.0),
-            pc=(float(row["nnz"] / row["n_cells_cell_type"]) if row["n_cells_cell_type"] else 0.0),
-            tpc=(float(row["nnz"] / row["n_cells_tissue"]) if row["n_cells_tissue"] else 0.0),
-        )
+    fill_out_structured_dict_aggregated(gene_expr_grouped_df, structured_result)
 
     # Populate gene expression stats for each (gene, tissue, cell_type, <compare_dimension>) combination
     if compare:
-        for i in range(rolled_gene_expression_df.shape[0]):
-            row = rolled_gene_expression_df.iloc[i]
-            structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
-                row[compare]
-            ] = dict(
-                n=int(row["nnz"]),
-                me=(float(row["sum"] / row["nnz"]) if row["nnz"] else 0.0),
-                pc=(float(row["nnz"] / row["n_cells_cell_type"]) if row["n_cells_cell_type"] else 0.0),
-                tpc=(float(row["nnz"] / row["n_cells_tissue"]) if row["n_cells_tissue"] else 0.0),
-            )
+        fill_out_structured_dict_compare(rolled_gene_expression_df, structured_result, compare)
 
     return structured_result
+
+
+def fill_out_structured_dict_aggregated(gene_expr_grouped_df, structured_result):
+    n = gene_expr_grouped_df["nnz"].astype("int").values
+    me = (gene_expr_grouped_df["sum"] / gene_expr_grouped_df["nnz"]).values
+    pc = (gene_expr_grouped_df["nnz"] / gene_expr_grouped_df["n_cells_cell_type"]).values
+    tpc = (gene_expr_grouped_df["nnz"] / gene_expr_grouped_df["n_cells_tissue"]).values
+    genes = gene_expr_grouped_df["gene_ontology_term_id"].values
+    tissues = gene_expr_grouped_df["tissue_ontology_term_id"].values
+    cell_types = gene_expr_grouped_df["cell_type_ontology_term_id"].values
+
+    for i in range(len(n)):
+        structured_result[genes[i]][tissues[i]][cell_types[i]]["aggregated"] = dict(
+            n=int(n[i]),
+            me=float(me[i]),
+            pc=float(pc[i]),
+            tpc=float(tpc[i]),
+        )
+
+
+def fill_out_structured_dict_compare(rolled_gene_expression_df, structured_result, compare):
+    n = rolled_gene_expression_df["nnz"].astype("int").values
+    me = (rolled_gene_expression_df["sum"] / rolled_gene_expression_df["nnz"]).values
+    pc = (rolled_gene_expression_df["nnz"] / rolled_gene_expression_df["n_cells_cell_type"]).values
+    tpc = (rolled_gene_expression_df["nnz"] / rolled_gene_expression_df["n_cells_tissue"]).values
+    genes = rolled_gene_expression_df["gene_ontology_term_id"].values
+    tissues = rolled_gene_expression_df["tissue_ontology_term_id"].values
+    cell_types = rolled_gene_expression_df["cell_type_ontology_term_id"].values
+    compare = rolled_gene_expression_df[compare].values
+
+    for i in range(len(n)):
+        structured_result[genes[i]][tissues[i]][cell_types[i]][compare[i]] = dict(
+            n=int(n[i]),
+            me=float(me[i]),
+            pc=float(pc[i]),
+            tpc=float(tpc[i]),
+        )
 
 
 def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
