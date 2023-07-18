@@ -108,7 +108,7 @@ export default function ShareButton(): JSX.Element {
     dispatch,
     compare,
     filteredCellTypes,
-    cellTypesByName,
+    mapCellTypesToIDs,
   ]);
 
   useEffect(() => {
