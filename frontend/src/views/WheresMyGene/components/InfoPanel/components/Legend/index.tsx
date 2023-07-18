@@ -36,6 +36,7 @@ interface Props {
 export default memo(function Legend({
   isScaled,
   handleRightSidebarButtonClick,
+  selectedTissues,
   selectedGenes,
   selectedCellTypes,
   setDownloadStatus,
@@ -48,19 +49,35 @@ export default memo(function Legend({
 }: Props): JSX.Element {
   return (
     <LegendWrapper data-testid="legend-wrapper">
-      <SaveExportV2
-        selectedGenes={selectedGenes}
-        selectedCellTypes={selectedCellTypes}
-        setDownloadStatus={setDownloadStatus}
-        setEchartsRendererMode={setEchartsRendererMode}
-        allChartProps={allChartProps}
-        availableFilters={availableFilters}
-        tissues={tissues || {}}
-        expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
-        filteredCellTypes={filteredCellTypes ?? EMPTY_ARRAY}
-      />
-      <ShareButtonV2 />
-
+      {selectedTissues ? (
+        <>
+          <SaveExport
+            selectedTissues={selectedTissues}
+            selectedGenes={selectedGenes}
+            selectedCellTypes={selectedCellTypes}
+            setDownloadStatus={setDownloadStatus}
+            setEchartsRendererMode={setEchartsRendererMode}
+            allChartProps={allChartProps}
+            availableFilters={availableFilters}
+          />
+          <ShareButton />
+        </>
+      ) : (
+        <>
+          <SaveExportV2
+            selectedGenes={selectedGenes}
+            selectedCellTypes={selectedCellTypes}
+            setDownloadStatus={setDownloadStatus}
+            setEchartsRendererMode={setEchartsRendererMode}
+            allChartProps={allChartProps}
+            availableFilters={availableFilters}
+            tissues={tissues || {}}
+            expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
+            filteredCellTypes={filteredCellTypes ?? EMPTY_ARRAY}
+          />
+          <ShareButtonV2 />
+        </>
+      )}
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}
       />

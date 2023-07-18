@@ -2,8 +2,8 @@ import { MouseEventHandler } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { StyledButtonIcon } from "../QuickSelect/style";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
 import { StyledButtonDiv, StyledLabel } from "./style";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 
 export default function SourceDataButton({
   handleRightSidebarButtonClick,
