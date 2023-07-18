@@ -49,7 +49,7 @@ export default function ShareButton(): JSX.Element {
   const [cellTypesByTissueName, setCellTypesByTissueName] =
     useState<CellTypeByTissueName>(EMPTY_OBJECT);
 
-  // This is needed
+  // This is needed to prevent overwriting the cellTypesByTissueName state with empty
   useEffect(() => {
     if (isLoadingCellTypesByTissueName) return;
 
@@ -66,6 +66,11 @@ export default function ShareButton(): JSX.Element {
     return result;
   }, [cellTypesByTissueName]);
 
+  const mapCellTypesToIDs = useCallback(
+    (cellType: string) => cellTypesByName[cellType].id,
+    [cellTypesByName]
+  );
+
   const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions(2); //temp explicit version
   const dispatch = useContext(DispatchContext);
   const [showURLCopyNotification, setShowURLCopyNotification] = useState(0);
@@ -81,9 +86,7 @@ export default function ShareButton(): JSX.Element {
       cellTypes: filteredCellTypes,
     });
 
-    const filteredCellTypeIDs = filteredCellTypes.map(
-      (cellType) => cellTypesByName[cellType].id
-    );
+    const filteredCellTypeIDs = filteredCellTypes.map(mapCellTypesToIDs);
 
     track(EVENTS.WMG_SHARE_CLICKED, {
       organism: selectedOrganismId,
@@ -127,9 +130,8 @@ export default function ShareButton(): JSX.Element {
       );
 
       if (loadedState) {
-        const filteredCellTypeIDs = loadedState.cellTypes.map(
-          (cellType) => cellTypesByName[cellType].id
-        );
+        const filteredCellTypeIDs =
+          loadedState.cellTypes?.map(mapCellTypesToIDs) || [];
 
         track(EVENTS.WMG_SHARE_LOADED, {
           genes: loadedState.genes,
@@ -143,7 +145,14 @@ export default function ShareButton(): JSX.Element {
         });
       }
     }
-  }, [isLoadingFilterDims, dispatch, selectedFilters, cellTypesByName]);
+  }, [
+    isLoadingFilterDims,
+    dispatch,
+    selectedFilters,
+    cellTypesByName,
+    compare,
+    mapCellTypesToIDs,
+  ]);
 
   return (
     <>

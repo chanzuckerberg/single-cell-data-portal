@@ -410,7 +410,7 @@ export interface LoadStateFromURLPayload {
   organism: State["selectedOrganismId"];
   tissues?: State["selectedTissues"];
   genes: State["selectedGenes"];
-  cellTypes: State["filteredCellTypes"];
+  cellTypes?: State["filteredCellTypes"];
 }
 
 function loadStateFromURL(
@@ -429,7 +429,7 @@ function loadStateFromURL(
     selectedGenes: genes,
     selectedTissues: tissues,
     selectedOrganismId: payload.organism,
-    filteredCellTypes: payload.cellTypes,
+    filteredCellTypes: payload.cellTypes ?? [],
   };
 }
 

@@ -119,7 +119,7 @@ export default function WheresMyGene(): JSX.Element {
   const [cellTypesByTissueName, setCellTypesByTissueName] =
     useState<CellTypeByTissueName>(EMPTY_OBJECT);
 
-  // This is needed
+  // This is needed to prevent overwriting the cellTypesByTissueName state with empty
   useEffect(() => {
     if (isLoadingCellTypesByTissueName) return;
 

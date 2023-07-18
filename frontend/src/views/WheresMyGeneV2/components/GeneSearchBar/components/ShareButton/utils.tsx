@@ -18,14 +18,14 @@ export const generateAndCopyShareUrl = ({
   organism,
   genes,
   compare,
-  cellTypes,
+  cellTypes = [],
   copyToClipboard = true,
 }: {
   filters: State["selectedFilters"];
   organism: State["selectedOrganismId"];
   genes: State["selectedGenes"];
   compare: State["compare"];
-  cellTypes: State["filteredCellTypes"];
+  cellTypes?: State["filteredCellTypes"];
   copyToClipboard?: boolean;
 }) => {
   // Create a URL that contains the selected filters, tissues, and genes as params in the URL
