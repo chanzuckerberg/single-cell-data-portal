@@ -1,0 +1,60 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +42ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +4ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +7ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +44ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000084", waiting until "load" +4ms
+  pw:api   "commit" event fired +104ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +20ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +19ms
+  pw:api   "networkidle" event fired +563ms
+  pw:api <= page.goto succeeded +326ms
+  pw:api => locator.click started +13ms
+  pw:api waiting for getByTestId('cell-guide-card-enriched-genes-table-selector') +119ms
+  pw:api   locator resolved to <button class="css-19n02b7-TableSelectorButton e1mdzv35"…>Computational (CZI)</button> +41ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +27ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +122ms
+  pw:api   click action done +128ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +5ms
+  pw:api <= locator.click succeeded +19ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\']') to be visible +34ms
+  pw:api   locator resolved to visible <div class="css-1ufxa56-TableWrapper e161gt4e1" data-…>…</div> +882ms
+  pw:api <= locator.waitFor succeeded +31ms
+  pw:api => locator.elementHandles started +0ms
+  pw:api <= locator.elementHandles succeeded +21ms
+  pw:api => elementHandle.textContent started +1ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api => elementHandle.textContent started +5ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api <= elementHandle.textContent succeeded +60ms
+  pw:api <= elementHandle.textContent succeeded +6ms
+  pw:api <= elementHandle.textContent succeeded +5ms
+  pw:api <= elementHandle.textContent succeeded +11ms
+  pw:api <= elementHandle.textContent succeeded +5ms
+  pw:api => locator.elementHandles started +3ms
+  pw:api <= locator.elementHandles succeeded +22ms
+  pw:api taking page screenshot +220ms
+  pw:api => browserContext.close started +100ms
+  pw:api <= browserContext.close succeeded +3s
