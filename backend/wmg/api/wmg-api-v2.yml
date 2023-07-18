@@ -667,6 +667,8 @@ paths:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                       tissue_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      publication_citation:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
 
   /markers:
     post:
