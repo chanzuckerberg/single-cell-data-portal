@@ -102,8 +102,7 @@ def create_cell_count_cube(corpus_path: str):
 
     dataset_dict = return_dataset_dict_w_publications()
     df["publication_citation"] = [
-        remove_accents(dataset_dict.get(dataset_id, "No Publication")).encode("ascii")
-        for dataset_id in df["dataset_id"]
+        remove_accents(dataset_dict.get(dataset_id, "No Publication")) for dataset_id in df["dataset_id"]
     ]
 
     n_cells = df["n_cells"].to_numpy()
