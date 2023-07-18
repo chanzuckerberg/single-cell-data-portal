@@ -97,11 +97,6 @@ export const loadStateFromQueryParams = (
     }
   });
 
-  // Check for publication filter
-  const newSelectedPublications =
-    params.get("publicationFilter")?.split(delimiter) || [];
-  if (newSelectedPublications) paramsToRemove.push("publicationFilter");
-
   //Check for organism
   const newSelectedOrganism = params.get("organism") || HUMAN_ORGANISM_ID;
   if (newSelectedOrganism) {
@@ -133,7 +128,6 @@ export const loadStateFromQueryParams = (
     loadStateFromURL({
       compare: newCompare,
       filters: newSelectedFilters,
-      publications: newSelectedPublications,
       organism: newSelectedOrganism,
       genes: newSelectedGenes,
     })
@@ -142,7 +136,6 @@ export const loadStateFromQueryParams = (
   return {
     compare: newCompare,
     filters: newSelectedFilters,
-    publications: newSelectedPublications,
     organism: newSelectedOrganism,
     genes: newSelectedGenes,
   };

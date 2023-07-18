@@ -30,6 +30,21 @@ def notify_slack(data: dict):
         requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=msg)
 
 
+def upload_to_slack(file_name: str, content: str, initial_comment: str, channel: str, token: str) -> None:
+    """
+    Uploads a file to slack
+    """
+    slack_upload_url = "https://slack.com/api/files.upload"
+
+    payload = {"channels": channel, "content": content, "filename": file_name, "initial_comment": initial_comment}
+    headers = {"Authorization": f"Bearer {token}"}
+    response = requests.post(slack_upload_url, data=payload, headers=headers)
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError:
+        logger.exception("Error uploading file to slack")
+
+
 def format_failed_batch_issue_slack_alert(data: dict) -> dict:
     aws_region = os.getenv("AWS_DEFAULT_REGION")
     job_id = os.getenv("AWS_BATCH_JOB_ID")

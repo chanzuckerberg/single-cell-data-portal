@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getColors } from "@czi-sds/components";
+import { fontBodyS, fontCapsXxs, getColors } from "@czi-sds/components";
 
 export const CellGuideCardDescription = styled.div`
   ${fontBodyS}
@@ -35,4 +35,16 @@ export const Source = styled.div`
 
 export const SourceLink = styled.div`
   white-space: nowrap;
+`;
+
+export const DescriptionHeader = styled.div`
+  ${fontCapsXxs}
+  font-weight: 600;
+  ${(props) => {
+    const colors = getColors(props);
+    return `
+      color: ${colors?.gray[500]};
+    `;
+  }}
+  margin-bottom: 8px;
 `;

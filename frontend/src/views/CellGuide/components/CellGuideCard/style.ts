@@ -1,8 +1,6 @@
 import styled from "@emotion/styled";
 import {
-  Button,
   CommonThemeProps,
-  fontBodyS,
   fontHeaderXxl,
   getSpaces,
   Tag,
@@ -81,12 +79,6 @@ export const SearchBarPositioner = styled.div`
 export const SearchBarWrapper = styled.div`
   margin-bottom: 20px;
   width: 240px;
-`;
-
-export const SuggestChangeButton = styled(Button)`
-  ${fontBodyS}
-  font-weight: 500;
-  text-transform: capitalize;
 `;
 
 export const StyledRightSideBar = styled(RightSideBar)`
