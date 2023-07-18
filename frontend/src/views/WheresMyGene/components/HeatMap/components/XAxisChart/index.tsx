@@ -34,7 +34,7 @@ import {
   HoverContainer,
   DeleteButtonWrapper,
 } from "./style";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import { StyledImage } from "../YAxisChart/style";
 import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
 import {
