@@ -1,11 +1,15 @@
 from typing import Dict, List, Union
 
+import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 
 from backend.wmg.data.snapshot import WmgSnapshot
+
+VALID_ATTRIBUTES = ["gene_ontology_term_id", "cell_type_ontology_term_id"]
+VALID_DIMENSIONS = ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]
 
 
 class WmgQueryCriteria(BaseModel):
@@ -81,47 +85,30 @@ class WmgQuery:
         return self._query(
             cube=self._snapshot.expression_summary_cube,
             criteria=criteria,
-            indexed_dims=[
-                "gene_ontology_term_ids",
-                "tissue_ontology_term_ids",
-                "organism_ontology_term_id",
-            ],
         )
 
     def expression_summary_default(self, criteria: WmgQueryCriteria) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_default_cube,
             criteria=criteria,
-            indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "organism_ontology_term_id"],
         )
 
     def expression_summary_fmg(self, criteria: FmgQueryCriteria) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_fmg_cube,
             criteria=criteria,
-            indexed_dims=[
-                "tissue_ontology_term_ids",
-                "organism_ontology_term_id",
-                "cell_type_ontology_term_ids",
-            ],
         )
 
     def marker_genes(self, criteria: MarkerGeneQueryCriteria) -> DataFrame:
         return self._query(
             cube=self._snapshot.marker_genes_cube,
             criteria=criteria,
-            indexed_dims=[
-                "tissue_ontology_term_ids",
-                "organism_ontology_term_id",
-                "cell_type_ontology_term_ids",
-            ],
         )
 
     def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
         cell_counts = self._query(
             cube=self._snapshot.cell_counts_cube,
             criteria=criteria.copy(exclude={"gene_ontology_term_ids"}),
-            indexed_dims=["tissue_ontology_term_ids", "organism_ontology_term_id"],
         )
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
@@ -129,12 +116,13 @@ class WmgQuery:
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
     @staticmethod
-    def _query(
-        cube: Array, criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, FmgQueryCriteria], indexed_dims: List[str]
-    ) -> DataFrame:
+    def _query(cube: Array, criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, FmgQueryCriteria]) -> DataFrame:
+
+        indexed_dims = get_indexed_dims_from_cube(cube)
+
         query_cond = ""
         attrs = {}
-        for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
+        for attr_name, vals in criteria.dict(exclude=set(indexed_dims + ["compare_dimension"])).items():
             attr = depluralize(attr_name)
             if query_cond and len(vals) > 0:
                 query_cond += " and "
@@ -155,36 +143,28 @@ class WmgQuery:
                 tiledb_dims_query.append([])
 
         tiledb_dims_query = tuple(tiledb_dims_query)
+        numeric_attrs = [attr.name for attr in cube.schema if np.issubdtype(attr.dtype, np.number)]
 
-        if isinstance(criteria, FmgQueryCriteria):
-            query_result_df = pd.concat(
-                cube.query(
-                    cond=query_cond or None,
-                    return_incomplete=True,
-                    use_arrow=True,
-                    attrs=["gene_ontology_term_id"],
-                    dims=["tissue_ontology_term_id", "cell_type_ontology_term_id"],
-                ).df[tiledb_dims_query]
-            )
-        elif criteria.compare_dimension is not None:
-            query_result_df = pd.concat(
-                cube.query(
-                    cond=query_cond or None,
-                    return_incomplete=True,
-                    use_arrow=True,
-                    attrs=["cell_type_ontology_term_id", criteria.compare_dimension],
-                ).df[tiledb_dims_query]
-            )
-        else:
-            query_result_df = pd.concat(
-                cube.query(
-                    cond=query_cond or None,
-                    return_incomplete=True,
-                    use_arrow=True,
-                    attrs=["cell_type_ontology_term_id"],
-                    dims=["tissue_ontology_term_id", "gene_ontology_term_id"],
-                ).df[tiledb_dims_query]
-            )
+        # get valid attributes from schema
+        # valid means it is a required column for downstream processing
+        attrs = [i.name for i in cube.schema if i.name in VALID_ATTRIBUTES]
+        if criteria.compare_dimension is not None:
+            attrs.append(criteria.compare_dimension)
+        attrs += numeric_attrs
+
+        # get valid dimensions from schema
+        dims = [i.name for i in cube.schema.domain if i.name in VALID_DIMENSIONS]
+
+        query_result_df = pd.concat(
+            cube.query(
+                cond=query_cond or None,
+                return_incomplete=True,
+                use_arrow=True,
+                attrs=attrs,
+                dims=dims,
+            ).df[tiledb_dims_query]
+        )
+
         return query_result_df
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
@@ -243,3 +223,7 @@ def retrieve_top_n_markers(query_result, test, n_markers):
         markers = markers.sort_values("effect_size", ascending=False)
     records = markers[["gene_ontology_term_id"] + col_names].to_dict(orient="records")
     return records
+
+
+def get_indexed_dims_from_cube(cube):
+    return [i.name + "s" if i.name != "organism_ontology_term_id" else i.name for i in cube.schema.domain]
