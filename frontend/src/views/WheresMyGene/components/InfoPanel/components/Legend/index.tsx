@@ -12,7 +12,11 @@ import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
-import { EMPTY_ARRAY, EMPTY_SET } from "src/common/constants/utils";
+import {
+  EMPTY_ARRAY,
+  EMPTY_OBJECT,
+  EMPTY_SET,
+} from "src/common/constants/utils";
 
 interface Props {
   isScaled: boolean;
@@ -71,7 +75,7 @@ export default memo(function Legend({
             setEchartsRendererMode={setEchartsRendererMode}
             allChartProps={allChartProps}
             availableFilters={availableFilters}
-            tissues={tissues || {}}
+            tissues={tissues || EMPTY_OBJECT}
             expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
             filteredCellTypes={filteredCellTypes ?? EMPTY_ARRAY}
           />
