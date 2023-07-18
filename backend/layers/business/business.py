@@ -422,7 +422,7 @@ class BusinessLogic(BusinessLogicInterface):
         self,
         collection_version_id: CollectionVersionId,
         dataset_version_id: DatasetVersionId,
-        delete_published: bool = False,
+        delete_published: bool = True,
     ) -> None:
         """
         Removes a dataset version from an existing collection version
