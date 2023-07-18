@@ -24,7 +24,6 @@ class WmgQueryCriteria(BaseModel):
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    compare_dimension: str = Field(default=None, required=False)
 
 
 class WmgQueryCriteriaV2(BaseModel):
@@ -39,7 +38,6 @@ class WmgQueryCriteriaV2(BaseModel):
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    compare_dimension: str = Field(default=None, required=False)
 
 
 class WmgFiltersQueryCriteria(BaseModel):
@@ -81,10 +79,11 @@ class WmgQuery:
     def __init__(self, snapshot: WmgSnapshot) -> None:
         self._snapshot = snapshot
 
-    def expression_summary(self, criteria: WmgQueryCriteria) -> DataFrame:
+    def expression_summary(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_cube,
             criteria=criteria,
+            compare_dimension=compare_dimension,
         )
 
     def expression_summary_default(self, criteria: WmgQueryCriteria) -> DataFrame:
@@ -105,10 +104,11 @@ class WmgQuery:
             criteria=criteria,
         )
 
-    def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
+    def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], compare_dimension=None) -> DataFrame:
         cell_counts = self._query(
             cube=self._snapshot.cell_counts_cube,
             criteria=criteria.copy(exclude={"gene_ontology_term_ids"}),
+            compare_dimension=compare_dimension,
         )
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
@@ -116,13 +116,16 @@ class WmgQuery:
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
     @staticmethod
-    def _query(cube: Array, criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, FmgQueryCriteria]) -> DataFrame:
-
-        indexed_dims = get_indexed_dims_from_cube(cube)
+    def _query(
+        cube: Array,
+        criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, FmgQueryCriteria, MarkerGeneQueryCriteria],
+        compare_dimension=None,
+    ) -> DataFrame:
+        indexed_dims = _get_indexed_dims_from_cube(cube, pluralize=not isinstance(criteria, MarkerGeneQueryCriteria))
 
         query_cond = ""
         attrs = {}
-        for attr_name, vals in criteria.dict(exclude=set(indexed_dims + ["compare_dimension"])).items():
+        for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
             attr = depluralize(attr_name)
             if query_cond and len(vals) > 0:
                 query_cond += " and "
@@ -148,8 +151,8 @@ class WmgQuery:
         # get valid attributes from schema
         # valid means it is a required column for downstream processing
         attrs = [i.name for i in cube.schema if i.name in VALID_ATTRIBUTES]
-        if criteria.compare_dimension is not None:
-            attrs.append(criteria.compare_dimension)
+        if compare_dimension is not None:
+            attrs.append(compare_dimension)
         attrs += numeric_attrs
 
         # get valid dimensions from schema
@@ -225,5 +228,5 @@ def retrieve_top_n_markers(query_result, test, n_markers):
     return records
 
 
-def get_indexed_dims_from_cube(cube):
-    return [i.name + "s" if i.name != "organism_ontology_term_id" else i.name for i in cube.schema.domain]
+def _get_indexed_dims_from_cube(cube, pluralize=True):
+    return [i.name + "s" if i.name != "organism_ontology_term_id" and pluralize else i.name for i in cube.schema.domain]
