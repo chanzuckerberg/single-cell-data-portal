@@ -39,6 +39,7 @@ export interface State {
   geneInfoGene: string | null;
   compare?: CompareId;
   xAxisHeight: number;
+  filteredCellTypes: string[];
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -73,6 +74,7 @@ export const INITIAL_STATE: State = {
     scaled: SORT_BY.COLOR_SCALED,
   },
   xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+  filteredCellTypes: [],
 };
 
 export const REDUCERS = {
@@ -98,6 +100,7 @@ export const REDUCERS = {
   setSnapshotId,
   toggleGeneToDelete,
   setXAxisHeight,
+  setFilteredCellTypes,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -407,6 +410,7 @@ export interface LoadStateFromURLPayload {
   organism: State["selectedOrganismId"];
   tissues?: State["selectedTissues"];
   genes: State["selectedGenes"];
+  cellTypes: State["filteredCellTypes"];
 }
 
 function loadStateFromURL(
@@ -425,6 +429,7 @@ function loadStateFromURL(
     selectedGenes: genes,
     selectedTissues: tissues,
     selectedOrganismId: payload.organism,
+    filteredCellTypes: payload.cellTypes,
   };
 }
 
@@ -442,5 +447,15 @@ function setXAxisHeight(state: State, action: PayloadAction<number>): State {
   return {
     ...state,
     xAxisHeight: action.payload,
+  };
+}
+
+function setFilteredCellTypes(
+  state: State,
+  action: PayloadAction<State["filteredCellTypes"]>
+): State {
+  return {
+    ...state,
+    filteredCellTypes: action.payload,
   };
 }

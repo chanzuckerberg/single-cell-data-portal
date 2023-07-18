@@ -43,8 +43,7 @@ import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGene/components/Filters";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport";
-import { UnderlyingDataChangeBanner } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport/ExportBanner";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 
 import InfoPanel from "src/views/WheresMyGene/components/InfoPanel";
 import Legend from "src/views/WheresMyGene/components/InfoPanel/components/Legend";
@@ -65,6 +64,7 @@ import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
+import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -72,7 +72,13 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { selectedGenes, sortBy, geneInfoGene, cellInfoCellType } = state;
+  const {
+    selectedGenes,
+    sortBy,
+    geneInfoGene,
+    cellInfoCellType,
+    filteredCellTypes,
+  } = state;
 
   const selectedOrganismId = state.selectedOrganismId || "";
 
@@ -101,9 +107,6 @@ export default function WheresMyGene(): JSX.Element {
   const [expandedTissues, setExpandedTissues] = useState<Set<Tissue>>(
     EMPTY_SET as Set<Tissue>
   );
-
-  const [filteredCellTypes, setFilteredCellTypes] =
-    useState<string[]>(EMPTY_ARRAY);
 
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
@@ -413,8 +416,6 @@ export default function WheresMyGene(): JSX.Element {
             setTissuesByName={setTissuesByName}
             expandedTissues={expandedTissues}
             setExpandedTissues={setExpandedTissues}
-            filteredCellTypes={filteredCellTypes}
-            setFilteredCellTypes={setFilteredCellTypes}
           />
         </Wrapper>
       </View>

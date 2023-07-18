@@ -23,7 +23,10 @@ import {
   State,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
-import { addCellInfoCellType } from "src/views/WheresMyGene/common/store/actions";
+import {
+  addCellInfoCellType,
+  setFilteredCellTypes,
+} from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
   ChartProps,
@@ -94,8 +97,6 @@ interface Props {
   >;
   expandedTissues: Set<string>;
   setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
-  filteredCellTypes: string[];
-  setFilteredCellTypes: Dispatch<SetStateAction<string[]>>;
 }
 
 export default memo(function HeatMap({
@@ -116,12 +117,11 @@ export default memo(function HeatMap({
   setTissuesByName,
   expandedTissues,
   setExpandedTissues,
-  filteredCellTypes,
-  setFilteredCellTypes,
 }: Props): JSX.Element {
   const {
     xAxisHeight,
     selectedFilters: { tissues: filteredTissues },
+    filteredCellTypes,
   } = useContext(StateContext);
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
@@ -296,7 +296,7 @@ export default memo(function HeatMap({
     if (newFilteredCellTypes.length === 0) {
       setDisplayedCellTypes(initialDisplayedCellTypes);
       setExpandedTissues(new Set<string>());
-      setFilteredCellTypes(newFilteredCellTypes);
+      if (dispatch) dispatch(setFilteredCellTypes(newFilteredCellTypes));
       return;
     }
     const newDisplayedCellTypes = new Set<string>();
@@ -330,7 +330,7 @@ export default memo(function HeatMap({
 
     setDisplayedCellTypes(newDisplayedCellTypes);
     setExpandedTissues(newExpandedTissues);
-    setFilteredCellTypes(newFilteredCellTypes);
+    if (dispatch) dispatch(setFilteredCellTypes(newFilteredCellTypes));
   };
 
   const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
