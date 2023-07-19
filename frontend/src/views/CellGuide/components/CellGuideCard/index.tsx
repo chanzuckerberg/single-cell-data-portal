@@ -81,7 +81,7 @@ export default function CellGuideCard({
     setGeneInfoGene(null);
   }
 
-  const title = `CELLxGENE ${titleizedCellTypeName} Cell Types - CellGuide`;
+  const title = `${titleizedCellTypeName} Cell Types - CZ CELLxGENE CellGuide`;
   const seoDescription = `Find comprehensive information about ${cellTypeName} cell types. ${rawSeoDescription}`;
 
   return (

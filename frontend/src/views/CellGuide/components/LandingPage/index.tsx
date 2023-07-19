@@ -4,7 +4,7 @@ import { StyledHeader, Wrapper } from "./style";
 
 export const LANDING_PAGE_HEADER = "landing-page-header";
 
-const TITLE = "CELLxGENE - CellGuide Cell Types and Cell Tissues";
+const TITLE = "CellGuide Cell Types and Cell Tissues - CZ CELLxGENE";
 const DESCRIPTION =
   "Explore single-cell transcriptomics data in CellGuide, a comprehensive resource that empowers researchers with deep insights into the intricacies of cell types";
 

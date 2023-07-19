@@ -52,7 +52,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  const title = `CELLxGENE ${titleizedName} Tissue - CellGuide`;
+  const title = `${titleizedName} Tissue - CZ CELLxGENE CellGuide`;
   const seoDescription = `Find comprehensive information about ${tissueName} tissue: ${description}`;
 
   return (
