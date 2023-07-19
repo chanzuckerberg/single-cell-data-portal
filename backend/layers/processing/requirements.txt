@@ -1,4 +1,6 @@
-cellxgene-schema
+git+https://github.com/chanzuckerberg/single-cell-curation/@auto/update-convert-py-to-3.1.1#subdirectory=cellxgene_schema_cli
+# TODO ^^^undo before merging to main
+# cellxgene-schema TODO restore before merging to main
 dataclasses-json
 matplotlib==3.6.3 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
 numba==0.56.2

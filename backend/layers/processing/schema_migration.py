@@ -112,6 +112,7 @@ class SchemaMigrate(ProcessingLogic):
 
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
+        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
         response = {
             "can_publish": str(can_publish),
             "collection_version_id": private_collection_version_id,
@@ -125,6 +126,8 @@ class SchemaMigrate(ProcessingLogic):
                     "dataset_version_id": dataset.version_id.id,
                 }
                 for dataset in version.datasets
+                if dataset.metadata.schema_version != current_schema_version
+                # Filter out datasets that are already on the current schema version
             ]
             # The repeated fields in datasets is required for the AWS SFN job that uses it.
         }
