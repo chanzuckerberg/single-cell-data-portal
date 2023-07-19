@@ -102,17 +102,28 @@ class SchemaMigrate(ProcessingLogic):
         }
 
     def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
+        # Get datasets from collection
+        version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
+        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
+
+        if not any(dataset.metadata.schema_version != current_schema_version for dataset in version.datasets):
+            # check if there are datasets to migrate.
+            return {
+                "can_publish": str(False),  # skip publishing, because the collection is already published and no
+                # revision is created, or the collection is private or a revision.
+                "collection_version_id": collection_version_id,
+                "datasets": [],
+                "no_datasets": str(True),
+            }
 
         if can_publish:
+            # Create a new collection version(revision) if the collection is already published
             private_collection_version_id = self.business_logic.create_collection_version(
                 CollectionId(collection_id)
             ).version_id.id
         else:
             private_collection_version_id = collection_version_id
 
-        # Get datasets from collection
-        version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
-        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
         response = {
             "can_publish": str(can_publish),
             "collection_version_id": private_collection_version_id,
