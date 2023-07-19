@@ -129,3 +129,9 @@ variable schema_migration_ecs_memory {
   description = "Memory reservation for the schema_migration ecs task"
   default     = 2048
 }
+
+variable backend_workers {
+  type        = number
+  description = "Number of backend workers to run"
+  default     = 1
+}
