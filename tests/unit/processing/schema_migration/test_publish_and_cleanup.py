@@ -12,14 +12,13 @@ class TestPublishAndCleanup:
         metadata = Mock(schema_version="1.0.0")
         schema_migrate.business_logic.get_collection_version = Mock()
         schema_migrate.business_logic.get_collection_version.return_value = Mock(
-            is_published=Mock(return_value=False),
             datasets=[
                 Mock(
                     version_id=DatasetVersionId("successful_dataset_version_id"),
                     status=dataset_status,
                     metadata=metadata,
                 )
-            ],
+            ]
         )
 
         errors = schema_migrate.publish_and_cleanup("collection_version_id", True)
@@ -40,7 +39,6 @@ class TestPublishAndCleanup:
         metadata_not_migrated = Mock(schema_version="0.9.0")
         schema_migrate.business_logic.get_collection_version = Mock()
         schema_migrate.business_logic.get_collection_version.return_value = Mock(
-            is_published=Mock(return_value=False),
             datasets=[
                 Mock(
                     version_id=DatasetVersionId("successful_dataset_version_id"),
@@ -57,7 +55,7 @@ class TestPublishAndCleanup:
                     status=dataset_status_success,
                     metadata=metadata_not_migrated,
                 ),
-            ],
+            ]
         )
 
         errors = schema_migrate.publish_and_cleanup("collection_version_id", True)
@@ -81,14 +79,13 @@ class TestPublishAndCleanup:
         metadata = Mock(schema_version="1.0.0")
         schema_migrate.business_logic.get_collection_version = Mock()
         schema_migrate.business_logic.get_collection_version.return_value = Mock(
-            is_published=Mock(return_value=False),
             datasets=[
                 Mock(
                     version_id=DatasetVersionId("successful_dataset_version_id"),
                     status=dataset_status,
                     metadata=metadata,
                 )
-            ],
+            ]
         )
 
         errors = schema_migrate.publish_and_cleanup("collection_version_id", False)
@@ -97,14 +94,3 @@ class TestPublishAndCleanup:
         schema_migrate.s3_provider.delete_files.assert_called_once_with(
             "artifact-bucket", ["successful_dataset_version_id/migrated.h5ad"]
         )
-
-    def test_with_published_collection_version_and_can_publish_true(
-        self, mock_cellxgene_schema, schema_migrate_and_collections
-    ):
-        schema_migrate, collections = schema_migrate_and_collections
-        published_collection = collections["published"][0]
-
-        errors = schema_migrate.publish_and_cleanup(published_collection.version_id.id, True)
-        assert errors == {}
-        schema_migrate.business_logic.publish_collection_version.assert_not_called()
-        schema_migrate.s3_provider.delete_files.assert_not_called()

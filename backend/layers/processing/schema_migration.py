@@ -109,7 +109,8 @@ class SchemaMigrate(ProcessingLogic):
         if not any(dataset.metadata.schema_version != current_schema_version for dataset in version.datasets):
             # check if there are datasets to migrate.
             return {
-                "can_publish": str(can_publish),
+                "can_publish": str(False),  # skip publishing, because the collection is already published and no
+                # revision is created, or the collection is private or a revision.
                 "collection_version_id": collection_version_id,
                 "datasets": [],
                 "no_datasets": str(True),
@@ -151,8 +152,6 @@ class SchemaMigrate(ProcessingLogic):
         errors = dict()
         collection_version_id = CollectionVersionId(collection_version_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
-        if collection_version.is_published():
-            return errors
         current_schema_version = cellxgene_schema.schema.get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
