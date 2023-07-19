@@ -61,6 +61,18 @@ class TestCollectionMigrate:
         schema_migrate, collections = schema_migrate_and_collections
         mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
         published = collections["published"][0]
+        schema_migrate.business_logic.create_collection_version.return_value = mock.Mock(
+            version_id=CollectionVersionId()
+        )
+        response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
+        assert response["collection_version_id"] == published.version_id.id
+        assert not response["datasets"]
+        assert response["no_datasets"] == "True"
+
+    def test_no_datasets(self, mock_cellxgene_schema, schema_migrate_and_collections):
+        schema_migrate, collections = schema_migrate_and_collections
+        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
+        published = collections["published"][0]
         published.datasets = []
         schema_migrate.business_logic.create_collection_version.return_value = mock.Mock(
             version_id=CollectionVersionId()
