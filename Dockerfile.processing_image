@@ -15,9 +15,8 @@ ENV PIP_NO_CACHE_DIR=1
 RUN pip3 install python-igraph==0.8.3 louvain==0.7.0 packaging==21.0 awscli
 
 
-ADD requirements.txt requirements-base.txt
-ADD backend/layers/processing/requirements.txt requirements-processing.txt
-RUN pip3 install -r requirements-base.txt -r requirements-processing.txt
+ADD requirements-processing.txt requirements.txt
+RUN pip3 install -r requirements.txt
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/layers backend/layers
