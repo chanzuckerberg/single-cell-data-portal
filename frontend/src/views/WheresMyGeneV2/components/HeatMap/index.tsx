@@ -23,7 +23,10 @@ import {
   State,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
-import { addCellInfoCellType } from "src/views/WheresMyGene/common/store/actions";
+import {
+  addCellInfoCellType,
+  setFilteredCellTypes,
+} from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
   ChartProps,
@@ -94,8 +97,6 @@ interface Props {
   >;
   expandedTissues: Set<string>;
   setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
-  filteredCellTypes: string[];
-  setFilteredCellTypes: Dispatch<SetStateAction<string[]>>;
 }
 
 export default memo(function HeatMap({
@@ -116,12 +117,11 @@ export default memo(function HeatMap({
   setTissuesByName,
   expandedTissues,
   setExpandedTissues,
-  filteredCellTypes,
-  setFilteredCellTypes,
 }: Props): JSX.Element {
   const {
     xAxisHeight,
     selectedFilters: { tissues: filteredTissues },
+    filteredCellTypes,
   } = useContext(StateContext);
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
@@ -286,17 +286,19 @@ export default memo(function HeatMap({
     });
     return [...result].sort();
   }, [sortedCellTypesByTissueName]);
-
-  // update displayedCellTypes and expandedTissues
   const handleFilteredCellTypesChange = (
     _: unknown,
     rawNewFilteredCellTypes: unknown
   ) => {
-    const newFilteredCellTypes = rawNewFilteredCellTypes as string[];
-    if (newFilteredCellTypes.length === 0) {
+    if (!dispatch) return;
+    dispatch(setFilteredCellTypes(rawNewFilteredCellTypes as string[]));
+  };
+
+  // update displayedCellTypes and expandedTissues
+  useEffect(() => {
+    if (filteredCellTypes.length === 0) {
       setDisplayedCellTypes(initialDisplayedCellTypes);
       setExpandedTissues(new Set<string>());
-      setFilteredCellTypes(newFilteredCellTypes);
       return;
     }
     const newDisplayedCellTypes = new Set<string>();
@@ -309,7 +311,7 @@ export default memo(function HeatMap({
         )
           return;
         cellTypes.forEach((cellType) => {
-          if (newFilteredCellTypes.includes(cellType.name)) {
+          if (filteredCellTypes.includes(cellType.name)) {
             newDisplayedCellTypes.add(
               tissuesByName[tissue].id + tissuesByName[tissue].id
             );
@@ -319,25 +321,33 @@ export default memo(function HeatMap({
         });
       }
     );
-    if (newFilteredCellTypes.length > filteredCellTypes.length) {
-      const filteredCellTypeIDs = newFilteredCellTypes.map(
-        (cellType) => cellTypesByName[cellType].id
-      );
-      track(EVENTS.WMG_SELECT_CELL_TYPE, {
-        cell_types: filteredCellTypeIDs,
-      });
-    }
+    const filteredCellTypeIDs = filteredCellTypes.map(
+      (cellType) => cellTypesByName[cellType].id
+    );
+    track(EVENTS.WMG_SELECT_CELL_TYPE, {
+      cell_types: filteredCellTypeIDs,
+    });
 
     setDisplayedCellTypes(newDisplayedCellTypes);
     setExpandedTissues(newExpandedTissues);
-    setFilteredCellTypes(newFilteredCellTypes);
-  };
+  }, [
+    cellTypesByName,
+    dispatch,
+    filteredCellTypes,
+    filteredCellTypes.length,
+    filteredTissues,
+    initialDisplayedCellTypes,
+    setExpandedTissues,
+    sortedCellTypesByTissueName,
+    tissuesByName,
+  ]);
 
   const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
+    if (!dispatch) return;
     const newValue = filteredCellTypes.filter(
       (cellType) => !(cellTypeToDelete === cellType)
     );
-    handleFilteredCellTypesChange(null, newValue);
+    dispatch(setFilteredCellTypes(newValue));
   };
 
   useTrackHeatMapLoaded({

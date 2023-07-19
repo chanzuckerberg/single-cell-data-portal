@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from backend.wmg.pipeline.summary_cubes.cell_count import return_dataset_dict_w_publications
+from backend.wmg.pipeline.summary_cubes.cell_count import remove_accents, return_dataset_dict_w_publications
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +67,8 @@ def build_in_mem_cube(
             if k != "publication_citation":
                 vals[k][idx : idx + n_vals] = attr_values[i]
 
-        vals["publication_citation"][idx : idx + n_vals] = dataset_dict.get(
-            attr_values[dataset_index], "No Publication"
+        vals["publication_citation"][idx : idx + n_vals] = remove_accents(
+            dataset_dict.get(attr_values[dataset_index], "No Publication")
         )
 
         idx += n_vals
