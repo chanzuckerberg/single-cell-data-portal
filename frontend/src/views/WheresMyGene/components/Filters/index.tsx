@@ -172,8 +172,7 @@ export default memo(function Filters({
     const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
     newEthnicities.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newPublications = rawPublications.map(mapTermToFilterOption);
-    newPublications.sort((a, b) => a.name.localeCompare(b.name));
+    const newPublications = rawPublications.sort((a, b) => a.localeCompare(b));
 
     const newDevelopmentStages = rawDevelopmentStages.map(
       mapTermToFilterOption
@@ -239,7 +238,7 @@ export default memo(function Filters({
 
   const selectedPublications = useMemo(() => {
     return publication_citations.filter((publication) =>
-      publications?.includes(publication.id)
+      publications?.includes(publication)
     );
   }, [publication_citations, publications]);
 
@@ -285,13 +284,21 @@ export default memo(function Filters({
         }
 
         currentOptions = options;
-
-        dispatch(
-          selectFilters(
-            key,
-            options.map((option) => (option as unknown as { id: string }).id)
-          )
-        );
+        if (key === "publications") {
+          dispatch(
+            selectFilters(
+              key,
+              options.map((option) => option as unknown as string)
+            )
+          );
+        } else {
+          dispatch(
+            selectFilters(
+              key,
+              options.map((option) => (option as unknown as { id: string }).id)
+            )
+          );
+        }
       };
     },
     [dispatch]

@@ -118,7 +118,7 @@ export const USE_PRIMARY_FILTER_DIMENSIONS = {
 };
 
 export function usePrimaryFilterDimensions(
-  version: 1 | 2 = 1
+  version: 1 | 2 = 2
 ): UseQueryResult<PrimaryFilterDimensionsResponse> {
   const dispatch = useContext(DispatchContext);
 
@@ -146,7 +146,7 @@ export function usePrimaryFilterDimensions(
 
 const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
 
-export function useAvailableOrganisms(version: 1 | 2 = 1) {
+export function useAvailableOrganisms(version: 1 | 2 = 2) {
   const { data, isLoading } = usePrimaryFilterDimensions(version);
 
   if (isLoading) {
@@ -277,7 +277,7 @@ interface FiltersQueryResponse {
     }[];
     disease_terms: { [id: string]: string }[];
     sex_terms: { [id: string]: string }[];
-    publication_citations: { [id: string]: string }[];
+    publication_citations: string[];
     development_stage_terms: { [id: string]: string }[];
     self_reported_ethnicity_terms: { [id: string]: string }[];
     tissue_terms: { [id: string]: string }[];
@@ -355,7 +355,7 @@ export const USE_FILTERS_QUERY = {
 
 export function useWMGQuery(
   query: Query | null,
-  version: 1 | 2 = 1
+  version: 1 | 2 = 2
 ): UseQueryResult<QueryResponse> {
   const dispatch = useContext(DispatchContext);
 
@@ -389,7 +389,7 @@ export function useWMGQuery(
 
 export function useWMGFiltersQuery(
   query: FiltersQuery | null,
-  version: 1 | 2 = 1
+  version: 1 | 2 = 2
 ): UseQueryResult<FiltersQueryResponse> {
   const dispatch = useContext(DispatchContext);
 
@@ -437,12 +437,12 @@ export interface FilterDimensions {
   development_stage_terms: { id: string; name: string }[];
   disease_terms: { id: string; name: string }[];
   self_reported_ethnicity_terms: { id: string; name: string }[];
-  publication_citations: { id: string; name: string }[];
+  publication_citations: string[];
   sex_terms: { id: string; name: string }[];
   tissue_terms: { id: string; name: string }[];
 }
 
-export function useFilterDimensions(version: 1 | 2 = 1): {
+export function useFilterDimensions(version: 1 | 2 = 2): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
@@ -478,7 +478,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
-        publication_citations: publication_citations.map(toEntity),
+        publication_citations,
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },
@@ -487,7 +487,7 @@ export function useFilterDimensions(version: 1 | 2 = 1): {
   }, [data, isLoading]);
 }
 
-export function useExpressionSummary(version: 1 | 2 = 1): {
+export function useExpressionSummary(version: 1 | 2 = 2): {
   isLoading: boolean;
   data: QueryResponse["expression_summary"];
 } {
@@ -518,7 +518,7 @@ const FILTERED_CELL_TYPE_ONTOLOGY_IDS = [
   "CL:0000548", // Animal cell
 ];
 
-export function useCellTypesByTissueName(version: 1 | 2 = 1): {
+export function useCellTypesByTissueName(version: 1 | 2 = 2): {
   isLoading: boolean;
   data: CellTypeByTissueName;
 } {
@@ -585,7 +585,7 @@ export interface GeneExpressionSummariesByTissueName {
   [tissueName: string]: { [geneName: string]: GeneExpressionSummary };
 }
 
-export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 1): {
+export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 2): {
   data: GeneExpressionSummariesByTissueName;
   isLoading: boolean;
 } {
@@ -732,7 +732,7 @@ export interface CellTypeRow {
   cellTypeName: string;
 }
 
-export function useTermIdLabels(version: 1 | 2 = 1): {
+export function useTermIdLabels(version: 1 | 2 = 2): {
   data: TermIdLabels;
   isLoading: boolean;
 } {
@@ -1033,7 +1033,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 }
 
 function useWMGFiltersQueryRequestBody(
-  version: 1 | 2 = 1
+  version: 1 | 2 = 2
 ): FiltersQuery | null {
   const { selectedOrganismId, selectedFilters } = useContext(StateContext);
 
@@ -1350,7 +1350,7 @@ export function useMarkerGenes({
 
 export function useGeneInfo(
   geneSymbol: string,
-  version: 1 | 2 = 1
+  version: 1 | 2 = 2
 ): UseQueryResult<GeneInfo> {
   const { data } = usePrimaryFilterDimensions(version);
   const genesByName = useMemo((): { [name: string]: OntologyTerm } => {
