@@ -1,4 +1,5 @@
 .PHONY: db/migrate
+
 db/migrate:
 	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE} -c=./database/database.ini upgrade head
 
@@ -53,16 +54,12 @@ db/check:
 # interactive mode usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect
 # ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
 db/connect:
-ifeq ($(DEPLOYMENT_STAGE), rdev)
-	$(MAKE) db/connect_internal DB_NAME=/${STACK} USER_NAME=dataportal
-else
-	$(MAKE) db/connect_internal DB_NAME=corpora_${DEPLOYMENT_STAGE} USER_NAME=corpora_${DEPLOYMENT_STAGE}
-endif
+	$(MAKE) db/connect_internal DB_NAME=${DB_NAME} DB_USER=${DB_USER}
 
 db/connect_internal:
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
 	$(MAKE) db/tunnel/up
-	PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname ${DB_NAME} --username ${USER_NAME} --host 0.0.0.0 $(ARGS)
+	PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname=${DB_NAME} --username ${DB_USER} --host 0.0.0.0 $(ARGS)
 	$(MAKE) db/tunnel/down
 
 db/console: db/connect # alias
@@ -71,7 +68,7 @@ db/dump:
   # Dump the DEPLOYMENT_STAGE database to OUTFILE
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
 	$(MAKE) db/tunnel/up
-	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=$(OUTFILE) --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
+	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=${DB_NAME} --file=$(OUTFILE) --host 0.0.0.0 --username=${DB_USER}
 	$(MAKE) db/tunnel/down
 
 db/local/load-data:
@@ -94,7 +91,7 @@ ifeq ($(DEPLOYMENT_STAGE),test)
 else
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
 	$(MAKE) db/tunnel/up
-	PGPASSWORD=${DB_PW} pg_dump --schema-only --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0
+	PGPASSWORD=${DB_PW} pg_dump --schema-only --dbname=${DB_NAME} --username=${DB_USER} --host 0.0.0.0
 	$(MAKE) db/tunnel/down
 endif
 
@@ -113,12 +110,15 @@ SSH_SOCKET=/tmp/data-portal-ssh-db-tunnel-socket-${DEPLOYMENT_STAGE}
 ifeq ($(DEPLOYMENT_STAGE), rdev)
 	SSH_BASTION_HOST=bastion.dev.single-cell.czi.technology
 	CLUSTER_NAME=dataportal-rdev-happy
-
+	DB_NAME="/${RDEV_ENV}"
+	DB_USER=dataportal
 else
 	SSH_BASTION_HOST=bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
 	CLUSTER_NAME=corpora-${DEPLOYMENT_STAGE}-corpora-api
-
+	DB_NAME="corpora_${DEPLOYMENT_STAGE}"
+  	DB_USER=corpora_${DEPLOYMENT_STAGE}
 endif
+
 # TODO:
 # - add db/tunnel as a dependency for all targets so that a tunnel is automatically opened if not already
 db/tunnel/up:
