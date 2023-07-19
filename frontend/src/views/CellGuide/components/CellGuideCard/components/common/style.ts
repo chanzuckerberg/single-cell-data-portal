@@ -35,6 +35,11 @@ export const TableTitleInnerWrapper = styled.div<TableTitleInnerWrapperProps>`
   }}
 `;
 
+export const FlexRow = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 export const TableUnavailableContainer = styled("div")`
   margin-top: 16px;
   background: #f8f8f8;

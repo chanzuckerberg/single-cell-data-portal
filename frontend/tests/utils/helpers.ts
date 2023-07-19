@@ -203,15 +203,6 @@ export async function selectNthOption(page: Page, number: number) {
   await page.keyboard.press("Escape");
 }
 
-export async function waitForHeatmapToRender(page: Page) {
-  await tryUntil(
-    async () => {
-      await expect(page.locator("canvas")).not.toHaveCount(0);
-    },
-    { page }
-  );
-}
-
 export async function waitForElement(page: Page, testId: string) {
   await tryUntil(
     async () => {

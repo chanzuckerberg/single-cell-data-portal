@@ -65,7 +65,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             join(key_prefix, file_base),
             extra_args={"ACL": "bucket-owner-full-control"},
         )
-        return ProcessingLogic.make_s3_uri(artifact_bucket, key_prefix, file_base)
+        return self.make_s3_uri(artifact_bucket, key_prefix, file_base)
 
     @logit
     def create_artifact(
@@ -89,7 +89,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
                 self.s3_provider.upload_file(
                     file_name, datasets_bucket, key, extra_args={"ACL": "bucket-owner-full-control"}
                 )
-                datasets_s3_uri = ProcessingLogic.make_s3_uri(datasets_bucket, key_prefix, key)
+                datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
                 self.logger.info(f"Uploaded {dataset_id}.{artifact_type} to {datasets_s3_uri}")
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception:

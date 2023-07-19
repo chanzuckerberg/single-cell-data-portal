@@ -210,6 +210,15 @@ export function setXAxisHeight(
   };
 }
 
+export function setFilteredCellTypes(
+  payload: State["filteredCellTypes"]
+): GetActionTypeOfReducer<typeof REDUCERS["setFilteredCellTypes"]> {
+  return {
+    payload,
+    type: "setFilteredCellTypes",
+  };
+}
+
 type GetActionTypeOfReducer<T> = T extends (
   state: never,
   action: infer Action

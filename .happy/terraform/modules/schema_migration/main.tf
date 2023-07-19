@@ -87,13 +87,26 @@ resource aws_sfn_state_machine sfn_schema_migration {
               "Value": "True"
             },
             {
-                "Name": "TASK_TOKEN",
-                "Value.$": "$$.Task.Token"
+              "Name": "TASK_TOKEN",
+              "Value.$": "$$.Task.Token"
+            },
+            {
+              "Name": "EXECUTION_ID",
+              "Value.$": "$$.Execution.Name"
             }
           ]
         }
       },
-      "Next": "SpanCollections"
+      "Next": "SpanCollections",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "report",
+          "ResultPath": null
+        }
+      ]
     },
     "SpanCollections": {
       "Type": "Map",
@@ -142,17 +155,101 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Value.$": "$.collection_version_id"
                   },
                   {
-                    "Name": "CAN_OPEN_REVISION",
-                    "Value.$": "$.can_open_revision"
+                    "Name": "CAN_PUBLISH",
+                    "Value.$": "$.can_publish"
                   },
                   {
                     "Name": "TASK_TOKEN",
                     "Value.$": "$$.Task.Token"
+                  },
+                  {
+                    "Name": "EXECUTION_ID",
+                    "Value.$": "$$.Execution.Name"
                   }
                 ]
               }
             },
-            "Next": "SpanDatasets"
+            "Next": "DatasetsExists",
+            "Catch": [
+              {
+                "ErrorEquals": [
+                  "States.ALL"
+                ],
+                "ResultPath": "$.error",
+                "Next": "CollectionPublish"
+              }
+            ]
+          },
+          "DatasetsExists": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.no_datasets",
+                "IsPresent": true,
+                "Next": "CollectionPublish"
+              }
+            ],
+            "Default": "SpanDatasets"
+          },
+          "CollectionPublish": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::batch:submitJob.sync",
+            "Parameters": {
+            "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
+            "JobName": "Collection_publish",
+            "JobQueue": "${var.job_queue_arn}",
+              "Timeout": {
+                "AttemptDurationSeconds": 600
+              },
+              "ContainerOverrides": {
+                "ResourceRequirements": [
+                  {
+                    "Type": "VCPU",
+                    "Value": "4"
+                  },
+                  {
+                    "Type": "MEMORY",
+                    "Value": "2048"
+                  }
+                ],
+                "Environment": [
+                  {
+                    "Name": "STEP_NAME",
+                    "Value": "collection_publish"
+                  },
+                  {
+                    "Name": "MIGRATE",
+                    "Value": "True"
+                  },
+                  {
+                    "Name": "COLLECTION_VERSION_ID",
+                    "Value.$": "$.collection_version_id"
+                  },
+                  {
+                    "Name": "CAN_PUBLISH",
+                    "Value.$": "$.can_publish"
+                  },
+                  {
+                    "Name": "TASK_TOKEN",
+                    "Value.$": "$$.Task.Token"
+                  },
+                  {
+                    "Name": "EXECUTION_ID",
+                    "Value.$": "$$.Execution.Name"
+                  }
+                ]
+              }
+            },
+            "End": true,
+            "Catch": [
+              {
+                "ErrorEquals": [
+                  "States.ALL"
+                ],
+                "Next": "CollectionError",
+                "ResultPath": "$.error"
+              }
+            ]
           },
           "SpanDatasets": {
             "Type": "Map",
@@ -191,17 +288,39 @@ resource aws_sfn_state_machine sfn_schema_migration {
                           "Value.$": "$.dataset_version_id"
                         },
                         {
+                          "Name": "COLLECTION_VERSION_ID",
+                          "Value.$": "$.collection_version_id"
+                        },
+                        {
                           "Name": "COLLECTION_ID",
                           "Value.$": "$.collection_id"
                         },
                         {
-                            "Name": "TASK_TOKEN",
-                            "Value.$": "$$.Task.Token"
+                          "Name": "TASK_TOKEN",
+                          "Value.$": "$$.Task.Token"
+                        },
+                        {
+                          "Name": "EXECUTION_ID",
+                          "Value.$": "$$.Execution.Name"
                         }
                       ]
                     }
                   },
-                  "Next": "StepFunctionsStartExecution"
+                  "Next": "StepFunctionsStartExecution",
+                  "Catch": [
+                    {
+                      "ErrorEquals": [
+                        "States.ALL"
+                      ],
+                      "Next": "DatasetError",
+                      "ResultPath": "$.error"
+                    }
+                  ],
+                  "ResultPath": "$.result"
+                },
+                "DatasetError": {
+                  "Type": "Pass",
+                  "End": true
                 },
                 "StepFunctionsStartExecution": {
                   "Type": "Task",
@@ -210,71 +329,57 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "StateMachineArn": "arn:aws:states:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:stateMachine:dp-${var.deployment_stage}-${var.custom_stack_name}-sfn",
                     "Input": {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
-                      "url.$": "$.url",
-                      "dataset_id.$": "$.dataset_version_id",
-                      "collection_id.$": "$.collection_id"
+                      "url.$": "$.result.uri",
+                      "dataset_id.$": "$.result.dataset_version_id",
+                      "collection_id.$": "$.result.collection_version_id"
                     }
                   },
-                  "End": true
+                  "End": true,
+                  "Catch": [
+                    {
+                      "ErrorEquals": [
+                        "States.ALL"
+                      ],
+                      "Next": "DatasetError",
+                      "ResultPath": "$.error"
+                    }
+                  ],
+                  "ResultPath": "$.result"
                 }
               }
             },
-            "ItemsPath": "$",
+            "ItemsPath": "$.datasets",
             "Next": "CollectionPublish",
-            "MaxConcurrency": 40
-          },
-          "CollectionPublish": {
-            "Type": "Task",
-            "Resource": "arn:aws:states:::batch:submitJob.sync",
-            "Parameters": {
-              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
-              "JobName": "collection_publish",
-              "JobQueue": "${var.job_queue_arn}",
-              "Timeout": {
-                "AttemptDurationSeconds": 600
-              },
-              "ContainerOverrides": {
-                "ResourceRequirements": [
-                  {
-                    "Type": "VCPU",
-                    "Value": "4"
-                  },
-                  {
-                    "Type": "MEMORY",
-                    "Value": "2048"
-                  }
+            "MaxConcurrency": 40,
+            "Catch": [
+              {
+                "ErrorEquals": [
+                  "States.ALL"
                 ],
-                "Environment": [
-                  {
-                    "Name": "STEP_NAME",
-                    "Value": "collection_publish"
-                  },
-                  {
-                    "Name": "MIGRATE",
-                    "Value": "True"
-                  },
-                  {
-                    "Name": "COLLECTION_ID",
-                    "Value.$": "$[0].Input.collection_id"
-                  },
-                  {
-                    "Name": "CAN_PUBLISH",
-                    "Value.$": "$.can_open_revision"
-                  },
-                  {
-                    "Name": "TASK_TOKEN",
-                    "Value.$": "$$.Task.Token"
-                  }
-                ]
+                "Next": "CollectionPublish",
+                "ResultPath": "$.error"
               }
-            },
+            ],
+            "OutputPath": "$[0]"
+          },
+          "CollectionError": {
+            "Type": "Pass",
             "End": true
           }
         }
       },
       "ItemsPath": "$",
       "MaxConcurrency": 40,
-      "Next": "report"
+      "Next": "report",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "report",
+          "ResultPath": null
+        }
+      ]
     },
     "report": {
       "Type": "Task",
@@ -309,6 +414,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "TASK_TOKEN",
               "Value.$": "$$.Task.Token"
+            },
+            {
+              "Name": "EXECUTION_ID",
+              "Value.$": "$$.Execution.Name"
             }
           ]
         }
