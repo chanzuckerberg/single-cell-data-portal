@@ -14,7 +14,8 @@ set -e
 SCRIPTS_DIR=`dirname $0`
 . $SCRIPTS_DIR/set_src_dest_envs.sh
 
-echo Mirroring RDS data from $SRC_ENV to $DEST_ENV
+echo
+echo Mirroring RDS data from $SRC_ENV to $DEST_ENV/$RDEV_ENV
 
 DB_DUMP_FILE=`mktemp`
 
@@ -37,13 +38,17 @@ make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE
 
 DB_PW=`aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'`
 
-DB_NAME="corpora_${DEPLOYMENT_STAGE}"
-DB_USER=corpora_${DEPLOYMENT_STAGE}
+if [[ $DEST_ENV == 'rdev' ]]; then
+  DB_NAME="/${RDEV_ENV}"
+  DB_USER=dataportal
+else
+  DB_NAME="corpora_${DEPLOYMENT_STAGE}"
+  DB_USER=corpora_${DEPLOYMENT_STAGE}
+fi
 
 read -n 1 -p "ATTENTION: Proceed to replace the destination database \"${DB_NAME}\"? (Y/n) " ANS
 echo
 [[ $ANS == 'Y' ]] || exit 1
-
 make db/tunnel/up
 PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} --schema=persistence_schema ${DB_DUMP_FILE}
 make db/tunnel/down
