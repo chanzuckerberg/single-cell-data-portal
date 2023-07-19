@@ -437,7 +437,7 @@ export interface FilterDimensions {
   development_stage_terms: { id: string; name: string }[];
   disease_terms: { id: string; name: string }[];
   self_reported_ethnicity_terms: { id: string; name: string }[];
-  publication_citations: string[];
+  publication_citations: { id: string; name: string }[];
   sex_terms: { id: string; name: string }[];
   tissue_terms: { id: string; name: string }[];
 }
@@ -478,7 +478,7 @@ export function useFilterDimensions(version: 1 | 2 = 2): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
-        publication_citations,
+        publication_citations: publication_citations.map(stringToEntity),
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },
@@ -1039,8 +1039,15 @@ function useWMGFiltersQueryRequestBody(
 
   const { data } = usePrimaryFilterDimensions(version);
 
-  const { tissues, datasets, developmentStages, diseases, ethnicities, sexes } =
-    selectedFilters;
+  const {
+    tissues,
+    datasets,
+    developmentStages,
+    diseases,
+    ethnicities,
+    sexes,
+    publications,
+  } = selectedFilters;
 
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
@@ -1068,6 +1075,7 @@ function useWMGFiltersQueryRequestBody(
         self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids: tissues,
+        publication_citations: publications,
       },
     };
   }, [
@@ -1079,6 +1087,7 @@ function useWMGFiltersQueryRequestBody(
     developmentStages,
     diseases,
     ethnicities,
+    publications,
     sexes,
     version,
   ]);
@@ -1122,6 +1131,10 @@ function toEntity(item: RawOntologyTerm) {
   const [id, name] = Object.entries(item)[0];
 
   return { id, name: name || id || "" };
+}
+
+function stringToEntity(item: string) {
+  return { id: item, name: item };
 }
 
 function useSnapshotId(): string | null {
