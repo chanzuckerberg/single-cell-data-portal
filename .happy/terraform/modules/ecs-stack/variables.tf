@@ -132,6 +132,6 @@ variable schema_migration_ecs_memory {
 
 variable backend_workers {
   type        = number
-  description = "Number of backend workers to run"
+  description = "Number of backend workers to run. Set to 1 by default for dev and staging."
   default     = 1
 }
