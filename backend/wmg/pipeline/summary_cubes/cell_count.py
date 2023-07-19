@@ -1,5 +1,6 @@
 import json
 import logging
+import unicodedata
 
 import numpy as np
 import pandas as pd
@@ -100,7 +101,9 @@ def create_cell_count_cube(corpus_path: str):
     df = transform(obs)
 
     dataset_dict = return_dataset_dict_w_publications()
-    df["publication_citation"] = df["dataset_id"].map(lambda x: dataset_dict.get(x, "No Publication"))
+    df["publication_citation"] = [
+        remove_accents(dataset_dict.get(dataset_id, "No Publication")) for dataset_id in df["dataset_id"]
+    ]
 
     n_cells = df["n_cells"].to_numpy()
     df["n_cells"] = n_cells
@@ -187,3 +190,8 @@ def _to_dict(a, b):
     slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
     d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
     return d
+
+
+def remove_accents(input_str):
+    nfkd_form = unicodedata.normalize("NFKD", input_str)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
