@@ -103,9 +103,22 @@ describe("Cell Guide", () => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_GUIDE}`, page);
       const element = page.getByTestId(CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT);
       await waitForElementAndClick(element);
-      await element.type("neuron");
-      // input down arrow key
-      await element.press("ArrowDown");
+
+      await tryUntil(
+        async () => {
+          await element.type("neuron");
+          // input down arrow key
+          await element.press("ArrowDown");
+          const firstOption = page.getByRole("option").first();
+          const firstOptionText = await firstOption?.textContent();
+          expect(firstOptionText).toBe("neuron");
+
+          // get css classes of first option
+          const firstOptionClasses = await firstOption?.getAttribute("class");
+          expect(firstOptionClasses).toContain("Mui-focused");
+        },
+        { page }
+      );
 
       await Promise.all([
         // check that the url has changed to the correct CellGuide card after browser finishes navigating
