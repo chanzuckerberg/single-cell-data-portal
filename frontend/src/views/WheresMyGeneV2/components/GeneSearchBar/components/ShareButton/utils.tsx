@@ -18,12 +18,14 @@ export const generateAndCopyShareUrl = ({
   organism,
   genes,
   compare,
+  cellTypes = [],
   copyToClipboard = true,
 }: {
   filters: State["selectedFilters"];
   organism: State["selectedOrganismId"];
   genes: State["selectedGenes"];
   compare: State["compare"];
+  cellTypes?: State["filteredCellTypes"];
   copyToClipboard?: boolean;
 }) => {
   // Create a URL that contains the selected filters, tissues, and genes as params in the URL
@@ -41,6 +43,10 @@ export const generateAndCopyShareUrl = ({
 
   if (compare) {
     url.searchParams.set("compare", compare);
+  }
+
+  if (cellTypes.length > 0) {
+    url.searchParams.set("cellTypes", cellTypes.join(","));
   }
 
   const urlString = String(url);
@@ -107,9 +113,13 @@ export const loadStateFromQueryParams = (
   const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
 
+  //Check for cell types
+  const newFilteredCellTypes = params.get("cellTypes")?.split(delimiter) || [];
+  if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
+
   removeParams(paramsToRemove);
 
-  // If there are no filters, tissues, or genes selected, don't update the state
+  // If there are no filters and genes selected, don't update the state
   if (
     Object.values(Object.keys(newSelectedFilters)).length === 0 &&
     newSelectedGenes.length === 0
@@ -130,6 +140,7 @@ export const loadStateFromQueryParams = (
       filters: newSelectedFilters,
       organism: newSelectedOrganism,
       genes: newSelectedGenes,
+      cellTypes: newFilteredCellTypes,
     })
   );
 
@@ -138,5 +149,6 @@ export const loadStateFromQueryParams = (
     filters: newSelectedFilters,
     organism: newSelectedOrganism,
     genes: newSelectedGenes,
+    cellTypes: newFilteredCellTypes,
   };
 };

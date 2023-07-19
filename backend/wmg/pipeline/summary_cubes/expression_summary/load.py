@@ -69,7 +69,7 @@ def build_in_mem_cube(
 
         vals["publication_citation"][idx : idx + n_vals] = remove_accents(
             dataset_dict.get(attr_values[dataset_index], "No Publication")
-        ).encode("ascii")
+        )
 
         idx += n_vals
 
