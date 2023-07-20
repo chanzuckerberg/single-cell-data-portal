@@ -8,9 +8,19 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     CollectionVersionWithDatasets,
     DatasetId,
+    DatasetProcessingStatus,
     DatasetVersionId,
 )
 from backend.layers.processing.schema_migration import SchemaMigrate
+
+
+def make_mock_dataset_version():
+    dataset_version = mock.Mock()
+    dataset_version.dataset_id = DatasetId()
+    dataset_version.version_id = DatasetVersionId()
+    dataset_version.status = mock.Mock(processing_status=DatasetProcessingStatus.SUCCESS)
+    dataset_version.metadata = mock.Mock(schema_version="1.0.0")
+    return dataset_version
 
 
 @pytest.fixture
@@ -23,10 +33,7 @@ def published_collection():
     collection.version_id = CollectionVersionId()
     collection.datasets = []
     for _i in range(2):
-        dataset_version = mock.Mock()
-        dataset_version.dataset_id = DatasetId()
-        dataset_version.version_id = DatasetVersionId()
-        collection.datasets.append(dataset_version)
+        collection.datasets.append(make_mock_dataset_version())
     return collection
 
 
@@ -39,11 +46,8 @@ def revision(published_collection):
     collection.collection_id = published_collection.collection_id
     collection.version_id = CollectionVersionId()
     collection.datasets = []
-    for dataset in published_collection.datasets:
-        dataset_version = mock.Mock()
-        dataset_version.dataset_id = dataset.dataset_id
-        dataset_version.version_id = dataset.version_id
-        collection.datasets.append(dataset_version)
+    for _dataset in published_collection.datasets:
+        collection.datasets.append(make_mock_dataset_version())
     return [published_collection, collection]
 
 
@@ -57,10 +61,7 @@ def private():
     collection.version_id = CollectionVersionId()
     collection.datasets = []
     for _i in range(2):
-        dataset_version = mock.Mock()
-        dataset_version.dataset_id = DatasetId()
-        dataset_version.version_id = DatasetVersionId()
-        collection.datasets.append(dataset_version)
+        collection.datasets.append(make_mock_dataset_version())
     return collection
 
 
