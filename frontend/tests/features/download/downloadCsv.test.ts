@@ -14,7 +14,7 @@ import {
 } from "tests/common/constants";
 
 const { describe } = test;
-describe("CSV download tests", () => {
+describe.only("CSV download tests", () => {
   conditionallyRunTests();
 
   test(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
