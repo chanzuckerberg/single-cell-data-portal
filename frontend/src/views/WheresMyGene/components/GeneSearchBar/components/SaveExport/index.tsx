@@ -148,12 +148,8 @@ export default function SaveExport({
   allChartProps,
   availableFilters,
 }: Props): JSX.Element {
-  const {
-    selectedFilters,
-    selectedPublicationFilter,
-    selectedOrganismId,
-    compare,
-  } = useContext(StateContext);
+  const { selectedFilters, selectedOrganismId, compare } =
+    useContext(StateContext);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFileTypes, setFileTypes] = useState<("png" | "svg" | "csv")[]>(
     ["png"]
@@ -219,7 +215,6 @@ export default function SaveExport({
         selectedCellTypes,
         selectedFileTypes,
         selectedFilters,
-        selectedPublicationFilter,
         selectedGenes,
         selectedOrganismId,
         selectedTissues,
@@ -250,7 +245,6 @@ export default function SaveExport({
     selectedCellTypes,
     selectedFileTypes,
     selectedFilters,
-    selectedPublicationFilter,
     selectedGenes,
     selectedOrganismId,
     selectedTissues,
@@ -445,7 +439,6 @@ function generateCsv({
   selectedGenes,
   availableFilters,
   selectedFilters,
-  selectedPublicationFilter,
   selectedOrganismId,
   availableOrganisms,
   selectedTissues,
@@ -455,7 +448,6 @@ function generateCsv({
   selectedGenes: Props["selectedGenes"];
   availableFilters: Partial<FilterDimensions>;
   selectedFilters: State["selectedFilters"];
-  selectedPublicationFilter: State["selectedPublicationFilter"];
   selectedOrganismId: string | null;
   availableOrganisms: OntologyTerm[] | null | undefined;
   selectedTissues: Props["selectedTissues"];
@@ -469,7 +461,6 @@ function generateCsv({
       availableFilters,
       availableOrganisms,
       selectedFilters,
-      selectedPublicationFilter,
       selectedGenes,
       selectedOrganismId,
       selectedTissues,
@@ -603,7 +594,6 @@ function download_({
   availableOrganisms,
   selectedOrganismId,
   selectedFilters,
-  selectedPublicationFilter,
   observer,
   setDownloadStatus,
   setEchartsRendererMode,
@@ -619,7 +609,6 @@ function download_({
   availableOrganisms: OntologyTerm[] | null | undefined;
   selectedOrganismId: string | null;
   selectedFilters: State["selectedFilters"];
-  selectedPublicationFilter: State["selectedPublicationFilter"];
   observer: MutationObserver;
   setDownloadStatus: Dispatch<
     SetStateAction<{
@@ -700,7 +689,6 @@ function download_({
             selectedGenes,
             availableFilters,
             selectedFilters,
-            selectedPublicationFilter,
             selectedOrganismId,
             availableOrganisms,
             selectedTissues,
@@ -736,7 +724,6 @@ function download_({
         dataset_filter: selectedFilters.datasets,
         disease_filter: selectedFilters.diseases,
         self_reported_ethnicity_filter: selectedFilters.ethnicities,
-        publication_filter: selectedPublicationFilter.publications,
         sex_filter: selectedFilters.sexes,
         group_by_option: getCompareOptionNameById(compare),
 

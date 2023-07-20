@@ -78,10 +78,6 @@ class DataArtifactCorrectness(unittest.TestCase):
                 test_filter_options[dimension].sort()
                 expected_filter_options[dimension].sort()
 
-            # ignore publication citation for now
-            del test_filter_options["publication_citation"]
-            del expected_filter_options["publication_citation"]
-
             # check that the two dictionaries are equal
             self.assertDictEqual(test_filter_options, expected_filter_options)
 

@@ -623,6 +623,10 @@ paths:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     self_reported_ethnicity_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    publication_citations:
+                      type: array
+                      items:
+                        type: string
               required:
                 - filter
       responses:
@@ -667,7 +671,10 @@ paths:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                       tissue_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-
+                      publication_citations:
+                        type: array
+                        items:
+                          type: string
   /markers:
     post:
       summary: Given a cell type, organism, and tissue, returns the top `n_markers` precomputed marker genes for one of two statistical tests, the t-test or binomial test (`test="ttest"` or `test="binomtest"`, respectively). By default, `n_markers=10`. If `n_markers=0`, all marker genes will be returned.
