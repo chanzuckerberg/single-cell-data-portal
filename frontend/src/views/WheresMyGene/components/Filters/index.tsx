@@ -285,21 +285,12 @@ export default memo(function Filters({
         }
 
         currentOptions = options;
-        if (key === "publications") {
-          dispatch(
-            selectFilters(
-              key,
-              options.map((option) => option as unknown as string)
-            )
-          );
-        } else {
-          dispatch(
-            selectFilters(
-              key,
-              options.map((option) => (option as unknown as { id: string }).id)
-            )
-          );
-        }
+        dispatch(
+          selectFilters(
+            key,
+            options.map((option) => (option as unknown as { id: string }).id)
+          )
+        );
       };
     },
     [dispatch]

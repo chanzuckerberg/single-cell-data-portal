@@ -953,8 +953,14 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 
   const { data } = usePrimaryFilterDimensions(version);
 
-  const { datasets, developmentStages, diseases, ethnicities, sexes } =
-    selectedFilters;
+  const {
+    datasets,
+    developmentStages,
+    diseases,
+    ethnicities,
+    sexes,
+    publications,
+  } = selectedFilters;
 
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
@@ -1011,6 +1017,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
         organism_ontology_term_id: selectedOrganismId,
         self_reported_ethnicity_ontology_term_ids: ethnicities,
         sex_ontology_term_ids: sexes,
+        publication_citations: publications,
         ...(version === 1 && { tissue_ontology_term_ids }),
       },
       is_rollup: true, // this could be made toggleable by users in the future
@@ -1029,6 +1036,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
     sexes,
     organismGenesByName,
     tissuesByName,
+    publications,
   ]);
 }
 
