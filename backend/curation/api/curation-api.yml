@@ -280,6 +280,13 @@ paths:
         - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
+        - name: delete_published
+          description: |
+            Perform the delete even if the Collection is published. Not allowed for users.
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "204":
           $ref: "#/components/responses/204"
@@ -375,6 +382,13 @@ paths:
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/path_dataset_id"
+        - name: delete_published
+          description: |
+            Perform the delete even if the Dataset is published. Not allowed for users.
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "202":
           description: Accepted

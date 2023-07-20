@@ -75,7 +75,7 @@ def _get_collection_and_dataset(
     return collection_version, dataset_version
 
 
-def delete(token_info: dict, collection_id: str, dataset_id: str):
+def delete(token_info: dict, collection_id: str, dataset_id: str, delete_published: str):
     business_logic = get_business_logic()
     user_info = UserInfo(token_info)
 
@@ -87,8 +87,14 @@ def delete(token_info: dict, collection_id: str, dataset_id: str):
     if dataset_version.version_id not in [v.version_id for v in collection_version.datasets]:
         raise ForbiddenHTTPException(f"Dataset {dataset_id} does not belong to a collection")
 
+    delete_published_flag = False
+    if user_info.is_cxg_admin() and delete_published == "true" and not collection_version.published_at:
+        delete_published_flag = True
+
     try:
-        business_logic.remove_dataset_version(collection_version.version_id, dataset_version.version_id)
+        business_logic.remove_dataset_version(
+            collection_version.version_id, dataset_version.version_id, delete_published_flag
+        )
     except CollectionUpdateException:
         raise MethodNotAllowedException(detail="Cannot delete a public Dataset") from None
     return Response(status=202)
