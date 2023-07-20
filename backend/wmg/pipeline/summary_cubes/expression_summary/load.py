@@ -59,16 +59,12 @@ def build_in_mem_cube(
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
 
-        dataset_index = 0
-
         for i, k in enumerate(other_cube_attrs):
-            if k == "dataset_id":
-                dataset_index = i
             if k != "publication_citation":
                 vals[k][idx : idx + n_vals] = attr_values[i]
 
         vals["publication_citation"][idx : idx + n_vals] = remove_accents(
-            dataset_dict.get(attr_values[dataset_index], "No Publication")
+            dataset_dict.get(vals["dataset_id"][0], "No Publication")
         )
 
         idx += n_vals
