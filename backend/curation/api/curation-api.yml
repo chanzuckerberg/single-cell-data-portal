@@ -286,6 +286,7 @@ paths:
           in: query
           required: false
           schema:
+            default: "false"
             type: string
       responses:
         "204":
@@ -388,6 +389,7 @@ paths:
           in: query
           required: false
           schema:
+            default: "false"
             type: string
       responses:
         "202":
