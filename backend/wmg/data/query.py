@@ -168,7 +168,7 @@ class WmgQuery:
                 cond=query_cond or None,
                 return_incomplete=True,
                 use_arrow=True,
-                attrs=attrs + ["publication_citation"],
+                attrs=attrs,
                 dims=dims,
             ).df[tiledb_dims_query]
         )
