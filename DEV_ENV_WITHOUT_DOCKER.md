@@ -37,16 +37,15 @@
    - `brew install graphviz`
    - `pip install --global-option=build_ext --global-option="-I$(brew --prefix graphviz)/include/" --global-option="-L$(brew --prefix graphviz)/lib/" pygraphviz==1.11`
 
-1. Install base packages - `pip install -r requirements.txt`
-1. Install packages for WMG api - `pip install -r backend/api_server/requirements.txt`
-1. Install packages for WMG pipeline - `pip install -r backend/wmg/pipeline/requirements.txt`
+1. Install packages for WMG api - `pip install -r requirements-backend.txt`
+1. Install packages for WMG pipeline - `pip install -r requirements-wmg-pipeline.txt`
 
-### Run unit tests
+### Run unit tests for WMG
 
 1. Run unit tests for WMG api - `pytest -v tests/unit/backend/wmg`
 1. Run unit tests for WMG pipeline - `pytest -v tests/unit/wmg_processing`
 
-### Run functional tests
+### Run functional tests for WMG
 
 Run functional tests for WMG api against the `dev` environment.
 **NOTE**: `dev` environment is a remote environment. These functional tests run locally against a backend in a remote environment called `dev`.
