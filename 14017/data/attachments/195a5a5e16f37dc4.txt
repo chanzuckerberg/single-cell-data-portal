@@ -1,0 +1,77 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +6ms
+  pw:api <= browserType.launch succeeded +469ms
+  pw:api => browser.newContext started +3ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +114ms
+  pw:api   "commit" event fired +27ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +6ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +14ms
+  pw:api => tracing.start started +11ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +87ms
+  pw:api => page.goto started +27ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +16ms
+  pw:api   "commit" event fired +36s
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "networkidle" event fired +14s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/" +24ms
+  pw:api   navigated to "about:blank" +36ms
+  pw:api <= page.goto succeeded +87ms
+  pw:api => page.evaluate started +4ms
+  pw:api <= page.evaluate succeeded +48ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +17ms
+  pw:api   "commit" event fired +163ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/" +5ms
+  pw:api   navigated to "about:blank" +26ms
+  pw:api <= page.goto succeeded +85ms
+TypeError: Invalid URL
+    at new NodeError (node:internal/errors:371:5)
+    at onParseError (node:internal/url:552:9)
+    at new URL (node:internal/url:628:5)
+    at parseUrl (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@smithy/url-parser/dist-cjs/index.js:7:38)
+    at toEndpointV1 (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@smithy/middleware-endpoint/dist-cjs/adaptors/toEndpointV1.js:12:38)
+    at customEndpointProvider (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@smithy/middleware-endpoint/dist-cjs/resolveEndpointConfig.js:10:99)
+    at runNextTicks (node:internal/process/task_queues:61:5)
+    at processImmediate (node:internal/timers:437:9) {
+  input: '',
+  code: 'ERR_INVALID_URL'
+}
+  pw:api => locator.click started +17ms
+  pw:api waiting for getByText('Log In') +23ms
+  pw:api   locator resolved to <span class="bp4-button-text">Log In</span> +33ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +9ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +12ms
+  pw:api   click action done +939ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   "commit" event fired +1ms
+  pw:api   navigated to "https://login.cellxgene.dev.single-cell.czi.technology/login?state=hKFo2SBLMTZ4aDA5UnZpaE9VZ1JtSzUxSmtITmdpWVdfMk5nUKFupWxvZ2luo3RpZNkgYUh2b1BpNTBoM2tENFFrOV9MeVNRWk1GUXdYTjRSeUejY2lk2SBSNkd3eGtDVDVKd0k4dWRMZGxPdEwzcmVWdnk0MVFXNQ&client=R6GwxkCT5JwI8udLdlOtL3reVvy41QW5&protocol=oauth2&response_type=code&redirect_uri=https%3A%2F%2Fapi.cellxgene.dev.single-cell.czi.technology%2Fdp%2Fv1%2Foauth2%2Fcallback&scope=openid%20profile%20email%20offline_access%20write%3Acollections&audience=api.cellxgene.dev.single-cell.czi.technology&nonce=bAWrhFKF66T4ZidlF2yh" +0ms
+  pw:api   navigated to "https://login.cellxgene.dev.single-cell.czi.technology/login?state=hKFo2SBLMTZ4aDA5UnZpaE9VZ1JtSzUxSmtITmdpWVdfMk5nUKFupWxvZ2luo3RpZNkgYUh2b1BpNTBoM2tENFFrOV9MeVNRWk1GUXdYTjRSeUejY2lk2SBSNkd3eGtDVDVKd0k4dWRMZGxPdEwzcmVWdnk0MVFXNQ&client=R6GwxkCT5JwI8udLdlOtL3reVvy41QW5&protocol=oauth2&response_type=code&redirect_uri=https%3A%2F%2Fapi.cellxgene.dev.single-cell.czi.technology%2Fdp%2Fv1%2Foauth2%2Fcallback&scope=openid%20profile%20email%20offline_access%20write%3Acollections&audience=api.cellxgene.dev.single-cell.czi.technology&nonce=bAWrhFKF66T4ZidlF2yh" +0ms
+  pw:api   navigations have finished +5ms
+  pw:api <= locator.click succeeded +4ms
+  pw:api => page.fill started +2ms
+  pw:api <= page.fill failed +1ms
+ValidationError: page.fill: value: expected string, got object
+    at login (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/tests/utils/helpers.ts:78:14)
+    at /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/tests/common/playwright.global.setup.ts:39:9
+  pw:api => tracing.stopChunk started +5ms
+  pw:api <= tracing.stopChunk succeeded +12ms
+  pw:api => tracing.stopChunk started +7ms
+  pw:api   "domcontentloaded" event fired +237ms
+  pw:api <= tracing.stopChunk succeeded +20ms
