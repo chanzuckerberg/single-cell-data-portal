@@ -92,6 +92,7 @@ class TissueMapper:
         "UBERON_0001511",  # skin of leg
         "UBERON_0002190",  # subcutaneous adipose tissue
         "UBERON_0000014",  # zone of skin
+        "UBERON_0000916",  # abdomen
     ]
 
     # Terms to ignore when mapping
