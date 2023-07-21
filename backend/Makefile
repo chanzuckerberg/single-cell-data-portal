@@ -5,7 +5,7 @@ db/migrate:
 .PHONY: db/remote_migration_init
 db/remote_migration_init:
 	# Run utility installation before invoking these commands.
-	pip install awscli -r ../requirements-base.txt
+	pip install awscli -r ../requirements-backend.txt
 	apt-get update && apt-get install -y postgresql-client jq
 
 .PHONY: db/init_remote_dev
