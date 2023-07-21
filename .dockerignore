@@ -3,6 +3,12 @@
 
 # Allow files and directories
 !/requirements.txt
+!/requirements-backend.txt
+!/requirements-processing.txt
+!/requirements-submissions.txt
+!/requirements-upload-failures.txt
+!/requirements-upload-success.txt
+!/requirements-wmg-pipeline.txt
 !/backend/**
 !/tests/**
 !/scripts/**
