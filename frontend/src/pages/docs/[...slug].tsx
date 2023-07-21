@@ -443,7 +443,7 @@ DocPage.Layout = function DocLayout({
   return (
     <Layout>
       <Head>
-        <title>CELL&times;GENE | Documentation</title>
+        <title>Documentation - CZ CELLxGENE</title>
       </Head>
       <StyledDocsLayout>
         <main>{children}</main>
