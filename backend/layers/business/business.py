@@ -750,6 +750,14 @@ class BusinessLogic(BusinessLogicInterface):
         except DatasetVersionNotFoundException:
             return None
 
+    def get_latest_dataset_versions_by_schema(self, schema_version: str) -> Iterable[DatasetVersion]:
+        """
+        Return a list of the most recently published Dataset Version matching the given schema version for each
+        published Dataset
+        """
+        self.database_provider.get_all_dataset_versions_by_schema(schema_version)
+        # TODO: process dataset_versions, keep one (most recently published) per canonical dataset
+
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
     ) -> Tuple[CollectionVersionWithDatasets, DatasetVersion]:

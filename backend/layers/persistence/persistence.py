@@ -825,3 +825,14 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version = session.query(DatasetVersionTable).filter_by(id=canonical_dataset.version_id).one()
             dataset_version.canonical_dataset = canonical_dataset
             return self._hydrate_dataset_version(dataset_version)
+
+    def get_all_dataset_versions_by_schema(self, schema_version) -> Iterable[CollectionVersionWithDatasets]:
+        """
+        Returns list of Datasets Versions matching schema_version, for each published canonical Dataset
+        """
+        pass
+
+    # with self._manage_session() as session:
+    # get all published canonical Datasets
+    # query dataset version table by published dataset canonical ID and schema version
+    # return
