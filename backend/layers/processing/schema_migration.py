@@ -108,7 +108,13 @@ class SchemaMigrate(ProcessingLogic):
         current_schema_version = cxs_get_current_schema_version()
 
         if all(dataset.metadata.schema_version == current_schema_version for dataset in version.datasets):
-            # check if there are datasets to migrate.
+            # Handles the case were the collection has no datasets or all datasets are already migrated.
+            if len(version.datasets) == 0:
+                self.logger.info("Collection has no datasets")
+            else:
+                self.logger.info(
+                    "All datasets in the collection have been migrated", extra={"dataset_count": len(version.datasets)}
+                )
             return {
                 "can_publish": str(False),  # skip publishing, because the collection is already published and no
                 # revision is created, or the collection is private or a revision.
@@ -143,10 +149,6 @@ class SchemaMigrate(ProcessingLogic):
             ]
             # The repeated fields in datasets is required for the AWS SFN job that uses it.
         }
-
-        if not response["datasets"]:
-            # Handles the case were the collection has no datasets
-            response["no_datasets"] = str(True)
         return response
 
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
