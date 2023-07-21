@@ -4,7 +4,8 @@ import logging
 import os
 from typing import Any, Dict, List
 
-import cellxgene_schema
+from cellxgene_schema.migrate import migrate as cxs_migrate
+from cellxgene_schema.schema import get_current_schema_version as cxs_get_current_schema_version
 
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.result_notification import upload_to_slack
@@ -85,7 +86,7 @@ class SchemaMigrate(ProcessingLogic):
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
         migrated_file = "migrated.h5ad"
-        cellxgene_schema.migrate.migrate("previous_schema.h5ad", migrated_file, collection_id, dataset_id)
+        cxs_migrate("previous_schema.h5ad", migrated_file, collection_id, dataset_id)
         key_prefix = self.get_key_prefix(dataset_version_id)
         uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -104,7 +105,7 @@ class SchemaMigrate(ProcessingLogic):
     def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
-        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
+        current_schema_version = cxs_get_current_schema_version()
 
         if not any(dataset.metadata.schema_version != current_schema_version for dataset in version.datasets):
             # check if there are datasets to migrate.
@@ -152,7 +153,7 @@ class SchemaMigrate(ProcessingLogic):
         errors = dict()
         collection_version_id = CollectionVersionId(collection_version_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
-        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
+        current_schema_version = cxs_get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
             dataset_version_id = dataset.version_id.id
