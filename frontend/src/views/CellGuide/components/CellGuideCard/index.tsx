@@ -123,6 +123,7 @@ export default function CellGuideCard(): JSX.Element {
           <MarkerGeneTables
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
+            cellTypeName={cellTypeName}
           />
 
           {/* Source Data section */}
