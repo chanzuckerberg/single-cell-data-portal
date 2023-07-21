@@ -340,7 +340,7 @@ export default function Collections(): JSX.Element {
   return (
     <>
       <Head>
-        <title>CELL&times;GENE | Collections</title>
+        <title>Collections - CZ CELLxGENE Discover</title>
       </Head>
       {isError ? null : shouldShowLoader ? (
         <Loader />
