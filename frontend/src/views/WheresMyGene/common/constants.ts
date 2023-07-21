@@ -9,9 +9,10 @@ export const COMPARE_OPTIONS = [
   { id: "disease", name: "Disease" },
   { id: "self_reported_ethnicity", name: "Ethnicity" },
   { id: "sex", name: "Sex" },
+  { id: "publication", name: "Publication" },
 ];
 
-export type CompareId = "disease" | "ethnicity" | "sex";
+export type CompareId = "disease" | "ethnicity" | "sex" | "publication";
 
 export const getCompareOptionNameById = (id?: CompareId) => {
   const option = COMPARE_OPTIONS.find((option) => option.id === id);
