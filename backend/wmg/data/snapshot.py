@@ -1,6 +1,8 @@
+import glob
 import json
 import logging
 import os
+import shutil
 from dataclasses import dataclass
 from typing import Dict, Optional
 
@@ -128,7 +130,15 @@ def _download_and_load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
     logger.info(f"Downloading WMG snapshot at {snapshot_base_uri}")
 
-    os.system(f"aws s3 sync {snapshot_base_uri} snapshot/")
+    local_snapshot_name = f"local_snapshot_{new_snapshot_identifier}"
+    # delete all local snapshots prior to downloading a new one
+    local_snapshots = glob.glob("local_snapshot_*")
+    if len(local_snapshots) > 0:
+        # delete all local snapshots
+        for local_snapshot in local_snapshots:
+            shutil.rmtree(local_snapshot)
+
+    os.system(f"aws s3 sync {snapshot_base_uri} {local_snapshot_name}/")
 
     cell_type_orderings = _load_cell_type_order()
     primary_filter_dimensions = _load_primary_filter_data()
@@ -140,11 +150,11 @@ def _download_and_load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     #  -data-portal/2134
     return WmgSnapshot(
         snapshot_identifier=new_snapshot_identifier,
-        expression_summary_cube=_open_cube(f"snapshot/{EXPRESSION_SUMMARY_CUBE_NAME}"),
-        expression_summary_default_cube=_open_cube(f"snapshot/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
-        expression_summary_fmg_cube=_open_cube(f"snapshot/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
-        marker_genes_cube=_open_cube(f"snapshot/{MARKER_GENES_CUBE_NAME}"),
-        cell_counts_cube=_open_cube(f"snapshot/{CELL_COUNTS_CUBE_NAME}"),
+        expression_summary_cube=_open_cube(f"{local_snapshot_name}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        expression_summary_default_cube=_open_cube(f"{local_snapshot_name}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
+        expression_summary_fmg_cube=_open_cube(f"{local_snapshot_name}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
+        marker_genes_cube=_open_cube(f"{local_snapshot_name}/{MARKER_GENES_CUBE_NAME}"),
+        cell_counts_cube=_open_cube(f"{local_snapshot_name}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=cell_type_orderings,
         primary_filter_dimensions=primary_filter_dimensions,
         dataset_to_gene_ids=dataset_to_gene_ids,
@@ -156,22 +166,22 @@ def _open_cube(cube_uri) -> Array:
     return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
 
 
-def _load_cell_type_order() -> DataFrame:
-    return pd.read_json(f"snapshot/{CELL_TYPE_ORDERINGS_FILENAME}")
+def _load_cell_type_order(local_snapshot_name: str) -> DataFrame:
+    return pd.read_json(f"{local_snapshot_name}/{CELL_TYPE_ORDERINGS_FILENAME}")
 
 
-def _load_primary_filter_data() -> Dict:
-    with open(f"snapshot/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "r") as f:
+def _load_primary_filter_data(local_snapshot_name: str) -> Dict:
+    with open(f"{local_snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "r") as f:
         return json.load(f)
 
 
-def _load_dataset_to_gene_ids_data() -> Dict:
-    with open(f"snapshot/{DATASET_TO_GENE_IDS_FILENAME}", "r") as f:
+def _load_dataset_to_gene_ids_data(local_snapshot_name: str) -> Dict:
+    with open(f"{local_snapshot_name}/{DATASET_TO_GENE_IDS_FILENAME}", "r") as f:
         return json.load(f)
 
 
-def _load_filter_graph_data() -> str:
-    with open(f"snapshot/{FILTER_RELATIONSHIPS_FILENAME}", "r") as f:
+def _load_filter_graph_data(local_snapshot_name: str) -> str:
+    with open(f"{local_snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}", "r") as f:
         return json.load(f)
 
 
