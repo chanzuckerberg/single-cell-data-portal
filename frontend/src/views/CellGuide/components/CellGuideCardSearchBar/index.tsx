@@ -54,18 +54,18 @@ export default function CellGuideCardSearchBar(): JSX.Element {
   };
 
   function changeEntity(entityId: string) {
+    if (!entityId) return;
+
+    const formattedEntityId = entityId.replace(":", "_");
+
     if (entityId) {
       if (entityId.startsWith("CL:")) {
-        router.push(`${ROUTES.CELL_GUIDE}/${entityId.replace(":", "_")}`);
-        document.getElementById(CELL_GUIDE_CARD_SEARCH_BAR)?.blur();
-        setOpen(false);
+        router.push(`${ROUTES.CELL_GUIDE}/${formattedEntityId}`);
       } else {
-        router.push(
-          `${ROUTES.CELL_GUIDE}/tissues/${entityId.replace(":", "_")}`
-        );
-        document.getElementById(CELL_GUIDE_CARD_SEARCH_BAR)?.blur();
-        setOpen(false);
+        router.push(`${ROUTES.CELL_GUIDE}/tissues/${formattedEntityId}`);
       }
+      document.getElementById(CELL_GUIDE_CARD_SEARCH_BAR)?.blur();
+      setOpen(false);
     }
   }
   return (

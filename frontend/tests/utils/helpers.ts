@@ -393,3 +393,22 @@ export async function selectFirstNOptions(count: number, page: Page) {
 
   await page.keyboard.press("Escape");
 }
+
+export async function takeSnapshotOfMetaTags(page: Page) {
+  const allMetaTags = await page.locator("meta").all();
+
+  await tryUntil(
+    async () => {
+      const allMetaTagsHTML = (
+        await Promise.all(
+          allMetaTags.map(async (metaTag) =>
+            metaTag.evaluate((node) => node.outerHTML)
+          )
+        )
+      ).sort();
+
+      expect(JSON.stringify(allMetaTagsHTML)).toMatchSnapshot();
+    },
+    { page }
+  );
+}
