@@ -181,6 +181,7 @@ type TableRow = (TableRowEnrichedGenes | TableRowCanonicalGenes) & {
 interface Props {
   cellTypeId: string;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
+  cellTypeName: string;
 }
 
 const ROWS_PER_PAGE = 10;
@@ -190,7 +191,11 @@ export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
 export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =
   "marker-genes-canonical-help-tooltip";
 
-const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
+const MarkerGeneTables = ({
+  cellTypeId,
+  cellTypeName,
+  setGeneInfoGene,
+}: Props) => {
   const [selectedOrganism, setSelectedOrganism] = useState("");
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -410,7 +415,9 @@ const MarkerGeneTables = ({ cellTypeId, setGeneInfoGene }: Props) => {
     setPage(1);
   }, [cellTypeId]);
 
-  const genesForShareUrl = tableRows.map((row) => row.symbolId).join("%2C");
+  const genesForShareUrl = `${tableRows
+    .map((row) => row.symbolId)
+    .join("%2C")}&cellTypes=${cellTypeName.replace(" ", "+")}`;
 
   const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
     setSelectedOrganism(event.target.value as string);
