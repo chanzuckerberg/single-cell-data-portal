@@ -145,6 +145,33 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_mapped_version(collection_id)
 
+    def get_latest_published_collection_versions_by_schema(
+        self, schema_version: str
+    ) -> List[CollectionVersionWithPublishedDatasets]:
+        """
+        Returns a list with the latest published collection version that matches the given schema_version, for each
+        canonical collection
+        """
+        collection_versions = self.database_provider.get_published_collection_versions_by_schema(schema_version)
+        collections = dict()
+        for collection_version in collection_versions:
+            canonical_collection_id = collection_version.collection_id.id
+            if canonical_collection_id not in collections:
+                collections[canonical_collection_id] = collection_version
+            else:
+                current_collection_version = collections[canonical_collection_id]
+                if collection_version.published_at > current_collection_version.published_at:
+                    collections[canonical_collection_id] = collection_version
+        latest_collection_versions = list(collections.values())
+        dataset_version_ids = [
+            dataset_version_id
+            for collection in latest_collection_versions
+            for dataset_version_id in collection.datasets
+        ]
+        dataset_versions = self.database_provider.get_dataset_versions_by_id(dataset_version_ids)
+
+        return self._map_collection_version_to_published_dataset_versions(latest_collection_versions, dataset_versions)
+
     def get_unpublished_collection_version_from_canonical(
         self, collection_id: CollectionId
     ) -> Optional[CollectionVersionWithDatasets]:
@@ -446,43 +473,9 @@ class BusinessLogic(BusinessLogicInterface):
             mapped_dataset_versions,
             mapped_collection_versions,
         ) = self.database_provider.get_all_mapped_datasets_and_collections()
-
-        # Construct dict of collection_id: [Datasets]
-        datasets_by_collection_id = defaultdict(list)
-        [datasets_by_collection_id[d.collection_id.id].append(d) for d in mapped_dataset_versions]
-
-        # Construct dict of collection_id: [all published Collection versions]
-        all_collections_versions = self.database_provider.get_all_collections_versions()
-        collection_versions_by_collection_id = defaultdict(list)
-        [collection_versions_by_collection_id[c.collection_id.id].append(c) for c in all_collections_versions]
-
-        # Determine published_at and collection_version_id for all mapped Dataset versions. Both values come from the
-        # Collection version with which the Dataset version was first published.
-        collections_with_published_datasets: List[CollectionVersionWithPublishedDatasets] = []
-        for collection in mapped_collection_versions:
-            mapped_dataset_versions_for_collection = datasets_by_collection_id[collection.collection_id.id]
-            all_versions_for_collection = collection_versions_by_collection_id[collection.collection_id.id]
-            published_datasets_for_collection: List[PublishedDatasetVersion] = []
-            for mapped_dataset_version in mapped_dataset_versions_for_collection:
-                published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
-                    mapped_dataset_version, all_versions_for_collection
-                )
-                revised_at = (
-                    None if mapped_dataset_version.canonical_dataset.published_at == published_at else published_at
-                )
-                mapped_dataset_version.canonical_dataset.revised_at = revised_at
-                published_datasets_for_collection.append(
-                    PublishedDatasetVersion(
-                        collection_version_id=collection_version_id,
-                        revised_at=revised_at,  # Duped logic to avoid pitfall; no effect in present implementation
-                        published_at=mapped_dataset_version.canonical_dataset.published_at,
-                        **vars(mapped_dataset_version),
-                    )
-                )
-            collection.datasets = published_datasets_for_collection  # hack to allow unpacking via **vars() below
-            collections_with_published_datasets.append(CollectionVersionWithPublishedDatasets(**vars(collection)))
-
-        return collections_with_published_datasets
+        return self._map_collection_version_to_published_dataset_versions(
+            mapped_collection_versions, mapped_dataset_versions
+        )
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
         """
@@ -636,7 +629,7 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Publishes a collection version.
         """
-        version = self.database_provider.get_collection_version(version_id)
+        version = self.database_provider.get_collection_version_with_datasets(version_id)
 
         if version.published_at is not None:
             raise CollectionPublishException("Cannot publish an already published collection")
@@ -644,18 +637,23 @@ class BusinessLogic(BusinessLogicInterface):
         if len(version.datasets) == 0:
             raise CollectionPublishException("Cannot publish a collection with no datasets")
 
+        schema_versions = {dataset.metadata.schema_version for dataset in version.datasets}
+        if len(schema_versions) != 1:
+            raise CollectionPublishException("Cannot publish a collection with datasets of different schema versions")
+        schema_version = next(iter(schema_versions))
+
         has_dataset_revisions = False
         # if collection is a revision and has no changes to previous version's datasets--don't update 'revised_at'
         # used for cases where revision only contains collection-level metadata changes
         if version.canonical_collection.version_id is not None:
             canonical_version = self.database_provider.get_collection_version(version.canonical_collection.version_id)
             canonical_datasets = {dataset_version_id.id for dataset_version_id in canonical_version.datasets}
-            version_datasets = {dataset_version_id.id for dataset_version_id in version.datasets}
+            version_datasets = {dataset.version_id.id for dataset in version.datasets}
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
-            version.collection_id, version_id, update_revised_at=has_dataset_revisions
+            version.collection_id, version_id, schema_version, update_revised_at=has_dataset_revisions
         )
 
         self.delete_dataset_versions_from_bucket(dataset_version_ids_to_delete_from_s3, os.getenv("DATASETS_BUCKET"))
@@ -750,14 +748,6 @@ class BusinessLogic(BusinessLogicInterface):
         except DatasetVersionNotFoundException:
             return None
 
-    def get_latest_dataset_versions_by_schema(self, schema_version: str) -> Iterable[DatasetVersion]:
-        """
-        Return a list of the most recently published Dataset Version matching the given schema version for each
-        published Dataset
-        """
-        self.database_provider.get_all_dataset_versions_by_schema(schema_version)
-        # TODO: process dataset_versions, keep one (most recently published) per canonical dataset
-
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
     ) -> Tuple[CollectionVersionWithDatasets, DatasetVersion]:
@@ -780,3 +770,47 @@ class BusinessLogic(BusinessLogicInterface):
             raise DatasetNotFoundException() from None
 
         return collection_version, dataset_version
+
+    def _map_collection_version_to_published_dataset_versions(
+        self, mapped_collection_versions: List[CollectionVersion], mapped_dataset_versions: List[DatasetVersion]
+    ) -> List[CollectionVersionWithPublishedDatasets]:
+        """
+        Given a list of collection versions and dataset versions, produce a list joining them into CollectionVersionWithPublishedDatasets
+        objects
+        """
+        # Construct dict of collection_id: [Datasets]
+        datasets_by_collection_id = defaultdict(list)
+        [datasets_by_collection_id[d.collection_id.id].append(d) for d in mapped_dataset_versions]
+
+        # Construct dict of collection_id: [all published Collection versions]
+        all_collections_versions = self.database_provider.get_all_collections_versions()
+        collection_versions_by_collection_id = defaultdict(list)
+        [collection_versions_by_collection_id[c.collection_id.id].append(c) for c in all_collections_versions]
+
+        # Determine published_at and collection_version_id for all mapped Dataset versions. Both values come from the
+        # Collection version with which the Dataset version was first published.
+        collections_with_published_datasets: List[CollectionVersionWithPublishedDatasets] = []
+        for collection in mapped_collection_versions:
+            mapped_dataset_versions_for_collection = datasets_by_collection_id[collection.collection_id.id]
+            all_versions_for_collection = collection_versions_by_collection_id[collection.collection_id.id]
+            published_datasets_for_collection: List[PublishedDatasetVersion] = []
+            for mapped_dataset_version in mapped_dataset_versions_for_collection:
+                published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
+                    mapped_dataset_version, all_versions_for_collection
+                )
+                revised_at = (
+                    None if mapped_dataset_version.canonical_dataset.published_at == published_at else published_at
+                )
+                mapped_dataset_version.canonical_dataset.revised_at = revised_at
+                published_datasets_for_collection.append(
+                    PublishedDatasetVersion(
+                        collection_version_id=collection_version_id,
+                        revised_at=revised_at,  # Duped logic to avoid pitfall; no effect in present implementation
+                        published_at=mapped_dataset_version.canonical_dataset.published_at,
+                        **vars(mapped_dataset_version),
+                    )
+                )
+            collection.datasets = published_datasets_for_collection  # hack to allow unpacking via **vars() below
+            collections_with_published_datasets.append(CollectionVersionWithPublishedDatasets(**vars(collection)))
+
+        return collections_with_published_datasets

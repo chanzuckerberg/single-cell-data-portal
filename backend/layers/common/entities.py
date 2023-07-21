@@ -172,7 +172,6 @@ class DatasetMetadata:
     development_stage: List[OntologyTermId]
     cell_type: List[OntologyTermId]
     cell_count: int
-    schema_version: str
     mean_genes_per_cell: float
     batch_condition: List[str]
     suspension_type: List[str]
@@ -230,6 +229,7 @@ class CollectionMetadata:
     contact_name: str
     contact_email: str
     links: List[Link]
+    schema_version: Optional[str]
     consortia: List[str] = field(default_factory=list)
 
 
