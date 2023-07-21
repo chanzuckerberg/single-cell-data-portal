@@ -1,0 +1,2 @@
+INFO     backend.layers.processing.schema_migration:schema_migration.py:188 Uploaded to S3
+INFO     backend.layers.processing.schema_migration:schema_migration.py:170 Deleting files
