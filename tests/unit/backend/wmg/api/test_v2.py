@@ -734,6 +734,7 @@ class WmgApiV2Tests(unittest.TestCase):
             response = self.app.post("/wmg/v2/filters", json=filter_0_request)
 
             expected_filters = {
+                "cell_type_terms": [{"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}],
                 "datasets": [
                     {
                         "collection_id": "dataset_id_0_coll_id",
@@ -746,12 +747,12 @@ class WmgApiV2Tests(unittest.TestCase):
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"}
                 ],
                 "disease_terms": [],
+                "publication_citations": [],
                 "self_reported_ethnicity_terms": [
                     {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
                 ],
                 "sex_terms": [],
                 "tissue_terms": [{"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],
-                "cell_type_terms": [{"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}],
             }
             self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
 

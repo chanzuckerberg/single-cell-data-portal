@@ -169,8 +169,6 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
         )
         marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes.csv.gz", index_col=0)
 
-        expression_summary["publication_citation"] = "No Publication"
-        cell_counts["publication_citation"] = "No Publication"
         tiledb.Array.create(f"{cube_dir}/expression_summary", expression_summary_schema_actual, overwrite=True)
         tiledb.Array.create(f"{cube_dir}/expression_summary_fmg", expression_summary_fmg_schema_actual, overwrite=True)
         tiledb.Array.create(
