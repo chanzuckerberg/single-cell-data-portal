@@ -276,6 +276,7 @@ export const USE_CELL_GUIDE_QUERY = {
 interface CellGuideQueryResponseEntry {
   id: string;
   label: string;
+  synonyms?: string[];
 }
 
 export type CellGuideQueryResponse = CellGuideQueryResponseEntry[];
