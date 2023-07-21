@@ -107,7 +107,7 @@ class SchemaMigrate(ProcessingLogic):
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         current_schema_version = cxs_get_current_schema_version()
 
-        if not any(dataset.metadata.schema_version != current_schema_version for dataset in version.datasets):
+        if all(dataset.metadata.schema_version == current_schema_version for dataset in version.datasets):
             # check if there are datasets to migrate.
             return {
                 "can_publish": str(False),  # skip publishing, because the collection is already published and no
