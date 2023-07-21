@@ -162,7 +162,6 @@ class OntologyTermId:
 @dataclass
 class DatasetMetadata:
     name: str
-    schema_version: str
     organism: List[OntologyTermId]
     tissue: List[OntologyTermId]
     assay: List[OntologyTermId]
