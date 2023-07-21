@@ -18,6 +18,7 @@ import { ChartFormat } from "src/views/WheresMyGene/components/HeatMap/component
 const NO_SELECTION_STRING = "No selection";
 
 interface CsvMetadata {
+  // (thuang): row name - either tissue name or cell type name
   name: string;
   compareValueName: string;
   viewId: string;
@@ -182,6 +183,12 @@ export function csvGeneExpressionRow({
 }) {
   const { total_count, name, compareValueName, viewId } = metadata;
 
+  /**
+   * (thuang): We don't want tissue name to be in the cellType column
+   * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5108
+   */
+  const finalName = tissueName === name ? "aggregated" : name;
+
   const geneExpression = allChartProps[tissueName].chartData.find(
     (value) => value.id === `${viewId}-${geneName}`
   );
@@ -189,7 +196,7 @@ export function csvGeneExpressionRow({
   if (compare) {
     return [
       tissueName,
-      name,
+      finalName,
       total_count,
       getTissuePercentage(geneExpression),
       compareValueName,
@@ -201,7 +208,7 @@ export function csvGeneExpressionRow({
   } else {
     return [
       tissueName,
-      name,
+      finalName,
       total_count,
       getTissuePercentage(geneExpression),
       geneName,
