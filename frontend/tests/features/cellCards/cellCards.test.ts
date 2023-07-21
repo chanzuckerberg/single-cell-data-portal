@@ -79,6 +79,30 @@ describe("Cell Guide", () => {
       // check that the url has changed to the correct CellGuide card
       await page.waitForURL(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000540`); // Neuron
     });
+    test("Cell type search bar filters by synonyms properly and links to a CellGuideCard", async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.CELL_GUIDE}`, page);
+      const element = page.getByTestId(CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT);
+      await waitForElementAndClick(element);
+      await waitForOptionsToLoad(page);
+      // get number of elements with role option in dropdown
+      const numOptionsBefore = await countLocator(page.getByRole("option"));
+      // type in search bar
+      await element.type("cardiomyocyte");
+      // get number of elements with role option in dropdown
+      const numOptionsAfter = await countLocator(page.getByRole("option"));
+      // check that number of elements with role option in dropdown has decreased
+      expect(numOptionsAfter).toBeLessThan(numOptionsBefore);
+      // check that the first element in the dropdown is the one we searched for (cardiac muscle cell)
+      const firstOption = (await page.getByRole("option").elementHandles())[0];
+      const firstOptionText = await firstOption?.textContent();
+      expect(firstOptionText).toBe("cardiac muscle cell");
+      // click on first element in dropdown
+      await firstOption?.click();
+      // check that the url has changed to the correct CellGuide card
+      await page.waitForURL(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000746`); // cardiac muscle cell
+    });
     test("Cell type search bar keyboard input works properly", async ({
       page,
     }) => {
