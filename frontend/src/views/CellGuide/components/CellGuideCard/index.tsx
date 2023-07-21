@@ -155,6 +155,7 @@ export default function CellGuideCard({
           <MarkerGeneTables
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
+            cellTypeName={cellTypeName}
           />
 
           {/* Source Data section */}
