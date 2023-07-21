@@ -100,6 +100,17 @@ class WmgSnapshot:
 cached_snapshot: Optional[WmgSnapshot] = None
 
 
+def get_cached_snapshot() -> WmgSnapshot:
+    """
+    Return the cached snapshot if it exists, otherwise load and cache the snapshot.
+    """
+    global cached_snapshot
+    if cached_snapshot is None:
+        # This is a safety check but should never happen since the snapshot is loaded on server start.
+        cached_snapshot = load_snapshot()
+    return cached_snapshot
+
+
 def load_snapshot() -> WmgSnapshot:
     """
     Loads and caches the WMG snapshot. Reloads the snapshot data if the latest_snapshot_identifier S3 object has

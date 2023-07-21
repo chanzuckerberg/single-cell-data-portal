@@ -15,6 +15,7 @@ from backend.api_server.request_id import generate_request_id, get_request_id
 from backend.common.utils.aws import AwsSecret
 from backend.common.utils.json import CurationJSONEncoder, CustomJSONEncoder
 from backend.gene_info.api.ensembl_ids import GeneChecker
+from backend.wmg.data.snapshot import load_snapshot
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
@@ -60,6 +61,9 @@ def create_flask_app():
     # This is done here because the initialization of gene checker takes some
     # time and, if done on API request, would significantly slow performance.
     GeneChecker()
+
+    # Load the WMG snapshot on startup
+    load_snapshot()
 
     return connexion_app.app
 
