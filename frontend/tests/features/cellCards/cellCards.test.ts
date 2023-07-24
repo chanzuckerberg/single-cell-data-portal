@@ -77,6 +77,7 @@ describe("Cell Guide", () => {
       // get number of elements with role option in dropdown
       const numOptionsBefore = await countLocator(page.getByRole("option"));
       // type in search bar
+      await element.clear();
       await element.type("neuron");
       // get number of elements with role option in dropdown
       const numOptionsAfter = await countLocator(page.getByRole("option"));
