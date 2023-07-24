@@ -248,7 +248,7 @@ export default function BottomBanner({
   const showBanner = useMemo(() => {
     const show =
       !bottomBannerLastClosedTime ||
-      Date.now() - bottomBannerLastClosedTime > BOTTOM_BANNER_EXPIRATION_TIME;
+      Date.now() - bottomBannerLastClosedTime > BOTTOM_BANNER_EXPIRATION_TIME_MS;
     if (show && bottomBannerLastClosedTime) {
       setBottomBannerLastClosedTime(0);
     }
