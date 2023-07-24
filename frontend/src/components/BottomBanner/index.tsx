@@ -39,7 +39,7 @@ export interface Props {
   asFooter?: boolean;
   customSurveyLinkPrefix?: ReactElement;
 }
-const BOTTOM_BANNER_EXPIRATION_TIME = 30 * 3600 * 24 * 1000; //30 days
+const BOTTOM_BANNER_EXPIRATION_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const BOTTOM_BANNER_LAST_CLOSED_TIME_KEY = "bottomBannerLastClosedTime";
 
 export default function BottomBanner({
