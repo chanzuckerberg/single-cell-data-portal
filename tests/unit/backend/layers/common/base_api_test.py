@@ -34,6 +34,9 @@ class BaseAuthAPITest(unittest.TestCase):
     def make_super_curator_header(self):
         return {"Authorization": "Bearer " + "super", "Content-Type": "application/json"}
 
+    def make_cxg_admin_header(self):
+        return {"Authorization": "Bearer " + "cxg_admin", "Content-Type": "application/json"}
+
     def make_not_owner_header(self):
         return {"Authorization": "Bearer " + "not_owner", "Content-Type": "application/json"}
 
@@ -50,6 +53,13 @@ class BaseAuthAPITest(unittest.TestCase):
                 "sub": "super",
                 "email": "fake_user@email.com",
                 "scope": ["write:collections"],
+                "curator_name": "Super Curator",
+            }
+        elif token == "cxg_admin":
+            return {
+                "sub": "super",
+                "email": "fake_user@email.com",
+                "scope": ["write:collections", "delete:collections"],
                 "curator_name": "Super Curator",
             }
         else:
