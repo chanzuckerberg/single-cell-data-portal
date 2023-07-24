@@ -1464,7 +1464,7 @@ components:
     schema_version:
       description: |
         Optional--Filter results by most recently published dataset versions with matching CELLxGENE schema version. Can
-        match against major, minor, or patch schema version.
+        match against major, minor, or patch schema version. Returns empty list if no match is found.
       in: query
       name: schema_version
       required: false
