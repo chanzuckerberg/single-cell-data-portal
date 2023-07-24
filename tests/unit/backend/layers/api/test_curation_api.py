@@ -39,35 +39,46 @@ def mock_config_fn(name):
 
 
 class TestDeleteCollection(BaseAPIPortalTest):
-    def _test(self, collection_id, header, expected_status):
+    def _test(self, collection_id, header, expected_status, query_param_str=None):
         if header == "owner":
             headers = self.make_owner_header()
         elif header == "super":
             headers = self.make_super_curator_header()
+        elif header == "cxg_admin":
+            headers = self.make_cxg_admin_header()
         elif header == "not_owner":
             headers = self.make_not_owner_header()
         elif "noauth":
             headers = {}
-
-        response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
+        response = self.app.delete(
+            f"/curation/v1/collections/{collection_id}{'?' + query_param_str if query_param_str else ''}",
+            headers=headers,
+        )
         self.assertEqual(expected_status, response.status_code)
-        if response.status_code == 204:
-            response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
-            self.assertEqual(404, response.status_code)
 
     def test__delete_public_collection(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 405), ("super", 405)]
+        tests = [
+            ("not_owner", (403, 403)),
+            ("noauth", (401, 401)),
+            ("owner", (405, 405)),
+            ("super", (405, 405)),
+            ("cxg_admin", (405, 204)),
+        ]
+        query_param_strs = ("", "delete_published=true")
         public_collection_id = self.generate_published_collection().collection_id
-        for auth, expected_response in tests:
-            with self.subTest(auth):
-                self._test(public_collection_id, auth, expected_response)
+        for auth, expected_responses in tests:
+            for i, query_param_str in enumerate(query_param_strs):
+                with self.subTest(auth):
+                    self._test(public_collection_id, auth, expected_responses[i], query_param_str=query_param_str)
 
     def test__delete_revision_collection_by_collection_version_id(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 revision_collection = self.generate_collection_revision()
-                self._test(revision_collection.version_id.id, auth, expected_response)
+                self._test(revision_collection.version_id, auth, expected_response)
+                if expected_response == 204:
+                    self._test(revision_collection.version_id, auth, 404)
 
     def test__delete_private_collection(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
@@ -75,21 +86,31 @@ class TestDeleteCollection(BaseAPIPortalTest):
             with self.subTest(auth):
                 private_collection_id = self.generate_unpublished_collection().collection_id
                 self._test(private_collection_id, auth, expected_response)
+                if expected_response == 204:
+                    self._test(private_collection_id, auth, 404)
 
     def test__delete_private_collection_by_collection_version_id(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
+        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403), ("cxg_admin", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 private_collection_version_id = self.generate_unpublished_collection().version_id
                 self._test(private_collection_version_id, auth, expected_response)
 
     def test__delete_tombstone_collection(self):
-        tests = [("not_owner", 410), ("noauth", 401), ("owner", 410), ("super", 410)]
-        for auth, expected_response in tests:
-            with self.subTest(auth):
-                collection = self.generate_published_collection()
-                self.business_logic.tombstone_collection(collection.collection_id)
-                self._test(collection.collection_id, auth, expected_response)
+        tests = [
+            ("not_owner", (410, 410)),
+            ("noauth", (401, 401)),
+            ("owner", (410, 410)),
+            ("super", (410, 410)),
+            ("cxg_admin", (410, 410)),
+        ]
+        query_param_strs = ("", "delete_published=true")
+        for auth, expected_responses in tests:
+            for i, query_param_str in enumerate(query_param_strs):
+                with self.subTest(auth):
+                    collection = self.generate_published_collection()
+                    self.business_logic.tombstone_collection(collection.collection_id)
+                    self._test(collection.collection_id, auth, expected_responses[i], query_param_str=query_param_str)
 
 
 class TestS3Credentials(BaseAPIPortalTest):
@@ -1518,7 +1539,7 @@ class TestDeleteDataset(BaseAPIPortalTest):
             revision = self.generate_revision(collection.collection_id)
             dataset_id = revision.datasets[0].dataset_id
             response = self._delete(
-                self.make_cxg_admin_header, revision.version_id, dataset_id, "delete_published=true"
+                self.make_cxg_admin_header, revision.version_id, dataset_id, query_param_str="delete_published=true"
             )
             self.assertEqual(202, response.status_code)
         with self.subTest("Cannot delete published Dataset without query param"):
@@ -1532,7 +1553,7 @@ class TestDeleteDataset(BaseAPIPortalTest):
             revision = self.generate_revision(collection.collection_id)
             dataset_id = revision.datasets[0].dataset_id
             response = self._delete(
-                self.make_cxg_admin_header, revision.collection_id, dataset_id, "delete_published=true"
+                self.make_cxg_admin_header, revision.collection_id, dataset_id, query_param_str="delete_published=true"
             )
             self.assertEqual(405, response.status_code)
 
