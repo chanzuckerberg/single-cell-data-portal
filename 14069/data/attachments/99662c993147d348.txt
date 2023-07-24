@@ -1,0 +1,76 @@
+  pw:api => selectors.setTestIdAttribute started +7ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +49ms
+  pw:api   "commit" event fired +24ms
+  pw:api   navigated to "https://localhost:3000/" +2ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +50ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cellguide", waiting until "load" +4ms
+  pw:api   "commit" event fired +217ms
+  pw:api   navigated to "https://localhost:3000/cellguide" +4ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide" +4ms
+  pw:api <= page.goto succeeded +316ms
+  pw:api => locator.waitFor started +5ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input') to be visible +17ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-search-bar-text-inp…>…</div> +39ms
+  pw:api <= locator.waitFor succeeded +19ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input') +6ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-search-bar-text-inp…>…</div> +5ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +27ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +9ms
+  pw:api   "networkidle" event fired +80ms
+  pw:api   click action done +401ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +126ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +2s
+  pw:api => locator.elementHandles started +12ms
+  pw:api <= locator.elementHandles succeeded +2s
+  pw:api => locator.type started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input') +72ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-search-bar-text-inp…>…</div> +5ms
+  pw:api elementHandle.type("cardiomyocyte") +2ms
+  pw:api <= locator.type succeeded +1s
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +25ms
+  pw:api => locator.elementHandles started +9ms
+  pw:api <= locator.elementHandles succeeded +17ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api <= elementHandle.textContent succeeded +13ms
+  pw:api => elementHandle.click started +2ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +18ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +7ms
+  pw:api   click action done +72ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +33ms
+  pw:api <= elementHandle.click succeeded +27ms
+  pw:api => page.waitForURL started +1ms
+  pw:api waiting for navigation to "https://localhost:3000/cellguide/CL_0000746" until "load" +12ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000746" +488ms
+  pw:api <= page.waitForURL succeeded +11ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000746" +21ms
+  pw:api taking page screenshot +284ms
+  pw:api => browserContext.close started +815ms
+  pw:api <= browserContext.close succeeded +5s
