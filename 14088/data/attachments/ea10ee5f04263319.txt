@@ -1,0 +1,57 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +14ms
+  pw:api <= browserType.launch succeeded +591ms
+  pw:api => browser.newContext started +7ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +236ms
+  pw:api   "commit" event fired +82ms
+  pw:api   navigated to "https://localhost:3000/" +7ms
+  pw:api   "load" event fired +19ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +62ms
+  pw:api => tracing.start started +63ms
+  pw:api <= tracing.start succeeded +59ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +237ms
+  pw:api => page.goto started +71ms
+  pw:api navigating to "https://localhost:3000/tests/components/Chart", waiting until "load" +8ms
+  pw:api   "commit" event fired +18s
+  pw:api   navigated to "https://localhost:3000/tests/components/Chart" +4ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/tests/components/Chart" +7ms
+  pw:api <= page.goto succeeded +72ms
+  pw:api => expect.toBeVisible started +10ms
+  pw:api expect.toBeVisible with timeout 10000ms +16ms
+  pw:api waiting for getByTestId('chart') +2ms
+  pw:api   locator resolved to <div id="chart" width="500" height="500" data-testid=…>…</div> +31ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api => page._expectScreenshot started +8ms
+  pw:api page._expectScreenshot with timeout 10000ms +5ms
+  pw:api   verifying given screenshot expectation +1ms
+  pw:api waiting for locator('[data-testid="chart"]') +3ms
+  pw:api   locator resolved to <div id="chart" width="500" height="500" data-testid=…>…</div> +6ms
+  pw:api taking element screenshot +3ms
+  pw:api   disabled all CSS animations +1ms
+  pw:api   waiting for element to be visible and stable +9ms
+  pw:api   element is visible and stable +43ms
+  pw:api screenshot matched expectation +193ms
+  pw:api <= page._expectScreenshot succeeded +6ms
+  pw:api => page._expectScreenshot started +5ms
+  pw:api page._expectScreenshot with timeout 10000ms +6ms
+  pw:api   verifying given screenshot expectation +0ms
+  pw:api waiting for locator('[data-testid="canvas-chart"]') +1ms
+  pw:api   locator resolved to <div id="chart" width="500" height="500" data-testid=…>…</div> +4ms
+  pw:api taking element screenshot +3ms
+  pw:api   disabled all CSS animations +1ms
+  pw:api   waiting for element to be visible and stable +16ms
+  pw:api   element is visible and stable +31ms
+  pw:api   "networkidle" event fired +29ms
+  pw:api screenshot matched expectation +111ms
+  pw:api <= page._expectScreenshot succeeded +11ms
+  pw:api taking page screenshot +130ms
+  pw:api => browserContext.close started +105ms
+  pw:api <= browserContext.close succeeded +6s
