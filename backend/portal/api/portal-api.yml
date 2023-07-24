@@ -1284,6 +1284,7 @@ components:
       schema:
         $ref: "#/components/schemas/visibility"
         default: PUBLIC
+
   responses:
     200:
       description: OK.

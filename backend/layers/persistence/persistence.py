@@ -841,15 +841,15 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version.canonical_dataset = canonical_dataset
             return self._hydrate_dataset_version(dataset_version)
 
-    def get_collection_versions_by_schema(self, schema_version: str, exact_match: bool) -> List[CollectionVersion]:
+    def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
         """
         Returns a list with all collection versions that match the given schema_version
         """
         with self._manage_session() as session:
-            if exact_match:
-                collection_versions = session.query(CollectionVersionTable).filter_by(schema_version=schema_version)
-            else:
+            if has_wildcards:
                 collection_versions = session.query(CollectionVersionTable).filter(
                     CollectionVersionTable.schema_version.like(schema_version)
                 )
+            else:
+                collection_versions = session.query(CollectionVersionTable).filter_by(schema_version=schema_version)
             return [self._row_to_collection_version(row, None) for row in collection_versions.all()]

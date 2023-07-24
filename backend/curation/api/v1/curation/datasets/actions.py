@@ -13,11 +13,11 @@ def get(schema_version: str = None):
     if not schema_version:
         collections_with_datasets = get_business_logic().get_all_mapped_collection_versions_with_datasets()
     else:
-        version_parts = schema_version.strip(".")
+        version_parts = schema_version.split(".")
         if len(version_parts) > 3 or not all(part.isdigit() for part in version_parts):
             raise InvalidParametersHTTPException(detail="Invalid Schema Version Input")
         while len(version_parts) < 3:
-            # wildcard match for exactly 1 character
+            # wildcard match for exactxly 1 character
             version_parts.append("_")
         schema_version = ".".join(version_parts)
         collections_with_datasets = get_business_logic().get_latest_published_collection_versions_by_schema(
