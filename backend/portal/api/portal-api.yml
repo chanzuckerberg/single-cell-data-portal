@@ -685,8 +685,6 @@ paths:
         Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
         for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
       operationId: backend.portal.api.portal_api.get_datasets_index
-      parameters:
-        - $ref: "#/components/parameters/schema_version"
       responses:
         "200":
           description: OK
@@ -1286,14 +1284,6 @@ components:
       schema:
         $ref: "#/components/schemas/visibility"
         default: PUBLIC
-    schema_version:
-      description: Filter to fetch latest version of dataset with the given CELLxGENE schema version
-      in: query
-      name: schema_version
-      required: false
-      schema:
-        type: string
-        example: "3.0.0"
   responses:
     200:
       description: OK.

@@ -152,9 +152,12 @@ class BusinessLogic(BusinessLogicInterface):
         Returns a list with the latest published collection version that matches the given schema_version, for each
         canonical collection
         """
-        collection_versions = self.database_provider.get_published_collection_versions_by_schema(schema_version)
+        exact_match = not schema_version.contains("_")
+        collection_versions = self.database_provider.get_collection_versions_by_schema(schema_version, exact_match)
         collections = dict()
         for collection_version in collection_versions:
+            if collection_version.published_at is None:
+                continue
             canonical_collection_id = collection_version.collection_id.id
             if canonical_collection_id not in collections:
                 collections[canonical_collection_id] = collection_version
@@ -169,7 +172,6 @@ class BusinessLogic(BusinessLogicInterface):
             for dataset_version_id in collection.datasets
         ]
         dataset_versions = self.database_provider.get_dataset_versions_by_id(dataset_version_ids)
-
         return self._map_collection_version_to_published_dataset_versions(latest_collection_versions, dataset_versions)
 
     def get_unpublished_collection_version_from_canonical(

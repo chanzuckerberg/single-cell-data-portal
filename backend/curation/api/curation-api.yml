@@ -616,6 +616,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/dataset_index"
+        "400":
+          $ref: "#/components/responses/400"
 
   /v1/datasets/{dataset_id}/versions:
     get:
@@ -1460,13 +1462,24 @@ components:
       schema:
         $ref: "#/components/schemas/dataset_version_id"
     schema_version:
-      description: Filter to fetch latest version of dataset with the given CELLxGENE schema version
+      description: |
+        Optional--Filter results by most recently published dataset versions with matching CELLxGENE schema version. Can
+        match against major, minor, or patch schema version.
       in: query
       name: schema_version
       required: false
       schema:
         type: string
-        example: "3.0.0"
+      examples:
+        major_schema_version:
+          summary: Major Schema Version Filter
+          value: "3"
+        minor_schema_version:
+          summary: Minor Schema Version Filter
+          value: "3.0"
+        patch_schema_version:
+          summary: Patch Schema Version Filter
+          value: "3.0.0"
   responses:
     "200":
       description: OK

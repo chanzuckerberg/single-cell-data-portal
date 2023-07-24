@@ -229,7 +229,6 @@ class CollectionMetadata:
     contact_name: str
     contact_email: str
     links: List[Link]
-    schema_version: Optional[str]
     consortia: List[str] = field(default_factory=list)
 
 
@@ -252,6 +251,7 @@ class CollectionVersionBase:
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
     published_at: Optional[datetime]
     created_at: datetime
+    schema_version: str
     canonical_collection: CanonicalCollection
 
     def is_published(self) -> bool:

@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple
 
-from sqlalchemy import Unicode, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
@@ -103,6 +103,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
             published_at=row.published_at,
             created_at=row.created_at,
+            schema_version=row.schema_version,
             canonical_collection=canonical_collection,
         )
 
@@ -119,6 +120,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             datasets=datasets,
             published_at=row.published_at,
             created_at=row.created_at,
+            schema_version=row.schema_version,
             canonical_collection=canonical_collection,
         )
 
@@ -213,6 +215,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             publisher_metadata=None,
             published_at=None,
             created_at=now,
+            schema_version=None,
             datasets=list(),
         )
 
@@ -472,7 +475,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         """
         Adds a collection version to an existing canonical collection. The new version copies all data from
-         the previous version except version_id and datetime-based fields (i.e. created_at, published_at)
+        the previous version except version_id, schema_version and datetime-based fields (i.e. created_at, published_at)
         Returns the new version id.
         """
         with self._manage_session() as session:
@@ -488,6 +491,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 publisher_metadata=current_version.publisher_metadata,
                 published_at=None,
                 created_at=datetime.utcnow(),
+                schema_version=None,
                 datasets=current_version.datasets,
             )
             session.add(new_version)
@@ -532,7 +536,8 @@ class DatabaseProvider(DatabaseProviderInterface):
             # update collection version
             collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             collection_version.published_at = published_at
-            collection_version.collection_metadata.schema_version = schema_version
+            collection_version.schema_version = schema_version
+
             dataset_ids_for_new_collection_version = [
                 d.dataset_id.id for d in self.get_collection_version_with_datasets(version_id).datasets
             ]
@@ -836,16 +841,15 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version.canonical_dataset = canonical_dataset
             return self._hydrate_dataset_version(dataset_version)
 
-    def get_published_collection_versions_by_schema(self, schema_version: str) -> List[CollectionVersion]:
+    def get_collection_versions_by_schema(self, schema_version: str, exact_match: bool) -> List[CollectionVersion]:
         """
-        Returns a list with all published collection versions that match the given schema_version
+        Returns a list with all collection versions that match the given schema_version
         """
         with self._manage_session() as session:
-            return (
-                session.query(CollectionVersionTable)
-                .filter(
-                    CollectionVersionTable.collection_metadata["schema_version"].astext.cast(Unicode) == schema_version,
-                    CollectionVersionTable.published_at.isnot(None),
+            if exact_match:
+                collection_versions = session.query(CollectionVersionTable).filter_by(schema_version=schema_version)
+            else:
+                collection_versions = session.query(CollectionVersionTable).filter(
+                    CollectionVersionTable.schema_version.like(schema_version)
                 )
-                .all()
-            )
+            return [self._row_to_collection_version(row, None) for row in collection_versions.all()]
