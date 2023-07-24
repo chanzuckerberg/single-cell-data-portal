@@ -125,7 +125,7 @@ class Auth0ManagementSession:
                 grant_type="http://auth0.com/oauth/grant-type/password-realm",
                 username=user_name,
                 password=password,
-                scope="profile email write:collections read:collections",
+                scope="profile email write:collections read:collections delete:collections",
                 client_id=self.config.curator_api_client_id,
                 client_secret=self.config.curator_api_client_secret,
                 realm=self.config.api_key_connection_name,
