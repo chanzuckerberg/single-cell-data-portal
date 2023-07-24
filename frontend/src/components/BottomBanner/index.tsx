@@ -46,7 +46,7 @@ export default function BottomBanner({
   includeSurveyLink = false,
   asFooter = false,
   customSurveyLinkPrefix,
-}: Props): JSX.Element {
+}: Props): JSX.Element | null {
   const [bottomBannerLastClosedTime, setBottomBannerLastClosedTime] =
     useLocalStorage<number>(BOTTOM_BANNER_LAST_CLOSED_TIME_KEY, 0);
 
@@ -254,6 +254,8 @@ export default function BottomBanner({
     }
     return show;
   }, [bottomBannerLastClosedTime]);
+
+  if (!showBanner) return null;
 
   return (
     <>
