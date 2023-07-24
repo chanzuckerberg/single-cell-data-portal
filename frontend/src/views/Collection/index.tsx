@@ -112,7 +112,7 @@ const Collection: FC = () => {
   return (
     <>
       <Head>
-        <title>CELL&times;GENE | {collection.name}</title>
+        <title>{collection.name} - CZ CELLxGENE Discover</title>
       </Head>
       <CollectionView>
         {/* Collection revision status callout */}

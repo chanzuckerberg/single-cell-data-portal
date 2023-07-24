@@ -23,7 +23,10 @@ import {
   State,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
-import { addCellInfoCellType } from "src/views/WheresMyGene/common/store/actions";
+import {
+  addCellInfoCellType,
+  setFilteredCellTypes,
+} from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
   ChartProps,
@@ -94,8 +97,6 @@ interface Props {
   >;
   expandedTissues: Set<string>;
   setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
-  filteredCellTypes: string[];
-  setFilteredCellTypes: Dispatch<SetStateAction<string[]>>;
 }
 
 export default memo(function HeatMap({
@@ -116,12 +117,11 @@ export default memo(function HeatMap({
   setTissuesByName,
   expandedTissues,
   setExpandedTissues,
-  filteredCellTypes,
-  setFilteredCellTypes,
 }: Props): JSX.Element {
   const {
     xAxisHeight,
     selectedFilters: { tissues: filteredTissues },
+    filteredCellTypes,
   } = useContext(StateContext);
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
@@ -144,6 +144,16 @@ export default memo(function HeatMap({
 
     return result;
   }, [data, setTissuesByName]);
+
+  const cellTypesByName = useMemo(() => {
+    const result: { [name: string]: CellType } = {};
+    Object.values(cellTypes).forEach((cellTypes) => {
+      cellTypes.forEach((cellType) => {
+        result[cellType.cellTypeName] = cellType;
+      });
+    });
+    return result;
+  }, [cellTypes]);
 
   const generateMarkerGenes = (cellType: CellType, tissueID: string) => {
     if (!dispatch) return;
@@ -276,6 +286,13 @@ export default memo(function HeatMap({
     });
     return [...result].sort();
   }, [sortedCellTypesByTissueName]);
+  const handleFilteredCellTypesChange = (
+    _: unknown,
+    rawNewFilteredCellTypes: unknown
+  ) => {
+    if (!dispatch) return;
+    dispatch(setFilteredCellTypes(rawNewFilteredCellTypes as string[]));
+  };
 
   // update displayedCellTypes and expandedTissues
   useEffect(() => {
@@ -304,23 +321,33 @@ export default memo(function HeatMap({
         });
       }
     );
+    const filteredCellTypeIDs = filteredCellTypes.map(
+      (cellType) => cellTypesByName[cellType].id
+    );
+    track(EVENTS.WMG_SELECT_CELL_TYPE, {
+      cell_types: filteredCellTypeIDs,
+    });
 
     setDisplayedCellTypes(newDisplayedCellTypes);
     setExpandedTissues(newExpandedTissues);
   }, [
+    cellTypesByName,
+    dispatch,
+    filteredCellTypes,
+    filteredCellTypes.length,
+    filteredTissues,
     initialDisplayedCellTypes,
     setExpandedTissues,
     sortedCellTypesByTissueName,
     tissuesByName,
-    filteredCellTypes,
-    filteredTissues,
   ]);
 
   const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
+    if (!dispatch) return;
     const newValue = filteredCellTypes.filter(
-      (cellType) => !cellTypeToDelete.includes(cellType)
+      (cellType) => !(cellTypeToDelete === cellType)
     );
-    setFilteredCellTypes(newValue);
+    dispatch(setFilteredCellTypes(newValue));
   };
 
   useTrackHeatMapLoaded({
@@ -340,12 +367,7 @@ export default memo(function HeatMap({
             <StyledAutocomplete
               multiple
               value={filteredCellTypes}
-              onChange={(_, newValue) => {
-                setFilteredCellTypes(newValue as string[]);
-                track(EVENTS.WMG_SELECT_CELL_TYPE, {
-                  cell_types: newValue as string[],
-                });
-              }}
+              onChange={handleFilteredCellTypesChange}
               renderInput={(params) => (
                 <TextField
                   {...params}

@@ -3,7 +3,7 @@ from typing import Dict
 
 from pandas.testing import assert_series_equal
 
-from backend.wmg.data.query import WmgQuery, WmgQueryCriteria, WmgSnapshot
+from backend.wmg.data.query import WmgQueryCriteria, WmgSnapshot
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_logical_dims as expression_summary_default_logical_dims,
 )
@@ -15,14 +15,19 @@ TEST_SNAPSHOT = "realistic-test-snapshot"
 NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID = "PATO:0000461"
 
 
-def find_dim_option_values_tiledb(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
+def find_dim_option_values_pandas(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
     filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
-    # todo can we query cell_counts for a performance gain?
-    q = WmgQuery(snapshot)
-    query_result = q.cell_counts(filter_options_criteria)
-    filter_dims = list(query_result.groupby(dimension).groups.keys())
+    cell_counts_df = snapshot.cell_counts_cube.df[:]
+
+    for key, vals in filter_options_criteria:
+        key = key[:-1] if key[-1] == "s" else key
+        vals = [vals] if isinstance(vals, str) else vals
+        if key in cell_counts_df.columns and len(vals) > 0:
+            cell_counts_df = cell_counts_df[cell_counts_df[key].isin(vals)]
+
+    filter_dims = list(cell_counts_df.groupby(dimension).groups.keys())
     return filter_dims
 
 
@@ -95,7 +100,7 @@ class DataArtifactCorrectness(unittest.TestCase):
             dims_expected = dims.copy()
             for dim in dims:
                 dims[dim] = find_dim_option_values(criteria, snapshot, dim)
-                dims_expected[dim] = find_dim_option_values_tiledb(criteria, snapshot, dim)
+                dims_expected[dim] = find_dim_option_values_pandas(criteria, snapshot, dim)
                 dims[dim].sort()
                 dims_expected[dim].sort()
 

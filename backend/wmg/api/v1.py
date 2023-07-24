@@ -49,9 +49,13 @@ def query():
                 default = False
                 break
 
-        expression_summary = q.expression_summary_default(criteria) if default else q.expression_summary(criteria)
+        expression_summary = (
+            q.expression_summary_default(criteria)
+            if default
+            else q.expression_summary(criteria, compare_dimension=compare)
+        )
 
-        cell_counts = q.cell_counts(criteria)
+        cell_counts = q.cell_counts(criteria, compare_dimension=compare)
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 

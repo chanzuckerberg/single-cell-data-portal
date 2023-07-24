@@ -2,11 +2,12 @@ import itertools
 import json
 import logging
 import os
-from typing import Dict, List
+from typing import Any, Dict, List
 
-import boto3
-from cellxgene_schema import schema
+import cellxgene_schema
 
+from backend.common.corpora_config import CorporaConfig
+from backend.common.utils.result_notification import upload_to_slack
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.common.entities import (
@@ -17,25 +18,29 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.processing import logger
+from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 
 logger.configure_logging(level=logging.INFO)
 
 
-class SchemaMigrate:
+class SchemaMigrate(ProcessingLogic):
     def __init__(self, business_logic: BusinessLogic):
         self.business_logic = business_logic
-        self.bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
-        self.execution_arn = os.environ.get("EXECUTION_ARN", "test-execution-arn")
+        self.s3_provider = business_logic.s3_provider  # For compatiblity with ProcessingLogic
+        self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
+        self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
+        self.logger = logging.getLogger(__name__)
 
     def gather_collections(self) -> List[Dict[str, str]]:
         """
         This function is used to gather all the collections and their datasets that will be migrated
         :return: A dictionary with the following structure:
         [
-            {"can_open_revision": True, "collection_id": "<collection_id>"},
-            {"can_open_revision": False, "collection_id": "<collection_id>", "collection_version_id":
+            {"can_publish": "true", "collection_id": "<collection_id>", "collection_version_id":
             "<collection_version_id>"},
-            {"can_open_revision": False, "collection_id": "<collection_id>"},
+            {"can_publish": "false", "collection_id": "<collection_id>", "collection_version_id":
+            "<collection_version_id>"}
             ...
         ]
         """
@@ -49,156 +54,225 @@ class SchemaMigrate:
         # evaluate unpublished collections first, so that published versions are skipped if there is an active revision
         has_revision = []  # list of collections to skip if published with an active revision
         for collection in collections:
-
+            _resp = {}
             if collection.is_published() and collection.collection_id not in has_revision:
                 # published collection without an active revision
-                response.append(
-                    dict(
-                        can_open_revision="True",
-                        collection_id=collection.collection_id.id,
-                        collection_version_id=collection.version_id.id,
-                    )
-                )
+                _resp["can_publish"] = str(True)
             elif collection.is_unpublished_version():
-                # published collection with an active revision
+                # active revision of a published collection.
                 has_revision.append(collection.collection_id)  # revision found, skip published version
-                response.append(
-                    dict(
-                        can_open_revision="False",
-                        collection_id=collection.collection_id.id,
-                        collection_version_id=collection.version_id.id,
-                    )
-                )
-                # include collection version id
+                _resp["can_publish"] = str(False)
             elif collection.is_initial_unpublished_version():
                 # unpublished collection
-                response.append(
-                    dict(
-                        can_open_revision="False",
-                        collection_id=collection.collection_id.id,
-                        collection_version_id=collection.version_id.id,
-                    )
-                )
+                _resp["can_publish"] = str(False)
+            else:
+                continue  # skip published version with an active revision
+            _resp.update(
+                collection_id=collection.collection_id.id,
+                collection_version_id=collection.version_id.id,
+            )
+            response.append(_resp)
         return response
 
-    def dataset_migrate(self, collection_id: str, dataset_id: str, dataset_version_id: str) -> Dict[str, str]:
+    def dataset_migrate(
+        self, collection_version_id: str, collection_id: str, dataset_id: str, dataset_version_id: str
+    ) -> Dict[str, str]:
         raw_h5ad_uri = [
             artifact.uri
             for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
             if artifact.type == DatasetArtifactType.RAW_H5AD
         ][0]
-        bucket_name, object_key = self.business_logic.s3_provider.parse_s3_uri(raw_h5ad_uri)
-        self.business_logic.s3_provider.download_file(bucket_name, object_key, "previous_schema.h5ad")
-        schema.migrate("previous_schema.h5ad", "migrated.h5ad", collection_id, dataset_id)
-        upload_bucket = os.environ["ARTIFACT_BUCKET"]
-        dst_uri = f"{dataset_version_id}/migrated.h5ad"
-        self.business_logic.s3_provider.upload_file("migrated.h5ad", upload_bucket, dst_uri, {})
-        url = f"s3://{upload_bucket}/{dst_uri}"
-        return {"collection_id": collection_id, "dataset_version_id": dataset_version_id, "url": url}
+        source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
+        self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
+        migrated_file = "migrated.h5ad"
+        cellxgene_schema.migrate.migrate("previous_schema.h5ad", migrated_file, collection_id, dataset_id)
+        key_prefix = self.get_key_prefix(dataset_version_id)
+        uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            CollectionVersionId(collection_version_id),
+            uri,
+            file_size=0,  # TODO: this shouldn't be needed but it gets around a 404 for HeadObject
+            existing_dataset_version_id=DatasetVersionId(dataset_version_id),
+            start_step_function=False,  # The schema_migration sfn will start the ingest sfn
+        )
+        return {
+            "collection_version_id": collection_version_id,
+            "dataset_version_id": new_dataset_version_id.id,
+            "uri": uri,
+        }
 
-    def collection_migrate(
-        self, collection_id: str, collection_version_id: str, can_open_revision: bool
-    ) -> List[Dict[str, str]]:
-        private_collection_id = collection_version_id
-
+    def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
-        datasets = []
-        for dataset in version.datasets:
-            datasets.append({"dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id})
+        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
 
-        if can_open_revision:
-            private_collection_id = self.business_logic.create_collection_version(
+        if not any(dataset.metadata.schema_version != current_schema_version for dataset in version.datasets):
+            # check if there are datasets to migrate.
+            return {
+                "can_publish": str(False),  # skip publishing, because the collection is already published and no
+                # revision is created, or the collection is private or a revision.
+                "collection_version_id": collection_version_id,
+                "datasets": [],
+                "no_datasets": str(True),
+            }
+
+        if can_publish:
+            # Create a new collection version(revision) if the collection is already published
+            private_collection_version_id = self.business_logic.create_collection_version(
                 CollectionId(collection_id)
             ).version_id.id
-        return [
-            {
-                "collection_id": private_collection_id,
-                "dataset_id": dataset["dataset_id"],
-                "dataset_version_id": dataset["dataset_version_id"],
-            }
-            for dataset in datasets
-        ]
+        else:
+            private_collection_version_id = collection_version_id
 
-    def publish_and_cleanup(self, collection_id: str, can_publish: bool) -> Dict[str, str]:
+        response = {
+            "can_publish": str(can_publish),
+            "collection_version_id": private_collection_version_id,
+            # ^^^ The top level fields are used for handling error cases in the AWS SFN.
+            "datasets": [
+                {
+                    "can_publish": str(can_publish),
+                    "collection_id": collection_id,
+                    "collection_version_id": private_collection_version_id,
+                    "dataset_id": dataset.dataset_id.id,
+                    "dataset_version_id": dataset.version_id.id,
+                }
+                for dataset in version.datasets
+                if dataset.metadata.schema_version != current_schema_version
+                # Filter out datasets that are already on the current schema version
+            ]
+            # The repeated fields in datasets is required for the AWS SFN job that uses it.
+        }
+
+        if not response["datasets"]:
+            # Handles the case were the collection has no datasets
+            response["no_datasets"] = str(True)
+        return response
+
+    def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
         errors = dict()
-        collection_version_id = CollectionVersionId(collection_id)
+        collection_version_id = CollectionVersionId(collection_version_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
-        current_schema_version = schema.get_current_schema_version()
+        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
             dataset_version_id = dataset.version_id.id
-            object_keys_to_delete.append(f"{dataset_version_id}/migrated.h5ad")
+            key_prefix = self.get_key_prefix(dataset_version_id)
+            object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if dataset.metadata.schema_version != current_schema_version:
                 errors[dataset_version_id] = "Did Not Migrate."
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors[dataset_version_id] = dataset.status.validation_message
 
-        artifact_bucket = os.environ["ARTIFACT_BUCKET"]
         if errors:
-            self._store_in_s3("report", collection_id, errors)
+            self._store_sfn_response("report", collection_version_id, errors)
         elif can_publish:
             self.business_logic.publish_collection_version(collection_version_id)
-        self.business_logic.s3_provider.delete_files(artifact_bucket, object_keys_to_delete)
+        self.logger.info(
+            "Deleting files", extra={"artifact_bucket": self.artifact_bucket, "object_keys": object_keys_to_delete}
+        )
+        self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
         return errors
 
-    def _store_in_s3(self, step_name, file_name, response: Dict[str, str]):
+    def _store_sfn_response(self, step_name, file_name, response: Dict[str, str]):
         """
 
         :param step_name: The step that will use this file
         :param file_name: a unique name to describe this job
         :param response: the response to store as json.
         """
-        with open("response.json", "w") as f:
+        file_name = f"{file_name}.json"
+        key_name = self.get_key_prefix(f"schema_migration/{self.execution_id}/{step_name}/{file_name}")
+        with open(file_name, "w") as f:
             json.dump(response, f)
-        self.business_logic.s3_provider.upload_file(
-            "response.json",
-            self.bucket,
-            f"schema_migration/{self.execution_arn}/{step_name}/{file_name}.json",
+        self.s3_provider.upload_file(file_name, self.artifact_bucket, key_name, {})
+        self.logger.info(
+            "Uploaded to S3", extra={"file_name": file_name, "bucket": self.artifact_bucket, "key": key_name}
         )
 
-    def report(self, local_path: str) -> str:
-        report = dict(errors=[])
-        error_files = list(
-            self.business_logic.s3_provider.list_directory(
-                self.bucket, f"schema_migration/" f"{self.execution_arn}/report"
+    def error_wrapper(self, func, file_name: str):
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                self.logger.exception(f"Error in {func.__name__}", extra={"input": {"args": args, "kwargs": kwargs}})
+                self._store_sfn_response(
+                    "report", file_name, {"step": func.__name__, "error": str(e), "args": args, "kwargs": kwargs}
+                )
+                raise e
+
+        return wrapper
+
+    def report(self, local_path: str = ".") -> str:
+        try:
+            report = dict(errors=[])
+            error_files = list(
+                self.s3_provider.list_directory(
+                    self.artifact_bucket, self.get_key_prefix(f"schema_migration/{self.execution_id}/report")
+                )
             )
-        )
-        for file in error_files:
-            local_file = os.path.join(local_path, file)
-            self.business_logic.s3_provider.download_file(self.bucket, file, local_file)
-            with open(local_file, "r") as f:
-                jn = json.load(f)
-            report["errors"].append(jn)
-        report_path = os.path.join(local_path, "report.json")
-        with open(report_path, "w") as f:
-            json.dump(report, f)
-        # TODO output the files to slack.
-        self.business_logic.s3_provider.delete_files(self.bucket, error_files)
-        return report_path
+            self.logger.info("Error files found", extra={"error_files": len(error_files)})
+            for file in error_files:
+                local_file = os.path.join(local_path, "data.json")
+                self.s3_provider.download_file(self.artifact_bucket, file, local_file)
+                with open(local_file, "r") as f:
+                    jn = json.load(f)
+                report["errors"].append(jn)
+            self.logger.info("Report", extra=report)
+            report_str = json.dumps(report, indent=4, sort_keys=True)
+            self.s3_provider.delete_files(self.artifact_bucket, error_files)
+            report_message = "Schema migration results."
+            if report["errors"]:
+                report_message += " @sc-oncall-eng"
+            self._upload_to_slack("schema_migration_report.json", report_str, report_message)
+            return report
+        except Exception as e:
+            self.logger.exception("Failed to generate report")
+            raise e
+
+    def _upload_to_slack(self, filename: str, contents, initial_comment: str) -> None:
+        slack_token = CorporaConfig().slack_reporter_secret
+        slack_channel = CorporaConfig().slack_reporter_channel
+        response = upload_to_slack(filename, contents, initial_comment, slack_channel, slack_token)
+        self.logger.info("Uploaded to slack", extra={"response": response})
 
     def migrate(self, step_name) -> bool:
         """
         Gets called by the step function at every different step, as defined by `step_name`
         """
+        self.logger.info(f"Starting {step_name}", extra={"step": step_name})
         if step_name == "gather_collections":
-            response = self.gather_collections()
+            gather_collections = self.error_wrapper(self.gather_collections, "gather_collections")
+            response = gather_collections()
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
-            can_open_revision = os.environ["CAN_OPEN_REVISION"].lower() == "true"
-            response = self.collection_migrate(collection_id, collection_version_id, can_open_revision)
+            can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
+            collection_migrate = self.error_wrapper(self.collection_migrate, collection_id)
+            response = collection_migrate(
+                collection_id=collection_id,
+                collection_version_id=collection_version_id,
+                can_publish=can_publish,
+            )
         elif step_name == "dataset_migrate":
+            collection_version_id = os.environ["COLLECTION_VERSION_ID"]
             collection_id = os.environ["COLLECTION_ID"]
             dataset_id = os.environ["DATASET_ID"]
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
-            response = self.dataset_migrate(collection_id, dataset_id, dataset_version_id)
+            dataset_migrate = self.error_wrapper(self.dataset_migrate, f"{collection_version_id}_{dataset_id}")
+            response = dataset_migrate(
+                collection_version_id=collection_version_id,
+                collection_id=collection_id,
+                dataset_id=dataset_id,
+                dataset_version_id=dataset_version_id,
+            )
         elif step_name == "collection_publish":
-            collection_id = os.environ["COLLECTION_ID"]
+            collection_version_id = os.environ["COLLECTION_VERSION_ID"]
             can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
-            response = self.publish_and_cleanup(collection_id, can_publish)
+            publish_and_cleanup = self.error_wrapper(self.publish_and_cleanup, collection_version_id)
+            response = publish_and_cleanup(collection_version_id=collection_version_id, can_publish=can_publish)
         elif step_name == "report":
-            self.report()
-        sfn_client = boto3.client("stepfunctions")
+            response = self.report()
+        self.logger.info("output", extra={"response": response})
+        sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(taskToken=os.environ["TASK_TOKEN"], output=json.dumps(response))
         return True

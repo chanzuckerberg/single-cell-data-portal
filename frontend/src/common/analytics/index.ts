@@ -8,8 +8,10 @@ const serializeProps = (
   return {
     props: Object.fromEntries(
       Object.entries(props).map(([key, val]) => {
-        if (Array.isArray(val))
-          return [key as keyof typeof props, val.sort().join(",")];
+        if (Array.isArray(val)) {
+          const newSortedArray = [...val].sort();
+          return [key as keyof typeof props, newSortedArray.join(",")];
+        }
         return [key as keyof typeof props, val];
       })
     ),

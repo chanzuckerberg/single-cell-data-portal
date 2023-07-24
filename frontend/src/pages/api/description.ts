@@ -1,7 +1,5 @@
 import getHandler from "src/common/utils/api/handler";
 
-const handler = getHandler(
-  "src/views/CellCards/common/fixtures/allCellTypeDescriptions.json"
+export default getHandler(
+  "src/views/CellGuide/common/fixtures/allCellTypeDescriptions.json"
 );
-
-export default handler;
