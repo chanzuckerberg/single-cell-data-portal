@@ -682,6 +682,7 @@ const LandingPage = (): JSX.Element => {
               <a
                 href="https://chanzuckerberg.com/blog/behind-the-scenes-of-chan-zuckerberg-cellxgene/"
                 target="_blank"
+                rel="noopener"
               >
                 <Image
                   src={FreethinkThumbnailImg}
