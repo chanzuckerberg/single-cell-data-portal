@@ -8,8 +8,8 @@ export const COMPARE_OPTIONS = [
   { id: undefined, name: "None" },
   { id: "disease", name: "Disease" },
   { id: "self_reported_ethnicity", name: "Ethnicity" },
-  { id: "sex", name: "Sex" },
   { id: "publication", name: "Publication" },
+  { id: "sex", name: "Sex" },
 ];
 
 export type CompareId = "disease" | "ethnicity" | "sex" | "publication";
