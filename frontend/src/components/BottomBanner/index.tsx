@@ -278,74 +278,71 @@ export default function BottomBanner({
         type="text/javascript"
         src="https://js.hsforms.net/forms/v2.js"
       />
-
-      {showBanner && (
-        <StyledBottomBannerWrapper
-          asFooter={asFooter}
-          id={BOTTOM_BANNER_ID}
-          className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-          data-testid="newsletter-modal-banner-wrapper"
+      <StyledBottomBannerWrapper
+        asFooter={asFooter}
+        id={BOTTOM_BANNER_ID}
+        className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+        data-testid="newsletter-modal-banner-wrapper"
+      >
+        <StyledBanner
+          dismissible={!asFooter}
+          sdsType={"primary"}
+          onClose={() => setBottomBannerLastClosedTime(Date.now())}
         >
-          <StyledBanner
-            dismissible={!asFooter}
-            sdsType={"primary"}
-            onClose={() => setBottomBannerLastClosedTime(Date.now())}
-          >
-            {/* Hidden form for submitting the data to Hubspot */}
-            <HiddenHubspotForm id={FORM_CONTAINER_ID} />
+          {/* Hidden form for submitting the data to Hubspot */}
+          <HiddenHubspotForm id={FORM_CONTAINER_ID} />
 
-            {asFooter ? (
-              <FooterContentWrapper>{modalContent}</FooterContentWrapper>
-            ) : (
-              <>
-                <div>
-                  <StyledLink
-                    onClick={toggleNewsletterSignupModal}
-                    data-testid="newsletter-modal-open-button"
-                  >
-                    Subscribe
-                  </StyledLink>{" "}
-                  to our newsletter to receive updates about new features.{" "}
-                  {includeSurveyLink && (
-                    <>
-                      {customSurveyLinkPrefix
-                        ? customSurveyLinkPrefix
-                        : "Send us feedback with this"}{" "}
-                      <StyledLink
-                        href="https://airtable.com/shrLwepDSEX1HI6bo"
-                        target="_blank"
-                        rel="noopener"
-                      >
-                        quick survey
-                      </StyledLink>
-                      .
-                    </>
-                  )}
-                </div>
-
-                <NewsletterModal
-                  isOpen={newsletterModalIsOpen}
-                  title=""
-                  onClose={toggleNewsletterSignupModal}
-                  isCloseButtonShown={false}
+          {asFooter ? (
+            <FooterContentWrapper>{modalContent}</FooterContentWrapper>
+          ) : (
+            <>
+              <div>
+                <StyledLink
+                  onClick={toggleNewsletterSignupModal}
+                  data-testid="newsletter-modal-open-button"
                 >
-                  <HeaderContainer>
-                    <Image alt="CellxGene Logo" src={cellxgeneLogoSvg} />
-                    <StyledCloseButtonIcon
-                      sdsIcon="xMark"
-                      sdsSize="small"
-                      onClick={toggleNewsletterSignupModal}
-                      hideCloseButton={isDirectLink}
-                      data-testid="newsletter-modal-close-button"
-                    />
-                  </HeaderContainer>
-                  {modalContent}
-                </NewsletterModal>
-              </>
-            )}
-          </StyledBanner>
-        </StyledBottomBannerWrapper>
-      )}
+                  Subscribe
+                </StyledLink>{" "}
+                to our newsletter to receive updates about new features.{" "}
+                {includeSurveyLink && (
+                  <>
+                    {customSurveyLinkPrefix
+                      ? customSurveyLinkPrefix
+                      : "Send us feedback with this"}{" "}
+                    <StyledLink
+                      href="https://airtable.com/shrLwepDSEX1HI6bo"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      quick survey
+                    </StyledLink>
+                    .
+                  </>
+                )}
+              </div>
+
+              <NewsletterModal
+                isOpen={newsletterModalIsOpen}
+                title=""
+                onClose={toggleNewsletterSignupModal}
+                isCloseButtonShown={false}
+              >
+                <HeaderContainer>
+                  <Image alt="CellxGene Logo" src={cellxgeneLogoSvg} />
+                  <StyledCloseButtonIcon
+                    sdsIcon="xMark"
+                    sdsSize="small"
+                    onClick={toggleNewsletterSignupModal}
+                    hideCloseButton={isDirectLink}
+                    data-testid="newsletter-modal-close-button"
+                  />
+                </HeaderContainer>
+                {modalContent}
+              </NewsletterModal>
+            </>
+          )}
+        </StyledBanner>
+      </StyledBottomBannerWrapper>
     </>
   );
 }
