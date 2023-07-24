@@ -1453,11 +1453,11 @@ class TestDeleteDataset(BaseAPIPortalTest):
             (self.make_not_owner_header, "not_owner", 403),
         ]
 
-    def _delete(self, auth, collection_id, dataset_id):
+    def _delete(self, auth, collection_id, dataset_id, query_param_str=None):
         """
         Helper method to call the delete endpoint
         """
-        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}"
+        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}{'?' + query_param_str if query_param_str else ''}"
         headers = auth() if callable(auth) else auth
         return self.app.delete(test_url, headers=headers)
 
@@ -1508,6 +1508,33 @@ class TestDeleteDataset(BaseAPIPortalTest):
                 self.generate_dataset(collection_version=revision, replace_dataset_version_id=dataset_version_id)
                 response = self._delete(auth_func, revision.collection_id, dataset_id)
                 self.assertEqual(405, response.status_code)
+
+    def test__delete_published_dataset_cxg_admin(self):
+        """
+        cxg_admin role can delete published Datasets during revisions using query_param flag 'delete_published=true'
+        """
+        with self.subTest("Can delete published Dataset during a revision"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(
+                self.make_cxg_admin_header, revision.version_id, dataset_id, "delete_published=true"
+            )
+            self.assertEqual(202, response.status_code)
+        with self.subTest("Cannot delete published Dataset without query param"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(self.make_cxg_admin_header, revision.version_id, dataset_id)
+            self.assertEqual(405, response.status_code)
+        with self.subTest("Cannot delete published Dataset from public Collection"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(
+                self.make_cxg_admin_header, revision.collection_id, dataset_id, "delete_published=true"
+            )
+            self.assertEqual(405, response.status_code)
 
 
 class TestGetDatasets(BaseAPIPortalTest):
