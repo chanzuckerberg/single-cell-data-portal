@@ -154,7 +154,7 @@ class BusinessLogic(BusinessLogicInterface):
         Returns a list with the latest published collection version that matches the given schema_version, for each
         canonical collection
         """
-        has_wildcards = schema_version.contains("_")
+        has_wildcards = "_" in schema_version
         collection_versions = self.database_provider.get_collection_versions_by_schema(schema_version, has_wildcards)
 
         # for each published canonical collection, map its most recently published collection version
