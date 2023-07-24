@@ -73,6 +73,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             publisher_metadata=None,
             published_at=None,
             created_at=datetime.utcnow(),
+            schema_version=None,
             canonical_collection=canonical,
             datasets=[],
         )
@@ -182,6 +183,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             datasets=new_dataset_list,
             published_at=None,
             created_at=datetime.utcnow(),
+            schema_version=None,
             canonical_collection=cc,
         )
         self.collections_versions[new_version_id.id] = collection_version
@@ -222,6 +224,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self,
         collection_id: CollectionId,
         version_id: CollectionVersionId,
+        schema_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
     ) -> List[str]:
@@ -270,6 +273,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 new_cc.revised_at = published_at
             self.collections[collection_id.id] = new_cc
         self.collections_versions[version_id.id].published_at = published_at
+        self.collections_versions[version_id.id].schema_version = schema_version
 
         return dataset_ids_to_tombstone
 

@@ -941,6 +941,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             revision_id, "http://fake.url", None, dataset.version_id
         )
+        self.business_logic.set_dataset_metadata(new_dataset_version_id, self.sample_dataset_metadata)
         self.business_logic.publish_collection_version(revision_id)
         revision = self.business_logic.get_collection_version(revision_id)
         # Revision 2 (not to publish)
@@ -972,6 +973,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_revision_id, "http://fake.url", None, dataset.version_id
         )
+        self.business_logic.set_dataset_metadata(new_dataset_version_id, self.sample_dataset_metadata)
         self.business_logic.publish_collection_version(collection_revision_id)
         # Revision 2 (not to publish)
         unpublished_collection_version_id = self.business_logic.create_collection_version(collection_id).version_id
@@ -1346,6 +1348,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         added_dataset_version_id, _ = self.business_logic.ingest_dataset(
             new_version.version_id, "http://fake.url", None, None
         )
+        self.business_logic.set_dataset_metadata(added_dataset_version_id, self.sample_dataset_metadata)
         self.complete_dataset_processing_with_success(added_dataset_version_id)
 
         # The new version should have three datasets (before publishing)
@@ -1395,6 +1398,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
             new_version.version_id, "http://fake.url", None, dataset_id_to_replace
         )
+        self.business_logic.set_dataset_metadata(replaced_dataset_version_id, self.sample_dataset_metadata)
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
 
         # The new version should have the correct datasets (before publishing)
@@ -1533,7 +1537,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
             new_version.version_id, "http://fake.url", None, None
         )
         self.complete_dataset_processing_with_success(added_dataset_version_id)
-
+        self.business_logic.set_dataset_metadata(added_dataset_version_id, self.sample_dataset_metadata)
         self.business_logic.publish_collection_version(new_version.version_id)
 
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)
@@ -1574,7 +1578,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         )
 
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
-
+        self.business_logic.set_dataset_metadata(replaced_dataset_version_id, self.sample_dataset_metadata)
         self.business_logic.publish_collection_version(new_version.version_id)
 
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)
