@@ -16,13 +16,9 @@ export interface State {
     developmentStages: string[];
     diseases: string[];
     ethnicities: string[];
+    publications: string[];
     sexes: string[];
     tissues: string[];
-  };
-
-  // New state for publication filter
-  selectedPublicationFilter: {
-    publications: string[];
   };
 
   /**
@@ -39,6 +35,7 @@ export interface State {
   geneInfoGene: string | null;
   compare?: CompareId;
   xAxisHeight: number;
+  filteredCellTypes: string[];
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -46,13 +43,9 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   developmentStages: [],
   diseases: [],
   ethnicities: [],
+  publications: [],
   sexes: [],
   tissues: [],
-};
-
-// Need this to initialize selectedPublicationFilter
-const EMPTY_PUBLICATION_FILTER: State["selectedPublicationFilter"] = {
-  publications: [],
 };
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -62,7 +55,6 @@ export const INITIAL_STATE: State = {
   geneInfoGene: null,
   genesToDelete: [],
   selectedFilters: EMPTY_FILTERS,
-  selectedPublicationFilter: EMPTY_PUBLICATION_FILTER,
   selectedGenes: [],
   selectedOrganismId: null,
   selectedTissues: [],
@@ -73,6 +65,7 @@ export const INITIAL_STATE: State = {
     scaled: SORT_BY.COLOR_SCALED,
   },
   xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+  filteredCellTypes: [],
 };
 
 export const REDUCERS = {
@@ -89,7 +82,6 @@ export const REDUCERS = {
   selectCompare,
   resetGenesToDelete,
   selectFilters,
-  selectPublicationFilter, // Added to the reducer here
   selectGenes,
   selectGeneInfoFromXAxis,
   selectOrganism,
@@ -98,6 +90,7 @@ export const REDUCERS = {
   setSnapshotId,
   toggleGeneToDelete,
   setXAxisHeight,
+  setFilteredCellTypes,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -278,31 +271,6 @@ function selectFilters(
   };
 }
 
-// (cchoi): We  are using a single filter for all publications to avoid touching the backend / reconfiguring the cube
-function selectPublicationFilter(
-  state: State,
-  action: PayloadAction<{
-    key: keyof State["selectedPublicationFilter"];
-    options: string[];
-  }>
-): State {
-  const { key, options } = action.payload;
-
-  const { selectedPublicationFilter } = state;
-
-  if (isEqual(selectedPublicationFilter[key], options)) return state;
-
-  const newSelectedFilters = {
-    ...state.selectedPublicationFilter,
-    [key]: options,
-  };
-
-  return {
-    ...state,
-    selectedPublicationFilter: newSelectedFilters,
-  };
-}
-
 function setSnapshotId(
   state: State,
   action: PayloadAction<State["snapshotId"]>
@@ -403,10 +371,10 @@ function closeRightSidebar(state: State, _: PayloadAction<null>): State {
 export interface LoadStateFromURLPayload {
   compare: State["compare"];
   filters: Partial<State["selectedFilters"]>;
-  publications: State["selectedPublicationFilter"]["publications"];
   organism: State["selectedOrganismId"];
   tissues?: State["selectedTissues"];
   genes: State["selectedGenes"];
+  cellTypes?: State["filteredCellTypes"];
 }
 
 function loadStateFromURL(
@@ -415,16 +383,16 @@ function loadStateFromURL(
 ): State {
   const { payload } = action;
 
-  const { compare, filters, publications, genes, tissues } = payload;
+  const { compare, filters, genes, tissues } = payload;
 
   return {
     ...state,
     compare,
     selectedFilters: { ...state.selectedFilters, ...filters },
-    selectedPublicationFilter: { publications },
     selectedGenes: genes,
     selectedTissues: tissues,
     selectedOrganismId: payload.organism,
+    filteredCellTypes: payload.cellTypes ?? [],
   };
 }
 
@@ -442,5 +410,15 @@ function setXAxisHeight(state: State, action: PayloadAction<number>): State {
   return {
     ...state,
     xAxisHeight: action.payload,
+  };
+}
+
+function setFilteredCellTypes(
+  state: State,
+  action: PayloadAction<State["filteredCellTypes"]>
+): State {
+  return {
+    ...state,
+    filteredCellTypes: action.payload,
   };
 }

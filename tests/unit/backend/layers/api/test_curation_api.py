@@ -39,35 +39,46 @@ def mock_config_fn(name):
 
 
 class TestDeleteCollection(BaseAPIPortalTest):
-    def _test(self, collection_id, header, expected_status):
+    def _test(self, collection_id, header, expected_status, query_param_str=None):
         if header == "owner":
             headers = self.make_owner_header()
         elif header == "super":
             headers = self.make_super_curator_header()
+        elif header == "cxg_admin":
+            headers = self.make_cxg_admin_header()
         elif header == "not_owner":
             headers = self.make_not_owner_header()
         elif "noauth":
             headers = {}
-
-        response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
+        response = self.app.delete(
+            f"/curation/v1/collections/{collection_id}{'?' + query_param_str if query_param_str else ''}",
+            headers=headers,
+        )
         self.assertEqual(expected_status, response.status_code)
-        if response.status_code == 204:
-            response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
-            self.assertEqual(404, response.status_code)
 
     def test__delete_public_collection(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 405), ("super", 405)]
+        tests = [
+            ("not_owner", (403, 403)),
+            ("noauth", (401, 401)),
+            ("owner", (405, 405)),
+            ("super", (405, 405)),
+            ("cxg_admin", (405, 204)),
+        ]
+        query_param_strs = ("", "delete_published=true")
         public_collection_id = self.generate_published_collection().collection_id
-        for auth, expected_response in tests:
-            with self.subTest(auth):
-                self._test(public_collection_id, auth, expected_response)
+        for auth, expected_responses in tests:
+            for i, query_param_str in enumerate(query_param_strs):
+                with self.subTest(auth):
+                    self._test(public_collection_id, auth, expected_responses[i], query_param_str=query_param_str)
 
     def test__delete_revision_collection_by_collection_version_id(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 revision_collection = self.generate_collection_revision()
-                self._test(revision_collection.version_id.id, auth, expected_response)
+                self._test(revision_collection.version_id, auth, expected_response)
+                if expected_response == 204:
+                    self._test(revision_collection.version_id, auth, 404)
 
     def test__delete_private_collection(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
@@ -75,21 +86,31 @@ class TestDeleteCollection(BaseAPIPortalTest):
             with self.subTest(auth):
                 private_collection_id = self.generate_unpublished_collection().collection_id
                 self._test(private_collection_id, auth, expected_response)
+                if expected_response == 204:
+                    self._test(private_collection_id, auth, 404)
 
     def test__delete_private_collection_by_collection_version_id(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
+        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403), ("cxg_admin", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 private_collection_version_id = self.generate_unpublished_collection().version_id
                 self._test(private_collection_version_id, auth, expected_response)
 
     def test__delete_tombstone_collection(self):
-        tests = [("not_owner", 410), ("noauth", 401), ("owner", 410), ("super", 410)]
-        for auth, expected_response in tests:
-            with self.subTest(auth):
-                collection = self.generate_published_collection()
-                self.business_logic.tombstone_collection(collection.collection_id)
-                self._test(collection.collection_id, auth, expected_response)
+        tests = [
+            ("not_owner", (410, 410)),
+            ("noauth", (401, 401)),
+            ("owner", (410, 410)),
+            ("super", (410, 410)),
+            ("cxg_admin", (410, 410)),
+        ]
+        query_param_strs = ("", "delete_published=true")
+        for auth, expected_responses in tests:
+            for i, query_param_str in enumerate(query_param_strs):
+                with self.subTest(auth):
+                    collection = self.generate_published_collection()
+                    self.business_logic.tombstone_collection(collection.collection_id)
+                    self._test(collection.collection_id, auth, expected_responses[i], query_param_str=query_param_str)
 
 
 class TestS3Credentials(BaseAPIPortalTest):
@@ -1453,11 +1474,11 @@ class TestDeleteDataset(BaseAPIPortalTest):
             (self.make_not_owner_header, "not_owner", 403),
         ]
 
-    def _delete(self, auth, collection_id, dataset_id):
+    def _delete(self, auth, collection_id, dataset_id, query_param_str=None):
         """
         Helper method to call the delete endpoint
         """
-        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}"
+        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}{'?' + query_param_str if query_param_str else ''}"
         headers = auth() if callable(auth) else auth
         return self.app.delete(test_url, headers=headers)
 
@@ -1492,6 +1513,49 @@ class TestDeleteDataset(BaseAPIPortalTest):
                 )
                 response = self._delete(auth, dataset.collection_id, dataset.dataset_id)
                 self.assertEqual(expected_status_code, response.status_code)
+
+    def test__delete_published_dataset__405(self):
+        """
+        A Dataset that has been published cannot be deleted via the API
+        """
+        for auth_func in (self.make_super_curator_header, self.make_owner_header):
+            with self.subTest("Cannot delete published Dataset in a revision"):
+                collection = self.generate_published_collection()
+                revision = self.generate_revision(collection.collection_id)
+                dataset_id, dataset_version_id = revision.datasets[0].dataset_id, revision.datasets[0].version_id
+                response = self._delete(auth_func, revision.collection_id, dataset_id)
+                self.assertEqual(405, response.status_code)
+            with self.subTest("Cannot delete published Dataset in a revision even after it has been updated"):
+                self.generate_dataset(collection_version=revision, replace_dataset_version_id=dataset_version_id)
+                response = self._delete(auth_func, revision.collection_id, dataset_id)
+                self.assertEqual(405, response.status_code)
+
+    def test__delete_published_dataset_cxg_admin(self):
+        """
+        cxg_admin role can delete published Datasets during revisions using query_param flag 'delete_published=true'
+        """
+        with self.subTest("Can delete published Dataset during a revision"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(
+                self.make_cxg_admin_header, revision.version_id, dataset_id, query_param_str="delete_published=true"
+            )
+            self.assertEqual(202, response.status_code)
+        with self.subTest("Cannot delete published Dataset without query param"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(self.make_cxg_admin_header, revision.version_id, dataset_id)
+            self.assertEqual(405, response.status_code)
+        with self.subTest("Cannot delete published Dataset from public Collection"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(
+                self.make_cxg_admin_header, revision.collection_id, dataset_id, query_param_str="delete_published=true"
+            )
+            self.assertEqual(405, response.status_code)
 
 
 class TestGetDatasets(BaseAPIPortalTest):
@@ -1545,7 +1609,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         response = self.app.get(test_url)
         self.assertEqual(200, response.status_code)
         revision = self.generate_revision(collection.collection_id)
-        self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id)
+        self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id, delete_published=True)
         self.business_logic.publish_collection_version(revision.version_id)
         new_published_version = self.database_provider.get_collection_version(revision.version_id)
         self.assertEqual(1, len(new_published_version.datasets))
@@ -1993,7 +2057,7 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             collection = self.generate_published_collection(add_datasets=2)
             dataset = collection.datasets[0]
             revision = self.generate_revision(collection.collection_id)
-            self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id)
+            self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id, delete_published=True)
             self.business_logic.publish_collection_version(revision.version_id)
             test_url = f"/curation/v1/datasets/{dataset.dataset_id}/versions"
             response = self.app.get(test_url, headers=self.make_owner_header())

@@ -11,9 +11,8 @@ RUN apt-get update && \
 
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
-ADD requirements.txt requirements-base.txt
-ADD backend/api_server/requirements.txt requirements-api.txt
-RUN python3 -m pip install -r requirements-base.txt -r requirements-api.txt
+ADD requirements-backend.txt requirements-backend.txt
+RUN python3 -m pip install -r requirements-backend.txt
 EXPOSE 5000
 
 # Install utilities to /single-cell-data-portal so we can run db migrations.

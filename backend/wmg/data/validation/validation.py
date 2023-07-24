@@ -71,9 +71,10 @@ class Validation:
         self.validate_expression_levels_for_particular_gene_dataset()
 
         if len(self.errors) > 0:
-            logger.info(f"Cube Validation Failed with {len(self.errors)} errors")
+            error_message = f"Cube Validation Failed with {len(self.errors)} errors"
             for error in self.errors:
-                logger.info(error)
+                error_message += f"\n{error}"
+            logger.error(error_message)
             return False
         return True
 

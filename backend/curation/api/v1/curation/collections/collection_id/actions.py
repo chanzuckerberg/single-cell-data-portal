@@ -13,16 +13,19 @@ from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidMetadataException
 from backend.layers.common import doi
-from backend.layers.common.entities import CollectionLinkType, Link
+from backend.layers.common.entities import CollectionId, CollectionLinkType, Link
 from backend.portal.api.providers import get_business_logic
 
 
-def delete(collection_id: str, token_info: dict) -> Response:
+def delete(collection_id: str, token_info: dict, delete_published: str) -> Response:
     user_info = UserInfo(token_info)
     collection_version = get_inferred_collection_version(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at:
-        raise MethodNotAllowedException(detail="Cannot delete a published collection through API.")
+        if user_info.is_cxg_admin() and delete_published == "true":
+            get_business_logic().tombstone_collection(CollectionId(collection_id))
+        else:
+            raise MethodNotAllowedException(detail="Cannot delete a published collection through API.")
     else:
         get_business_logic().delete_collection_version(collection_version.version_id)
     return make_response("", 204)

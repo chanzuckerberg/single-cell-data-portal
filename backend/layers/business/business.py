@@ -71,6 +71,8 @@ from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
+logger = logging.getLogger(__name__)
+
 
 class BusinessLogic(BusinessLogicInterface):
     database_provider: DatabaseProviderInterface
@@ -358,11 +360,20 @@ class BusinessLogic(BusinessLogicInterface):
         url: str,
         file_size: Optional[int],
         existing_dataset_version_id: Optional[DatasetVersionId],
+        start_step_function: bool = True,
     ) -> Tuple[DatasetVersionId, DatasetId]:
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
         If `size` is not provided, it will be inferred automatically
         """
+        logger.info(
+            {
+                "message": "ingesting dataset",
+                "collection_version_id": collection_version_id,
+                "url": url,
+                "existing_dataset_version_id": existing_dataset_version_id,
+            }
+        )
         if not self.uri_provider.validate(url):
             raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
@@ -431,17 +442,25 @@ class BusinessLogic(BusinessLogicInterface):
         )
 
         # Starts the step function process
-        self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
+        if start_step_function:
+            self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
 
     def remove_dataset_version(
-        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        delete_published: bool = False,
     ) -> None:
         """
         Removes a dataset version from an existing collection version
         """
         self._assert_collection_version_unpublished(collection_version_id)
+        if not delete_published:
+            dv = self.database_provider.get_dataset_version(dataset_version_id)
+            if dv.canonical_dataset.published_at:
+                raise CollectionUpdateException from None
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:

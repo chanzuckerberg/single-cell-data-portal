@@ -55,7 +55,7 @@ def create_empty_cube(uri: str, schema):
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
     all_filter_options = set()
     organism_key = "organism_ontology_term_id__" + organism
-    all_filter_options = snapshot.filter_relationships[organism_key][dimension]
+    all_filter_options = snapshot.filter_relationships[organism_key].get(dimension, [])
     return [option.split("__")[1] for option in all_filter_options]
 
 

@@ -203,15 +203,6 @@ export async function selectNthOption(page: Page, number: number) {
   await page.keyboard.press("Escape");
 }
 
-export async function waitForHeatmapToRender(page: Page) {
-  await tryUntil(
-    async () => {
-      await expect(page.locator("canvas")).not.toHaveCount(0);
-    },
-    { page }
-  );
-}
-
 export async function waitForElement(page: Page, testId: string) {
   await tryUntil(
     async () => {
@@ -401,4 +392,23 @@ export async function selectFirstNOptions(count: number, page: Page) {
   }
 
   await page.keyboard.press("Escape");
+}
+
+export async function takeSnapshotOfMetaTags(page: Page) {
+  const allMetaTags = await page.locator("meta").all();
+
+  await tryUntil(
+    async () => {
+      const allMetaTagsHTML = (
+        await Promise.all(
+          allMetaTags.map(async (metaTag) =>
+            metaTag.evaluate((node) => node.outerHTML)
+          )
+        )
+      ).sort();
+
+      expect(JSON.stringify(allMetaTagsHTML)).toMatchSnapshot();
+    },
+    { page }
+  );
 }

@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { ADD_TISSUE_BTN } from "tests/common/constants";
 import { goToWMG, verifyAddedTissue } from "tests/utils/geneUtils";
-import { selectNthOption } from "tests/utils/helpers";
+import { selectNthOption, tryUntil } from "tests/utils/helpers";
 import { conditionallyRunTests } from "tests/utils/wmgUtils";
 
 const { describe } = test;
@@ -21,7 +21,12 @@ describe("Add tissue tests", () => {
     await selectNthOption(page, 3);
 
     // verify selected tissue details
-    await verifyAddedTissue(page, TISSUE);
+    await tryUntil(
+      async () => {
+        await verifyAddedTissue(page, TISSUE);
+      },
+      { page }
+    );
   });
 
   test("Should select tissue by searching", async ({ page }) => {
@@ -35,6 +40,12 @@ describe("Add tissue tests", () => {
     // close dropdown
     await page.keyboard.press("Escape");
     // verify selected tissue details
-    await verifyAddedTissue(page, TISSUE);
+
+    await tryUntil(
+      async () => {
+        await verifyAddedTissue(page, TISSUE);
+      },
+      { page }
+    );
   });
 });
