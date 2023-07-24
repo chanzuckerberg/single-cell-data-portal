@@ -115,7 +115,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
 
     dispatch(
       selectCompare(
-        (value as typeof COMPARE_OPTIONS[number]).id as State["compare"]
+        (value as (typeof COMPARE_OPTIONS)[number]).id as State["compare"]
       )
     );
   }
