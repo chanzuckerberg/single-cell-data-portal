@@ -1,13 +1,6 @@
 import Image from "next/image";
 import Script from "next/script";
-import {
-  ReactElement,
-  ReactNode,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalStorage } from "react-use";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport";
 import {
