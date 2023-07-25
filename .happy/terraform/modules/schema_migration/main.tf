@@ -13,11 +13,10 @@ resource aws_cloudwatch_log_group batch_cloud_watch_logs_group {
 
 resource aws_batch_job_definition schema_migrations {
   type = "container"
-  name = "dp-${var.deploymen_stage}-${var.custom_stack_name}-${local.name}"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-${local.name}"
   container_properties = jsonencode({
     jobRoleArn= var.batch_role_arn,
     image= var.image,
-    memory= var.batch_container_memory_limit,
     environment= [
       {
         name= "ARTIFACT_BUCKET",
@@ -36,7 +35,16 @@ resource aws_batch_job_definition schema_migrations {
         value= var.remote_dev_prefix
       },
     ],
-    vcpus= 2,
+    resourceRequirements = [
+                  {
+              "Type": "VCPU",
+              "Value": "28"
+            },
+            {
+              "Type": "MEMORY",
+              "Value": var.batch_container_memory_limit
+            }
+    ]
     linuxParameters= {
      maxSwap= 400000,
      swappiness= 60
@@ -70,7 +78,17 @@ resource aws_sfn_state_machine sfn_schema_migration {
         "Timeout": {
           "AttemptDurationSeconds": 600
         },
-        "ContainerOverrides": {,
+        "ContainerOverrides": {
+          "ResourceRequirements": [
+            {
+              "Type": "VCPU",
+              "Value": "2"
+            },
+            {
+              "Type": "MEMORY",
+              "Value": "2048"
+            }
+          ],
           "Environment": [
             {
               "Name": "STEP_NAME",
@@ -121,6 +139,16 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "AttemptDurationSeconds": 600
               },
               "ContainerOverrides": {
+                "ResourceRequirements": [
+                  {
+                    "Type": "VCPU",
+                    "Value": "2"
+                  },
+                  {
+                    "Type": "MEMORY",
+                    "Value": "2048"
+                  }
+                ],
                 "Environment": [
                   {
                     "Name": "STEP_NAME",
@@ -186,6 +214,16 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "AttemptDurationSeconds": 600
               },
               "ContainerOverrides": {
+                "ResourceRequirements": [
+                  {
+                    "Type": "VCPU",
+                    "Value": "2"
+                  },
+                  {
+                    "Type": "MEMORY",
+                    "Value": "2048"
+                  }
+                ],
                 "Environment": [
                   {
                     "Name": "STEP_NAME",
@@ -244,16 +282,6 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       "AttemptDurationSeconds": 36000
                     },
                     "ContainerOverrides": {
-                      "ResourceRequirements": [
-                        {
-                          "Type": "VCPU",
-                          "Value": "28"
-                        },
-                        {
-                          "Type": "MEMORY",
-                          "Value": "50000"
-                        }
-                      ],
                       "Environment": [
                         {
                           "Name": "STEP_NAME",
@@ -377,6 +405,16 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "AttemptDurationSeconds": 600
         },
         "ContainerOverrides": {
+          "ResourceRequirements": [
+            {
+              "Type": "VCPU",
+              "Value": "2"
+            },
+            {
+              "Type": "MEMORY",
+              "Value": "2048"
+            }
+          ],
           "Environment": [
             {
               "Name": "STEP_NAME",
