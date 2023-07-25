@@ -1879,6 +1879,115 @@ class TestGetDatasets(BaseAPIPortalTest):
             ]
             self.assertEqual(expected_assets, dataset["assets"])
 
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test_get_datasets_by_schema_200(self, mock_config: Mock):
+        published_collection_1 = self.generate_published_collection(
+            add_datasets=2,
+            metadata=CollectionMetadata(
+                "test_collection_1",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+        published_collection_2 = self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_2",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+            dataset_schema_version="3.1.0",
+        )
+        published_collection_3 = self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_3",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+            dataset_schema_version="4.0.0",
+        )
+        self.generate_unpublished_collection(add_datasets=4)
+        self.generate_revision(published_collection_1.collection_id)
+
+        sorted_dataset_ids = (
+            [published_collection_3.datasets[0].dataset_id.id]
+            + [published_collection_2.datasets[0].dataset_id.id]
+            + sorted([d.dataset_id.id for d in published_collection_1.datasets], reverse=True)
+        )
+
+        with self.subTest("Query without parameter"):
+            response = self.app.get("/curation/v1/datasets")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual(sorted_dataset_ids, received_dataset_ids)
+
+        with self.subTest("Query against major schema version 3"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual(sorted_dataset_ids[1:], received_dataset_ids)
+
+        with self.subTest("Query against major schema version 4"):
+            response = self.app.get("/curation/v1/datasets?schema_version=4")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual([published_collection_3.datasets[0].dataset_id.id], received_dataset_ids)
+
+        with self.subTest("Query against minor schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.0")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual(sorted_dataset_ids[2:], received_dataset_ids)
+
+        with self.subTest("Query against patch schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.1.0")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual([published_collection_2.datasets[0].dataset_id.id], received_dataset_ids)
+
+        with self.subTest("Query against non-matching major schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=5")
+            self.assertTrue(200, response.status_code)
+            self.assertCountEqual(response.json, [])
+
+        with self.subTest("Query against non-matching minor schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.2")
+            self.assertTrue(200, response.status_code)
+            self.assertCountEqual(response.json, [])
+
+        with self.subTest("Query against non-matching patch schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.1.1")
+            self.assertTrue(200, response.status_code)
+            self.assertCountEqual(response.json, [])
+
+        with self.subTest("Query against non-version input"):
+            response = self.app.get("/curation/v1/datasets?schema_version=invalid_input")
+            self.assertEqual(400, response.status_code)
+
 
 class TestGetDatasetVersion(BaseAPIPortalTest):
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)

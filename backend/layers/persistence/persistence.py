@@ -103,6 +103,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
             published_at=row.published_at,
             created_at=row.created_at,
+            schema_version=row.schema_version,
             canonical_collection=canonical_collection,
         )
 
@@ -119,6 +120,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             datasets=datasets,
             published_at=row.published_at,
             created_at=row.created_at,
+            schema_version=row.schema_version,
             canonical_collection=canonical_collection,
         )
 
@@ -213,6 +215,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             publisher_metadata=None,
             published_at=None,
             created_at=now,
+            schema_version=None,
             datasets=list(),
         )
 
@@ -236,7 +239,9 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_collection = self.get_canonical_collection(collection_id)
             return self._row_to_collection_version(collection_version, canonical_collection)
 
-    def _get_datasets(self, ids: List[DatasetVersionId], get_tombstoned: bool = False) -> List[DatasetVersion]:
+    def get_dataset_versions_by_id(
+        self, ids: List[DatasetVersionId], get_tombstoned: bool = False
+    ) -> List[DatasetVersion]:
         ids = [dv_id.id for dv_id in ids]
         with self._manage_session() as session:
             versions = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(ids)).all()
@@ -300,7 +305,9 @@ class DatabaseProvider(DatabaseProviderInterface):
                 self._row_to_collection_version(c_v_row, canonical_collection)
                 for c_v_row in all_collection_versions_rows
             ]
-            dataset_versions = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
+            dataset_versions = self.get_dataset_versions_by_id(
+                [DatasetVersionId(str(id)) for id in collection_version.datasets]
+            )
             set_revised_at_field(dataset_versions, all_collection_versions)
             return self._row_to_collection_version_with_datasets(
                 collection_version, canonical_collection, dataset_versions
@@ -320,7 +327,9 @@ class DatabaseProvider(DatabaseProviderInterface):
 
             collection_version = next(c_v_row for c_v_row in collection_versions if c_v_row.id == version_id)
             canonical_collection = self.get_canonical_collection(collection_id)
-            dataset_versions = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
+            dataset_versions = self.get_dataset_versions_by_id(
+                [DatasetVersionId(str(id)) for id in collection_version.datasets]
+            )
             all_collection_versions = [
                 self._row_to_collection_version(c_v_row, canonical_collection) for c_v_row in collection_versions
             ]
@@ -338,7 +347,9 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_collection = self.get_canonical_collection(collection_id)
             versions = list()
             for i in range(len(version_rows)):
-                datasets = self._get_datasets([DatasetVersionId(str(id)) for id in version_rows[i].datasets])
+                datasets = self.get_dataset_versions_by_id(
+                    [DatasetVersionId(str(id)) for id in version_rows[i].datasets]
+                )
                 version = self._row_to_collection_version_with_datasets(version_rows[i], canonical_collection, datasets)
                 versions.append(version)
             return versions
@@ -464,7 +475,8 @@ class DatabaseProvider(DatabaseProviderInterface):
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         """
         Adds a collection version to an existing canonical collection. The new version copies all data from
-         the previous version except version_id and datetime-based fields (i.e. created_at, published_at)
+        the previous version except version_id, schema_version, and datetime-based fields (i.e. created_at,
+        published_at)
         Returns the new version id.
         """
         with self._manage_session() as session:
@@ -480,6 +492,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 publisher_metadata=current_version.publisher_metadata,
                 published_at=None,
                 created_at=datetime.utcnow(),
+                schema_version=None,
                 datasets=current_version.datasets,
             )
             session.add(new_version)
@@ -500,6 +513,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         self,
         collection_id: CollectionId,
         version_id: CollectionVersionId,
+        schema_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
     ) -> List[str]:
@@ -523,6 +537,8 @@ class DatabaseProvider(DatabaseProviderInterface):
             # update collection version
             collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             collection_version.published_at = published_at
+            collection_version.schema_version = schema_version
+
             dataset_ids_for_new_collection_version = [
                 d.dataset_id.id for d in self.get_collection_version_with_datasets(version_id).datasets
             ]
@@ -603,7 +619,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         dataset_version_ids = []
         for collection in active_collections:
             dataset_version_ids.extend(collection.datasets)
-        return list(self._get_datasets(dataset_version_ids)), active_collections
+        return list(self.get_dataset_versions_by_id(dataset_version_ids)), active_collections
 
     def get_dataset_artifacts(self, dataset_artifact_id_list: List[DatasetArtifactId]) -> List[DatasetArtifact]:
         """
@@ -825,3 +841,17 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version = session.query(DatasetVersionTable).filter_by(id=canonical_dataset.version_id).one()
             dataset_version.canonical_dataset = canonical_dataset
             return self._hydrate_dataset_version(dataset_version)
+
+    def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
+        """
+        Returns a list with all collection versions that match the given schema_version. schema_version may contain
+         wildcards.
+        """
+        with self._manage_session() as session:
+            if has_wildcards:
+                collection_versions = session.query(CollectionVersionTable).filter(
+                    CollectionVersionTable.schema_version.like(schema_version)
+                )
+            else:
+                collection_versions = session.query(CollectionVersionTable).filter_by(schema_version=schema_version)
+            return [self._row_to_collection_version(row, None) for row in collection_versions.all()]
