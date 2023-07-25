@@ -1,16 +1,12 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontCapsXxs, getColors } from "@czi-sds/components";
+import { fontBodyS, fontCapsXxs } from "@czi-sds/components";
+import { gray100, gray500 } from "src/common/theme";
 
 export const CellGuideCardDescription = styled.div`
   ${fontBodyS}
   font-weight: 400;
   white-space: pre-wrap;
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      background-color: ${colors?.gray[100]};
-    `;
-  }}
+  background-color: ${gray100};
   padding: 12px 16px 12px 16px;
   border-radius: 8px;
 `;
@@ -25,12 +21,7 @@ export const Source = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 40px;
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
 `;
 
 export const SourceLink = styled.div`
@@ -40,11 +31,6 @@ export const SourceLink = styled.div`
 export const DescriptionHeader = styled.div`
   ${fontCapsXxs}
   font-weight: 600;
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
   margin-bottom: 8px;
 `;

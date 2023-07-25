@@ -3,14 +3,13 @@ import {
   Banner,
   Button,
   ButtonIcon,
-  CommonThemeProps,
   fontBodyS,
   fontBodyXxxs,
   fontHeaderXl,
-  getColors,
   InputText,
 } from "@czi-sds/components";
 import Modal from "../common/Modal";
+import { beta100, beta400, error400, gray500 } from "src/common/theme";
 
 export const BOTTOM_BANNER_ID = "bottom-banner";
 
@@ -25,29 +24,25 @@ export const StyledBanner = styled(Banner)`
 
   height: auto;
 
-  ${(props: CommonThemeProps) => {
-    const colors = getColors(props);
+  /**
+   * beta intent does not exist for SDS banner, but the colors do targeting
+   * specific id to overwrite style
+   */
+  border-color: ${beta400} !important;
+  background-color: ${beta100};
+  color: black;
 
-    // beta intent does not exist for SDS banner, but the colors do
-    // targeting specific id to overwrite style
-    return `
-      border-color: ${colors?.beta[400]} !important;
-      background-color: ${colors?.beta[100]};
-      color: black;
+  /* Hide default svg icon in the Banner as it is not in figma */
+  :first-child > div:first-child > div:first-child {
+    display: none;
+  }
 
-      /* Hide default svg icon in the Banner as it is not in figma */
-      :first-child > div:first-child > div:first-child {
-        display: none;
-      }
-
-      /* Change close button icon default color */
-      button svg {
-        path {
-          fill: ${colors?.gray[500]};
-        }
-      }
-    `;
-  }}
+  /* Change close button icon default color */
+  button svg {
+    path {
+      fill: ${gray500};
+    }
+  }
 `;
 
 export const StyledBottomBannerWrapper = styled.div`
@@ -140,15 +135,11 @@ export const StyledDisclaimer = styled.div`
 
   letter-spacing: -0.005em;
 
-  ${(props: CommonThemeProps) => {
-    const colors = getColors(props);
-
-    // beta intent does not exist for SDS banner, but the colors do
-    // targeting specific id to overwrite style
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  /*
+   * beta intent does not exist for SDS banner, but the colors do
+   * targeting specific id to overwrite style
+   */
+  color: ${gray500};
 `;
 
 export const StyledErrorMessage = styled.div`
@@ -162,15 +153,11 @@ export const StyledErrorMessage = styled.div`
   margin-top: 4px;
   margin-bottom: 4px;
 
-  ${(props: CommonThemeProps) => {
-    const colors = getColors(props);
-
-    // beta intent does not exist for SDS banner, but the colors do
-    // targeting specific id to overwrite style
-    return `
-      color: ${colors?.error[400]};
-    `;
-  }}
+  /*
+   * beta intent does not exist for SDS banner, but the colors do
+   * targeting specific id to overwrite style
+   */
+  color: ${error400};
 `;
 
 export const NewsletterModal = styled(Modal)`

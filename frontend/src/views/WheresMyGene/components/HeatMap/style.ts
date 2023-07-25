@@ -10,9 +10,8 @@ import {
 import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
 import { X_AXIS_CHART_HEIGHT_PX } from "../../common/constants";
 import { Autocomplete } from "@mui/material";
-import { CommonThemeProps, Tag, getSpaces } from "@czi-sds/components";
-
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
+import { Tag } from "@czi-sds/components";
+import { spacesS } from "src/common/theme";
 
 export const CHART_PADDING_PX = 10;
 

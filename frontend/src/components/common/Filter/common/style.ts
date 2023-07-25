@@ -1,10 +1,6 @@
 import styled from "@emotion/styled";
 import { Popover } from "@mui/material";
-import { CommonThemeProps, getShadows, getSpaces } from "@czi-sds/components";
-
-const shadowM = (props: CommonThemeProps) => getShadows(props)?.m;
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
-const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
+import { shadowM, spacesS, spacesXxs } from "src/common/theme";
 
 export const Filter = styled.div`
   display: grid;
