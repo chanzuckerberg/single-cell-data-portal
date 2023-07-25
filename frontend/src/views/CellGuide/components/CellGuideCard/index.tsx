@@ -24,6 +24,7 @@ import { throttle } from "lodash";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
+import CellGuideBottomBanner from "../CellGuideBottomBanner";
 
 export const CELL_GUIDE_CARD_HEADER_NAME = "cell-guide-card-header-name";
 export const CELL_GUIDE_CARD_HEADER_TAG = "cell-guide-card-header-tag";
@@ -182,6 +183,7 @@ export default function CellGuideCard({
           />
         )}
       </StyledRightSideBar>
+      <CellGuideBottomBanner />
     </>
   );
 }
