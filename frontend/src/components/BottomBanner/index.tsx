@@ -38,6 +38,7 @@ export interface Props {
   includeSurveyLink?: boolean;
   asFooter?: boolean;
   customSurveyLinkPrefix?: ReactElement;
+  analyticsHandler?: () => void;
 }
 const BOTTOM_BANNER_EXPIRATION_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const BOTTOM_BANNER_LAST_CLOSED_TIME_KEY = "bottomBannerLastClosedTime";
@@ -46,6 +47,7 @@ export default function BottomBanner({
   includeSurveyLink = false,
   asFooter = false,
   customSurveyLinkPrefix,
+  analyticsHandler,
 }: Props): JSX.Element | null {
   const [bottomBannerLastClosedTime, setBottomBannerLastClosedTime] =
     useLocalStorage<number>(BOTTOM_BANNER_LAST_CLOSED_TIME_KEY, 0);
@@ -314,6 +316,7 @@ export default function BottomBanner({
                       href="https://airtable.com/shrLwepDSEX1HI6bo"
                       target="_blank"
                       rel="noopener"
+                      onClick={analyticsHandler}
                     >
                       quick survey
                     </StyledLink>

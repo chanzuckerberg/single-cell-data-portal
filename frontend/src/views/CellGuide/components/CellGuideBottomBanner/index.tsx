@@ -1,3 +1,5 @@
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import BottomBanner from "src/components/BottomBanner";
 import { StyledLink } from "src/components/BottomBanner/style";
 
@@ -18,6 +20,9 @@ export default function CellGuideBottomBanner(): JSX.Element {
           for planned updates or send us feedback with this
         </span>
       }
+      analyticsHandler={() => {
+        track(EVENTS.SUGGEST_CHANGE_CLICKED);
+      }}
     />
   );
 }
