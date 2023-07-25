@@ -11,6 +11,7 @@ import {
   LEFT_RIGHT_PADDING_PX,
   SearchBarPositioner,
   StyledRightSideBar,
+  StyledSynonyms,
 } from "./style";
 import Description from "./components/Description";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
@@ -25,9 +26,11 @@ import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
+import { useCellTypesById } from "src/common/queries/cellGuide";
 
 export const CELL_GUIDE_CARD_HEADER_NAME = "cell-guide-card-header-name";
 export const CELL_GUIDE_CARD_HEADER_TAG = "cell-guide-card-header-tag";
+export const CELL_GUIDE_CARD_SYNONYMS = "cell-guide-card-synonyms";
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
 // This is the desired width of the CellGuideCard components right after the sidebar is hidden.
@@ -59,6 +62,12 @@ export default function CellGuideCard({
   const cellTypeName = name || "";
   const titleizedCellTypeName = titleize(cellTypeName);
 
+  const cellTypesById = useCellTypesById();
+
+  const cellType = cellTypesById && cellTypesById[cellTypeId];
+
+  const { synonyms } = cellType || {};
+
   const handleResize = useCallback(() => {
     setSkinnyMode(
       window.innerWidth < BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
@@ -83,7 +92,9 @@ export default function CellGuideCard({
   }
 
   const title = `${titleizedCellTypeName} Cell Types - CZ CELLxGENE CellGuide`;
-  const seoDescription = `Find comprehensive information about ${cellTypeName} cell types. ${rawSeoDescription}`;
+  const seoDescription = `Find comprehensive information about "${cellTypeName}" cell types (synonyms: ${
+    synonyms?.join(", ") || "N/A"
+  }). ${rawSeoDescription}`;
 
   return (
     <>
@@ -143,7 +154,13 @@ export default function CellGuideCard({
               </a>
             </CellGuideCardHeaderInnerWrapper>
           </CellGuideCardHeader>
+
           <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
+
+          <StyledSynonyms
+            synonyms={synonyms}
+            data-testid={CELL_GUIDE_CARD_SYNONYMS}
+          />
 
           {/* Cell Ontology section */}
           <div ref={sectionRef1} id="section-1" data-testid="section-1" />

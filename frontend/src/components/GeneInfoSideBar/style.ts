@@ -1,11 +1,12 @@
 import styled from "@emotion/styled";
+import { fontBodyXs, fontBodyS, Callout } from "@czi-sds/components";
 import {
-  fontBodyXs,
-  getFontWeights,
-  fontBodyS,
-  getColors,
-  Callout,
-} from "@czi-sds/components";
+  fontWeightRegular,
+  gray500,
+  primary400,
+  warning100,
+  warning400,
+} from "src/common/theme";
 
 export const GeneSummary = styled.div`
   ${fontBodyXs}
@@ -15,49 +16,17 @@ export const GeneSummary = styled.div`
   color: black;
 `;
 
-export const GeneSynonymsWrapper = styled.div`
-  display: flex;
-  padding-bottom: 8px;
-  align-items: center;
-`;
-
 export const Label = styled.div`
   ${fontBodyXs}
-  ${(props) => {
-    const colors = getColors(props);
-    const fontWeights = getFontWeights(props);
 
-    return `
-      color: ${colors?.gray[500]};
-      font-weight: ${fontWeights?.regular};
-    `;
-  }}
-`;
-
-export const GeneSynonyms = styled.div`
-  padding: 4px 8px;
-  color: black;
-
-  ${fontBodyXs}
-  ${(props) => {
-    const fontWeights = getFontWeights(props);
-
-    return `
-      font-weight: ${fontWeights?.regular};
-    `;
-  }}
+  color: ${gray500};
+  font-weight: ${fontWeightRegular};
 `;
 
 export const GeneUrl = styled.a`
   ${fontBodyS}
   font-weight: 400;
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.primary[400]};
-    `;
-  }}
+  color: ${primary400};
 `;
 
 export const GeneName = styled.div`
@@ -76,21 +45,17 @@ export const StyledCallout = styled(Callout)`
 `;
 
 export const WarningBanner = styled.div`
+  ${fontBodyXs}
+
   padding: 8px;
   display: flex;
   align-items: center;
   margin-top: 8px;
 
-  ${fontBodyXs}
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      background-color: ${colors?.warning[100]};
-      svg {
-        fill: ${colors?.warning[400]}
-      }
-    `;
-  }}
+  background-color: ${warning100};
+  svg {
+    fill: ${warning400};
+  }
 `;
 
 export const OutLinksWrapper = styled.div`
