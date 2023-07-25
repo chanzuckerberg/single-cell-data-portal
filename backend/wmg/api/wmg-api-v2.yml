@@ -94,6 +94,7 @@ paths:
                     - sex
                     - self_reported_ethnicity
                     - disease
+                    - publication
               required:
                 - filter
               additionalProperties: false
