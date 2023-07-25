@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Script from "next/script";
-import { useEffect, useRef, useState } from "react";
+import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
+import { useLocalStorage } from "react-use";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport";
 import {
   BOTTOM_BANNER_ID,
@@ -36,12 +37,21 @@ export const FAILED_EMAIL_VALIDATION_STRING =
 export interface Props {
   includeSurveyLink?: boolean;
   asFooter?: boolean;
+  customSurveyLinkPrefix?: ReactElement;
+  analyticsHandler?: () => void;
 }
+const BOTTOM_BANNER_EXPIRATION_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const BOTTOM_BANNER_LAST_CLOSED_TIME_KEY = "bottomBannerLastClosedTime";
 
 export default function BottomBanner({
   includeSurveyLink = false,
   asFooter = false,
-}: Props): JSX.Element {
+  customSurveyLinkPrefix,
+  analyticsHandler,
+}: Props): JSX.Element | null {
+  const [bottomBannerLastClosedTime, setBottomBannerLastClosedTime] =
+    useLocalStorage<number>(BOTTOM_BANNER_LAST_CLOSED_TIME_KEY, 0);
+
   const [newsletterModalIsOpen, setNewsletterModalIsOpen] = useState(false);
   const [isHubSpotReady, setIsHubSpotReady] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -237,6 +247,19 @@ export default function BottomBanner({
     </div>
   );
 
+  const showBanner = useMemo(() => {
+    const show =
+      !bottomBannerLastClosedTime ||
+      Date.now() - bottomBannerLastClosedTime >
+        BOTTOM_BANNER_EXPIRATION_TIME_MS;
+    if (show && bottomBannerLastClosedTime) {
+      setBottomBannerLastClosedTime(0);
+    }
+    return show;
+  }, [bottomBannerLastClosedTime]);
+
+  if (!showBanner) return null;
+
   return (
     <>
       <Head>
@@ -258,14 +281,17 @@ export default function BottomBanner({
         type="text/javascript"
         src="https://js.hsforms.net/forms/v2.js"
       />
-
       <StyledBottomBannerWrapper
         asFooter={asFooter}
         id={BOTTOM_BANNER_ID}
         className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
         data-testid="newsletter-modal-banner-wrapper"
       >
-        <StyledBanner dismissible={!asFooter} sdsType={"primary"}>
+        <StyledBanner
+          dismissible={!asFooter}
+          sdsType={"primary"}
+          onClose={() => setBottomBannerLastClosedTime(Date.now())}
+        >
           {/* Hidden form for submitting the data to Hubspot */}
           <HiddenHubspotForm id={FORM_CONTAINER_ID} />
 
@@ -283,11 +309,14 @@ export default function BottomBanner({
                 to our newsletter to receive updates about new features.{" "}
                 {includeSurveyLink && (
                   <>
-                    Send us feedback with this{" "}
+                    {customSurveyLinkPrefix
+                      ? customSurveyLinkPrefix
+                      : "Send us feedback with this"}{" "}
                     <StyledLink
                       href="https://airtable.com/shrLwepDSEX1HI6bo"
                       target="_blank"
                       rel="noopener"
+                      onClick={analyticsHandler}
                     >
                       quick survey
                     </StyledLink>
