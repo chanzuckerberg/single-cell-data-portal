@@ -1936,15 +1936,15 @@ class TestGetDatasets(BaseAPIPortalTest):
                 received_dataset_ids.append(dataset["dataset_id"])
             self.assertTrue(200, response.status_code)
             self.assertEqual(sorted_dataset_ids, received_dataset_ids)
+
         with self.subTest("Query against major schema version 3"):
             response = self.app.get("/curation/v1/datasets?schema_version=3")
             received_dataset_ids = []
             for dataset in response.json:
                 received_dataset_ids.append(dataset["dataset_id"])
-            expected_response = copy.deepcopy(sorted_dataset_ids)
-            del expected_response[0]
             self.assertTrue(200, response.status_code)
-            self.assertEqual(expected_response, received_dataset_ids)
+            self.assertEqual(sorted_dataset_ids[1:], received_dataset_ids)
+
         with self.subTest("Query against major schema version 4"):
             response = self.app.get("/curation/v1/datasets?schema_version=4")
             received_dataset_ids = []
@@ -1952,16 +1952,15 @@ class TestGetDatasets(BaseAPIPortalTest):
                 received_dataset_ids.append(dataset["dataset_id"])
             self.assertTrue(200, response.status_code)
             self.assertEqual([published_collection_3.datasets[0].dataset_id.id], received_dataset_ids)
+
         with self.subTest("Query against minor schema version"):
             response = self.app.get("/curation/v1/datasets?schema_version=3.0")
             received_dataset_ids = []
             for dataset in response.json:
                 received_dataset_ids.append(dataset["dataset_id"])
-            expected_response = copy.deepcopy(sorted_dataset_ids)
-            del expected_response[0]
-            del expected_response[1]
             self.assertTrue(200, response.status_code)
-            self.assertEqual(expected_response, received_dataset_ids)
+            self.assertEqual(sorted_dataset_ids[2:], received_dataset_ids)
+
         with self.subTest("Query against patch schema version"):
             response = self.app.get("/curation/v1/datasets?schema_version=3.1.0")
             received_dataset_ids = []
@@ -1969,18 +1968,22 @@ class TestGetDatasets(BaseAPIPortalTest):
                 received_dataset_ids.append(dataset["dataset_id"])
             self.assertTrue(200, response.status_code)
             self.assertEqual([published_collection_2.datasets[0].dataset_id.id], received_dataset_ids)
+
         with self.subTest("Query against non-matching major schema version"):
             response = self.app.get("/curation/v1/datasets?schema_version=5")
             self.assertTrue(200, response.status_code)
             self.assertCountEqual(response.json, [])
+
         with self.subTest("Query against non-matching minor schema version"):
             response = self.app.get("/curation/v1/datasets?schema_version=3.2")
             self.assertTrue(200, response.status_code)
             self.assertCountEqual(response.json, [])
+
         with self.subTest("Query against non-matching patch schema version"):
             response = self.app.get("/curation/v1/datasets?schema_version=3.1.1")
             self.assertTrue(200, response.status_code)
             self.assertCountEqual(response.json, [])
+
         with self.subTest("Query against non-version input"):
             response = self.app.get("/curation/v1/datasets?schema_version=invalid_input")
             self.assertEqual(400, response.status_code)
