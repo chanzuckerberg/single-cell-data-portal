@@ -19,7 +19,7 @@ on:
 
 jobs:
   rebuild-and-push-processing-image-dev:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -46,7 +46,7 @@ jobs:
           happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
 
   rebuild-and-push-processing-image-staging:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -73,7 +73,7 @@ jobs:
           happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
 
   rebuild-and-push-processing-image-prod:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
