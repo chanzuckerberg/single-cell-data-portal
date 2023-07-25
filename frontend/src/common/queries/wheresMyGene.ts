@@ -864,15 +864,11 @@ function getSortedCellTypeCompareOptions(
       return -1;
     }
 
-    if (aCompareOptionId < bCompareOptionId) {
-      return -1;
-    }
+    const aCompareOption = a[1];
+    const bCompareOption = b[1];
 
-    if (aCompareOptionId > bCompareOptionId) {
-      return 1;
-    }
-
-    return 0;
+    // cchoi: higher number goes first!
+    return bCompareOption.total_count - aCompareOption.total_count;
   });
 }
 
