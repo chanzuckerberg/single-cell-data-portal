@@ -475,7 +475,8 @@ class DatabaseProvider(DatabaseProviderInterface):
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         """
         Adds a collection version to an existing canonical collection. The new version copies all data from
-        the previous version except version_id, schema_version and datetime-based fields (i.e. created_at, published_at)
+        the previous version except version_id, schema_version, and datetime-based fields (i.e. created_at,
+        published_at)
         Returns the new version id.
         """
         with self._manage_session() as session:
@@ -843,7 +844,8 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
         """
-        Returns a list with all collection versions that match the given schema_version
+        Returns a list with all collection versions that match the given schema_version. schema_version may contain
+         wildcards.
         """
         with self._manage_session() as session:
             if has_wildcards:

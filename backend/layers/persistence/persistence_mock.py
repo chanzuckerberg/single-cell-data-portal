@@ -1,5 +1,6 @@
 import copy
 from datetime import datetime
+from fnmatch import fnmatchcase
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 from backend.layers.business.exceptions import CollectionIsPublishedException
@@ -310,7 +311,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 active_datasets.append(self._update_dataset_version_with_canonical(dataset_version))
         return active_datasets, active_collections
 
-    def _get_datasets(self, ids: List[DatasetVersionId], get_tombstoned: bool = False) -> List[DatasetVersion]:
+    def get_dataset_versions_by_id(
+        self, ids: List[DatasetVersionId], get_tombstoned: bool = False
+    ) -> List[DatasetVersion]:
         dataset_versions = []
         for dv_id in ids:
             dataset_version = self._update_dataset_version_with_canonical(self.datasets_versions[dv_id.id])
@@ -455,3 +458,17 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 return None
             version = None if cd.dataset_version_id is None else self.datasets_versions[cd.dataset_version_id.id]
             return None if version is None else self._update_dataset_version_with_canonical(version)
+
+    def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
+        if has_wildcards:
+            schema_version = schema_version.replace("_", "?")
+            collection_versions = [
+                cv
+                for cv in self.collections_versions.values()
+                if cv.schema_version is not None and fnmatchcase(cv.schema_version, schema_version)
+            ]
+        else:
+            collection_versions = [
+                cv for cv in self.collections_versions.values() if cv.schema_version == schema_version
+            ]
+        return copy.deepcopy(collection_versions)

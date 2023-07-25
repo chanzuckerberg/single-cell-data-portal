@@ -166,8 +166,7 @@ class BusinessLogic(BusinessLogicInterface):
             if canonical_collection_id not in collections:
                 collections[canonical_collection_id] = collection_version
             else:
-                current_collection_version = collections[canonical_collection_id]
-                if collection_version.published_at > current_collection_version.published_at:
+                if collection_version.published_at > collections[canonical_collection_id].published_at:
                     collections[canonical_collection_id] = collection_version
 
         # for each mapped collection version, populate its dataset versions' details
@@ -800,8 +799,8 @@ class BusinessLogic(BusinessLogicInterface):
         self, mapped_collection_versions: List[CollectionVersion], mapped_dataset_versions: List[DatasetVersion]
     ) -> List[CollectionVersionWithPublishedDatasets]:
         """
-        Given a list of collection versions and dataset versions, produce a list joining them into CollectionVersionWithPublishedDatasets
-        objects
+        Given a list of collection versions and dataset versions, produce a list joining them into
+        CollectionVersionWithPublishedDatasets objects
         """
         # Construct dict of collection_id: [Datasets]
         datasets_by_collection_id = defaultdict(list)
