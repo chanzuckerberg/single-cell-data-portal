@@ -280,6 +280,14 @@ paths:
         - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
+        - name: delete_published
+          description: |
+            Perform the delete even if the Collection is published. Not allowed for users.
+          in: query
+          required: false
+          schema:
+            default: "false"
+            type: string
       responses:
         "204":
           $ref: "#/components/responses/204"
@@ -375,6 +383,14 @@ paths:
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/path_dataset_id"
+        - name: delete_published
+          description: |
+            Perform the delete even if the Dataset is published. Not allowed for users.
+          in: query
+          required: false
+          schema:
+            default: "false"
+            type: string
       responses:
         "202":
           description: Accepted
@@ -605,6 +621,8 @@ paths:
       description: |
         List all public Datasets with full metadata as well as Collection name and Collection doi.
       operationId: backend.curation.api.v1.curation.datasets.actions.get
+      parameters:
+        - $ref: "#/components/parameters/schema_version"
       responses:
         "200":
           description: OK
@@ -614,6 +632,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/dataset_index"
+        "400":
+          $ref: "#/components/responses/400"
 
   /v1/datasets/{dataset_id}/versions:
     get:
@@ -1457,6 +1477,26 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/dataset_version_id"
+    schema_version:
+      description: |
+        Optional--Filter results by most recently published dataset versions with matching CELLxGENE schema version. Can
+        match against major, minor, or patch schema version. Returns empty list if no match is found. Input should be in
+        semver format (X, X.Y, or X.Y.Z where X, Y, and Z are positive integers).
+      in: query
+      name: schema_version
+      required: false
+      schema:
+        type: string
+      examples:
+        major_schema_version:
+          summary: Major Schema Version Filter
+          value: "3"
+        minor_schema_version:
+          summary: Minor Schema Version Filter
+          value: "3.0"
+        patch_schema_version:
+          summary: Patch Schema Version Filter
+          value: "3.0.0"
   responses:
     "200":
       description: OK

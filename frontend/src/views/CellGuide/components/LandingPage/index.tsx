@@ -1,6 +1,7 @@
 import Head from "next/head";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import { StyledHeader, Wrapper } from "./style";
+import CellGuideBottomBanner from "../CellGuideBottomBanner";
 
 export const LANDING_PAGE_HEADER = "landing-page-header";
 
@@ -35,6 +36,7 @@ export default function LandingPage(): JSX.Element {
         </StyledHeader>
         <CellGuideCardSearchBar />
       </Wrapper>
+      <CellGuideBottomBanner />
     </>
   );
 }

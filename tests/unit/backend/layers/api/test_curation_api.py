@@ -39,35 +39,46 @@ def mock_config_fn(name):
 
 
 class TestDeleteCollection(BaseAPIPortalTest):
-    def _test(self, collection_id, header, expected_status):
+    def _test(self, collection_id, header, expected_status, query_param_str=None):
         if header == "owner":
             headers = self.make_owner_header()
         elif header == "super":
             headers = self.make_super_curator_header()
+        elif header == "cxg_admin":
+            headers = self.make_cxg_admin_header()
         elif header == "not_owner":
             headers = self.make_not_owner_header()
         elif "noauth":
             headers = {}
-
-        response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
+        response = self.app.delete(
+            f"/curation/v1/collections/{collection_id}{'?' + query_param_str if query_param_str else ''}",
+            headers=headers,
+        )
         self.assertEqual(expected_status, response.status_code)
-        if response.status_code == 204:
-            response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
-            self.assertEqual(404, response.status_code)
 
     def test__delete_public_collection(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 405), ("super", 405)]
+        tests = [
+            ("not_owner", (403, 403)),
+            ("noauth", (401, 401)),
+            ("owner", (405, 405)),
+            ("super", (405, 405)),
+            ("cxg_admin", (405, 204)),
+        ]
+        query_param_strs = ("", "delete_published=true")
         public_collection_id = self.generate_published_collection().collection_id
-        for auth, expected_response in tests:
-            with self.subTest(auth):
-                self._test(public_collection_id, auth, expected_response)
+        for auth, expected_responses in tests:
+            for i, query_param_str in enumerate(query_param_strs):
+                with self.subTest(auth):
+                    self._test(public_collection_id, auth, expected_responses[i], query_param_str=query_param_str)
 
     def test__delete_revision_collection_by_collection_version_id(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 revision_collection = self.generate_collection_revision()
-                self._test(revision_collection.version_id.id, auth, expected_response)
+                self._test(revision_collection.version_id, auth, expected_response)
+                if expected_response == 204:
+                    self._test(revision_collection.version_id, auth, 404)
 
     def test__delete_private_collection(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
@@ -75,21 +86,31 @@ class TestDeleteCollection(BaseAPIPortalTest):
             with self.subTest(auth):
                 private_collection_id = self.generate_unpublished_collection().collection_id
                 self._test(private_collection_id, auth, expected_response)
+                if expected_response == 204:
+                    self._test(private_collection_id, auth, 404)
 
     def test__delete_private_collection_by_collection_version_id(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
+        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403), ("cxg_admin", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 private_collection_version_id = self.generate_unpublished_collection().version_id
                 self._test(private_collection_version_id, auth, expected_response)
 
     def test__delete_tombstone_collection(self):
-        tests = [("not_owner", 410), ("noauth", 401), ("owner", 410), ("super", 410)]
-        for auth, expected_response in tests:
-            with self.subTest(auth):
-                collection = self.generate_published_collection()
-                self.business_logic.tombstone_collection(collection.collection_id)
-                self._test(collection.collection_id, auth, expected_response)
+        tests = [
+            ("not_owner", (410, 410)),
+            ("noauth", (401, 401)),
+            ("owner", (410, 410)),
+            ("super", (410, 410)),
+            ("cxg_admin", (410, 410)),
+        ]
+        query_param_strs = ("", "delete_published=true")
+        for auth, expected_responses in tests:
+            for i, query_param_str in enumerate(query_param_strs):
+                with self.subTest(auth):
+                    collection = self.generate_published_collection()
+                    self.business_logic.tombstone_collection(collection.collection_id)
+                    self._test(collection.collection_id, auth, expected_responses[i], query_param_str=query_param_str)
 
 
 class TestS3Credentials(BaseAPIPortalTest):
@@ -1453,11 +1474,11 @@ class TestDeleteDataset(BaseAPIPortalTest):
             (self.make_not_owner_header, "not_owner", 403),
         ]
 
-    def _delete(self, auth, collection_id, dataset_id):
+    def _delete(self, auth, collection_id, dataset_id, query_param_str=None):
         """
         Helper method to call the delete endpoint
         """
-        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}"
+        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}{'?' + query_param_str if query_param_str else ''}"
         headers = auth() if callable(auth) else auth
         return self.app.delete(test_url, headers=headers)
 
@@ -1508,6 +1529,33 @@ class TestDeleteDataset(BaseAPIPortalTest):
                 self.generate_dataset(collection_version=revision, replace_dataset_version_id=dataset_version_id)
                 response = self._delete(auth_func, revision.collection_id, dataset_id)
                 self.assertEqual(405, response.status_code)
+
+    def test__delete_published_dataset_cxg_admin(self):
+        """
+        cxg_admin role can delete published Datasets during revisions using query_param flag 'delete_published=true'
+        """
+        with self.subTest("Can delete published Dataset during a revision"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(
+                self.make_cxg_admin_header, revision.version_id, dataset_id, query_param_str="delete_published=true"
+            )
+            self.assertEqual(202, response.status_code)
+        with self.subTest("Cannot delete published Dataset without query param"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(self.make_cxg_admin_header, revision.version_id, dataset_id)
+            self.assertEqual(405, response.status_code)
+        with self.subTest("Cannot delete published Dataset from public Collection"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(
+                self.make_cxg_admin_header, revision.collection_id, dataset_id, query_param_str="delete_published=true"
+            )
+            self.assertEqual(405, response.status_code)
 
 
 class TestGetDatasets(BaseAPIPortalTest):
@@ -1830,6 +1878,115 @@ class TestGetDatasets(BaseAPIPortalTest):
                 },
             ]
             self.assertEqual(expected_assets, dataset["assets"])
+
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test_get_datasets_by_schema_200(self, mock_config: Mock):
+        published_collection_1 = self.generate_published_collection(
+            add_datasets=2,
+            metadata=CollectionMetadata(
+                "test_collection_1",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+        published_collection_2 = self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_2",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+            dataset_schema_version="3.1.0",
+        )
+        published_collection_3 = self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_3",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+            dataset_schema_version="4.0.0",
+        )
+        self.generate_unpublished_collection(add_datasets=4)
+        self.generate_revision(published_collection_1.collection_id)
+
+        sorted_dataset_ids = (
+            [published_collection_3.datasets[0].dataset_id.id]
+            + [published_collection_2.datasets[0].dataset_id.id]
+            + sorted([d.dataset_id.id for d in published_collection_1.datasets], reverse=True)
+        )
+
+        with self.subTest("Query without parameter"):
+            response = self.app.get("/curation/v1/datasets")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual(sorted_dataset_ids, received_dataset_ids)
+
+        with self.subTest("Query against major schema version 3"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual(sorted_dataset_ids[1:], received_dataset_ids)
+
+        with self.subTest("Query against major schema version 4"):
+            response = self.app.get("/curation/v1/datasets?schema_version=4")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual([published_collection_3.datasets[0].dataset_id.id], received_dataset_ids)
+
+        with self.subTest("Query against minor schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.0")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual(sorted_dataset_ids[2:], received_dataset_ids)
+
+        with self.subTest("Query against patch schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.1.0")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual([published_collection_2.datasets[0].dataset_id.id], received_dataset_ids)
+
+        with self.subTest("Query against non-matching major schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=5")
+            self.assertTrue(200, response.status_code)
+            self.assertCountEqual(response.json, [])
+
+        with self.subTest("Query against non-matching minor schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.2")
+            self.assertTrue(200, response.status_code)
+            self.assertCountEqual(response.json, [])
+
+        with self.subTest("Query against non-matching patch schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.1.1")
+            self.assertTrue(200, response.status_code)
+            self.assertCountEqual(response.json, [])
+
+        with self.subTest("Query against non-version input"):
+            response = self.app.get("/curation/v1/datasets?schema_version=invalid_input")
+            self.assertEqual(400, response.status_code)
 
 
 class TestGetDatasetVersion(BaseAPIPortalTest):

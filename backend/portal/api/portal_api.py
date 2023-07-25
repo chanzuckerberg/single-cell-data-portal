@@ -517,6 +517,9 @@ def delete_collection(collection_id: str, token_info: dict):
     if not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
+    if version.published_at:
+        raise MethodNotAllowedException("Cannot delete a published Collection through API -- contact CXG Admins")
+
     if isinstance(resource_id, CollectionVersionId):
         try:
             get_business_logic().delete_collection_version(resource_id)
