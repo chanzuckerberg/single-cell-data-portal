@@ -101,7 +101,6 @@ interface Props {
 
 export default memo(function HeatMap({
   className,
-  // cellTypes: cellTypesRaw,
   cellTypes,
   genes,
   selectedGeneExpressionSummariesByTissueName,
@@ -119,45 +118,6 @@ export default memo(function HeatMap({
   expandedTissues,
   setExpandedTissues,
 }: Props): JSX.Element {
-  // const cellTypes = useMemo(() => {
-  //   const cell_types: { [tissue: string]: CellTypeRow[] } = {};
-
-  //   // outer loop
-  //   for (const tissue in cellTypesRaw) {
-  //     const cellTypesInTissue = cellTypesRaw[tissue];
-  //     const results: CellTypeRow[] = [];
-  //     // aggregate the cell types by id
-
-  //     // get the options for each id
-  //     // get the aggregated for each id
-
-  //     // inner loop
-  //     for (const cellType in yourAggeregatedOptionsObject) {
-  //       // sort the options
-  //       // then add the options to results
-  //       // then add the aggregated to results
-  //     }
-
-  //     cell_types[tissue] = results;
-  //   }
-  //   // cellTypesRaw is an object with tissues as keys and arrays of cell types as values {tissueName: [cellType1, celltype2, etc.], etc}
-  //   // make an empty object to store the results (cellTypes = {})
-
-  //   // loop starts here (looping through tissues)
-  //   // so per tissue in cellTypesRaw, we need to group the cell types by the id
-  //   // start a results array "results" for each tissue
-  //   // inner loop starts here (looping through the cell types in the tissue)
-  //   // then per id, get the options and get the aggregated
-  //   // then we need to sort the options by total count
-  //   // then we need to append the aggregated row, then the sorted options, to "results"
-  //   // inner loop ends
-  //   // assign the results array into cellTypes (cellTypes[tissueName] = results)
-  //   // outer loop ends
-  //   // return cellTypes
-
-  //   return cell_types;
-  // }, [cellTypesRaw]);
-
   const {
     xAxisHeight,
     selectedFilters: { tissues: filteredTissues },
@@ -370,7 +330,17 @@ export default memo(function HeatMap({
 
     setDisplayedCellTypes(newDisplayedCellTypes);
     setExpandedTissues(newExpandedTissues);
-  }, [cellTypesByName, dispatch, filteredCellTypes, filteredCellTypes.length, filteredTissues, initialDisplayedCellTypes, setExpandedTissues, sortedCellTypesByTissueName, tissuesByName]);
+  }, [
+    cellTypesByName,
+    dispatch,
+    filteredCellTypes,
+    filteredCellTypes.length,
+    filteredTissues,
+    initialDisplayedCellTypes,
+    setExpandedTissues,
+    sortedCellTypesByTissueName,
+    tissuesByName,
+  ]);
 
   const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
     if (!dispatch) return;
