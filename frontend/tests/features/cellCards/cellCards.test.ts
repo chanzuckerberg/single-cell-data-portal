@@ -4,7 +4,6 @@ import {
   goToPage,
   takeSnapshotOfMetaTags,
   tryUntil,
-  waitForElement,
 } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage";
