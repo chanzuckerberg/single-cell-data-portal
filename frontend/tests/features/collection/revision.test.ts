@@ -147,7 +147,8 @@ async function startRevision(page: Page): Promise<string> {
   await tryUntil(
     async () => {
       await goToPage(TEST_URL + ROUTES.COLLECTIONS, page);
-
+      // (thuang): Wait for collections to load to prevent race condition
+      await page.waitForLoadState("networkidle");
       try {
         await expect(
           page.getByTestId(COLLECTION_ROW_WRITE_PUBLISHED_ID)
