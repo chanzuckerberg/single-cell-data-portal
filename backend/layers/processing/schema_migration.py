@@ -155,6 +155,10 @@ class SchemaMigrate(ProcessingLogic):
             ]
             # The repeated fields in datasets is required for the AWS SFN job that uses it.
         }
+
+        if not response["datasets"]:
+            # Handles the case were the collection has no processed datasets
+            response["no_datasets"] = str(True)
         return response
 
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
