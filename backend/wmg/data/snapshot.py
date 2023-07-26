@@ -1,8 +1,6 @@
-import glob
 import json
 import logging
 import os
-import shutil
 from dataclasses import dataclass
 from typing import Dict, Optional
 
@@ -102,17 +100,6 @@ class WmgSnapshot:
 cached_snapshot: Optional[WmgSnapshot] = None
 
 
-def get_cached_snapshot() -> WmgSnapshot:
-    """
-    Return the cached snapshot if it exists, otherwise load and cache the snapshot.
-    """
-    global cached_snapshot
-    if cached_snapshot is None:
-        # This is a safety check but should never happen since the snapshot is loaded on server start.
-        cached_snapshot = load_snapshot()
-    return cached_snapshot
-
-
 def load_snapshot() -> WmgSnapshot:
     """
     Loads and caches the WMG snapshot. Reloads the snapshot data if the latest_snapshot_identifier S3 object has
@@ -120,9 +107,9 @@ def load_snapshot() -> WmgSnapshot:
     @return: WmgSnapshot object
     """
     global cached_snapshot
-    if new_snapshot_identifier := _update_latest_snapshot_identifier():
+    new_snapshot_identifier = _update_latest_snapshot_identifier()
+    if cached_snapshot is None and new_snapshot_identifier is not None:
         if os.environ.get("DEPLOYMENT_STAGE") == "test":
-            # for tests
             cached_snapshot = _load_snapshot(new_snapshot_identifier)
         else:
             cached_snapshot = _download_and_load_snapshot(new_snapshot_identifier)
@@ -162,14 +149,6 @@ def _download_and_load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
 
     local_snapshot_name = f"local_snapshot_{new_snapshot_identifier}"
     os.system(f"aws s3 sync {snapshot_base_uri} {local_snapshot_name}/")
-
-    # delete all local snapshots after downloading a new one
-    local_snapshots = glob.glob("local_snapshot_*")
-    if len(local_snapshots) > 0:
-        # delete all local snapshots
-        for local_snapshot in local_snapshots:
-            if local_snapshot != local_snapshot_name:
-                shutil.rmtree(local_snapshot)
 
     cell_type_orderings = _load_cell_type_order(local_snapshot_name)
     primary_filter_dimensions = _load_primary_filter_data(local_snapshot_name)

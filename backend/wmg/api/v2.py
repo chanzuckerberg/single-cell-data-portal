@@ -17,7 +17,7 @@ from backend.wmg.data.query import (
     retrieve_top_n_markers,
 )
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
-from backend.wmg.data.snapshot import WmgSnapshot, get_cached_snapshot
+from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
@@ -26,7 +26,7 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 
 
 def primary_filter_dimensions():
-    snapshot: WmgSnapshot = get_cached_snapshot()
+    snapshot: WmgSnapshot = load_snapshot()
     return jsonify(snapshot.primary_filter_dimensions)
 
 
@@ -41,7 +41,7 @@ def query():
     criteria = WmgQueryCriteriaV2(**request["filter"])
 
     with ServerTiming.time("query and build response"):
-        snapshot: WmgSnapshot = get_cached_snapshot()
+        snapshot: WmgSnapshot = load_snapshot()
         q = WmgQuery(snapshot)
         default = snapshot.expression_summary_default_cube is not None and compare is None
         for dim in criteria.dict():
@@ -89,7 +89,7 @@ def filters():
     criteria = WmgFiltersQueryCriteria(**request["filter"])
 
     with ServerTiming.time("calculate filters and build response"):
-        snapshot: WmgSnapshot = get_cached_snapshot()
+        snapshot: WmgSnapshot = load_snapshot()
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
         response = jsonify(
             dict(
@@ -107,7 +107,7 @@ def markers():
     organism = request["organism"]
     n_markers = request["n_markers"]
     test = request["test"]
-    snapshot: WmgSnapshot = get_cached_snapshot()
+    snapshot: WmgSnapshot = load_snapshot()
 
     criteria = MarkerGeneQueryCriteria(
         tissue_ontology_term_id=tissue,
