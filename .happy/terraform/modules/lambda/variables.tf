@@ -18,6 +18,11 @@ variable cellxgene_bucket {
   description = "Cellxgene bucket name"
 }
 
+variable "dataset_bucket" {
+  type        = string
+  description = "Public Dataset bucket name"
+}
+
 variable custom_stack_name {
   type        = string
   description = "Please provide the stack name"
