@@ -1,0 +1,133 @@
+name: Trigger Schema Migration
+
+env:
+  DEPLOYMENT_STAGE: test
+  # Force using BuildKit instead of normal Docker, required so that metadata
+  # is written/read to allow us to use layers of previous builds as cache.
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
+
+on:
+  repository_dispatch:
+    types: [schema-migration]
+
+jobs:
+  rebuild-and-push-processing-image-dev:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - name: Checkout Dev (main)
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.85.1"
+      - name: Docker build, push, and tag
+        shell: bash
+        run: |
+          export BRANCH_SHA=$(git rev-parse --short=8 HEAD)
+          happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
+
+  rebuild-and-push-processing-image-staging:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - name: Checkout Staging
+        uses: actions/checkout@v2
+        with:
+          ref: staging
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.85.1"
+      - name: Docker build, push, and tag
+        shell: bash
+        run: |
+          export BRANCH_SHA=$(git rev-parse --short=8 HEAD)
+          happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
+
+  rebuild-and-push-processing-image-prod:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - name: Checkout Prod
+        uses: actions/checkout@v2
+        with:
+          ref: prod
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.85.1"
+      - name: Docker build, push, and tag
+        shell: bash
+        run: |
+          export BRANCH_SHA=$(git rev-parse --short=8 HEAD)
+          happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
+      - name: Alert in Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,eventName,workflow,job
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: always() # Pick up events even if the job fails or is canceled.
+
+  trigger-schema-migration:
+    runs-on: ubuntu-22.04
+    needs: rebuild-and-push-processing-image-prod
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: install requirements
+        run: |
+          pip install awscli==1.29.1
+      - name: Trigger Schema Migration AWS Step Function
+        run: |
+          aws stepfunctions start-execution --state-machine-arn ${{ secrets.SCHEMA_MIGRATION_ARN }}
+      - name: Alert in Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,eventName,workflow,job
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: always() # Pick up events even if the job fails or is canceled.

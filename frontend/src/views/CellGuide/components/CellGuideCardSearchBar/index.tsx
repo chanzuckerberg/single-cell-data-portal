@@ -15,8 +15,9 @@ export const CELL_GUIDE_CARD_SEARCH_BAR = "cell-guide-card-search-bar";
 
 interface Entity {
   id: string;
-  cell_types?: string[];
+  cell_types?: string[]; // only tissues have cell_types
   label: string;
+  synonyms?: string[]; // only cell types (optionally) have synonyms
 }
 
 export default function CellGuideCardSearchBar(): JSX.Element {
@@ -53,18 +54,18 @@ export default function CellGuideCardSearchBar(): JSX.Element {
   };
 
   function changeEntity(entityId: string) {
+    if (!entityId) return;
+
+    const formattedEntityId = entityId.replace(":", "_");
+
     if (entityId) {
       if (entityId.startsWith("CL:")) {
-        router.push(`${ROUTES.CELL_GUIDE}/${entityId.replace(":", "_")}`);
-        document.getElementById(CELL_GUIDE_CARD_SEARCH_BAR)?.blur();
-        setOpen(false);
+        router.push(`${ROUTES.CELL_GUIDE}/${formattedEntityId}`);
       } else {
-        router.push(
-          `${ROUTES.CELL_GUIDE}/tissues/${entityId.replace(":", "_")}`
-        );
-        document.getElementById(CELL_GUIDE_CARD_SEARCH_BAR)?.blur();
-        setOpen(false);
+        router.push(`${ROUTES.CELL_GUIDE}/tissues/${formattedEntityId}`);
       }
+      document.getElementById(CELL_GUIDE_CARD_SEARCH_BAR)?.blur();
+      setOpen(false);
     }
   }
   return (
@@ -148,11 +149,17 @@ export default function CellGuideCardSearchBar(): JSX.Element {
           return options
             .filter((option) => {
               const entity = option as Entity;
+              const searchTerm = state.inputValue.toLowerCase();
+              // Determine if each item starts with any of the snyonyms
+              const synonyms = entity.synonyms ?? [];
+              const synonymStartsWithSearch = synonyms.some((synonym) =>
+                synonym.toLowerCase().startsWith(searchTerm)
+              );
+
               return (
                 entity.label &&
-                entity.label
-                  .toLowerCase()
-                  .includes(state.inputValue.toLowerCase())
+                (entity.label.toLowerCase().includes(searchTerm) ||
+                  synonymStartsWithSearch)
               );
             })
             .sort((entity1, entity2) => {

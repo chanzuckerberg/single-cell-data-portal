@@ -18,6 +18,7 @@ import { ChartFormat } from "src/views/WheresMyGene/components/HeatMap/component
 const NO_SELECTION_STRING = "No selection";
 
 interface CsvMetadata {
+  // (thuang): row name - either tissue name or cell type name
   name: string;
   compareValueName: string;
   viewId: string;
@@ -42,8 +43,13 @@ export function csvHeaders({
   selectedGenes: Props["selectedGenes"];
   selectedOrganismId: string | null;
 }) {
-  const { datasets, disease_terms, self_reported_ethnicity_terms, sex_terms } =
-    availableFilters;
+  const {
+    datasets,
+    disease_terms,
+    self_reported_ethnicity_terms,
+    sex_terms,
+    publication_citations,
+  } = availableFilters;
 
   const output: string[][] = [];
 
@@ -94,6 +100,18 @@ export function csvHeaders({
       self_reported_ethnicity_terms
         ?.filter((option) => {
           return selectedFilters.ethnicities.includes(option.id);
+        })
+        .map((selected) => selected.name)
+        .join(", ") || NO_SELECTION_STRING
+    }`,
+  ]);
+
+  // Publication
+  output.push([
+    `# Publication Filter Values: ${
+      publication_citations
+        ?.filter((option) => {
+          return selectedFilters.publications.includes(option.id);
         })
         .map((selected) => selected.name)
         .join(", ") || NO_SELECTION_STRING
@@ -165,6 +183,12 @@ export function csvGeneExpressionRow({
 }) {
   const { total_count, name, compareValueName, viewId } = metadata;
 
+  /**
+   * (thuang): We don't want tissue name to be in the cellType column
+   * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5108
+   */
+  const finalName = tissueName === name ? "aggregated" : name;
+
   const geneExpression = allChartProps[tissueName].chartData.find(
     (value) => value.id === `${viewId}-${geneName}`
   );
@@ -172,7 +196,7 @@ export function csvGeneExpressionRow({
   if (compare) {
     return [
       tissueName,
-      name,
+      finalName,
       total_count,
       getTissuePercentage(geneExpression),
       compareValueName,
@@ -184,7 +208,7 @@ export function csvGeneExpressionRow({
   } else {
     return [
       tissueName,
-      name,
+      finalName,
       total_count,
       getTissuePercentage(geneExpression),
       geneName,

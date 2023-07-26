@@ -16,6 +16,12 @@ class UserInfo:
         else:
             return auth.is_super_curator(self.token_info.get("scope", ""))
 
+    def is_cxg_admin(self):
+        if self.token_info is None:
+            return False
+        else:
+            return auth.is_cxg_admin(self.token_info.get("scope", ""))
+
     @property
     def user_id(self):
         if self.token_info is None:

@@ -64,6 +64,7 @@ export async function goToPage(
   page: Page
 ): Promise<void> {
   await page.goto(url, { timeout: GO_TO_PAGE_TIMEOUT_MS });
+  await page.waitForLoadState("networkidle");
 }
 
 export async function login(page: Page): Promise<void> {
@@ -392,4 +393,25 @@ export async function selectFirstNOptions(count: number, page: Page) {
   }
 
   await page.keyboard.press("Escape");
+}
+
+export async function takeSnapshotOfMetaTags(name: string, page: Page) {
+  const allMetaTags = await page.locator("meta").all();
+
+  await tryUntil(
+    async () => {
+      const allMetaTagsHTML = (
+        await Promise.all(
+          allMetaTags.map(async (metaTag) =>
+            metaTag.evaluate((node) => node.outerHTML)
+          )
+        )
+      ).sort();
+
+      expect(JSON.stringify(allMetaTagsHTML)).toMatchSnapshot({
+        name: name + "-seoMetaTags.txt",
+      });
+    },
+    { page }
+  );
 }

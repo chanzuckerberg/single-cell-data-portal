@@ -370,7 +370,7 @@ export default function Datasets(): JSX.Element {
   return (
     <>
       <Head>
-        <title>CELL&times;GENE | Datasets</title>
+        <title>Datasets - CZ CELLxGENE Discover</title>
       </Head>
       {isError ? null : shouldShowLoader ? (
         <Loader />

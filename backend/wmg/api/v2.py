@@ -139,6 +139,8 @@ def find_dimension_id_from_compare(compare: str) -> str:
         return "self_reported_ethnicity_ontology_term_id"
     elif compare == "disease":
         return "disease_ontology_term_id"
+    elif compare == "publication":
+        return "publication_citation"
     else:
         return None
 
@@ -165,6 +167,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
         "self_reported_ethnicity_ontology_term_id": "",
         "tissue_ontology_term_id": "",
         "cell_type_ontology_term_id": "",
+        "publication_citation": "",
     }
     for dim in dims:
         dims[dim] = (
@@ -181,6 +184,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
         self_reported_ethnicity_terms=build_ontology_term_id_label_mapping(
             dims["self_reported_ethnicity_ontology_term_id"]
         ),
+        publication_citations=dims["publication_citation"],
         cell_type_terms=build_ontology_term_id_label_mapping(dims["cell_type_ontology_term_id"]),
         tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
     )

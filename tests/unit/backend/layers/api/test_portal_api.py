@@ -796,10 +796,7 @@ class TestCollection(BaseAPIPortalTest):
         collection_to_tombstone = self.generate_published_collection()
         private_collection = self.generate_unpublished_collection()
 
-        tombstone_url = furl(path=f"/dp/v1/collections/{collection_to_tombstone.collection_id}")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.delete(tombstone_url.url, headers=headers)
-        self.assertEqual(204, response.status_code)
+        self.business_logic.tombstone_collection(collection_to_tombstone.collection_id)
 
         test_url = furl(path="/dp/v1/collections/index")
         headers = {"host": "localhost", "Content-Type": "application/json"}
@@ -869,14 +866,7 @@ class TestCollection(BaseAPIPortalTest):
         private_collection_not_owned = self.generate_unpublished_collection("test_user_id_2")
 
         collection_to_tombstone = self.generate_published_collection("test_user_id")
-        tombstone_url = furl(path=f"/dp/v1/collections/{collection_to_tombstone.collection_id}")
-        headers = {
-            "host": "localhost",
-            "Content-Type": "application/json",
-            "Cookie": self.get_cxguser_token("owner"),
-        }
-        response = self.app.delete(tombstone_url.url, headers=headers)
-        self.assertEqual(204, response.status_code)
+        self.business_logic.tombstone_collection(collection_to_tombstone.collection_id)
 
         # test that super curators can see the all public and private collections
         test_url = furl(path="/dp/v1/user-collections/index")
@@ -1047,7 +1037,7 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 405)
 
     def test_delete_published_collection__ok(self):
         """Published collections are tombstoned."""
@@ -1058,8 +1048,7 @@ class TestCollectionDeletion(BaseAPIPortalTest):
             path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PUBLIC")
         )
         # tombstone public collection
-        response = self.app.delete(test_public_url.url, headers=headers)
-        self.assertEqual(response.status_code, 204)
+        self.business_logic.tombstone_collection(collection.collection_id)
 
         # check collection is gone
         response = self.app.get(test_public_url.url, headers=headers)

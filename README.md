@@ -84,6 +84,6 @@ The base image is built using Github actions. It is built both nightly, and when
 
 The CELLxGENE Discover upload application code by default uses the base image tagged with the tag "branch-main" (which the nightly and on-change base image build reassigns).
 
-If a new base image build is needed but the Dockerfile has no functional change (e.g. upstream R libraries versions have changed), the Dockerfile.processing_image can be modified with a non-functional to force the build (e.g. adding a blank line).
+If a new base image build is needed but the Dockerfile has no functional change (e.g. upstream R libraries versions have changed), the `Dockerfile.processing` can be modified with a non-functional to force the build (e.g. adding a blank line).
 
 In the rare event a new build of the base image needs to be built without Github Actions (e.g. Github Actions is down), follow the steps [Github's documentation](https://docs.github.com/en/packages/guides/pushing-and-pulling-docker-images) for creating a personal access token, and build locally and push like any other Docker image.
