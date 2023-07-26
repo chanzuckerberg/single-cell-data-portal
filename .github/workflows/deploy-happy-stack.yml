@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   upgrade:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/setup-node@v2
         with:
@@ -96,7 +96,7 @@ jobs:
 
   e2e-test:
     timeout-minutes: 60
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs:
       - upgrade
     steps:
@@ -163,7 +163,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   functional-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs:
       - upgrade
     steps:
@@ -228,7 +228,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   performance-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs:
       - upgrade
     steps:
@@ -270,7 +270,7 @@ jobs:
           make prod-performance-test
 
   status:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: ${{ always() }} # Ensures status is run after post-deploy tests, even if they fail
     needs:
       - performance-test

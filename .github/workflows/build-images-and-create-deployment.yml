@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   build-frontend-backend-images:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -55,7 +55,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   build-batch-job-images:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -89,7 +89,7 @@ jobs:
     needs:
       - build-frontend-backend-images
       - build-batch-job-images
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -123,7 +123,7 @@ jobs:
     needs:
       - build-frontend-backend-images
       - build-batch-job-images
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         if: ( github.ref == 'refs/heads/prod' )
@@ -159,7 +159,7 @@ jobs:
   create_deployment:
     needs:
       - push-prod-images
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Generate payload
         run: |

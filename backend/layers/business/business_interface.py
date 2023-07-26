@@ -137,3 +137,8 @@ class BusinessLogicInterface:
 
     def get_dataset_version_from_canonical(self, dataset_id: DatasetId, get_tombstoned: bool) -> DatasetVersion:
         pass
+
+    def get_latest_published_collection_versions_by_schema(
+        self, schema_version: str
+    ) -> List[CollectionVersionWithPublishedDatasets]:
+        pass

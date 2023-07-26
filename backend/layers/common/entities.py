@@ -162,6 +162,7 @@ class OntologyTermId:
 @dataclass
 class DatasetMetadata:
     name: str
+    schema_version: str
     organism: List[OntologyTermId]
     tissue: List[OntologyTermId]
     assay: List[OntologyTermId]
@@ -171,7 +172,6 @@ class DatasetMetadata:
     development_stage: List[OntologyTermId]
     cell_type: List[OntologyTermId]
     cell_count: int
-    schema_version: str
     mean_genes_per_cell: float
     batch_condition: List[str]
     suspension_type: List[str]
@@ -251,6 +251,7 @@ class CollectionVersionBase:
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
     published_at: Optional[datetime]
     created_at: datetime
+    schema_version: str
     canonical_collection: CanonicalCollection
 
     def is_published(self) -> bool:

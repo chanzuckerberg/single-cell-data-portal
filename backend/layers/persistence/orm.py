@@ -35,6 +35,7 @@ class CollectionVersionTable:
     publisher_metadata = Column(JSON)
     published_at = Column(DateTime)
     created_at = Column(DateTime)
+    schema_version = Column(String)
     datasets = Column(ARRAY(UUID(as_uuid=True)))
 
 

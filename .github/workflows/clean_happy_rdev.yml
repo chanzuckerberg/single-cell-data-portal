@@ -12,7 +12,7 @@ permissions:
 jobs:
   build:
     name: Clean happy stacks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2

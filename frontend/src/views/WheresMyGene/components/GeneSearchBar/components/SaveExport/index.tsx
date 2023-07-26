@@ -724,6 +724,7 @@ function download_({
         dataset_filter: selectedFilters.datasets,
         disease_filter: selectedFilters.diseases,
         self_reported_ethnicity_filter: selectedFilters.ethnicities,
+        publication_filter: selectedFilters.publications,
         sex_filter: selectedFilters.sexes,
         group_by_option: getCompareOptionNameById(compare),
 
