@@ -160,7 +160,7 @@ def get_datasets_from_curation_api():
         if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
         else os.getenv("API_URL")
     )
-    PINNED_SCHEMA_VERSION = "3"
+    PINNED_SCHEMA_VERSION = "3.0.0"
 
     datasets = {}
     if API_URL:
