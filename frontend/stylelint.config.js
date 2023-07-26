@@ -4,5 +4,6 @@ module.exports = {
     "public/**/*",
     // (thuang): Ignore `venv` folder
     "venv/**/*",
+    "html-reports/**/*",
   ],
 };

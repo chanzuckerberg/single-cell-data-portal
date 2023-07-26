@@ -19,6 +19,7 @@ import {
 import {
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
+  CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard";
 import {
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE,
@@ -176,6 +177,7 @@ describe("Cell Guide", () => {
       await isElementVisible(page, CELL_GUIDE_CARD_HEADER_TAG);
       await isElementVisible(page, CELL_GUIDE_CARD_CL_DESCRIPTION);
       await isElementVisible(page, CELL_GUIDE_CARD_GPT_DESCRIPTION);
+      await isElementVisible(page, CELL_GUIDE_CARD_SYNONYMS);
       await isElementVisible(page, CELL_GUIDE_CARD_GPT_TOOLTIP_LINK);
       await isElementVisible(page, CELL_GUIDE_CARD_SEARCH_BAR);
       await isElementVisible(

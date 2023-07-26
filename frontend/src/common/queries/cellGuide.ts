@@ -286,8 +286,29 @@ export const useCellGuide = (): UseQueryResult<CellGuideQueryResponse> => {
 };
 
 /* ========== cell types by Id ========== */
+export function useCellTypesById():
+  | { [cellTypeId: string]: CellGuideQueryResponseEntry }
+  | undefined {
+  const { data, isLoading } = useCellGuide();
 
-export function useCellTypesById(): { [id: string]: string } | undefined {
+  return useMemo(() => {
+    if (!data || isLoading) return;
+
+    const cellTypesById = {} as {
+      [cellTypeId: string]: CellGuideQueryResponseEntry;
+    };
+
+    for (const cellType of data) {
+      cellTypesById[cellType.id] = cellType;
+    }
+
+    return cellTypesById;
+  }, [data, isLoading]);
+}
+
+/* ========== cell type names by Id ========== */
+
+export function useCellTypeNamesById(): { [id: string]: string } | undefined {
   const { data, isLoading } = useCellGuide();
 
   return useMemo(() => {

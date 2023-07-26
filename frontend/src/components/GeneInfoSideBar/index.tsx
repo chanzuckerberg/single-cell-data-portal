@@ -2,9 +2,7 @@ import React from "react";
 import {
   GeneName,
   GeneSummary,
-  GeneSynonyms,
   Label,
-  GeneSynonymsWrapper,
   GeneUrl,
   OutLinksWrapper,
   StyledCallout,
@@ -12,6 +10,7 @@ import {
 import { useGeneInfo } from "src/common/queries/wheresMyGene";
 import { RightSidebarProperties } from "../common/RightSideBar";
 import { GeneInfo } from "../../views/WheresMyGene/common/types";
+import Synonyms from "src/components/Synonyms";
 
 const GENE_CARDS_URL = "https://www.genecards.org/cgi-bin/carddisp.pl?gene=";
 
@@ -80,10 +79,7 @@ function GeneInfoResult({
           {summary}
         </GeneSummary>
 
-        <GeneSynonymsWrapper data-testid="gene-info-gene-synonyms">
-          <Label>Synonyms</Label>
-          <GeneSynonyms>{synonyms.join(", ")}</GeneSynonyms>
-        </GeneSynonymsWrapper>
+        <Synonyms synonyms={synonyms} data-testid="gene-info-gene-synonyms" />
 
         <OutLinksWrapper>
           <GeneUrl
