@@ -95,6 +95,7 @@ export default function ShareButton(): JSX.Element {
       genes: selectedGenes,
       group_by_option: getCompareOptionNameById(compare),
       self_reported_ethnicity_filter: selectedFilters.ethnicities,
+      publication_filter: selectedFilters.publications,
       sex_filter: selectedFilters.sexes,
       tissue_filter: selectedFilters.tissues,
       cell_types_selected: filteredCellTypeIDs,
@@ -140,6 +141,7 @@ export default function ShareButton(): JSX.Element {
           disease_filter: loadedState.filters.diseases,
           group_by_option: getCompareOptionNameById(loadedState.compare),
           self_reported_ethnicity_filter: loadedState.filters.ethnicities,
+          publication_filter: loadedState.filters.publications,
           sex_filter: loadedState.filters.sexes,
           cell_types_selected: filteredCellTypeIDs,
         });
