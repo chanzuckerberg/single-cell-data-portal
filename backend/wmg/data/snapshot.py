@@ -140,10 +140,10 @@ def _download_and_load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
 
     os.system(f"aws s3 sync {snapshot_base_uri} {local_snapshot_name}/")
 
-    cell_type_orderings = _load_cell_type_order()
-    primary_filter_dimensions = _load_primary_filter_data()
-    dataset_to_gene_ids = _load_dataset_to_gene_ids_data()
-    filter_relationships = _load_filter_graph_data()
+    cell_type_orderings = _load_cell_type_order(local_snapshot_name)
+    primary_filter_dimensions = _load_primary_filter_data(local_snapshot_name)
+    dataset_to_gene_ids = _load_dataset_to_gene_ids_data(local_snapshot_name)
+    filter_relationships = _load_filter_graph_data(local_snapshot_name)
 
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
