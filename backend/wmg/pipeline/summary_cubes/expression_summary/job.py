@@ -92,7 +92,7 @@ def create_expression_summary_cube(corpus_path: str, default=False) -> None:
         gene_ontology_term_ids = extract_var_data(corpus_path, ctx)
 
         # transform
-        result = transform(corpus_path, gene_ontology_term_ids, cube_dims)
+        result = transform(corpus_path=corpus_path, gene_ontology_term_ids=gene_ontology_term_ids, cube_dims=cube_dims)
         _load(
             uri=uri,
             gene_ontology_term_ids=gene_ontology_term_ids,
