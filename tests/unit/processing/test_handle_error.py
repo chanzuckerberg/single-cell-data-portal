@@ -1,9 +1,16 @@
+import os
 from unittest.mock import Mock, patch
 
 import pytest
 
 from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetStatus, DatasetVersionId
-from backend.layers.processing.upload_failures.app import get_failure_slack_notification_message, parse_event
+from backend.layers.processing.upload_failures.app import (
+    cleanup_artifacts,
+    get_failure_slack_notification_message,
+    parse_event,
+)
+
+module_path = "backend.layers.processing.upload_failures.app"
 
 
 @pytest.fixture
@@ -159,7 +166,7 @@ def test_get_failure_slack_notification_message_with_dataset_id_none(
     execution_arn = "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"
     collection_version_id = "collection_version_id123"
 
-    with patch("backend.layers.processing.upload_failures.app.logger") as logger_mock:
+    with patch(f"{module_path}.logger") as logger_mock:
         result = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
@@ -207,9 +214,9 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
 
     logger_mock = Mock()
 
-    with patch(
-        "backend.layers.processing.upload_failures.app.get_business_logic", get_business_logic_constructor_mock
-    ), patch("backend.layers.processing.upload_failures.app.logger", logger_mock):
+    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), patch(
+        f"{module_path}.logger", logger_mock
+    ):
         result = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
@@ -272,9 +279,9 @@ def test_get_failure_slack_notification_message_with_missing_collection(
 
     logger_mock = Mock()
 
-    with patch(
-        "backend.layers.processing.upload_failures.app.get_business_logic", get_business_logic_constructor_mock
-    ), patch("backend.layers.processing.upload_failures.app.logger", logger_mock):
+    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), patch(
+        f"{module_path}.logger", logger_mock
+    ):
         result = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
@@ -332,7 +339,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
     )
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    with patch("backend.layers.processing.upload_failures.app.get_business_logic", get_business_logic_constructor_mock):
+    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock):
         result = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
@@ -363,3 +370,42 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
     }
     get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_id))
     get_unpublished_collection_version_from_canonical_mock.assert_called_with(CollectionId(collection_id))
+
+
+@pytest.fixture
+def mock_env_vars():
+    return {"ARTIFACT_BUCKET": "artifact_bucket", "DATASET_BUCKET": "dataset_bucket", "CELLXGENE_BUCKET": "cxg_bucket"}
+
+
+def test_cleanup_artifacts__OK(mock_env_vars):
+    dataset_id = "example_dataset"
+
+    with patch(f"{module_path}.delete_many_from_s3") as mock_delete_many_from_s3, patch.dict(os.environ, mock_env_vars):
+        cleanup_artifacts(dataset_id)
+
+        # Assertions
+        mock_delete_many_from_s3.assert_any_call(os.environ["ARTIFACT_BUCKET"], dataset_id + "/")
+        mock_delete_many_from_s3.assert_any_call(os.environ["DATASET_BUCKET"], dataset_id + ".")
+        mock_delete_many_from_s3.assert_any_call(os.environ["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
+        assert mock_delete_many_from_s3.call_count == 3
+
+
+def test_cleanup_artifacts__download_validate_no_bucket(caplog):
+    dataset_id = "example_dataset"
+
+    with patch(f"{module_path}.delete_many_from_s3") as mock_delete_many_from_s3, patch.dict(os.environ, clear=True):
+        cleanup_artifacts(dataset_id)
+
+        # Assertions
+        mock_delete_many_from_s3.assert_not_called()
+        assert "Failed to clean up artifacts." in caplog.text
+
+
+def test_cleanup_artifacts__cxg_specified_bucket(mock_env_vars):
+    dataset_id = "example_dataset"
+
+    with patch(f"{module_path}.delete_many_from_s3") as mock_delete_many_from_s3, patch.dict(os.environ, mock_env_vars):
+        cleanup_artifacts(dataset_id)
+
+        # Assertions
+        mock_delete_many_from_s3.assert_called_with(os.environ["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
