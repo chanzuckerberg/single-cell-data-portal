@@ -107,7 +107,12 @@ class SchemaMigrate(ProcessingLogic):
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         current_schema_version = cxs_get_current_schema_version()
 
-        if all(dataset.metadata.schema_version == current_schema_version for dataset in version.datasets):
+        if all(
+            hasattr(dataset, "metadata")
+            and hasattr(dataset.metadata, "schema_version")
+            and dataset.metadata.schema_version == current_schema_version
+            for dataset in version.datasets
+        ):
             # Handles the case were the collection has no datasets or all datasets are already migrated.
             if len(version.datasets) == 0:
                 self.logger.info("Collection has no datasets")
@@ -144,8 +149,9 @@ class SchemaMigrate(ProcessingLogic):
                     "dataset_version_id": dataset.version_id.id,
                 }
                 for dataset in version.datasets
-                if dataset.metadata.schema_version != current_schema_version
-                # Filter out datasets that are already on the current schema version
+                if dataset.processing_status == "SUCCESS" and dataset.metadata.schema_version != current_schema_version
+                # Filter out datasets that are already on the current schema version OR that
+                # are not successfully processed
             ]
             # The repeated fields in datasets is required for the AWS SFN job that uses it.
         }
