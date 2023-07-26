@@ -21,6 +21,7 @@ variable cellxgene_bucket {
 variable "dataset_bucket" {
   type        = string
   description = "Public Dataset bucket name"
+  default     = ""
 }
 
 variable custom_stack_name {
