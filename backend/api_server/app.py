@@ -62,8 +62,9 @@ def create_flask_app():
     # time and, if done on API request, would significantly slow performance.
     GeneChecker()
 
-    # Load the WMG snapshot on startup
-    load_snapshot()
+    # Load the WMG snapshot on startup if not testing
+    if os.environ.get("DEPLOYMENT_STAGE") != "test":
+        load_snapshot()
 
     return connexion_app.app
 
