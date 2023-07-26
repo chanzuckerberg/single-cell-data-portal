@@ -131,14 +131,15 @@ def _download_and_load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     logger.info(f"Downloading WMG snapshot at {snapshot_base_uri}")
 
     local_snapshot_name = f"local_snapshot_{new_snapshot_identifier}"
-    # delete all local snapshots prior to downloading a new one
+    os.system(f"aws s3 sync {snapshot_base_uri} {local_snapshot_name}/")
+
+    # delete all local snapshots after downloading a new one
     local_snapshots = glob.glob("local_snapshot_*")
     if len(local_snapshots) > 0:
         # delete all local snapshots
         for local_snapshot in local_snapshots:
-            shutil.rmtree(local_snapshot)
-
-    os.system(f"aws s3 sync {snapshot_base_uri} {local_snapshot_name}/")
+            if local_snapshot != local_snapshot_name:
+                shutil.rmtree(local_snapshot)
 
     cell_type_orderings = _load_cell_type_order(local_snapshot_name)
     primary_filter_dimensions = _load_primary_filter_data(local_snapshot_name)
