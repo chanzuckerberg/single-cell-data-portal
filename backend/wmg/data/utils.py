@@ -160,11 +160,12 @@ def get_datasets_from_curation_api():
         if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
         else os.getenv("API_URL")
     )
+    PINNED_SCHEMA_VERSION = "3.0.0"
 
     datasets = {}
     if API_URL:
         session = _setup_retry_session()
-        dataset_metadata_url = f"{API_URL}/curation/v1/datasets"
+        dataset_metadata_url = f"{API_URL}/curation/v1/datasets?schema_version={PINNED_SCHEMA_VERSION}"
         response = session.get(dataset_metadata_url)
         if response.status_code == 200:
             datasets = response.json()
