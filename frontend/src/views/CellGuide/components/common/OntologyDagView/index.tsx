@@ -267,6 +267,7 @@ export default function OntologyDagView({
     return () => {
       setCenteredNodeCoords(false);
       setInitialTransformMatrix(initialTransformMatrixDefault);
+      disableFullScreen();
       hideTooltip();
     };
   }, [cellTypeId, tissueId]);
