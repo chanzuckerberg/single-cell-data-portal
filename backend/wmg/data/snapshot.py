@@ -121,9 +121,39 @@ def load_snapshot() -> WmgSnapshot:
     """
     global cached_snapshot
     if new_snapshot_identifier := _update_latest_snapshot_identifier():
-        cached_snapshot = _download_and_load_snapshot(new_snapshot_identifier)
+        if os.environ.get("DEPLOYMENT_STAGE") == "test":
+            # for tests
+            cached_snapshot = _load_snapshot(new_snapshot_identifier)
+        else:
+            cached_snapshot = _download_and_load_snapshot(new_snapshot_identifier)
         cached_snapshot.build_dataset_metadata_dict()
     return cached_snapshot
+
+
+def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
+    cell_type_orderings = _load_cell_type_order(new_snapshot_identifier)
+    primary_filter_dimensions = _load_primary_filter_data(new_snapshot_identifier)
+    dataset_to_gene_ids = _load_dataset_to_gene_ids_data(new_snapshot_identifier)
+    filter_relationships = _load_filter_graph_data(new_snapshot_identifier)
+
+    snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
+    logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
+
+    # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
+    #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
+    #  -data-portal/2134
+    return WmgSnapshot(
+        snapshot_identifier=new_snapshot_identifier,
+        expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        expression_summary_default_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
+        expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
+        marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
+        cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
+        cell_type_orderings=cell_type_orderings,
+        primary_filter_dimensions=primary_filter_dimensions,
+        dataset_to_gene_ids=dataset_to_gene_ids,
+        filter_relationships=filter_relationships,
+    )
 
 
 def _download_and_load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
