@@ -149,7 +149,7 @@ class SchemaMigrate(ProcessingLogic):
                     "dataset_version_id": dataset.version_id.id,
                 }
                 for dataset in version.datasets
-                if dataset.processing_status == "SUCCESS" and dataset.metadata.schema_version != current_schema_version
+                if dataset.status == "SUCCESS" and dataset.metadata.schema_version != current_schema_version
                 # Filter out datasets that are already on the current schema version OR that
                 # are not successfully processed
             ]
