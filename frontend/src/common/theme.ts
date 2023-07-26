@@ -201,6 +201,9 @@ const primaryColors = {
 export const textPrimary = (props: CommonThemeProps) =>
   getPalette(props)?.text?.primary;
 
+export const textSecondary = (props: CommonThemeProps) =>
+  getPalette(props)?.text?.secondary;
+
 export const primary100 = (props: CommonThemeProps) =>
   getColors(props)?.primary[100];
 
