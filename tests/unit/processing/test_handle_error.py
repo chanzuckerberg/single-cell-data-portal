@@ -376,7 +376,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
 def mock_env_vars():
     return {
         "ARTIFACT_BUCKET": "artifact_bucket",
-        "DATASETS_BUCKETS": "datasets_bucket",
+        "DATASETS_BUCKET": "datasets_bucket",
         "CELLXGENE_BUCKET": "cxg_bucket",
     }
 
