@@ -3,11 +3,11 @@ from unittest.mock import Mock, patch
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetVersionId
 
 
-@patch("backend.layers.processing.schema_migration.cellxgene_schema")
+@patch("backend.layers.processing.schema_migration.cxs_get_current_schema_version")
 class TestPublishAndCleanup:
-    def test_publish_and_cleanup(self, mock_cellxgene_schema, schema_migrate_and_collections):
+    def test_publish_and_cleanup(self, mock_cxs_get_current_schema_version, schema_migrate_and_collections):
         schema_migrate, _ = schema_migrate_and_collections
-        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
+        mock_cxs_get_current_schema_version.return_value = "1.0.0"
         dataset_status = Mock(processing_status=DatasetProcessingStatus.SUCCESS)
         metadata = Mock(schema_version="1.0.0")
         schema_migrate.business_logic.get_collection_version = Mock()
@@ -28,9 +28,11 @@ class TestPublishAndCleanup:
             "artifact-bucket", ["successful_dataset_version_id/migrated.h5ad"]
         )
 
-    def test_publish_and_cleanup__with_errors(self, mock_cellxgene_schema, schema_migrate_and_collections):
+    def test_publish_and_cleanup__with_errors(
+        self, mock_cxs_get_current_schema_version, schema_migrate_and_collections
+    ):
         schema_migrate, _ = schema_migrate_and_collections
-        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
+        mock_cxs_get_current_schema_version.return_value = "1.0.0"
         dataset_status_success = Mock(processing_status=DatasetProcessingStatus.SUCCESS)
         dataset_status_failure = Mock(
             processing_status=DatasetProcessingStatus.FAILURE, validation_message="rds conversion failed"
@@ -72,9 +74,11 @@ class TestPublishAndCleanup:
             ],
         )
 
-    def test_publish_and_cleanup__can_not_publish(self, mock_cellxgene_schema, schema_migrate_and_collections):
+    def test_publish_and_cleanup__can_not_publish(
+        self, mock_cxs_get_current_schema_version, schema_migrate_and_collections
+    ):
         schema_migrate, _ = schema_migrate_and_collections
-        mock_cellxgene_schema.schema.get_current_schema_version.return_value = "1.0.0"
+        mock_cxs_get_current_schema_version.return_value = "1.0.0"
         dataset_status = Mock(processing_status=DatasetProcessingStatus.SUCCESS)
         metadata = Mock(schema_version="1.0.0")
         schema_migrate.business_logic.get_collection_version = Mock()

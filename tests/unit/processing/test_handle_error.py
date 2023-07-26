@@ -374,7 +374,11 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
 
 @pytest.fixture
 def mock_env_vars():
-    return {"ARTIFACT_BUCKET": "artifact_bucket", "DATASET_BUCKET": "dataset_bucket", "CELLXGENE_BUCKET": "cxg_bucket"}
+    return {
+        "ARTIFACT_BUCKET": "artifact_bucket",
+        "DATASETS_BUCKET": "datasets_bucket",
+        "CELLXGENE_BUCKET": "cxg_bucket",
+    }
 
 
 def test_cleanup_artifacts__OK(mock_env_vars):
@@ -385,7 +389,7 @@ def test_cleanup_artifacts__OK(mock_env_vars):
 
         # Assertions
         mock_delete_many_from_s3.assert_any_call(os.environ["ARTIFACT_BUCKET"], dataset_id + "/")
-        mock_delete_many_from_s3.assert_any_call(os.environ["DATASET_BUCKET"], dataset_id + ".")
+        mock_delete_many_from_s3.assert_any_call(os.environ["DATASETS_BUCKET"], dataset_id + ".")
         mock_delete_many_from_s3.assert_any_call(os.environ["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
         assert mock_delete_many_from_s3.call_count == 3
 
