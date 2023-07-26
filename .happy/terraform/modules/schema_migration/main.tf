@@ -37,12 +37,12 @@ resource aws_batch_job_definition schema_migrations {
     ],
     resourceRequirements = [
                   {
-              "Type": "VCPU",
-              "Value": "28"
+              type= "VCPU",
+              Value="28"
             },
             {
-              "Type": "MEMORY",
-              "Value": var.batch_container_memory_limit
+              Type="MEMORY",
+              Value = "28000"
             }
     ]
     linuxParameters= {
