@@ -10,7 +10,7 @@ from moto import mock_s3
 from backend.common.utils.aws import delete_many_from_s3
 
 
-class TestUploadFailureHandling(TestCase):
+class TestDeleteManyFromS3(TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.tmp_dir = tempfile.mkdtemp()
