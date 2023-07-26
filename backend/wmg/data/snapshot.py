@@ -16,7 +16,7 @@ from backend.wmg.data.schemas.corpus_schema import (
     FILTER_RELATIONSHIPS_NAME,
 )
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.utils import get_collections_from_curation_api, get_datasets_from_curation_api
+from backend.wmg.data.utils import get_datasets_from_curation_api
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
@@ -82,8 +82,6 @@ class WmgSnapshot:
 
     def build_dataset_metadata_dict(self):
         datasets = get_datasets_from_curation_api()
-        collections = get_collections_from_curation_api()
-        collections_dict = {collection["collection_id"]: collection for collection in collections}
         dataset_dict = {}
         for dataset in datasets:
             dataset_id = dataset["dataset_id"]
@@ -91,7 +89,7 @@ class WmgSnapshot:
                 id=dataset_id,
                 label=dataset["title"],
                 collection_id=dataset["collection_id"],
-                collection_label=collections_dict[dataset["collection_id"]]["name"],
+                collection_label=dataset["collection_name"],
             )
         self.dataset_dict = dataset_dict
 
