@@ -72,7 +72,8 @@ export async function login(page: Page): Promise<void> {
 
   const { username, password } = await getTestUsernameAndPassword();
 
-  expect(username).toBeDefined();
+  expect(typeof username).toBe("string");
+  expect(typeof password).toBe("string");
 
   await page.getByText("Log In").click();
 
