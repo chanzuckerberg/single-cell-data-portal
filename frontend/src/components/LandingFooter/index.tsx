@@ -6,13 +6,14 @@ import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
 import BottomBanner from "../BottomBanner";
 import styles from "./index.module.scss";
+import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 const LandingFooter = (): JSX.Element => {
   return (
     <>
       <BottomBanner
         asFooter
-        airtableLink="https://airtable.com/shrLwepDSEX1HI6bo"
+        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
       />
       <footer className={styles.footer}>
         <div className={styles.footerTopContainer}>

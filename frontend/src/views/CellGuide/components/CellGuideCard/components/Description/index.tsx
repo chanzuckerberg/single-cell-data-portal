@@ -12,6 +12,7 @@ import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { CELL_GUIDE_CORRECTION_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 export const CELL_GUIDE_CARD_CL_DESCRIPTION = "cell-guide-card-cl-description";
 export const CELL_GUIDE_CARD_GPT_DESCRIPTION =
@@ -89,7 +90,7 @@ export default function Description({
               validation icon. If you believe a description is inaccurate,
               please{" "}
               <a
-                href="https://airtable.com/shr6hViGxXnJIxIVJ"
+                href={CELL_GUIDE_CORRECTION_SURVEY_LINK}
                 target="_blank"
                 rel="noreferrer noopener"
                 onClick={() => {
