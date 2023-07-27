@@ -13,6 +13,7 @@ RUN apt-get update && \
 WORKDIR /single-cell-data-portal
 ADD requirements-backend.txt requirements-backend.txt
 RUN python3 -m pip install -r requirements-backend.txt
+RUN python3 -m pip install awscli
 EXPOSE 5000
 
 # Install utilities to /single-cell-data-portal so we can run db migrations.
