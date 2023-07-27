@@ -23,7 +23,7 @@ export const Label = styled.div`
   font-weight: ${fontWeightRegular};
 `;
 
-export const GeneUrl = styled.a`
+export const Link = styled.a`
   ${fontBodyS}
   font-weight: 400;
   color: ${primary400};
