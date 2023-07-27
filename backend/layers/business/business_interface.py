@@ -55,12 +55,13 @@ class BusinessLogicInterface:
     ) -> CollectionVersion:
         pass
 
-    def delete_dataset_versions_from_bucket(self, dataset_version_ids: List[str], bucket: str) -> List[str]:
+    def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         pass
 
-    def delete_all_dataset_versions_from_bucket_for_collection(
-        self, collection_id: CollectionId, bucket: str
-    ) -> List[str]:
+    def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
+        pass
+
+    def delete_all_dataset_versions_from_public_bucket_for_collection(self, collection_id: CollectionId) -> List[str]:
         pass
 
     def delete_collection(self, collection_id: CollectionId) -> None:
@@ -141,4 +142,7 @@ class BusinessLogicInterface:
     def get_latest_published_collection_versions_by_schema(
         self, schema_version: str
     ) -> List[CollectionVersionWithPublishedDatasets]:
+        pass
+
+    def _delete_keys_from_bucket(self, bucket: str, keys: List[str]) -> None:
         pass

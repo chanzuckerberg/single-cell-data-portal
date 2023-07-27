@@ -1640,17 +1640,20 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
             replaced_dataset_version_id
         ]
         expected_delete_keys = set()
+        fake_public_bucket = "fake-public-bucket"
         for d_v_id in dataset_version_ids:
             for file_type in ("h5ad", "rds"):
                 key = f"{d_v_id}.{file_type}"
-                self.s3_provider.upload_file(None, "fake-bucket", key, None)  # Populate s3 mock with assets
-                self.assertTrue(self.s3_provider.uri_exists(f"s3://fake-bucket/{key}"))
+                self.s3_provider.upload_file(None, fake_public_bucket, key, None)  # Populate s3 mock with assets
+                self.assertTrue(self.s3_provider.uri_exists(f"s3://{fake_public_bucket}/{key}"))
                 expected_delete_keys.update([f"{d_v_id}.{file_type}"])
+        os.environ["DATASETS_BUCKET"] = fake_public_bucket
         actual_delete_keys = set(
-            self.business_logic.delete_all_dataset_versions_from_bucket_for_collection(
-                published_collection.collection_id, "fake-bucket"
+            self.business_logic.delete_all_dataset_versions_from_public_bucket_for_collection(
+                published_collection.collection_id
             )
         )
+        os.unsetenv("DATASETS_BUCKET")
         self.assertTrue(self.s3_provider.is_empty())
         self.assertTrue(len(expected_delete_keys) > 0)
         self.assertEqual(expected_delete_keys, actual_delete_keys)

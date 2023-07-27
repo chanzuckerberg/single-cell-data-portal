@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+import re
 from collections import defaultdict
 from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
@@ -464,6 +465,8 @@ class BusinessLogic(BusinessLogicInterface):
             dv = self.database_provider.get_dataset_version(dataset_version_id)
             if dv.canonical_dataset.published_at:
                 raise CollectionUpdateException from None
+            self.delete_dataset_versions_from_public_bucket([dv.version_id.id])
+            self.delete_artifacts(dv.artifacts)
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
@@ -613,9 +616,18 @@ class BusinessLogic(BusinessLogicInterface):
         Deletes a collection version. This method will raise an error if the version is published.
         (Note: for performance reasons, the check is performed by the underlying layer)
         """
+        collection_version = self._assert_collection_version_unpublished(version_id)
+        dataset_versions_to_delete: list[str] = []
+        artifacts_to_delete: list[DatasetArtifact] = []
+        for dataset_version in collection_version.datasets:
+            if not dataset_version.canonical_dataset.published_at:
+                dataset_versions_to_delete.append(dataset_version.version_id.id)
+                artifacts_to_delete.extend(dataset_version.artifacts)
+        self.delete_dataset_versions_from_public_bucket(dataset_versions_to_delete)
+        self.delete_artifacts(artifacts_to_delete)
         self.database_provider.delete_collection_version(version_id)
 
-    def delete_dataset_versions_from_bucket(self, dataset_version_ids: List[str], bucket: str) -> List[str]:
+    def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
         object_keys = set()
         for d_v_id in dataset_version_ids:
@@ -624,15 +636,10 @@ class BusinessLogic(BusinessLogicInterface):
                 if rdev_prefix:
                     dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                 object_keys.add(dataset_version_s3_object_key)
-        try:
-            self.s3_provider.delete_files(bucket, list(object_keys))
-        except S3DeleteException as e:
-            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
+        self._delete_keys_from_bucket(os.getenv("DATASETS_BUCKET"), list(object_keys))
         return list(object_keys)
 
-    def delete_all_dataset_versions_from_bucket_for_collection(
-        self, collection_id: CollectionId, bucket: str
-    ) -> List[str]:
+    def delete_all_dataset_versions_from_public_bucket_for_collection(self, collection_id: CollectionId) -> List[str]:
         """
         Delete all associated publicly-accessible Datasets in s3
         """
@@ -640,13 +647,13 @@ class BusinessLogic(BusinessLogicInterface):
         dataset_version_ids_to_delete = []
         for collection_version in collection_versions:
             dataset_version_ids_to_delete.extend([dv.version_id.id for dv in collection_version.datasets])
-        return self.delete_dataset_versions_from_bucket(dataset_version_ids_to_delete, bucket)
+        return self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
         Tombstones a canonical collection
         """
-        self.delete_all_dataset_versions_from_bucket_for_collection(collection_id, os.getenv("DATASETS_BUCKET"))
+        self.delete_all_dataset_versions_from_public_bucket_for_collection(collection_id)
         self.database_provider.delete_canonical_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
@@ -680,7 +687,7 @@ class BusinessLogic(BusinessLogicInterface):
             version.collection_id, version_id, schema_version, update_revised_at=has_dataset_revisions
         )
 
-        self.delete_dataset_versions_from_bucket(dataset_version_ids_to_delete_from_s3, os.getenv("DATASETS_BUCKET"))
+        self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete_from_s3)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         """
@@ -771,6 +778,18 @@ class BusinessLogic(BusinessLogicInterface):
             )
         except DatasetVersionNotFoundException:
             return None
+
+    def _delete_keys_from_bucket(self, bucket: str, keys: List[str]) -> None:
+        try:
+            self.s3_provider.delete_files(bucket, list(keys))
+        except S3DeleteException as e:
+            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
+
+    def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
+        for artifact in artifacts:
+            matches_dict = re.match(r"^s3://(?P<bucket>[^/]+)/(?P<key>.*)", artifact.uri).groupdict()
+            bucket, key = matches_dict["bucket"], matches_dict["key"]
+            self._delete_keys_from_bucket(bucket, [key])
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
