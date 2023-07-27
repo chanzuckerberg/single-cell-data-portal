@@ -190,7 +190,7 @@ class SchemaMigrate(ProcessingLogic):
                     "collection_version_id": private_collection_version_id,
                     "dataset_id": dataset.dataset_id.id,
                     "dataset_version_id": dataset.version_id.id,
-                    "memory": str(memory),
+                    "memory": memory,
                     "swap": str(swap),
                 }
                 # The repeated fields in datasets is required for the AWS SFN job that uses it.

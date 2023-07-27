@@ -21,7 +21,7 @@ class TestCollectionMigrate:
                 "can_publish": "True",
                 "dataset_id": dataset.dataset_id.id,
                 "dataset_version_id": dataset.version_id.id,
-                "memory": "8192",
+                "memory": 8192,
                 "swap": "False",
             }
             for dataset in published.datasets
@@ -44,7 +44,7 @@ class TestCollectionMigrate:
                 "can_publish": "False",
                 "dataset_id": dataset.dataset_id.id,
                 "dataset_version_id": dataset.version_id.id,
-                "memory": "8192",
+                "memory": 8192,
                 "swap": "False",
             }
             for dataset in private.datasets
