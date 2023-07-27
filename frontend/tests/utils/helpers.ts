@@ -68,6 +68,8 @@ export async function goToPage(
 }
 
 export async function login(page: Page): Promise<void> {
+  console.log("Logging in...");
+
   await goToPage(undefined, page);
 
   const { username, password } = await getTestUsernameAndPassword();
@@ -96,6 +98,8 @@ export async function login(page: Page): Promise<void> {
   console.log("setting storage state...");
 
   await page.context().storageState({ path: LOGIN_STATE_FILENAME });
+
+  console.log(`Login success!`);
 }
 
 export async function scrollToPageBottom(page: Page): Promise<void> {
