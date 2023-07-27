@@ -3,7 +3,7 @@ import {
   GeneName,
   GeneSummary,
   Label,
-  GeneUrl,
+  Link,
   OutLinksWrapper,
   StyledCallout,
 } from "./style";
@@ -32,13 +32,13 @@ function GeneInfoSideBar({
         Sorry, this gene could not be found on NCBI.
       </StyledCallout>
 
-      <GeneUrl
+      <Link
         href={`https://www.google.com/search?q=${geneInfoGene}%20gene`}
         target="_blank"
         rel="noreferrer noopener"
       >
         Search on Google
-      </GeneUrl>
+      </Link>
     </>
   );
 
@@ -82,26 +82,26 @@ function GeneInfoResult({
         <Synonyms synonyms={synonyms} data-testid="gene-info-gene-synonyms" />
 
         <OutLinksWrapper>
-          <GeneUrl
+          <Link
             href={GENE_CARDS_URL + geneInfoGene}
             target="_blank"
             rel="noreferrer noopener"
             data-testid="gene-info-geneCards-link"
           >
             View on GeneCards
-          </GeneUrl>
+          </Link>
 
           <span>
             <Label>
               Source:{" "}
-              <GeneUrl
+              <Link
                 href={ncbi_url}
                 target="_blank"
                 rel="noreferrer noopener"
                 data-testid="gene-info-ncbi-link"
               >
                 NCBI
-              </GeneUrl>
+              </Link>
             </Label>
           </span>
         </OutLinksWrapper>
