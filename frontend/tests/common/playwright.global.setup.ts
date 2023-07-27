@@ -28,23 +28,19 @@ describe("global setup", () => {
 
     process.env.API_URL = apiUrl || "";
 
-    try {
-      // Skip login for tests that don't require it
-      if (SKIP_LOGIN) {
-        console.log("SKIP_LOGIN was set to true. Skipping log in.");
-      } else {
-        // One time auth
-        console.log("Logging in...");
+    // Skip login for tests that don't require it
+    if (SKIP_LOGIN) {
+      console.log("SKIP_LOGIN was set to true. Skipping log in.");
+    } else {
+      // One time auth
+      console.log("Logging in...");
 
-        await login(page);
+      await login(page);
 
-        console.log(`Login success!`);
+      console.log(`Login success!`);
 
-        await browserContext.close();
-        await browser.close();
-      }
-    } catch (error) {
-      console.error(error);
+      await browserContext.close();
+      await browser.close();
     }
   });
 
