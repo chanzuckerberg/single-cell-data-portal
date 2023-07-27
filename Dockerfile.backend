@@ -28,4 +28,5 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
+RUN aws s3 cp s3://${WMG_SNAPSHOT_PATH}/latest_snapshot_identifier - | xargs -I {} aws s3 sync s3://${WMG_SNAPSHOT_PATH}/{}/ local_snapshot_{}/
 ENTRYPOINT ["/single-cell-data-portal/container_init.sh"]
