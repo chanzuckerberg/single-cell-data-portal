@@ -10,7 +10,10 @@ import styles from "./index.module.scss";
 const LandingFooter = (): JSX.Element => {
   return (
     <>
-      <BottomBanner asFooter />
+      <BottomBanner
+        asFooter
+        airtableLink="https://airtable.com/shrLwepDSEX1HI6bo"
+      />
       <footer className={styles.footer}>
         <div className={styles.footerTopContainer}>
           <div className={styles.footerLogo}>

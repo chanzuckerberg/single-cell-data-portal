@@ -89,7 +89,7 @@ export default function Description({
               validation icon. If you believe a description is inaccurate,
               please{" "}
               <a
-                href="https://airtable.com/shrEReYLtRTAAsNiE"
+                href="https://airtable.com/shr6hViGxXnJIxIVJ"
                 target="_blank"
                 rel="noreferrer noopener"
                 onClick={() => {

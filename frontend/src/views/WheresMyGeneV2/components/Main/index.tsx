@@ -420,7 +420,10 @@ export default function WheresMyGene(): JSX.Element {
         </Wrapper>
       </View>
 
-      <BottomBanner includeSurveyLink />
+      <BottomBanner
+        airtableLink="https://airtable.com/shrLwepDSEX1HI6bo"
+        includeSurveyLink
+      />
     </>
   );
 }

@@ -7,6 +7,7 @@ export default function CellGuideBottomBanner(): JSX.Element {
   return (
     <BottomBanner
       includeSurveyLink
+      airtableLink="https://airtable.com/shrEReYLtRTAAsNiE"
       customSurveyLinkPrefix={
         <span>
           Check out the{" "}
