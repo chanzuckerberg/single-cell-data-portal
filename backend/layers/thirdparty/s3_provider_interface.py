@@ -1,7 +1,10 @@
-from typing import Iterable, List
+from typing import Iterable, List, Tuple
 
 
 class S3ProviderInterface:
+    def parse_s3_uri(s3_uri: str) -> Tuple[str, str]:
+        pass
+
     def get_file_size(self, path: str) -> int:
         pass
 

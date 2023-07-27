@@ -38,7 +38,7 @@ resource aws_batch_job_definition schema_migrations_swap {
     resourceRequirements = [
       {
         type= "VCPU",
-        Value="12"
+        Value="6"
       },
       {
         Type="MEMORY",
@@ -293,9 +293,20 @@ resource aws_sfn_state_machine sfn_schema_migration {
               "ProcessorConfig": {
                 "Mode": "INLINE"
               },
-              "StartAt": "DatasetMigration",
+              "StartAt": "Choice",
               "States": {
-                "DatasetMigration": {
+                "Choice": {
+                  "Type": "Choice",
+                  "Choices": [
+                    {
+                      "Variable": "$.swap",
+                      "StringEquals": "True",
+                      "Next": "DatasetMigrationSwap"
+                    }
+                  ],
+                  "Default": "DatasetMigration"
+                },
+                "DatasetMigrationSwap": {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::batch:submitJob.sync",
                   "Parameters": {
@@ -306,6 +317,75 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       "AttemptDurationSeconds": 36000
                     },
                     "ContainerOverrides": {
+                      "Environment": [
+                        {
+                          "Name": "STEP_NAME",
+                          "Value": "dataset_migrate"
+                        },
+                        {
+                          "Name": "MIGRATE",
+                          "Value": "True"
+                        },
+                        {
+                          "Name": "DATASET_ID",
+                          "Value.$": "$.dataset_id"
+                        },
+                        {
+                          "Name": "DATASET_VERSION_ID",
+                          "Value.$": "$.dataset_version_id"
+                        },
+                        {
+                          "Name": "COLLECTION_VERSION_ID",
+                          "Value.$": "$.collection_version_id"
+                        },
+                        {
+                          "Name": "COLLECTION_ID",
+                          "Value.$": "$.collection_id"
+                        },
+                        {
+                          "Name": "TASK_TOKEN",
+                          "Value.$": "$$.Task.Token"
+                        },
+                        {
+                          "Name": "EXECUTION_ID",
+                          "Value.$": "$$.Execution.Name"
+                        }
+                      ]
+                    }
+                  },
+                  "Catch": [
+                    {
+                      "ErrorEquals": [
+                        "States.ALL"
+                      ],
+                      "Next": "DatasetError",
+                      "ResultPath": "$.error"
+                    }
+                  ],
+                  "ResultPath": "$.result",
+                  "Next": "StepFunctionsStartExecution"
+                },
+                "DatasetMigration": {
+                  "Type": "Task",
+                  "Resource": "arn:aws:states:::batch:submitJob.sync",
+                  "Parameters": {
+                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
+                    "JobName": "dataset_migration",
+                    "JobQueue": "${var.job_queue_arn}",
+                    "Timeout": {
+                      "AttemptDurationSeconds": 36000
+                    },
+                    "ContainerOverrides": {
+                      "resourceRequirements": [
+                        {
+                          "Type": "MEMORY",
+                          "Value": "$.memory"
+                        },
+                        {
+                          type= "VCPU",
+                          Value="6"
+                        }
+                      ],
                       "Environment": [
                         {
                           "Name": "STEP_NAME",

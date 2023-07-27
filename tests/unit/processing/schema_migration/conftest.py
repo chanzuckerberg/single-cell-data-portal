@@ -7,6 +7,9 @@ from backend.layers.common.entities import (
     CollectionId,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    DatasetArtifact,
+    DatasetArtifactId,
+    DatasetArtifactType,
     DatasetId,
     DatasetProcessingStatus,
     DatasetVersionId,
@@ -78,6 +81,12 @@ def schema_migrate_and_collections(published_collection, revision, private) -> T
         }
         return db[collection_version_id.id]
 
+    business_logic.get_dataset_artifacts = mock.Mock(
+        return_value=[
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.RAW_H5AD, uri="s3://bucket/key.h5ad")
+        ]
+    )
     business_logic.get_collection_version = _get_collection_version
+    business_logic.s3_provider.get_file_size.return_value = 100
     schema_migrate = SchemaMigrate(business_logic)
     return schema_migrate, {"published": [published_collection], "revision": revision, "private": [private]}

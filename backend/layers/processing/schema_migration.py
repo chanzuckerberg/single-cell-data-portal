@@ -2,12 +2,13 @@ import itertools
 import json
 import logging
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from cellxgene_schema.migrate import migrate as cxs_migrate
 from cellxgene_schema.schema import get_current_schema_version as cxs_get_current_schema_version
 
 from backend.common.corpora_config import CorporaConfig
+from backend.common.utils.math_utils import GB
 from backend.common.utils.result_notification import upload_to_slack
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
@@ -24,6 +25,25 @@ from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 
 logger.configure_logging(level=logging.INFO)
+
+MIN_MEMORY = 8  # GB
+MAX_MEMORY = 95  # GB, This number is based on the size of the EC2 instance allocated.
+
+
+def calculate_memory_requirements(dataset_size: int) -> Tuple[int, bool]:
+    """
+    Calculate the memory requirements for the schema migration step function and if swap is required.
+    :param dataset_size: in bytes
+    :return:
+    """
+    memory = max([dataset_size // GB * 2, MIN_MEMORY])
+    if memory > MAX_MEMORY:
+        swap = True
+        memory = MAX_MEMORY
+    else:
+        swap = False
+    memory *= 1024  # convert to MB
+    return memory, swap
 
 
 class SchemaMigrate(ProcessingLogic):
@@ -76,14 +96,23 @@ class SchemaMigrate(ProcessingLogic):
             response.append(_resp)
         return response
 
-    def dataset_migrate(
-        self, collection_version_id: str, collection_id: str, dataset_id: str, dataset_version_id: str
-    ) -> Dict[str, str]:
+    def get_raw_h5ad_uri(self, dataset_version_id: str) -> str:
+        """
+        This function is used to get the raw h5ad uri from the dataset version id
+        :param dataset_version_id: The dataset version id
+        :return: The raw h5ad uri
+        """
         raw_h5ad_uri = [
             artifact.uri
             for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
             if artifact.type == DatasetArtifactType.RAW_H5AD
         ][0]
+        return raw_h5ad_uri
+
+    def dataset_migrate(
+        self, collection_version_id: str, collection_id: str, dataset_id: str, dataset_version_id: str
+    ) -> Dict[str, str]:
+        raw_h5ad_uri = self.get_raw_h5ad_uri(dataset_version_id)
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
         migrated_file = "migrated.h5ad"
@@ -93,7 +122,7 @@ class SchemaMigrate(ProcessingLogic):
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             CollectionVersionId(collection_version_id),
             uri,
-            file_size=0,  # TODO: this shouldn't be needed but it gets around a 404 for HeadObject
+            file_size=self.s3_provider.get_file_size(raw_h5ad_uri),
             existing_dataset_version_id=DatasetVersionId(dataset_version_id),
             start_step_function=False,  # The schema_migration sfn will start the ingest sfn
         )
@@ -142,23 +171,36 @@ class SchemaMigrate(ProcessingLogic):
         else:
             private_collection_version_id = collection_version_id
 
-        response = {
-            "can_publish": str(can_publish),
-            "collection_version_id": private_collection_version_id,
-            # ^^^ The top level fields are used for handling error cases in the AWS SFN.
-            "datasets": [
+        # Migrate datasets
+        _datasets = []
+        for dataset in datasets:
+            if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
+                continue  # Filter out datasets that are not successfully processed
+
+            # calculate memory requirements
+            raw_h5ad_uri = self.get_raw_h5ad_uri(dataset.version_id.id)
+            file_size = self.s3_provider.get_file_size(raw_h5ad_uri)
+            memory, swap = calculate_memory_requirements(file_size)
+
+            # build dataset migration job
+            _datasets.append(
                 {
                     "can_publish": str(can_publish),
                     "collection_id": collection_id,
                     "collection_version_id": private_collection_version_id,
                     "dataset_id": dataset.dataset_id.id,
                     "dataset_version_id": dataset.version_id.id,
+                    "memory": str(memory),
+                    "swap": str(swap),
                 }
-                for dataset in datasets
-                if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
-                # Filter out datasets that are not successfully processed
-            ]
-            # The repeated fields in datasets is required for the AWS SFN job that uses it.
+                # The repeated fields in datasets is required for the AWS SFN job that uses it.
+            )
+
+        response = {
+            "can_publish": str(can_publish),
+            "collection_version_id": private_collection_version_id,
+            # ^^^ The top level fields are used for handling error cases in the AWS SFN.
+            "datasets": _datasets,
         }
 
         if not response["datasets"]:

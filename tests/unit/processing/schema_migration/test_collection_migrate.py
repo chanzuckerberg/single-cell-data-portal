@@ -1,7 +1,9 @@
 from unittest import mock
 from unittest.mock import patch
 
+from backend.common.utils.math_utils import GB
 from backend.layers.common.entities import CollectionVersionId
+from backend.layers.processing.schema_migration import MAX_MEMORY, MIN_MEMORY, calculate_memory_requirements
 
 
 @patch("backend.layers.processing.schema_migration.cxs_get_current_schema_version")
@@ -15,7 +17,13 @@ class TestCollectionMigrate:
             version_id=collection_version_id
         )
         datasets = [
-            {"can_publish": "True", "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
+            {
+                "can_publish": "True",
+                "dataset_id": dataset.dataset_id.id,
+                "dataset_version_id": dataset.version_id.id,
+                "memory": "8192",
+                "swap": "False",
+            }
             for dataset in published.datasets
         ]
         response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, True)
@@ -32,7 +40,13 @@ class TestCollectionMigrate:
         mock_cxs_get_current_schema_version.return_value = "0.0.0"
         private = collections["private"][0]
         datasets = [
-            {"can_publish": "False", "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
+            {
+                "can_publish": "False",
+                "dataset_id": dataset.dataset_id.id,
+                "dataset_version_id": dataset.version_id.id,
+                "memory": "8192",
+                "swap": "False",
+            }
             for dataset in private.datasets
         ]
         response = schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
@@ -85,3 +99,41 @@ class TestCollectionMigrate:
         assert response["collection_version_id"] == published.version_id.id
         assert not response["datasets"]
         assert response["no_datasets"] == "True"
+
+
+class TestCalculateMemoryRequirements:
+    def test_1(self):
+        # Test case 1: Smaller than minimum memory (8 GB)
+        dataset_size = GB  # 1 GB
+        expected_memory = MIN_MEMORY * 1024  # 8 GB in MB
+        expected_swap = False
+        memory, swap = calculate_memory_requirements(dataset_size)
+        assert memory == expected_memory
+        assert swap == expected_swap
+
+    def test_2(self):
+        # Test case 2: Between minimum and maximum memory
+        dataset_size = 30 * GB
+        expected_memory = 30 * 2 * 1024
+        expected_swap = False
+        memory, swap = calculate_memory_requirements(dataset_size)
+        assert memory == expected_memory
+        assert swap == expected_swap
+
+    def test_3(self):
+        # Test case 3: Larger than maximum memory
+        dataset_size = 100 * GB  # 100 GB
+        expected_memory = MAX_MEMORY * 1024  # memory_max
+        expected_swap = True
+        memory, swap = calculate_memory_requirements(dataset_size)
+        assert memory == expected_memory
+        assert swap == expected_swap
+
+    def test_4(self):
+        # Test case 4: Dataset size is 0
+        dataset_size = 0
+        expected_memory = MIN_MEMORY * 1024  # Minimum memory
+        expected_swap = False
+        memory, swap = calculate_memory_requirements(dataset_size)
+        assert memory == expected_memory
+        assert swap == expected_swap
