@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetArtifactType,
     DatasetProcessingStatus,
+    DatasetVersion,
     DatasetVersionId,
 )
 from backend.layers.processing import logger
@@ -102,17 +103,22 @@ class SchemaMigrate(ProcessingLogic):
             "uri": uri,
         }
 
+    def _check_dataset_is_latest_schema_version(self, dataset: DatasetVersion) -> bool:
+        return (
+            hasattr(dataset, "metadata")
+            and hasattr(dataset.metadata, "schema_version")
+            and dataset.metadata.schema_version == cxs_get_current_schema_version()
+        )
+
     def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
-        current_schema_version = cxs_get_current_schema_version()
-
-        if all(
-            hasattr(dataset, "metadata")
-            and hasattr(dataset.metadata, "schema_version")
-            and dataset.metadata.schema_version == current_schema_version
-            for dataset in version.datasets
-        ):
+        cxs_get_current_schema_version()
+        datasets = [
+            dataset for dataset in version.datasets if not self._check_dataset_is_latest_schema_version(dataset)
+        ]
+        # Filter out datasets that are already on the current schema version
+        if not datasets:
             # Handles the case were the collection has no datasets or all datasets are already migrated.
             if len(version.datasets) == 0:
                 self.logger.info("Collection has no datasets")
@@ -148,10 +154,9 @@ class SchemaMigrate(ProcessingLogic):
                     "dataset_id": dataset.dataset_id.id,
                     "dataset_version_id": dataset.version_id.id,
                 }
-                for dataset in version.datasets
-                if dataset.status == "SUCCESS" and dataset.metadata.schema_version != current_schema_version
-                # Filter out datasets that are already on the current schema version OR that
-                # are not successfully processed
+                for dataset in datasets
+                if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
+                # Filter out datasets that are not successfully processed
             ]
             # The repeated fields in datasets is required for the AWS SFN job that uses it.
         }
@@ -165,13 +170,13 @@ class SchemaMigrate(ProcessingLogic):
         errors = dict()
         collection_version_id = CollectionVersionId(collection_version_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
-        current_schema_version = cxs_get_current_schema_version()
+        cxs_get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
             dataset_version_id = dataset.version_id.id
             key_prefix = self.get_key_prefix(dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
-            if dataset.metadata.schema_version != current_schema_version:
+            if not self._check_dataset_is_latest_schema_version(dataset):
                 errors[dataset_version_id] = "Did Not Migrate."
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors[dataset_version_id] = dataset.status.validation_message
