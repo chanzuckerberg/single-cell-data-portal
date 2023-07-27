@@ -74,7 +74,11 @@ resource aws_ecs_task_definition task_definition {
       {
         "name": "AWS_DEFAULT_REGION",
         "value": "${data.aws_region.current.name}"
-      }
+      },
+      {
+        "name": "WMG_SNAPSHOT_PATH",
+        "value": "${var.wmg_bucket}/${var.remote_dev_prefix}"
+      }            
     ],
     "portMappings": [
       {

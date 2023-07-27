@@ -149,6 +149,7 @@ module backend_service {
   dataset_submissions_bucket = local.dataset_submissions_bucket
   datasets_bucket            = local.datasets_bucket
   execution_role             = local.ecs_execution_role
+  wmg_bucket                 = local.wmg_bucket
 
   wait_for_steady_state = local.wait_for_steady_state
 }

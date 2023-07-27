@@ -143,3 +143,8 @@ variable "health_check_interval" {
   description = "Interval for the health check pings"
   default     = 15
 }
+
+variable "wmg_bucket" {
+  type        = string
+  description = "S3 bucket containing the WMG snapshot"
+}
