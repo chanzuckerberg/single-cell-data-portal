@@ -231,3 +231,9 @@ class DatabaseProviderInterface:
         """
         Returns the dataset version mapped to a canonical dataset_id, or None if not existing
         """
+
+    def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
+        """
+        Returns a list with all collection versions that match the given schema_version. schema_version may contain
+         wildcards.
+        """

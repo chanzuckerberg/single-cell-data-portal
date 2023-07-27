@@ -188,7 +188,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-upload:branch-main"
-      dockerfile: Dockerfile.processing_image
+      dockerfile: Dockerfile.processing
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
@@ -225,7 +225,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}wmg-processing:branch-main"
-      dockerfile: Dockerfile.data_cube_creation
+      dockerfile: Dockerfile.wmg_pipeline
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT

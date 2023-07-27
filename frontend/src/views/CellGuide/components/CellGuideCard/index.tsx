@@ -11,8 +11,8 @@ import {
   LEFT_RIGHT_PADDING_PX,
   SearchBarPositioner,
   StyledRightSideBar,
+  StyledSynonyms,
 } from "./style";
-import { useCellTypesById } from "src/common/queries/cellGuide";
 import Description from "./components/Description";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -23,15 +23,30 @@ import CellGuideCardSidebar from "./components/CellGuideCardSidebar";
 import { Gene } from "src/views/WheresMyGene/common/types";
 import { throttle } from "lodash";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
+import { titleize } from "src/common/utils/string";
+import Head from "next/head";
+import CellGuideBottomBanner from "../CellGuideBottomBanner";
+import { useCellTypesById } from "src/common/queries/cellGuide";
 
 export const CELL_GUIDE_CARD_HEADER_NAME = "cell-guide-card-header-name";
 export const CELL_GUIDE_CARD_HEADER_TAG = "cell-guide-card-header-tag";
+export const CELL_GUIDE_CARD_SYNONYMS = "cell-guide-card-synonyms";
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
 // This is the desired width of the CellGuideCard components right after the sidebar is hidden.
 const BREAKPOINT_WIDTH = 960;
 
-export default function CellGuideCard(): JSX.Element {
+interface Props {
+  name: string;
+  seoDescription: string;
+}
+
+export default function CellGuideCard({
+  // From getServerSideProps
+  name,
+  // From getServerSideProps
+  seoDescription: rawSeoDescription,
+}: Props): JSX.Element {
   const router = useRouter();
 
   // Navigation
@@ -44,8 +59,14 @@ export default function CellGuideCard(): JSX.Element {
   // cell type id
   const { cellTypeId: cellTypeIdRaw } = router.query;
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
-  const cellTypesById = useCellTypesById() ?? {};
-  const cellTypeName = cellTypesById[cellTypeId] ?? "";
+  const cellTypeName = name || "";
+  const titleizedCellTypeName = titleize(cellTypeName);
+
+  const cellTypesById = useCellTypesById();
+
+  const cellType = cellTypesById && cellTypesById[cellTypeId];
+
+  const { synonyms } = cellType || {};
 
   const handleResize = useCallback(() => {
     setSkinnyMode(
@@ -70,8 +91,31 @@ export default function CellGuideCard(): JSX.Element {
     setGeneInfoGene(null);
   }
 
+  const title = `${titleizedCellTypeName} Cell Types - CZ CELLxGENE CellGuide`;
+  const seoDescription = `Find comprehensive information about "${cellTypeName}" cell types (synonyms: ${
+    synonyms?.join(", ") || "N/A"
+  }). ${rawSeoDescription}`;
+
   return (
     <>
+      <Head>
+        <title>{title}</title>
+        <meta property="title" key="title" content={title} />
+        <meta property="og:title" key="og:title" content={title} />
+        <meta property="twitter:title" key="twitter:title" content={title} />
+
+        <meta name="description" key="description" content={seoDescription} />
+        <meta
+          property="og:description"
+          key="og:description"
+          content={seoDescription}
+        />
+        <meta
+          property="twitter:description"
+          key="twitter:description"
+          content={seoDescription}
+        />
+      </Head>
       <CellGuideView skinnyMode={skinnyMode}>
         {/* Flex item left */}
         <Wrapper>
@@ -92,7 +136,7 @@ export default function CellGuideCard(): JSX.Element {
           <CellGuideCardHeader>
             <CellGuideCardHeaderInnerWrapper>
               <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
-                {cellTypeName}
+                {titleizedCellTypeName}
               </CellGuideCardName>
               <a
                 href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
@@ -110,7 +154,13 @@ export default function CellGuideCard(): JSX.Element {
               </a>
             </CellGuideCardHeaderInnerWrapper>
           </CellGuideCardHeader>
+
           <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
+
+          <StyledSynonyms
+            synonyms={synonyms}
+            data-testid={CELL_GUIDE_CARD_SYNONYMS}
+          />
 
           {/* Cell Ontology section */}
           <div ref={sectionRef1} id="section-1" data-testid="section-1" />
@@ -123,6 +173,7 @@ export default function CellGuideCard(): JSX.Element {
           <MarkerGeneTables
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
+            cellTypeName={cellTypeName}
           />
 
           {/* Source Data section */}
@@ -149,6 +200,7 @@ export default function CellGuideCard(): JSX.Element {
           />
         )}
       </StyledRightSideBar>
+      <CellGuideBottomBanner />
     </>
   );
 }

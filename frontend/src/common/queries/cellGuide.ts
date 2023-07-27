@@ -276,6 +276,7 @@ export const USE_CELL_GUIDE_QUERY = {
 interface CellGuideQueryResponseEntry {
   id: string;
   label: string;
+  synonyms?: string[];
 }
 
 export type CellGuideQueryResponse = CellGuideQueryResponseEntry[];
@@ -285,8 +286,29 @@ export const useCellGuide = (): UseQueryResult<CellGuideQueryResponse> => {
 };
 
 /* ========== cell types by Id ========== */
+export function useCellTypesById():
+  | { [cellTypeId: string]: CellGuideQueryResponseEntry }
+  | undefined {
+  const { data, isLoading } = useCellGuide();
 
-export function useCellTypesById(): { [id: string]: string } | undefined {
+  return useMemo(() => {
+    if (!data || isLoading) return;
+
+    const cellTypesById = {} as {
+      [cellTypeId: string]: CellGuideQueryResponseEntry;
+    };
+
+    for (const cellType of data) {
+      cellTypesById[cellType.id] = cellType;
+    }
+
+    return cellTypesById;
+  }, [data, isLoading]);
+}
+
+/* ========== cell type names by Id ========== */
+
+export function useCellTypeNamesById(): { [id: string]: string } | undefined {
   const { data, isLoading } = useCellGuide();
 
   return useMemo(() => {
@@ -316,26 +338,6 @@ export type TissueCardsQueryResponse = TissueCardsQueryResponseEntry[];
 export const useTissueCards = (): UseQueryResult<TissueCardsQueryResponse> => {
   return useCellGuideQuery<TissueCardsQueryResponse>(TYPES.TISSUE_CARDS);
 };
-
-export function useTissuesById():
-  | {
-      [id: string]: Pick<TissueCardsQueryResponseEntry, "label">;
-    }
-  | undefined {
-  const { data, isLoading } = useTissueCards();
-
-  return useMemo(() => {
-    if (!data || isLoading) return;
-    const accumulator: {
-      [id: string]: Pick<TissueCardsQueryResponseEntry, "label">;
-    } = {};
-    return data.reduce((acc, curr) => {
-      const { id, label } = curr;
-      acc[id] = { label };
-      return acc;
-    }, accumulator);
-  }, [data, isLoading]);
-}
 
 /**
  * Mapping from data/response type to properties used for querying

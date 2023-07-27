@@ -27,7 +27,7 @@ def handle_failure(event: dict, context) -> None:
         dataset_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
     )
     update_dataset_processing_status_to_failed(dataset_id)
-    cleanup_artifacts(dataset_id, error_step_name)
+    cleanup_artifacts(dataset_id)
 
 
 # write test cases using pytest to test the parse_event function
@@ -156,14 +156,15 @@ def trigger_slack_notification(
         notify_slack(data)
 
 
-def cleanup_artifacts(dataset_id: str, error_step_name: str) -> None:
-    """Clean up artifacts depending on error; default to full clean-up if error step is unknown"""
+def cleanup_artifacts(dataset_id: str) -> None:
+    """Clean up artifacts"""
+    object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
     with logger.LogSuppressed(Exception, message="Failed to clean up artifacts."):
-        object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
-        if not error_step_name or error_step_name == "download-validate":
-            delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], object_key)
-        if not error_step_name or error_step_name == "cxg":
-            cellxgene_bucket = os.getenv(
-                "CELLXGENE_BUCKET", default=f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"
-            )
-            delete_many_from_s3(cellxgene_bucket, object_key)
+        artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+        delete_many_from_s3(artifact_bucket, object_key + "/")
+    with logger.LogSuppressed(Exception, message="Failed to clean up datasets."):
+        datasets_bucket = os.environ["DATASETS_BUCKET"]
+        delete_many_from_s3(datasets_bucket, object_key + ".")
+    with logger.LogSuppressed(Exception, message="Failed to clean up cxgs."):
+        cellxgene_bucket = os.environ["CELLXGENE_BUCKET"]
+        delete_many_from_s3(cellxgene_bucket, object_key + ".cxg/")

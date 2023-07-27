@@ -7,8 +7,25 @@ resource "aws_sfn_state_machine" "state_machine" {
 
   definition = <<EOF
 {
-    "StartAt": "DownloadValidate",
+    "StartAt": "DefineDefaults",
     "States": {
+      "DefineDefaults": {
+        "Type": "Pass",
+        "Next": "ApplyDefaults",
+        "ResultPath": "$.inputDefaults",
+        "Parameters": {
+          "job_queue": "${var.job_queue_arn}"
+        }
+      },
+      "ApplyDefaults": {
+        "Type": "Pass",
+        "Next": "DownloadValidate",
+        "Parameters": {
+          "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
+        },
+        "ResultPath": "$.withDefaults",
+        "OutputPath": "$.withDefaults.args"
+      },
       "DownloadValidate": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
@@ -16,7 +33,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Parameters": {
           "JobDefinition": "${var.job_definition_arn}",
           "JobName": "download-validate",
-          "JobQueue": "${var.job_queue_arn}",
+          "JobQueue.$": "$.job_queue",
           "RetryStrategy": {
             "Attempts": ${var.max_attempts},
             "EvaluateOnExit": [
@@ -74,7 +91,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Parameters": {
                   "JobDefinition": "${var.job_definition_arn}",
                   "JobName": "cxg",
-                  "JobQueue": "${var.job_queue_arn}",
+                  "JobQueue.$": "$.job_queue",
                   "RetryStrategy": {
                     "Attempts": ${var.max_attempts},
                     "EvaluateOnExit": [
@@ -116,7 +133,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Parameters": {
                   "JobDefinition": "${var.job_definition_arn}",
                   "JobName": "seurat",
-                  "JobQueue": "${var.job_queue_arn}",
+                  "JobQueue.$": "$.job_queue",
                   "RetryStrategy": {
                     "Attempts": ${var.max_attempts},
                     "EvaluateOnExit": [

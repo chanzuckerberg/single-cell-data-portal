@@ -1,6 +1,7 @@
 import os
 import unittest
 import uuid
+from copy import deepcopy
 from datetime import datetime
 from unittest.mock import Mock, patch
 from uuid import uuid4
@@ -169,6 +170,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
         complete_dataset_ingestion: bool = True,
+        num_datasets: int = 2,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes an unpublished collection to be used for testing, with two datasets.
@@ -176,7 +178,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         Pass `complete_dataset_ingestion=False` if you want to initialize datasets only.
         """
         version = self.initialize_empty_unpublished_collection(owner, curator_name)
-        for _ in range(2):
+        for _ in range(num_datasets):
             dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id,
             )
@@ -193,21 +195,28 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
         published_at: datetime = None,
+        num_datasets: int = 2,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
         published_at = published_at or datetime.utcnow()
-        version = self.initialize_unpublished_collection(owner, curator_name)
-        self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
+        version = self.initialize_unpublished_collection(owner, curator_name, num_datasets=num_datasets)
+        self.database_provider.finalize_collection_version(
+            version.collection_id, version.version_id, "3.0.0", published_at=published_at
+        )
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
 
     def initialize_collection_with_a_published_revision(
-        self, owner: str = test_user_name, curator_name: str = test_curator_name, published_at: datetime = None
+        self,
+        owner: str = test_user_name,
+        curator_name: str = test_curator_name,
+        published_at: datetime = None,
+        num_datasets: int = 2,
     ) -> tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
 
         # Published with a published revision.
-        published_version = self.initialize_published_collection(owner, curator_name, published_at)
+        published_version = self.initialize_published_collection(owner, curator_name, published_at, num_datasets)
         revision = self.business_logic.create_collection_version(published_version.collection_id)
         self.business_logic.publish_collection_version(revision.version_id)
         return (
@@ -216,11 +225,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         )
 
     def initialize_collection_with_an_unpublished_revision(
-        self, owner: str = test_user_name, curator_name: str = test_curator_name, published_at: datetime = None
+        self,
+        owner: str = test_user_name,
+        curator_name: str = test_curator_name,
+        published_at: datetime = None,
+        num_datasets: int = 2,
     ) -> tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
 
         # Published with an unpublished revision
-        published_version = self.initialize_published_collection(owner, curator_name, published_at)
+        published_version = self.initialize_published_collection(owner, curator_name, published_at, num_datasets)
         revision = self.business_logic.create_collection_version(published_version.collection_id)
         return (
             self.database_provider.get_collection_version_with_datasets(published_version.version_id),
@@ -941,6 +954,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             revision_id, "http://fake.url", None, dataset.version_id
         )
+        self.business_logic.set_dataset_metadata(new_dataset_version_id, self.sample_dataset_metadata)
         self.business_logic.publish_collection_version(revision_id)
         revision = self.business_logic.get_collection_version(revision_id)
         # Revision 2 (not to publish)
@@ -972,6 +986,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_revision_id, "http://fake.url", None, dataset.version_id
         )
+        self.business_logic.set_dataset_metadata(new_dataset_version_id, self.sample_dataset_metadata)
         self.business_logic.publish_collection_version(collection_revision_id)
         # Revision 2 (not to publish)
         unpublished_collection_version_id = self.business_logic.create_collection_version(collection_id).version_id
@@ -1224,6 +1239,19 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         with self.assertRaises(CollectionPublishException):
             self.business_logic.publish_collection_version(published_collection.version_id)
 
+    def test_publish_version_fails_on_mismatching_dataset_schema_versions(self):
+        """
+        `publish_collection_version` should fail if called on a collection version with datasets that have mismatching
+        schema versions
+        """
+        cv = self.initialize_unpublished_collection()
+        metadata = deepcopy(self.sample_dataset_metadata)
+        metadata.schema_version = "3.1.0"
+        self.database_provider.set_dataset_metadata(cv.datasets[0].version_id, metadata)
+
+        with self.assertRaises(CollectionPublishException):
+            self.business_logic.publish_collection_version(cv.version_id)
+
     def test_publish_version_ok(self):
         """
         A collection version can be published using `publish_collection`
@@ -1346,6 +1374,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         added_dataset_version_id, _ = self.business_logic.ingest_dataset(
             new_version.version_id, "http://fake.url", None, None
         )
+        self.business_logic.set_dataset_metadata(added_dataset_version_id, self.sample_dataset_metadata)
         self.complete_dataset_processing_with_success(added_dataset_version_id)
 
         # The new version should have three datasets (before publishing)
@@ -1395,6 +1424,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
             new_version.version_id, "http://fake.url", None, dataset_id_to_replace
         )
+        self.business_logic.set_dataset_metadata(replaced_dataset_version_id, self.sample_dataset_metadata)
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
 
         # The new version should have the correct datasets (before publishing)
@@ -1533,7 +1563,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
             new_version.version_id, "http://fake.url", None, None
         )
         self.complete_dataset_processing_with_success(added_dataset_version_id)
-
+        self.business_logic.set_dataset_metadata(added_dataset_version_id, self.sample_dataset_metadata)
         self.business_logic.publish_collection_version(new_version.version_id)
 
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)
@@ -1574,7 +1604,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         )
 
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
-
+        self.business_logic.set_dataset_metadata(replaced_dataset_version_id, self.sample_dataset_metadata)
         self.business_logic.publish_collection_version(new_version.version_id)
 
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)
@@ -1624,6 +1654,73 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
         self.assertTrue(self.s3_provider.is_empty())
         self.assertTrue(len(expected_delete_keys) > 0)
         self.assertEqual(expected_delete_keys, actual_delete_keys)
+
+
+class TestGetEntitiesBySchema(BaseBusinessLogicTestCase):
+    def test_get_latest_published_collection_versions_by_schema(self):
+        """
+        Test fetching index of most recently published collection versions with datasets matching a given
+        CxG schema version
+        """
+        # set-up: 1 private, 3 public datasets
+        # public just 3.1.0
+        cv = self.initialize_unpublished_collection(num_datasets=1)
+        metadata = deepcopy(self.sample_dataset_metadata)
+        metadata.schema_version = "3.1.0"
+        self.database_provider.set_dataset_metadata(cv.datasets[0].version_id, metadata)
+        self.business_logic.publish_collection_version(cv.version_id)
+
+        # public with 4.0.0, and an unpublished revision with 4.1.0 (should not appear)
+        cv = self.initialize_unpublished_collection(num_datasets=1)
+        metadata = deepcopy(self.sample_dataset_metadata)
+        metadata.schema_version = "4.0.0"
+        self.database_provider.set_dataset_metadata(cv.datasets[0].version_id, metadata)
+        self.business_logic.publish_collection_version(cv.version_id)
+
+        revision = self.business_logic.create_collection_version(cv.collection_id)
+        metadata.schema_version = "4.1.0"
+        self.database_provider.set_dataset_metadata(revision.datasets[0].version_id, metadata)
+
+        # public with 3.0.0 and 3.1.0
+        _, cv = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        metadata = deepcopy(self.sample_dataset_metadata)
+        metadata.schema_version = "3.1.0"
+        self.database_provider.set_dataset_metadata(cv.datasets[0].version_id, metadata)
+        self.business_logic.publish_collection_version(cv.version_id)
+
+        # private with just 4.1.0, should not appear
+        cv = self.initialize_unpublished_collection(num_datasets=1)
+        metadata = deepcopy(self.sample_dataset_metadata)
+        metadata.schema_version = "4.1.0"
+        self.database_provider.set_dataset_metadata(cv.datasets[0].version_id, metadata)
+
+        with self.subTest("Without schema_version Parameter"):
+            collection_versions = self.business_logic.get_all_mapped_collection_versions_with_datasets()
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], ["3.1.0", "3.1.0", "4.0.0"])
+        with self.subTest("Querying against major schema version 3"):
+            collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema("3._._")
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], ["3.1.0", "3.1.0"])
+        with self.subTest("Querying against major schema version 4"):
+            collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema("4._._")
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], ["4.0.0"])
+        with self.subTest("Querying against minor schema version 3.0"):
+            collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema("3.0._")
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], ["3.0.0"])
+        with self.subTest("Querying against minor schema version 3.1"):
+            collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema("3.1._")
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], ["3.1.0", "3.1.0"])
+        with self.subTest("Querying against patch schema version 4.0.0"):
+            collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema("4.0.0")
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], ["4.0.0"])
+        with self.subTest("Querying against patch schema version 4.1.0"):
+            collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema("4.1.0")
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], [])
+        with self.subTest("Querying against minor schema version 4.1"):
+            collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema("4.1._")
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], [])
+        with self.subTest("Querying against major schema version 5"):
+            collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema("5._._")
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], [])
 
 
 if __name__ == "__main__":

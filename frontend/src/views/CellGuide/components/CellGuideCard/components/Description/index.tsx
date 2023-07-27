@@ -93,7 +93,7 @@ export default function Description({
                 target="_blank"
                 rel="noreferrer noopener"
                 onClick={() => {
-                  track(EVENTS.SUGGEST_CHANGE_CLICKED, {
+                  track(EVENTS.SUBMIT_CORRECTION_CLICKED, {
                     cell_type_name: cellTypeName,
                   });
                 }}

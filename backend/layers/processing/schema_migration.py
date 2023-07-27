@@ -4,7 +4,8 @@ import logging
 import os
 from typing import Any, Dict, List
 
-import cellxgene_schema
+from cellxgene_schema.migrate import migrate as cxs_migrate
+from cellxgene_schema.schema import get_current_schema_version as cxs_get_current_schema_version
 
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.result_notification import upload_to_slack
@@ -15,6 +16,7 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetArtifactType,
     DatasetProcessingStatus,
+    DatasetVersion,
     DatasetVersionId,
 )
 from backend.layers.processing import logger
@@ -85,7 +87,7 @@ class SchemaMigrate(ProcessingLogic):
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
         migrated_file = "migrated.h5ad"
-        cellxgene_schema.migrate.migrate("previous_schema.h5ad", migrated_file, collection_id, dataset_id)
+        cxs_migrate("previous_schema.h5ad", migrated_file, collection_id, dataset_id)
         key_prefix = self.get_key_prefix(dataset_version_id)
         uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -101,17 +103,45 @@ class SchemaMigrate(ProcessingLogic):
             "uri": uri,
         }
 
+    def _check_dataset_is_latest_schema_version(self, dataset: DatasetVersion) -> bool:
+        return (
+            hasattr(dataset, "metadata")
+            and hasattr(dataset.metadata, "schema_version")
+            and dataset.metadata.schema_version == cxs_get_current_schema_version()
+        )
+
     def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
+        # Get datasets from collection
+        version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
+        cxs_get_current_schema_version()
+        datasets = [
+            dataset for dataset in version.datasets if not self._check_dataset_is_latest_schema_version(dataset)
+        ]
+        # Filter out datasets that are already on the current schema version
+        if not datasets:
+            # Handles the case were the collection has no datasets or all datasets are already migrated.
+            if len(version.datasets) == 0:
+                self.logger.info("Collection has no datasets")
+            else:
+                self.logger.info(
+                    "All datasets in the collection have been migrated", extra={"dataset_count": len(version.datasets)}
+                )
+            return {
+                "can_publish": str(False),  # skip publishing, because the collection is already published and no
+                # revision is created, or the collection is private or a revision.
+                "collection_version_id": collection_version_id,
+                "datasets": [],
+                "no_datasets": str(True),
+            }
 
         if can_publish:
+            # Create a new collection version(revision) if the collection is already published
             private_collection_version_id = self.business_logic.create_collection_version(
                 CollectionId(collection_id)
             ).version_id.id
         else:
             private_collection_version_id = collection_version_id
 
-        # Get datasets from collection
-        version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         response = {
             "can_publish": str(can_publish),
             "collection_version_id": private_collection_version_id,
@@ -124,13 +154,15 @@ class SchemaMigrate(ProcessingLogic):
                     "dataset_id": dataset.dataset_id.id,
                     "dataset_version_id": dataset.version_id.id,
                 }
-                for dataset in version.datasets
+                for dataset in datasets
+                if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
+                # Filter out datasets that are not successfully processed
             ]
             # The repeated fields in datasets is required for the AWS SFN job that uses it.
         }
 
         if not response["datasets"]:
-            # Handles the case were the collection has no datasets
+            # Handles the case were the collection has no processed datasets
             response["no_datasets"] = str(True)
         return response
 
@@ -138,13 +170,13 @@ class SchemaMigrate(ProcessingLogic):
         errors = dict()
         collection_version_id = CollectionVersionId(collection_version_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
-        current_schema_version = cellxgene_schema.schema.get_current_schema_version()
+        cxs_get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
             dataset_version_id = dataset.version_id.id
             key_prefix = self.get_key_prefix(dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
-            if dataset.metadata.schema_version != current_schema_version:
+            if not self._check_dataset_is_latest_schema_version(dataset):
                 errors[dataset_version_id] = "Did Not Migrate."
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors[dataset_version_id] = dataset.status.validation_message
