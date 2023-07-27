@@ -1,0 +1,84 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +14ms
+  pw:api <= browserType.launch succeeded +356ms
+  pw:api => browser.newContext started +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +137ms
+  pw:api   "commit" event fired +37ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +14ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +17ms
+  pw:api => tracing.start started +15ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +59ms
+  pw:api => page.goto started +25ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +26ms
+  pw:api   "commit" event fired +26s
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "networkidle" event fired +13s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/" +18ms
+  pw:api   navigated to "about:blank" +31ms
+  pw:api <= page.goto succeeded +80ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api   "networkidle" event fired +3m
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api => page.evaluate started +2ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api <= page.evaluate succeeded +21ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +8ms
+  pw:api   "commit" event fired +129ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/" +3ms
+  pw:api   navigated to "about:blank" +24ms
+  pw:api <= page.goto succeeded +61ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api   "networkidle" event fired +440ms
+  pw:api <= page.waitForLoadState succeeded +5ms
+TypeError: Invalid URL
+    at new NodeError (node:internal/errors:371:5)
+    at onParseError (node:internal/url:552:9)
+    at new URL (node:internal/url:628:5)
+    at parseUrl (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@smithy/url-parser/dist-cjs/index.js:7:38)
+    at toEndpointV1 (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@smithy/middleware-endpoint/dist-cjs/adaptors/toEndpointV1.js:12:38)
+    at customEndpointProvider (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/node_modules/@smithy/middleware-endpoint/dist-cjs/resolveEndpointConfig.js:10:99) {
+  input: '',
+  code: 'ERR_INVALID_URL'
+}
+  pw:api => locator.click started +11ms
+  pw:api   "networkidle" event fired +2ms
+  pw:api waiting for getByText('Log In') +9ms
+  pw:api   locator resolved to <span class="bp4-button-text">Log In</span> +17ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +16ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +7ms
+  pw:api   click action done +286ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   "commit" event fired +1ms
+  pw:api   navigated to "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/login" +0ms
+  pw:api   navigated to "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/login" +0ms
+  pw:api   "load" event fired +12ms
+  pw:api   navigations have finished +2ms
+  pw:api   "domcontentloaded" event fired +4ms
+  pw:api <= locator.click succeeded +1ms
+  pw:api => page.fill started +2ms
+  pw:api <= page.fill failed +0ms
+ValidationError: page.fill: value: expected string, got object
+    at login (/home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/tests/utils/helpers.ts:79:14)
+    at /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/tests/common/playwright.global.setup.ts:39:9
+  pw:api => tracing.stopChunk started +3ms
+  pw:api <= tracing.stopChunk succeeded +8ms
+  pw:api => tracing.stopChunk started +2ms
+  pw:api <= tracing.stopChunk succeeded +172ms
