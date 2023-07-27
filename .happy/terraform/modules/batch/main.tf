@@ -45,7 +45,7 @@ resource aws_batch_job_definition batch_job_def {
   ],
   "vcpus": 8,
   "linuxParameters": {
-     "maxSwap": 800000,
+     "maxSwap": 300000,
      "swappiness": 60
   },
   "logConfiguration": {
