@@ -105,12 +105,8 @@ def load_snapshot() -> WmgSnapshot:
     @return: WmgSnapshot object
     """
     global cached_snapshot
-    new_snapshot_identifier = _update_latest_snapshot_identifier()
-    if cached_snapshot is None and new_snapshot_identifier is not None:
-        if os.environ.get("DEPLOYMENT_STAGE") == "test":
-            cached_snapshot = _load_snapshot(new_snapshot_identifier)
-        else:
-            cached_snapshot = _download_and_load_snapshot(new_snapshot_identifier)
+    if new_snapshot_identifier := _update_latest_snapshot_identifier():
+        cached_snapshot = _load_snapshot(new_snapshot_identifier)
         cached_snapshot.build_dataset_metadata_dict()
     return cached_snapshot
 
@@ -141,56 +137,27 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     )
 
 
-def _download_and_load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
-    snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
-    logger.info(f"Downloading WMG snapshot at {snapshot_base_uri}")
-
-    local_snapshot_name = f"local_snapshot_{new_snapshot_identifier}"
-    os.system(f"aws s3 sync {snapshot_base_uri} {local_snapshot_name}/")
-
-    cell_type_orderings = _load_cell_type_order(local_snapshot_name)
-    primary_filter_dimensions = _load_primary_filter_data(local_snapshot_name)
-    dataset_to_gene_ids = _load_dataset_to_gene_ids_data(local_snapshot_name)
-    filter_relationships = _load_filter_graph_data(local_snapshot_name)
-
-    # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
-    #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
-    #  -data-portal/2134
-    return WmgSnapshot(
-        snapshot_identifier=new_snapshot_identifier,
-        expression_summary_cube=_open_cube(f"{local_snapshot_name}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
-        expression_summary_default_cube=_open_cube(f"{local_snapshot_name}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
-        expression_summary_fmg_cube=_open_cube(f"{local_snapshot_name}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
-        marker_genes_cube=_open_cube(f"{local_snapshot_name}/{MARKER_GENES_CUBE_NAME}"),
-        cell_counts_cube=_open_cube(f"{local_snapshot_name}/{CELL_COUNTS_CUBE_NAME}"),
-        cell_type_orderings=cell_type_orderings,
-        primary_filter_dimensions=primary_filter_dimensions,
-        dataset_to_gene_ids=dataset_to_gene_ids,
-        filter_relationships=filter_relationships,
-    )
-
-
 def _open_cube(cube_uri) -> Array:
     return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
 
 
-def _load_cell_type_order(local_snapshot_name: str) -> DataFrame:
-    return pd.read_json(f"{local_snapshot_name}/{CELL_TYPE_ORDERINGS_FILENAME}")
+def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
+    return pd.read_json(_read_s3obj(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}"))
 
 
-def _load_primary_filter_data(local_snapshot_name: str) -> Dict:
-    with open(f"{local_snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "r") as f:
-        return json.load(f)
+def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
+    return json.loads(_read_s3obj(f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"))
 
 
-def _load_dataset_to_gene_ids_data(local_snapshot_name: str) -> Dict:
-    with open(f"{local_snapshot_name}/{DATASET_TO_GENE_IDS_FILENAME}", "r") as f:
-        return json.load(f)
+def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
+    return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
 
 
-def _load_filter_graph_data(local_snapshot_name: str) -> str:
-    with open(f"{local_snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}", "r") as f:
-        return json.load(f)
+def _load_filter_graph_data(snapshot_identifier: str) -> str:
+    try:
+        return json.loads(_read_s3obj(f"{snapshot_identifier}/{FILTER_RELATIONSHIPS_FILENAME}"))
+    except Exception:
+        return None
 
 
 def _read_s3obj(relative_path: str) -> str:
