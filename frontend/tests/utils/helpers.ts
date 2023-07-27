@@ -24,14 +24,14 @@ const DEPLOYED_TEST_USERNAME = "user@example.com";
 let endpoint;
 
 try {
-  endpoint = new URL(process.env["BOTO_ENDPOINT_URL"] as string);
+  endpoint = String(new URL(process.env["BOTO_ENDPOINT_URL"] as string));
 } catch (e) {
   console.log("BOTO_ENDPOINT_URL not assigned, assuming running on deployment");
-  endpoint = "";
 }
 
 const client = new SecretsManagerClient({
-  endpoint: String(endpoint),
+  // (thuang): Do NOT pass empty string to `endpoint` or it will throw `TypeError: Invalid URL`
+  endpoint,
 });
 
 const deployment_stage = process.env.DEPLOYMENT_STAGE || "test";
@@ -72,7 +72,8 @@ export async function login(page: Page): Promise<void> {
 
   const { username, password } = await getTestUsernameAndPassword();
 
-  expect(username).toBeDefined();
+  expect(typeof username).toBe("string");
+  expect(typeof password).toBe("string");
 
   await page.getByText("Log In").click();
 
