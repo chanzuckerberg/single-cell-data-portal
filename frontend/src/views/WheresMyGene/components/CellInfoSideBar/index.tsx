@@ -22,6 +22,7 @@ import {
   TissueName,
   TooltipButton,
 } from "./style";
+import { Link } from "../../../../components/GeneInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { StyledImage } from "../HeatMap/components/YAxisChart/style";
 import InfoSVG from "../HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
@@ -98,6 +99,13 @@ function CellInfoSideBar({
   return (
     <div>
       <TissueName>{tissueInfo.name}</TissueName>
+      <Link
+        href={`https://cellxgene.cziscience.com/cellguide/${cellInfoCellType.cellType.id}`}
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        Open in CellGuide
+      </Link>
       <ButtonContainer>
         <div>
           <StyledMarkerGeneHeader>Marker Genes</StyledMarkerGeneHeader>
