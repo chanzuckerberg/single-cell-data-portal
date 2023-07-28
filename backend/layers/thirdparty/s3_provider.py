@@ -82,7 +82,7 @@ class S3Provider(S3ProviderInterface):
                 raise S3DeleteException(errors)
 
     def delete_recursive(self, bucket_name: str, prefix: str) -> None:
-        resp = self.resource.Bucket(bucket_name).objects.filter(Prefix=prefix).delete()
+        resp = self.resource.Bucket(bucket_name).objects.filter(Prefix=prefix).delete()[0]
         if deleted := resp.get("Deleted"):
             logger.info(f"Deleted: {deleted}")
         if errors := resp.get("Errors"):
