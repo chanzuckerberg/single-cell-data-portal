@@ -1731,19 +1731,19 @@ class TestSetPreviousDatasetVersion(BaseBusinessLogicTestCase):
         collection = self.initialize_published_collection(num_datasets=1)
         dataset = collection.datasets[0]
         with self.assertRaises(CollectionIsPublishedException):
-            self.business_logic.set_previous_dataset_version(collection.version_id, dataset.dataset_id)
+            self.business_logic.restore_previous_dataset_version(collection.version_id, dataset.dataset_id)
 
     def test_private_with_no_previous_version(self):
         collection = self.initialize_unpublished_collection(num_datasets=1)
         dataset = collection.datasets[0]
         with self.assertRaises(NoPreviousDatasetVersionException):
-            self.business_logic.set_previous_dataset_version(collection.version_id, dataset.dataset_id)
+            self.business_logic.restore_previous_dataset_version(collection.version_id, dataset.dataset_id)
 
     def test_revision_with_no_previous_version(self):
         _, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
         dataset = revision.datasets[0]
         with self.assertRaises(NoPreviousDatasetVersionException):
-            self.business_logic.set_previous_dataset_version(revision.version_id, dataset.dataset_id)
+            self.business_logic.restore_previous_dataset_version(revision.version_id, dataset.dataset_id)
 
     def test_private_restoring_previously_replaced_dataset(self):
         collection = self.initialize_unpublished_collection(num_datasets=1)
@@ -1759,7 +1759,7 @@ class TestSetPreviousDatasetVersion(BaseBusinessLogicTestCase):
         assert previous_dataset.version_id not in datasets
 
         # Restore the previous dataset
-        self.business_logic.set_previous_dataset_version(collection.version_id, dataset_id)
+        self.business_logic.restore_previous_dataset_version(collection.version_id, dataset_id)
 
         # Verify the new dataset is no longer in the collection and the previous one is restored
         datasets = [d.version_id for d in self.business_logic.get_collection_version(collection.version_id).datasets]
@@ -1780,7 +1780,7 @@ class TestSetPreviousDatasetVersion(BaseBusinessLogicTestCase):
         assert previous_dataset.version_id not in datasets
 
         # Restore the previous dataset
-        self.business_logic.set_previous_dataset_version(revision.version_id, dataset_id)
+        self.business_logic.restore_previous_dataset_version(revision.version_id, dataset_id)
 
         # Verify the new dataset is no longer in the collection and the previous one is restored
         datasets = [d.version_id for d in self.business_logic.get_collection_version(revision.version_id).datasets]

@@ -840,7 +840,9 @@ class BusinessLogic(BusinessLogicInterface):
 
         return collections_with_published_datasets
 
-    def set_previous_dataset_version(self, collection_version_id: CollectionVersionId, dataset_id: DatasetId) -> None:
+    def restore_previous_dataset_version(
+        self, collection_version_id: CollectionVersionId, dataset_id: DatasetId
+    ) -> None:
         """
         Restore the previous dataset version for a dataset.
         :param collection_version_id: The collection version to restore the dataset version. It must be in a mutable
@@ -860,7 +862,3 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.replace_dataset_in_collection_version(
             collection_version_id, current_version.version_id, previous_version_id
         )
-        # self.database_provider.delete_dataset_from_collection_version(collection_version_id,
-        #                                                               current_version.version_id)
-        # self.database_provider.add_dataset_to_collection_version_mapping(collection_version_id,
-        #                                                                  previous_version_id)
