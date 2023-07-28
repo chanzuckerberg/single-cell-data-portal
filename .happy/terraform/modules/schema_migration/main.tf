@@ -1,5 +1,6 @@
 locals {
   name = "schema-migration"
+  dataset_migrate_cpu = "4"
 }
 
 data aws_region current {}
@@ -38,7 +39,7 @@ resource aws_batch_job_definition schema_migrations_swap {
     resourceRequirements = [
       {
         type= "VCPU",
-        Value="6"
+        Value=local.dataset_migrate_cpu
       },
       {
         Type="MEMORY",
@@ -398,7 +399,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         },
                         {
                          "Type": "VCPU",
-                          "Value":"6"
+                          "Value": "${local.dataset_migrate_cpu}"
                         }
                       ],
                       "Environment": [
@@ -468,7 +469,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         },
                         {
                          "Type": "VCPU",
-                          "Value":"6"
+                          "Value": "${local.dataset_migrate_cpu}"
                         }
                       ],
                       "Environment": [
@@ -537,7 +538,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         },
                         {
                          "Type": "VCPU",
-                          "Value":"6"
+                          "Value": "${local.dataset_migrate_cpu}"
                         }
                       ],
                       "Environment": [
@@ -606,7 +607,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         },
                         {
                          "Type": "VCPU",
-                          "Value":"6"
+                          "Value": "${local.dataset_migrate_cpu}"
                         }
                       ],
                       "Environment": [
@@ -675,7 +676,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         },
                         {
                          "Type": "VCPU",
-                          "Value":"6"
+                          "Value": "${local.dataset_migrate_cpu}"
                         }
                       ],
                       "Environment": [
