@@ -28,6 +28,7 @@ from backend.layers.business.exceptions import (
     DatasetVersionNotFoundException,
     InvalidURIException,
     MaxFileSizeExceededException,
+    NoPreviousDatasetVersionException,
 )
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
@@ -838,3 +839,28 @@ class BusinessLogic(BusinessLogicInterface):
             collections_with_published_datasets.append(CollectionVersionWithPublishedDatasets(**vars(collection)))
 
         return collections_with_published_datasets
+
+    def set_previous_dataset_version(self, collection_version_id: CollectionVersionId, dataset_id: DatasetId) -> None:
+        """
+        Restore the previous dataset version for a dataset.
+        :param collection_version_id: The collection version to restore the dataset version. It must be in a mutable
+        state
+        :param dataset_id: The dataset id to restore the previous version of.
+        """
+
+        collection = self.database_provider.get_collection_version_with_datasets(collection_version_id)
+        if collection.is_published():
+            raise CollectionIsPublishedException(
+                f"Collection {collection_version_id} is published, unable to restore previous dataset version"
+            )
+        current_version: DatasetVersion = [dv for dv in collection.datasets if dv.dataset_id == dataset_id][0]
+        previous_version_id: DatasetVersionId = self.database_provider.get_previous_dataset_version_id(dataset_id)
+        if previous_version_id is None:
+            raise NoPreviousDatasetVersionException(f"No previous dataset version for dataset {dataset_id.id}")
+        self.database_provider.replace_dataset_in_collection_version(
+            collection_version_id, current_version.version_id, previous_version_id
+        )
+        # self.database_provider.delete_dataset_from_collection_version(collection_version_id,
+        #                                                               current_version.version_id)
+        # self.database_provider.add_dataset_to_collection_version_mapping(collection_version_id,
+        #                                                                  previous_version_id)

@@ -472,3 +472,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 cv for cv in self.collections_versions.values() if cv.schema_version == schema_version
             ]
         return copy.deepcopy(collection_versions)
+
+    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> DatasetVersion:
+        """
+        Returns the previously created dataset version for a dataset.
+        """
