@@ -792,7 +792,7 @@ class BusinessLogic(BusinessLogicInterface):
         for artifact in artifacts:
             matches_dict = re.match(r"^s3://(?P<bucket>[^/]+)/((?P<prefix>.*/)|(?P<key>.*))", artifact.uri).groupdict()
             bucket, key, prefix = matches_dict["bucket"], matches_dict["key"], matches_dict["prefix"]
-            self._delete_from_bucket(bucket, keys=[key], prefix=prefix)
+            self._delete_from_bucket(bucket, keys=[key] if key else None, prefix=prefix)
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
