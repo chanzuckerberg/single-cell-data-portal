@@ -190,14 +190,11 @@ def _update_latest_snapshot_identifier() -> Optional[str]:
 
 
 def _build_data_path_prefix():
-    wmg_config = WmgConfig()
     rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX")
     if rdev_prefix:
         return rdev_prefix.strip("/")
-    elif "data_path_prefix" in wmg_config.config:
-        return wmg_config.data_path_prefix
-    else:
-        return ""
+
+    return ""
 
 
 def _build_snapshot_base_uri(snapshot_identifier: str):
