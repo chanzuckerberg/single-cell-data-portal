@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from backend.common.utils.math_utils import GB
 from backend.layers.common.entities import CollectionVersionId
-from backend.layers.processing.schema_migration import MAX_MEMORY, MIN_MEMORY, calculate_memory_requirements
+from backend.layers.processing.schema_migration import MEMORY_TIERS, calculate_memory_requirements
 
 
 @patch("backend.layers.processing.schema_migration.cxs_get_current_schema_version")
@@ -21,8 +21,7 @@ class TestCollectionMigrate:
                 "can_publish": "True",
                 "dataset_id": dataset.dataset_id.id,
                 "dataset_version_id": dataset.version_id.id,
-                "memory": 8192,
-                "swap": "False",
+                "memory": "8",
             }
             for dataset in published.datasets
         ]
@@ -44,8 +43,7 @@ class TestCollectionMigrate:
                 "can_publish": "False",
                 "dataset_id": dataset.dataset_id.id,
                 "dataset_version_id": dataset.version_id.id,
-                "memory": 8192,
-                "swap": "False",
+                "memory": "8",
             }
             for dataset in private.datasets
         ]
@@ -102,38 +100,19 @@ class TestCollectionMigrate:
 
 
 class TestCalculateMemoryRequirements:
-    def test_1(self):
-        # Test case 1: Smaller than minimum memory (8 GB)
+    def test_min(self):
+        # Test case 1: Smaller than minimum memory
         dataset_size = GB  # 1 GB
-        expected_memory = MIN_MEMORY * 1024  # 8 GB in MB
-        expected_swap = False
-        memory, swap = calculate_memory_requirements(dataset_size)
-        assert memory == expected_memory
-        assert swap == expected_swap
+        expected_memory = str(min(MEMORY_TIERS))
+        assert calculate_memory_requirements(dataset_size) == expected_memory
 
-    def test_2(self):
-        # Test case 2: Between minimum and maximum memory
-        dataset_size = 30 * GB
-        expected_memory = 30 * 2 * 1024
-        expected_swap = False
-        memory, swap = calculate_memory_requirements(dataset_size)
-        assert memory == expected_memory
-        assert swap == expected_swap
+    def test_swap(self):
+        dataset_size = 50 * GB
+        expected_memory = "swap"
+        assert calculate_memory_requirements(dataset_size) == expected_memory
 
-    def test_3(self):
+    def test_max(self):
         # Test case 3: Larger than maximum memory
-        dataset_size = 100 * GB  # 100 GB
-        expected_memory = MAX_MEMORY * 1024  # memory_max
-        expected_swap = True
-        memory, swap = calculate_memory_requirements(dataset_size)
-        assert memory == expected_memory
-        assert swap == expected_swap
-
-    def test_4(self):
-        # Test case 4: Dataset size is 0
-        dataset_size = 0
-        expected_memory = MIN_MEMORY * 1024  # Minimum memory
-        expected_swap = False
-        memory, swap = calculate_memory_requirements(dataset_size)
-        assert memory == expected_memory
-        assert swap == expected_swap
+        dataset_size = 40 * GB
+        expected_memory = str(max(MEMORY_TIERS))
+        assert calculate_memory_requirements(dataset_size) == expected_memory

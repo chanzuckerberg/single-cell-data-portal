@@ -2,13 +2,13 @@ import itertools
 import json
 import logging
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 from cellxgene_schema.migrate import migrate as cxs_migrate
 from cellxgene_schema.schema import get_current_schema_version as cxs_get_current_schema_version
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.utils.math_utils import GB
+from backend.common.utils.math_utils import GB, MB
 from backend.common.utils.result_notification import upload_to_slack
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
@@ -26,24 +26,26 @@ from backend.layers.thirdparty.step_function_provider import StepFunctionProvide
 
 logger.configure_logging(level=logging.INFO)
 
-MIN_MEMORY = 8  # GB
-MAX_MEMORY = 95  # GB, This number is based on the size of the EC2 instance allocated.
+# memory in GB for the dataset migration step
+MEMORY_TIERS = [8, 16, 32, 64, 95]
 
 
-def calculate_memory_requirements(dataset_size: int) -> Tuple[int, bool]:
+def calculate_memory_requirements(dataset_size: int) -> int:
     """
     Calculate the memory requirements for the schema migration step function and if swap is required.
     :param dataset_size: in bytes
     :return:
     """
-    memory = max([dataset_size // GB * 2, MIN_MEMORY])
-    if memory > MAX_MEMORY:
-        swap = True
-        memory = MAX_MEMORY
-    else:
-        swap = False
-    memory *= 1024  # convert to MB
-    return memory, swap
+
+    estimated_memory = dataset_size // GB * 4
+    allocated_memory = None
+    for tier in MEMORY_TIERS:
+        if estimated_memory < tier:
+            allocated_memory = str(tier)
+            break
+    if allocated_memory is None:
+        allocated_memory = "swap"
+    return allocated_memory
 
 
 class SchemaMigrate(ProcessingLogic):
@@ -180,7 +182,8 @@ class SchemaMigrate(ProcessingLogic):
             # calculate memory requirements
             raw_h5ad_uri = self.get_raw_h5ad_uri(dataset.version_id.id)
             file_size = self.s3_provider.get_file_size(raw_h5ad_uri)
-            memory, swap = calculate_memory_requirements(file_size)
+            self.logger.info("File size in MB", extra={"file_size": file_size / MB})
+            memory = calculate_memory_requirements(file_size)
 
             # build dataset migration job
             _datasets.append(
@@ -191,7 +194,6 @@ class SchemaMigrate(ProcessingLogic):
                     "dataset_id": dataset.dataset_id.id,
                     "dataset_version_id": dataset.version_id.id,
                     "memory": memory,
-                    "swap": str(swap),
                 }
                 # The repeated fields in datasets is required for the AWS SFN job that uses it.
             )
