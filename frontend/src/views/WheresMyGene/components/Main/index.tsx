@@ -45,6 +45,7 @@ import RightSideBar from "../../../../components/common/RightSideBar";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
+import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -398,7 +399,10 @@ export default function WheresMyGene(): JSX.Element {
         </Wrapper>
       </View>
 
-      <BottomBanner includeSurveyLink />
+      <BottomBanner
+        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
+        includeSurveyLink
+      />
     </>
   );
 }
