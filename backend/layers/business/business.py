@@ -4,7 +4,7 @@ import os
 import re
 from collections import defaultdict
 from datetime import datetime
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
@@ -462,16 +462,11 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self._assert_collection_version_unpublished(collection_version_id)
         if not delete_published:
-            print("djh not delete published")
             dv = self.database_provider.get_dataset_version(dataset_version_id)
             if dv.canonical_dataset.published_at:
-                print("djh dataset was published")
                 raise CollectionUpdateException from None
-            print("djh deleting dataset versions from public")
             self.delete_dataset_versions_from_public_bucket([dv.version_id.id])
-            print("djh dleeting dataset artifacts")
             self.delete_artifacts(dv.artifacts)
-        print("djh removing from collection")
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
@@ -641,7 +636,7 @@ class BusinessLogic(BusinessLogicInterface):
                 if rdev_prefix:
                     dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                 object_keys.add(dataset_version_s3_object_key)
-        self._delete_keys_from_bucket(os.getenv("DATASETS_BUCKET"), list(object_keys))
+        self._delete_from_bucket(os.getenv("DATASETS_BUCKET"), list(object_keys))
         return list(object_keys)
 
     def delete_all_dataset_versions_from_public_bucket_for_collection(self, collection_id: CollectionId) -> List[str]:
@@ -784,24 +779,20 @@ class BusinessLogic(BusinessLogicInterface):
         except DatasetVersionNotFoundException:
             return None
 
-    def _delete_keys_from_bucket(self, bucket: str, keys_or_prefix: Union[Iterable[str], str]) -> None:
+    def _delete_from_bucket(self, bucket: str, keys: List[str] = None, prefix: str = None) -> None:
         try:
-            print(f"djh bucket: {bucket} keys_or_prefix: {keys_or_prefix}")
-            if isinstance(keys_or_prefix, Iterable):
-                print("djh delete_files")
-                self.s3_provider.delete_files(bucket, list(keys_or_prefix))  # keys
-            else:
-                print("djh delete_recursive")
-                self.s3_provider.delete_recursive(bucket, keys_or_prefix)  # prefix
+            if keys:
+                self.s3_provider.delete_files(bucket, keys)
+            if prefix:
+                self.s3_provider.delete_recursive(bucket, prefix)
         except S3DeleteException as e:
-            print("djh failed to delete correctly")
             raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
     def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         for artifact in artifacts:
-            matches_dict = re.match(r"^s3://(?P<bucket>[^/]+)/(?P<key>.*)", artifact.uri).groupdict()
-            bucket, key = matches_dict["bucket"], matches_dict["key"]
-            self._delete_keys_from_bucket(bucket, key if re.search(r"/$", key) else [key])
+            matches_dict = re.match(r"^s3://(?P<bucket>[^/]+)/((?P<prefix>.*/)|(?P<key>.*))", artifact.uri).groupdict()
+            bucket, key, prefix = matches_dict["bucket"], matches_dict["key"], matches_dict["prefix"]
+            self._delete_from_bucket(bucket, keys=[key], prefix=prefix)
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str

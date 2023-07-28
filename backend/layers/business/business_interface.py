@@ -144,5 +144,5 @@ class BusinessLogicInterface:
     ) -> List[CollectionVersionWithPublishedDatasets]:
         pass
 
-    def _delete_keys_from_bucket(self, bucket: str, keys: List[str]) -> None:
+    def _delete_from_bucket(self, bucket: str, keys: List[str], prefix: str) -> None:
         pass
