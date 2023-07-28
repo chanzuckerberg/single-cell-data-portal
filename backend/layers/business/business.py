@@ -462,11 +462,16 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self._assert_collection_version_unpublished(collection_version_id)
         if not delete_published:
+            print("djh not delete published")
             dv = self.database_provider.get_dataset_version(dataset_version_id)
             if dv.canonical_dataset.published_at:
+                print("djh dataset was published")
                 raise CollectionUpdateException from None
+            print("djh deleting dataset versions from public")
             self.delete_dataset_versions_from_public_bucket([dv.version_id.id])
+            print("djh dleeting dataset artifacts")
             self.delete_artifacts(dv.artifacts)
+        print("djh removing from collection")
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:

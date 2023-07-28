@@ -793,6 +793,7 @@ def delete_dataset(dataset_id: str, token_info: dict):
     """
     Deletes a dataset version.
     """
+    print("djh portal api called delete dataset")
     dataset_version, collection_version = _assert_dataset_has_right_owner(
         DatasetVersionId(dataset_id), UserInfo(token_info)
     )
@@ -800,6 +801,7 @@ def delete_dataset(dataset_id: str, token_info: dict):
         raise ForbiddenHTTPException(f"Dataset {dataset_id} does not belong to a collection")
 
     try:
+        print("djh portal api deleting dataset")
         get_business_logic().remove_dataset_version(collection_version.version_id, DatasetVersionId(dataset_id))
     except CollectionUpdateException:
         raise MethodNotAllowedException(detail="Cannot delete a public Dataset") from None
