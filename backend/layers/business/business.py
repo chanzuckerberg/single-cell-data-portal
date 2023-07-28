@@ -4,7 +4,7 @@ import os
 import re
 from collections import defaultdict
 from datetime import datetime
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple, Union
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
@@ -779,9 +779,12 @@ class BusinessLogic(BusinessLogicInterface):
         except DatasetVersionNotFoundException:
             return None
 
-    def _delete_keys_from_bucket(self, bucket: str, keys: List[str]) -> None:
+    def _delete_keys_from_bucket(self, bucket: str, keys_or_prefix: Union[Iterable[str], str]) -> None:
         try:
-            self.s3_provider.delete_files(bucket, list(keys))
+            if isinstance(keys_or_prefix, Iterable):
+                self.s3_provider.delete_files(bucket, list(keys_or_prefix))  # keys
+            else:
+                self.s3_provider.delete_recursive(bucket, keys_or_prefix)  # prefix
         except S3DeleteException as e:
             raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
@@ -789,7 +792,7 @@ class BusinessLogic(BusinessLogicInterface):
         for artifact in artifacts:
             matches_dict = re.match(r"^s3://(?P<bucket>[^/]+)/(?P<key>.*)", artifact.uri).groupdict()
             bucket, key = matches_dict["bucket"], matches_dict["key"]
-            self._delete_keys_from_bucket(bucket, [key])
+            self._delete_keys_from_bucket(bucket, key if re.search(r"/$", key) else [key])
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
