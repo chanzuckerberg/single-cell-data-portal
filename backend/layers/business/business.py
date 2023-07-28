@@ -781,11 +781,15 @@ class BusinessLogic(BusinessLogicInterface):
 
     def _delete_keys_from_bucket(self, bucket: str, keys_or_prefix: Union[Iterable[str], str]) -> None:
         try:
+            print(f"djh bucket: {bucket} keys_or_prefix: {keys_or_prefix}")
             if isinstance(keys_or_prefix, Iterable):
+                print("djh delete_files")
                 self.s3_provider.delete_files(bucket, list(keys_or_prefix))  # keys
             else:
+                print("djh delete_recursive")
                 self.s3_provider.delete_recursive(bucket, keys_or_prefix)  # prefix
         except S3DeleteException as e:
+            print("djh failed to delete correctly")
             raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
     def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
