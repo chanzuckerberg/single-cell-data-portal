@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2023-07-28T17:59:01.028Z", "name": "backend.layers.processing.schema_migration", "message": "Collection has no datasets", "lineno": 124, "pathname": "/single-cell-data-portal/backend/layers/processing/schema_migration.py"}
