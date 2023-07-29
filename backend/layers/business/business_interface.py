@@ -67,6 +67,9 @@ class BusinessLogicInterface:
     def delete_collection(self, collection_id: CollectionId) -> None:
         pass
 
+    def delete_prior_unpublished_dataset_versions(self, dataset_version_id: DatasetVersionId) -> None:
+        pass
+
     def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
         pass
 

@@ -18,8 +18,10 @@ def success_handler(event: dict, context) -> None:
     :param context: Lambda's context object
     :return:
     """
-    dataset_id = event["dataset_id"]
+    dataset_version_id = event["dataset_id"]
 
     business_logic.update_dataset_version_status(
-        DatasetVersionId(dataset_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
+        DatasetVersionId(dataset_version_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
     )
+
+    business_logic.delete_prior_unpublished_dataset_versions(dataset_version_id)
