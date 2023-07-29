@@ -257,6 +257,7 @@ module dataset_submissions_lambda {
   deployment_stage           = local.deployment_stage
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
+  datasets_bucket            = local.datasets_bucket
   lambda_execution_role      = aws_iam_role.dataset_submissions_lambda_service_role.arn
   step_function_arn          = module.upload_sfn.step_function_arn
   subnets                    = local.subnets
