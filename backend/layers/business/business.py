@@ -670,10 +670,10 @@ class BusinessLogic(BusinessLogicInterface):
             lambda d_v: d_v.created_at > mapped_version_created_at and d_v.version_id != new_dataset_version.version_id,
             all_versions,
         )
-        logger.info(f"djh dataset_versions_to_delete {dataset_versions_to_delete}")
+        logger.info(f"djh dataset_versions_to_delete {[dv.version_id for dv in dataset_versions_to_delete]}")
         self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions_to_delete])
         artifacts_to_delete = reduce(lambda acc, dv: acc + dv.artifacts, dataset_versions_to_delete, [])
-        logger.info(f"djh artifacts to delete {artifacts_to_delete}")
+        logger.info(f"djh artifacts to delete {[a.uri for a in artifacts_to_delete]}")
         self.delete_artifacts(artifacts_to_delete)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
