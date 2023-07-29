@@ -24,4 +24,4 @@ def success_handler(event: dict, context) -> None:
         DatasetVersionId(dataset_version_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
     )
 
-    business_logic.delete_prior_unpublished_dataset_versions(dataset_version_id)
+    business_logic.delete_prior_unpublished_dataset_versions(DatasetVersionId(dataset_version_id))
