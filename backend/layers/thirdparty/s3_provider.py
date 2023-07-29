@@ -82,12 +82,13 @@ class S3Provider(S3ProviderInterface):
                 raise S3DeleteException(errors)
 
     def delete_recursive(self, bucket_name: str, prefix: str) -> None:
-        resp = self.resource.Bucket(bucket_name).objects.filter(Prefix=prefix).delete()[0]
-        if deleted := resp.get("Deleted"):
-            logger.info(f"Deleted: {deleted}")
-        if errors := resp.get("Errors"):
-            logger.info(f"Errors: {errors}")
-            raise S3DeleteException(errors)
+        resp = self.resource.Bucket(bucket_name).objects.filter(Prefix=prefix).delete()
+        logger.info(f"djh resp: {type(resp)} {len(resp) if isinstance(list, resp) else None} {resp}")
+        # if deleted := resp.get("Deleted"):
+        #     logger.info(f"Deleted: {deleted}")
+        # if errors := resp.get("Errors"):
+        #     logger.info(f"Errors: {errors}")
+        #     raise S3DeleteException(errors)
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """
