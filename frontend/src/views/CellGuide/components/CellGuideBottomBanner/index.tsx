@@ -1,5 +1,6 @@
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { CELL_GUIDE_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 import BottomBanner from "src/components/BottomBanner";
 import { StyledLink } from "src/components/BottomBanner/style";
 
@@ -7,6 +8,7 @@ export default function CellGuideBottomBanner(): JSX.Element {
   return (
     <BottomBanner
       includeSurveyLink
+      airtableLink={CELL_GUIDE_BANNER_SURVEY_LINK}
       customSurveyLinkPrefix={
         <span>
           Check out the{" "}
