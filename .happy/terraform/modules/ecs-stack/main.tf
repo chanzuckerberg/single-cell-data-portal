@@ -219,6 +219,7 @@ module upload_success_lambda {
   lambda_execution_role      = local.lambda_execution_role
   subnets                    = local.subnets
   security_groups            = local.security_groups
+  datasets_bucket            = local.datasets_bucket
 }
 
 module upload_error_lambda {

@@ -433,6 +433,7 @@ class BusinessLogic(BusinessLogicInterface):
                 new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
                     collection_version_id, existing_dataset_version_id
                 )
+                self.delete_prior_unpublished_dataset_versions(new_dataset_version)
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
             # adds new dataset version to collection version
@@ -650,15 +651,14 @@ class BusinessLogic(BusinessLogicInterface):
             dataset_version_ids_to_delete.extend([dv.version_id.id for dv in collection_version.datasets])
         return self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete)
 
-    def delete_prior_unpublished_dataset_versions(self, dataset_version_id: DatasetVersionId) -> None:
+    def delete_prior_unpublished_dataset_versions(self, new_dataset_version: DatasetVersion) -> None:
         """
         Delete all prior, never-published versions of the same Dataset as that to which dataset_version_id belongs, if
         any exist. Also remove their public-access Dataset assets and cxg assets. Intended to be called after
         successful ingestion of a new version of a Dataset.
         """
-        dataset_version = self.get_dataset_version(dataset_version_id)
-        all_versions = self.database_provider.get_all_versions_for_dataset(dataset_version.dataset_id)
-        canonical_dataset = dataset_version.canonical_dataset
+        all_versions = self.database_provider.get_all_versions_for_dataset(new_dataset_version.dataset_id)
+        canonical_dataset = new_dataset_version.canonical_dataset
         logger.info(f"djh canonical_dataset {canonical_dataset}")
         mapped_version_created_at = (
             next(d_v.created_at for d_v in all_versions if d_v.version_id == canonical_dataset.dataset_version_id)
@@ -667,12 +667,13 @@ class BusinessLogic(BusinessLogicInterface):
         )
         logger.info(f"djh mapped created_at {mapped_version_created_at}")
         dataset_versions_to_delete = filter(
-            lambda d_v: d_v.created_at > mapped_version_created_at and d_v.version_id != dataset_version_id,
+            lambda d_v: d_v.created_at > mapped_version_created_at and d_v.version_id != new_dataset_version.version_id,
             all_versions,
         )
         logger.info(f"djh dataset_versions_to_delete {dataset_versions_to_delete}")
         self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions_to_delete])
         artifacts_to_delete = reduce(lambda acc, dv: acc + dv.artifacts, dataset_versions_to_delete, [])
+        logger.info(f"djh artifacts to delete {artifacts_to_delete}")
         self.delete_artifacts(artifacts_to_delete)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:

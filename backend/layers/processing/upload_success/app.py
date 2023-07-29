@@ -3,10 +3,9 @@ import logging
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
 from backend.layers.persistence.persistence import DatabaseProvider
-from backend.layers.thirdparty.s3_provider import S3Provider
 
 database_provider = DatabaseProvider()
-business_logic = BusinessLogic(database_provider, None, None, S3Provider(), None)
+business_logic = BusinessLogic(database_provider, None, None, None, None)
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +18,8 @@ def success_handler(event: dict, context) -> None:
     :param context: Lambda's context object
     :return:
     """
-    dataset_version_id = event["dataset_id"]
+    dataset_id = event["dataset_id"]
 
     business_logic.update_dataset_version_status(
-        DatasetVersionId(dataset_version_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
+        DatasetVersionId(dataset_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
     )
-
-    business_logic.delete_prior_unpublished_dataset_versions(DatasetVersionId(dataset_version_id))
