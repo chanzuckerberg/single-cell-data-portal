@@ -83,7 +83,7 @@ class S3Provider(S3ProviderInterface):
 
     def delete_recursive(self, bucket_name: str, prefix: str) -> None:
         resp = self.resource.Bucket(bucket_name).objects.filter(Prefix=prefix).delete()
-        logger.info(f"djh resp: {type(resp)} {len(resp) if isinstance(list, resp) else None} {resp}")
+        logger.info(f"djh resp: {type(resp)} {len(resp) if isinstance(resp, list) else None} {resp}")
         # if deleted := resp.get("Deleted"):
         #     logger.info(f"Deleted: {deleted}")
         # if errors := resp.get("Errors"):
