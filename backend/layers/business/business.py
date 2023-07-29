@@ -859,6 +859,14 @@ class BusinessLogic(BusinessLogicInterface):
         previous_version_id: DatasetVersionId = self.database_provider.get_previous_dataset_version_id(dataset_id)
         if previous_version_id is None:
             raise NoPreviousDatasetVersionException(f"No previous dataset version for dataset {dataset_id.id}")
+        logger.info(
+            {
+                "message": "Restoring previous dataset version",
+                "dataset_id": dataset_id.id,
+                "replace_version_id": current_version.version_id.id,
+                "restored_version_id": previous_version_id.id,
+            }
+        )
         self.database_provider.replace_dataset_in_collection_version(
             collection_version_id, current_version.version_id, previous_version_id
         )

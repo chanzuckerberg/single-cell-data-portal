@@ -167,7 +167,7 @@ class SchemaMigrate(ProcessingLogic):
         return response
 
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
-        errors = dict()
+        errors = []
         collection_version_id = CollectionVersionId(collection_version_id)
         collection_version = self.business_logic.get_collection_version(collection_version_id)
         cxs_get_current_schema_version()
@@ -177,10 +177,25 @@ class SchemaMigrate(ProcessingLogic):
             key_prefix = self.get_key_prefix(dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if not self._check_dataset_is_latest_schema_version(dataset):
-                errors[dataset_version_id] = "Did Not Migrate."
+                errors.append(
+                    {
+                        "message": "Did Not Migrate.",
+                        "collection_version_id": collection_version_id,
+                        "dataset_version_id": dataset_version_id,
+                        "dataset_id": dataset.dataset_id.id,
+                        "rollback": False,
+                    }
+                )
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                errors[dataset_version_id] = dataset.status.validation_message
-
+                errors.append(
+                    {
+                        "message": dataset.status.validation_message,
+                        "collection_version_id": collection_version_id,
+                        "dataset_version_id": dataset_version_id,
+                        "dataset_id": dataset.dataset_id.id,
+                        "rollback": True,
+                    }
+                )
         if errors:
             self._store_sfn_response("report", collection_version_id, errors)
         elif can_publish:
