@@ -666,9 +666,12 @@ class BusinessLogic(BusinessLogicInterface):
             else datetime.min
         )
         logger.info(f"djh mapped created_at {mapped_version_created_at}")
-        dataset_versions_to_delete = filter(
-            lambda d_v: d_v.created_at > mapped_version_created_at and d_v.version_id != new_dataset_version.version_id,
-            all_versions,
+        dataset_versions_to_delete = list(
+            filter(
+                lambda d_v: d_v.created_at > mapped_version_created_at
+                and d_v.version_id != new_dataset_version.version_id,
+                all_versions,
+            )
         )
         logger.info(f"djh dataset_versions_to_delete {[dv.version_id for dv in dataset_versions_to_delete]}")
         self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions_to_delete])

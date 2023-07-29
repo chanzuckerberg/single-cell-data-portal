@@ -296,7 +296,7 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
+data "aws_iam_policy_document" "lambda_step_function_execution_policy_document" {
   statement {
     sid    = "sfn"
     effect = "Allow"
@@ -355,13 +355,15 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
       "arn:aws:s3:::${local.artifact_bucket}/*",
       "arn:aws:s3:::${local.cellxgene_bucket}",
       "arn:aws:s3:::${local.cellxgene_bucket}/*",
+      "arn:aws:s3:::${local.datasets_bucket}",
+      "arn:aws:s3:::${local.datasets_bucket}/*"
     ]
   }
 }
 
 resource "aws_iam_policy" "lambda_step_function_execution_policy" {
   name = "lambda-step-function-execution-policy-${local.custom_stack_name}"
-  policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
+  policy = data.aws_iam_policy_document.lambda_step_function_execution_policy_document.json
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_step_function_execution_policy_attachment" {
