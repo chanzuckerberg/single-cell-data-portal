@@ -355,6 +355,15 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy_document" 
       "arn:aws:s3:::${local.artifact_bucket}/*",
       "arn:aws:s3:::${local.cellxgene_bucket}",
       "arn:aws:s3:::${local.cellxgene_bucket}/*",
+    ]
+  }
+  statement {
+    sid     = "s3"
+    effect  = "Allow"
+    actions = [
+      "s3:DeleteObject"
+    ]
+    resources = [
       "arn:aws:s3:::${local.datasets_bucket}",
       "arn:aws:s3:::${local.datasets_bucket}/*"
     ]
