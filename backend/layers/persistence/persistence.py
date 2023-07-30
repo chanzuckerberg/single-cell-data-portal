@@ -774,10 +774,17 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_version.datasets = updated_datasets
 
     def delete_dataset_from_collection_version(
-        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        delete_dv_row: bool = False,
     ) -> None:
         """
-        Removes a mapping between a collection version and a dataset version
+        Removes a mapping between a collection version and a dataset version.
+
+        :param collection_version_id: the CollectionVersion or the CollectionVersionId
+        :param dataset_version_id: the DatasetVersionId
+        :param delete_dv_row: boolean flag - when True, delete DatasetVersion row (and dependent DatasetArtifact rows)
         """
         with self._manage_session() as session:
             collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
@@ -785,6 +792,15 @@ class DatabaseProvider(DatabaseProviderInterface):
             updated_datasets = list(collection_version.datasets)
             updated_datasets.remove(uuid.UUID(dataset_version_id.id))
             collection_version.datasets = updated_datasets
+            if delete_dv_row:
+                dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one()
+                artifacts = (
+                    session.query(DatasetArtifactTable)
+                    .filter(DatasetArtifactTable.id.in_([str(i) for i in dataset_version.artifacts]))
+                    .all()
+                )  # noqa
+                session.delete(artifacts)
+                session.delete(dataset_version)
 
     def replace_dataset_in_collection_version(
         self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId

@@ -463,13 +463,10 @@ class BusinessLogic(BusinessLogicInterface):
         Removes a dataset version from an existing collection version
         """
         self._assert_collection_version_unpublished(collection_version_id)
-        if not delete_published:
-            dv = self.database_provider.get_dataset_version(dataset_version_id)
-            if dv.canonical_dataset.published_at:
-                raise CollectionUpdateException from None
-            self.delete_dataset_versions_from_public_bucket([dv.version_id.id])
-            self.delete_artifacts(dv.artifacts)
-        self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
+        dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
+        if dataset_version.canonical_dataset.published_at and not delete_published:
+            raise CollectionUpdateException from None
+        self.delete_prior_unpublished_dataset_versions(dataset_version, delete_most_recent=True)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
@@ -621,6 +618,7 @@ class BusinessLogic(BusinessLogicInterface):
         collection_version = self._assert_collection_version_unpublished(version_id)
         for dataset_version in collection_version.datasets:
             self.delete_prior_unpublished_dataset_versions(dataset_version, delete_most_recent=True)
+        self.database_provider.delete_collection_version(version_id)
 
     def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
@@ -657,6 +655,11 @@ class BusinessLogic(BusinessLogicInterface):
         to True when deleting a Collection version.
         """
         all_versions = self.database_provider.get_all_versions_for_dataset(new_dataset_version.dataset_id)
+        unpublished_collection_version = self.get_unpublished_collection_version_from_canonical(
+            all_versions[0].collection_id
+        )
+        if not unpublished_collection_version:
+            return None  # short circuit
         canonical_dataset = new_dataset_version.canonical_dataset
         # Determine when the current mapped version was created
         mapped_version_created_at = (
@@ -674,6 +677,12 @@ class BusinessLogic(BusinessLogicInterface):
         )
         self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions_to_delete])
         self.delete_artifacts(reduce(lambda artifacts, dv: artifacts + dv.artifacts, dataset_versions_to_delete, []))
+        [
+            self.database_provider.delete_dataset_from_collection_version(
+                unpublished_collection_version.version_id, dv.version_id, delete_dv_row=True
+            )
+            for dv in dataset_versions_to_delete
+        ]
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
         """

@@ -214,10 +214,14 @@ class DatabaseProviderInterface:
         """
 
     def delete_dataset_from_collection_version(
-        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        delete_dv_row: bool,
     ) -> None:
         """
-        Removes a mapping between a collection version and a dataset version
+        Removes a mapping between a collection version and a dataset version. Optional flag to delete DatasetVersion
+        and dependent DatasetArtifact rows.
         """
 
     def replace_dataset_in_collection_version(

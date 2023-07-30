@@ -419,10 +419,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         pass
 
     def delete_dataset_from_collection_version(
-        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        delete_dv_row: bool = False,
     ) -> None:
         version = self.collections_versions[collection_version_id.id]
         version.datasets = [d for d in version.datasets if d != dataset_version_id]
+        if delete_dv_row:
+            del self.datasets_versions[dataset_version_id.id]
 
     def replace_dataset_in_collection_version(
         self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
