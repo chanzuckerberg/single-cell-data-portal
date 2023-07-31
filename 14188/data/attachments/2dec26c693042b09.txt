@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2023-07-27T21:47:06.027Z", "name": "backend.layers.processing.schema_migration", "message": "All datasets in the collection have been migrated", "lineno": 126, "pathname": "/single-cell-data-portal/backend/layers/processing/schema_migration.py", "dataset_count": 2}
