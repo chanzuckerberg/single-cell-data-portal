@@ -39,6 +39,7 @@ export interface Props {
   asFooter?: boolean;
   customSurveyLinkPrefix?: ReactElement;
   analyticsHandler?: () => void;
+  airtableLink: string;
 }
 const BOTTOM_BANNER_EXPIRATION_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const BOTTOM_BANNER_LAST_CLOSED_TIME_KEY = "bottomBannerLastClosedTime";
@@ -48,6 +49,7 @@ export default function BottomBanner({
   asFooter = false,
   customSurveyLinkPrefix,
   analyticsHandler,
+  airtableLink,
 }: Props): JSX.Element | null {
   const [bottomBannerLastClosedTime, setBottomBannerLastClosedTime] =
     useLocalStorage<number>(BOTTOM_BANNER_LAST_CLOSED_TIME_KEY, 0);
@@ -313,7 +315,7 @@ export default function BottomBanner({
                       ? customSurveyLinkPrefix
                       : "Send us feedback with this"}{" "}
                     <StyledLink
-                      href="https://airtable.com/shrLwepDSEX1HI6bo"
+                      href={airtableLink}
                       target="_blank"
                       rel="noopener"
                       onClick={analyticsHandler}
