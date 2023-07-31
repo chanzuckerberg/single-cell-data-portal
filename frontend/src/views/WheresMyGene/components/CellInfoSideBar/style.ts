@@ -3,6 +3,7 @@ import styled from "@emotion/styled";
 import { Button, fontBodyS } from "@czi-sds/components";
 import Image from "next/image";
 import { fontBodyXxs, getColors } from "@czi-sds/components";
+import { gray500 } from "src/common/theme";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
 
@@ -67,12 +68,7 @@ export const MarkerStrengthContainer = styled("div")`
 
 export const MarkerStrengthLabel = styled("div")`
   ${fontBodyXxs}
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
   line-height: unset;
 `;
 

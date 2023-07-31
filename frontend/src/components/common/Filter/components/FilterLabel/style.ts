@@ -1,12 +1,6 @@
 import styled from "@emotion/styled";
-import {
-  CommonThemeProps,
-  fontBodyS,
-  getColors,
-  getSpaces,
-} from "@czi-sds/components";
-
-const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
+import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
+import { spacesXxs } from "src/common/theme";
 
 interface Props extends CommonThemeProps {
   isOpen: boolean;

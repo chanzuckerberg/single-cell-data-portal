@@ -1,12 +1,7 @@
 import styled from "@emotion/styled";
-import {
-  CommonThemeProps,
-  ComplexFilter,
-  ComplexFilterInputDropdown,
-  getColors,
-  getSpaces,
-} from "@czi-sds/components";
+import { ComplexFilter, ComplexFilterInputDropdown } from "@czi-sds/components";
 import { Label, Wrapper as RawWrapper } from "./components/common/style";
+import { gray500, spacesXl } from "src/common/theme";
 
 export const StyledComplexFilterInputDropdown = styled(
   ComplexFilterInputDropdown
@@ -24,26 +19,14 @@ export const StyledComplexFilterInputDropdown = styled(
     border: 0;
   }
 
-  ${(props: CommonThemeProps) => {
-    const colors = getColors(props);
-
-    return `
-      .styled-label {
-        // (thuang): Override the default color black to be gray until SDS fixes it
-        color: ${colors?.gray[500]} !important;
-      }
-    `;
-  }}
+  .styled-label {
+    /* (thuang): Override the default color black to be gray until SDS fixes it */
+    color: ${gray500} !important;
+  }
 `;
 
 export const Wrapper = styled(RawWrapper)`
-  ${(props: CommonThemeProps) => {
-    const spaces = getSpaces(props);
-
-    return `
-      gap: ${spaces?.xl}px;
-    `;
-  }}
+  gap: ${spacesXl}px;
 `;
 
 export const StyledComplexFilter = styled(ComplexFilter)`

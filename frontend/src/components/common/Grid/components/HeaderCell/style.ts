@@ -1,13 +1,14 @@
 import styled from "@emotion/styled";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
-import { CommonThemeProps, getColors, getSpaces } from "@czi-sds/components";
+import { CommonThemeProps } from "@czi-sds/components";
 import { css } from "@emotion/react";
-
-const grey400 = (props: CommonThemeProps) => getColors(props)?.gray[400];
-const primary400 = (props: CommonThemeProps) => getColors(props)?.primary[400];
-const primary500 = (props: CommonThemeProps) => getColors(props)?.primary[500];
-const primary600 = (props: CommonThemeProps) => getColors(props)?.primary[600];
-const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
+import {
+  grey400,
+  primary400,
+  primary500,
+  primary600,
+  spacesXxs,
+} from "src/common/theme";
 
 interface Props extends CommonThemeProps {
   alignment: ALIGNMENT;

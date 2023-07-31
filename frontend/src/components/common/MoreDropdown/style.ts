@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
-import { ButtonIcon, CommonThemeProps, getSpaces } from "@czi-sds/components";
-
-const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
+import { ButtonIcon } from "@czi-sds/components";
+import { spacesXs } from "src/common/theme";
 
 export const MoreButton = styled(ButtonIcon)`
   padding: ${spacesXs}px;

@@ -1,18 +1,13 @@
 import styled from "@emotion/styled";
+import { fontBodyS } from "@czi-sds/components";
 import {
-  CommonThemeProps,
-  fontBodyS,
-  getColors,
-  getFontWeights,
-  getSpaces,
-} from "@czi-sds/components";
-
-const gray300 = (props: CommonThemeProps) => getColors(props)?.gray[300];
-const gray500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
-const semiBold = (props: CommonThemeProps) => getFontWeights(props)?.semibold;
-const spacesM = (props: CommonThemeProps) => getSpaces(props)?.m;
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
-const spacesXxxs = (props: CommonThemeProps) => getSpaces(props)?.xxxs;
+  gray300,
+  gray500,
+  fontWeightSemibold,
+  spacesM,
+  spacesS,
+  spacesXxxs,
+} from "src/common/theme";
 
 export const Grid = styled.table`
   display: grid;
@@ -49,7 +44,7 @@ export const Grid = styled.table`
   th {
     align-self: center;
     color: ${gray500};
-    font-weight: ${semiBold};
+    font-weight: ${fontWeightSemibold};
     margin-bottom: ${spacesS}px;
     padding: ${spacesXxxs}px 0;
   }
