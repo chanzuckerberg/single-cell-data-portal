@@ -1,8 +1,7 @@
 from unittest.mock import Mock, patch
 
-from unit.processing.schema_migration.conftest import make_mock_dataset_version
-
 from backend.layers.common.entities import CollectionId, DatasetProcessingStatus, DatasetVersionId
+from tests.unit.processing.schema_migration.conftest import make_mock_dataset_version
 
 
 @patch("backend.layers.processing.schema_migration.cxs_get_current_schema_version")
