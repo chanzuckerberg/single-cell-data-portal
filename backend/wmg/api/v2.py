@@ -29,7 +29,7 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot(
         snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-        specific_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
     )
 
     return jsonify(snapshot.primary_filter_dimensions)
@@ -48,7 +48,7 @@ def query():
     with ServerTiming.time("query and build response"):
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-            specific_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
         q = WmgQuery(snapshot)
@@ -100,7 +100,7 @@ def filters():
     with ServerTiming.time("calculate filters and build response"):
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-            specific_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
@@ -122,7 +122,7 @@ def markers():
     test = request["test"]
     snapshot: WmgSnapshot = load_snapshot(
         snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-        specific_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
     )
 
     criteria = MarkerGeneQueryCriteria(

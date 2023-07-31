@@ -105,20 +105,20 @@ class WmgSnapshot:
 cached_snapshot: Optional[WmgSnapshot] = None
 
 
-def load_snapshot(*, snapshot_schema_version: str, specific_snapshot_id_to_load: Optional[str] = None) -> WmgSnapshot:
+def load_snapshot(*, snapshot_schema_version: str, explicit_snapshot_id_to_load: Optional[str] = None) -> WmgSnapshot:
     """
     Loads and caches the snapshot identified by the snapshot schema version and a snapshot id.
 
     By default, this functions loads the latest snapshot id for a given schema version.
-    If a specific snapshot id is given, it will load that snapshot id. Note, that if a specific
+    If an explicit snapshot id is given, it will load that snapshot id. Note, that if an explicit
     snapshot id is given, it should be associated with the given schema version.
 
     The snapshot representation is cached in memory. Therefore, multiple calls to this function
-    will not simply return the cached snapshot if there isn't a newer snapshot id.
+    will simply return the cached snapshot if there isn't a newer snapshot id.
     """
     global cached_snapshot
 
-    should_reload, snapshot_id = _should_reload_snapshot(snapshot_schema_version, specific_snapshot_id_to_load)
+    should_reload, snapshot_id = _should_reload_snapshot(snapshot_schema_version, explicit_snapshot_id_to_load)
 
     if should_reload:
         cached_snapshot = _load_snapshot(snapshot_schema_version, snapshot_id)
@@ -249,14 +249,14 @@ def _read_value_at_s3_key(key_path: str):
 
 
 def _should_reload_snapshot(
-    snapshot_schema_version: str, specific_snapshot_id_to_load: Optional[str] = None
+    snapshot_schema_version: str, explicit_snapshot_id_to_load: Optional[str] = None
 ) -> tuple[bool, str]:
     """
-    Returns a pair: (<should_reload>, <snapshot_id>) where <should_reload> is boolean indicating
+    Returns a pair: (<should_reload>, <snapshot_id>) where <should_reload> is a boolean indicating
     whether then in-memory snapshot should be reloaded and <snapshot_id> is the id of the snapshot that
     the in-memory data structure represents.
     """
-    snapshot_id = specific_snapshot_id_to_load or _get_latest_snapshot_id(snapshot_schema_version)
+    snapshot_id = explicit_snapshot_id_to_load or _get_latest_snapshot_id(snapshot_schema_version)
 
     if cached_snapshot is None:
         logger.info(f"Loading snapshot id: {snapshot_id}")
