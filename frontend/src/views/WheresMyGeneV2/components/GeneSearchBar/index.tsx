@@ -20,6 +20,9 @@ import {
   StyledClearButton,
 } from "src/views/WheresMyGene/components/GeneSearchBar/style";
 import { track } from "src/common/analytics";
+import { StyledAutocomplete } from "src/views/WheresMyGene/components/HeatMap/style";
+import { InputAdornment, TextField } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function GeneSearchBar({
   className,
@@ -40,6 +43,11 @@ export default function GeneSearchBar({
     return rawGenes[selectedOrganismId || ""] || [];
   }, [rawGenes, selectedOrganismId]);
 
+  const uniqueGeneNamesSet: Set<string> = new Set(
+    genes.map((dictionary) => dictionary.name)
+  );
+
+  const uniqueGeneNamesArray: string[] = Array.from(uniqueGeneNamesSet);
   /**
    * NOTE: key is gene name in lowercase
    */
@@ -65,7 +73,7 @@ export default function GeneSearchBar({
   return (
     <Container {...{ className }}>
       <ActionWrapper>
-        <QuickSelect
+        {/* <QuickSelect
           items={genes}
           itemsByName={genesByName}
           selected={selectedGeneOptions}
@@ -78,6 +86,25 @@ export default function GeneSearchBar({
           placeholder="Search or paste comma separated gene names"
           isLoading={isLoadingPrimaryFilters}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
+        /> */}
+        <StyledAutocomplete
+          multiple
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+                endAdornment: undefined,
+              }}
+              placeholder="Add genes"
+            ></TextField>
+          )}
+          options={uniqueGeneNamesArray}
         />
         {/* Clear Genes button */}
         {!selectedGenes.length || (
@@ -96,7 +123,7 @@ export default function GeneSearchBar({
               sdsStyle="minimal"
               isAllCaps={false}
             >
-              Clear Genes
+              Clear All
             </StyledClearButton>
           </StyledButtonWrapper>
         )}
