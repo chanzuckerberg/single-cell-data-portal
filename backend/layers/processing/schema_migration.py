@@ -168,8 +168,7 @@ class SchemaMigrate(ProcessingLogic):
 
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
         errors = []
-        collection_version_id = CollectionVersionId(collection_version_id)
-        collection_version = self.business_logic.get_collection_version(collection_version_id)
+        collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         cxs_get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
@@ -180,6 +179,7 @@ class SchemaMigrate(ProcessingLogic):
                 errors.append(
                     {
                         "message": "Did Not Migrate.",
+                        "collection_id": collection_version.collection_id.id,
                         "collection_version_id": collection_version_id,
                         "dataset_version_id": dataset_version_id,
                         "dataset_id": dataset.dataset_id.id,
@@ -190,6 +190,8 @@ class SchemaMigrate(ProcessingLogic):
                 errors.append(
                     {
                         "message": dataset.status.validation_message,
+                        "dataset_processing_status": dataset.status.processing_status.name,
+                        "collection_id": collection_version.collection_id.id,
                         "collection_version_id": collection_version_id,
                         "dataset_version_id": dataset_version_id,
                         "dataset_id": dataset.dataset_id.id,

@@ -14,12 +14,18 @@ from backend.layers.common.entities import (
 from backend.layers.processing.schema_migration import SchemaMigrate
 
 
-def make_mock_dataset_version():
+def make_mock_dataset_version(
+    dataset_id: str = None, version_id: str = None, status: dict = None, metadata: dict = None
+):
     dataset_version = mock.Mock()
-    dataset_version.dataset_id = DatasetId()
-    dataset_version.version_id = DatasetVersionId()
-    dataset_version.status = mock.Mock(processing_status=DatasetProcessingStatus.SUCCESS)
-    dataset_version.metadata = mock.Mock(schema_version="1.0.0")
+    dataset_version.dataset_id = DatasetId(dataset_id)
+    dataset_version.version_id = DatasetVersionId(version_id)
+    dataset_version.metadata.schema_version = "1.0.0"
+    if metadata:
+        dataset_version.metadata.configure_mock(**metadata)
+    dataset_version.status.processing_status = DatasetProcessingStatus.SUCCESS
+    if status:
+        dataset_version.status.configure_mock(**status)
     return dataset_version
 
 
