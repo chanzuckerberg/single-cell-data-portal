@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, delete
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
@@ -799,7 +799,10 @@ class DatabaseProvider(DatabaseProviderInterface):
                     .filter(DatasetArtifactTable.id.in_([str(i) for i in dataset_version.artifacts]))
                     .all()
                 )  # noqa
-                session.delete(artifacts)
+                artifact_delete_statement = delete(DatasetArtifactTable).where(
+                    DatasetArtifactTable.id.in_([a.id for a in artifacts])
+                )
+                session.execute(artifact_delete_statement)
                 session.delete(dataset_version)
 
     def replace_dataset_in_collection_version(
