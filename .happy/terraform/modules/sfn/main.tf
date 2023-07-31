@@ -160,7 +160,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
-                "TimeoutSeconds": 36000
+                "TimeoutSeconds": 72000
               }
             }
           }
