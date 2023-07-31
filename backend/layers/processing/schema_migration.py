@@ -21,7 +21,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing import logger
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider, sfn_name_generator
 
 logger.configure_logging(level=logging.INFO)
 
@@ -97,10 +97,12 @@ class SchemaMigrate(ProcessingLogic):
             existing_dataset_version_id=DatasetVersionId(dataset_version_id),
             start_step_function=False,  # The schema_migration sfn will start the ingest sfn
         )
+        sfn_name = sfn_name_generator(dataset_version_id, prefix="migrate")
         return {
             "collection_version_id": collection_version_id,
             "dataset_version_id": new_dataset_version_id.id,
             "uri": uri,
+            "sfn_name": sfn_name,
         }
 
     def _check_dataset_is_latest_schema_version(self, dataset: DatasetVersion) -> bool:
