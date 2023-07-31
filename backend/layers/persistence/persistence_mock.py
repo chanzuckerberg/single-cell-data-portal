@@ -425,26 +425,36 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version.datasets = [d for d in version.datasets if d != dataset_version_id]
 
     def replace_dataset_in_collection_version(
-        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId = None,
     ) -> DatasetVersion:
-        new_version_id = DatasetVersionId()
         old_version = self.get_dataset_version(old_dataset_version_id)
         collection_version = self.collections_versions[collection_version_id.id]
-        new_version = DatasetVersion(
-            dataset_id=old_version.dataset_id,
-            version_id=new_version_id,
-            collection_id=collection_version.collection_id,
-            status=DatasetStatus.empty(),
-            metadata=None,
-            artifacts=[],
-            created_at=datetime.utcnow(),
-            canonical_dataset=old_version.canonical_dataset,
-        )
-        self.datasets_versions[new_version_id.id] = new_version
+        if new_dataset_version_id is None:
+            new_dataset_version_id = DatasetVersionId()
+            new_dataset_version = DatasetVersion(
+                dataset_id=old_version.dataset_id,
+                version_id=new_dataset_version_id,
+                collection_id=collection_version.collection_id,
+                status=DatasetStatus.empty(),
+                metadata=None,
+                artifacts=[],
+                created_at=datetime.utcnow(),
+                canonical_dataset=old_version.canonical_dataset,
+            )
+            self.datasets_versions[new_dataset_version_id.id] = new_dataset_version
+        else:
+            new_dataset_version = self.get_dataset_version(new_dataset_version_id)
+            if collection_version.collection_id != new_dataset_version.collection_id:
+                raise ValueError(
+                    f"Dataset version {new_dataset_version_id} does not belong to collection {collection_version.collection_id}"
+                )
 
         idx = next(i for i, e in enumerate(collection_version.datasets) if e == old_dataset_version_id)
-        collection_version.datasets[idx] = new_version_id
-        return copy.deepcopy(new_version)
+        collection_version.datasets[idx] = new_dataset_version_id
+        return copy.deepcopy(new_dataset_version)
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         return copy.deepcopy(self.datasets_versions[version_id.id].status)
@@ -473,7 +483,17 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             ]
         return copy.deepcopy(collection_versions)
 
-    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> DatasetVersion:
+    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
         """
         Returns the previously created dataset version for a dataset.
         """
+
+        self.datasets.get(dataset_id.id)
+        datasets = [d for d in self.datasets_versions.values() if d.dataset_id == dataset_id]
+        datasets.sort(key=lambda d: d.created_at, reverse=True)
+        try:
+            previous_dataset = datasets[1]
+        except IndexError:
+            return None
+        else:
+            return copy.deepcopy(previous_dataset.version_id)

@@ -596,22 +596,6 @@ class DatabaseProvider(DatabaseProviderInterface):
                     return None
             return self._hydrate_dataset_version(dataset_version)
 
-    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> DatasetVersionId:
-        """
-        Returns the previously created dataset version for a dataset.
-        """
-        with self._manage_session() as session:
-            version_id = (
-                session.query(DatasetVersionTable.id)
-                .filter_by(dataset_id=dataset_id.id)
-                .order_by(DatasetVersionTable.created_at.desc())
-                .offset(1)
-                .first()
-            )
-            if version_id is None:
-                return None
-            return DatasetVersionId(str(version_id.id))
-
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
         Returns all dataset versions for a canonical dataset_id
@@ -890,3 +874,19 @@ class DatabaseProvider(DatabaseProviderInterface):
             else:
                 collection_versions = session.query(CollectionVersionTable).filter_by(schema_version=schema_version)
             return [self._row_to_collection_version(row, None) for row in collection_versions.all()]
+
+    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
+        """
+        Returns the previously created dataset version for a dataset.
+        """
+        with self._manage_session() as session:
+            version_id = (
+                session.query(DatasetVersionTable.id)
+                .filter_by(dataset_id=dataset_id.id)
+                .order_by(DatasetVersionTable.created_at.desc())
+                .offset(1)
+                .first()
+            )
+            if version_id is None:
+                return None
+            return DatasetVersionId(str(version_id.id))

@@ -241,7 +241,7 @@ class DatabaseProviderInterface:
          wildcards.
         """
 
-    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> DatasetVersion:
+    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
         """
         Returns the previously created dataset version for a dataset.
         """
