@@ -676,7 +676,7 @@ class BusinessLogic(BusinessLogicInterface):
             )
         )
         self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions_to_delete])
-        print(f"djh going to delete artifacts for dataset version id {new_dataset_version.version_id}")
+        logger.info(f"djh going to delete artifacts for dataset version id {new_dataset_version.version_id}")
         self.delete_artifacts(reduce(lambda artifacts, dv: artifacts + dv.artifacts, dataset_versions_to_delete, []))
         [
             self.database_provider.delete_dataset_from_collection_version(
@@ -826,9 +826,9 @@ class BusinessLogic(BusinessLogicInterface):
 
     def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         for artifact in artifacts:
-            print(f"djh artifact is {artifact.uri} {artifact.type}")
+            logger.info(f"djh artifact is {artifact.uri} {artifact.type}")
             matches_dict = re.match(r"^s3://(?P<bucket>[^/]+)/((?P<prefix>.*/$)|(?P<key>.*))", artifact.uri).groupdict()
-            print(f"djh matches are {matches_dict['bucket']} {matches_dict['key']} {matches_dict['prefix']}")
+            logger.info(f"djh matches are {matches_dict['bucket']} {matches_dict['key']} {matches_dict['prefix']}")
             bucket, key, prefix = matches_dict["bucket"], matches_dict["key"], matches_dict["prefix"]
             self._delete_from_bucket(bucket, keys=[key] if key else None, prefix=prefix)
 
