@@ -6,9 +6,9 @@ from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
-from backend.wmg.api import WMG_API_FORCE_LOAD_SNAPSHOT_ID, WMG_API_SNAPSHOT_SCHEMA_VERSION
 from backend.wmg.api.common.expression_dotplot import get_dot_plot_data
 from backend.wmg.api.common.rollup import rollup
+from backend.wmg.api.wmg_api_config import WMG_API_FORCE_LOAD_SNAPSHOT_ID, WMG_API_SNAPSHOT_SCHEMA_VERSION
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import (
     MarkerGeneQueryCriteria,
