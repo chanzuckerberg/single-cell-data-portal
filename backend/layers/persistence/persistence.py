@@ -503,7 +503,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Delete an unpublished Collection
         """
         with self._manage_session() as session:
-            collection = session.query(CollectionVersionTable).filter_by(id=collection_id.id).one_or_none()
+            collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()
             if collection:
                 if collection.originally_published_at:
                     raise CollectionIsPublishedException(f"Published Collection {collection_id} cannot be deleted")
