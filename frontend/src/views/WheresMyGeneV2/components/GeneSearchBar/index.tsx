@@ -14,6 +14,7 @@ import {
 } from "src/views/WheresMyGene/common/store/actions";
 import { Gene } from "src/views/WheresMyGene/common/types";
 import QuickSelect from "./components/QuickSelect";
+import GeneAutocomplete from "./components/GeneAutocomplete";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 import {
   StyledButtonWrapper,
@@ -23,6 +24,8 @@ import { track } from "src/common/analytics";
 import { StyledAutocomplete } from "src/views/WheresMyGene/components/HeatMap/style";
 import { InputAdornment, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { FixedSizeList, ListChildComponentProps } from "react-window";
+import { Style } from "@blueprintjs/icons/lib/esm/generated-icons/16px/paths";
 
 export default function GeneSearchBar({
   className,
@@ -73,7 +76,7 @@ export default function GeneSearchBar({
   return (
     <Container {...{ className }}>
       <ActionWrapper>
-        {/* <QuickSelect
+        {/* <GeneAutocomplete
           items={genes}
           itemsByName={genesByName}
           selected={selectedGeneOptions}
@@ -81,7 +84,7 @@ export default function GeneSearchBar({
           setSelected={handleSelectGenes}
           onItemNotFound={handleGeneNotFound}
           label=""
-          text="Gene"
+          text="Caro"
           dataTestId="add-gene-btn"
           placeholder="Search or paste comma separated gene names"
           isLoading={isLoadingPrimaryFilters}
@@ -127,7 +130,6 @@ export default function GeneSearchBar({
             </StyledClearButton>
           </StyledButtonWrapper>
         )}
-
         {isLoadingPrimaryFilters && (
           <LoadingIndicatorWrapper>
             <LoadingIndicator sdsStyle="tag" />
