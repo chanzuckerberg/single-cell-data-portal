@@ -399,6 +399,10 @@ export default function WheresMyGene(): JSX.Element {
           <ScreenTint isDownloading={downloadStatus} />
 
           <HeatMap
+            /**
+             * (thuang): Use the selected organism ID to reset the heatmap state
+             */
+            key={selectedOrganismId}
             echartsRendererMode={echartsRendererMode}
             cellTypeSortBy={sortBy.cellTypes}
             geneSortBy={sortBy.genes}
@@ -411,10 +415,10 @@ export default function WheresMyGene(): JSX.Element {
             }
             scaledMeanExpressionMax={scaledMeanExpressionMax}
             scaledMeanExpressionMin={scaledMeanExpressionMin}
-            selectedOrganismId={selectedOrganismId}
             allChartProps={allChartProps}
             setAllChartProps={setAllChartProps}
             setTissuesByName={setTissuesByName}
+            tissuesByName={tissuesByName}
             expandedTissues={expandedTissues}
             setExpandedTissues={setExpandedTissues}
           />

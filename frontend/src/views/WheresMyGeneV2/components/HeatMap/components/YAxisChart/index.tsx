@@ -42,7 +42,6 @@ interface Props {
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
   handleExpandCollapse: (tissueID: string, tissueName: Tissue) => void;
   expandedTissues: Set<Tissue>;
-  selectedOrganismId: string;
 }
 
 // List of Tissues to exclude from FMG
