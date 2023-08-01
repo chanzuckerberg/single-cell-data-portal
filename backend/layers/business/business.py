@@ -24,6 +24,7 @@ from backend.layers.business.exceptions import (
     CollectionVersionException,
     DatasetIngestException,
     DatasetInWrongStatusException,
+    DatasetIsNotPublishedException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
     DatasetUpdateException,
@@ -433,7 +434,14 @@ class BusinessLogic(BusinessLogicInterface):
                 new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
                     collection_version_id, existing_dataset_version_id
                 )
-                self.delete_prior_unpublished_dataset_versions(new_dataset_version)
+                versions_to_delete = list(
+                    filter(
+                        lambda dv: dv.version_id != new_dataset_version.version_id,
+                        self.get_unpublished_dataset_versions(new_dataset_version.dataset_id),
+                    )
+                )  # resultant list will only contain one Dataset version unless a pipeline error had occurred
+                self.delete_dataset_version_assets(versions_to_delete)
+                self.database_provider.delete_dataset_versions(versions_to_delete)
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
             # adds new dataset version to collection version
@@ -466,7 +474,17 @@ class BusinessLogic(BusinessLogicInterface):
         dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
         if dataset_version.canonical_dataset.published_at and not delete_published:
             raise CollectionUpdateException from None
-        self.delete_prior_unpublished_dataset_versions(dataset_version, delete_most_recent=True)
+        if not dataset_version.canonical_dataset.published_at and delete_published:
+            raise DatasetIsNotPublishedException from None
+        unpublished_versions = self.get_unpublished_dataset_versions(dataset_version.dataset_id)
+        self.delete_dataset_version_assets(unpublished_versions)
+        self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
+        if dataset_version.canonical_dataset.published_at:
+            # Dataset has been published; only delete unpublished version rows and artifact rows
+            self.database_provider.delete_dataset_versions(unpublished_versions)
+        else:
+            # Dataset has not been published; delete canonical row and all associated version rows and artifact rows
+            self.database_provider.delete_canonical_datasets([dataset_version.canonical_dataset])
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
@@ -616,8 +634,17 @@ class BusinessLogic(BusinessLogicInterface):
         (Note: for performance reasons, the check is performed by the underlying layer)
         """
         collection_version = self._assert_collection_version_unpublished(version_id)
-        for dataset_version in collection_version.datasets:
-            self.delete_prior_unpublished_dataset_versions(dataset_version, delete_most_recent=True)
+        unpublished_versions_of_published_datasets, unpublished_datasets, versions_to_delete_from_s3 = [], [], []
+        for dv in collection_version.datasets:
+            unpublished_versions = self.get_unpublished_dataset_versions(dv.canonical_dataset.dataset_id)
+            versions_to_delete_from_s3.extend(unpublished_versions)
+            if dv.canonical_dataset.published_at:
+                unpublished_versions_of_published_datasets.extend(unpublished_versions)
+            else:
+                unpublished_datasets.append(dv.canonical_dataset)
+        self.delete_dataset_version_assets(versions_to_delete_from_s3)
+        self.database_provider.delete_dataset_versions(unpublished_versions_of_published_datasets)
+        self.database_provider.delete_canonical_datasets(unpublished_datasets)
         self.database_provider.delete_collection_version(version_id)
 
     def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
@@ -642,52 +669,39 @@ class BusinessLogic(BusinessLogicInterface):
             dataset_version_ids_to_delete.extend([dv.version_id.id for dv in collection_version.datasets])
         return self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete)
 
-    def delete_prior_unpublished_dataset_versions(
-        self, new_dataset_version: DatasetVersion, delete_most_recent: bool = False
-    ) -> None:
+    def get_unpublished_dataset_versions(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
-        Delete all prior, never-published versions of the same Dataset as that to which dataset_version_id belongs, if
-        any exist. Also remove their public-access Dataset assets and cxg assets. Intended to be called after
-        successful ingestion of a new version of a Dataset.
-
-        :param new_dataset_version: the most recent version of the Dataset
-        :param delete_most_recent: boolean value to delete the most recent version (self) of the Dataset as well. Set
-        to True when deleting a Collection version.
+        Get all unpublished versions for a Dataset, as determined by the DatasetVersion argument, currently in the
+        database. Generally this will be one Dataset version unless a Dataset is in the midst of being replaced, in
+        which case there will be two DatasetVersion objects associated with the Dataset. It is also possible that
+        through pipeline errors, multiple unpublished DatasetVersionTable rows end up being persisted in the database,
+        in which case this function can be used for cleanup.
         """
-        all_versions = self.database_provider.get_all_versions_for_dataset(new_dataset_version.dataset_id)
-        unpublished_collection_version = self.get_unpublished_collection_version_from_canonical(
-            all_versions[0].collection_id
-        )
-        if not unpublished_collection_version:
-            return None  # short circuit
-        canonical_dataset = new_dataset_version.canonical_dataset
+        all_versions = self.database_provider.get_all_versions_for_dataset(dataset_id)
+        dataset = all_versions[0].canonical_dataset
         # Determine when the current mapped version was created
         mapped_version_created_at = (
-            next(d_v.created_at for d_v in all_versions if d_v.version_id == canonical_dataset.dataset_version_id)
-            if canonical_dataset.published_at
+            next(d_v.created_at for d_v in all_versions if d_v.version_id == dataset.dataset_version_id)
+            if dataset.published_at
             else datetime.min
         )
-        # Gather all Dataset versions that were created after the current mapped version; they are to be deleted
-        dataset_versions_to_delete = list(
+        # Gather all Dataset versions that were created after the current mapped version
+        return list(
             filter(
-                lambda d_v: d_v.created_at > mapped_version_created_at
-                and (d_v.version_id != new_dataset_version.version_id or delete_most_recent),
+                lambda d_v: d_v.created_at > mapped_version_created_at,
                 all_versions,
             )
         )
-        self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions_to_delete])
-        logger.info(f"djh going to delete artifacts for dataset version id {new_dataset_version.version_id}")
-        self.delete_artifacts(reduce(lambda artifacts, dv: artifacts + dv.artifacts, dataset_versions_to_delete, []))
-        [
-            self.database_provider.delete_dataset_from_collection_version(
-                unpublished_collection_version.version_id, dv.version_id, delete_dv_row=True
-            )
-            for dv in dataset_versions_to_delete
-        ]
+
+    def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> List[DatasetVersion]:
+        self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions])
+        logger.info(f"djh going to delete artifacts for {[dv.version_id for dv in dataset_versions]}")
+        self.delete_artifacts(reduce(lambda artifacts, dv: artifacts + dv.artifacts, dataset_versions, []))
+        return dataset_versions
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
-        Tombstones a canonical collection
+        Tombstone a published Collection. For admin use only.
         """
         self.delete_all_dataset_versions_from_public_bucket_for_collection(collection_id)
         self.database_provider.delete_canonical_collection(collection_id)

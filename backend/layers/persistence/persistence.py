@@ -4,14 +4,14 @@ import logging
 import uuid
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any, Iterable, List, Optional, Tuple, Union
 
 from sqlalchemy import create_engine, delete
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from backend.common.corpora_config import CorporaDbConfig
-from backend.layers.business.exceptions import CollectionIsPublishedException
+from backend.layers.business.exceptions import CollectionIsPublishedException, DatasetIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -509,6 +509,41 @@ class DatabaseProvider(DatabaseProviderInterface):
                     raise CollectionIsPublishedException(f"Published Collection Version {version_id} cannot be deleted")
                 session.delete(version)
 
+    def delete_canonical_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
+        """
+        Delete an unpublished DatasetTable row (and its dependent DatasetVersionTable and DatasetArtifactTable rows)
+        """
+        with self._manage_session() as session:
+            for d in datasets:
+                d_id = d.id if isinstance(d, DatasetId) else d.dataset_id.id
+                dataset_row = session.query(DatasetTable).filter_by(id=d_id).one()
+                if dataset_row.published_at:
+                    raise DatasetIsPublishedException(f"Published Dataset {d_id} cannot be deleted")
+                dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=d_id).all()
+                self._delete_dataset_version_and_artifact_rows(dataset_versions, session)
+                session.delete(dataset_row)
+
+    def delete_dataset_versions(self, dataset_versions: List[Union[DatasetVersionId, DatasetVersion]]) -> None:
+        """
+        Deletes DatasetVersionTable rows.
+        """
+        with self._manage_session() as session:
+            ids = [d_v.id if isinstance(d_v, DatasetVersionId) else d_v.version_id.id for d_v in dataset_versions]
+            dataset_version_rows = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(ids)).all()
+            self._delete_dataset_version_and_artifact_rows(dataset_version_rows, session)
+
+    def _delete_dataset_version_and_artifact_rows(
+        self, dataset_version_rows: List[DatasetVersionTable], session: Session
+    ) -> None:
+        """
+        Delete DatasetVersionTable rows (and their dependent DatasetArtifactTable rows)
+        """
+        for d_v_row in dataset_version_rows:
+            artifacts = d_v_row.artifacts
+            artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_([artifacts]))
+            session.execute(artifact_delete_statement)
+            session.delete(d_v_row)
+
     def finalize_collection_version(
         self,
         collection_id: CollectionId,
@@ -793,17 +828,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             updated_datasets.remove(uuid.UUID(dataset_version_id.id))
             collection_version.datasets = updated_datasets
             if delete_dv_row:
-                dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one()
-                artifacts = (
-                    session.query(DatasetArtifactTable)
-                    .filter(DatasetArtifactTable.id.in_([str(i) for i in dataset_version.artifacts]))
-                    .all()
-                )  # noqa
-                artifact_delete_statement = delete(DatasetArtifactTable).where(
-                    DatasetArtifactTable.id.in_([a.id for a in artifacts])
-                )
-                session.execute(artifact_delete_statement)
-                session.delete(dataset_version)
+                self.delete_dataset_versions([dataset_version_id])
 
     def replace_dataset_in_collection_version(
         self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId

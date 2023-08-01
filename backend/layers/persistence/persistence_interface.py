@@ -1,5 +1,7 @@
 from datetime import datetime
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple, Union
+
+from sqlalchemy.orm import Session
 
 from backend.layers.common.entities import (
     CanonicalCollection,
@@ -21,6 +23,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
+from backend.layers.persistence.orm import DatasetVersionTable
 
 
 class PersistenceException(Exception):
@@ -110,10 +113,28 @@ class DatabaseProviderInterface:
         Deletes a collection version.
         """
 
+    def delete_canonical_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
+        """
+        Delete an unpublished DatasetTable row (and its dependent DatasetVersionTable and DatasetArtifactTable rows)
+        """
+
+    def delete_dataset_versions(self, dataset_versions: List[Union[DatasetVersionId, DatasetVersion]]) -> None:
+        """
+        Deletes DatasetVersionTable rows.
+        """
+
+    def _delete_dataset_version_and_artifact_rows(
+        self, dataset_version_rows: List[DatasetVersionTable], session: Session
+    ) -> None:
+        """
+        Delete DatasetVersionTable rows (and their dependent DatasetArtifactTable rows)
+        """
+
     def finalize_collection_version(
         self,
         collection_id: CollectionId,
         version_id: CollectionVersionId,
+        schema_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
     ) -> List[str]:

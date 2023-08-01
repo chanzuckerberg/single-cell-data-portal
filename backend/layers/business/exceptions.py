@@ -89,6 +89,14 @@ class DatasetUpdateException(BusinessException):
     pass
 
 
+class DatasetIsPublishedException(DatasetUpdateException):
+    pass
+
+
+class DatasetIsNotPublishedException(DatasetUpdateException):
+    pass
+
+
 class CollectionPublishException(BusinessException):
     pass
 

@@ -22,6 +22,7 @@ from backend.layers.business.exceptions import (
     CollectionNotFoundException,
     CollectionUpdateException,
     DatasetInWrongStatusException,
+    DatasetIsNotPublishedException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
     InvalidURIException,
@@ -87,16 +88,20 @@ def delete(token_info: dict, collection_id: str, dataset_id: str, delete_publish
     if dataset_version.version_id not in [v.version_id for v in collection_version.datasets]:
         raise ForbiddenHTTPException(f"Dataset {dataset_id} does not belong to a collection")
 
-    delete_published_flag = False
     if user_info.is_cxg_admin() and delete_published == "true" and not collection_version.published_at:
-        delete_published_flag = True
-
-    try:
-        business_logic.remove_dataset_version(
-            collection_version.version_id, dataset_version.version_id, delete_published_flag
-        )
-    except CollectionUpdateException:
-        raise MethodNotAllowedException(detail="Cannot delete a public Dataset") from None
+        try:
+            business_logic.remove_dataset_version(
+                collection_version.version_id, dataset_version.version_id, delete_published=True
+            )
+        except DatasetIsNotPublishedException:
+            raise InvalidParametersHTTPException(
+                detail='Query param "delete_published=true" is set but Dataset is not published.'
+            ) from None
+    else:
+        try:
+            business_logic.remove_dataset_version(collection_version.version_id, dataset_version.version_id)
+        except CollectionUpdateException:
+            raise MethodNotAllowedException(detail="Cannot delete a public Dataset") from None
     return Response(status=202)
     # End of duplicate block
 
