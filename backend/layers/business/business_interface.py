@@ -77,7 +77,7 @@ class BusinessLogicInterface:
     def delete_collection(self, collection_id: CollectionId) -> None:
         pass
 
-    def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> List[DatasetVersion]:
+    def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> None:
         pass
 
     def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:

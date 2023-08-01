@@ -698,11 +698,10 @@ class BusinessLogic(BusinessLogicInterface):
             )
         )
 
-    def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> List[DatasetVersion]:
+    def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> None:
         self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions])
         logger.info(f"djh going to delete artifacts for {[dv.version_id for dv in dataset_versions]}")
         self.delete_artifacts(reduce(lambda artifacts, dv: artifacts + dv.artifacts, dataset_versions, []))
-        return dataset_versions
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
         """

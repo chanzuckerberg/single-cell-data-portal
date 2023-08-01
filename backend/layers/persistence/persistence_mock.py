@@ -1,9 +1,9 @@
 import copy
 from datetime import datetime
 from fnmatch import fnmatchcase
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from backend.layers.business.exceptions import CollectionIsPublishedException
+from backend.layers.business.exceptions import CollectionIsPublishedException, DatasetIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -190,11 +190,40 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[new_version_id.id] = collection_version
         return new_version_id
 
+    def delete_collection(self, collection_id: CollectionId) -> None:
+        collection = self.collections.get(collection_id.id)
+        if collection and collection.originally_published_at is not None:
+            raise CollectionIsPublishedException("Can only delete unpublished collections")
+        del self.collections[collection_id.id]
+
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         collection_version = self.collections_versions.get(version_id.id)
         if collection_version and collection_version.published_at is not None:
             raise CollectionIsPublishedException("Can only delete unpublished collections")
         del self.collections_versions[version_id.id]
+
+    def delete_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
+        for d in datasets:
+            d_id = d.id if isinstance(d, DatasetId) else d.dataset_id.id
+            dataset = self.datasets.get(d_id)
+            if dataset.published_at:
+                raise DatasetIsPublishedException(f"Published Dataset {d_id} cannot be deleted")
+            dataset_versions = list(
+                filter(lambda dv: dv.dataset_id == dataset.dataset_id, self.datasets_versions.values())
+            )
+            self._delete_dataset_version_and_artifact_rows(dataset_versions, None)  # None in place of Session
+            del self.datasets[d_id]
+
+    def delete_dataset_versions(self, dataset_versions: List[Union[DatasetVersionId, DatasetVersion]]) -> None:
+        ids = [d_v.id if isinstance(d_v, DatasetVersionId) else d_v.version_id.id for d_v in dataset_versions]
+        dataset_version_rows = [self.datasets_versions.get(_id) for _id in ids]
+        self._delete_dataset_version_and_artifact_rows(dataset_version_rows, None)  # None in place of Session
+
+    def _delete_dataset_version_and_artifact_rows(
+        self, dataset_version_rows: List[DatasetVersion], session: Any
+    ) -> None:
+        for d_v_row in dataset_version_rows:
+            del self.datasets_versions[d_v_row.version_id.id]  # Artifacts live on DatasetVersion; they get deleted
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         version = self.collections_versions.get(version_id.id)
@@ -419,15 +448,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         pass
 
     def delete_dataset_from_collection_version(
-        self,
-        collection_version_id: CollectionVersionId,
-        dataset_version_id: DatasetVersionId,
-        delete_dv_row: bool = False,
+        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
     ) -> None:
         version = self.collections_versions[collection_version_id.id]
         version.datasets = [d for d in version.datasets if d != dataset_version_id]
-        if delete_dv_row:
-            del self.datasets_versions[dataset_version_id.id]
 
     def replace_dataset_in_collection_version(
         self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
