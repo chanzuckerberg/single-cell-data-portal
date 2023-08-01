@@ -40,11 +40,11 @@ resource aws_batch_job_definition schema_migrations_swap {
     resourceRequirements = [
       {
         type= "VCPU",
-        Value="12"
+        Value="6"
       },
       {
         Type="MEMORY",
-        Value = "95000"
+        Value = "47500"
       }
     ]
     linuxParameters= {
@@ -118,23 +118,13 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "Type": "Task",
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
-        "JobDefinition": "${local.job_definition_arn}",
+        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
         "JobName": "gather_collections",
         "JobQueue": "${var.job_queue_arn}",
         "Timeout": {
           "AttemptDurationSeconds": 600
         },
         "ContainerOverrides": {
-          "ResourceRequirements": [
-            {
-              "Type": "VCPU",
-              "Value": "2"
-            },
-            {
-              "Type": "MEMORY",
-              "Value": "2048"
-            }
-          ],
           "Environment": [
             {
               "Name": "STEP_NAME",
@@ -178,7 +168,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Task",
             "Resource": "arn:aws:states:::batch:submitJob.sync",
             "Parameters": {
-              "JobDefinition": "${local.job_definition_arn}",
+              "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
               "JobName": "collection_migration",
               "JobQueue": "${var.job_queue_arn}",
               "Timeout": {
@@ -243,7 +233,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Task",
             "Resource": "arn:aws:states:::batch:submitJob.sync",
             "Parameters": {
-            "JobDefinition": "${local.job_definition_arn}",
+            "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
             "JobName": "Collection_publish",
             "JobQueue": "${var.job_queue_arn}",
               "Timeout": {
@@ -389,7 +379,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             },
             "ItemsPath": "$.datasets",
             "Next": "CollectionPublish",
-            "MaxConcurrency": 40,
+            "MaxConcurrency": 20,
             "Catch": [
               {
                 "ErrorEquals": [
@@ -424,7 +414,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "Type": "Task",
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
-        "JobDefinition": "${local.job_definition_arn}",
+        "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
         "JobName": "report",
         "JobQueue": "${var.job_queue_arn}",
         "Timeout": {
@@ -433,12 +423,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
         "ContainerOverrides": {
           "ResourceRequirements": [
             {
-              "Type": "VCPU",
-              "Value": "2"
-            },
-            {
               "Type": "MEMORY",
-              "Value": "2048"
+              "Value": "8048"
             }
           ],
           "Environment": [
