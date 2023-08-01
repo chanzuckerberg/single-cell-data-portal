@@ -29,6 +29,14 @@ def make_mock_dataset_version(
     return dataset_version
 
 
+def make_mock_collection_version(datasets: list):
+    return mock.Mock(
+        datasets=datasets,
+        collection_id=CollectionId("collection_id"),
+        version_id=CollectionVersionId("collection_version_id"),
+    )
+
+
 @pytest.fixture
 def published_collection():
     collection = mock.Mock(spec=CollectionVersionWithDatasets, name="published")
@@ -72,18 +80,26 @@ def private():
 
 
 @pytest.fixture
-def schema_migrate_and_collections(published_collection, revision, private) -> Tuple[mock.Mock, Dict[str, List]]:
+def schema_migrate(tmpdir):
     business_logic = mock.Mock()
+    schema_migrate = SchemaMigrate(business_logic)
+    schema_migrate.local_path = str(tmpdir)
+    return schema_migrate
+
+
+@pytest.fixture
+def schema_migrate_and_collections(
+    tmpdir, schema_migrate, published_collection, revision, private
+) -> Tuple[SchemaMigrate, Dict[str, List]]:
+    db = {
+        published_collection.version_id.id: published_collection,
+        revision[0].version_id.id: revision[0],
+        revision[1].version_id.id: revision[1],
+        private.version_id.id: private,
+    }
 
     def _get_collection_version(collection_version_id):
-        db = {
-            published_collection.version_id.id: published_collection,
-            revision[0].version_id.id: revision[0],
-            revision[1].version_id.id: revision[1],
-            private.version_id.id: private,
-        }
-        return db[collection_version_id.id]
+        return db.get(collection_version_id.id)
 
-    business_logic.get_collection_version = _get_collection_version
-    schema_migrate = SchemaMigrate(business_logic)
+    schema_migrate.business_logic.get_collection_version = _get_collection_version
     return schema_migrate, {"published": [published_collection], "revision": revision, "private": [private]}
