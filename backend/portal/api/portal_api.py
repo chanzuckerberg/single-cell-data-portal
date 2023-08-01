@@ -520,7 +520,7 @@ def delete_collection(collection_id: str, token_info: dict):
         raise MethodNotAllowedException("Cannot delete a published Collection through API -- contact CXG Admins")
 
     try:
-        get_business_logic().delete_collection_version(resource_id)
+        get_business_logic().delete_collection_version(version)
     except CollectionIsPublishedException:
         raise ForbiddenHTTPException() from None
 

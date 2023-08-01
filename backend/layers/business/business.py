@@ -628,12 +628,11 @@ class BusinessLogic(BusinessLogicInterface):
         added_version_id = self.database_provider.add_collection_version(collection_id)
         return self.get_collection_version(added_version_id)
 
-    def delete_collection_version(self, version_id: CollectionVersionId) -> None:
+    def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:
         """
         Deletes a collection version. This method will raise an error if the version is published.
         (Note: for performance reasons, the check is performed by the underlying layer)
         """
-        collection_version = self._assert_collection_version_unpublished(version_id)
         unpublished_versions_of_published_datasets, unpublished_datasets, versions_to_delete_from_s3 = [], [], []
         for dv in collection_version.datasets:
             unpublished_versions = self.get_unpublished_dataset_versions(dv.canonical_dataset.dataset_id)
@@ -647,7 +646,7 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.delete_dataset_versions(unpublished_versions_of_published_datasets)
         # Delete DatasetTable, DatasetVersionTable, and DatasetArtifactTable rows if Dataset is unpublished (new)
         self.database_provider.delete_datasets(unpublished_datasets)
-        self.database_provider.delete_collection_version(version_id)
+        self.database_provider.delete_collection_version(collection_version.version_id)
         if not collection_version.canonical_collection.originally_published_at:
             # Collection was never published; delete CollectionTable row
             self.database_provider.delete_collection(collection_version.collection_id)

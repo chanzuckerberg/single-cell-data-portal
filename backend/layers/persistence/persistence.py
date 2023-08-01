@@ -556,7 +556,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(ids))
             session.execute(artifact_delete_statement)
             session.delete(d_v_row)
-            session.flush()
+        session.flush()
 
     def finalize_collection_version(
         self,

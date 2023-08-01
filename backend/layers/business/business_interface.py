@@ -86,7 +86,7 @@ class BusinessLogicInterface:
     def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
         pass
 
-    def delete_collection_version(self, version_id: CollectionVersionId) -> None:
+    def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:
         pass
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
