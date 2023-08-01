@@ -1,0 +1,47 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +5ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +108ms
+  pw:api   "commit" event fired +35ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +0ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +35ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +69ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +5ms
+  pw:api   "commit" event fired +88ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +3ms
+  pw:api   "networkidle" event fired +550ms
+  pw:api <= page.goto succeeded +2s
+  pw:api => page.waitForLoadState started +2ms
+  pw:api <= page.waitForLoadState succeeded +15ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api   not waiting, "networkidle" event already fired +8ms
+  pw:api   navigated to "about:blank" +305ms
+  pw:api <= locator.elementHandles succeeded +98ms
+  pw:api => elementHandle.textContent started +0ms
+  pw:api => elementHandle.textContent started +8ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api => elementHandle.textContent started +8ms
+  pw:api <= elementHandle.textContent succeeded +171ms
+  pw:api <= elementHandle.textContent succeeded +21ms
+  pw:api <= elementHandle.textContent succeeded +20ms
+  pw:api <= elementHandle.textContent succeeded +11ms
+  pw:api <= elementHandle.textContent succeeded +12ms
+  pw:api => locator.elementHandles started +4ms
+  pw:api <= locator.elementHandles succeeded +156ms
+  pw:api   "networkidle" event fired +45ms
+  pw:api taking page screenshot +142ms
+  pw:api => browserContext.close started +109ms
+  pw:api <= browserContext.close succeeded +4s
