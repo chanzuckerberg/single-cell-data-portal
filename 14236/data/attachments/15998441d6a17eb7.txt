@@ -1,0 +1,75 @@
+  pw:api => selectors.setTestIdAttribute started +3ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +47ms
+  pw:api   "commit" event fired +20ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +43ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +8ms
+  pw:api   "commit" event fired +155ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +7ms
+  pw:api   "networkidle" event fired +551ms
+  pw:api <= page.goto succeeded +900ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api => locator.scrollIntoViewIfNeeded started +2ms
+  pw:api   not waiting, "networkidle" event already fired +5ms
+  pw:api waiting for getByTestId('section-3') +187ms
+  pw:api   navigated to "about:blank" +50ms
+  pw:api   locator resolved to hidden <div id="section-3" data-testid="section-3"></div> +60ms
+  pw:api   waiting for element to be  and stable +30ms
+  pw:api   element is  and stable +24ms
+  pw:api <= locator.scrollIntoViewIfNeeded succeeded +4ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') to be visible +177ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-source-data-table">…</div> +114ms
+  pw:api <= locator.waitFor succeeded +26ms
+  pw:api => expect.toBeInViewport started +10ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api expect.toBeInViewport with timeout 10000ms +63ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') +0ms
+  pw:api   "networkidle" event fired +17ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-source-data-table">…</div> +28ms
+  pw:api <= expect.toBeInViewport succeeded +29ms
+  pw:api <= locator.elementHandles succeeded +9ms
+  pw:api => elementHandle.click started +1ms
+  pw:api attempting click action +29ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +28ms
+  pw:api   click action done +36ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= elementHandle.click succeeded +9ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +15ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +165ms
+  pw:api <= locator.waitFor succeeded +360ms
+  pw:api => expect.toBeInViewport started +2ms
+  pw:api => expect.not.toBeInViewport started +3ms
+  pw:api expect.toBeInViewport with timeout 10000ms +199ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') +0ms
+  pw:api expect.not.toBeInViewport with timeout 10000ms +36ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') +0ms
+  pw:api taking page screenshot +136ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-ontology-dag-view">…</div> +15ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-source-data-table">…</div> +0ms
+  pw:api <= expect.toBeInViewport succeeded +0ms
+  pw:api <= expect.not.toBeInViewport succeeded +0ms
+  pw:api => browserContext.close started +174ms
+  pw:api <= browserContext.close succeeded +5s
