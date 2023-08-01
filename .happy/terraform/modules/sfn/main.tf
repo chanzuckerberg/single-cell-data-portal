@@ -68,7 +68,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         },
         "ResultPath": null,
-        "TimeoutSeconds": ${local.timeout}
+        "TimeoutSeconds": ${local.timeout},
         "Catch": [
           {
             "ErrorEquals": [
