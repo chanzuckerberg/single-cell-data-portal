@@ -27,7 +27,7 @@ def delete(collection_id: str, token_info: dict, delete_published: str) -> Respo
         else:
             raise MethodNotAllowedException(detail="Cannot delete a published collection through API.")
     else:
-        get_business_logic().delete_collection_version(collection_version.version_id)
+        get_business_logic().delete_collection_version(collection_version)
     return make_response("", 204)
 
 

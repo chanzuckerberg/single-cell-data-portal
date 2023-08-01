@@ -1200,7 +1200,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
-        self.business_logic.delete_collection_version(new_version.version_id)
+        self.business_logic.delete_collection_version(new_version)
 
         # The version should no longer exist
         deleted_version = self.business_logic.get_collection_version(new_version.version_id)
