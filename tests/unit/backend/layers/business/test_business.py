@@ -475,7 +475,7 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
 
         # Add a tombstoned Collection
         collection_version_to_tombstone: CollectionVersionWithDatasets = self.initialize_published_collection()
-        self.database_provider.delete_canonical_collection(collection_version_to_tombstone.collection_id)
+        self.database_provider.tombstone_collection(collection_version_to_tombstone.collection_id)
 
         # Confirm tombstoned Collection is in place
         all_collections_including_tombstones = self.database_provider.get_all_collections_versions(get_tombstoned=True)

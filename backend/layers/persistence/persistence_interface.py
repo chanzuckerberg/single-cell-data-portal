@@ -82,7 +82,7 @@ class DatabaseProviderInterface:
         Retrieves all the collection versions that are mapped to a canonical collection.
         """
 
-    def delete_canonical_collection(self, collection_id: CollectionId) -> None:
+    def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
         Deletes (tombstones) a canonical collection.
         """
@@ -108,12 +108,17 @@ class DatabaseProviderInterface:
         Returns the new version.
         """
 
+    def delete_collection(self, collection_id: CollectionId) -> None:
+        """
+        Delete an unpublished Collection
+        """
+
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         """
         Deletes a collection version.
         """
 
-    def delete_canonical_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
+    def delete_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
         """
         Delete an unpublished DatasetTable row (and its dependent DatasetVersionTable and DatasetArtifactTable rows)
         """

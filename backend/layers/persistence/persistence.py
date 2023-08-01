@@ -436,7 +436,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 )
                 yield self._row_to_collection_version(version, canonical)
 
-    def delete_canonical_collection(self, collection_id: CollectionId) -> None:
+    def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
         Deletes (tombstones) a canonical collection.
         """
@@ -498,6 +498,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(new_version)
             return CollectionVersionId(new_version_id)
 
+    def delete_collection(self, collection_id: CollectionId) -> None:
+        """
+        Delete an unpublished Collection
+        """
+        pass
+
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         """
         Deletes a collection version, if it is unpublished.
@@ -509,7 +515,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     raise CollectionIsPublishedException(f"Published Collection Version {version_id} cannot be deleted")
                 session.delete(version)
 
-    def delete_canonical_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
+    def delete_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
         """
         Delete an unpublished DatasetTable row (and its dependent DatasetVersionTable and DatasetArtifactTable rows)
         """
@@ -528,7 +534,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         Deletes DatasetVersionTable rows.
         """
         with self._manage_session() as session:
-            ids = [d_v.id if isinstance(d_v, DatasetVersionId) else d_v.version_id.id for d_v in dataset_versions]
+            ids = [
+                str(d_v.id) if isinstance(d_v, DatasetVersionId) else str(d_v.version_id.id) for d_v in dataset_versions
+            ]
             dataset_version_rows = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(ids)).all()
             self._delete_dataset_version_and_artifact_rows(dataset_version_rows, session)
 
@@ -539,8 +547,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         Delete DatasetVersionTable rows (and their dependent DatasetArtifactTable rows)
         """
         for d_v_row in dataset_version_rows:
-            artifacts = d_v_row.artifacts
-            artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_([artifacts]))
+            ids = [str(_id) for _id in d_v_row.artifacts]
+            artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(ids))
             session.execute(artifact_delete_statement)
             session.delete(d_v_row)
 

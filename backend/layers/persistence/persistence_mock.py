@@ -146,7 +146,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     continue
                 yield self._update_version_with_canonical(collection_version)
 
-    def delete_canonical_collection(self, collection_id: CollectionId) -> None:
+    def tombstone_collection(self, collection_id: CollectionId) -> None:
         collection = self.collections[collection_id.id]
         collection.tombstoned = True
         # Tombstone Datasets individually as well
