@@ -39,7 +39,7 @@ def transform(*, corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
         The number of cells with non zero expression for each gene for each group of cell attributes
     """
 
-    cell_labels, cube_index = make_cube_index(corpus_path=corpus_path, cube_dims=cube_dims)
+    cell_labels, cube_index = make_cube_index(tdb_group=corpus_path, cube_dims=cube_dims)
     n_groups = len(cube_index)
     n_genes = len(gene_ontology_term_ids)
 
