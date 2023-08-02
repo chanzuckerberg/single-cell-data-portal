@@ -1,5 +1,8 @@
 # Same file as https://github.com/chanzuckerberg/single-cell-infra/blob/main/.happy/terraform/modules/sfn/main.tf
 # This is used for environment (dev, staging, prod) deployments
+locals {
+  timeout = 86400 # 24 hours
+}
 
 resource "aws_sfn_state_machine" "state_machine" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-sfn"
@@ -65,7 +68,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         },
         "ResultPath": null,
-        "TimeoutSeconds": 36000,
+        "TimeoutSeconds": ${local.timeout},
         "Catch": [
           {
             "ErrorEquals": [
@@ -160,7 +163,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
-                "TimeoutSeconds": 36000
+                "TimeoutSeconds": ${local.timeout}
               }
             }
           }
@@ -239,7 +242,7 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
           ]
         }
       },
-      "TimeoutSeconds": 36000
+      "TimeoutSeconds": ${local.timeout}
     }
   }
 }
@@ -275,7 +278,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
           ]
         }
       },
-      "TimeoutSeconds": 36000
+      "TimeoutSeconds": ${local.timeout}
     }
   }
 }
