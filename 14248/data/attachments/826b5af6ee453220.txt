@@ -1,0 +1,56 @@
+  pw:api => selectors.setTestIdAttribute started +8ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +47ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +10ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +54ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +19ms
+  pw:api   "commit" event fired +259ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +147ms
+  pw:api   "networkidle" event fired +563ms
+  pw:api <= page.goto succeeded +639ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api <= page.waitForLoadState succeeded +13ms
+  pw:api => locator.click started +1ms
+  pw:api   not waiting, "networkidle" event already fired +2ms
+  pw:api waiting for getByTestId('cell-guide-card-canonical-marker-genes-table-selector') +286ms
+  pw:api   navigated to "about:blank" +64ms
+  pw:api   locator resolved to <button class="css-1t3feg1-TableSelectorButton e1mdzv35"…>Canonical (HuBMAP)</button> +49ms
+  pw:api attempting click action +6ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +27ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +209ms
+  pw:api   click action done +81ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +6ms
+  pw:api <= locator.click succeeded +29ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +47ms
+  pw:api => elementHandle.textContent started +1ms
+  pw:api => elementHandle.textContent started +1ms
+  pw:api => elementHandle.textContent started +2ms
+  pw:api   "networkidle" event fired +67ms
+  pw:api <= elementHandle.textContent succeeded +13ms
+  pw:api <= elementHandle.textContent succeeded +12ms
+  pw:api <= elementHandle.textContent succeeded +13ms
+  pw:api => locator.elementHandles started +4ms
+  pw:api <= locator.elementHandles succeeded +72ms
+  pw:api taking page screenshot +191ms
+  pw:api => browserContext.close started +102ms
+  pw:api <= browserContext.close succeeded +3s
