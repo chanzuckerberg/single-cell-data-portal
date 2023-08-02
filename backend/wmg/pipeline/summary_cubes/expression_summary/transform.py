@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from typing import Tuple
 
 import numba as nb
@@ -15,6 +16,7 @@ from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 logger = logging.getLogger(__name__)
 
 
+@dataclass
 class TransformResult:
     cube_index: pd.DataFrame
     cube_sum: np.ndarray
@@ -78,7 +80,7 @@ def reduce_X(
             logger.info(f"reduce integrated expression data, i={i}")
             gene_expression_sum_x_cube_dimension(
                 rankit_values=result["rankit"].values,
-                obs_idx=result["obs_idx"].values,
+                obs_idxs=result["obs_idx"].values,
                 var_idx=result["var_idx"].values,
                 cube_indices=cube_indices,
                 sum_into=cube_sum,

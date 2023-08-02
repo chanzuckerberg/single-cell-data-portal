@@ -42,9 +42,9 @@ def _load(
     if default:
         non_indexed_dims = expression_summary_non_indexed_dims_default
         dims, vals = build_in_mem_cube_default(
-            gene_ontology_term_ids=gene_ontology_term_ids,
+            gene_ids=gene_ontology_term_ids,
             cube_index=cube_index,
-            non_indexed_dims=non_indexed_dims,
+            other_cube_attrs=non_indexed_dims,
             cube_sum=cube_sum,
             cube_nnz=cube_nnz,
             cube_sqsum=cube_sqsum,
@@ -105,7 +105,7 @@ def create_expression_summary_cube(corpus_path: str, default=False) -> None:
             cube_index=result.cube_index,
             cube_sum=result.cube_sum,
             cube_nnz=result.cube_nnz,
-            cube_sqsum=result.sqsum,
+            cube_sqsum=result.cube_sqsum,
             default=default,
         )
     gene_count = len(gene_ontology_term_ids)
