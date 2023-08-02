@@ -554,6 +554,8 @@ class DatabaseProvider(DatabaseProviderInterface):
                 for previous_d_id in previous_d_ids:
                     if previous_d_id not in dataset_ids_for_new_collection_version:
                         dataset_ids_to_tombstone.append(previous_d_id)
+
+            # get all dataset versions for the datasets that are being tombstoned
             dataset_version_ids_to_delete_from_s3 = []
             if dataset_ids_to_tombstone:
                 datasets = session.query(DatasetTable).filter(DatasetTable.id.in_(dataset_ids_to_tombstone)).all()
@@ -562,6 +564,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     dataset_all_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset.id).all()
                     dataset_version_ids_to_delete_from_s3.extend([dv.id for dv in dataset_all_versions])
 
+            # update dataset versions for datasets that are not being tombstoned
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
             for dataset_version, dataset in (
                 session.query(DatasetVersionTable, DatasetTable)
@@ -569,7 +572,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 .filter(DatasetVersionTable.id.in_(dataset_version_ids))
                 .all()
             ):
-                dataset.version_id = dataset_version.id
+                dataset.version_id = dataset_version.id  # point the dataset to the new version
                 if dataset.published_at is None:
                     dataset.published_at = published_at
 
@@ -787,10 +790,18 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_version.datasets = updated_datasets
 
     def replace_dataset_in_collection_version(
-        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId = None,
     ) -> DatasetVersion:
         """
         Replaces an existing mapping between a collection version and a dataset version
+
+        :param collection_version_id: the collection version id
+        :param old_dataset_version_id: the dataset version id to be replaced
+        :param new_dataset_version_id: the dataset version id to replace with. If None is provide a new
+        dataset version will be created.
         """
         # TODO: this method should probably be split into multiple - it contains too much logic
         with self._manage_session() as session:
@@ -798,17 +809,25 @@ class DatabaseProvider(DatabaseProviderInterface):
                 session.query(CollectionVersionTable.collection_id).filter_by(id=collection_version_id.id).one()[0]
             )  # noqa
             dataset_id = session.query(DatasetVersionTable.dataset_id).filter_by(id=old_dataset_version_id.id).one()[0]
-            new_dataset_version_id = DatasetVersionId()
-            new_dataset_version = DatasetVersionTable(
-                id=new_dataset_version_id.id,
-                dataset_id=dataset_id,
-                collection_id=collection_id,
-                dataset_metadata=None,
-                artifacts=list(),
-                status=DatasetStatus.empty().to_json(),
-                created_at=datetime.utcnow(),
-            )
-            session.add(new_dataset_version)
+            if new_dataset_version_id is None:
+                new_dataset_version_id = DatasetVersionId()
+                new_dataset_version = DatasetVersionTable(
+                    id=new_dataset_version_id.id,
+                    dataset_id=dataset_id,
+                    collection_id=collection_id,
+                    dataset_metadata=None,
+                    artifacts=list(),
+                    status=DatasetStatus.empty().to_json(),
+                    created_at=datetime.utcnow(),
+                )
+                session.add(new_dataset_version)
+                new_dataset_version = self._hydrate_dataset_version(new_dataset_version)
+            else:
+                new_dataset_version = self.get_dataset_version(new_dataset_version_id)
+                if CollectionId(str(collection_id)) != new_dataset_version.collection_id:
+                    raise ValueError(
+                        f"Dataset version {new_dataset_version_id} does not belong to collection {collection_id}"
+                    )
 
             collection_version = (
                 session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
@@ -819,7 +838,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             datasets[idx] = uuid.UUID(new_dataset_version_id.id)
             collection_version.datasets = datasets
 
-            return self._hydrate_dataset_version(new_dataset_version)
+            return new_dataset_version
 
     def get_dataset_mapped_version(
         self, dataset_id: DatasetId, get_tombstoned: bool = False
@@ -855,3 +874,19 @@ class DatabaseProvider(DatabaseProviderInterface):
             else:
                 collection_versions = session.query(CollectionVersionTable).filter_by(schema_version=schema_version)
             return [self._row_to_collection_version(row, None) for row in collection_versions.all()]
+
+    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
+        """
+        Returns the previously created dataset version for a dataset.
+        """
+        with self._manage_session() as session:
+            version_id = (
+                session.query(DatasetVersionTable.id)
+                .filter_by(dataset_id=dataset_id.id)
+                .order_by(DatasetVersionTable.created_at.desc())
+                .offset(1)
+                .first()
+            )
+            if version_id is None:
+                return None
+            return DatasetVersionId(str(version_id.id))
