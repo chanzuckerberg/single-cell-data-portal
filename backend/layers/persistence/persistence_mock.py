@@ -192,9 +192,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def delete_collection(self, collection_id: CollectionId) -> None:
         collection = self.collections.get(collection_id.id)
-        if collection and collection.originally_published_at is not None:
-            raise CollectionIsPublishedException("Can only delete unpublished collections")
-        del self.collections[collection_id.id]
+        if collection:
+            if collection.originally_published_at is not None:
+                raise CollectionIsPublishedException("Can only delete unpublished collections")
+            del self.collections[collection_id.id]
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         collection_version = self.collections_versions.get(version_id.id)
