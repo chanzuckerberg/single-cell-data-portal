@@ -2,7 +2,8 @@ import itertools
 import json
 import logging
 import os
-from typing import Any, Dict, List
+import random
+from typing import Any, Dict, Iterable, List
 
 from cellxgene_schema.migrate import migrate as cxs_migrate
 from cellxgene_schema.schema import get_current_schema_version as cxs_get_current_schema_version
@@ -13,6 +14,7 @@ from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.common.entities import (
     CollectionId,
+    CollectionVersion,
     CollectionVersionId,
     DatasetArtifactType,
     DatasetProcessingStatus,
@@ -34,6 +36,19 @@ class SchemaMigrate(ProcessingLogic):
         self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
         self.logger = logging.getLogger(__name__)
         self.local_path: str = "."  # Used for testing
+        self.limit_migration = os.environ.get("LIMIT_MIGRATION", False)  # Run a small migration for testing
+        self.limit_select = 2  # Number of collections to migrate
+
+    def limit_collections(self) -> Iterable[CollectionVersion]:
+        published_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=True))
+        unpublished_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=False))
+        if self.limit_migration:
+            select = self.limit_select // 2
+            if len(unpublished_collections) > select:
+                unpublished_collections = random.sample(unpublished_collections, self.limit_select // 2)
+            if len(published_collections) > select:
+                published_collections = random.sample(published_collections, self.limit_select // 2)
+        return itertools.chain(unpublished_collections, published_collections)
 
     def gather_collections(self) -> List[Dict[str, str]]:
         """
@@ -47,16 +62,11 @@ class SchemaMigrate(ProcessingLogic):
             ...
         ]
         """
-
-        published_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=True))
-        unpublished_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=False))
-
         response = []
 
-        collections = itertools.chain(unpublished_collections, published_collections)
         # evaluate unpublished collections first, so that published versions are skipped if there is an active revision
         has_revision = []  # list of collections to skip if published with an active revision
-        for collection in collections:
+        for collection in self.limit_collections():
             _resp = {}
             if collection.is_published() and collection.collection_id not in has_revision:
                 # published collection without an active revision
