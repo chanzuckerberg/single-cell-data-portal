@@ -21,7 +21,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing import logger
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider, sfn_name_generator
 
 logger.configure_logging(level=logging.INFO)
 
@@ -97,10 +97,12 @@ class SchemaMigrate(ProcessingLogic):
             existing_dataset_version_id=DatasetVersionId(dataset_version_id),
             start_step_function=False,  # The schema_migration sfn will start the ingest sfn
         )
+        sfn_name = sfn_name_generator(dataset_version_id, prefix="migrate")
         return {
             "collection_version_id": collection_version_id,
             "dataset_version_id": new_dataset_version_id.id,
             "uri": uri,
+            "sfn_name": sfn_name,
         }
 
     def _check_dataset_is_latest_schema_version(self, dataset: DatasetVersion) -> bool:
@@ -167,9 +169,8 @@ class SchemaMigrate(ProcessingLogic):
         return response
 
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
-        errors = dict()
-        collection_version_id = CollectionVersionId(collection_version_id)
-        collection_version = self.business_logic.get_collection_version(collection_version_id)
+        errors = []
+        collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         cxs_get_current_schema_version()
         object_keys_to_delete = []
         for dataset in collection_version.datasets:
@@ -177,10 +178,28 @@ class SchemaMigrate(ProcessingLogic):
             key_prefix = self.get_key_prefix(dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if not self._check_dataset_is_latest_schema_version(dataset):
-                errors[dataset_version_id] = "Did Not Migrate."
+                errors.append(
+                    {
+                        "message": "Did Not Migrate.",
+                        "collection_id": collection_version.collection_id.id,
+                        "collection_version_id": collection_version_id,
+                        "dataset_version_id": dataset_version_id,
+                        "dataset_id": dataset.dataset_id.id,
+                        "rollback": False,
+                    }
+                )
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                errors[dataset_version_id] = dataset.status.validation_message
-
+                errors.append(
+                    {
+                        "message": dataset.status.validation_message,
+                        "dataset_processing_status": dataset.status.processing_status.name,
+                        "collection_id": collection_version.collection_id.id,
+                        "collection_version_id": collection_version_id,
+                        "dataset_version_id": dataset_version_id,
+                        "dataset_id": dataset.dataset_id.id,
+                        "rollback": True,
+                    }
+                )
         if errors:
             self._store_sfn_response("report", collection_version_id, errors)
         elif can_publish:
