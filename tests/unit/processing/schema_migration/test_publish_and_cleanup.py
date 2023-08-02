@@ -19,9 +19,6 @@ def local_schema_migrate(schema_migrate):
                     "dataset_version_id": "failed_dataset_version_id",
                 },
                 {
-                    "dataset_version_id": "initialized_dataset_version_id",
-                },
-                {
                     "dataset_version_id": "non_migrated_dataset_version_id",
                 },
             ]
@@ -45,12 +42,7 @@ class TestPublishAndCleanup:
                 version_id=DatasetVersionId("successful_dataset_version_id"),
                 status=Mock(processing_status=DatasetProcessingStatus.SUCCESS),
                 metadata=metadata,
-            ),
-            Mock(
-                version_id=DatasetVersionId("initialized_dataset_version_id"),
-                status=Mock(processing_status=DatasetProcessingStatus.INITIALIZED),
-                metadata=metadata,
-            ),
+            )
         ]
         collection_version = make_mock_collection_version(datasets)
         local_schema_migrate.business_logic.get_collection_version.return_value = collection_version
@@ -63,7 +55,7 @@ class TestPublishAndCleanup:
         )
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
-            ["successful_dataset_version_id/migrated.h5ad", "initialized_dataset_version_id/migrated.h5ad"],
+            ["successful_dataset_version_id/migrated.h5ad"],
         )
 
     def test_publish_and_cleanup__with_errors(

@@ -199,10 +199,7 @@ class SchemaMigrate(ProcessingLogic):
                         "rollback": False,
                     }
                 )
-            elif dataset.status.processing_status not in [
-                DatasetProcessingStatus.SUCCESS,
-                DatasetProcessingStatus.INITIALIZED,
-            ]:
+            elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors.append(
                     {
                         "message": dataset.status.validation_message,
