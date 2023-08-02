@@ -9,6 +9,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetId,
     DatasetProcessingStatus,
+    DatasetStatus,
     DatasetVersionId,
 )
 from backend.layers.processing.schema_migration import SchemaMigrate
@@ -21,11 +22,16 @@ def make_mock_dataset_version(
     dataset_version.dataset_id = DatasetId(dataset_id)
     dataset_version.version_id = DatasetVersionId(version_id)
     dataset_version.metadata.schema_version = "1.0.0"
+
+    # set metadata
     if metadata:
         dataset_version.metadata.configure_mock(**metadata)
-    dataset_version.status.processing_status = DatasetProcessingStatus.SUCCESS
-    if status:
-        dataset_version.status.configure_mock(**status)
+
+    # set status
+    _status = DatasetStatus.empty().to_dict()
+    _status.update({"processing_status": DatasetProcessingStatus.SUCCESS} if status is None else status)
+    dataset_version.status = DatasetStatus(**_status)
+
     return dataset_version
 
 

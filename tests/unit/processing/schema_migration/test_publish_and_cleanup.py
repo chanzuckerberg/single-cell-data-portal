@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from backend.layers.common.entities import DatasetProcessingStatus, DatasetVersionId
+from backend.layers.common.entities import DatasetProcessingStatus
 from tests.unit.processing.schema_migration.conftest import make_mock_collection_version, make_mock_dataset_version
 
 
@@ -35,13 +35,11 @@ def local_schema_migrate(schema_migrate):
 @patch("backend.layers.processing.schema_migration.cxs_get_current_schema_version", return_value="1.0.0")
 @patch("backend.layers.processing.schema_migration.json.dump")
 class TestPublishAndCleanup:
-    def test_publish_and_cleanup(self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate):
-        metadata = Mock(schema_version="1.0.0")
+    def test_OK(self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate):
         datasets = [
-            Mock(
-                version_id=DatasetVersionId("successful_dataset_version_id"),
-                status=Mock(processing_status=DatasetProcessingStatus.SUCCESS),
-                metadata=metadata,
+            make_mock_dataset_version(
+                version_id="successful_dataset_version_id",
+                status=dict(processing_status=DatasetProcessingStatus.SUCCESS),
             )
         ]
         collection_version = make_mock_collection_version(datasets)
@@ -58,9 +56,7 @@ class TestPublishAndCleanup:
             ["successful_dataset_version_id/migrated.h5ad"],
         )
 
-    def test_publish_and_cleanup__with_errors(
-        self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate
-    ):
+    def test_with_errors(self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate):
         failed_dataset = make_mock_dataset_version(
             version_id="failed_dataset_version_id",
             status=dict(processing_status=DatasetProcessingStatus.FAILURE, validation_message="rds conversion failed"),
@@ -81,7 +77,7 @@ class TestPublishAndCleanup:
         assert len(errors) == 2
         assert {
             "message": failed_dataset.status.validation_message,
-            "dataset_status": failed_dataset.status,
+            "dataset_status": failed_dataset.status.to_dict(),
             "collection_id": collection_version.collection_id.id,
             "collection_version_id": collection_version.version_id.id,
             "dataset_version_id": failed_dataset.version_id.id,
@@ -108,9 +104,7 @@ class TestPublishAndCleanup:
             ],
         )
 
-    def test_publish_and_cleanup__can_not_publish(
-        self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate
-    ):
+    def test_can_not_publish(self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate):
         dataset_status = dict(processing_status=DatasetProcessingStatus.SUCCESS)
         metadata = dict(schema_version="1.0.0")
         collection_version = make_mock_collection_version(

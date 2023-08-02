@@ -203,7 +203,7 @@ class SchemaMigrate(ProcessingLogic):
                 errors.append(
                     {
                         "message": dataset.status.validation_message,
-                        "dataset_status": dataset.status,
+                        "dataset_status": dataset.status.to_dict(),
                         "collection_id": collection_version.collection_id.id,
                         "collection_version_id": collection_version_id,
                         "dataset_version_id": dataset_version_id,
