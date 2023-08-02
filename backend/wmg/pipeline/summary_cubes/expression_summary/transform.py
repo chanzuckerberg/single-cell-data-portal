@@ -37,6 +37,9 @@ def transform(*, corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
 
     cube_nnz: np.ndarray
         The number of cells with non zero expression for each gene for each group of cell attributes
+
+    cube_sqsum: np.ndarray
+        The squared sum of expression values for each gene for each group of cell attributes
     """
 
     cell_labels, cube_index = make_cube_index(tdb_group=corpus_path, cube_dims=cube_dims)
@@ -47,7 +50,13 @@ def transform(*, corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
     cube_sqsum = np.zeros((n_groups, n_genes), dtype=np.float32)
 
-    reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz)
+    reduce_X(
+        tdb_group=corpus_path,
+        cube_indices=cell_labels.cube_idx.values,
+        cube_sum=cube_sum,
+        cube_nnz=cube_nnz,
+        cube_sqsum=cube_sqsum,
+    )
     return TransformResult(cube_index, cube_sum, cube_nnz, cube_sqsum)
 
 

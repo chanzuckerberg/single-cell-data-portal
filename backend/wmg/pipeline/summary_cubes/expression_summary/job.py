@@ -51,7 +51,13 @@ def _load(
         )
     else:
         non_indexed_dims = expression_summary_non_indexed_dims
-        dims, vals = build_in_mem_cube(gene_ontology_term_ids, cube_index, non_indexed_dims, cube_sum, cube_nnz)
+        dims, vals = build_in_mem_cube(
+            gene_ids=gene_ontology_term_ids,
+            cube_index=cube_index,
+            other_cube_attrs=non_indexed_dims,
+            cube_sum=cube_sum,
+            cube_nnz=cube_nnz,
+        )
 
     logger.debug("Saving cube to tiledb")
     with tiledb.open(uri, "w") as cube:
