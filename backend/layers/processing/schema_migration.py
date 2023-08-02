@@ -40,13 +40,13 @@ class SchemaMigrate(ProcessingLogic):
         self.limit_select = 2  # Number of collections to migrate
 
     def limit_collections(self) -> Iterable[CollectionVersion]:
-        published_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=True))
-        unpublished_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=False))
+        published_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=True))]
+        unpublished_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=False))]
         if self.limit_migration:
             select = self.limit_select // 2
-            if len(unpublished_collections) > select:
+            if len(unpublished_collections) >= select:
                 unpublished_collections = random.sample(unpublished_collections, self.limit_select // 2)
-            if len(published_collections) > select:
+            if len(published_collections) >= select:
                 published_collections = random.sample(published_collections, self.limit_select // 2)
         return itertools.chain(unpublished_collections, published_collections)
 
