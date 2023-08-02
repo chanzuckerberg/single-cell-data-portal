@@ -59,6 +59,10 @@ If you need to make a change to the CELLxGENE Discover database, see [CELLxGENE 
 1. Ensure that you have set up your local development environment per the instructions above and run `make local-init` to launch a local dev environment.
 1. Run the tests using the command `$ make unit-test`.
 
+### Running the WMG pipeline and endpoints locally in an interactive environment
+
+Please take a look at the tutorial notebooks in `example_dev_notebooks` for examples on how to run the WMG pipeline and endpoints locally for development purposes.
+
 ### Troubleshooting Unit Tests
 
 1. If your unit tests crash due to an `Error 137`, that means the docker containers currently running are using up more memory than what the docker application
