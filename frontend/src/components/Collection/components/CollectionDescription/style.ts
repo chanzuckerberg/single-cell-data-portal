@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontBodyS, getSpaces } from "@czi-sds/components";
+import { CommonThemeProps, fontBodyS } from "@czi-sds/components";
+import { spacesS } from "src/common/theme";
 
 export const DESCRIPTION_LINE_HEIGHT_PX = 20;
 export const MAX_LINE_COUNT = 6;
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
 
 interface Props extends CommonThemeProps {
   isEllipsis: boolean;

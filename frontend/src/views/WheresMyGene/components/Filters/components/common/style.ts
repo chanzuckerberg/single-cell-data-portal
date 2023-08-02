@@ -1,25 +1,17 @@
 import styled from "@emotion/styled";
+import { Dropdown, fontBodyS, fontBodyXxxs } from "@czi-sds/components";
 import {
-  Dropdown,
-  fontBodyS,
-  fontBodyXxxs,
-  getColors,
-  getFontWeights,
-  getSpaces,
-} from "@czi-sds/components";
+  fontWeightMedium,
+  fontWeightSemibold,
+  gray500,
+  spacesXxs,
+} from "src/common/theme";
 
 export const Label = styled("div")`
   ${fontBodyS}
 
-  ${(props) => {
-    const fontWeights = getFontWeights(props);
-    const spaces = getSpaces(props);
-
-    return `
-      font-weight: ${fontWeights?.semibold};
-      margin-bottom: ${spaces?.xxs}px;
-    `;
-  }}
+  font-weight: ${fontWeightSemibold};
+  margin-bottom: ${spacesXxs}px;
 `;
 
 export const Wrapper = styled("div")`
@@ -34,15 +26,7 @@ export const StyledDropdown = styled(Dropdown)`
 export const FilterLabel = styled("label")`
   ${fontBodyXxxs}
 
-  ${(props) => {
-    const colors = getColors(props);
-    const fontWeights = getFontWeights(props);
-    const spaces = getSpaces(props);
-
-    return `
-      color: ${colors?.gray["500"]};
-      font-weight: ${fontWeights?.medium};
-      margin-bottom: ${spaces?.xxs}px;
-    `;
-  }}
+  color: ${gray500};
+  font-weight: ${fontWeightMedium};
+  margin-bottom: ${spacesXxs}px;
 `;

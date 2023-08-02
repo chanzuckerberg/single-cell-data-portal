@@ -8,6 +8,7 @@ from server_timing import Timing as ServerTiming
 
 from backend.wmg.api.common.expression_dotplot import get_dot_plot_data
 from backend.wmg.api.common.rollup import rollup
+from backend.wmg.api.wmg_api_config import WMG_API_FORCE_LOAD_SNAPSHOT_ID, WMG_API_SNAPSHOT_SCHEMA_VERSION
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import (
     MarkerGeneQueryCriteria,
@@ -26,7 +27,11 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 
 
 def primary_filter_dimensions():
-    snapshot: WmgSnapshot = load_snapshot()
+    snapshot: WmgSnapshot = load_snapshot(
+        snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+    )
+
     return jsonify(snapshot.primary_filter_dimensions)
 
 
@@ -41,7 +46,11 @@ def query():
     criteria = WmgQueryCriteriaV2(**request["filter"])
 
     with ServerTiming.time("query and build response"):
-        snapshot: WmgSnapshot = load_snapshot()
+        snapshot: WmgSnapshot = load_snapshot(
+            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        )
+
         q = WmgQuery(snapshot)
         default = snapshot.expression_summary_default_cube is not None and compare is None
         for dim in criteria.dict():
@@ -89,7 +98,11 @@ def filters():
     criteria = WmgFiltersQueryCriteria(**request["filter"])
 
     with ServerTiming.time("calculate filters and build response"):
-        snapshot: WmgSnapshot = load_snapshot()
+        snapshot: WmgSnapshot = load_snapshot(
+            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        )
+
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
         response = jsonify(
             dict(
@@ -107,7 +120,10 @@ def markers():
     organism = request["organism"]
     n_markers = request["n_markers"]
     test = request["test"]
-    snapshot: WmgSnapshot = load_snapshot()
+    snapshot: WmgSnapshot = load_snapshot(
+        snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+    )
 
     criteria = MarkerGeneQueryCriteria(
         tissue_ontology_term_id=tissue,
