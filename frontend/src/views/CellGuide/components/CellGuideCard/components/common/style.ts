@@ -1,11 +1,7 @@
 import styled from "@emotion/styled";
-import {
-  fontHeaderM,
-  fontBodyXxs,
-  fontBodyS,
-  getColors,
-} from "@czi-sds/components";
+import { fontHeaderM, fontBodyXxs, fontBodyS } from "@czi-sds/components";
 import { Divider } from "@mui/material";
+import { gray500 } from "src/common/theme";
 
 export const TableTitle = styled.div`
   ${fontHeaderM}
@@ -64,12 +60,8 @@ export const TableUnavailableHeader = styled("span")`
 
 export const TableUnavailableDescription = styled("span")`
   ${fontBodyXxs}
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+
+  color: ${gray500};
 `;
 
 export const StyledDivider = styled(Divider)`

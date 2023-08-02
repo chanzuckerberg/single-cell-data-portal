@@ -3,24 +3,22 @@ import {
   CommonThemeProps,
   fontBodyS,
   getColors,
-  getCorners,
-  getFontWeights,
-  getSpaces,
   List as SDSList,
   ListItem,
 } from "@czi-sds/components";
 import { css } from "@emotion/react";
 import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-
-const cornersM = (props: CommonThemeProps) => getCorners(props)?.m;
-const grey100 = (props: CommonThemeProps) => getColors(props)?.gray[100];
-const grey500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
-const primary400 = (props: CommonThemeProps) => getColors(props)?.primary[400];
-const semibold = (props: CommonThemeProps) => getFontWeights(props)?.semibold; // font-weight 600.
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
-const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
-const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
-const spacesXxxs = (props: CommonThemeProps) => getSpaces(props)?.xxxs;
+import {
+  cornersM,
+  grey100,
+  grey500,
+  primary400,
+  fontWeightSemibold,
+  spacesS,
+  spacesXs,
+  spacesXxs,
+  spacesXxxs,
+} from "src/common/theme";
 
 export const listCss = (props: CommonThemeProps) => {
   return css`
@@ -73,7 +71,7 @@ export const listItemButtonSelectedCss = (props: CommonThemeProps) => {
 
       .MuiListItemText-root {
         span:first-of-type {
-          font-weight: ${semibold(props)};
+          font-weight: ${fontWeightSemibold(props)};
         }
       }
     }

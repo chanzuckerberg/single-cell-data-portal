@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { fontBodyS, getColors, getSpaces } from "@czi-sds/components";
+import { spacesM, spacesS } from "src/common/theme";
 
 export const StyledTable = styled.table`
   width: 100%;
@@ -39,11 +40,7 @@ export const StyledRow = styled.tr<StyledRowProps>`
 export const StyledCell = styled.td`
   ${fontBodyS}
   font-weight: 400;
-  ${(props) => {
-    const spacings = getSpaces(props);
-    return `padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;
-    `;
-  }}
+  padding: ${spacesS}px ${spacesM}px;
   min-width: 120px;
   word-break: break-word;
   overflow-wrap: break-word;
