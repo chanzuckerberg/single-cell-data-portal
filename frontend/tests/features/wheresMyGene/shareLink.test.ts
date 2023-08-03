@@ -2,6 +2,7 @@
 import { Page, expect, test } from "@playwright/test";
 import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGene/components/GeneSearchBar/components/ShareButton/utils";
 import { TEST_URL } from "tests/common/constants";
+import { tryUntil } from "tests/utils/helpers";
 
 import {
   goToWMG,
@@ -27,12 +28,12 @@ const GENES = ["DPM1", "TNMD", "TSPAN6"];
 
 const DATASETS = [
   {
-    id: "c874f155-9bf9-4928-b821-f52c876b3e48",
-    text: "49 years old male - Fresh PBMCs (1 day post-intubation)",
+    id: "d8da613f-e681-4c69-b463-e94f5e66847f",
+    text: "A molecular single-cell lung atlas of lethal COVID-19",
   },
   {
-    id: "db59611b-42de-4035-93aa-1ed39f38b467",
-    text: "49 years old male - Fresh PBMCs (2 days post-intubation)",
+    id: "de2c780c-1747-40bd-9ccf-9588ec186cee",
+    text: "Immunophenotyping of COVID-19 and influenza highlights the role of type I interferons in development of severe COVID-19",
   },
 ];
 
@@ -46,9 +47,9 @@ const SEXES = [
 ];
 const COMPARE = "disease";
 
-const initialState =
+const SHARE_LINK =
   `${TEST_URL}/gene-expression?` +
-  "datasets=c874f155-9bf9-4928-b821-f52c876b3e48%2Cdb59611b-42de-4035-93aa-1ed39f38b467&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2&compare=disease";
+  "compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2";
 
 describe("Share link tests", () => {
   conditionallyRunTests({ forceRun: true });
@@ -96,20 +97,25 @@ describe("Share link tests", () => {
     skipFirefox(browserName);
 
     // prepare state
-    await goToWMG(page, initialState);
+    await goToWMG(page, SHARE_LINK);
 
     // verify link parameters and app state
-    await verifyShareLink({
-      page,
-      linkVersion: LATEST_SHARE_LINK_VERSION,
-      tissueIds,
-      genes: GENES,
-      datasets: DATASETS,
-      sexes: SEXES,
-      diseases: DISEASES,
-      ethnicities: ETHNICITIES,
-      compare: COMPARE,
-    });
+    await tryUntil(
+      async () => {
+        await verifyShareLink({
+          page,
+          linkVersion: LATEST_SHARE_LINK_VERSION,
+          tissueIds,
+          genes: GENES,
+          datasets: DATASETS,
+          sexes: SEXES,
+          diseases: DISEASES,
+          ethnicities: ETHNICITIES,
+          compare: COMPARE,
+        });
+      },
+      { page }
+    );
   });
 });
 
