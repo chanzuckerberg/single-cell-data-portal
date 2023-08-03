@@ -24,8 +24,35 @@ from backend.wmg.pipeline.integrated_corpus.extract import get_X_raw
 logger = logging.getLogger(__name__)
 
 
+def patch_scipy_compressed_matrix_instance_method(csr_matrix):
+    def patched_scalar_binopt(self, other, op):
+        """This function patches the the '_scalar_binopt()` method
+        of scipy.sparse.csr.csr_matrix class with an implementation
+        that does not copy the underlying structure arrays of the matrix.
+
+        This is done by calling the '_with_data()' instance method with
+        'copy=False'.
+
+        The original implementation of '_scalar_binopt()' invokes
+        a call to '_with_data()' with argument 'copy=True'.
+
+        See: https://github.com/scipy/scipy/blob/c025587b9fbbabf7e6bbf10e2e7c76ae61d6395c/scipy/sparse/_compressed.py#L213
+        """
+        self.sum_duplicates()
+        res = self._with_data(op(self.data, other), copy=False)
+        res.eliminate_zeros()
+        return res
+
+    csr_matrix.__class__._scalar_binopt = patched_scalar_binopt
+
+
 def apply_pre_concatenation_filters(anndata_object: anndata.AnnData, min_genes: int = None) -> anndata.AnnData:
+    logger.info("Patching anndata_object.X._scalar_binopt() instance method with a new implementation")
+    patch_scipy_compressed_matrix_instance_method(anndata_object.X)
+    logger.info("anndata_object.X._scalar_binopt is using patched implementation: {anndata_object.X._scalar_binopt}")
+
     min_genes = min_genes if min_genes is not None else GENE_EXPRESSION_COUNT_MIN_THRESHOLD
+
     logger.info("Applying filters: assay, and lowly-covered cells")
     # Filter out cells with low coverage (less than GENE_EXPRESSION_COUNT_MIN_THRESHOLD unique genes expressed)
     scanpy.pp.filter_cells(anndata_object, min_genes=min_genes)
