@@ -193,18 +193,11 @@ export async function deleteChips({
           async () => {
             // click the delete button
             await deleteChip.click();
-
-            // verify the selected filter is not visible
-            expect(await deleteChip.isVisible()).toBeFalsy();
           },
           { page }
         );
       });
 
-      /**
-       * (thuang): Somehow this is needed to ensure Playwright doesn't throw a
-       * timeout error when running in GHA
-       */
       expect(await deleteChipLocator.count()).toBe(0);
     },
     { page }
