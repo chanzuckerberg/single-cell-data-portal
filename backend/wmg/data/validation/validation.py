@@ -43,10 +43,6 @@ class Validation:
         """
         self.log_validation_details()
 
-        if self.env == "rdev":
-            logger.info("Skipping cube validation in rdev")
-            return True
-
         # check size
         self.validate_cube_size()
 
