@@ -9,9 +9,6 @@ permissions:
 on:
   repository_dispatch:
     types: [pull-ontology-mappings]
-  push:
-    branches:
-      - nayib/pull-mappings-pr
 
 jobs:
   pull-ontology-mappings-and-commit:
