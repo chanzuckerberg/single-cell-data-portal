@@ -11,6 +11,8 @@ import { LOGIN_STATE_FILENAME } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
 import featureFlags from "./tests/common/featureFlags";
 
+const CICD_MAX_FAILURE = 2;
+
 expect.extend(matchers);
 
 /**
@@ -164,6 +166,7 @@ const config: PlaywrightTestConfig = {
   //   command: 'npm run start',
   //   port: 3000,
   // },
+  maxFailures: process.env.CI ? CICD_MAX_FAILURE : undefined,
 };
 
 function getStorageState(): {
