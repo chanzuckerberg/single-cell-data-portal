@@ -23,10 +23,12 @@ NOTE. It is advised to run the default `npm run e2e` once PR is ready to ensure 
 
 1. `--ui`: UI Mode lets you explore, run, and debug tests with a time travel experience complete with watch mode. All test files are loaded into the testing sidebar where you can expand each file and describe block to individually run, view, watch and debug each test.
 
+   - ![Image](https://user-images.githubusercontent.com/13063165/234295914-f7ee3d8b-33a7-41b3-bc91-d363baaa7305.png)
    - [Source](https://playwright.dev/docs/test-ui-mode#running-tests-in-ui-mode)
    - Example: `npm run e2e -- --ui -- FILE_PATH`
 
 2. `--debug`: Debug mode launches Playwright Inspector, which lets you play, pause, or step through each action of your test using the toolbar at the top of the Inspector. You can see the current action highlighted in the test code, and matching elements highlighted in the browser window.
+   - ![Image](https://user-images.githubusercontent.com/13063165/212924587-4b84e5f6-b147-40e9-8c75-d7b9ab6b7ca1.png)
    - [Source](https://playwright.dev/docs/debug#playwright-inspector)
    - Example: `npm run e2e -- --debug -- FILE_PATH`
 
