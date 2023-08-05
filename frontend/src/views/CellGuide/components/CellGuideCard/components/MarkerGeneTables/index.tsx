@@ -29,6 +29,8 @@ import DropdownSelect from "../common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Pagination } from "@mui/material";
 import {
+  CanonicalMarkersQueryResponse,
+  EnrichedGenesQueryResponse,
   useCanonicalMarkers,
   useEnrichedGenes,
 } from "src/common/queries/cellGuide";
@@ -191,239 +193,365 @@ export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
 export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =
   "marker-genes-canonical-help-tooltip";
 
+function getComputationalMarkerGenesTableRowsAndFilters({
+  genes,
+  selectedOrganism,
+  selectedOrgan,
+  setGeneInfoGene,
+}: {
+  genes: EnrichedGenesQueryResponse;
+  selectedOrganism: string;
+  selectedOrgan: string;
+  setGeneInfoGene: Props["setGeneInfoGene"];
+}): {
+  selectedOrganismFilter: string;
+  selectedOrganFilter: string;
+  tableRows: TableRow[];
+  uniqueOrganisms: string[];
+  uniqueOrgans: string[];
+} {
+  return useMemo(() => {
+    if (!genes)
+      return {
+        selectedOrganismFilter: selectedOrganism,
+        selectedOrganFilter: selectedOrgan,
+        tableRows: [],
+        uniqueOrganisms: [],
+        uniqueOrgans: [],
+      };
+
+    const organisms = new Set<string>();
+    for (const markerGene of genes) {
+      if (markerGene.marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
+      organisms.add(markerGene.organism);
+    }
+
+    const sortedOrganisms = Array.from(organisms).sort((a, b) => {
+      if (a === "Homo sapiens") return -1;
+      if (b === "Homo sapiens") return 1;
+      return a.localeCompare(b);
+    });
+
+    const selectedOrganismFilter =
+      selectedOrganism === "" || !sortedOrganisms.includes(selectedOrganism)
+        ? sortedOrganisms.at(0) ?? ""
+        : selectedOrganism;
+
+    const organs = new Set<string>();
+    for (const markerGene of genes) {
+      if (markerGene.organism !== selectedOrganismFilter) continue;
+      if (markerGene.marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
+      organs.add(markerGene.tissue);
+    }
+
+    const sortedOrgans = Array.from(organs).sort((a, b) => {
+      if (a === "All Tissues") return -1;
+      if (b === "All Tissues") return 1;
+      return a.localeCompare(b);
+    });
+
+    const selectedOrganFilter =
+      selectedOrgan === "" || !sortedOrgans.includes(selectedOrgan)
+        ? sortedOrgans.at(0) ?? ""
+        : selectedOrgan;
+
+    const rows: TableRow[] = [];
+    for (const markerGene of genes) {
+      const { pc, me, name, symbol, organism, marker_score, tissue } =
+        markerGene;
+      if (organism !== selectedOrganismFilter) continue;
+      if (tissue !== selectedOrganFilter) continue;
+      if (marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
+      rows.push({
+        symbolId: symbol,
+        symbol: (
+          <>
+            {symbol}{" "}
+            <ButtonIcon
+              aria-label={`display gene info for ${symbol}`}
+              sdsIcon="infoCircle"
+              sdsSize="small"
+              sdsType="secondary"
+              onClick={() => setGeneInfoGene(symbol.toUpperCase())}
+            />
+          </>
+        ),
+        name,
+        marker_score: marker_score.toFixed(2),
+        me: me.toFixed(2),
+        pc: (pc * 100).toFixed(1),
+      });
+    }
+
+    return {
+      selectedOrganismFilter,
+      selectedOrganFilter,
+      tableRows: rows,
+      uniqueOrganisms: sortedOrganisms,
+      uniqueOrgans: sortedOrgans,
+    };
+  }, [genes, selectedOrganism, selectedOrgan, setGeneInfoGene]);
+}
+
+function getCanonicalMarkerGenesTableRowsAndFilters({
+  genes,
+  selectedOrgan,
+  setGeneInfoGene,
+}: {
+  genes: CanonicalMarkersQueryResponse;
+  selectedOrgan: string;
+  setGeneInfoGene: Props["setGeneInfoGene"];
+}): {
+  selectedOrganFilter: string;
+  tableRows: TableRow[];
+  uniqueOrgans: string[];
+  uniqueOrganisms: string[];
+} {
+  return useMemo(() => {
+    if (!genes)
+      return {
+        selectedOrganFilter: selectedOrgan,
+        tableRows: [],
+        uniqueOrgans: [],
+        uniqueOrganisms: [],
+      };
+
+    const organs = new Set<string>();
+    for (const markerGene of genes) {
+      organs.add(markerGene.tissue_general);
+    }
+
+    const sortedOrgans = Array.from(organs).sort((a, b) => {
+      if (a === "All Tissues") return -1;
+      if (b === "All Tissues") return 1;
+      return a.localeCompare(b);
+    });
+
+    const selectedOrganFilter =
+      selectedOrgan === "" || !sortedOrgans.includes(selectedOrgan)
+        ? sortedOrgans.at(0) ?? ""
+        : selectedOrgan;
+
+    const sortedOrganisms = ["Homo sapiens"]; // ASCTB tables only report data for humans
+
+    const rows: (TableRow & {
+      numReferences: number;
+    })[] = [];
+
+    const publicationTitlesToIndex = new Map();
+    let index = 0;
+    for (const markerGene of genes) {
+      if (markerGene.tissue_general !== selectedOrganFilter) continue;
+      const publicationTitles = markerGene.publication_titles.split(";;");
+      for (let i = 0; i < publicationTitles.length; i += 1) {
+        if (
+          !publicationTitlesToIndex.has(publicationTitles[i]) &&
+          publicationTitles[i] !== ""
+        ) {
+          publicationTitlesToIndex.set(publicationTitles[i], index);
+          index += 1;
+        }
+      }
+    }
+    for (const markerGene of genes) {
+      const { tissue_general, publication, publication_titles, symbol, name } =
+        markerGene;
+
+      if (tissue_general !== selectedOrganFilter) continue;
+      // multiple publications for a single gene are joined by ";;"
+      let publications = Array.from(new Set(publication.split(";;")));
+      let publicationTitles = Array.from(
+        new Set(publication_titles.split(";;"))
+      );
+
+      const sortedPublicationsAndTitles = publications
+        .map((pub, i) => [pub, publicationTitles[i]])
+        .sort((a, b) => {
+          return (
+            publicationTitlesToIndex.get(a[1]) -
+            publicationTitlesToIndex.get(b[1])
+          );
+        })
+        .filter((publicationTitle, index) => {
+          return publicationTitle && publications[index];
+        });
+
+      publications = sortedPublicationsAndTitles.map((pub) => pub[0]);
+      publicationTitles = sortedPublicationsAndTitles.map((pub) => pub[1]);
+
+      const publicationLinks = (
+        <PublicationLinkWrapper>
+          {publicationTitles.map((publicationTitle, index) => {
+            if (publicationTitle && publications[index]) {
+              const referenceIndexLabel =
+                publicationTitlesToIndex.get(publicationTitle) + 1;
+              return (
+                <Tooltip
+                  key={`${publications[index]}-${index}-tooltip`}
+                  placement="top"
+                  width="default"
+                  arrow={false}
+                  title={
+                    <div>
+                      {publicationTitle.split("\n\n").at(0)}
+                      <br />
+                      <br />
+                      <i>{publicationTitle.split("\n\n").at(1)}</i>
+                    </div>
+                  }
+                  leaveDelay={0}
+                >
+                  <span key={`${publications[index]}-${index}-span`}>
+                    <Link
+                      key={`${publications[index]}-${index}`}
+                      label={`[${referenceIndexLabel}]`}
+                      url={`https://doi.org/${publications[index]}`}
+                    />
+                  </span>
+                </Tooltip>
+              );
+            }
+          })}
+        </PublicationLinkWrapper>
+      );
+
+      rows.push({
+        name,
+        symbolId: symbol,
+        symbol: (
+          <>
+            {symbol}{" "}
+            <ButtonIcon
+              aria-label={`display gene info for ${symbol}`}
+              sdsIcon="infoCircle"
+              sdsSize="small"
+              sdsType="secondary"
+              onClick={() => setGeneInfoGene(symbol.toUpperCase())}
+            />
+          </>
+        ),
+        references: publicationLinks,
+        numReferences: sortedPublicationsAndTitles.length,
+      });
+    }
+
+    // Sort rows by number of references
+    if (rows.length) {
+      rows.sort((a, b) => {
+        return b.numReferences - a.numReferences;
+      });
+    }
+
+    return {
+      selectedOrganFilter,
+      tableRows: rows,
+      uniqueOrgans: sortedOrgans,
+      uniqueOrganisms: sortedOrganisms,
+    };
+  }, [genes, selectedOrgan, setGeneInfoGene]);
+}
+
 const MarkerGeneTables = ({
   cellTypeId,
   cellTypeName,
   setGeneInfoGene,
 }: Props) => {
-  const [selectedOrganism, setSelectedOrganism] = useState("");
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
-  const [selectedOrgan, setSelectedOrgan] = useState("");
-  const [page, setPage] = useState(1);
+  const [selectedOrganCanonical, setSelectedOrganCanonical] = useState("");
+  const [selectedOrganComputational, setSelectedOrganComputational] =
+    useState("");
+  const [selectedOrganismComputational, setSelectedOrganismComputational] =
+    useState("");
+  const [computationalMarkerGenes, setComputationalMarkerGenes] =
+    useState<EnrichedGenesQueryResponse>([]);
+  const [canonicalMarkerGenes, setCanonicalMarkerGenes] =
+    useState<CanonicalMarkersQueryResponse>([]);
 
-  let uniqueOrganisms = ["Homo sapiens"];
-  let uniqueOrgans: string[] = ["All Tissues"];
-  let tableRows: TableRow[];
-  if (activeTable) {
-    const { data: genes } = useEnrichedGenes(cellTypeId);
-    uniqueOrganisms = useMemo(() => {
-      if (!genes) return [];
-      const organisms = new Set<string>();
-      for (const markerGene of genes) {
-        organisms.add(markerGene.organism);
-      }
-      if (!selectedOrganism && Array.from(organisms).includes("Homo sapiens"))
-        setSelectedOrganism("Homo sapiens");
-      else if (!selectedOrganism)
-        setSelectedOrganism(Array.from(organisms).at(0) ?? "");
-      // All Tissues always selected
-      setSelectedOrgan("All Tissues");
-
-      return Array.from(organisms).sort((a, b) => {
-        if (a === "Homo sapiens") return -1;
-        if (b === "Homo sapiens") return 1;
-        return a.localeCompare(b);
-      });
-    }, [genes, cellTypeId]);
-
-    tableRows = useMemo(() => {
-      if (!genes) return [];
-      const rows: TableRow[] = [];
-      for (const markerGene of genes) {
-        const { pc, me, name, symbol, organism, marker_score } = markerGene;
-        if (organism !== selectedOrganism) continue;
-        if (marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
-        rows.push({
-          symbolId: symbol,
-          symbol: (
-            <>
-              {symbol}{" "}
-              <ButtonIcon
-                aria-label={`display gene info for ${symbol}`}
-                sdsIcon="infoCircle"
-                sdsSize="small"
-                sdsType="secondary"
-                onClick={() => setGeneInfoGene(symbol.toUpperCase())}
-              />
-            </>
-          ),
-          name,
-          marker_score: marker_score.toFixed(2),
-          me: me.toFixed(2),
-          pc: (pc * 100).toFixed(1),
-        });
-      }
-      return rows;
-    }, [genes, selectedOrganism, cellTypeId]);
-  } else {
-    const { data: genes } = useCanonicalMarkers(cellTypeId);
-    uniqueOrgans = useMemo(() => {
-      if (!genes) return [];
-      const organs = new Set<string>();
-      for (const markerGene of genes) {
-        organs.add(markerGene.tissue_general);
-      }
-      // All Tissues selecteed by default
-      if (!selectedOrgan) setSelectedOrgan("All Tissues");
-      // Homo sapiens always selected
-      setSelectedOrganism("Homo sapiens");
-      const uniqueOrgans = Array.from(organs);
-
-      // put "All Tissues" first in the array
-      return uniqueOrgans.sort((a, b) => {
-        if (a === "All Tissues") return -1;
-        if (b === "All Tissues") return 1;
-        return a.localeCompare(b);
-      });
-    }, [genes, cellTypeId]);
-
-    tableRows = useMemo(() => {
-      if (!genes) return [];
-      const rows: (TableRow & {
-        numReferences: number;
-      })[] = [];
-
-      const publicationTitlesToIndex = new Map();
-      let index = 0;
-      for (const markerGene of genes) {
-        if (markerGene.tissue_general !== selectedOrgan) continue;
-        const publicationTitles = markerGene.publication_titles.split(";;");
-        for (let i = 0; i < publicationTitles.length; i += 1) {
-          if (
-            !publicationTitlesToIndex.has(publicationTitles[i]) &&
-            publicationTitles[i] !== ""
-          ) {
-            publicationTitlesToIndex.set(publicationTitles[i], index);
-            index += 1;
-          }
-        }
-      }
-      for (const markerGene of genes) {
-        const {
-          tissue_general,
-          publication,
-          publication_titles,
-          symbol,
-          name,
-        } = markerGene;
-
-        if (tissue_general !== selectedOrgan) continue;
-
-        // multiple publications for a single gene are joined by ";;"
-        let publications = Array.from(new Set(publication.split(";;")));
-        let publicationTitles = Array.from(
-          new Set(publication_titles.split(";;"))
-        );
-
-        const sortedPublicationsAndTitles = publications
-          .map((pub, i) => [pub, publicationTitles[i]])
-          .sort((a, b) => {
-            return (
-              publicationTitlesToIndex.get(a[1]) -
-              publicationTitlesToIndex.get(b[1])
-            );
-          })
-          .filter((publicationTitle, index) => {
-            return publicationTitle && publications[index];
-          });
-
-        publications = sortedPublicationsAndTitles.map((pub) => pub[0]);
-        publicationTitles = sortedPublicationsAndTitles.map((pub) => pub[1]);
-
-        const publicationLinks = (
-          <PublicationLinkWrapper>
-            {publicationTitles.map((publicationTitle, index) => {
-              if (publicationTitle && publications[index]) {
-                const referenceIndexLabel =
-                  publicationTitlesToIndex.get(publicationTitle) + 1;
-                return (
-                  <Tooltip
-                    key={`${publications[index]}-${index}-tooltip`}
-                    placement="top"
-                    width="default"
-                    arrow={false}
-                    title={
-                      <div>
-                        {publicationTitle.split("\n\n").at(0)}
-                        <br />
-                        <br />
-                        <i>{publicationTitle.split("\n\n").at(1)}</i>
-                      </div>
-                    }
-                    leaveDelay={0}
-                  >
-                    <span key={`${publications[index]}-${index}-span`}>
-                      <Link
-                        key={`${publications[index]}-${index}`}
-                        label={`[${referenceIndexLabel}]`}
-                        url={`https://doi.org/${publications[index]}`}
-                      />
-                    </span>
-                  </Tooltip>
-                );
-              }
-            })}
-          </PublicationLinkWrapper>
-        );
-
-        rows.push({
-          name,
-          symbolId: symbol,
-          symbol: (
-            <>
-              {symbol}{" "}
-              <ButtonIcon
-                aria-label={`display gene info for ${symbol}`}
-                sdsIcon="infoCircle"
-                sdsSize="small"
-                sdsType="secondary"
-                onClick={() => setGeneInfoGene(symbol.toUpperCase())}
-              />
-            </>
-          ),
-          references: publicationLinks,
-          numReferences: sortedPublicationsAndTitles.length,
-        });
-      }
-
-      // Sort rows by number of references
-      if (rows.length) {
-        rows.sort((a, b) => {
-          return b.numReferences - a.numReferences;
-        });
-      }
-
-      return rows;
-    }, [genes, selectedOrgan, setGeneInfoGene]);
-  }
+  const { data: enrichedGenes } = useEnrichedGenes(cellTypeId);
+  const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
 
   useEffect(() => {
+    if (enrichedGenes) {
+      setComputationalMarkerGenes(enrichedGenes);
+    }
+  }, [enrichedGenes]);
+
+  useEffect(() => {
+    if (canonicalMarkers) {
+      setCanonicalMarkerGenes(canonicalMarkers);
+    }
+  }, [canonicalMarkers]);
+
+  const [page, setPage] = useState(1);
+
+  const {
+    uniqueOrganisms: uniqueOrganismsComputational,
+    uniqueOrgans: uniqueOrgansComputational,
+    tableRows: tableRowsComputational,
+    selectedOrganFilter: selectedOrganFilterComputational,
+    selectedOrganismFilter: selectedOrganismFilterComputational,
+  } = getComputationalMarkerGenesTableRowsAndFilters({
+    genes: computationalMarkerGenes,
+    selectedOrgan: selectedOrganComputational,
+    selectedOrganism: selectedOrganismComputational,
+    setGeneInfoGene,
+  });
+
+  const {
+    uniqueOrganisms: uniqueOrganismsCanonical,
+    uniqueOrgans: uniqueOrgansCanonical,
+    tableRows: tableRowsCanonical,
+    selectedOrganFilter: selectedOrganFilterCanonical,
+  } = getCanonicalMarkerGenesTableRowsAndFilters({
+    genes: canonicalMarkerGenes,
+    selectedOrgan: selectedOrganCanonical,
+    setGeneInfoGene,
+  });
+
+  const uniqueOrganisms = activeTable
+    ? uniqueOrganismsComputational
+    : uniqueOrganismsCanonical;
+  const uniqueOrgans = activeTable
+    ? uniqueOrgansComputational
+    : uniqueOrgansCanonical;
+  const tableRows = activeTable ? tableRowsComputational : tableRowsCanonical;
+
+  useEffect(() => {
+    setPage(1);
+    setSelectedOrganismComputational("");
+    setSelectedOrganComputational("");
+    setSelectedOrganCanonical("");
+    setActiveTable(0);
+
     return () => {
       // (alec) when the component unmounts, reset the organism/organ to its initial state.
       // not all cell types may have homo sapiens as a valid option so we need to invoke the conditional
       // logic above for setting the initial organism/organ.
-      setSelectedOrganism("");
-      setSelectedOrgan("");
+      setSelectedOrganismComputational("");
+      setSelectedOrganComputational("");
+      setSelectedOrganCanonical("");
       setActiveTable(0);
       setPage(1);
     };
-  }, []);
-
-  // Handle cell type change, set marker genes table page back to 1
-  useEffect(() => {
-    setPage(1);
   }, [cellTypeId]);
 
   const genesForShareUrl = `${tableRows
     .map((row) => row.symbolId)
     .join("%2C")}&cellTypes=${cellTypeName.replace(" ", "+")}`;
 
-  const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
-    setSelectedOrganism(event.target.value as string);
+  const handleChangeOrganismComputational = (
+    event: SelectChangeEvent<unknown>
+  ) => {
+    setSelectedOrganismComputational(event.target.value as string);
   };
-  const handleChangeOrgan = (event: SelectChangeEvent<unknown>) => {
-    setSelectedOrgan(event.target.value as string);
+  const handleChangeOrganCanonical = (event: SelectChangeEvent<unknown>) => {
+    setSelectedOrganCanonical(event.target.value as string);
+  };
+  const handleChangeOrganComputational = (
+    event: SelectChangeEvent<unknown>
+  ) => {
+    setSelectedOrganComputational(event.target.value as string);
   };
   const enrichedGenesTooltipComponent = (
     <div>
@@ -509,6 +637,15 @@ const MarkerGeneTables = ({
     setPage(page);
   };
 
+  const selectedOptionOrgan = activeTable
+    ? selectedOrganFilterComputational
+    : selectedOrganFilterCanonical;
+  const handleChangeOrgan = activeTable
+    ? handleChangeOrganComputational
+    : handleChangeOrganCanonical;
+
+  const selectedOptionOrganism = selectedOrganismFilterComputational;
+  const handleChangeOrganism = handleChangeOrganismComputational;
   return (
     <div>
       <TableTitleWrapper>
@@ -516,30 +653,26 @@ const MarkerGeneTables = ({
           <TableTitleInnerWrapper columnGap={4}>
             <TableTitle>Marker Genes</TableTitle>
           </TableTitleInnerWrapper>
-          {tableRows.length > 0 && (
-            <TableTitleInnerWrapper>
-              {activeTable === 1 && (
-                <DropdownSelect
-                  handleChange={handleChangeOrganism}
-                  options={uniqueOrganisms}
-                  selectedOption={selectedOrganism}
-                  testId={CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
-                />
-              )}
-              {activeTable === 0 && (
-                <DropdownSelect
-                  handleChange={handleChangeOrgan}
-                  options={uniqueOrgans}
-                  selectedOption={selectedOrgan}
-                  testId={CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
-                />
-              )}
-              <Link
-                url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
-                label="Open in Gene Expression"
+          <TableTitleInnerWrapper>
+            {activeTable === 1 && (
+              <DropdownSelect
+                handleChange={handleChangeOrganism}
+                options={uniqueOrganisms}
+                selectedOption={selectedOptionOrganism}
+                testId={CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
               />
-            </TableTitleInnerWrapper>
-          )}
+            )}
+            <DropdownSelect
+              handleChange={handleChangeOrgan}
+              options={uniqueOrgans}
+              selectedOption={selectedOptionOrgan}
+              testId={CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
+            />
+            <Link
+              url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
+              label="Open in Gene Expression"
+            />
+          </TableTitleInnerWrapper>
         </TableTitleOuterWrapper>
       </TableTitleWrapper>
       <TableTitleOuterWrapper>
