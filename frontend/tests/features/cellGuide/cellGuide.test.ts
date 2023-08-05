@@ -398,6 +398,52 @@ describe("Cell Guide", () => {
           { page }
         );
       });
+      test("Enriched marker gene table is updated by the organ dropdown", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_GUIDE}/${T_CELL_CELL_TYPE_ID}`,
+          page
+        );
+
+        await tryUntil(
+          async () => {
+            // set enriched marker genes table as active
+            await page
+              .getByTestId(CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR)
+              .click();
+
+            const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
+            await page.locator(tableSelector).waitFor({ timeout: 5000 });
+
+            const rowElementsBefore = await page
+              .locator(`${tableSelector} tbody tr`)
+              .elementHandles();
+            const rowCountBefore = rowElementsBefore.length;
+            expect(rowCountBefore).toBeGreaterThan(1);
+            const firstRowContentBefore =
+              await rowElementsBefore[0].textContent();
+
+            const dropdown = page.getByTestId(
+              CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN
+            );
+            await waitForElementAndClick(dropdown);
+            await dropdown.press("ArrowDown");
+            await dropdown.press("ArrowDown");
+            await dropdown.press("Enter");
+
+            const rowElementsAfter = await page
+              .locator(`${tableSelector} tbody tr`)
+              .elementHandles();
+            const rowCountAfter = rowElementsAfter.length;
+            expect(rowCountAfter).toBeGreaterThan(1);
+            const firstRowContentAfter =
+              await rowElementsAfter[0].textContent();
+            expect(firstRowContentBefore).not.toBe(firstRowContentAfter);
+          },
+          { page }
+        );
+      });
     });
 
     describe("Source Data Table", () => {
