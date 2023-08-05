@@ -262,7 +262,7 @@ const MarkerGeneTables = ({
       if (!genes) return [];
       const organs = new Set<string>();
       for (const markerGene of genes) {
-        organs.add(markerGene.tissue_general);
+        organs.add(markerGene.tissue);
       }
       // All Tissues selecteed by default
       if (!selectedOrgan) setSelectedOrgan("All Tissues");
@@ -287,7 +287,7 @@ const MarkerGeneTables = ({
       const publicationTitlesToIndex = new Map();
       let index = 0;
       for (const markerGene of genes) {
-        if (markerGene.tissue_general !== selectedOrgan) continue;
+        if (markerGene.tissue !== selectedOrgan) continue;
         const publicationTitles = markerGene.publication_titles.split(";;");
         for (let i = 0; i < publicationTitles.length; i += 1) {
           if (
@@ -300,15 +300,10 @@ const MarkerGeneTables = ({
         }
       }
       for (const markerGene of genes) {
-        const {
-          tissue_general,
-          publication,
-          publication_titles,
-          symbol,
-          name,
-        } = markerGene;
+        const { tissue, publication, publication_titles, symbol, name } =
+          markerGene;
 
-        if (tissue_general !== selectedOrgan) continue;
+        if (tissue !== selectedOrgan) continue;
 
         // multiple publications for a single gene are joined by ";;"
         let publications = Array.from(new Set(publication.split(";;")));
