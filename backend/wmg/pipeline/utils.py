@@ -3,7 +3,9 @@ import logging
 
 import numpy as np
 from anndata import AnnData
-from scipy.sparse import csr_matrix, issparse
+from scipy.sparse import csc_matrix, csr_matrix
+
+from backend.wmg.pipeline.errors import UnsupportedMatrixTypeError
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +52,18 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
 
     """
 
-    assert isinstance(adata.X, csr_matrix)
-
-    # memory efficient implementation for getting nnz per row for CSR sparse matrices
-    number_per_cell = np.diff(adata.X.indptr) if issparse(adata.X) else (adata.X > 0).sum(axis=1).A1
+    # memory efficient implementation for getting count of non-zeros per row.
+    # For CSR we use the `indptr` structure to compute number of non-zeros per row
+    # For CSC we use the `indices` structure to compute number of non-zeros per row
+    # And finally for ndarray, we simply filter the matrix and sum the resulting boolean matrix.
+    if isinstance(adata.X, csr_matrix):
+        number_per_cell = np.diff(adata.X.indptr)
+    elif isinstance(adata.X, csc_matrix):
+        _, number_per_cell = np.unique(adata.X.indices, return_counts=True)
+    elif isinstance(adata.X, np.ndarray):
+        number_per_cell = (adata.X > 0).sum(axis=1).A1
+    else:
+        raise UnsupportedMatrixTypeError(f"Unsupported AnnData.X matrix type: {type(adata.X)}")
 
     cell_subset = number_per_cell >= min_genes
 
