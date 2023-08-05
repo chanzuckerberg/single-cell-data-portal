@@ -96,8 +96,8 @@ class QueryTest(unittest.TestCase):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             q = WmgQuery(snapshot)
             query_result = q.expression_summary_default(criteria)
-            query_sum = list(query_result[["sum", "nnz"]].sum())
-            expected = [804599.0, 370972.0]
+            query_sum = list(query_result[["sum", "nnz", "sqsum"]].sum())
+            expected = [804599.0, 370972.0, 1822108.0]
             [self.assertEqual(round(query_sum[i]), round(expected[i])) for i in range(len(query_sum))]
 
 

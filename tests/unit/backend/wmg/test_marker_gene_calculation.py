@@ -19,7 +19,7 @@ CONTEXT_FILTERS = {
     "organism_ontology_term_id": "NCBITaxon:9606",
 }
 
-# tests key functions in calculate_markers.py in order from most to least nested
+# Tests key functions in calculate_markers.py in order from most to least nested
 
 
 class MarkerGeneCalculationTest(unittest.TestCase):
