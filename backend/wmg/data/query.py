@@ -144,7 +144,11 @@ class WmgQuery:
         attrs = [i.name for i in cube.schema if i.name in VALID_ATTRIBUTES]
         if compare_dimension is not None:
             attrs.append(compare_dimension)
-        if isinstance(criteria, FmgQueryCriteria) and compare_dimension != "dataset_id":
+        if (
+            isinstance(criteria, FmgQueryCriteria)
+            and compare_dimension != "dataset_id"
+            and "dataset_id" in [i.name for i in cube.schema]
+        ):
             attrs.append("dataset_id")
 
         attrs += numeric_attrs

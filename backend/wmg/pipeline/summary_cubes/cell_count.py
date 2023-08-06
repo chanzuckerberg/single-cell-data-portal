@@ -136,26 +136,38 @@ def add_missing_cell_types_to_df(df: pd.DataFrame):
     df_numeric_columns = list(df.select_dtypes(include="number").columns)
 
     df_meta_columns.remove("cell_type_ontology_term_id")
-
     agg_dict = {"cell_type_ontology_term_id": _get_ancestors_and_agg}
-
     for num in df_numeric_columns:
         agg_dict[num] = "sum"
 
-    result = df.groupby(df_meta_columns).agg(agg_dict)
+    if len(df_meta_columns):
+        result = df.groupby(df_meta_columns).agg(agg_dict)
 
-    entries = []
-    for i in range(result.shape[0]):
-        row = result.iloc[i]
-        cell_types = row["cell_type_ontology_term_id"].split(";")
-        for cell_type in cell_types:
-            entries.append(row.name + (cell_type,) + (0,) * len(df_numeric_columns))
+        entries = []
+        for i in range(result.shape[0]):
+            row = result.iloc[i]
+            cell_types = row["cell_type_ontology_term_id"].split(";")
+            name = row.name if isinstance(row.name, tuple) else (row.name,)
+            for cell_type in cell_types:
+                entries.append(name + (cell_type,) + (0,) * len(df_numeric_columns))
 
-    new = pd.DataFrame(data=entries, columns=list(result.index.names) + list(result.columns))
-    new.index = pd.MultiIndex.from_frame(new[df_meta_columns + ["cell_type_ontology_term_id"]])
-    index_df = pd.MultiIndex.from_frame(df[df_meta_columns + ["cell_type_ontology_term_id"]])
-    new.loc[index_df, df_numeric_columns] += df[df_numeric_columns].values
-    new = new.reset_index(drop=True)
+        new = pd.DataFrame(data=entries, columns=list(result.index.names) + list(result.columns))
+        new.index = pd.MultiIndex.from_frame(new[df_meta_columns + ["cell_type_ontology_term_id"]])
+        index_df = pd.MultiIndex.from_frame(df[df_meta_columns + ["cell_type_ontology_term_id"]])
+        new.loc[index_df, df_numeric_columns] += df[df_numeric_columns].values
+        new = new.reset_index(drop=True)
+    else:
+        # if cell type is the only column in the dataframe
+        result = df.reset_index().groupby("index").agg(agg_dict).reset_index(drop=True)
+        all_cell_types = list(set(sum([i.split(";") for i in result["cell_type_ontology_term_id"]], [])))
+        new = pd.DataFrame(columns=["cell_type_ontology_term_id"], data=all_cell_types)
+        for col in df_numeric_columns:
+            new[col] = 0
+
+        df = df.set_index("cell_type_ontology_term_id")
+        new = new.set_index("cell_type_ontology_term_id")
+        new.loc[df.index, df_numeric_columns] += df[df_numeric_columns].values
+        new = new.reset_index(drop=False)
     return new
 
 
