@@ -272,10 +272,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 self.datasets[dataset_version.dataset_id.id].revised_at = published_at
             dataset_version.canonical_dataset.dataset_version_id = dataset_version.version_id
             dataset_ids_for_new_collection_version.append(dataset_version.dataset_id.id)
-        cc = self.collections.get(collection_id.id)
+        previous_collection = self.collections.get(collection_id.id)
 
         dataset_ids_to_tombstone = []
-        if cc is None:
+        if previous_collection is None:
             self.collections[collection_id.id] = CanonicalCollection(
                 id=collection_id,
                 version_id=version_id,
@@ -286,23 +286,23 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
         else:
             # Check to see if any Datasets are missing from new version, tombstone if so
-            current_dataset_version_ids = self.collections_versions[cc.version_id.id].datasets
-            current_dataset_ids = [
-                self.datasets_versions[d_v_id.id].dataset_id.id for d_v_id in current_dataset_version_ids
+            previous_dataset_version_ids = self.collections_versions[previous_collection.version_id.id].datasets
+            previous_dataset_ids = [
+                self.datasets_versions[d_v_id.id].dataset_id.id for d_v_id in previous_dataset_version_ids
             ]
-            for current_dataset_id in current_dataset_ids:
-                if current_dataset_id not in dataset_ids_for_new_collection_version:
+            for previous_dataset_id in previous_dataset_ids:
+                if previous_dataset_id not in dataset_ids_for_new_collection_version:
                     # Dataset has been removed and needs to be tombstoned
-                    self.datasets[current_dataset_id].tombstoned = True
+                    self.datasets[previous_dataset_id].tombstoned = True
                     for dataset_version in self.datasets_versions.values():
-                        if dataset_version.dataset_id == current_dataset_id:
+                        if dataset_version.dataset_id == previous_dataset_id:
                             dataset_ids_to_tombstone.append(dataset_version.dataset_id.id)
 
-            new_cc = copy.deepcopy(cc)
-            new_cc.version_id = version_id
+            new_collection = copy.deepcopy(previous_collection)
+            new_collection.version_id = version_id
             if update_revised_at:
-                new_cc.revised_at = published_at
-            self.collections[collection_id.id] = new_cc
+                new_collection.revised_at = published_at
+            self.collections[collection_id.id] = new_collection
         self.collections_versions[version_id.id].published_at = published_at
         self.collections_versions[version_id.id].schema_version = schema_version
 
@@ -356,7 +356,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         versions = []
         for dataset_version in self.datasets_versions.values():
             if dataset_version.dataset_id == dataset_id:
-                versions.append(dataset_version)
+                versions.append(self._update_dataset_version_with_canonical(dataset_version))
         return versions
 
     def _get_all_datasets(self) -> Iterable[DatasetVersion]:
