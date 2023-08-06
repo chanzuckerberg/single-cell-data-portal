@@ -147,7 +147,6 @@ def _query_tiledb_context(
     criteria = FmgQueryCriteria(**{"tissue_ontology_term_ids": [tissue], "organism_ontology_term_id": organism})
     q = WmgQuery(snapshot)
     cell_counts_query = q.cell_counts(criteria)
-    cell_types_in_cube = list(cell_counts_query["cell_type_ontology_term_id"].unique())
 
     criteria.cell_type_ontology_term_ids = descendants(cell_type)
     query = q.expression_summary_fmg(criteria)
@@ -155,7 +154,6 @@ def _query_tiledb_context(
     agg = query.groupby(["cell_type_ontology_term_id", "gene_ontology_term_id"]).sum(numeric_only=True).reset_index()
     agg = add_missing_cell_types_to_df(agg)
     agg = rollup_across_cell_type_descendants(agg)
-    agg = agg[agg["cell_type_ontology_term_id"].isin(cell_types_in_cube)]
     # remove tidy
     agg = agg.groupby(["cell_type_ontology_term_id", "gene_ontology_term_id"]).sum(numeric_only=True)
 
