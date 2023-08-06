@@ -18,6 +18,7 @@ from backend.wmg.data.utils import (
     get_collections_from_curation_api,
     get_datasets_from_curation_api,
     log_func_runtime,
+    to_dict,
 )
 
 logger = logging.getLogger(__name__)
@@ -187,7 +188,7 @@ def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
     Xs, Ys = Xs[filt], Ys[filt]
 
     # convert the edges to a linked list representation
-    filter_relationships_linked_list = _to_dict(Xs, Ys)
+    filter_relationships_linked_list = to_dict(Xs, Ys)
 
     # reorganize the linked list representation to a nested linked list representation
     # where the filter columns are separated into distinct dictionaries
@@ -195,27 +196,9 @@ def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
     # it's now {"cell_type_ontology_term_id__beta cell": {"dataset_id": ["dataset_id__Single cell transcriptome analysis of human pancreas", ...], "assay_ontology_term_id": ["assay_ontology_term_id__assay_type", ...], ...}, ...}.
     # This structure is easier to parse by the `/query` endpoint.
     for k, v in filter_relationships_linked_list.items():
-        filter_relationships_linked_list[k] = _to_dict([x.split("__")[0] for x in v], v)
+        filter_relationships_linked_list[k] = to_dict([x.split("__")[0] for x in v], v)
 
     return filter_relationships_linked_list
-
-
-def _to_dict(a, b):
-    """
-    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
-    """
-    a = np.array(a)
-    b = np.array(b)
-    idx = np.argsort(a)
-    a = a[idx]
-    b = b[idx]
-    bounds = np.where(a[:-1] != a[1:])[0] + 1
-    bounds = np.append(np.append(0, bounds), a.size)
-    bounds_left = bounds[:-1]
-    bounds_right = bounds[1:]
-    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
-    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
-    return d
 
 
 def remove_accents(input_str):
