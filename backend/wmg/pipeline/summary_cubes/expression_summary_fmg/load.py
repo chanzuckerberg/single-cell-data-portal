@@ -13,7 +13,6 @@ def build_in_mem_cube(
     cube_sum: np.ndarray,
     cube_sqsum: np.ndarray,
     cube_nnz: np.ndarray,
-    cube_nnz_thr: np.ndarray,
 ):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
@@ -36,7 +35,6 @@ def build_in_mem_cube(
         "sum": np.empty((total_vals,)),
         "sqsum": np.empty((total_vals,)),
         "nnz": np.empty((total_vals,)),
-        "nnz_thr": np.empty((total_vals,)),
         **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
     }
 
@@ -66,7 +64,6 @@ def build_in_mem_cube(
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["sqsum"][idx : idx + n_vals] = cube_sqsum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
-        vals["nnz_thr"][idx : idx + n_vals] = cube_nnz_thr[cube_idx, mask]
         vals["gene_ontology_term_id"][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
 
         for i, k in enumerate(other_cube_attrs[1:]):
