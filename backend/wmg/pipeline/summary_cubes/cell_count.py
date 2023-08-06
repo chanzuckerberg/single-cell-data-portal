@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import tiledb
 
+from backend.wmg.data.rollup import ancestors
 from backend.wmg.data.schemas.corpus_schema import (
     FILTER_RELATIONSHIPS_NAME,
     OBS_ARRAY_NAME,
@@ -92,6 +93,11 @@ def return_dataset_dict_w_publications():
     return dataset_dict
 
 
+def _get_ancestors_and_agg(x):
+    anc = [i for i in list(set(sum([ancestors(i) for i in x], []))) if i.startswith("CL:")]
+    return ";".join(anc)
+
+
 @log_func_runtime
 def create_cell_count_cube(corpus_path: str):
     """
@@ -107,6 +113,26 @@ def create_cell_count_cube(corpus_path: str):
 
     n_cells = df["n_cells"].to_numpy()
     df["n_cells"] = n_cells
+
+    df_meta_columns = list(df.select_dtypes(exclude="number").columns)
+    df_meta_columns.remove("cell_type_ontology_term_id")
+
+    result = df.groupby(df_meta_columns).agg({"cell_type_ontology_term_id": _get_ancestors_and_agg, "n_cells": "sum"})
+
+    entries = []
+    for i in range(result.shape[0]):
+        row = result.iloc[i]
+        cell_types = row["cell_type_ontology_term_id"].split(";")
+        for cell_type in cell_types:
+            entries.append(row.name + (cell_type, 0))
+
+    new = pd.DataFrame(data=entries, columns=list(result.index.names) + list(result.columns))
+    new.index = pd.MultiIndex.from_frame(new[df_meta_columns + ["cell_type_ontology_term_id"]])
+    index_df = pd.MultiIndex.from_frame(df[df_meta_columns + ["cell_type_ontology_term_id"]])
+    new.loc[index_df, "n_cells"] += df["n_cells"].values
+    new = new.reset_index(drop=True)
+
+    df = new
 
     filter_relationships_linked_list = create_filter_relationships_graph(df)
 
