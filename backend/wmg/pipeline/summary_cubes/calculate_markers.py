@@ -5,6 +5,7 @@ from typing import Optional, Union
 import numpy as np
 import pandas as pd
 import tiledb
+from numba import njit, prange
 from scipy import stats
 
 from backend.common.utils.exceptions import MarkerGeneCalculationException
@@ -24,6 +25,44 @@ from backend.wmg.data.snapshot import (
     load_snapshot,
 )
 from backend.wmg.pipeline.summary_cubes.cell_count import add_missing_cell_types_to_df
+
+
+@njit(parallel=True)
+def nanpercentile_2d(arr, percentile, axis):
+    """
+    Calculate the specified percentile of a 2D array along an axis, ignoring NaN values.
+
+    Parameters:
+        arr: 2D array to calculate percentile of
+        percentile: percentile to calculate, as a number between 0 and 100
+        axis: axis along which to calculate percentile
+
+    Returns:
+        The specified percentile of the 2D array along the specified axis.
+    """
+    if axis == 0:
+        result = np.empty(arr.shape[1])
+        for i in prange(arr.shape[1]):
+            arr_column = arr[:, i]
+            result[i] = nanpercentile(arr_column, percentile)
+        return result
+    else:
+        result = np.empty(arr.shape[0])
+        for i in prange(arr.shape[0]):
+            arr_row = arr[i, :]
+            result[i] = nanpercentile(arr_row, percentile)
+        return result
+
+
+@njit
+def nanpercentile(arr, percentile):
+    arr_without_nan = arr[np.logical_not(np.isnan(arr))]
+    length = len(arr_without_nan)
+
+    if length == 0:
+        return np.nan
+
+    return np.percentile(arr_without_nan, percentile)
 
 
 def _make_hashable(func):
@@ -108,6 +147,7 @@ def _query_tiledb_context(
     criteria = FmgQueryCriteria(**{"tissue_ontology_term_ids": [tissue], "organism_ontology_term_id": organism})
     q = WmgQuery(snapshot)
     cell_counts_query = q.cell_counts(criteria)
+    cell_types_in_cube = list(cell_counts_query["cell_type_ontology_term_id"].unique())
 
     criteria.cell_type_ontology_term_ids = descendants(cell_type)
     query = q.expression_summary_fmg(criteria)
@@ -115,6 +155,7 @@ def _query_tiledb_context(
     agg = query.groupby(["cell_type_ontology_term_id", "gene_ontology_term_id"]).sum(numeric_only=True).reset_index()
     agg = add_missing_cell_types_to_df(agg)
     agg = rollup_across_cell_type_descendants(agg)
+    agg = agg[agg["cell_type_ontology_term_id"].isin(cell_types_in_cube)]
     # remove tidy
     agg = agg.groupby(["cell_type_ontology_term_id", "gene_ontology_term_id"]).sum(numeric_only=True)
 
@@ -225,104 +266,6 @@ def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids):
     n_cells_array = rollup_across_cell_type_descendants_array(n_cells_array, cell_types)
     index = pd.Index(cell_types, name="cell_type_ontology_term_id")
     return n_cells_array, index
-
-
-def _prepare_indices_and_metrics(cell_type, tissue, organism, corpus=None):
-    """
-    Compute all the necessary indices and metrics for the given target and context filters.
-
-    Arguments
-    ---------
-    cell_type - str
-        cell type ID to calculate marker genes for
-
-    tissue - str
-        tissue ontology term ID to calculate marker genes for
-
-    corpus - str or WmgSnapshot, optional, default None
-        If string, it is the path to the snapshot.
-        If WmgSnapshot, it is the snapshot object.
-        If None, the snapshot will be fetched from AWS.
-
-    Returns
-    -------
-    context_agg - DataFrame,
-        aggregated values for the context query across the combinations of
-        filters specified in target_filters
-
-    target_agg - DataFrame,
-        aggregated values for the target query across genes
-
-    n_cells_index_context - pandas MultiIndex
-        Index of unique combinations of filter values (length N)
-
-    n_cells_per_gene_target - np.ndarray
-        1 x M array of cell counts for the target group
-        (M = number of genes)
-
-    n_cells_per_gene_context - np.ndarray
-        N x M array of cell counts for the groups present in the context
-        (N = number of groups, M = number of genes)
-
-    target_data_nnz - np.ndarray
-        1 x M array of number of nonzero values for each gene in the target group
-
-    genes - list
-        List of non-zero genes present in the target population
-
-    groups_indices_context - list
-        indices of the groups in `context_agg` corresponding to the index location of each group in
-        `groups_context_uniq`.
-        These are the row coordinates of the array in which the expression statistics will be filled
-        for the context population.
-
-    genes_indices_context - list
-        indices of the genes in `context_agg` corresponding to the index location of each gene in
-        `genes`.
-        These are the column coordinates of the array in which the expression statistics will be filled
-        for the context population.
-
-    genes_indices_target - list
-        indices of the genes in `target_agg` corresponding to the index location of each gene in
-        `genes`.
-        These are the column coordinates of the array in which the expression statistics will be filled
-        for the target population.
-    """
-    context_agg, n_cells_per_gene_context, n_cells_index_context, genes = _query_tiledb_context(
-        cell_type, tissue, organism, corpus=corpus
-    )
-    target_agg, n_cells_per_gene_target = _query_target(
-        cell_type, context_agg, n_cells_per_gene_context, n_cells_index_context
-    )
-
-    target_agg = target_agg.groupby("gene_ontology_term_id").sum(numeric_only=True)
-
-    genes_target = list(target_agg.index)
-
-    genes_context = list(context_agg.index.get_level_values("gene_ontology_term_id"))
-    groups_context = list(context_agg.index.get_level_values("cell_type_ontology_term_id"))
-    groups_indexer = pd.Series(index=n_cells_index_context, data=range(len(n_cells_index_context)))
-    genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
-
-    groups_indices_context = list(groups_indexer[groups_context])
-    genes_indices_context = list(genes_indexer[genes_context])
-    genes_indices_target = list(genes_indexer[genes_target])
-
-    target_data_nnz = np.zeros((1, len(genes)))
-    target_data_nnz[0, genes_indices_target] = list(target_agg["nnz"])
-
-    return (
-        context_agg,
-        target_agg,
-        n_cells_index_context,
-        n_cells_per_gene_target,
-        n_cells_per_gene_context,
-        target_data_nnz,
-        genes,
-        groups_indices_context,
-        genes_indices_context,
-        genes_indices_target,
-    )
 
 
 def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
@@ -439,8 +382,8 @@ def _post_process_stats(
         effects[:, np.all(np.isnan(effects), axis=0)] = 0
 
     # aggregate
-    effects = np.nanpercentile(effects, percentile * 100, axis=0)
-    pvals = np.array([stats.combine_pvalues(x[np.invert(np.isnan(x))] + 1e-300)[-1] for x in pvals.T])
+    effects = nanpercentile_2d(effects, percentile * 100, 0)
+    pvals = np.sort(pvals, axis=0)[int(np.round(0.05 * pvals.shape[0]))]
     effects[zero_out] = np.nan
     pvals[zero_out] = np.nan
 
@@ -463,7 +406,34 @@ def _post_process_stats(
     return dict(zip(list(final_markers), statistics))
 
 
-def _get_markers_ttest(cell_type, tissue, organism, corpus=None, n_markers=10, percentile=0.15):
+def get_markers(cell_type, tissue, organism, corpus=None, n_markers=10, percentile=0.15):
+    """
+    Calculate marker genes using the t-test.
+
+    Arguments
+    ---------
+    cell_type - str
+        cell type of interest
+
+    tissue - dict
+        tissue of interest
+
+    corpus - str or WmgSnapshot, optional, default None
+        If string, it is the path to the snapshot.
+        If WmgSnapshot, it is the snapshot object.
+        If None, the snapshot will be fetched from AWS.
+
+    n_markers - int, optional, default 10
+        Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
+
+    percentile - float, optional, default 0.15
+        The percentile of effect sizes to select as the representative effect size.
+
+    Returns
+    -------
+    Dictionary of marker genes as keys and a dictionary of p-value and effect size as values.
+    """
+
     """
     Calculate marker genes using the t-test.
 
@@ -490,34 +460,43 @@ def _get_markers_ttest(cell_type, tissue, organism, corpus=None, n_markers=10, p
     -------
     Dictionary of marker genes as keys and a dictionary of p-value and effect size as values.
     """
-    (
-        context_agg,
-        target_agg,
-        groups_index_context,
-        n_target,
-        n_context,
-        target_data_nnz,
-        genes,
-        groups_indices_context,
-        genes_indices_context,
-        genes_indices_target,
-    ) = _prepare_indices_and_metrics(cell_type, tissue, organism, corpus=corpus)
+
+    context_agg, n_context, cell_types_index_context, genes = _query_tiledb_context(
+        cell_type, tissue, organism, corpus=corpus
+    )
+    target_agg, n_target = _query_target(cell_type, context_agg, n_context, cell_types_index_context)
+
+    target_agg = target_agg.groupby("gene_ontology_term_id").sum(numeric_only=True)
+
+    genes_target = list(target_agg.index)
+
+    genes_context = list(context_agg.index.get_level_values("gene_ontology_term_id"))
+    cell_types_context = list(context_agg.index.get_level_values("cell_type_ontology_term_id"))
+    cell_types_indexer = pd.Series(index=cell_types_index_context, data=range(len(cell_types_index_context)))
+    genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
+
+    cell_types_indices_context = list(cell_types_indexer[cell_types_context])
+    genes_indices_context = list(genes_indexer[genes_context])
+    genes_indices_target = list(genes_indexer[genes_target])
+
+    target_data_nnz = np.zeros((1, len(genes)))
+    target_data_nnz[0, genes_indices_target] = list(target_agg["nnz"])
 
     target_data_sum = np.zeros((1, len(genes)))
     target_data_sum[0, genes_indices_target] = list(target_agg["sum"])
     target_data_sumsq = np.zeros((1, len(genes)))
     target_data_sumsq[0, genes_indices_target] = list(target_agg["sqsum"])
 
-    context_data_sum = np.zeros((len(groups_index_context), len(genes)))
-    context_data_sum[groups_indices_context, genes_indices_context] = list(context_agg["sum"])
-    context_data_sumsq = np.zeros((len(groups_index_context), len(genes)))
-    context_data_sumsq[groups_indices_context, genes_indices_context] = list(context_agg["sqsum"])
+    context_data_sum = np.zeros((len(cell_types_index_context), len(genes)))
+    context_data_sum[cell_types_indices_context, genes_indices_context] = list(context_agg["sum"])
+    context_data_sumsq = np.zeros((len(cell_types_index_context), len(genes)))
+    context_data_sumsq[cell_types_indices_context, genes_indices_context] = list(context_agg["sqsum"])
 
     pvals, effects = _run_ttest(
         target_data_sum, target_data_sumsq, n_target, context_data_sum, context_data_sumsq, n_context
     )
 
-    cell_types_context = groups_index_context.get_level_values("cell_type_ontology_term_id")
+    cell_types_context = cell_types_index_context.get_level_values("cell_type_ontology_term_id")
 
     return _post_process_stats(
         cell_type,
@@ -530,48 +509,3 @@ def _get_markers_ttest(cell_type, tissue, organism, corpus=None, n_markers=10, p
         n_markers=n_markers,
         percentile=percentile,
     )
-
-
-def get_markers(cell_type, tissue, organism, corpus=None, test="ttest", n_markers=10, percentile=0.15):
-    """
-    Calculate marker genes using the t-test.
-
-    Arguments
-    ---------
-    cell_type - str
-        cell type of interest
-
-    tissue - dict
-        tissue of interest
-
-    corpus - str or WmgSnapshot, optional, default None
-        If string, it is the path to the snapshot.
-        If WmgSnapshot, it is the snapshot object.
-        If None, the snapshot will be fetched from AWS.
-
-    test - str, optional, default "ttest"
-        The statistical test used. Historically "ttest" or "binomtest" were both supported, currently
-        only "ttest" is supported.
-
-    n_markers - int, optional, default 10
-        Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
-
-    percentile - float, optional, default 0.15
-        The percentile of effect sizes to select as the representative effect size.
-
-    Returns
-    -------
-    Dictionary of marker genes as keys and a dictionary of p-value and effect size as values.
-    """
-
-    if test == "ttest":
-        return _get_markers_ttest(
-            cell_type,
-            tissue,
-            organism,
-            corpus=corpus,
-            n_markers=n_markers,
-            percentile=percentile,
-        )
-    else:
-        raise ValueError(f"Test {test} not supported.")
