@@ -58,7 +58,6 @@ class FmgQueryCriteria(BaseModel):
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0, max_items=1)
-    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
 class MarkerGeneQueryCriteria(BaseModel):

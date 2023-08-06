@@ -75,7 +75,6 @@ class QueryTest(unittest.TestCase):
 
     def test__query_expression_summary_fmg_cube__returns_correct_results(self):
         criteria = FmgQueryCriteria(
-            gene_ontology_term_ids=["ENSG00000238042", "ENSG00000168028"],
             organism_ontology_term_id="NCBITaxon:9606",
             tissue_ontology_term_ids=["UBERON:0002048"],
             cell_type_ontology_term_ids=["CL:0000786"],

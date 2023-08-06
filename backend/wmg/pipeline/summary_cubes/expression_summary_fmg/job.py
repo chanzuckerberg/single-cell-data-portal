@@ -7,7 +7,6 @@ import tiledb
 from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import (
     expression_summary_fmg_indexed_dims,
     expression_summary_fmg_non_indexed_dims,
-    expression_summary_fmg_non_indexed_dims_no_gene_ontology,
     expression_summary_fmg_schema,
 )
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_FMG_CUBE_NAME
@@ -58,7 +57,7 @@ def create_expression_summary_fmg_cube(corpus_path: str):
     """
     uri = f"{corpus_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"
     ctx = create_ctx()
-    cube_dims = expression_summary_fmg_indexed_dims + expression_summary_fmg_non_indexed_dims_no_gene_ontology
+    cube_dims = expression_summary_fmg_indexed_dims
 
     with tiledb.scope_ctx(ctx):
         # Create cube

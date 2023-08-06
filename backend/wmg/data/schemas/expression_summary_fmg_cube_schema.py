@@ -20,11 +20,6 @@ expression_summary_fmg_indexed_dims = [
 # client-side filtering, which may result in less efficient querying.
 expression_summary_fmg_non_indexed_dims = [
     "gene_ontology_term_id",
-    "dataset_id",
-]
-
-expression_summary_fmg_non_indexed_dims_no_gene_ontology = [
-    "dataset_id",
 ]
 
 # The full set of logical cube dimensions by which the cube can be queried.

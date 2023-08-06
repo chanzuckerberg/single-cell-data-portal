@@ -115,25 +115,7 @@ def create_cell_count_cube(corpus_path: str):
     n_cells = df["n_cells"].to_numpy()
     df["n_cells"] = n_cells
 
-    df_meta_columns = list(df.select_dtypes(exclude="number").columns)
-    df_meta_columns.remove("cell_type_ontology_term_id")
-
-    result = df.groupby(df_meta_columns).agg({"cell_type_ontology_term_id": _get_ancestors_and_agg, "n_cells": "sum"})
-
-    entries = []
-    for i in range(result.shape[0]):
-        row = result.iloc[i]
-        cell_types = row["cell_type_ontology_term_id"].split(";")
-        for cell_type in cell_types:
-            entries.append(row.name + (cell_type, 0))
-
-    new = pd.DataFrame(data=entries, columns=list(result.index.names) + list(result.columns))
-    new.index = pd.MultiIndex.from_frame(new[df_meta_columns + ["cell_type_ontology_term_id"]])
-    index_df = pd.MultiIndex.from_frame(df[df_meta_columns + ["cell_type_ontology_term_id"]])
-    new.loc[index_df, "n_cells"] += df["n_cells"].values
-    new = new.reset_index(drop=True)
-
-    df = new
+    df = add_missing_cell_types_to_df(df)
 
     filter_relationships_linked_list = create_filter_relationships_graph(df)
 
@@ -144,6 +126,37 @@ def create_cell_count_cube(corpus_path: str):
     cell_count = df.n_cells.sum()
     logger.info(f"{cell_count=}")
     logger.info(f"Cell count cube created and stored at {uri}")
+
+
+def add_missing_cell_types_to_df(df: pd.DataFrame):
+    if "cell_type_ontology_term_id" not in df.columns:
+        raise ValueError("cell_type_ontology_term_id column is missing from the dataframe")
+
+    df_meta_columns = list(df.select_dtypes(exclude="number").columns)
+    df_numeric_columns = list(df.select_dtypes(include="number").columns)
+
+    df_meta_columns.remove("cell_type_ontology_term_id")
+
+    agg_dict = {"cell_type_ontology_term_id": _get_ancestors_and_agg}
+
+    for num in df_numeric_columns:
+        agg_dict[num] = "sum"
+
+    result = df.groupby(df_meta_columns).agg(agg_dict)
+
+    entries = []
+    for i in range(result.shape[0]):
+        row = result.iloc[i]
+        cell_types = row["cell_type_ontology_term_id"].split(";")
+        for cell_type in cell_types:
+            entries.append(row.name + (cell_type,) + (0,) * len(df_numeric_columns))
+
+    new = pd.DataFrame(data=entries, columns=list(result.index.names) + list(result.columns))
+    new.index = pd.MultiIndex.from_frame(new[df_meta_columns + ["cell_type_ontology_term_id"]])
+    index_df = pd.MultiIndex.from_frame(df[df_meta_columns + ["cell_type_ontology_term_id"]])
+    new.loc[index_df, df_numeric_columns] += df[df_numeric_columns].values
+    new = new.reset_index(drop=True)
+    return new
 
 
 def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
