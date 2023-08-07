@@ -9,7 +9,12 @@ logger = logging.getLogger(__name__)
 
 
 def build_in_mem_cube(
-    gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray, cube_nnz: np.ndarray
+    *,
+    gene_ids: pd.DataFrame,
+    cube_index: pd.DataFrame,
+    other_cube_attrs: list,
+    cube_sum: np.ndarray,
+    cube_nnz: np.ndarray,
 ):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
@@ -76,12 +81,18 @@ def build_in_mem_cube(
 
 
 def build_in_mem_cube_default(
-    gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray, cube_nnz: np.ndarray
+    *,
+    gene_ids: pd.DataFrame,
+    cube_index: pd.DataFrame,
+    other_cube_attrs: list,
+    cube_sum: np.ndarray,
+    cube_nnz: np.ndarray,
+    cube_sqsum: np.ndarray,
 ):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
     """
-    logger.info("Building in-mem cube")
+    logger.info("Building in-mem default cube")
 
     # Count total values so we can allocate buffers once
     total_vals = 0
@@ -98,6 +109,7 @@ def build_in_mem_cube_default(
     vals = {
         "sum": np.empty((total_vals,)),
         "nnz": np.empty((total_vals,), dtype=np.uint64),
+        "sqsum": np.empty((total_vals,)),
         **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
     }
 
@@ -125,6 +137,7 @@ def build_in_mem_cube_default(
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
+        vals["sqsum"][idx : idx + n_vals] = cube_sqsum[cube_idx, mask]
 
         for i, k in enumerate(other_cube_attrs):
             vals[k][idx : idx + n_vals] = attr_values[i]

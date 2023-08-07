@@ -74,10 +74,12 @@ function GeneButton({
     currentFont
   );
 
-  if (dispatch && length && length > currentMaxLabelHeight) {
-    setCurrentMaxLabelHeight(length);
-    dispatch(setXAxisHeight(length + X_AXIS_HOVER_CONTAINER_HEIGHT_PX)); // Account for hover icons
-  }
+  useEffect(() => {
+    if (dispatch && length && length > currentMaxLabelHeight) {
+      setCurrentMaxLabelHeight(length);
+      dispatch(setXAxisHeight(length + X_AXIS_HOVER_CONTAINER_HEIGHT_PX)); // Account for hover icons
+    }
+  }, [dispatch, length, currentMaxLabelHeight, setCurrentMaxLabelHeight]);
 
   return (
     <GeneButtonStyle

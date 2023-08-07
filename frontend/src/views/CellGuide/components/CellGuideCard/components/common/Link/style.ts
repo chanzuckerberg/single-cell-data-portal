@@ -1,23 +1,14 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getColors } from "@czi-sds/components";
+import { fontBodyS } from "@czi-sds/components";
+import { primary400, primary500 } from "src/common/theme";
 
 export const StyledLink = styled.a`
   ${fontBodyS}
 
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.primary[400]};
-    `;
-  }}
+  color: ${primary400};
 
   &:hover {
     text-decoration: none;
-    ${(props) => {
-      const colors = getColors(props);
-      return `
-        color: ${colors?.primary[500]};
-      `;
-    }}
+    color: ${primary500};
   }
 `;

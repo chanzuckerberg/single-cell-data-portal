@@ -16,7 +16,7 @@ class OntologyLabelTests(unittest.TestCase):
             "PATO:0000001": "quality",
             "NCBITaxon:10001": "Sciurus",
             "MmusDv:0000000": "mouse life cycle stage",
-            "MONDO:0000001": "disease or disorder",
+            "MONDO:0000001": "disease",
             "UBERON:0002539": "pharyngeal arch",
             "UBERON:0000995 (organoid)": "uterus (organoid)",
             "CL:0000082 (cell culture)": "epithelial cell of lung (cell culture)",

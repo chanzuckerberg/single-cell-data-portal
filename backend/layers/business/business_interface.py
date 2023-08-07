@@ -162,3 +162,13 @@ class BusinessLogicInterface:
 
     def _delete_from_bucket(self, bucket: str, keys: List[str], prefix: str) -> None:
         pass
+
+    def restore_previous_dataset_version(
+        self, collection_version_id: CollectionVersionId, dataset_id: DatasetId
+    ) -> None:
+        """
+        Restore the previous dataset version for a dataset.
+        :param collection_version_id: The collection version to restore the dataset version. It must be in a mutable
+        state
+        :param dataset_id: The dataset id to restore the previous version of.
+        """

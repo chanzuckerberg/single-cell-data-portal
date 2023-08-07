@@ -1,15 +1,6 @@
 import styled from "@emotion/styled";
-import {
-  CommonThemeProps,
-  fontBodyS,
-  getColors,
-  getSpaces,
-} from "@czi-sds/components";
-
-const gray500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
-const primary400 = (props: CommonThemeProps) => getColors(props)?.primary[400];
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
-const spacesXl = (props: CommonThemeProps) => getSpaces(props)?.xl;
+import { fontBodyS } from "@czi-sds/components";
+import { gray500, primary400, spacesS, spacesXl } from "src/common/theme";
 
 export const CollectionMetadata = styled.div`
   display: grid;

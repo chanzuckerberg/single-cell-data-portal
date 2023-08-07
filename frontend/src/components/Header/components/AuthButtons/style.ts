@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getColors } from "@czi-sds/components";
+import { fontBodyS } from "@czi-sds/components";
+import { gray500 } from "src/common/theme";
 
 export const LogOutAnchor = styled.a`
   &:hover {
@@ -14,11 +15,5 @@ export const LogOutText = styled.div`
 export const LogOutEmail = styled.div`
   ${fontBodyS}
 
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
 `;

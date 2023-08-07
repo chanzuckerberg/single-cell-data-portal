@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
-import { ButtonIcon, CommonThemeProps, getColors } from "@czi-sds/components";
-
-const primary600 = (props: CommonThemeProps) => getColors(props)?.primary[600];
+import { ButtonIcon } from "@czi-sds/components";
+import { primary600 } from "src/common/theme";
 
 export const RevisionButton = styled(ButtonIcon)`
   &:hover {
