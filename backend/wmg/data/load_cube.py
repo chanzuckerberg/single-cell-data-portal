@@ -35,10 +35,7 @@ def upload_artifacts_to_s3(
     information about the data schema version, the snapshot id, and the location
     of the snapshot.
 
-    The destination_path is determined by the following logic:
-    - If `snapshot_schema_version` is set, then the destination path is
-        s3://<environment_bucket_name>/snapshots/<data_schema_version>/
-    - Otherwise, the destination path is the root directory: s3://<environment_bucket_name>/
+    The <destination_path> is set as s3://<environment_bucket_name>/snapshots/<data_schema_version>/
 
     1. Snapshot artifacts are stored in <destination_path>/<snapshot_id>/
        A. Note that, as of now, <snapshot_id> is a integer representing the time elapsed
