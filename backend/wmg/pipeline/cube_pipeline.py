@@ -11,7 +11,7 @@ from backend.common.utils.result_notification import (
     notify_slack,
 )
 from backend.wmg.data.load_cube import upload_artifacts_to_s3
-from backend.wmg.data.schemas import WMG_DATA_SCHEMA_VERSION
+from backend.wmg.data.schemas.data_schema_config import WMG_DATA_SCHEMA_VERSION
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 from backend.wmg.data.transform import (
     cell_type_ordering_create_file,
