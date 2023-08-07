@@ -1,5 +1,0 @@
-ERROR    root:logger.py:35 Suppressed Exception
-Traceback (most recent call last):
-  File "/single-cell-data-portal/tests/unit/processing/test_logger.py", line 9, in test_log_suppressed__caught
-    raise ValueError("Test Exception")
-ValueError: Test Exception
