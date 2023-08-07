@@ -84,7 +84,10 @@ def _query_tiledb_context_memoized(
             dataset_to_gene_ids = json.load(fp)
     else:
         if corpus is None:
-            corpus = load_snapshot(snapshot_schema_version=WMG_DATA_SCHEMA_VERSION)
+            corpus = load_snapshot(
+                snapshot_schema_version=WMG_DATA_SCHEMA_VERSION,
+                read_versioned_snapshot=True,
+            )
 
         assert isinstance(corpus, WmgSnapshot)
         expression_summary_fmg_cube = corpus.expression_summary_fmg_cube
