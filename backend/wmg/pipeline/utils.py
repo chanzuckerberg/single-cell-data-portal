@@ -73,7 +73,7 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
         number_per_cell = np.zeros(adata.shape[0], dtype="int")
         number_per_cell[cell_indices] = counts
     elif isinstance(adata.X, np.ndarray):
-        number_per_cell = (adata.X > 0).sum(axis=1).A1
+        number_per_cell = (adata.X > 0).sum(axis=1).flatten()
     else:
         raise UnsupportedMatrixTypeError(f"Unsupported AnnData.X matrix type: {type(adata.X)}")
 
