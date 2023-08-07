@@ -84,4 +84,6 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
     # The False values are the ones to filter out. When the boolean index contains only
     # True values, then the mean of the boolean index array is exactly 1.
     if cell_subset.mean() < 1:
+        logger.info(f"Subsetting data down to {cell_subset.sum()} cells from {adata.shape[0]} cells")
         adata._inplace_subset_obs(cell_subset)
+        logger.info(f"Completed subsetting data down to {cell_subset.sum()} cells")
