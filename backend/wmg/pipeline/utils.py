@@ -59,7 +59,19 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
     if isinstance(adata.X, csr_matrix):
         number_per_cell = np.diff(adata.X.indptr)
     elif isinstance(adata.X, csc_matrix):
-        _, number_per_cell = np.unique(adata.X.indices, return_counts=True)
+        cell_indices, counts = np.unique(adata.X.indices, return_counts=True)
+
+        # We take care of special case that an entire row has no values (implicit zero)
+        # and therefore omitted in the unique count of `adata.X.indices` by allocating
+        # a new array of size equal to the number of rows in the sparse matrix where each
+        # index in the row corresponds to a row index in the sparse matrix and then filling
+        # this new array with counts non-zero columns for a corresponding row index
+        #
+        # Example: 4X4 sparse matrix stored in column orientation where ROW 3 has no values.
+        # That is, ROW 3 is not stored in the `adata.X.indices` array:
+        # column_oriented_sparse_matrix = np.array([[1, 0, 0, 2], [0, 4, 1, 0], [0, 0, 0, 0], [0, 0, 5, 0]])
+        number_per_cell = np.zeros(adata.shape[0], dtype="int")
+        number_per_cell[cell_indices] = counts
     elif isinstance(adata.X, np.ndarray):
         number_per_cell = (adata.X > 0).sum(axis=1).A1
     else:
