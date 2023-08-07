@@ -52,6 +52,7 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
 
     """
 
+    logger.info(f"Filtering cells with less than {min_genes} genes expressed, data matrix is type: {type(adata.X)}")
     # memory efficient implementation for getting count of non-zeros per row.
     # For CSR we use the `indptr` structure to compute number of non-zeros per row
     # For CSC we use the `indices` structure to compute number of non-zeros per row
