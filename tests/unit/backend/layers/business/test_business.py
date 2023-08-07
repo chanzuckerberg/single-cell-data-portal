@@ -730,8 +730,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
     def test_remove_dataset_from_unpublished_collection_ok(self):
         """
-        A dataset can be removed from a collection version using `delete_dataset`.
-        This should NOT delete the dataset but rather just update the collection_version -> dataset_version mapping
+        A dataset can be removed from a collection version using `delete_dataset`. This should delete the dataset.
         """
         version = self.initialize_unpublished_collection()
         self.assertEqual(2, len(version.datasets))
@@ -742,9 +741,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         new_version = self.database_provider.get_collection_version(version.version_id)
         self.assertEqual(1, len(new_version.datasets))
 
-        # The dataset should still be present in the persistence store
+        # The dataset should not be present in the persistence store
         deleted_dataset = self.database_provider.get_dataset_version(dataset_version_to_delete_id)
-        self.assertIsNotNone(deleted_dataset)
+        self.assertIsNone(deleted_dataset)
 
     def test_remove_dataset_from_published_collection_fail(self):
         """
@@ -780,9 +779,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
-        # Verify that the old dataset is still existent
+        # Verify that the old dataset is gone
         old_dataset_version = self.database_provider.get_dataset_version(dataset_version_to_replace_id)
-        self.assertIsNotNone(old_dataset_version)
+        self.assertIsNone(old_dataset_version)
 
         # Verify that the collection version points to the right datasets
         version_from_db = self.business_logic.get_collection_version(version.version_id)
