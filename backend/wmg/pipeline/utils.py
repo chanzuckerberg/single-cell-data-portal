@@ -57,7 +57,7 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
     # For CSC we use the `indices` structure to compute number of non-zeros per row
     # And finally for ndarray, we simply filter the matrix and sum the resulting boolean matrix.
     if isinstance(adata.X, csr_matrix):
-        logger.info("Filtering cells for anndata.X csr_matrix of shape: {adata.X.shape}")
+        logger.info(f"Filtering cells for anndata.X csr_matrix of shape: {adata.X.shape}")
         number_per_cell = np.diff(adata.X.indptr)
     elif isinstance(adata.X, csc_matrix):
         cell_indices, counts = np.unique(adata.X.indices, return_counts=True)
@@ -71,16 +71,16 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
         # Example: 4X4 sparse matrix stored in column orientation where ROW 3 has no values.
         # That is, ROW 3 is not stored in the `adata.X.indices` array:
         # column_oriented_sparse_matrix = np.array([[1, 0, 0, 2], [0, 4, 1, 0], [0, 0, 0, 0], [0, 0, 5, 0]])
-        logger.info("Filtering cells for anndata.X csc_matrix of shape: {adata.X.shape}")
+        logger.info(f"Filtering cells for anndata.X csc_matrix of shape: {adata.X.shape}")
         number_per_cell = np.zeros(adata.shape[0], dtype="int")
         number_per_cell[cell_indices] = counts
     elif isinstance(adata.X, np.ndarray):
-        logger.info("Filtering cells for anndata.X ndarray of shape: {adata.X.shape}")
+        logger.info(f"Filtering cells for anndata.X ndarray of shape: {adata.X.shape}")
         number_per_cell = (adata.X > 0).sum(axis=1).flatten()
     else:
         raise UnsupportedMatrixTypeError(f"Unsupported AnnData.X matrix type: {type(adata.X)}")
 
-    logger.info("Shape of number_per_cell array holding counts of non-zero column values: {number_per_cell.shape}")
+    logger.info(f"Shape of number_per_cell array holding counts of non-zero column values: {number_per_cell.shape}")
     cell_subset = number_per_cell >= min_genes
 
     # No subsetting is needed if there are no False values in the boolean index array.
