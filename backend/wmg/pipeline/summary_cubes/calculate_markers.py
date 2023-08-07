@@ -14,7 +14,7 @@ from backend.wmg.data.rollup import (
     rollup_across_cell_type_descendants,
     rollup_across_cell_type_descendants_array,
 )
-from backend.wmg.data.schemas import WMG_DATA_SCHEMA_VERSION
+from backend.wmg.data.schemas.data_schema_config import WMG_DATA_SCHEMA_VERSION
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     DATASET_TO_GENE_IDS_FILENAME,
