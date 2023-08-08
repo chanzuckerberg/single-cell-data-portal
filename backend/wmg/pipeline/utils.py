@@ -83,11 +83,23 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
     logger.info(f"Shape of number_per_cell array holding counts of non-zero column values: {number_per_cell.shape}")
     cell_subset = number_per_cell >= min_genes
 
+    adata.obs["filter_cells"] = ~cell_subset
+
     # No subsetting is needed if there are no False values in the boolean index array.
     # The False values are the ones to filter out. When the boolean index contains only
     # True values, then the mean of the boolean index array is exactly 1.
     if cell_subset.mean() < 1:
-        logger.info("Performing in place subsetting of AnnData.X")
-        adata._inplace_subset_obs(cell_subset)
+        logger.info("Performing in place zeroing of AnnData.X rows to be filtered out")
+        rows_to_zero = np.where(~cell_subset)[0]
+        if isinstance(adata.X, csr_matrix):
+            for row in rows_to_zero:
+                adata.X.data[adata.X.indptr[row] : adata.X.indptr[row + 1]] = 0
+            adata.X.eliminate_zeros()
+        elif isinstance(adata.X, csc_matrix):
+            adata.X.data[np.in1d(adata.X.indices, rows_to_zero)] = 0
+            adata.X.eliminate_zeros()
+        else:
+            adata.X[~cell_subset] = 0
+
     else:
-        logger.info("Skipping subsetting of AnnData.X")
+        logger.info("Skipping inplace zeroing of AnnData.X")
