@@ -17,6 +17,7 @@ from backend.wmg.data.utils import log_func_runtime
 from backend.wmg.pipeline.integrated_corpus import extract, load
 from backend.wmg.pipeline.integrated_corpus.transform import apply_pre_concatenation_filters, create_high_level_tissue
 from backend.wmg.pipeline.integrated_corpus.validate import should_load_dataset, validate_dataset_properties
+from backend.wmg.pipeline.utils import remap_anndata_normalized_X_to_raw_X_if_exists
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,15 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str) -> Union[Tuple[str
     except Exception as e:
         logger.error(f"Failed to extract h5ad file {h5ad_path} with error: {e}")
         return None, None
+
+    # A memory optimization to reduce memory consumption when loading large datasets
+    # is to remap AnnData.X = AnnData.raw.X if AnnData.raw.X exists and then garbage
+    # collect the original object pointed to by AnnData.X.
+    #
+    # This is significant memory savings because size_of(AnnData.X) ~= size_of(AnnData.raw.X)
+    # and so we reduce memory pressure by 50%. Moreover, the normalized value in the
+    # original AnnData.X is not used throughout the pipeline run.
+    remap_anndata_normalized_X_to_raw_X_if_exists(anndata_object)
 
     # transform
     apply_pre_concatenation_filters(anndata_object)

@@ -1,0 +1,2 @@
+class UnsupportedMatrixTypeError(Exception):
+    pass
