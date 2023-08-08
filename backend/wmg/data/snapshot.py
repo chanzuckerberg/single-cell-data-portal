@@ -109,7 +109,7 @@ def load_snapshot(
     *,
     snapshot_schema_version: str,
     explicit_snapshot_id_to_load: Optional[str] = None,
-    read_versioned_snapshot: bool = False,
+    read_versioned_snapshot: bool = True,
 ) -> WmgSnapshot:
     """
     Loads and caches the snapshot identified by the snapshot schema version and a snapshot id.
