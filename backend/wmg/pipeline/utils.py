@@ -30,17 +30,28 @@ def remap_anndata_normalized_X_to_raw_X_if_exists(adata: AnnData) -> None:
         gc.collect()
 
 
-def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) -> None:
+def decorate_anndata_with_assays_to_filter_out(adata: AnnData, assays_to_keep: list) -> None:
     """
-    Filter cell outliers based on numbers of genes expressed.
+    Decorate the anndata object with a 'filter_cells' attribute that indicates which
+    rows (ie cells) to filter because the assays used are not in the given list.
 
-    NOTE: This operation is *in place*
+    Parameters
+    ----------
+    data
+        The (annotated) data matrix of shape `n_obs` × `n_vars`.
+        Rows correspond to cells and columns to genes.
+    assays_to_keep
+        The assays that are NOT in this list will be marked to be filtered out
+    """
 
-    This implementation is more memory efficient than `scanpy.pp.filter_cells`:
-    https://github.com/scverse/scanpy/blob/89804c26bcbdde4449dfe98b3193a9d28c2a0e2f/scanpy/preprocessing/_simple.py#L41C2-L41C2
+    assays_to_filter_out = ~adata.obs["assay_ontology_term_id"].isin(assays_to_keep)
+    adata.obs["filter_cells"] *= assays_to_filter_out
 
-    The scanpy implementation is more memory intensive because it makes unnecessary copies
-    of the underlying data structures when performing computations.
+
+def decorate_anndata_with_lowly_covered_cells_to_filter_out(adata: AnnData, min_genes: int) -> None:
+    """
+    Decorate the anndata object with a 'filter_cells' attribute that indicates which
+    rows (ie cells) to filter because they don't have a minimum number of expressed genes.
 
     Parameters
     ----------
@@ -48,7 +59,8 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
         The (annotated) data matrix of shape `n_obs` × `n_vars`.
         Rows correspond to cells and columns to genes.
     min_genes
-        Minimum number of genes expressed required for a cell to pass filtering.
+        The minimum number of expressed genes threshold for a given cell to pass
+        the filtering criteria
 
     """
 
@@ -58,7 +70,7 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
     # And finally for ndarray, we simply filter the matrix and sum the resulting boolean matrix.
     if isinstance(adata.X, csr_matrix):
         logger.info(f"Filtering cells for anndata.X csr_matrix of shape: {adata.X.shape}")
-        number_per_cell = np.diff(adata.X.indptr)
+        gene_counts_per_cell = np.diff(adata.X.indptr)
     elif isinstance(adata.X, csc_matrix):
         cell_indices, counts = np.unique(adata.X.indices, return_counts=True)
 
@@ -72,25 +84,27 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
         # That is, ROW 3 is not stored in the `adata.X.indices` array:
         # column_oriented_sparse_matrix = np.array([[1, 0, 0, 2], [0, 4, 1, 0], [0, 0, 0, 0], [0, 0, 5, 0]])
         logger.info(f"Filtering cells for anndata.X csc_matrix of shape: {adata.X.shape}")
-        number_per_cell = np.zeros(adata.shape[0], dtype="int")
-        number_per_cell[cell_indices] = counts
+        gene_counts_per_cell = np.zeros(adata.shape[0], dtype="int")
+        gene_counts_per_cell[cell_indices] = counts
     elif isinstance(adata.X, np.ndarray):
         logger.info(f"Filtering cells for anndata.X ndarray of shape: {adata.X.shape}")
-        number_per_cell = (adata.X > 0).sum(axis=1).flatten()
+        gene_counts_per_cell = (adata.X > 0).sum(axis=1).flatten()
     else:
         raise UnsupportedMatrixTypeError(f"Unsupported AnnData.X matrix type: {type(adata.X)}")
 
-    logger.info(f"Shape of number_per_cell array holding counts of non-zero column values: {number_per_cell.shape}")
-    cell_subset = number_per_cell >= min_genes
+    logger.info(
+        f"Shape of gene_counts_per_cell array holding counts of non-zero column values: {gene_counts_per_cell.shape}"
+    )
 
-    adata.obs["filter_cells"] = ~cell_subset
+    lowly_covered_cells_to_filter_out = gene_counts_per_cell < min_genes
 
-    # No subsetting is needed if there are no False values in the boolean index array.
-    # The False values are the ones to filter out. When the boolean index contains only
-    # True values, then the mean of the boolean index array is exactly 1.
-    if cell_subset.mean() < 1:
+    adata.obs["filter_cells"] = lowly_covered_cells_to_filter_out
+
+    # Do inplace zeroing of rows that should be filtered out
+    # This is done to make the anndata object sparser and memory efficient
+    if lowly_covered_cells_to_filter_out.sum() > 0:
         logger.info("Performing in place zeroing of AnnData.X rows to be filtered out")
-        rows_to_zero = np.where(~cell_subset)[0]
+        rows_to_zero = np.where(lowly_covered_cells_to_filter_out)[0]
         if isinstance(adata.X, csr_matrix):
             for row in rows_to_zero:
                 adata.X.data[adata.X.indptr[row] : adata.X.indptr[row + 1]] = 0
@@ -99,7 +113,7 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
             adata.X.data[np.in1d(adata.X.indices, rows_to_zero)] = 0
             adata.X.eliminate_zeros()
         else:
-            adata.X[~cell_subset] = 0
+            adata.X[lowly_covered_cells_to_filter_out] = 0
 
     else:
         logger.info("Skipping inplace zeroing of AnnData.X")
