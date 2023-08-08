@@ -37,8 +37,16 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
     integrated corpus obs arrays on relevant features
     """
 
+    # filter out observations in the 'filter_cells' attribute.
+    # It is important to filter out rejected observations BEFORE
+    # performing the `groupby` operation because the `groupby` operation
+    # would lose information about the `filter_cells` attribute because
+    # `filter_cells` is not one of the columns used in the `groupby` list
+    cells_to_keep_bool_index = np.logical_not(obs["filter_cells"])
+    obs_to_keep = obs[cells_to_keep_bool_index]
+
     df = (
-        obs.groupby(
+        obs_to_keep.groupby(
             by=[
                 "dataset_id",
                 "cell_type_ontology_term_id",
@@ -55,11 +63,7 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
         ).size()
     ).rename(columns={"size": "n_cells"})
 
-    # filter out observations in the 'filter_cells' attribute
-    cells_to_keep_bool_index = np.logical_not(obs["filter_cells"])
-    obs_to_keep = df[cells_to_keep_bool_index]
-
-    return obs_to_keep
+    return df
 
 
 def load(corpus_path: str, df: pd.DataFrame) -> str:
