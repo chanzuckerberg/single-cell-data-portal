@@ -27,7 +27,8 @@ def extract(corpus_path: str) -> pd.DataFrame:
     """
     get obs data from integrated corpus
     """
-    return tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}")
+    tiledb_array = tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}")
+    return tiledb_array.df[:]
 
 
 def transform(obs: pd.DataFrame) -> pd.DataFrame:
@@ -35,9 +36,10 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
     Create cell count cube data frame by grouping data in the
     integrated corpus obs arrays on relevant features
     """
+    obs_to_keep = obs[obs["filter_cells"] is False]
+
     df = (
-        obs.df[:]
-        .groupby(
+        obs_to_keep.groupby(
             by=[
                 "dataset_id",
                 "cell_type_ontology_term_id",
@@ -51,8 +53,7 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
                 "organism_ontology_term_id",
             ],
             as_index=False,
-        )
-        .size()
+        ).size()
     ).rename(columns={"size": "n_cells"})
     return df
 

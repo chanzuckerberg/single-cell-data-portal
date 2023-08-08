@@ -96,6 +96,8 @@ def decorate_anndata_with_lowly_covered_cells_to_filter_out(adata: AnnData, min_
         f"Shape of gene_counts_per_cell array holding counts of non-zero column values: {gene_counts_per_cell.shape}"
     )
 
+    # boolean index encoding the cells (rows) with number of expressed genes less than the threshold
+    # and that should be marked to be filtered out
     lowly_covered_cells_to_filter_out = gene_counts_per_cell < min_genes
 
     adata.obs["filter_cells"] = lowly_covered_cells_to_filter_out
