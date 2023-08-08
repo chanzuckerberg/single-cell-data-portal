@@ -43,7 +43,7 @@ def decorate_anndata_with_assays_to_filter_out(adata: AnnData, assays_to_keep: l
     assays_to_keep
         The assays that are NOT in this list will be marked to be filtered out
     """
-    assays_to_filter_out = ~(adata.obs["assay_ontology_term_id"].isin(assays_to_keep))
+    assays_to_filter_out = np.logical_not(adata.obs["assay_ontology_term_id"].isin(assays_to_keep))
 
     # Do a LOGICAL_OR to update the 'filter_cells' boolean index
     adata.obs["filter_cells"] |= assays_to_filter_out

@@ -276,7 +276,8 @@ class TestCorpusLoad(unittest.TestCase):
         obs_array = tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}", "r")
 
         obs_df = obs_array.df[:]
-        obs_after_filtering = obs_df[obs_df["filter_cells"] is False]
+        cell_to_keep_bool_index = np.logical_not(obs_df["filter_cells"])
+        obs_after_filtering = obs_df[cell_to_keep_bool_index]
         corpus_cell_count = obs_after_filtering.shape[0]
 
         # check the cell count is one less than the starting count
