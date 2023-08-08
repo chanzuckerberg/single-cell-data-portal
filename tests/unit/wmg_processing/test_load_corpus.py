@@ -273,8 +273,11 @@ class TestCorpusLoad(unittest.TestCase):
         # pre_concatenation filters remove irrelevant data
         updated_test_anndata_object = apply_pre_concatenation_filters(test_anndata_object, min_genes=0)
         load_dataset(self.corpus_path, updated_test_anndata_object, "dataset_0")
-        obs = tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}", "r")
-        corpus_cell_count = obs.df[:].shape[0]
+        obs_array = tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}", "r")
+
+        obs_df = obs_array.df[:]
+        obs_after_filtering = obs_df[obs_df["filter_cells"] is False]
+        corpus_cell_count = obs_after_filtering.shape[0]
 
         # check the cell count is one less than the starting count
         # because we replaced the assay type for one cell in the original anndata object
