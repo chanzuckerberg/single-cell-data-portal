@@ -36,8 +36,8 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
     Create cell count cube data frame by grouping data in the
     integrated corpus obs arrays on relevant features
     """
-    cell_to_keep_bool_index = np.logical_not(obs["filter_cells"])
-    obs_to_keep = obs[cell_to_keep_bool_index]
+    cells_to_keep_bool_index = np.logical_not(obs["filter_cells"])
+    obs_to_keep = obs[cells_to_keep_bool_index]
 
     df = (
         obs_to_keep.groupby(
