@@ -42,6 +42,7 @@ class Validation:
         that we are validating the correct values in the cube
         """
         self.log_validation_details()
+
         # check size
         self.validate_cube_size()
 
@@ -474,7 +475,9 @@ class Validation:
             datasets = cube.df[:].dataset_id.drop_duplicates()
             dataset_count = len(datasets)
             if dataset_count < self.MIN_DATASET_COUNT:
-                self.errors.append("Not enough datasets in the cube")
+                self.errors.append(
+                    f"Not enough datasets in the cube, found {dataset_count} but we need {self.MIN_DATASET_COUNT}"
+                )
             logger.info(f"{dataset_count} datasets included in {self.expression_summary_path}")
             logger.info(f"Included dataset ids are: {datasets}")
 

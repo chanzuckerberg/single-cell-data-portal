@@ -28,7 +28,7 @@ def _load(
     cube_sqsum: np.ndarray,
     cube_nnz: np.ndarray,
     cube_nnz_thr: np.ndarray,
-) -> (list, dict):
+) -> None:
     """
     Build expression summary fmg cube in memory and write to disk
     """
@@ -75,4 +75,4 @@ def create_expression_summary_fmg_cube(corpus_path: str):
         )
         _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr)
     gene_count = len(gene_ontology_term_ids)
-    logger.info(f"create_expression_summary_fmg_cube: {gene_count=}")
+    logger.info(f"create_expression_summary_fmg_cube: gene_count={gene_count}")
