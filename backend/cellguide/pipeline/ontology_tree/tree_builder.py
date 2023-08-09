@@ -24,34 +24,38 @@ HEMATOPOIETIC_CELL_TYPE_ID = "CL:0000988"
 
 class OntologyTreeBuilder:
     def __init__(self, cell_counts_df, root_node="CL:0000548"):
+        logger.info("Loading CL ontology...")
         self.ontology = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
+
+        logger.info("Loading UBERON ontology...")
         with warnings.catch_warnings():
             # loading uberon ontology has some warnings that we don't care about
             warnings.simplefilter("ignore")
             self.uberon_ontology = Ontology(UBERON_BASIC_PERMANENT_URL_PRONTO)
 
+        logger.info("Initializing tissue data structures from the input cell counts dataframe...")
         self.tissue_counts_df = cell_counts_df.groupby("tissue_ontology_term_id").sum(numeric_only=True)["n_cells"]
         self.tissue_celltypes_df = (
             cell_counts_df.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"])
             .sum(numeric_only=True)
             .reset_index()
         )
-
         self.uberon_by_celltype = _to_dict(
             cell_counts_df["tissue_ontology_term_id"], cell_counts_df["cell_type_ontology_term_id"]
         )
 
+        logger.info("Initializing cell type data structures from the input cell counts dataframe...")
         self.id_to_name, self.all_cell_type_ids = self._initialize_id_to_name()
         self.cell_counts_df, self.cell_counts_df_rollup = self._initialize_cell_counts_df_rollup(cell_counts_df)
-
+        self.all_cell_type_ids_in_corpus = self.cell_counts_df_rollup.index.values[
+            self.cell_counts_df_rollup.values > 0
+        ]
+        logger.info("Initializing ontology tree data structures by traversing CL ontology...")
         self.ontology_graph, self.traverse_node_counter, self.all_unique_nodes = self._traverse_ontology_with_counting(
             self.ontology[root_node]
         )
-
         self._delete_unknown_terms_from_ontology_graph(self.ontology_graph)
-
         self.all_children, self.all_parents = self._initialize_children_and_parents_per_node()
-
         self.start_node = f"{root_node}__0"
 
     def _initialize_cell_counts_df_rollup(self, cell_counts_df):
@@ -308,8 +312,15 @@ class OntologyTreeBuilder:
 
     def get_ontology_tree_state_per_celltype(self):
         all_states_per_cell_type = {}
-        for i, end_node in enumerate(self.all_cell_type_ids):
+        for i, end_node in enumerate(self.all_cell_type_ids_in_corpus):
             if end_node in self.traverse_node_counter:
+                logger.info(
+                    "Getting ontology tree state for cell type %s (%s/%s)",
+                    end_node,
+                    i + 1,
+                    len(self.all_cell_type_ids_in_corpus),
+                )
+
                 all_paths = []
                 siblings = []
                 for i in range(self.traverse_node_counter[end_node]):
@@ -349,8 +360,12 @@ class OntologyTreeBuilder:
     def get_ontology_tree_state_per_tissue(self):
         all_states_per_tissue = {}
         tissue_by_cell_type = []
-        for tissue in self.uberon_by_celltype:
+        for i, tissue in enumerate(self.uberon_by_celltype):
             if " (" not in tissue:
+                logger.info(
+                    "Getting ontology tree state for tissue %s (%s/%s)", tissue, i + 1, len(self.uberon_by_celltype)
+                )
+
                 tissueId = tissue
                 tissue_term = self.uberon_ontology[tissueId]
                 tissue_label = tissue_term.name
@@ -364,11 +379,11 @@ class OntologyTreeBuilder:
                         if HEMATOPOIETIC_CELL_TYPE_ID not in [i.id for i in self.ontology[e].superclasses()]
                     ]
                     if len(end_nodes2) == 0:
-                        print("Not filtering out immune cell for", tissue_label)
+                        logger.info(f"Not filtering out immune cell for {tissue_label}")
                     else:
                         end_nodes = end_nodes2
                 else:
-                    print("Not filtering out immune cell for", tissue_label)
+                    logger.info(f"Not filtering out immune cell for {tissue_label}")
 
                 tissue_ct_df = self.tissue_celltypes_df[self.tissue_celltypes_df["tissue_ontology_term_id"] == tissue]
 
