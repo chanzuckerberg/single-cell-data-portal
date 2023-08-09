@@ -92,6 +92,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             if session is not None:
                 session.close()
 
+    @contextmanager
+    def _get_serializable_session(self, **kwargs):
+        with self._manage_session(**kwargs) as session:
+            session.connection(execution_options={"isolation_level": "SERIALIZABLE"})
+            yield session
+
     def _row_to_collection_version(self, row: Any, canonical_collection: CanonicalCollection) -> CollectionVersion:
         return CollectionVersion(
             collection_id=CollectionId(str(row.collection_id)),
@@ -681,7 +687,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         artifact_id = DatasetArtifactId()
         artifact = DatasetArtifactTable(id=artifact_id.id, type=artifact_type, uri=artifact_uri)
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             session.add(artifact)
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             artifacts = list(dataset_version.artifacts)
@@ -693,7 +699,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Updates uri for an existing artifact_id
         """
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             artifact = session.query(DatasetArtifactTable).filter_by(id=artifact_id.id).one()
             artifact.uri = artifact_uri
 
@@ -701,7 +707,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Updates the processing status for a dataset version.
         """
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["processing_status"] = status.value
@@ -711,7 +717,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Updates the validation status for a dataset version.
         """
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_status"] = status.value
@@ -721,7 +727,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Updates the upload status for a dataset version.
         """
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["upload_status"] = status.value
@@ -733,14 +739,14 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Updates the conversion status for a dataset version and for `status_type`
         """
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status[status_type] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_message"] = validation_message
