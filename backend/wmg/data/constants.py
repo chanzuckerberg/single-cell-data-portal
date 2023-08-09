@@ -25,3 +25,4 @@ INCLUDED_ASSAYS = {
 
 CL_BASIC_PERMANENT_URL_PRONTO = "https://github.com/obophenotype/cell-ontology/releases/latest/download/cl-basic.obo"
 CL_BASIC_PERMANENT_URL_OWL = "https://github.com/obophenotype/cell-ontology/releases/latest/download/cl-basic.owl"
+UBERON_BASIC_PERMANENT_URL_PRONTO = "http://purl.obolibrary.org/obo/uberon.obo"
