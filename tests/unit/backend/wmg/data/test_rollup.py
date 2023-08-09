@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from backend.wmg.data.rollup import are_cell_types_colinear, rollup_across_cell_type_descendants
+from backend.common.utils.rollup import are_cell_types_colinear, rollup_across_cell_type_descendants
 
 
 class TestLowLevelRollupFunctionsTraversingCellTypeLineage(unittest.TestCase):
