@@ -18,7 +18,7 @@ TISSUES_IMMUNE_CELL_WHITELIST = [
 HEMATOPOIETIC_CELL_TYPE_ID = "CL:0000988"
 
 
-class OntologyTreeClimber:
+class OntologyTreeBuilder:
     def __init__(self, cell_counts_df, root_node="CL:0000548"):
         self.ontology = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
 
@@ -344,7 +344,6 @@ class OntologyTreeClimber:
         tissue_by_cell_type = []
         for tissue in self.uberon_by_celltype:
             if " (" not in tissue:
-                print(tissue)
                 tissueId = tissue
                 tissue_term = self.uberon_ontology[tissueId]
                 tissue_label = tissue_term.name
