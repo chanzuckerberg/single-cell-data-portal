@@ -1,4 +1,6 @@
 import json
+import logging
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -6,6 +8,8 @@ from pronto import Ontology
 
 from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO, UBERON_BASIC_PERMANENT_URL_PRONTO
 from backend.wmg.data.rollup import rollup_across_cell_type_descendants
+
+logger = logging.getLogger(__name__)
 
 # tissues in which we want to show immune cell types
 TISSUES_IMMUNE_CELL_WHITELIST = [
@@ -21,6 +25,10 @@ HEMATOPOIETIC_CELL_TYPE_ID = "CL:0000988"
 class OntologyTreeBuilder:
     def __init__(self, cell_counts_df, root_node="CL:0000548"):
         self.ontology = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
+        with warnings.catch_warnings():
+            # loading uberon ontology has some warnings that we don't care about
+            warnings.simplefilter("ignore")
+            self.uberon_ontology = Ontology(UBERON_BASIC_PERMANENT_URL_PRONTO)
 
         self.tissue_counts_df = cell_counts_df.groupby("tissue_ontology_term_id").sum(numeric_only=True)["n_cells"]
         self.tissue_celltypes_df = (
@@ -33,7 +41,7 @@ class OntologyTreeBuilder:
             cell_counts_df["tissue_ontology_term_id"], cell_counts_df["cell_type_ontology_term_id"]
         )
 
-        self.id_to_name, self.all_cell_type_ids = self._initialze_id_to_name()
+        self.id_to_name, self.all_cell_type_ids = self._initialize_id_to_name()
         self.cell_counts_df, self.cell_counts_df_rollup = self._initialize_cell_counts_df_rollup(cell_counts_df)
 
         self.ontology_graph, self.traverse_node_counter, self.all_unique_nodes = self._traverse_ontology_with_counting(
@@ -46,20 +54,18 @@ class OntologyTreeBuilder:
 
         self.start_node = f"{root_node}__0"
 
-    def _initialize_uberon_ontology(self):
-        self.uberon_ontology = Ontology(UBERON_BASIC_PERMANENT_URL_PRONTO)
-        self._initialze_id_to_name()
-
     def _initialize_cell_counts_df_rollup(self, cell_counts_df):
-        cell_counts_df = cell_counts_df.groupby("cell_type_ontology_term_id").sum(numeric_only=True)[["n_cells"]]
+        cell_counts_df = (
+            cell_counts_df.groupby("cell_type_ontology_term_id").sum(numeric_only=True)[["n_cells"]].reset_index()
+        )
 
         to_attach = pd.DataFrame()
         to_attach["cell_type_ontology_term_id"] = [
-            i for i in self.all_cell_types_ids if i not in cell_counts_df["cell_type_ontology_term_id"]
+            i for i in self.all_cell_type_ids if i not in cell_counts_df["cell_type_ontology_term_id"].values
         ]
         to_attach["n_cells"] = 0
         cell_counts_df = pd.concat([cell_counts_df, to_attach], axis=0)
-        cell_counts_df_rollup = rollup_across_cell_type_descendants(self.cell_counts_df)
+        cell_counts_df_rollup = rollup_across_cell_type_descendants(cell_counts_df)
         cell_counts_df = cell_counts_df.set_index("cell_type_ontology_term_id")["n_cells"]
         cell_counts_df_rollup = cell_counts_df_rollup.set_index("cell_type_ontology_term_id")["n_cells"]
         return cell_counts_df, cell_counts_df_rollup
@@ -81,11 +87,12 @@ class OntologyTreeBuilder:
         for child in node.get("children", []):
             self._delete_unknown_terms_from_ontology_graph(child)
 
-    def _initialze_id_to_name(self):
+    def _initialize_id_to_name(self):
         id_to_name = {}
         for term in self.ontology.terms():
-            id_to_name[term.id] = term.name
-        return id_to_name, list(self.id_to_name)
+            if term.id.startswith("CL:"):
+                id_to_name[term.id] = term.name
+        return id_to_name, list(id_to_name)
 
     def _initialize_children_and_parents_per_node(self):
         all_children = self._build_children_per_node(self.ontology_graph)
@@ -301,14 +308,14 @@ class OntologyTreeBuilder:
 
     def get_ontology_tree_state_per_celltype(self):
         all_states_per_cell_type = {}
-        for i, end_node in enumerate(self.all_cell_types_ids):
+        for i, end_node in enumerate(self.all_cell_type_ids):
             if end_node in self.traverse_node_counter:
                 all_paths = []
                 siblings = []
                 for i in range(self.traverse_node_counter[end_node]):
                     end_node_i = end_node + "__" + str(i)
                     path = self._depth_first_search_pathfinder(end_node_i)
-                    path = [i[::-1] for i in path] if path else [end_node_i]
+                    path = path if path else [end_node_i]
                     all_paths.append(path)
 
                     siblings.append(
@@ -368,7 +375,7 @@ class OntologyTreeBuilder:
                 df = tissue_ct_df[["cell_type_ontology_term_id", "n_cells"]]
                 to_attach = pd.DataFrame()
                 to_attach["cell_type_ontology_term_id"] = [
-                    i for i in self.all_cell_types_ids if i not in df["cell_type_ontology_term_id"].values
+                    i for i in self.all_cell_type_ids if i not in df["cell_type_ontology_term_id"].values
                 ]
                 to_attach["n_cells"] = 0
                 df = pd.concat([df, to_attach], axis=0)
@@ -390,7 +397,7 @@ class OntologyTreeBuilder:
                     if end_node in self.traverse_node_counter:
                         end_node_0 = end_node + "__0"  # only get path to the first instance of a node.
                         path = self._depth_first_search_pathfinder(end_node_0)
-                        path = [i[::-1] for i in path] if path else [end_node_0]
+                        path = path if path else [end_node_0]
                         all_paths.append(path)
 
                 valid_nodes = list(set(sum(all_paths, [])))
@@ -439,6 +446,7 @@ def _getShownData(graph, notShownWhenExpandedNodes=None):
                     notShownWhenExpandedNodes.append({child["parent"]: list(set(child["invalid_children_ids"]))})
             else:
                 _getShownData(child, notShownWhenExpandedNodes)
+    return notShownWhenExpandedNodes
 
 
 def _to_dict(a, b):
