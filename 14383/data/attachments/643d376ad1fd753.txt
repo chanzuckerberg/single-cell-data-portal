@@ -1,0 +1,81 @@
+  pw:api => selectors.setTestIdAttribute started +4ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +39ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +9ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +66ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/cellguide", waiting until "load" +10ms
+  pw:api   "commit" event fired +189ms
+  pw:api   navigated to "https://localhost:3000/cellguide" +1ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide" +151ms
+  pw:api   navigated to "about:blank" +34ms
+  pw:api <= page.goto succeeded +39ms
+  pw:api => page.waitForLoadState started +7ms
+  pw:api   "networkidle" event fired +472ms
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api => locator.waitFor started +1ms
+  pw:api   "networkidle" event fired +2ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') to be visible +10ms
+  pw:api   locator resolved to visible <input value="" type="text" role="combobox" autocomplet…/> +16ms
+  pw:api <= locator.waitFor succeeded +9ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +4ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +4ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +16ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +8ms
+  pw:api   click action done +314ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +5ms
+  pw:api <= locator.click succeeded +140ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +28ms
+  pw:api => locator.all started +11ms
+  pw:api <= locator.all succeeded +22ms
+  pw:api => locator.type started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +6ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +4ms
+  pw:api elementHandle.type("cardiomyocyte") +1ms
+  pw:api <= locator.type succeeded +565ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +3ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +19ms
+  pw:api => elementHandle.textContent started +1ms
+  pw:api <= elementHandle.textContent succeeded +9ms
+  pw:api => elementHandle.click started +2ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +19ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +10ms
+  pw:api   click action done +58ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +24ms
+  pw:api <= elementHandle.click succeeded +8ms
+  pw:api => page.waitForURL started +1ms
+  pw:api waiting for navigation to "https://localhost:3000/cellguide/CL_0000746" until "load" +4ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000746" +314ms
+  pw:api <= page.waitForURL succeeded +4ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000746" +25ms
+  pw:api taking page screenshot +161ms
+  pw:api   navigated to "about:blank" +324ms
+  pw:api => browserContext.close started +150ms
+  pw:api <= browserContext.close succeeded +2s
