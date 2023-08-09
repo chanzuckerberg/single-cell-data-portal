@@ -345,6 +345,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     return self._update_dataset_version_with_canonical(dataset_versions_map.get(dv_id))
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+        """
+        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
+        """
         versions = []
         for dataset_version in self.datasets_versions.values():
             if dataset_version.dataset_id == dataset_id:

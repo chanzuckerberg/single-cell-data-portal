@@ -620,21 +620,11 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
-        Returns all dataset versions for a canonical dataset_id
+        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
         """
-        dataset = self.get_canonical_dataset(dataset_id)
         with self._manage_session() as session:
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
-            artifact_ids = [artifact_id for dv in dataset_versions for artifact_id in dv.artifacts]
-            artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
-            artifact_map = {artifact.id: artifact for artifact in artifacts}
-            for i in range(len(dataset_versions)):
-                version = dataset_versions[i]
-                version_artifacts = [
-                    self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
-                ]
-                dataset_versions[i] = self._row_to_dataset_version(version, dataset, version_artifacts)
-            return dataset_versions
+            return [self._hydrate_dataset_version(dv) for dv in dataset_versions]
 
     def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
