@@ -27,7 +27,8 @@ def extract(corpus_path: str) -> pd.DataFrame:
     """
     get obs data from integrated corpus
     """
-    return tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}")
+    tiledb_array = tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}")
+    return tiledb_array.df[:]
 
 
 def transform(obs: pd.DataFrame) -> pd.DataFrame:
@@ -35,9 +36,16 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
     Create cell count cube data frame by grouping data in the
     integrated corpus obs arrays on relevant features
     """
+
+    # filter out observations in the 'filter_cells' attribute.
+    # It is important to filter out rejected observations BEFORE
+    # performing the `groupby` operation because the `groupby` operation
+    # would lose information about the `filter_cells` attribute because
+    # `filter_cells` is not one of the columns used in the `groupby` list
+    obs_to_keep = obs[np.logical_not(obs["filter_cells"])]
+
     df = (
-        obs.df[:]
-        .groupby(
+        obs_to_keep.groupby(
             by=[
                 "dataset_id",
                 "cell_type_ontology_term_id",
@@ -51,9 +59,9 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
                 "organism_ontology_term_id",
             ],
             as_index=False,
-        )
-        .size()
+        ).size()
     ).rename(columns={"size": "n_cells"})
+
     return df
 
 
