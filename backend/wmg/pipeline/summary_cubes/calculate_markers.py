@@ -8,12 +8,12 @@ import tiledb
 from scipy import stats
 
 from backend.common.utils.exceptions import MarkerGeneCalculationException
-from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
-from backend.wmg.data.rollup import (
+from backend.common.utils.rollup import (
     are_cell_types_colinear,
     rollup_across_cell_type_descendants,
     rollup_across_cell_type_descendants_array,
 )
+from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
 from backend.wmg.data.schemas.data_schema_config import WMG_DATA_SCHEMA_VERSION
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,

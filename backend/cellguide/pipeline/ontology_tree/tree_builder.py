@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 from pronto import Ontology
 
+from backend.common.utils.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO, UBERON_BASIC_PERMANENT_URL_PRONTO
-from backend.wmg.data.rollup import rollup_across_cell_type_descendants
 
 logger = logging.getLogger(__name__)
 
