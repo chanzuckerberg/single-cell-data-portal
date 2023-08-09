@@ -43,8 +43,9 @@ class TestIntegratedCorpusSchema(unittest.TestCase):
             corpus_path = f"{corpus_dir}/test_corpus"
             create_tdb_integrated_corpus(corpus_path)
             obs_schema = tiledb.ArraySchema.load(f"{corpus_path}/obs")
-            self.assertEqual(obs_schema.nattr, 16)
+            self.assertEqual(obs_schema.nattr, 17)
             self.assertTrue(obs_schema.has_attr("obs_idx"))
+            self.assertTrue(obs_schema.has_attr("filter_cells"))
             self.assertTrue(obs_schema.has_attr("cell_type"))
             self.assertTrue(obs_schema.has_attr("assay"))
             self.assertTrue(obs_schema.has_attr("assay_ontology_term_id"))

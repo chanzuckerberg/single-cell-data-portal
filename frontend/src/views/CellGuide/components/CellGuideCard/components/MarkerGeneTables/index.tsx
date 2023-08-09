@@ -318,7 +318,7 @@ function getCanonicalMarkerGenesTableRowsAndFilters({
 
     const organs = new Set<string>();
     for (const markerGene of genes) {
-      organs.add(markerGene.tissue_general);
+      organs.add(markerGene.tissue);
     }
 
     const sortedOrgans = Array.from(organs).sort((a, b) => {
@@ -341,7 +341,7 @@ function getCanonicalMarkerGenesTableRowsAndFilters({
     const publicationTitlesToIndex = new Map();
     let index = 0;
     for (const markerGene of genes) {
-      if (markerGene.tissue_general !== selectedOrganFilter) continue;
+      if (markerGene.tissue !== selectedOrganFilter) continue;
       const publicationTitles = markerGene.publication_titles.split(";;");
       for (let i = 0; i < publicationTitles.length; i += 1) {
         if (
@@ -354,10 +354,10 @@ function getCanonicalMarkerGenesTableRowsAndFilters({
       }
     }
     for (const markerGene of genes) {
-      const { tissue_general, publication, publication_titles, symbol, name } =
+      const { tissue, publication, publication_titles, symbol, name } =
         markerGene;
 
-      if (tissue_general !== selectedOrganFilter) continue;
+      if (tissue !== selectedOrganFilter) continue;
       // multiple publications for a single gene are joined by ";;"
       let publications = Array.from(new Set(publication.split(";;")));
       let publicationTitles = Array.from(
