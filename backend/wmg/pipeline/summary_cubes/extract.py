@@ -23,8 +23,7 @@ def extract_obs_data(tdb_group: str, cube_dims: list) -> pd.DataFrame:
         obs_df = obs.query(use_arrow=False).df[:]
 
         # filter out observations in the 'filter_cells' attribute
-        cells_to_keep_bool_index = np.logical_not(obs_df["filter_cells"])
-        cell_labels = obs_df[cells_to_keep_bool_index]
+        cell_labels = obs_df[np.logical_not(obs_df["filter_cells"])]
 
     cell_labels.sort_values(by=["obs_idx"], inplace=True, ignore_index=True)
 

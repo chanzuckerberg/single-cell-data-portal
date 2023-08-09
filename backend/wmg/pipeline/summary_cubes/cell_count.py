@@ -42,8 +42,7 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
     # performing the `groupby` operation because the `groupby` operation
     # would lose information about the `filter_cells` attribute because
     # `filter_cells` is not one of the columns used in the `groupby` list
-    cells_to_keep_bool_index = np.logical_not(obs["filter_cells"])
-    obs_to_keep = obs[cells_to_keep_bool_index]
+    obs_to_keep = obs[np.logical_not(obs["filter_cells"])]
 
     df = (
         obs_to_keep.groupby(

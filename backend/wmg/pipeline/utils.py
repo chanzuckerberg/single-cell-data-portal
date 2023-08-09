@@ -115,8 +115,10 @@ def decorate_anndata_with_lowly_covered_cells_to_filter_out(adata: AnnData, min_
         elif isinstance(adata.X, csc_matrix):
             adata.X.data[np.in1d(adata.X.indices, rows_to_zero)] = 0
             adata.X.eliminate_zeros()
-        else:
+        elif isinstance(adata.X, np.ndarray):
             adata.X[lowly_covered_cells_to_filter_out] = 0
+        else:
+            raise UnsupportedMatrixTypeError(f"Unsupported AnnData.X matrix type: {type(adata.X)}")
 
     else:
         logger.info("Skipping inplace zeroing of AnnData.X")
