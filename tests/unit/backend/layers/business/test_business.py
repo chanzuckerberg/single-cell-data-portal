@@ -1790,8 +1790,11 @@ class TestSetPreviousDatasetVersion(BaseBusinessLogicTestCase):
 
 class TestConcurrentUpdates(BaseBusinessLogicTestCase):
     """
-    Test that concurrent updates to a "shared" field in DatasetVersion are supported properly.
+    Test that concurrent updates to a "shared" field in DatasetVersion are properly supported.
     This is simulated by calling a method that updates such field concurrently, using a thread pool.
+    Note: this test should always pass, but we can't guarantee that it actually prevents a race condition.
+    Different hosts might have different behaviors and might not yield a race condition in the first place
+    (for instance, if the runtime can only give 1 worker to ThreadPoolExecutor).
     """
 
     def test_concurrency(self):
