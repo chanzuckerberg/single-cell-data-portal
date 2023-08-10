@@ -5,13 +5,13 @@ import uuid
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple
-from tenacity import retry
-from tenacity.stop import stop_after_attempt
-from tenacity.wait import wait_fixed
 
 from sqlalchemy import create_engine
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
+from tenacity import retry
+from tenacity.stop import stop_after_attempt
+from tenacity.wait import wait_fixed
 
 from backend.common.corpora_config import CorporaDbConfig
 from backend.layers.business.exceptions import CollectionIsPublishedException
