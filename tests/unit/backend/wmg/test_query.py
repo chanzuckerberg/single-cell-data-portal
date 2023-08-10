@@ -42,6 +42,61 @@ def generate_expected_marker_gene_data_with_pandas(snapshot, criteria, statistic
     return expected
 
 
+class WmgCubeQueryParamsTest(unittest.TestCase):
+    def test__cube_query_params_for_expression_summary_cube(self):
+        cube_query_valid_attrs = ["gene_ontology_term_id", "cell_type_ontology_term_id"]
+        cube_query_valid_dims = ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]
+
+        cube_query_params = WmgCubeQueryParams(
+            cube_query_valid_attrs=cube_query_valid_attrs,
+            cube_query_valid_dims=cube_query_valid_dims,
+        )
+        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
+            expected_cube_indexed_dims = [
+                "gene_ontology_term_id",
+                "tissue_ontology_term_id",
+                "organism_ontology_term_id",
+            ]
+            actual_cube_indexed_dims = [i.name for i in snapshot.expression_summary_cube.schema.domain]
+            self.assertEqual(actual_cube_indexed_dims, expected_cube_indexed_dims)
+
+            expected_cube_nonindexed_attrs = [
+                "cell_type_ontology_term_id",
+                "tissue_original_ontology_term_id",
+                "dataset_id",
+                "assay_ontology_term_id",
+                "development_stage_ontology_term_id",
+                "disease_ontology_term_id",
+                "self_reported_ethnicity_ontology_term_id",
+                "sex_ontology_term_id",
+                "publication_citation",
+                "nnz",
+                "sum",
+            ]
+            actual_cube_nonindexed_attrs = [i.name for i in snapshot.expression_summary_cube.schema]
+            self.assertEqual(actual_cube_nonindexed_attrs, expected_cube_nonindexed_attrs)
+
+            expected_dim_key_names_to_lookup_query_criteria = [
+                "gene_ontology_term_ids",
+                "tissue_ontology_term_ids",
+                "organism_ontology_term_id",
+            ]
+            actual_dim_key_names_to_lookup_query_criteria = cube_query_params.get_indexed_dims_to_lookup_query_criteria(
+                snapshot.expression_summary_cube, pluralize=True
+            )
+            self.assertEqual(
+                actual_dim_key_names_to_lookup_query_criteria, expected_dim_key_names_to_lookup_query_criteria
+            )
+
+            expected_attrs_for_cube_query = ["cell_type_ontology_term_id"]
+            actual_attrs_for_cube_query = cube_query_params.get_attrs_for_cube_query(snapshot.expression_summary_cube)
+            self.assertEqual(actual_attrs_for_cube_query, expected_attrs_for_cube_query)
+
+            expected_dims_for_cube_query = ["gene_ontology_term_id", "tissue_ontology_term_id"]
+            actual_dims_for_cube_query = cube_query_params.get_dims_for_cube_query(snapshot.expression_summary_cube)
+            self.assertEqual(actual_dims_for_cube_query, expected_dims_for_cube_query)
+
+
 class QueryTest(unittest.TestCase):
     def setUp(self):
         self.cube_query_params = WmgCubeQueryParams(

@@ -8,9 +8,6 @@ from tiledb import Array
 
 from backend.wmg.data.snapshot import WmgSnapshot
 
-VALID_ATTRIBUTES = ["gene_ontology_term_id", "cell_type_ontology_term_id"]
-VALID_DIMENSIONS = ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]
-
 
 class WmgQueryCriteria(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
