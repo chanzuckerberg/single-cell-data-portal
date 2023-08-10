@@ -324,7 +324,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         """
-        Returns the must recent, active Dataset version for a canonical dataset_id
+        Returns the most recent, active Dataset version for a canonical dataset_id
         """
         dataset_versions = list(filter(lambda dv: dv.dataset_id == dataset_id, self.datasets_versions.values()))
         if not dataset_versions:

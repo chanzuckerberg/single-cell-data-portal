@@ -140,7 +140,7 @@ class DatabaseProviderInterface:
 
     def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         """
-        Returns the must recent, active Dataset version for a canonical dataset_id
+        Returns the most recent, active Dataset version for a canonical dataset_id
         """
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
