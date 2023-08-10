@@ -1799,5 +1799,35 @@ class TestSetPreviousDatasetVersion(BaseBusinessLogicTestCase):
         assert previous_dataset.version_id in datasets
 
 
+class TestConcurrentUpdates(BaseBusinessLogicTestCase):
+    """
+    Test that concurrent updates to a "shared" field in DatasetVersion are properly supported.
+    This is simulated by calling a method that updates such field concurrently, using a thread pool.
+    Note: this test should always pass, but we can't guarantee that it actually prevents a race condition.
+    Different hosts might have different behaviors and might not yield a race condition in the first place
+    (for instance, if the runtime can only give 1 worker to ThreadPoolExecutor).
+    """
+
+    def test_concurrency(self):
+        collection = self.initialize_published_collection(num_datasets=1)
+        dataset = collection.datasets[0]
+
+        def add_artifact():
+            self.database_provider.add_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
+
+        self.assertEqual(len(dataset.artifacts), 3)
+
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=4) as e:
+            for _ in range(10):
+                e.submit(add_artifact)
+
+        dv = self.business_logic.get_dataset_version(dataset.version_id)
+        self.assertIsNotNone(dv)
+        if dv is not None:
+            self.assertEqual(len(dv.artifacts), 13)
+
+
 if __name__ == "__main__":
     unittest.main()
