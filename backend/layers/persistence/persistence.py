@@ -596,23 +596,35 @@ class DatabaseProvider(DatabaseProviderInterface):
                     return None
             return self._hydrate_dataset_version(dataset_version)
 
-    def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+    def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         """
-        Returns all dataset versions for a canonical dataset_id
+        Returns the most recently active Dataset version for a canonical dataset_id
         """
-        dataset = self.get_canonical_dataset(dataset_id)
         with self._manage_session() as session:
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
-            artifact_ids = [artifact_id for dv in dataset_versions for artifact_id in dv.artifacts]
-            artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
-            artifact_map = {artifact.id: artifact for artifact in artifacts}
-            for i in range(len(dataset_versions)):
-                version = dataset_versions[i]
-                version_artifacts = [
-                    self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
-                ]
-                dataset_versions[i] = self._row_to_dataset_version(version, dataset, version_artifacts)
-            return dataset_versions
+            if not dataset_versions:
+                return None
+            dataset_versions_map = {dv.id: dv for dv in dataset_versions}
+            # Dataset version ids in the latest Collection version
+            collection_id = dataset_versions[0].collection_id
+            dataset_version_ids_rows = (
+                session.query(CollectionVersionTable.datasets)
+                .filter_by(collection_id=collection_id)
+                .order_by(CollectionVersionTable.created_at.desc())
+                .all()
+            )
+            for dataset_row in dataset_version_ids_rows:
+                for dv_id in dataset_versions_map:
+                    if dv_id in dataset_row.datasets:
+                        return self._hydrate_dataset_version(dataset_versions_map.get(dv_id))
+
+    def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+        """
+        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
+        """
+        with self._manage_session() as session:
+            dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
+            return [self._hydrate_dataset_version(dv) for dv in dataset_versions]
 
     def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
