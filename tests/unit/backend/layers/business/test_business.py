@@ -1787,11 +1787,13 @@ class TestSetPreviousDatasetVersion(BaseBusinessLogicTestCase):
         assert new_dataset_version_id not in datasets
         assert previous_dataset.version_id in datasets
 
+
 class TestConcurrentUpdates(BaseBusinessLogicTestCase):
     """
     Test that concurrent updates to a "shared" field in DatasetVersion are supported properly.
     This is simulated by calling a method that updates such field concurrently, using a thread pool.
     """
+
     def test_concurrency(self):
         collection = self.initialize_published_collection(num_datasets=1)
         dataset = collection.datasets[0]
@@ -1802,6 +1804,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         self.assertEqual(len(dataset.artifacts), 3)
 
         from concurrent.futures import ThreadPoolExecutor
+
         with ThreadPoolExecutor(max_workers=4) as e:
             for _ in range(10):
                 e.submit(add_artifact)
