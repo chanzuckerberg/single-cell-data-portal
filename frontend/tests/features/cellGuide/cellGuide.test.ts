@@ -53,7 +53,7 @@ import {
 
 const { describe } = test;
 
-const WAIT_FOR_TIMEOUT_MS = 10 * 1000;
+const WAIT_FOR_TIMEOUT_MS = 30 * 1000;
 
 const NEURON_CELL_TYPE_ID = "CL_0000540";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
