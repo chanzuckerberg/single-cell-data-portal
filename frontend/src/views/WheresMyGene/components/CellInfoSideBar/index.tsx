@@ -100,7 +100,7 @@ function CellInfoSideBar({
     <div>
       <TissueName>{tissueInfo.name}</TissueName>
       <Link
-        href={`https://cellxgene.cziscience.com/cellguide/${cellInfoCellType.cellType.id}`}
+        href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
         target="_blank"
         rel="noreferrer noopener"
       >

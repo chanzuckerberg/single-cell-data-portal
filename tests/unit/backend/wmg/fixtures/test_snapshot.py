@@ -97,6 +97,7 @@ def random_expression_summary_values(coords):
     return {
         "nnz": randint(size=len(coords), low=0, high=100),
         "sum": random(size=len(coords)) * 10,
+        "sqsum": random(size=len(coords)) * 100,
     }
 
 
@@ -104,6 +105,7 @@ def all_ones_expression_summary_values(coords):
     return {
         "nnz": np.ones(len(coords)),
         "sum": np.ones(len(coords)),
+        "sqsum": np.ones(len(coords)),
     }
 
 
