@@ -352,6 +352,21 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_versions.append(dataset_version)
         return dataset_versions
 
+    def get_all_dataset_versions_for_collection(
+        self, collection_id: CollectionId, from_date: datetime = datetime.min
+    ) -> List[DatasetVersion]:
+        """
+        Get all Dataset versions -- published and unpublished -- for a canonical Collection
+        """
+        from_date = datetime.min if from_date is None else from_date
+        dataset_versions = list(
+            filter(
+                lambda dv: dv.collection_id == collection_id and dv.created_at >= from_date,
+                self.datasets_versions.values(),
+            )
+        )
+        return [self._update_dataset_version_with_canonical(dv) for dv in dataset_versions]
+
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         versions = []
         for dataset_version in self.datasets_versions.values():

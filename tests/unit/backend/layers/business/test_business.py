@@ -203,8 +203,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
-        published_at = published_at or datetime.utcnow()
         version = self.initialize_unpublished_collection(owner, curator_name, num_datasets=num_datasets)
+        # published_at must be later than created_at for constituent Dataset Versions
+        if published_at:
+            assert published_at >= datetime.utcnow()
+        else:
+            published_at = datetime.utcnow()
         self.database_provider.finalize_collection_version(
             version.collection_id, version.version_id, "3.0.0", published_at=published_at
         )
@@ -782,9 +786,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
-        # Verify that the old dataset is gone
+        # Verify that the previous dataset version is still present in database
         old_dataset_version = self.database_provider.get_dataset_version(dataset_version_to_replace_id)
-        self.assertIsNone(old_dataset_version)
+        self.assertIsNotNone(old_dataset_version)
 
         # Verify that the collection version points to the right datasets
         version_from_db = self.business_logic.get_collection_version(version.version_id)

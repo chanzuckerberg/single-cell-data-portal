@@ -645,6 +645,22 @@ class DatabaseProvider(DatabaseProviderInterface):
                     return None
             return self._hydrate_dataset_version(dataset_version)
 
+    def get_all_dataset_versions_for_collection(
+        self, collection_id: CollectionId, from_date: datetime = datetime.min
+    ) -> List[DatasetVersion]:
+        """
+        Get all Dataset versions -- published and unpublished -- for a canonical Collection
+        """
+        from_date = datetime.min if from_date is None else from_date
+        with self._manage_session() as session:
+            dataset_versions = (
+                session.query(DatasetVersionTable)
+                .filter(DatasetVersionTable.collection_id == uuid.UUID(collection_id.id))
+                .filter(DatasetVersionTable.created_at >= from_date)
+                .all()
+            )
+            return [self._hydrate_dataset_version(dv) for dv in dataset_versions]
+
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
         Returns all dataset versions for a canonical dataset_id
