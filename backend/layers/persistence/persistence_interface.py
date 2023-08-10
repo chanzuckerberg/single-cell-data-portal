@@ -171,6 +171,11 @@ class DatabaseProviderInterface:
         Get all Dataset versions -- published and unpublished -- for a canonical Collection
         """
 
+    def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        """
+        Returns the most recent, active Dataset version for a canonical dataset_id
+        """
+
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
         Returns all dataset versions for a canonical dataset_id

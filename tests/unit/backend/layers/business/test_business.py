@@ -924,7 +924,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
 
     def test_get_dataset_version_from_canonical(self):
         """
-        Get currently published dataset version using canonical dataset ID, or most recently created unpublished dataset
+        Get currently published dataset version using canonical dataset ID, or most recent active unpublished dataset
         if none are published.
         """
         with self.subTest("Dataset is published with a revision open, get published dataset version"):
@@ -946,6 +946,17 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         with self.subTest("Dataset does not exist"):
             dataset_version = self.business_logic.get_dataset_version_from_canonical(DatasetId(str(uuid.uuid4())))
             self.assertIsNone(dataset_version)
+        with self.subTest("DatasetVersion has been rolled back from most recently-created"):
+            unpublished_collection = self.initialize_unpublished_collection()
+            init_dataset = unpublished_collection.datasets[0]
+            new_dataset = self.database_provider.replace_dataset_in_collection_version(
+                unpublished_collection.version_id, init_dataset.version_id
+            )
+            self.business_logic.restore_previous_dataset_version(
+                unpublished_collection.version_id, new_dataset.dataset_id
+            )
+            dataset_version = self.business_logic.get_dataset_version_from_canonical(init_dataset.dataset_id)
+            self.assertEqual(dataset_version.version_id, init_dataset.version_id)
 
     def test_get_prior_published_versions_for_dataset(self):
         """
