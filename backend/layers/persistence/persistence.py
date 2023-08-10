@@ -598,7 +598,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         """
-        Returns the must recently active Dataset version for a canonical dataset_id
+        Returns the most recently active Dataset version for a canonical dataset_id
         """
         with self._manage_session() as session:
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
