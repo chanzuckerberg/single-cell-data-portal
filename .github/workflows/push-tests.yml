@@ -78,11 +78,20 @@ jobs:
           npm i
           npx playwright install --with-deps
           cp src/configs/local.js src/configs/configs.js
-          npm run dev&
+          npm run dev > dev_server.log 2>&1 &
 
       # Run E2E tests
       - name: Run E2E tests
-        run: DEBUG=pw:api npm run e2e
+        run: |
+          DEBUG=pw:api npm run e2e
+
+      - name: Upload Artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: fe-server-logs
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/dev_server.log
+          retention-days: 30
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
