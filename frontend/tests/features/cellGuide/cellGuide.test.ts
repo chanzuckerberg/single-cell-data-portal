@@ -86,7 +86,7 @@ describe("Cell Guide", () => {
       // check that number of elements with role option in dropdown has decreased
       expect(numOptionsAfter).toBeLessThan(numOptionsBefore);
       // check that the first element in the dropdown is the one we searched for
-      const firstOption = (await page.getByRole("option").elementHandles())[0];
+      const firstOption = (await page.getByRole("option").all())[0];
       const firstOptionText = await firstOption?.textContent();
       expect(firstOptionText).toBe("neuron");
 
@@ -117,7 +117,7 @@ describe("Cell Guide", () => {
       // check that number of elements with role option in dropdown has decreased
       expect(numOptionsAfter).toBeLessThan(numOptionsBefore);
       // check that the first element in the dropdown is the one we searched for (cardiac muscle cell)
-      const firstOption = (await page.getByRole("option").elementHandles())[0];
+      const firstOption = (await page.getByRole("option").all())[0];
       const firstOptionText = await firstOption?.textContent();
       expect(firstOptionText).toBe("cardiac muscle cell");
       // click on first element in dropdown
@@ -225,7 +225,7 @@ describe("Cell Guide", () => {
       // check that number of elements with role option in dropdown has decreased
       expect(numOptionsAfter).toBeLessThan(numOptionsBefore);
       // check that the first element in the dropdown is the one we searched for
-      const firstOption = (await page.getByRole("option").elementHandles())[0];
+      const firstOption = (await page.getByRole("option").all())[0];
       const firstOptionText = await firstOption?.textContent();
       expect(firstOptionText).toBe("acinar cell");
 
@@ -254,7 +254,7 @@ describe("Cell Guide", () => {
         const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
-          .elementHandles();
+          .all();
         // get text content of each column header
         const columnHeaders = await Promise.all(
           columnHeaderElements.map(async (element) => {
@@ -264,7 +264,7 @@ describe("Cell Guide", () => {
         expect(columnHeaders).toEqual(["Symbol", "Name", "References"]);
         const rowElements = await page
           .locator(`${tableSelector} tbody tr`)
-          .elementHandles();
+          .all();
         const rowCount = rowElements.length;
         expect(rowCount).toBeGreaterThan(1);
       });
@@ -284,7 +284,7 @@ describe("Cell Guide", () => {
         const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
         const rowElementsBefore = await page
           .locator(`${tableSelector} tbody tr`)
-          .elementHandles();
+          .all();
         const rowCountBefore = rowElementsBefore.length;
         expect(rowCountBefore).toBeGreaterThan(1);
 
@@ -299,7 +299,7 @@ describe("Cell Guide", () => {
 
         const rowElementsAfter = await page
           .locator(`${tableSelector} tbody tr`)
-          .elementHandles();
+          .all();
         const rowCountAfter = rowElementsAfter.length;
         expect(rowCountAfter).toBeGreaterThan(1);
         expect(rowCountAfter).not.toBe(rowCountBefore);
@@ -331,7 +331,7 @@ describe("Cell Guide", () => {
 
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
-          .elementHandles();
+          .all();
 
         // get text content of each column header
         const columnHeaders = await Promise.all(
@@ -348,7 +348,7 @@ describe("Cell Guide", () => {
         ]);
         const rowElements = await page
           .locator(`${tableSelector} tbody tr`)
-          .elementHandles();
+          .all();
         const rowCount = rowElements.length;
         expect(rowCount).toBeGreaterThan(1);
       });
@@ -373,7 +373,7 @@ describe("Cell Guide", () => {
 
             const rowElementsBefore = await page
               .locator(`${tableSelector} tbody tr`)
-              .elementHandles();
+              .all();
             const rowCountBefore = rowElementsBefore.length;
             expect(rowCountBefore).toBeGreaterThan(1);
             const firstRowContentBefore =
@@ -388,7 +388,7 @@ describe("Cell Guide", () => {
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)
-              .elementHandles();
+              .all();
             const rowCountAfter = rowElementsAfter.length;
             expect(rowCountAfter).toBeGreaterThan(1);
             const firstRowContentAfter =
@@ -418,7 +418,7 @@ describe("Cell Guide", () => {
 
             const rowElementsBefore = await page
               .locator(`${tableSelector} tbody tr`)
-              .elementHandles();
+              .all();
             const rowCountBefore = rowElementsBefore.length;
             expect(rowCountBefore).toBeGreaterThan(1);
             const firstRowContentBefore =
@@ -434,7 +434,7 @@ describe("Cell Guide", () => {
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)
-              .elementHandles();
+              .all();
             const rowCountAfter = rowElementsAfter.length;
             expect(rowCountAfter).toBeGreaterThan(1);
             const firstRowContentAfter =
@@ -461,7 +461,7 @@ describe("Cell Guide", () => {
           async () => {
             const columnHeaderElements = await page
               .locator(`${tableSelector} thead th`)
-              .elementHandles();
+              .all();
 
             // get text content of each column header
             const columnHeaders = await Promise.all(
@@ -482,7 +482,7 @@ describe("Cell Guide", () => {
 
         const rowElements = await page
           .locator(`${tableSelector} tbody tr`)
-          .elementHandles();
+          .all();
         const rowCount = rowElements.length;
         expect(rowCount).toBeGreaterThan(1);
       });
@@ -727,7 +727,7 @@ describe("Cell Guide", () => {
         // get the second navbar tab (ontology) and click to scroll
         const elements = await navbar
           .locator(".MuiButtonBase-root.MuiTab-root")
-          .elementHandles();
+          .all();
         const tab = elements[1];
         await tab.click();
 
