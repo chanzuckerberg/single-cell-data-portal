@@ -1,5 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
-import React, { ReactElement, ReactNode, useEffect, useState } from "react";
+import React, {
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ButtonIcon, Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
@@ -189,6 +195,46 @@ type TableRow = (TableRowEnrichedGenes | TableRowCanonicalGenes) & {
   symbolId: string;
 };
 
+// Tooltip components
+const enrichedGenesTooltipComponent = (
+  <div>
+    {"Computational marker genes are derived from the "}
+    <Link label={"CELLxGENE Census"} url={CENSUS_LINK} />
+    {". They are computed utilizing the same methodology as featured in our "}
+    <Link
+      label={"Find Marker Genes feature from the Gene Expression application"}
+      url={ROUTES.FMG_DOCS}
+    />
+    {"."}
+  </div>
+);
+const canonicalMarkerGenesTooltipComponent = (
+  <div>
+    {
+      "Canonical marker genes and associated publications were derived from the "
+    }
+    <Link
+      label={"Anatomical Structures, Cell Types and Biomarkers (ASCT+B)"}
+      url={"https://humanatlas.io/asctb-tables"}
+    />
+    {
+      " tables from the 5th Human Reference Atlas release (July 2023). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+    }
+    <br />
+    <br />
+    <Link
+      label={
+        <i>
+          Börner, Katy, et al. "Anatomical structures, cell types and biomarkers
+          of the Human Reference Atlas." Nature cell biology 23.11 (2021):
+          1117-1128.
+        </i>
+      }
+      url={"https://www.nature.com/articles/s41556-021-00788-6"}
+    />
+  </div>
+);
+
 interface Props {
   cellTypeId: string;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
@@ -257,80 +303,92 @@ const MarkerGeneTables = ({
   const uniqueOrgans = activeTable
     ? uniqueOrgansComputational
     : uniqueOrgansCanonical;
-  const tableRows: TableRow[] = activeTable
-    ? computationalMarkerGeneTableData.map((row) => ({
-        ...row,
-        symbolId: row.symbol,
-        symbol: (
-          <>
-            {row.symbol}{" "}
-            <ButtonIcon
-              aria-label={`display gene info for ${row.symbol}`}
-              sdsIcon="infoCircle"
-              sdsSize="small"
-              sdsType="secondary"
-              onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-            />
-          </>
-        ),
-      }))
-    : canonicalMarkerGeneTableData.map((row) => ({
-        ...row,
-        symbolId: row.symbol,
-        symbol: (
-          <>
-            {row.symbol}{" "}
-            <ButtonIcon
-              aria-label={`display gene info for ${row.symbol}`}
-              sdsIcon="infoCircle"
-              sdsSize="small"
-              sdsType="secondary"
-              onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-            />
-          </>
-        ),
-        references: (
-          <PublicationLinkWrapper>
-            {row.referenceData.publicationTitles.map(
-              (publicationTitle, index) => {
-                if (publicationTitle && row.referenceData.publications[index]) {
-                  const referenceIndexLabel =
-                    (row.referenceData.publicationTitlesToIndex.get(
-                      publicationTitle
-                    ) ?? 0) + 1;
-                  return (
-                    <Tooltip
-                      key={`${row.referenceData.publications[index]}-${index}-tooltip`}
-                      placement="top"
-                      width="default"
-                      arrow={false}
-                      title={
-                        <div>
-                          {publicationTitle.split("\n\n").at(0)}
-                          <br />
-                          <br />
-                          <i>{publicationTitle.split("\n\n").at(1)}</i>
-                        </div>
-                      }
-                      leaveDelay={0}
-                    >
-                      <span
-                        key={`${row.referenceData.publications[index]}-${index}-span`}
-                      >
-                        <Link
-                          key={`${row.referenceData.publications[index]}-${index}`}
-                          label={`[${referenceIndexLabel}]`}
-                          url={`https://doi.org/${row.referenceData.publications[index]}`}
-                        />
-                      </span>
-                    </Tooltip>
-                  );
-                }
-              }
-            )}
-          </PublicationLinkWrapper>
-        ),
-      }));
+  const tableRows: TableRow[] = useMemo(
+    () =>
+      activeTable
+        ? computationalMarkerGeneTableData.map((row) => ({
+            ...row,
+            symbolId: row.symbol,
+            symbol: (
+              <>
+                {row.symbol}{" "}
+                <ButtonIcon
+                  aria-label={`display gene info for ${row.symbol}`}
+                  sdsIcon="infoCircle"
+                  sdsSize="small"
+                  sdsType="secondary"
+                  onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
+                />
+              </>
+            ),
+          }))
+        : canonicalMarkerGeneTableData.map((row) => ({
+            ...row,
+            symbolId: row.symbol,
+            symbol: (
+              <>
+                {row.symbol}{" "}
+                <ButtonIcon
+                  aria-label={`display gene info for ${row.symbol}`}
+                  sdsIcon="infoCircle"
+                  sdsSize="small"
+                  sdsType="secondary"
+                  onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
+                />
+              </>
+            ),
+            references: (
+              <PublicationLinkWrapper>
+                {row.referenceData.publicationTitles.map(
+                  (publicationTitle, index) => {
+                    if (
+                      publicationTitle &&
+                      row.referenceData.publications[index]
+                    ) {
+                      const referenceIndexLabel =
+                        (row.referenceData.publicationTitlesToIndex.get(
+                          publicationTitle
+                        ) ?? 0) + 1;
+                      return (
+                        <Tooltip
+                          key={`${row.referenceData.publications[index]}-${index}-tooltip`}
+                          placement="top"
+                          width="default"
+                          arrow={false}
+                          title={
+                            <div>
+                              {publicationTitle.split("\n\n").at(0)}
+                              <br />
+                              <br />
+                              <i>{publicationTitle.split("\n\n").at(1)}</i>
+                            </div>
+                          }
+                          leaveDelay={0}
+                        >
+                          <span
+                            key={`${row.referenceData.publications[index]}-${index}-span`}
+                          >
+                            <Link
+                              key={`${row.referenceData.publications[index]}-${index}`}
+                              label={`[${referenceIndexLabel}]`}
+                              url={`https://doi.org/${row.referenceData.publications[index]}`}
+                            />
+                          </span>
+                        </Tooltip>
+                      );
+                    }
+                  }
+                )}
+              </PublicationLinkWrapper>
+            ),
+          })),
+    [
+      activeTable,
+      canonicalMarkerGeneTableData,
+      computationalMarkerGeneTableData,
+      setGeneInfoGene,
+    ]
+  );
 
   const genesForShareUrl = `${tableRows
     .map((row) => row.symbolId)
@@ -349,71 +407,38 @@ const MarkerGeneTables = ({
   ) => {
     setSelectedOrganComputational(event.target.value as string);
   };
-  const enrichedGenesTooltipComponent = (
-    <div>
-      {"Computational marker genes are derived from the "}
-      <Link label={"CELLxGENE Census"} url={CENSUS_LINK} />
-      {". They are computed utilizing the same methodology as featured in our "}
-      <Link
-        label={"Find Marker Genes feature from the Gene Expression application"}
-        url={ROUTES.FMG_DOCS}
-      />
-      {"."}
-    </div>
-  );
-  const canonicalMarkerGenesTooltipComponent = (
-    <div>
-      {
-        "Canonical marker genes and associated publications were derived from the "
-      }
-      <Link
-        label={"Anatomical Structures, Cell Types and Biomarkers (ASCT+B)"}
-        url={"https://humanatlas.io/asctb-tables"}
-      />
-      {
-        " tables from the 5th Human Reference Atlas release (July 2023). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
-      }
-      <br />
-      <br />
-      <Link
-        label={
-          <i>
-            Börner, Katy, et al. "Anatomical structures, cell types and
-            biomarkers of the Human Reference Atlas." Nature cell biology 23.11
-            (2021): 1117-1128.
-          </i>
-        }
-        url={"https://www.nature.com/articles/s41556-021-00788-6"}
-      />
-    </div>
-  );
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
-  const tableComponent = activeTable ? (
-    <Table<TableRowEnrichedGenes>
-      testId={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}
-      columns={tableColumnsEnrichedGenes}
-      rows={
-        tableRows.slice(
-          (page - 1) * ROWS_PER_PAGE,
-          page * ROWS_PER_PAGE
-        ) as TableRowEnrichedGenes[]
-      }
-      columnIdToName={tableColumnNamesEnrichedGenes}
-    />
-  ) : (
-    <Table<TableRowCanonicalGenes>
-      testId={CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}
-      columns={tableColumnsCanonicalGenes}
-      rows={
-        tableRows.slice(
-          (page - 1) * ROWS_PER_PAGE,
-          page * ROWS_PER_PAGE
-        ) as TableRowCanonicalGenes[]
-      }
-      columnIdToName={tableColumnNamesCanonicalGenes}
-    />
+  const tableComponent = useMemo(
+    () =>
+      activeTable ? (
+        <Table<TableRowEnrichedGenes>
+          testId={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}
+          columns={tableColumnsEnrichedGenes}
+          rows={
+            tableRows.slice(
+              (page - 1) * ROWS_PER_PAGE,
+              page * ROWS_PER_PAGE
+            ) as TableRowEnrichedGenes[]
+          }
+          columnIdToName={tableColumnNamesEnrichedGenes}
+        />
+      ) : (
+        <Table<TableRowCanonicalGenes>
+          testId={CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}
+          columns={tableColumnsCanonicalGenes}
+          rows={
+            tableRows.slice(
+              (page - 1) * ROWS_PER_PAGE,
+              page * ROWS_PER_PAGE
+            ) as TableRowCanonicalGenes[]
+          }
+          columnIdToName={tableColumnNamesCanonicalGenes}
+        />
+      ),
+    [activeTable, page, tableRows]
   );
+
   const tableUnavailableComponent = (
     <TableUnavailableContainer>
       <TableUnavailableHeader>
