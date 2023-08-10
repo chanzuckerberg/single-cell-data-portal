@@ -262,6 +262,22 @@ const MarkerGeneTables = ({
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
 
   useEffect(() => {
+    setPage(1);
+    setSelectedOrganismComputational("");
+    setSelectedOrganComputational("");
+    setSelectedOrganCanonical("");
+    setActiveTable(0);
+
+    return () => {
+      setSelectedOrganismComputational("");
+      setSelectedOrganComputational("");
+      setSelectedOrganCanonical("");
+      setActiveTable(0);
+      setPage(1);
+    };
+  }, [cellTypeId]);
+
+  useEffect(() => {
     if (enrichedGenes) {
       setComputationalMarkerGenes(enrichedGenes);
     }
