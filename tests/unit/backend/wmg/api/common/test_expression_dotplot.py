@@ -7,7 +7,11 @@ In detail, this module tests the public and private functions defined in
 import unittest
 
 from backend.wmg.api.common.expression_dotplot import agg_cell_type_counts, agg_tissue_counts, get_dot_plot_data
-from backend.wmg.data.query import WmgQuery, WmgQueryCriteria
+from backend.wmg.api.wmg_api_config import (
+    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+)
+from backend.wmg.data.query import WmgCubeQueryParams, WmgQuery, WmgQueryCriteria
 from tests.unit.backend.wmg.fixtures.test_cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     all_ones_expression_summary_values,
@@ -59,6 +63,12 @@ def generate_expected_dot_plot_data_with_pandas(snapshot, criteria):
 
 
 class ExpressionDotPlotTest(unittest.TestCase):
+    def setUp(self):
+        self.cube_query_params = WmgCubeQueryParams(
+            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+        )
+
     def test__query_all_indexed_dims_single_value__returns_correct_result(self):
         criteria = WmgQueryCriteria(
             gene_ontology_term_ids=["gene_ontology_term_id_0"],
@@ -72,7 +82,7 @@ class ExpressionDotPlotTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
             expected = generate_expected_dot_plot_data_with_pandas(snapshot, criteria)
@@ -102,7 +112,7 @@ class ExpressionDotPlotTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
             expected = generate_expected_dot_plot_data_with_pandas(snapshot, criteria)
@@ -135,7 +145,7 @@ class ExpressionDotPlotTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
             expected = generate_expected_dot_plot_data_with_pandas(snapshot, criteria)
@@ -169,7 +179,7 @@ class ExpressionDotPlotTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
             expected = generate_expected_dot_plot_data_with_pandas(snapshot, criteria)
@@ -206,7 +216,7 @@ class ExpressionDotPlotTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result, _ = get_dot_plot_data(q.expression_summary(criteria), q.cell_counts(criteria))
 
             expected = generate_expected_dot_plot_data_with_pandas(snapshot, criteria)
@@ -240,7 +250,7 @@ class ExpressionDotPlotTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=lambda coords: all_X_cell_counts_values(coords, expected_count),
         ) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result = agg_cell_type_counts(q.cell_counts(criteria))
 
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
@@ -273,7 +283,7 @@ class ExpressionDotPlotTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=lambda coords: all_X_cell_counts_values(coords, expected_count),
         ) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result = agg_tissue_counts(q.cell_counts(criteria))
 
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]

@@ -1,25 +1,21 @@
 import unittest
 from typing import NamedTuple
 
+from backend.wmg.api.wmg_api_config import (
+    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+)
 from backend.wmg.data.query import (
     FmgQueryCriteria,
     MarkerGeneQueryCriteria,
+    WmgCubeQueryParams,
     WmgQuery,
     WmgQueryCriteria,
     retrieve_top_n_markers,
 )
-from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    create_temp_wmg_snapshot,
-    load_realistic_test_snapshot,
-)
+from tests.unit.backend.wmg.fixtures.test_snapshot import create_temp_wmg_snapshot, load_realistic_test_snapshot
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
-
-ALL_INDEXED_DIMS_FOR_QUERY = [
-    "gene_ontology_term_ids",
-    "tissue_ontology_term_ids",
-    "organism_ontology_term_id",
-]
 
 # TODO: Test build_* methods separately in test_v1.py.  This package's unit tests need only test the raw results of
 #  query methods
@@ -47,6 +43,12 @@ def generate_expected_marker_gene_data_with_pandas(snapshot, criteria, statistic
 
 
 class QueryTest(unittest.TestCase):
+    def setUp(self):
+        self.cube_query_params = WmgCubeQueryParams(
+            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+        )
+
     def test__query_marker_genes_cube__returns_correct_top_10_markers(self):
         criteria = MarkerGeneQueryCriteria(
             tissue_ontology_term_id="UBERON:0002048",
@@ -54,7 +56,7 @@ class QueryTest(unittest.TestCase):
             organism_ontology_term_id="NCBITaxon:9606",
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result = q.marker_genes(criteria)
             marker_genes = retrieve_top_n_markers(result, "ttest", 10)
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 10)
@@ -67,7 +69,7 @@ class QueryTest(unittest.TestCase):
             organism_ontology_term_id="NCBITaxon:9606",
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result = q.marker_genes(criteria)
             marker_genes = retrieve_top_n_markers(result, "ttest", 0)
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 0)
@@ -81,7 +83,7 @@ class QueryTest(unittest.TestCase):
             cell_type_ontology_term_ids=["CL:0000786"],
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             query_result = q.expression_summary_fmg(criteria)
             query_sum = list(query_result[["sum", "sqsum", "nnz", "nnz_thr"]].sum())
             expected = [120129.5703125, 343018.5625, 49966.0, 48978.0]
@@ -94,7 +96,7 @@ class QueryTest(unittest.TestCase):
             tissue_ontology_term_ids=["UBERON:0002048"],
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             query_result = q.expression_summary_default(criteria)
             query_sum = list(query_result[["sum", "nnz", "sqsum"]].sum())
             expected = [804599.0, 370972.0, 1822108.0]
@@ -102,10 +104,16 @@ class QueryTest(unittest.TestCase):
 
 
 class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
+    def setUp(self):
+        self.cube_query_params = WmgCubeQueryParams(
+            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+        )
+
     def test__single_dimension__returns_all_dimension_and_terms(self):
         dim_size = 3
         with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result = q.list_primary_filter_dimension_term_ids("tissue_ontology_term_id")
             self.assertEquals(
                 ["tissue_ontology_term_id_0", "tissue_ontology_term_id_1", "tissue_ontology_term_id_2"], result
@@ -122,7 +130,7 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
         with create_temp_wmg_snapshot(
             dim_size=dim_size, exclude_logical_coord_fn=exclude_one_tissue_per_organism
         ) as snapshot:
-            q = WmgQuery(snapshot)
+            q = WmgQuery(snapshot, self.cube_query_params)
             result = q.list_grouped_primary_filter_dimensions_term_ids(
                 "tissue_ontology_term_id", "organism_ontology_term_id"
             )
