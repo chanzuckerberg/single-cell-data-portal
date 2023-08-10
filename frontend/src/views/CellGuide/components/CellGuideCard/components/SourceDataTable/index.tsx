@@ -134,7 +134,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
       <TableTitleWrapper>
         <TableTitle>Data</TableTitle>
       </TableTitleWrapper>
-      <StyledDivider />
+
       {tableRows.length > 0 ? (
         <Table<TableRow> columns={tableColumns} rows={tableRows} />
       ) : (
