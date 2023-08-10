@@ -5,6 +5,9 @@ import uuid
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple
+from tenacity import retry
+from tenacity.stop import stop_after_attempt
+from tenacity.wait import wait_fixed
 
 from sqlalchemy import create_engine
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
@@ -679,6 +682,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(dataset_version)
             return self._row_to_dataset_version(dataset_version, CanonicalDataset(dataset_id, None, False, None), [])
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def add_dataset_artifact(
         self, version_id: DatasetVersionId, artifact_type: DatasetArtifactType, artifact_uri: str
     ) -> DatasetArtifactId:
@@ -699,10 +703,11 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Updates uri for an existing artifact_id
         """
-        with self._get_serializable_session() as session:
+        with self._manage_session() as session:
             artifact = session.query(DatasetArtifactTable).filter_by(id=artifact_id.id).one()
             artifact.uri = artifact_uri
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
         Updates the processing status for a dataset version.
@@ -713,6 +718,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_status["processing_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
         """
         Updates the validation status for a dataset version.
@@ -723,6 +729,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_status["validation_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:
         """
         Updates the upload status for a dataset version.
@@ -733,6 +740,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_status["upload_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_conversion_status(
         self, version_id: DatasetVersionId, status_type: str, status: DatasetConversionStatus
     ) -> None:
@@ -745,6 +753,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_status[status_type] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
