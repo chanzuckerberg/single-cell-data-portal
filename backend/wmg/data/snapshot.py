@@ -194,7 +194,6 @@ def _get_wmg_snapshot_dir_s3_uri(snapshot_dir_path: str) -> str:
 
 
 def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versioned_snapshot: bool) -> WmgSnapshot:
-
     snapshot_dir_path = _get_wmg_snapshot_dir_path(
         snapshot_schema_version=snapshot_schema_version,
         snapshot_id=snapshot_id,
@@ -207,7 +206,7 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
     filter_relationships = _load_filter_graph_data(snapshot_dir_path)
 
     snapshot_base_uri = _get_wmg_snapshot_dir_s3_uri(snapshot_dir_path)
-    logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
+    logger.info(f"Loading WMG snapshot from directory path {snapshot_dir_path} into URI {snapshot_base_uri}")
 
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
