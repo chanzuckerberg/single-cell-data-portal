@@ -84,17 +84,13 @@ jobs:
       - name: Run E2E tests
         run: |
           DEBUG=pw:api npm run e2e
-          # Upload dev_server.log as an artifact
-          mv dev_server.log $GITHUB_WORKSPACE/dev_server.log
-          echo "Uploading dev_server.log as an artifact..."
-          ls -lh $GITHUB_WORKSPACE
 
       - name: Upload Artifact
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: logs
-          path: $GITHUB_WORKSPACE/dev_server.log
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/dev_server.log
           retention-days: 30
 
       # Upload Playwright report as an artifact
