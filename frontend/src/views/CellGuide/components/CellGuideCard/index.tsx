@@ -171,6 +171,7 @@ export default function CellGuideCard({
           {/* Marker Genes section */}
           <div ref={sectionRef2} id="section-2" data-testid="section-2" />
           <MarkerGeneTables
+            key={cellTypeId}
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}

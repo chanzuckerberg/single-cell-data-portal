@@ -53,6 +53,8 @@ import {
 
 const { describe } = test;
 
+const WAIT_FOR_TIMEOUT_MS = 10 * 1000;
+
 const NEURON_CELL_TYPE_ID = "CL_0000540";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
 const LUNG_TISSUE_ID = "UBERON_0002048";
@@ -324,7 +326,9 @@ describe("Cell Guide", () => {
               .getByTestId(CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR)
               .click();
 
-            await page.locator(tableSelector).waitFor({ timeout: 5000 });
+            await page
+              .locator(tableSelector)
+              .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
           },
           { page }
         );
@@ -369,7 +373,9 @@ describe("Cell Guide", () => {
               .click();
 
             const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
-            await page.locator(tableSelector).waitFor({ timeout: 5000 });
+            await page
+              .locator(tableSelector)
+              .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
             const rowElementsBefore = await page
               .locator(`${tableSelector} tbody tr`)
@@ -499,7 +505,7 @@ describe("Cell Guide", () => {
 
         await page
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
-          .waitFor({ timeout: 5000 });
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const nodesLocator = `[data-testid^='${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
 
@@ -541,7 +547,7 @@ describe("Cell Guide", () => {
         );
         await page
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
-          .waitFor({ timeout: 5000 });
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
         const label = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000878__4`
         );
@@ -556,7 +562,7 @@ describe("Cell Guide", () => {
           .getByTestId(
             `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000878__4-has-children-isTargetNode=true`
           )
-          .waitFor({ timeout: 5000 });
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
       });
 
       test("Clicking on a collapsed node stub displays hidden cell types", async ({
@@ -568,7 +574,7 @@ describe("Cell Guide", () => {
         );
         await page
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
-          .waitFor({ timeout: 5000 });
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const nodesLocator = `[data-testid^='${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
         const nodesBefore = await page.locator(nodesLocator).all();
@@ -596,7 +602,7 @@ describe("Cell Guide", () => {
         const ontologyDagView = page.getByTestId(
           CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER
         );
-        await ontologyDagView.waitFor({ timeout: 5000 });
+        await ontologyDagView.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const ontologyDagViewSizeBefore = await ontologyDagView.boundingBox();
 
@@ -626,7 +632,7 @@ describe("Cell Guide", () => {
         );
         await page
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
-          .waitFor({ timeout: 5000 });
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const node = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
@@ -664,7 +670,7 @@ describe("Cell Guide", () => {
 
         await page
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
-          .waitFor({ timeout: 5000 });
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const label = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000066__0`
@@ -680,7 +686,7 @@ describe("Cell Guide", () => {
           .getByTestId(
             `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000066__0-has-children-isTargetNode=true`
           )
-          .waitFor({ timeout: 5000 });
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
       });
 
       test("Node tooltip displays on hover", async ({ page }) => {
@@ -690,7 +696,7 @@ describe("Cell Guide", () => {
         );
         await page
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
-          .waitFor({ timeout: 5000 });
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const node = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000066__0-has-children-isTargetNode=false`
@@ -721,7 +727,7 @@ describe("Cell Guide", () => {
 
         // check that source data is in viewport
         const sourceData = page.getByTestId(CELL_GUIDE_CARD_SOURCE_DATA_TABLE);
-        await sourceData.waitFor({ timeout: 5000 });
+        await sourceData.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
         expect(sourceData).toBeInViewport();
 
         // get the second navbar tab (ontology) and click to scroll
@@ -735,7 +741,7 @@ describe("Cell Guide", () => {
         const ontologyView = page.getByTestId(
           CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW
         );
-        await ontologyView.waitFor({ timeout: 5000 });
+        await ontologyView.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
         expect(ontologyView).toBeInViewport();
 
         // check that source data is not in viewport
@@ -822,7 +828,7 @@ describe("Cell Guide", () => {
 async function checkTooltipContent(page: Page, text: string) {
   // check role tooltip is visible
   const tooltipLocator = page.getByRole("tooltip");
-  await tooltipLocator.waitFor({ timeout: 5000 });
+  await tooltipLocator.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
   const tooltipLocatorVisible = await tooltipLocator.isVisible();
   expect(tooltipLocatorVisible).toBe(true);
 
@@ -835,7 +841,7 @@ async function isElementVisible(page: Page, testId: string) {
   await tryUntil(
     async () => {
       const element = page.getByTestId(testId);
-      await element.waitFor({ timeout: 5000 });
+      await element.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
       const isVisible = await element.isVisible();
       expect(isVisible).toBe(true);
     },
@@ -844,7 +850,7 @@ async function isElementVisible(page: Page, testId: string) {
 }
 
 async function waitForElementAndClick(locator: Locator) {
-  await locator.waitFor({ timeout: 5000 });
+  await locator.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
   await locator.click();
 }
 

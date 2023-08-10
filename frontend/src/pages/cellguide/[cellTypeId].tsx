@@ -10,7 +10,7 @@ const Page = ({
   seoDescription,
   name,
 }: InferGetServerSidePropsType<typeof getServerSideProps>): JSX.Element => (
-  <CellGuideCard name={name} seoDescription={seoDescription} />
+  <CellGuideCard key={name} name={name} seoDescription={seoDescription} />
 );
 
 export const getServerSideProps: GetServerSideProps<{
