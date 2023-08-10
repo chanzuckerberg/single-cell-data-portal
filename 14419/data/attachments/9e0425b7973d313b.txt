@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2023-08-10T21:21:48.010Z", "name": "backend.layers.processing.schema_migration", "message": "Deleting files", "lineno": 228, "pathname": "/single-cell-data-portal/backend/layers/processing/schema_migration.py", "artifact_bucket": "artifact-bucket", "object_keys": []}
