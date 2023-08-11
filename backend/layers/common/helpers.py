@@ -46,7 +46,7 @@ def set_revised_at_field(dataset_versions: List[DatasetVersion], collection_vers
             version_published_at, collection_version_id = get_published_at_and_collection_version_id_else_not_found(
                 dataset_version, collection_versions
             )
-            if version_published_at > dataset_version.canonical_dataset.published_at:
+            if version_published_at > dataset_version.canonical_dataset.published_at:  # type: ignore
                 # Dataset has been revised
                 dataset_version.canonical_dataset.revised_at = version_published_at
         except DatasetVersionNotFoundException:
@@ -71,7 +71,7 @@ def get_dataset_versions_with_published_at_and_collection_version_id(
         published_datasets_for_collection.append(
             PublishedDatasetVersion(
                 collection_version_id=collection_version_id,
-                published_at=published_at,
+                published_at=published_at,  # type: ignore
                 **vars(dataset_version),
             )
         )

@@ -26,7 +26,7 @@ from backend.layers.common.entities import (
 
 
 class BusinessLogicInterface:
-    def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
+    def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:  # type: ignore
         pass
 
     def get_published_collection_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
@@ -37,12 +37,12 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
-    def get_collection_version(
+    def get_collection_version(  # type: ignore
         self, version_id: CollectionVersionId, get_tombstoned: bool
     ) -> CollectionVersionWithDatasets:
         pass
 
-    def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+    def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:  # type: ignore
         pass
 
     def get_collection_version_from_canonical(
@@ -50,15 +50,15 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
-    def create_collection(
+    def create_collection(  # type: ignore
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
     ) -> CollectionVersion:
         pass
 
-    def delete_dataset_versions_from_bucket(self, dataset_version_ids: List[str], bucket: str) -> List[str]:
+    def delete_dataset_versions_from_bucket(self, dataset_version_ids: List[str], bucket: str) -> List[str]:  # type: ignore
         pass
 
-    def delete_all_dataset_versions_from_bucket_for_collection(
+    def delete_all_dataset_versions_from_bucket_for_collection(  # type: ignore
         self, collection_id: CollectionId, bucket: str
     ) -> List[str]:
         pass
@@ -69,7 +69,7 @@ class BusinessLogicInterface:
     def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
         pass
 
-    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:  # type: ignore
         pass
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
@@ -78,7 +78,7 @@ class BusinessLogicInterface:
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
         pass
 
-    def ingest_dataset(
+    def ingest_dataset(  # type: ignore
         self,
         collection_version_id: CollectionVersionId,
         url: str,
@@ -87,10 +87,10 @@ class BusinessLogicInterface:
     ) -> Tuple[DatasetVersionId, DatasetId]:
         pass
 
-    def get_all_mapped_datasets(self) -> List[DatasetVersion]:
+    def get_all_mapped_datasets(self) -> List[DatasetVersion]:  # type: ignore
         pass
 
-    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithPublishedDatasets]:
+    def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithPublishedDatasets]:  # type: ignore
         pass
 
     def remove_dataset_version(
@@ -101,10 +101,10 @@ class BusinessLogicInterface:
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         pass
 
-    def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
+    def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:  # type: ignore
         pass
 
-    def get_dataset_artifact_download_data(
+    def get_dataset_artifact_download_data(  # type: ignore
         self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
     ) -> DatasetArtifactDownloadData:
         pass
@@ -118,27 +118,27 @@ class BusinessLogicInterface:
     ) -> None:
         pass
 
-    def add_dataset_artifact(
+    def add_dataset_artifact(  # type: ignore
         self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
     ) -> DatasetArtifactId:
         pass
 
-    def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
+    def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:  # type: ignore
         pass
 
-    def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> DatasetVersion:
+    def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> DatasetVersion:  # type: ignore
         pass
 
-    def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[PublishedDatasetVersion]:
+    def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[PublishedDatasetVersion]:  # type: ignore
         pass
 
-    def get_prior_published_dataset_version(self, dataset_version_id: DatasetVersionId) -> PublishedDatasetVersion:
+    def get_prior_published_dataset_version(self, dataset_version_id: DatasetVersionId) -> PublishedDatasetVersion:  # type: ignore
         pass
 
-    def get_dataset_version_from_canonical(self, dataset_id: DatasetId, get_tombstoned: bool) -> DatasetVersion:
+    def get_dataset_version_from_canonical(self, dataset_id: DatasetId, get_tombstoned: bool) -> DatasetVersion:  # type: ignore
         pass
 
-    def get_latest_published_collection_versions_by_schema(
+    def get_latest_published_collection_versions_by_schema(  # type: ignore
         self, schema_version: str
     ) -> List[CollectionVersionWithPublishedDatasets]:
         pass

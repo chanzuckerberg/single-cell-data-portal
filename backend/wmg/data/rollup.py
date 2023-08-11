@@ -136,7 +136,7 @@ def rollup_across_cell_type_descendants(
         dim_indices.append(indices)
     # the last dimension corresponds to the numeric columns
     dim_shapes.append(numeric_df.shape[1])
-    dim_shapes = tuple(dim_shapes)
+    dim_shapes = tuple(dim_shapes)  # type: ignore
     array_to_sum = np.zeros(dim_shapes)
     # slot the numeric data into the multi-dimensional numpy array
 
@@ -185,7 +185,7 @@ def rollup_across_cell_type_descendants_array(array_to_sum, cell_types) -> np.nd
     for ix in descendants_indexes:
         z += len(ix)
         linear_indices.append(z)
-    linear_indices = np.array(linear_indices)
+    linear_indices = np.array(linear_indices)  # type: ignore
     descendants_indexes = np.concatenate(descendants_indexes)
 
     # roll up the multi-dimensional array across cell types (first axis)

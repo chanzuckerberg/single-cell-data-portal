@@ -5,7 +5,7 @@ from backend.curation.api.v1.curation.collections.common import extract_doi_from
 from backend.portal.api.providers import get_business_logic
 
 
-def get(schema_version: str = None):
+def get(schema_version: str = None):  # type: ignore
     """
     Datasets index endpoint to retrieve full metadata for all public Datasets.
     """

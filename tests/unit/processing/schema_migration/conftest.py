@@ -16,7 +16,7 @@ from backend.layers.processing.schema_migration import SchemaMigrate
 
 
 def make_mock_dataset_version(
-    dataset_id: str = None, version_id: str = None, status: dict = None, metadata: dict = None
+    dataset_id: str = None, version_id: str = None, status: dict = None, metadata: dict = None  # type: ignore
 ):
     dataset_version = mock.Mock()
     dataset_version.dataset_id = DatasetId(dataset_id)

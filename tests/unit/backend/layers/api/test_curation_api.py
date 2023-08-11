@@ -144,7 +144,7 @@ class TestS3Credentials(BaseAPIPortalTest):
 
             with self.subTest(f"{token}, unpublished revision"):
                 collection_id = self.generate_published_collection().collection_id
-                _id = self.generate_revision(collection_id).version_id
+                _id = self.generate_revision(collection_id).version_id  # type: ignore
                 response = self.app.get(f"/curation/v1/collections/{_id}/s3-upload-credentials", headers=headers)
                 self.assertEqual(200, response.status_code)
                 token_sub = self._mock_assert_authorized_token(token)["sub"]
@@ -560,7 +560,7 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
         # Confirm fields are present on Collection version body but ignore equality comparison for timestamps
         self.assertIn("created_at", received_body)
         self.assertIn("published_at", received_body)
-        [self.assertIn("published_at", d) for d in received_body["dataset_versions"]]
+        [self.assertIn("published_at", d) for d in received_body["dataset_versions"]]  # type: ignore
         received_body.pop("created_at")
         received_body.pop("published_at")
         [d.pop("published_at") for d in received_body["dataset_versions"]]
@@ -669,9 +669,9 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "link_url": "http://test_no_link_name_data_source_url.place",
             },
         ]
-        collection_version = self.generate_collection(links=links, visibility="PRIVATE")
+        collection_version = self.generate_collection(links=links, visibility="PRIVATE")  # type: ignore
         self.generate_dataset(
-            collection_version=collection_version,
+            collection_version=collection_version,  # type: ignore
             metadata=dataset_metadata,
             artifacts=[
                 DatasetArtifactUpdate(type="h5ad", uri="http://test_filename/1234-5678-9/local.h5ad"),
@@ -684,7 +684,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         collection_version = self.business_logic.get_collection_version(collection_version.version_id)
         dataset = collection_version.datasets[0]
         # expected results
-        expect_dataset = asdict(collection_version.datasets[0].metadata)
+        expect_dataset = asdict(collection_version.datasets[0].metadata)  # type: ignore
         expect_dataset["title"] = expect_dataset.pop("name")
         expect_dataset.update(
             **{
@@ -734,8 +734,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
         del res_body["revised_at"]  # too finicky; ignore
         del res_body["published_at"]  # too finicky; ignore
         for dataset in res_body["datasets"]:
-            del dataset["revised_at"]  # too finicky; ignore
-            del dataset["published_at"]  # too finicky; ignore
+            del dataset["revised_at"]  # type: ignore# too finicky; ignore
+            del dataset["published_at"]  # type: ignore# too finicky; ignore
         self.maxDiff = None
         self.assertDictEqual(expected_body, res_body)  # Confirm dict has been packaged in list
         self.assertEqual(json.dumps(expected_body, sort_keys=True), json.dumps(res_body))
@@ -777,7 +777,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 self.assertTrue(resp.json["collection_url"].endswith(expected_id.id))
                 if not response:
                     response = resp
-            return response.json
+            return response.json  # type: ignore
 
         privileged_access_headers = [self.make_owner_header(), self.make_super_curator_header()]
         restricted_access_headers = [self.make_not_owner_header(), self.make_not_auth_header()]
@@ -1663,7 +1663,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         collection_id = self.generate_published_collection(add_datasets=2).canonical_collection.id
         version = self.generate_revision(collection_id)
         dataset_version = self.generate_dataset(
-            collection_version=version, replace_dataset_version_id=version.datasets[0].version_id
+            collection_version=version, replace_dataset_version_id=version.datasets[0].version_id  # type: ignore
         )
         test_url = f"/curation/v1/collections/{version.version_id}/datasets/{dataset_version.dataset_id}"
         response = self.app.get(test_url)
@@ -1704,7 +1704,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.assertEqual(expected_assets, body["assets"])
 
         # retrieve a newly added dataset in a revision Collection
-        new_dataset = self.generate_dataset(collection_version=version)
+        new_dataset = self.generate_dataset(collection_version=version)  # type: ignore
         test_url = f"/curation/v1/collections/{version.version_id}/datasets/{new_dataset.dataset_id}"
         response = self.app.get(test_url)
         body = response.json
@@ -1831,7 +1831,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(expected_collection_dois, received_collection_dois)
 
         self.generate_dataset(
-            collection_version=revision,
+            collection_version=revision,  # type: ignore
             replace_dataset_version_id=revision.datasets[0].version_id,
             publish=True,
         )
@@ -1998,7 +1998,7 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         initial_published_dataset_version_id = collection.datasets[0].version_id
         published_revision = self.generate_revision(collection_id)
         published_dataset_revision = self.generate_dataset(
-            collection_version=published_revision,
+            collection_version=published_revision,  # type: ignore
             replace_dataset_version_id=initial_published_dataset_version_id,
             publish=True,
         )

@@ -4,9 +4,9 @@ import os
 import time
 import unittest
 
-import requests
-from requests.adapters import HTTPAdapter, Response
-from requests.packages.urllib3.util import Retry
+import requests  # type: ignore
+from requests.adapters import HTTPAdapter, Response  # type: ignore
+from requests.packages.urllib3.util import Retry  # type: ignore
 
 from backend.common.corpora_config import CorporaAuthConfig
 
@@ -59,24 +59,24 @@ class BaseFunctionalTestCase(unittest.TestCase):
         return response.json()["access_token"]
 
     @classmethod
-    def get_auth_token(cls, username: str, password: str, additional_claims: list = None):
+    def get_auth_token(cls, username: str, password: str, additional_claims: list = None):  # type: ignore
         standard_claims = "openid profile email offline"
         if additional_claims:
             additional_claims.append(standard_claims)
             claims = " ".join(additional_claims)
         else:
             claims = standard_claims
-        response = cls.session.post(
+        response = cls.session.post(  # type: ignore
             "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
             headers={"content-type": "application/x-www-form-urlencoded"},
             data=dict(
                 grant_type="password",
                 username=username,
                 password=password,
-                audience=AUDIENCE.get(cls.deployment_stage),
+                audience=AUDIENCE.get(cls.deployment_stage),  # type: ignore
                 scope=claims,
-                client_id=cls.config.client_id,
-                client_secret=cls.config.client_secret,
+                client_id=cls.config.client_id,  # type: ignore
+                client_secret=cls.config.client_secret,  # type: ignore
             ),
         )
         access_token = response.json()["access_token"]

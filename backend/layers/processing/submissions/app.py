@@ -111,7 +111,7 @@ def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
     return bucket, key, size
 
 
-def parse_key(key: str) -> Optional[dict]:
+def parse_key(key: str) -> Optional[dict]:  # type: ignore
     """
     Parses the S3 object key to extract the Collection ID and Dataset ID, ignoring the REMOTE_DEV_PREFIX
 

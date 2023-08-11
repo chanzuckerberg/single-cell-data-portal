@@ -75,7 +75,7 @@ class ProcessDownloadValidate(ProcessingLogic):
                 local_filename, output_filename
             )
         except Exception as e:
-            self.logger.exception("validation failed")
+            self.logger.exception("validation failed")  # type: ignore
             raise ValidationFailed([str(e)]) from None
 
         if not is_valid:
@@ -155,7 +155,7 @@ class ProcessDownloadValidate(ProcessingLogic):
             cell_type=_get_term_pairs("cell_type"),
             x_approximate_distribution=_get_x_approximate_distribution(),  # TODO: pay attention
             schema_version=adata.uns["schema_version"],
-            batch_condition=_get_batch_condition(),  # TODO: pay attention
+            batch_condition=_get_batch_condition(),  # type: ignore# TODO: pay attention
             donor_id=adata.obs["donor_id"].unique(),
             suspension_type=adata.obs["suspension_type"].unique(),
         )
@@ -184,7 +184,7 @@ class ProcessDownloadValidate(ProcessingLogic):
         """Given a source URI, download it to local_path.
         Handles fixing the url so it downloads directly.
         """
-        self.logger.info("Start download")
+        self.logger.info("Start download")  # type: ignore
         file_url = self.uri_provider.parse(source_uri)
         if not file_url:
             raise ValueError(f"Malformed source URI: {source_uri}")
@@ -192,8 +192,8 @@ class ProcessDownloadValidate(ProcessingLogic):
         # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
         if file_url.scheme == "https":
             file_info = self.uri_provider.get_file_info(source_uri)
-            status = self.downloader.download(dataset_id, file_url.url, local_path, file_info.size)
-            self.logger.info(status)  # TODO: this log is awful
+            status = self.downloader.download(dataset_id, file_url.url, local_path, file_info.size)  # type: ignore
+            self.logger.info(status)  # type: ignore# TODO: this log is awful
         elif file_url.scheme == "s3":
             bucket_name = file_url.netloc
             key = self.remove_prefix(file_url.path, "/")
@@ -206,7 +206,7 @@ class ProcessDownloadValidate(ProcessingLogic):
         else:
             raise ValueError(f"Download for URI scheme '{file_url.scheme}' not implemented")
 
-        self.logger.info("Download complete")  # TODO: remove
+        self.logger.info("Download complete")  # type: ignore# TODO: remove
         return local_path
 
     # TODO: after upgrading to Python 3.9, replace this with removeprefix()
@@ -246,7 +246,7 @@ class ProcessDownloadValidate(ProcessingLogic):
 
         if not can_convert_to_seurat:
             self.update_processing_status(dataset_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-            self.logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
+            self.logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")  # type: ignore
 
         key_prefix = self.get_key_prefix(dataset_id.id)
         # Upload the original dataset to the artifact bucket

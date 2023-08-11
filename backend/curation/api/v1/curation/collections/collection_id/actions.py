@@ -51,7 +51,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
             detail="Directly editing a public Collection is not allowed; you must create a revision."
         )
 
-    errors = []
+    errors = []  # type: ignore
     # Verify DOI
     if (doi_url := body.pop("doi", None)) and (doi_url := doi.curation_get_normalized_doi_url(doi_url, errors)):
         links = body.get("links", [])
@@ -89,7 +89,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     except InvalidMetadataException as ex:
         raise InvalidParametersHTTPException(ext=dict(invalid_parameters=ex.errors)) from None
     except CollectionUpdateException as ex:
-        errors.extend(ex.errors)
+        errors.extend(ex.errors)  # type: ignore
     if errors:
         raise InvalidParametersHTTPException(ext=dict(invalid_parameters=errors))
     # Make Response

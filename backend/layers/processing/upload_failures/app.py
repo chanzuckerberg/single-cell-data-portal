@@ -84,20 +84,20 @@ def get_failure_slack_notification_message(
     execution_arn: str,
 ) -> dict:
     if dataset_id is None:
-        logger.error("Dataset ID not found")
+        logger.error("Dataset ID not found")  # type: ignore
         dataset_id = "None"
         dataset = None
     else:
         dataset = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
     if dataset is None:
-        logger.error(f"Dataset {dataset_id} not found")
+        logger.error(f"Dataset {dataset_id} not found")  # type: ignore
         dataset_id = dataset_id + "(not found)"
         collection_owner, processing_status = "", ""
     else:
         collection_id = dataset.collection_id
         collection = get_business_logic().get_unpublished_collection_version_from_canonical(collection_id)
         if collection is None:
-            logger.error(f"Collection {collection_id} not found")
+            logger.error(f"Collection {collection_id} not found")  # type: ignore
             collection_owner = ""
         else:
             collection_owner = collection.owner
@@ -151,7 +151,7 @@ def trigger_slack_notification(
 ) -> None:
     with logger.LogSuppressed(Exception, message="Failed to send slack notification"):
         data = get_failure_slack_notification_message(
-            dataset_id, collection_version_id, step_name, job_id, aws_region, execution_arn
+            dataset_id, collection_version_id, step_name, job_id, aws_region, execution_arn  # type: ignore
         )
         notify_slack(data)
 

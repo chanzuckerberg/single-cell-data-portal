@@ -2,13 +2,13 @@ import logging
 from datetime import datetime
 from urllib.parse import urlparse
 
-import requests
+import requests  # type: ignore
 
 from backend.common.corpora_config import CorporaConfig
 
 
 class CrossrefProviderInterface:
-    def fetch_metadata(self, doi: str) -> dict:
+    def fetch_metadata(self, doi: str) -> dict:  # type: ignore
         pass
 
     def fetch_preprint_published_doi(self, doi):

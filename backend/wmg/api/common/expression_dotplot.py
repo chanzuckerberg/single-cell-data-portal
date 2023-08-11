@@ -13,7 +13,7 @@ DEFAULT_GROUP_BY_TERMS = ["tissue_ontology_term_id", "cell_type_ontology_term_id
 ######################### PUBLIC FUNCTIONS IN ALPHABETICAL ORDER ##################################
 
 
-def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: List[str] = None) -> DataFrame:
+def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: List[str] = None) -> DataFrame:  # type: ignore
     # Aggregate cube data by tissue, cell type
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS
@@ -33,7 +33,7 @@ def build_dot_plot_matrix(
     raw_gene_expression: DataFrame,
     cell_counts_cell_type_agg: DataFrame,
     cell_counts_tissue_agg: DataFrame,
-    group_by_terms: List[str] = None,
+    group_by_terms: List[str] = None,  # type: ignore
 ) -> DataFrame:
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS
@@ -50,7 +50,7 @@ def build_dot_plot_matrix(
 def get_dot_plot_data(
     raw_gene_expression: DataFrame,
     cell_counts: DataFrame,
-    group_by_terms: List[str] = None,
+    group_by_terms: List[str] = None,  # type: ignore
 ) -> Tuple[DataFrame, DataFrame]:
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS

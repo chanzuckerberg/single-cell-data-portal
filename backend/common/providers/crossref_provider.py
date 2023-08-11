@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from urllib.parse import urlparse
 
-import requests
+import requests  # type: ignore
 
 from backend.common.corpora_config import CorporaConfig
 
@@ -77,7 +77,7 @@ class CrossrefProvider:
 
         res = self._fetch_crossref_payload(doi)
         if not res:
-            return
+            return  # type: ignore
 
         try:
             message = res.json()["message"]

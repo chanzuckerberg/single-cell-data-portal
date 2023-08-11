@@ -63,15 +63,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.run_as_integration = os.environ.get("INTEGRATION_TEST", "false").lower() == "true"
-        if cls.run_as_integration:
+        cls.run_as_integration = os.environ.get("INTEGRATION_TEST", "false").lower() == "true"  # type: ignore
+        if cls.run_as_integration:  # type: ignore
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
-            cls.database_provider = DatabaseProvider(database_uri=database_uri)
-            cls.database_provider._drop_schema()
+            cls.database_provider = DatabaseProvider(database_uri=database_uri)  # type: ignore
+            cls.database_provider._drop_schema()  # type: ignore
 
     def setUp(self) -> None:
-        if self.run_as_integration:
-            self.database_provider._create_schema()
+        if self.run_as_integration:  # type: ignore
+            self.database_provider._create_schema()  # type: ignore
         else:
             self.database_provider = DatabaseProviderMock()
 
@@ -97,11 +97,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
-        self.step_function_provider.start_step_function = Mock()
+        self.step_function_provider.start_step_function = Mock()  # type: ignore
         self.s3_provider = MockS3Provider()
         self.uri_provider = UriProviderInterface()
-        self.uri_provider.validate = Mock(return_value=True)  # By default, every link should be valid
-        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
+        self.uri_provider.validate = Mock(return_value=True)  # type: ignore# By default, every link should be valid
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))  # type: ignore
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider,
@@ -152,8 +152,8 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if cls.run_as_integration:
-            cls.database_provider._engine.dispose()
+        if cls.run_as_integration:  # type: ignore
+            cls.database_provider._engine.dispose()  # type: ignore
 
     def initialize_empty_unpublished_collection(
         self, owner: str = test_user_name, curator_name: str = test_curator_name
@@ -197,7 +197,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self,
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
-        published_at: datetime = None,
+        published_at: datetime = None,  # type: ignore
         num_datasets: int = 2,
     ) -> CollectionVersionWithDatasets:
         """
@@ -214,7 +214,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self,
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
-        published_at: datetime = None,
+        published_at: datetime = None,  # type: ignore
         num_datasets: int = 2,
     ) -> Tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
 
@@ -231,7 +231,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self,
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
-        published_at: datetime = None,
+        published_at: datetime = None,  # type: ignore
         num_datasets: int = 2,
     ) -> Tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
 

@@ -57,7 +57,7 @@ from backend.portal.api.enrichment import enrich_dataset_with_ancestors
 from backend.portal.api.providers import get_business_logic, get_cloudfront_provider
 
 
-def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
+def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):  # type: ignore
     """
     Returns all collections that are either published or belong to the user.
     `from_date` and `to_date` are deprecated parameters and should not be used.
@@ -163,7 +163,7 @@ def remove_none(body: dict):
 
 # Note: `metadata` can be none while the dataset is uploading
 def _dataset_to_response(
-    dataset: DatasetVersion, is_tombstoned: bool, is_in_revision: bool = False, revision_created_at: datetime = None
+    dataset: DatasetVersion, is_tombstoned: bool, is_in_revision: bool = False, revision_created_at: datetime = None  # type: ignore
 ):
     """
     Converts a DatasetVersion object to an object compliant to the API specifications
@@ -375,7 +375,7 @@ def create_collection(body: dict, user: str):
     All exceptions are caught and raised as an InvalidParametersHTTPException.
     """
 
-    errors = []
+    errors = []  # type: ignore
     doi_url = None
     if (doi_node := doi.get_doi_link_node(body, errors)) and (
         doi_url := doi.portal_get_normalized_doi_url(doi_node, errors)
@@ -385,7 +385,7 @@ def create_collection(body: dict, user: str):
     if curator_name is None:
         errors.append("Create Collection body is missing field 'curator_name'")
     if errors:
-        raise InvalidParametersHTTPException(detail=errors)  # TODO: rewrite this exception?
+        raise InvalidParametersHTTPException(detail=errors)  # type: ignore# TODO: rewrite this exception?
 
     metadata = CollectionMetadata(
         body["name"],
@@ -399,7 +399,7 @@ def create_collection(body: dict, user: str):
     try:
         version = get_business_logic().create_collection(user, curator_name, metadata)
     except (InvalidMetadataException, CollectionCreationException) as ex:
-        raise InvalidParametersHTTPException(detail=ex.errors) from None
+        raise InvalidParametersHTTPException(detail=ex.errors) from None  # type: ignore
 
     return make_response(jsonify({"collection_id": version.collection_id.id}), 201)
 
@@ -509,7 +509,7 @@ def delete_collection(collection_id: str, token_info: dict):
     resource_id = CollectionVersionId(collection_id)
     version = get_business_logic().get_collection_version(resource_id)
     if version is None:
-        resource_id = CollectionId(collection_id)
+        resource_id = CollectionId(collection_id)  # type: ignore
         version = get_business_logic().get_collection_version_from_canonical(resource_id)
         if version is None:
             raise ForbiddenHTTPException()
@@ -537,14 +537,14 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     Updates a collection using the fields specified in `body`
     """
 
-    errors = []
+    errors = []  # type: ignore
     doi_url = None
     if (doi_node := doi.get_doi_link_node(body, errors)) and (
         doi_url := doi.portal_get_normalized_doi_url(doi_node, errors)
     ):
         doi_node["link_url"] = doi_url
     if errors:
-        raise InvalidParametersHTTPException(detail=errors)  # TODO: rewrite this exception?
+        raise InvalidParametersHTTPException(detail=errors)  # type: ignore# TODO: rewrite this exception?
 
     # Ensure that the version exists and the user is authorized to update it
     version = lookup_collection(collection_id)
@@ -565,9 +565,9 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     try:
         get_business_logic().update_collection_version(version.version_id, payload)
     except InvalidMetadataException as ex:
-        raise InvalidParametersHTTPException(detail=ex.errors) from None
+        raise InvalidParametersHTTPException(detail=ex.errors) from None  # type: ignore
     except CollectionUpdateException as ex:
-        raise InvalidParametersHTTPException(detail=ex.errors) from None
+        raise InvalidParametersHTTPException(detail=ex.errors) from None  # type: ignore
 
     # Requires strong consistency w.r.t. the operation above - if not available, the update needs
     # to be done in memory
@@ -595,7 +595,7 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     return make_response({"collection_id": version.collection_id.id, "visibility": "PUBLIC"}, 202)
 
 
-def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
+def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):  # type: ignore
     version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
@@ -648,7 +648,7 @@ def upload_relink(collection_id: str, body: dict, token_info: dict):
         collection_id,
         token_info,
         body.get("url", body.get("link")),
-        body.get("id"),
+        body.get("id"),  # type: ignore
     )
     return make_response({"dataset_id": dataset_id.id}, 202)
 

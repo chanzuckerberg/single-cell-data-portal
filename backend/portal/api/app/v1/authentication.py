@@ -6,7 +6,7 @@ import os
 from typing import Optional
 from urllib.parse import urlencode
 
-import requests
+import requests  # type: ignore
 from authlib.integrations.flask_client import OAuth
 from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
 from flask import Response, after_this_request, current_app, g, jsonify, make_response, redirect, request, session
@@ -82,7 +82,7 @@ def logout() -> Response:
     response = redirect(client.api_base_url + "/v2/logout?" + urlencode(params))
     # remove the cookie
     remove_token(config.cookie_name)
-    return response
+    return response  # type: ignore
 
 
 def oauth2_callback() -> Response:
@@ -100,7 +100,7 @@ def oauth2_callback() -> Response:
         raise UnauthorizedError(detail=f"Response from oauth server not valid. {e}") from None
 
     return_to = session.pop("oauth_corpora_callback_redirect", "/")
-    return redirect(return_to)
+    return redirect(return_to)  # type: ignore
 
 
 def save_token(cookie_name: str, token: dict) -> None:
@@ -166,7 +166,7 @@ def get_token(cookie_name: str) -> dict:
         return g.token
 
     tokenstr = request.cookies.get(cookie_name)
-    g.token = decode_token(tokenstr)
+    g.token = decode_token(tokenstr)  # type: ignore
     return g.token
 
 
@@ -179,15 +179,15 @@ def check_token(token: dict) -> dict:
     :param token: a dictionary that contains the token information.
     """
     try:
-        payload = assert_authorized_token(token.get("access_token"))
+        payload = assert_authorized_token(token.get("access_token"))  # type: ignore
     except ExpiredCredentialsError:
         # attempt to refresh the token
         auth_config = CorporaAuthConfig()
         try:
-            token = refresh_expired_token(token)
+            token = refresh_expired_token(token)  # type: ignore
             if token is None:
                 raise
-            payload = assert_authorized_token(token.get("access_token"))
+            payload = assert_authorized_token(token.get("access_token"))  # type: ignore
             # update the cookie with then refreshed token
             save_token(auth_config.cookie_name, token)
         except ExpiredCredentialsError:

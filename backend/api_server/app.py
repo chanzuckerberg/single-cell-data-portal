@@ -102,7 +102,7 @@ def configure_flask_app(flask_app):
     return flask_app
 
 
-api_base_paths = []
+api_base_paths = []  # type: ignore
 
 app = configure_flask_app(create_flask_app())
 

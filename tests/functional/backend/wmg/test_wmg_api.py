@@ -1,7 +1,7 @@
 import json
 import unittest
 
-import requests
+import requests  # type: ignore
 
 from tests.functional.backend.common import BaseFunctionalTestCase
 from tests.functional.backend.wmg.fixtures import (

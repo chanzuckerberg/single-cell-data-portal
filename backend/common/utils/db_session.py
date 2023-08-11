@@ -17,7 +17,7 @@ class DBSessionMaker:
     _session_maker = None
     engine = None
 
-    def __init__(self, database_uri: str = None):
+    def __init__(self, database_uri: str = None):  # type: ignore
         if not self.engine:
             self.database_uri = database_uri if database_uri else CorporaDbConfig().database_uri
             self.engine = create_engine(self.database_uri, connect_args={"connect_timeout": 5})

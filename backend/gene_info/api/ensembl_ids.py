@@ -19,7 +19,7 @@ class GeneChecker:
         SupportedOrganisms.SARS_COV_2: base_prefix + "genes_sars_cov_2.csv.gz",
         SupportedOrganisms.ERCC: base_prefix + "genes_ercc.csv.gz",
     }
-    gene_dict = {}
+    gene_dict = {}  # type: ignore
 
     def __init__(self):
         if not GeneChecker.gene_dict:

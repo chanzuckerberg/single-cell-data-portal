@@ -3,7 +3,7 @@ import os
 import unittest
 from urllib.parse import quote
 
-import requests
+import requests  # type: ignore
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from tests.functional.backend.common import BaseFunctionalTestCase

@@ -26,7 +26,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     uri_provider: UriProviderInterface
     s3_provider: S3ProviderInterface
     downloader: Downloader
-    logger: logging
+    logger: logging  # type: ignore
 
     def __init__(self) -> None:
         self.logger = logging.getLogger("processing")
@@ -40,7 +40,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     ):
         validation_message = "\n".join(validation_errors) if validation_errors is not None else None
         self.business_logic.update_dataset_version_status(dataset_id, status_key, status_value, validation_message)
-        self.logger.info(
+        self.logger.info(  # type: ignore
             "Updating processing status",
             extra=dict(validation_message=validation_message, status_key=status_key, status_value=status_value),
         )
@@ -81,16 +81,16 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADING)
         try:
             s3_uri = self.upload_artifact(file_name, key_prefix, artifact_bucket)
-            self.logger.info(f"Uploaded [{dataset_id}/{file_name}] to {s3_uri}")
+            self.logger.info(f"Uploaded [{dataset_id}/{file_name}] to {s3_uri}")  # type: ignore
             self.business_logic.add_dataset_artifact(dataset_id, artifact_type, s3_uri)
-            self.logger.info(f"Updated database with {artifact_type}.")
+            self.logger.info(f"Updated database with {artifact_type}.")  # type: ignore
             if datasets_bucket:
                 key = ".".join((key_prefix, artifact_type))
                 self.s3_provider.upload_file(
                     file_name, datasets_bucket, key, extra_args={"ACL": "bucket-owner-full-control"}
                 )
                 datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
-                self.logger.info(f"Uploaded {dataset_id}.{artifact_type} to {datasets_s3_uri}")
+                self.logger.info(f"Uploaded {dataset_id}.{artifact_type} to {datasets_s3_uri}")  # type: ignore
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception:
             raise ConversionFailed(processing_status_key) from None
@@ -103,13 +103,13 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         dataset_id: DatasetVersionId,
         processing_status_key: DatasetStatusKey,
     ) -> str:
-        self.logger.info(f"Converting {local_filename}")
+        self.logger.info(f"Converting {local_filename}")  # type: ignore
         start = datetime.now()
         try:
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTING)
             file_dir = converter(local_filename)
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTED)
-            self.logger.info(f"Finished converting {converter} in {datetime.now()- start}")
+            self.logger.info(f"Finished converting {converter} in {datetime.now()- start}")  # type: ignore
         except Exception:
             raise ConversionFailed(processing_status_key) from None
         return file_dir

@@ -3,9 +3,9 @@ import os
 import time
 from typing import Dict, List
 
-import requests
+import requests  # type: ignore
 import tiledb
-from requests.adapters import HTTPAdapter
+from requests.adapters import HTTPAdapter  # type: ignore
 from urllib3.util import Retry
 
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
@@ -74,7 +74,7 @@ def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
     linked_filter_sets = []
 
     # `all_criteria_attributes` is the set of all attributes specified across all criteria
-    all_criteria_attributes = set()
+    all_criteria_attributes = set()  # type: ignore
 
     for key in filter_options_criteria:
         attrs = filter_options_criteria[key]
@@ -92,7 +92,7 @@ def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
 
                     # for each attribute (attr) in `prefixed_attributes`,
                     # get the set of filters for the specified dimension that are linked to `attr`
-                    linked_filter_set = set()
+                    linked_filter_set = set()  # type: ignore
                     for attr in prefixed_attributes:
                         if dimension in snapshot.filter_relationships.get(attr, {}):
                             linked_filter_set = linked_filter_set.union(

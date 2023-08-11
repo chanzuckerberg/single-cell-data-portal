@@ -11,7 +11,7 @@ import multiprocessing
 import sys
 import urllib.parse
 
-import requests
+import requests  # type: ignore
 
 CXG_BASE_URI = "https://api.cellxgene.cziscience.com/"  # default - can override on the CLI
 

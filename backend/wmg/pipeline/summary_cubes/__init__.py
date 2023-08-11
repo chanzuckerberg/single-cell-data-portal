@@ -11,7 +11,7 @@ from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.job import create
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 
 
-def run(corpus_path: str, validate_cube: bool) -> dict:
+def run(corpus_path: str, validate_cube: bool) -> dict:  # type: ignore
     """
     Build expression summary cube and cell count cube based
     on cell data stored in integrated corpus

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from urllib.parse import ParseResult, urlparse
 
 import boto3
-import requests
+import requests  # type: ignore
 
 
 class MissingHeaderException(Exception):
@@ -166,7 +166,7 @@ class S3URI(URL):
 class RegisteredSources:
     """Manages all of the download sources."""
 
-    _registered = set()
+    _registered = set()  # type: ignore
 
     @classmethod
     def add(cls, parser: typing.Type[URL]):
@@ -184,7 +184,7 @@ class RegisteredSources:
         return cls._registered
 
 
-def from_url(url: str) -> URL:
+def from_url(url: str) -> URL:  # type: ignore
     """Given a URL return a object that can be used by the processing container to download data."""
     for source in RegisteredSources.get():
         url_obj = source.validate(url)

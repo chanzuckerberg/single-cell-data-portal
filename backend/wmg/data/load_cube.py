@@ -70,7 +70,7 @@ def upload_artifacts_to_s3(
     -------
     snapshot_s3_dest_path: A string that contains the location of the uploaded data
     """
-    snapshot_id = str(snapshot_id)
+    snapshot_id = str(snapshot_id)  # type: ignore
 
     # cleanup files we do not wish to upload
     shutil.rmtree(f"{snapshot_source_path}/{INTEGRATED_ARRAY_NAME}")
@@ -78,14 +78,14 @@ def upload_artifacts_to_s3(
     shutil.rmtree(f"{snapshot_source_path}/{VAR_ARRAY_NAME}")
 
     snapshot_s3_dest_path = _get_wmg_snapshot_s3_fullpath(
-        snapshot_schema_version, snapshot_id, is_snapshot_validation_successful
+        snapshot_schema_version, snapshot_id, is_snapshot_validation_successful  # type: ignore
     )
 
     logger.info(f"Writing snapshot data to {snapshot_s3_dest_path}")
     sync_command = ["aws", "s3", "sync", snapshot_source_path, snapshot_s3_dest_path]
     subprocess.run(sync_command)
 
-    _write_snapshot_metadata(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)
+    _write_snapshot_metadata(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)  # type: ignore
 
     return snapshot_s3_dest_path
 
@@ -207,7 +207,7 @@ def _write_latest_snapshot_run_file(
     file_name = "latest_snapshot_run"
 
     key_path = f"{wmg_s3_root_dir_path}/{file_name}" if wmg_s3_root_dir_path else file_name
-    snapshot_path = _get_wmg_snapshot_s3_path(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)
+    snapshot_path = _get_wmg_snapshot_s3_path(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)  # type: ignore
 
     logger.info(f"Writing latest snapshot run file to {key_path} with value {snapshot_path}")
     _write_value_to_s3_key(key_path=key_path, value=snapshot_path)

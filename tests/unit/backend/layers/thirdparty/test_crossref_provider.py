@@ -2,8 +2,8 @@ import json
 import unittest
 from unittest.mock import patch
 
-from requests import RequestException
-from requests.models import HTTPError, Response
+from requests import RequestException  # type: ignore
+from requests.models import HTTPError, Response  # type: ignore
 
 from backend.common.providers.crossref_provider import (
     CrossrefDOINotFoundException,

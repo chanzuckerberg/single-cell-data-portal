@@ -79,7 +79,7 @@ def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]
 
 def reshape_for_curation_api(
     collection_version: Union[CollectionVersion, CollectionVersionWithDatasets, CollectionVersionWithPublishedDatasets],
-    user_info: UserInfo = None,
+    user_info: UserInfo = None,  # type: ignore
     reshape_for_version_endpoint: bool = False,
     preview: bool = False,
 ) -> dict:
@@ -138,7 +138,7 @@ def reshape_for_curation_api(
     # get collection dataset attributes
     response_datasets = sorted(
         reshape_datasets_for_curation_api(
-            collection_version.datasets,
+            collection_version.datasets,  # type: ignore
             use_canonical_url,
             preview,
             as_version=reshape_for_version_endpoint,
@@ -165,7 +165,7 @@ def reshape_for_curation_api(
         name=collection_version.metadata.name,
         published_at=published_at,
         publisher_metadata=collection_version.publisher_metadata,
-        visibility=get_visibility(collection_version),
+        visibility=get_visibility(collection_version),  # type: ignore
     )
     if reshape_for_version_endpoint:
         response["dataset_versions"] = response_datasets
@@ -177,7 +177,7 @@ def reshape_for_curation_api(
             revision_of=revision_of,
         )
     if not is_published:
-        response.update(processing_status=get_collection_level_processing_status(collection_version.datasets))
+        response.update(processing_status=get_collection_level_processing_status(collection_version.datasets))  # type: ignore
     return response
 
 
@@ -332,7 +332,7 @@ def validate_uuid_else_forbidden(_id: str):
 
 def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> str:
     if not datasets:  # Return None if no datasets.
-        return None
+        return None  # type: ignore
 
     return_status = DatasetProcessingStatus.SUCCESS
     for dv in datasets:
@@ -343,7 +343,7 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
                 return_status = DatasetProcessingStatus.PENDING
             elif status == DatasetProcessingStatus.FAILURE:
                 return_status = status
-    return return_status
+    return return_status  # type: ignore
 
 
 def get_inferred_collection_version(_id: str) -> CollectionVersionWithDatasets:

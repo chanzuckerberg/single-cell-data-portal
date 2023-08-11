@@ -2,10 +2,10 @@ from typing import Iterable, List
 
 
 class S3ProviderInterface:
-    def get_file_size(self, path: str) -> int:
+    def get_file_size(self, path: str) -> int:  # type: ignore
         pass
 
-    def generate_presigned_url(self, path: str) -> str:
+    def generate_presigned_url(self, path: str) -> str:  # type: ignore
         pass
 
     def upload_file(self, src_file: str, bucket_name: str, dst_file: str, extra_args: dict):
@@ -20,5 +20,5 @@ class S3ProviderInterface:
     def upload_directory(self, src_dir: str, s3_uri: str):
         pass
 
-    def list_directory(self, bucket_name: str, src_dir: str) -> Iterable[str]:
+    def list_directory(self, bucket_name: str, src_dir: str) -> Iterable[str]:  # type: ignore
         pass

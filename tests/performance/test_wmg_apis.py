@@ -4,7 +4,7 @@ import os
 import timeit
 import unittest
 
-import requests
+import requests  # type: ignore
 
 from tests.functional.backend.wmg.fixtures import (
     secondary_filter_common_case_request_data,

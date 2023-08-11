@@ -168,18 +168,18 @@ class WmgQuery:
             else:
                 tiledb_dims_query.append([])
 
-        tiledb_dims_query = tuple(tiledb_dims_query)
+        tiledb_dims_query = tuple(tiledb_dims_query)  # type: ignore
         numeric_attrs = [attr.name for attr in cube.schema if np.issubdtype(attr.dtype, np.number)]
 
         # get valid attributes from schema
         # valid means it is a required column for downstream processing
-        attrs = self._cube_query_params.get_attrs_for_cube_query(cube)
+        attrs = self._cube_query_params.get_attrs_for_cube_query(cube)  # type: ignore
         if compare_dimension is not None:
-            attrs.append(compare_dimension)
+            attrs.append(compare_dimension)  # type: ignore
         if isinstance(criteria, FmgQueryCriteria) and compare_dimension != "dataset_id":
-            attrs.append("dataset_id")
+            attrs.append("dataset_id")  # type: ignore
 
-        attrs += numeric_attrs
+        attrs += numeric_attrs  # type: ignore
 
         # get valid dimensions from schema
         dims = self._cube_query_params.get_dims_for_cube_query(cube)

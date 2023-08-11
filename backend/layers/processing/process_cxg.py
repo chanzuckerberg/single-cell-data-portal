@@ -55,7 +55,7 @@ class ProcessCxg(ProcessingLogic):
             current_artifacts = self.business_logic.get_dataset_artifacts(dataset_id)
             existing_h5ad = [artifact for artifact in current_artifacts if artifact.type == DatasetArtifactType.H5AD][0]
             if existing_h5ad:
-                _, object_key = self.s3_provider.parse_s3_uri(existing_h5ad.uri)
+                _, object_key = self.s3_provider.parse_s3_uri(existing_h5ad.uri)  # type: ignore
         if object_key is None:
             key_prefix = self.get_key_prefix(dataset_id.id)
             object_key = f"{key_prefix}/{labeled_h5ad_filename}"

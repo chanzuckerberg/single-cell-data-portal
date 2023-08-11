@@ -10,7 +10,7 @@ from backend.layers.common.entities import CollectionLinkType, CollectionMetadat
 from backend.portal.api.providers import get_business_logic
 
 
-def get(visibility: str, token_info: dict, curator: str = None):
+def get(visibility: str, token_info: dict, curator: str = None):  # type: ignore
     """
     Collections index endpoint for Curation API. Only return Collection data for which the curator is authorized.
     :param visibility: the CollectionVisibility in string form
@@ -35,12 +35,12 @@ def get(visibility: str, token_info: dict, curator: str = None):
         if not user_info.is_super_curator():
             raise ForbiddenHTTPException(detail="Not authorized to use the curator query parameter.")
         else:
-            filters["curator_name"] = curator
+            filters["curator_name"] = curator  # type: ignore
 
     print(filters)
 
     resp_collections = []
-    for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
+    for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):  # type: ignore
         resp_collection = reshape_for_curation_api(collection_version, user_info, preview=True)
         resp_collections.append(resp_collection)
     return jsonify(resp_collections)
@@ -48,7 +48,7 @@ def get(visibility: str, token_info: dict, curator: str = None):
 
 def post(body: dict, token_info: dict):
     # Extract DOI into link
-    errors = []
+    errors = []  # type: ignore
     if (doi_url := body.get("doi")) and (doi_url := doi.curation_get_normalized_doi_url(doi_url, errors)):
         links = body.get("links", [])
         links.append({"link_type": CollectionLinkType.DOI.name, "link_url": doi_url})
@@ -68,9 +68,9 @@ def post(body: dict, token_info: dict):
     try:
         version = get_business_logic().create_collection(token_info["sub"], token_info["curator_name"], metadata)
     except InvalidMetadataException as ex:
-        errors.extend(ex.errors)
+        errors.extend(ex.errors)  # type: ignore
     except CollectionCreationException as ex:
-        errors.extend(ex.errors)
+        errors.extend(ex.errors)  # type: ignore
     if errors:
         raise InvalidParametersHTTPException(ext=dict(invalid_parameters=errors))
     return make_response(jsonify({"collection_id": version.collection_id.id}), 201)

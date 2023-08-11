@@ -13,7 +13,7 @@ NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID = "PATO:0000461"
 def find_dim_option_values_pandas(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
-    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
+    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)  # type: ignore
     cell_counts_df = snapshot.cell_counts_cube.df[:]
 
     for key, vals in filter_options_criteria:
@@ -23,7 +23,7 @@ def find_dim_option_values_pandas(criteria: Dict, snapshot: WmgSnapshot, dimensi
             cell_counts_df = cell_counts_df[cell_counts_df[key].isin(vals)]
 
     filter_dims = list(cell_counts_df.groupby(dimension).groups.keys())
-    return filter_dims
+    return filter_dims  # type: ignore
 
 
 class DataArtifactCorrectness(unittest.TestCase):

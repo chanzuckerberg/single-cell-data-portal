@@ -1,8 +1,8 @@
 import os
 from functools import lru_cache
 
-import requests
-from requests.adapters import HTTPAdapter
+import requests  # type: ignore
+from requests.adapters import HTTPAdapter  # type: ignore
 from urllib3 import Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
@@ -21,7 +21,7 @@ def get_auth0_session_with_retry():
     return _auth0_session_with_retry
 
 
-def assert_authorized_token(token: str, audience: str = None) -> dict:
+def assert_authorized_token(token: str, audience: str = None) -> dict:  # type: ignore
     """
     Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
     :param token: The token

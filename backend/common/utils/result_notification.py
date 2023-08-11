@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-import requests
+import requests  # type: ignore
 
 from backend.common.corpora_config import CorporaConfig
 

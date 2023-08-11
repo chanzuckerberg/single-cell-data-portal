@@ -155,8 +155,8 @@ def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
 
     # for each cell, get all pairwise combinations of filters compresent in that cell
     # these are the edges of the filter relationships graph
-    Xs = []
-    Ys = []
+    Xs = []  # type: ignore
+    Ys = []  # type: ignore
     for i in range(mat.shape[0]):
         Xs.extend(np.repeat(mat[i], mat[i].size))
         Ys.extend(np.tile(mat[i], mat[i].size))

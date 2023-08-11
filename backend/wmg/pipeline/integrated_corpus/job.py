@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 @log_func_runtime
 def extract_datasets(dataset_directory: List):
     asset_urls = extract.get_dataset_asset_urls()
-    extract.copy_datasets_to_instance(asset_urls, dataset_directory)
+    extract.copy_datasets_to_instance(asset_urls, dataset_directory)  # type: ignore
     logger.info("Copied datasets to instance")
 
 
@@ -42,14 +42,14 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
                     in the integrated corpus
     """
     with tiledb.scope_ctx(create_ctx()):
-        dataset_count = len(os.listdir(dataset_directory))
+        dataset_count = len(os.listdir(dataset_directory))  # type: ignore
         if os.path.exists(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json"):
             with open(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json", "r") as fp:
                 dataset_gene_mapping = json.load(fp)
         else:
             dataset_gene_mapping = {}
 
-        for index, dataset in enumerate(os.listdir(dataset_directory)):
+        for index, dataset in enumerate(os.listdir(dataset_directory)):  # type: ignore
             logger.info(f"Processing dataset {index + 1} of {dataset_count}")
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
             logger.info(f"{h5ad_file_path=}")
@@ -113,4 +113,4 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str) -> Union[Tuple[str
 
     # load
     load.load_dataset(corpus_path, anndata_object, dataset_id)
-    return dataset_id, list(anndata_object.var_names)
+    return dataset_id, list(anndata_object.var_names)  # type: ignore

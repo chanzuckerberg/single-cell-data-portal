@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def should_load_dataset(h5ad_path: str, corpus_path: str) -> str:
     dataset_id = get_dataset_id(h5ad_path)
     if is_dataset_already_loaded(corpus_path, dataset_id):
-        return None
+        return None  # type: ignore
     return dataset_id
 
 

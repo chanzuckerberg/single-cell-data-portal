@@ -109,8 +109,8 @@ def _query_tiledb_context_memoized(
         expression_summary_cube=None,
         expression_summary_default_cube=None,
         cell_type_orderings=None,
-        primary_filter_dimensions=None,
-        filter_relationships=None,
+        primary_filter_dimensions=None,  # type: ignore
+        filter_relationships=None,  # type: ignore
     )
     cube_query_params = WmgCubeQueryParams(
         cube_query_valid_attrs=WRITER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
@@ -207,7 +207,7 @@ def _query_target(
     target_filters: dict,
     context_filters: dict,
     context_agg: pd.DataFrame,
-    n_cells_per_gene_context: np.array,
+    n_cells_per_gene_context: np.array,  # type: ignore
     n_cells_index_context: pd.MultiIndex,
 ):
     """
@@ -257,7 +257,7 @@ def _query_target(
         raise MarkerGeneCalculationException("No cells found for target population.")
 
     target_agg = context_agg[filt]
-    n_cells_per_gene_target = n_cells_per_gene_context[filt_ncells].sum(axis=0, keepdims=True)
+    n_cells_per_gene_target = n_cells_per_gene_context[filt_ncells].sum(axis=0, keepdims=True)  # type: ignore
     return target_agg, n_cells_per_gene_target
 
 

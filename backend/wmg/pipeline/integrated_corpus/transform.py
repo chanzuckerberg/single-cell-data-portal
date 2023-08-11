@@ -27,7 +27,7 @@ from backend.wmg.pipeline.utils import (
 logger = logging.getLogger(__name__)
 
 
-def apply_pre_concatenation_filters(anndata_object: anndata.AnnData, min_genes: int = None) -> anndata.AnnData:
+def apply_pre_concatenation_filters(anndata_object: anndata.AnnData, min_genes: int = None) -> anndata.AnnData:  # type: ignore
     min_genes = min_genes if min_genes is not None else GENE_EXPRESSION_COUNT_MIN_THRESHOLD
 
     logger.info("Capturing cells to filter out: assays without gene length normalization, and lowly-covered cells")

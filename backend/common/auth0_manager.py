@@ -1,8 +1,8 @@
 import logging
 
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util import Retry
+import requests  # type: ignore
+from requests.adapters import HTTPAdapter  # type: ignore
+from requests.packages.urllib3.util import Retry  # type: ignore
 
 from backend.common.corpora_config import CorporaAuthConfig
 
@@ -84,7 +84,7 @@ class Auth0ManagementSession:
             if i["connection"] == self.config.api_key_connection_name:
                 identity = i
                 break
-        return identity
+        return identity  # type: ignore
 
     def delete_api_key(self, primary_id: str, identity: dict) -> None:
         user_id, provider = identity["user_id"], identity["provider"]

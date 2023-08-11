@@ -1,4 +1,4 @@
-import requests
+import requests  # type: ignore
 from connexion.exceptions import ProblemException
 
 
@@ -40,7 +40,7 @@ class TooLargeHTTPException(ProblemException):
 class InvalidParametersHTTPException(ProblemException):
     _default_detail = "One or more parameters is invalid."
 
-    def __init__(self, detail: str = None, *args, **kwargs) -> None:
+    def __init__(self, detail: str = None, *args, **kwargs) -> None:  # type: ignore
         detail = detail if detail else self._default_detail
         super().__init__(*args, **kwargs, status=400, title="Bad Request", detail=detail)
 

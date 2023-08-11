@@ -35,22 +35,22 @@ class TestCorpusLoad(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        super().setUp(cls)
-        cls.tmp_dir = tempfile.mkdtemp()
-        cls.path_to_datasets = pathlib.Path(cls.tmp_dir, "datasets")
+        super().setUp(cls)  # type: ignore
+        cls.tmp_dir = tempfile.mkdtemp()  # type: ignore
+        cls.path_to_datasets = pathlib.Path(cls.tmp_dir, "datasets")  # type: ignore
         os.mkdir(cls.path_to_datasets)
-        cls.small_anndata_filename = create_anndata_test_fixture(cls.path_to_datasets, "basic_test_dataset", 3, 5)
-        cls.large_anndata_filename = create_anndata_test_fixture(cls.path_to_datasets, "large_test_dataset", 1000, 5000)
+        cls.small_anndata_filename = create_anndata_test_fixture(cls.path_to_datasets, "basic_test_dataset", 3, 5)  # type: ignore
+        cls.large_anndata_filename = create_anndata_test_fixture(cls.path_to_datasets, "large_test_dataset", 1000, 5000)  # type: ignore
 
     @classmethod
     def tearDownClass(cls) -> None:
         super().tearDownClass()
-        shutil.rmtree(cls.tmp_dir)
+        shutil.rmtree(cls.tmp_dir)  # type: ignore
 
     def setUp(self) -> None:
         super().setUp()
-        self.path_to_datasets = pathlib.Path(self.tmp_dir, "datasets")
-        self.corpus_path = f"{self.tmp_dir}/test-corpus"
+        self.path_to_datasets = pathlib.Path(self.tmp_dir, "datasets")  # type: ignore
+        self.corpus_path = f"{self.tmp_dir}/test-corpus"  # type: ignore
         if not tiledb.VFS().is_dir(self.corpus_path):
             create_tdb_integrated_corpus(self.corpus_path)
             # self.pbmc3k_anndata_object = get_test_anndata_dataset()

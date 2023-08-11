@@ -55,7 +55,7 @@ class ProcessSeurat(ProcessingLogic):
             raise Exception("Dataset not found")  # TODO: maybe improve
 
         if dataset.status.rds_status == DatasetConversionStatus.SKIPPED:
-            self.logger.info("Skipping Seurat conversion")
+            self.logger.info("Skipping Seurat conversion")  # type: ignore
             return
 
         labeled_h5ad_filename = "local.h5ad"

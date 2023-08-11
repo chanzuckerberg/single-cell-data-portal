@@ -5,7 +5,7 @@ from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatu
 from backend.layers.persistence.persistence import DatabaseProvider
 
 database_provider = DatabaseProvider()
-business_logic = BusinessLogic(database_provider, None, None, None, None)
+business_logic = BusinessLogic(database_provider, None, None, None, None)  # type: ignore
 
 logger = logging.getLogger(__name__)
 

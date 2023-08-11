@@ -30,7 +30,7 @@ class NCBIProvider:
             self.api_key = f"&api_key={gene_info_config.ncbi_api_key}"
         except RuntimeError:
             logging.error("Could not find NCBI API key")
-            self.api_key = None
+            self.api_key = None  # type: ignore
 
     def fetch_gene_info_tree(self, uid):
         """

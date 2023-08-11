@@ -4,7 +4,7 @@ from multiprocessing import Process
 from random import randint
 from unittest.mock import MagicMock
 
-import requests
+import requests  # type: ignore
 from flask import Flask, make_response, request
 
 from backend.common.auth0_manager import auth0_management_session

@@ -3,7 +3,7 @@ import logging
 import shutil
 import threading
 
-import requests
+import requests  # type: ignore
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import DatasetStatusKey, DatasetUploadStatus, DatasetVersionId
@@ -19,7 +19,7 @@ class ProgressTracker:
         self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
-        self.error: Exception = None  # Track errors
+        self.error: Exception = None  # type: ignore# Track errors
         self.tombstoned: bool = False  # Track if dataset tombstoned
 
     def progress(self):
@@ -47,7 +47,7 @@ class NoOpProgressTracker:
         self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
-        self.error: Exception = None  # Track errors
+        self.error: Exception = None  # type: ignore# Track errors
         self.tombstoned: bool = False  # Track if dataset tombstoned
 
     def progress(self):

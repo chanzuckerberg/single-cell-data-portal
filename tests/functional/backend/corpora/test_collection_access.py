@@ -1,6 +1,6 @@
 import unittest
 
-import requests
+import requests  # type: ignore
 from jose import jwt
 
 from tests.functional.backend.common import BaseFunctionalTestCase

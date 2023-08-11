@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-import requests
+import requests  # type: ignore
 
 from backend.common.utils.dl_sources.url import URL, MissingHeaderException, from_url
 
@@ -16,13 +16,13 @@ class FileInfoException(Exception):
 
 
 class UriProviderInterface:
-    def validate(self, uri: str) -> bool:
+    def validate(self, uri: str) -> bool:  # type: ignore
         pass
 
-    def parse(self, uri: str) -> URL:
+    def parse(self, uri: str) -> URL:  # type: ignore
         pass
 
-    def get_file_info(self, uri: str) -> FileInfo:
+    def get_file_info(self, uri: str) -> FileInfo:  # type: ignore
         pass
 
 

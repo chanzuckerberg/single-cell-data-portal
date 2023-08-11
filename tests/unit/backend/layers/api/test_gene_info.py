@@ -3,7 +3,7 @@ import unittest
 import xml.etree.ElementTree as ET
 from unittest.mock import call, patch
 
-import requests
+import requests  # type: ignore
 
 from backend.api_server.app import app
 from backend.common.utils.http_exceptions import NotFoundHTTPException

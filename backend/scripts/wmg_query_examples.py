@@ -30,7 +30,7 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
     cube_fmg = _open_cube(
         f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}/'
     )
-    return WmgSnapshot(
+    return WmgSnapshot(  # type: ignore
         snapshot_identifier=snapshot_id,
         expression_summary_cube=cube,
         cell_counts_cube=None,
@@ -39,7 +39,7 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
         expression_summary_fmg_cube=cube_fmg,
         dataset_to_gene_ids={},
         marker_genes_cube=None,
-        filter_relationships=None,
+        filter_relationships=None,  # type: ignore
     )
 
 

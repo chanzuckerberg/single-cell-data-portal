@@ -34,7 +34,7 @@ from backend.layers.common.entities import (
 from backend.portal.api.providers import get_business_logic
 
 
-def get(collection_id: str, dataset_id: str = None):
+def get(collection_id: str, dataset_id: str = None):  # type: ignore
     collection_version, dataset_version = _get_collection_and_dataset(collection_id, dataset_id)
 
     # A canonical url should be only used in two cases:

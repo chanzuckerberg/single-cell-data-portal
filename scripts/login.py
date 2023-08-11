@@ -2,7 +2,7 @@ import json
 import re
 from urllib import parse
 
-import requests
+import requests  # type: ignore
 
 
 def get_cxguser_cookie():

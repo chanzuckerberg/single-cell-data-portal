@@ -64,7 +64,7 @@ def generate_expected_term_id_labels_dictionary(
             ["cell_types"][<tissue_ontology_term_id>][<cell_type_ontology_term_id>][<compare_dimension>]
     """
 
-    result = {}
+    result = {}  # type: ignore
     result["cell_types"] = {}
     # assume tissues are sorted, and cell types are sorted within each tissue
     # assume the length of cell types is the dimensionality of each column in the
@@ -155,7 +155,7 @@ def generate_expected_expression_summary_dictionary(
     result: A dictionary containing gene expression stats that is indexable by
             [<gene_ontology_term_id>][<tissue_ontology_term_id>][<cell_type_ontology_term_id>][<compare_dimension>]
     """
-    result = {}
+    result = {}  # type: ignore
     for gene in genes:
         if gene != ".":
             result[gene] = {}

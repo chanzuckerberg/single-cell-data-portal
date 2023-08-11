@@ -3,7 +3,7 @@ import os
 import time
 import unittest
 
-import requests
+import requests  # type: ignore
 from requests import HTTPError
 
 from tests.functional.backend.common import BaseFunctionalTestCase

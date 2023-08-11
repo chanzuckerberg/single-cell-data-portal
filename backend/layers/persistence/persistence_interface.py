@@ -28,7 +28,7 @@ class PersistenceException(Exception):
 
 
 class DatabaseProviderInterface:
-    def create_canonical_collection(
+    def create_canonical_collection(  # type: ignore
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
     ) -> CollectionVersion:
         """
@@ -36,22 +36,22 @@ class DatabaseProviderInterface:
         Returns the newly created CollectionVersion
         """
 
-    def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:
+    def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:  # type: ignore
         """
         Return the canonical collection with id `collection_id`
         """
 
-    def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:
+    def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:  # type: ignore
         """
         Return the canonical Dataset with id `dataset_id`
         """
 
-    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
+    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:  # type: ignore
         """
         Retrieves a specific collection version by id
         """
 
-    def get_collection_version_with_datasets(
+    def get_collection_version_with_datasets(  # type: ignore
         self, version_id: CollectionVersionId, get_tombstoned: bool
     ) -> CollectionVersionWithDatasets:
         """
@@ -63,18 +63,18 @@ class DatabaseProviderInterface:
         Retrieves the latest mapped version for a collection
         """
 
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersionWithDatasets]:
+    def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersionWithDatasets]:  # type: ignore
         """
         Retrieves all versions for a specific collections, without filtering
         """
 
-    def get_all_collections_versions(self, get_tombstoned: bool) -> Iterable[CollectionVersion]:
+    def get_all_collections_versions(self, get_tombstoned: bool) -> Iterable[CollectionVersion]:  # type: ignore
         """
         Retrieves all versions of all collections.
         TODO: for performance reasons, it might be necessary to add a filtering parameter here.
         """
 
-    def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:
+    def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # type: ignore
         """
         Retrieves all the collection versions that are mapped to a canonical collection.
         """
@@ -98,7 +98,7 @@ class DatabaseProviderInterface:
         Saves publisher metadata for a collection version. Specify None to remove it
         """
 
-    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
+    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:  # type: ignore
         """
         Adds a collection version to an existing canonical collection. The new version copies the following data from
          the previous version: owner, metadata, publisher_metadata, datasets (IDs).
@@ -110,7 +110,7 @@ class DatabaseProviderInterface:
         Deletes a collection version.
         """
 
-    def finalize_collection_version(
+    def finalize_collection_version(  # type: ignore
         self,
         collection_id: CollectionId,
         version_id: CollectionVersionId,
@@ -133,7 +133,7 @@ class DatabaseProviderInterface:
         Sets the `published_at` datetime for a collection version and its datasets
         """
 
-    def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool) -> DatasetVersion:
+    def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool) -> DatasetVersion:  # type: ignore
         """
         Returns a dataset version by id.
         """
@@ -143,12 +143,12 @@ class DatabaseProviderInterface:
         Returns the most recent, active Dataset version for a canonical dataset_id
         """
 
-    def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+    def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:  # type: ignore
         """
         Returns all dataset versions for a canonical dataset_id
         """
 
-    def get_all_mapped_datasets_and_collections(
+    def get_all_mapped_datasets_and_collections(  # type: ignore
         self,
     ) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:  # TODO: add filters if needed
         """
@@ -156,18 +156,18 @@ class DatabaseProviderInterface:
         # TODO: Add filtering
         """
 
-    def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:
+    def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:  # type: ignore
         """
         Returns all the artifacts for a specific dataset version
         """
 
-    def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
+    def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:  # type: ignore
         """
         Initializes a canonical dataset, generating a dataset_id and a dataset_version_id.
         Returns the newly created DatasetVersion.
         """
 
-    def add_dataset_artifact(
+    def add_dataset_artifact(  # type: ignore
         self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
     ) -> DatasetArtifactId:
         """
@@ -201,7 +201,7 @@ class DatabaseProviderInterface:
         Updates the validation message for a dataset version
         """
 
-    def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
+    def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:  # type: ignore
         """
         Returns the status for a dataset version
         """
@@ -225,11 +225,11 @@ class DatabaseProviderInterface:
         Removes a mapping between a collection version and a dataset version
         """
 
-    def replace_dataset_in_collection_version(
+    def replace_dataset_in_collection_version(  # type: ignore
         self,
         collection_version_id: CollectionVersionId,
         old_dataset_version_id: DatasetVersionId,
-        new_dataset_version_id: DatasetVersionId = None,
+        new_dataset_version_id: DatasetVersionId = None,  # type: ignore
     ) -> DatasetVersion:
         """
         Replaces an existing mapping between a collection version and a dataset version
@@ -240,7 +240,7 @@ class DatabaseProviderInterface:
         Returns the dataset version mapped to a canonical dataset_id, or None if not existing
         """
 
-    def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
+    def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:  # type: ignore
         """
         Returns a list with all collection versions that match the given schema_version. schema_version may contain
          wildcards.

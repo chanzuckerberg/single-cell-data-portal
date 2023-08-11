@@ -137,7 +137,7 @@ def load_snapshot(
         )
         cached_snapshot.build_dataset_metadata_dict()
 
-    return cached_snapshot
+    return cached_snapshot  # type: ignore
 
 
 ###################################### PRIVATE INTERFACE #################################
@@ -221,7 +221,7 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
         cell_type_orderings=cell_type_orderings,
         primary_filter_dimensions=primary_filter_dimensions,
         dataset_to_gene_ids=dataset_to_gene_ids,
-        filter_relationships=filter_relationships,
+        filter_relationships=filter_relationships,  # type: ignore
     )
 
 
@@ -252,7 +252,7 @@ def _load_filter_graph_data(snapshot_dir_path: str) -> str:
         logger.warning(
             f"{_get_wmg_snapshot_dir_s3_uri(snapshot_dir_path)}/{FILTER_RELATIONSHIPS_FILENAME} could not be loaded"
         )
-        return None
+        return None  # type: ignore
 
 
 def _read_value_at_s3_key(key_path: str):

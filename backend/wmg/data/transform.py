@@ -96,15 +96,15 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     from pronto import Ontology
 
     onto = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
-    ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
+    ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]  # type: ignore
     ancestors = [i for s in ancestors for i in s]
-    ancestors = set(ancestors)
+    ancestors = set(ancestors)  # type: ignore
 
     G = pgv.AGraph()
     for a in ancestors:
-        for s in a.subclasses(with_self=False, distance=1):
+        for s in a.subclasses(with_self=False, distance=1):  # type: ignore
             if s in ancestors:
-                G.add_edge(a.id, s.id)
+                G.add_edge(a.id, s.id)  # type: ignore
 
     G.layout(prog="dot")
 
@@ -113,7 +113,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
         pos = n.attr["pos"].split(",")
         positions[n] = (float(pos[0]), float(pos[1]))
 
-    ancestor_ids = [a.id for a in ancestors]
+    ancestor_ids = [a.id for a in ancestors]  # type: ignore
 
     def cell_entity(node, depth):
         return {"id": node, "depth": depth}
@@ -131,7 +131,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
                 depth += 1
 
         children = [
-            (c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids
+            (c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids  # type: ignore
         ]
         sorted_children = sorted(children, key=lambda x: x[1][0])
         for child in sorted_children:

@@ -59,15 +59,15 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     # must import lazily
     import backend.wmg.data.ontology_labels as ontology_labels
 
-    if ontology_labels.ontology_term_id_labels is None:
+    if ontology_labels.ontology_term_id_labels is None:  # type: ignore
         ontology_labels.__load_ontologies()
-    if ontology_labels.gene_term_id_labels is None:
+    if ontology_labels.gene_term_id_labels is None:  # type: ignore
         ontology_labels.__load_genes()
 
-    deterministic_term_ids = sorted(ontology_labels.ontology_term_id_labels.keys())
+    deterministic_term_ids = sorted(ontology_labels.ontology_term_id_labels.keys())  # type: ignore
 
     if dimension_name == "gene_ontology_term_id":
-        return sorted(ontology_labels.gene_term_id_labels.keys())[:dim_size]
+        return sorted(ontology_labels.gene_term_id_labels.keys())[:dim_size]  # type: ignore
     if dimension_name == "tissue_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("UBERON")][:dim_size]
     if dimension_name == "tissue_original_ontology_term_id":
@@ -147,7 +147,7 @@ def exclude_all_but_one_gene_per_organism(logical_coord: NamedTuple) -> bool:
     # include gene_ontology_term_id
     if "gene_ontology_term_id" not in logical_coord._fields:
         return False
-    return logical_coord.gene_ontology_term_id != logical_coord.organism_ontology_term_id.replace("organism", "gene")
+    return logical_coord.gene_ontology_term_id != logical_coord.organism_ontology_term_id.replace("organism", "gene")  # type: ignore
 
 
 def forward_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
@@ -158,8 +158,8 @@ def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
     return list(range(len(cell_type_ontology_ids), 0, -1))
 
 
-@contextlib.contextmanager
-def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
+@contextlib.contextmanager  # type: ignore
+def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:  # type: ignore
     with tempfile.TemporaryDirectory() as cube_dir:
         cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts.csv.gz", index_col=0)
         expression_summary = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary.csv.gz", index_col=0)
@@ -208,18 +208,18 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 marker_genes_cube=marker_genes_cube,
                 cell_counts_cube=cell_counts_cube,
                 cell_type_orderings=None,
-                primary_filter_dimensions=None,
+                primary_filter_dimensions=None,  # type: ignore
                 dataset_to_gene_ids=dataset_to_gene_ids,
                 filter_relationships=filter_relationships,
             )
 
 
-@contextlib.contextmanager
-def create_temp_wmg_snapshot(
+@contextlib.contextmanager  # type: ignore
+def create_temp_wmg_snapshot(  # type: ignore
     dim_size=3,
     snapshot_name="dummy-snapshot",
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
-    exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
+    exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,  # type: ignore
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
     cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
 ) -> WmgSnapshot:
@@ -227,7 +227,7 @@ def create_temp_wmg_snapshot(
         expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
             cube_dir,
             dim_size,
-            exclude_logical_coord_fn=exclude_logical_coord_fn,
+            exclude_logical_coord_fn=exclude_logical_coord_fn,  # type: ignore
             expression_summary_vals_fn=expression_summary_vals_fn,
             cell_counts_fn=cell_counts_generator_fn,
         )
@@ -249,7 +249,7 @@ def create_temp_wmg_snapshot(
                 cell_counts_cube=cell_counts_cube,
                 cell_type_orderings=cell_type_orderings,
                 primary_filter_dimensions=primary_filter_dimensions,
-                dataset_to_gene_ids=None,
+                dataset_to_gene_ids=None,  # type: ignore
                 filter_relationships=filter_relationships,
             )
 
@@ -280,19 +280,19 @@ def create_cubes(
     data_dir,
     dim_size: int = 3,
     dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
-    exclude_logical_coord_fn: Callable[[List[str], Tuple], bool] = None,
+    exclude_logical_coord_fn: Callable[[List[str], Tuple], bool] = None,  # type: ignore
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     cell_counts_fn: Callable[[List[Tuple]], List[int]] = random_cell_counts_values,
 ) -> Tuple[str, str]:
     coords, dim_values = build_coords(
-        expression_summary_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
+        expression_summary_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn  # type: ignore
     )
     expression_summary_cube_dir = create_expression_summary_cube(
         data_dir, coords, dim_values, expression_summary_vals_fn=expression_summary_vals_fn
     )
 
     coords, dim_values = build_coords(
-        cell_counts_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
+        cell_counts_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn  # type: ignore
     )
     cell_counts_cube_dir = create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn=cell_counts_fn)
 
@@ -349,7 +349,7 @@ def build_coords(
     logical_dims,
     dim_size,
     dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
-    exclude_coord_fn: Callable[[Tuple], bool] = None,
+    exclude_coord_fn: Callable[[Tuple], bool] = None,  # type: ignore
 ) -> Tuple[List[Tuple], List[List]]:
     n_dims = len(logical_dims)
     n_coords = dim_size**n_dims
@@ -367,10 +367,10 @@ def build_coords(
         for i_dim in range(n_dims)
     ]
     coords = list(zip(*dim_values))
-    if exclude_coord_fn:
-        Coord = namedtuple("Coord", logical_dims)
-        coords: List[Tuple] = list(filterfalse(exclude_coord_fn, (Coord(*c) for c in coords)))
-        dim_values: List[List] = [[coord_tuple[i_dim] for coord_tuple in coords] for i_dim in range(n_dims)]
+    if exclude_coord_fn:  # type: ignore
+        Coord = namedtuple("Coord", logical_dims)  # type: ignore
+        coords: List[Tuple] = list(filterfalse(exclude_coord_fn, (Coord(*c) for c in coords)))  # type: ignore
+        dim_values: List[List] = [[coord_tuple[i_dim] for coord_tuple in coords] for i_dim in range(n_dims)]  # type: ignore
     assert all([len(dim_values[i_dim]) == len(coords) for i_dim in range(n_dims)])
     return coords, dim_values
 
@@ -384,7 +384,7 @@ if __name__ == "__main__":
         output_cube_dir,
         dim_size=4,
         dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator,
-        exclude_logical_coord_fn=exclude_random_coords_75pct,
+        exclude_logical_coord_fn=exclude_random_coords_75pct,  # type: ignore
         expression_summary_vals_fn=random_expression_summary_values,
         cell_counts_fn=random_cell_counts_values,
     )

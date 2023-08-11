@@ -115,7 +115,7 @@ class DatasetStatus:
 class EntityId:
     id: str
 
-    def __init__(self, entity_id: str = None):
+    def __init__(self, entity_id: str = None):  # type: ignore
         self.id = str(entity_id) if entity_id is not None else str(uuid.uuid4())
 
     def __repr__(self) -> str:
@@ -205,7 +205,7 @@ class DatasetVersion:
 class PublishedDatasetVersion(DatasetVersion):
     collection_version_id: CollectionVersionId  # Pointer to collection version it was originally published under
     published_at: datetime
-    revised_at: datetime = None
+    revised_at: datetime = None  # type: ignore
 
 
 @dataclass

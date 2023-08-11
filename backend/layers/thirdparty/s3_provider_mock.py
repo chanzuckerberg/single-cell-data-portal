@@ -11,7 +11,7 @@ class MockS3Provider(S3ProviderInterface):
     """
 
     def __init__(self) -> None:
-        self.mock_s3_fs = []
+        self.mock_s3_fs = []  # type: ignore
 
     def parse_s3_uri(self, s3_uri: str):
         parsed_url = urlparse(s3_uri)

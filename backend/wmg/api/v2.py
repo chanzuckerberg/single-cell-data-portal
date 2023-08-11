@@ -175,18 +175,18 @@ def find_dimension_id_from_compare(compare: str) -> str:
     elif compare == "publication":
         return "publication_citation"
     else:
-        return None
+        return None  # type: ignore
 
 
 def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
-    criteria = criteria.dict()
+    criteria = criteria.dict()  # type: ignore
     for key in criteria:
         if key != "organism_ontology_term_id":
-            if isinstance(criteria[key], list):
-                if len(criteria[key]) > 0:
+            if isinstance(criteria[key], list):  # type: ignore
+                if len(criteria[key]) > 0:  # type: ignore
                     return False
             else:
-                if criteria[key] != "":
+                if criteria[key] != "":  # type: ignore
                     return False
     return True
 
@@ -204,9 +204,9 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     }
     for dim in dims:
         dims[dim] = (
-            find_all_dim_option_values(snapshot, criteria.organism_ontology_term_id, dim)
+            find_all_dim_option_values(snapshot, criteria.organism_ontology_term_id, dim)  # type: ignore
             if is_criteria_empty(criteria)
-            else find_dim_option_values(criteria, snapshot, dim)
+            else find_dim_option_values(criteria, snapshot, dim)  # type: ignore
         )
 
     response_filter_dims_values = dict(

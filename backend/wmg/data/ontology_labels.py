@@ -37,7 +37,7 @@ def ontology_term_label(ontology_term_id: str) -> Optional[str]:
 
     if suffix_to_strip:
         ontology_term_id = ontology_term_id.split(f"({suffix_to_strip})")[0].strip()
-    ontology_term_id_label = ontology_term_id_labels.get(ontology_term_id)
+    ontology_term_id_label = ontology_term_id_labels.get(ontology_term_id)  # type: ignore
     if suffix_to_strip:
         ontology_term_id_label = ontology_term_id_label + f" ({suffix_to_strip})"
 
@@ -49,36 +49,36 @@ def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
     Returns the label for a gene ontology term, given its id. Return None if ontology term id is invalid.
     """
     global gene_term_id_labels
-    return gene_term_id_labels.get(gene_ontology_term_id)
+    return gene_term_id_labels.get(gene_ontology_term_id)  # type: ignore
 
 
 def __load_ontologies() -> None:
     global ontology_term_id_labels
 
-    ontology_term_id_labels = {}
+    ontology_term_id_labels = {}  # type: ignore
     all_ontologies = json.loads(__open_ontology_resource(all_ontologies_json_file).read().decode("utf-8"))
     for _, ontology_dict in all_ontologies.items():
         for term_id, term in ontology_dict.items():
-            ontology_term_id_labels[term_id] = term["label"]
+            ontology_term_id_labels[term_id] = term["label"]  # type: ignore
 
 
 def __load_genes() -> None:
     global gene_term_id_labels
 
-    gene_term_id_labels = {}
+    gene_term_id_labels = {}  # type: ignore
     for genes_file in genes_files:
         for row in csv.DictReader(
             __open_ontology_resource(genes_file).read().decode("utf-8").split("\n"),
             fieldnames=["term_id", "label", "version"],
         ):
-            gene_term_id_labels[row["term_id"]] = row["label"]
+            gene_term_id_labels[row["term_id"]] = row["label"]  # type: ignore
 
 
 def __open_ontology_resource(file) -> IO:
     curr_path = pathlib.Path(__file__).parent.absolute()
     root_path = curr_path.parent.parent
     file_path = root_path.joinpath("common", "ontology_files", file)
-    return gzip.open(file_path)
+    return gzip.open(file_path)  # type: ignore
 
 
 __load_ontologies()

@@ -178,7 +178,7 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
         dim_size = 3
 
         def exclude_one_tissue_per_organism(logical_coord: NamedTuple) -> bool:
-            return logical_coord.tissue_ontology_term_id == logical_coord.organism_ontology_term_id.replace(
+            return logical_coord.tissue_ontology_term_id == logical_coord.organism_ontology_term_id.replace(  # type: ignore
                 "organism", "tissue"
             )
 

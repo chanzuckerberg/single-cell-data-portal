@@ -48,7 +48,7 @@ def load_data_and_create_cube(
     snapshot_path = path if path else pathlib.Path().resolve()
     corpus_path = f"{snapshot_path}/{snapshot_id}"
 
-    integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
+    integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)  # type: ignore
     try:
         summary_cubes.run(corpus_path, validate_cube)
     except CubeValidationException as e:

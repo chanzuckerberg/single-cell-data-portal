@@ -370,7 +370,7 @@ def rollback_datasets(ctx, report_path: str):
 
     ./scripts/cxg_admin.py --deployment dev rollback-dataset report.json
     """
-    schema_migration.rollback_dataset(ctx, report_path)
+    schema_migration.rollback_dataset(ctx, report_path)  # type: ignore
 
 
 if __name__ == "__main__":

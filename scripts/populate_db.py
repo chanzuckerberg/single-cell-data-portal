@@ -11,7 +11,7 @@ from backend.common.corpora_config import CorporaDbConfig
 
 # Importing tests.unit overwrites our deployment stage env var.
 # So we're putting it back here.
-os.environ["DEPLOYMENT_STAGE"] = env
+os.environ["DEPLOYMENT_STAGE"] = env  # type: ignore
 
 
 @click.command()

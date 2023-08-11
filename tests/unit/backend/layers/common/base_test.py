@@ -68,8 +68,8 @@ class BaseTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.run_as_integration = os.environ.get("INTEGRATION_TEST", "false").lower() == "true"
-        if cls.run_as_integration:
+        cls.run_as_integration = os.environ.get("INTEGRATION_TEST", "false").lower() == "true"  # type: ignore
+        if cls.run_as_integration:  # type: ignore
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
             cls.database_provider._drop_schema()
@@ -154,7 +154,7 @@ class BaseTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        if cls.run_as_integration:
+        if cls.run_as_integration:  # type: ignore
             cls.database_provider._engine.dispose()
 
     def get_sample_dataset_metadata(self):
@@ -168,7 +168,7 @@ class BaseTest(unittest.TestCase):
         self,
         owner="test_user_id",
         curator_name="Test User",
-        links: List[Link] = None,
+        links: List[Link] = None,  # type: ignore
         add_datasets: int = 0,
         metadata=None,
         dataset_schema_version="3.0.0",
@@ -199,13 +199,13 @@ class BaseTest(unittest.TestCase):
             )
             # TODO: set a proper dataset status
 
-        return self.business_logic.get_collection_version(collection.version_id)
+        return self.business_logic.get_collection_version(collection.version_id)  # type: ignore
 
     # Public collections need to have at least one dataset!
     def generate_published_collection(
         self,
         owner="test_user_id",
-        links: List[Link] = None,
+        links: List[Link] = None,  # type: ignore
         add_datasets: int = 1,
         curator_name: str = "Jane Smith",
         metadata=None,
@@ -233,9 +233,9 @@ class BaseTest(unittest.TestCase):
         collection_version: Optional[CollectionVersion] = None,
         metadata: Optional[DatasetMetadata] = None,
         name: Optional[str] = None,
-        statuses: List[DatasetStatusUpdate] = None,
-        validation_message: str = None,
-        artifacts: List[DatasetArtifactUpdate] = None,
+        statuses: List[DatasetStatusUpdate] = None,  # type: ignore
+        validation_message: str = None,  # type: ignore
+        artifacts: List[DatasetArtifactUpdate] = None,  # type: ignore
         publish: bool = False,
         replace_dataset_version_id: Optional[DatasetVersionId] = None,
     ) -> DatasetData:
@@ -286,21 +286,21 @@ class BaseTest(unittest.TestCase):
             [a.id for a in artifact_ids],
         )
 
-    def remove_timestamps(self, body: dict, remove: typing.List[str] = None) -> dict:
+    def remove_timestamps(self, body: dict, remove: typing.List[str] = None) -> dict:  # type: ignore
         # TODO: implement as needed
         return body
 
-    def generate_collection(self, links: List[dict] = None, **kwargs) -> CollectionVersionWithDatasets:
+    def generate_collection(self, links: List[dict] = None, **kwargs) -> CollectionVersionWithDatasets:  # type: ignore
         """Generated a collection
         Adding to for compatibility with old tests
         """
         links = links if links else []
-        links = [api_link_dict_to_link_class(lk) for lk in links]
+        links = [api_link_dict_to_link_class(lk) for lk in links]  # type: ignore
         visibility = kwargs.pop("visibility", "PUBLIC")
         if visibility == "PUBLIC":
-            return self.generate_published_collection(links=links, **kwargs)
+            return self.generate_published_collection(links=links, **kwargs)  # type: ignore
         else:
-            return self.generate_unpublished_collection(links=links, **kwargs)
+            return self.generate_unpublished_collection(links=links, **kwargs)  # type: ignore
 
     def generate_collection_revision(self, owner="test_user_id") -> CollectionVersionWithDatasets:
         published_collection = self.generate_published_collection(owner)

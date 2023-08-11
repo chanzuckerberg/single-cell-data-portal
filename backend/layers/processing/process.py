@@ -65,7 +65,7 @@ class ProcessMain(ProcessingLogic):
         )
         self.process_seurat = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
         self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
-        self.schema_migrate = SchemaMigrate(business_logic)
+        self.schema_migrate = SchemaMigrate(business_logic)  # type: ignore
 
     def log_batch_environment(self):
         batch_environment_variables = [
@@ -99,18 +99,18 @@ class ProcessMain(ProcessingLogic):
         """
         Gets called by the step function at every different step, as defined by `step_name`
         """
-        self.logger.info(f"Processing dataset {dataset_id}")
+        self.logger.info(f"Processing dataset {dataset_id}")  # type: ignore
         try:
             if step_name == "download-validate":
-                self.process_download_validate.process(dataset_id, dropbox_uri, artifact_bucket, datasets_bucket)
+                self.process_download_validate.process(dataset_id, dropbox_uri, artifact_bucket, datasets_bucket)  # type: ignore
             elif step_name == "cxg":
-                self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)
+                self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)  # type: ignore
             elif step_name == "cxg_remaster":
-                self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket, is_reprocess=True)
+                self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket, is_reprocess=True)  # type: ignore
             elif step_name == "seurat":
-                self.process_seurat.process(dataset_id, artifact_bucket, datasets_bucket)
+                self.process_seurat.process(dataset_id, artifact_bucket, datasets_bucket)  # type: ignore
             else:
-                self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
+                self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")  # type: ignore
 
         # TODO: this could be better - maybe collapse all these exceptions and pass in the status key and value
         except ProcessingCanceled:
@@ -130,7 +130,7 @@ class ProcessMain(ProcessingLogic):
             self.update_processing_status(dataset_id, e.failed_status, DatasetConversionStatus.FAILED)
             return False
         except Exception as e:
-            self.logger.exception(f"An unexpected error occurred while processing the data set: {e}")
+            self.logger.exception(f"An unexpected error occurred while processing the data set: {e}")  # type: ignore
             if step_name == "download-validate":
                 self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
             elif step_name == "seurat":
@@ -172,8 +172,8 @@ if __name__ == "__main__":
 
     business_logic = BusinessLogic(
         database_provider,
-        None,  # Not required - decide if we should pass for safety
-        None,  # Not required - decide if we should pass for safety
+        None,  # type: ignore# Not required - decide if we should pass for safety
+        None,  # type: ignore# Not required - decide if we should pass for safety
         s3_provider,
         uri_provider,
     )

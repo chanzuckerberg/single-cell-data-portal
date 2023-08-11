@@ -7,7 +7,7 @@ from backend.gene_info.api.ensembl_ids import GeneChecker
 from backend.gene_info.api.ncbi_provider import NCBIAPIException, NCBIProvider, NCBIUnexpectedResultException
 
 
-def gene_info(gene: string = None, geneID: string = None):
+def gene_info(gene: string = None, geneID: string = None):  # type: ignore
     provider = NCBIProvider()
 
     # given just a gene name (finds corresponding gene ID)

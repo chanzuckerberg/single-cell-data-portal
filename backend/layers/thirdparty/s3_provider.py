@@ -31,7 +31,7 @@ class S3Provider(S3ProviderInterface):
         try:
             response = self.client.head_object(Bucket=bucket, Key=key)
         except Exception:
-            return None
+            return None  # type: ignore
         return response["ContentLength"]
 
     def generate_presigned_url(self, path: str, expiration: int = 604800) -> str:

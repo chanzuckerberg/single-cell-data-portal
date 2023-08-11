@@ -82,17 +82,17 @@ def _get_type_info_from_dtype(dtype) -> Optional[Tuple[np.dtype, dict]]:
     are available for typing.
     """
     if dtype.kind == "b":
-        return (np.uint8, {"type": "boolean"})
+        return (np.uint8, {"type": "boolean"})  # type: ignore
 
     if dtype.kind == "U":
         return (np.dtype(str), {"type": "string"})
 
     if dtype.kind in ["i", "u"] and np.can_cast(dtype, np.int32):
-        return (np.int32, {"type": "int32"})
+        return (np.int32, {"type": "int32"})  # type: ignore
 
     if dtype.kind == "f":
         _float64_warning(dtype)
-        return (np.float32, {"type": "float32"})
+        return (np.float32, {"type": "float32"})  # type: ignore
 
     if dtype.kind == "O" and dtype.name != "category":
         return (np.dtype(str), {"type": "string"})
@@ -128,7 +128,7 @@ def _get_type_info(array: Union[np.ndarray, pd.Series, pd.Index]) -> Tuple[np.dt
             # NA/NaN (missing or undefined) categories.
             if dtype.categories.dtype.kind in ["f", "i", "u"]:
                 return (
-                    _get_type_info(array.to_numpy())[0],
+                    _get_type_info(array.to_numpy())[0],  # type: ignore
                     {"type": "categorical"},
                 )
             else:
@@ -138,11 +138,11 @@ def _get_type_info(array: Union[np.ndarray, pd.Series, pd.Index]) -> Tuple[np.dt
         return (np.dtype(str), {"type": "string"})
 
     if dtype.kind in ["i", "u"] and _can_cast_array_values_to_int32(array):
-        return (np.int32, {"type": "int32"})
+        return (np.int32, {"type": "int32"})  # type: ignore
 
     if dtype.kind == "f":
         _float64_warning(array.dtype)
-        return (np.float32, {"type": "float32"})
+        return (np.float32, {"type": "float32"})  # type: ignore
 
     raise TypeError(f"Annotations of type {dtype} are unsupported.")
 

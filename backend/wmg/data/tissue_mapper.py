@@ -197,7 +197,7 @@ class TissueMapper:
                 raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one ':'")
             return ontology_term_id.replace(":", "_")
 
-    def _list_ancestors(self, entity: owlready2.entity.ThingClass, ancestors: Optional[List[str]] = None) -> List[str]:
+    def _list_ancestors(self, entity: owlready2.entity.ThingClass, ancestors: Optional[List[str]] = None) -> List[str]:  # type: ignore
         """
         Recursive function that given an entity of an ontology, it traverses the ontology and returns
         a list of all ancestors associated with the entity.
