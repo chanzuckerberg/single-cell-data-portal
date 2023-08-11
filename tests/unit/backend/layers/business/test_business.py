@@ -68,6 +68,8 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
             cls.database_provider._drop_schema()
+        # Set datasets bucket env var
+        os.environ["DATASETS_BUCKET"] = "datasets"
 
     def setUp(self) -> None:
         if self.run_as_integration:
@@ -154,6 +156,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     def tearDownClass(cls) -> None:
         if cls.run_as_integration:
             cls.database_provider._engine.dispose()
+        os.unsetenv("DATASETS_BUCKET")
 
     def initialize_empty_unpublished_collection(
         self, owner: str = test_user_name, curator_name: str = test_curator_name
@@ -252,14 +255,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         Test method that "completes" a dataset processing. This is necessary since dataset ingestion
         is a complex process which happens asynchronously, and cannot be easily mocked.
         """
+        for ext in ("h5ad", "rds"):
+            self.database_provider.add_dataset_artifact(
+                dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://artifacts/local.{ext}"
+            )
+            self.database_provider.add_dataset_artifact(
+                dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://datasets/{dataset_version_id}.{ext}"
+            )
         self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.H5AD.value, "s3://fake-bucket/local.h5ad"
-        )
-        self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.CXG.value, "s3://fake-bucket/local.cxg"
-        )
-        self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.RDS.value, "s3://fake-bucket/local.rds"
+            dataset_version_id, DatasetArtifactType.CXG.value, "s3://cellxgene/local.cxg"
         )
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
@@ -748,9 +752,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         new_version = self.database_provider.get_collection_version(version.version_id)
         self.assertEqual(1, len(new_version.datasets))
 
-        # The dataset should not be present in the persistence store
+        # The dataset should still be present in the persistence store
         deleted_dataset = self.database_provider.get_dataset_version(dataset_version_to_delete_id)
-        self.assertIsNone(deleted_dataset)
+        self.assertIsNotNone(deleted_dataset)
 
     def test_remove_dataset_from_published_collection_fail(self):
         """
@@ -907,6 +911,15 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         )
         revision = self.business_logic.get_collection_version(revision.version_id)
         self.assertNotIn(dataset_version_id_to_delete.id, [dv.version_id.id for dv in revision.datasets])
+
+    # def test_deletetion_of_datasets_assets_and_rows(self):
+    #     with self.subTest("Not deleted until private Collection is deleted"):
+    #         collection = self.initialize_unpublished_collection()
+    #         dataset_version_id_to_remove = collection.datasets[0].version_id
+    #         self.business_logic.remove_dataset_version(collection.version_id, dataset_version_id_to_remove)
+    #         updated_collection = self.business_logic.get_collection_version(collection.version_id)
+    #         dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
+    #         self.assertNotIn(dataset_version_id_to_remove.id, dataset_version_id_strs)
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
@@ -1130,14 +1143,14 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         for dataset in published_collection.datasets:
             cxg_artifact = [artifact for artifact in dataset.artifacts if artifact.type == "cxg"][0]
-            self.assertEqual(cxg_artifact.uri, "s3://fake-bucket/local.cxg")
-            self.business_logic.update_dataset_artifact(cxg_artifact.id, "s3://fake-bucket/new-name.cxg")
+            self.assertEqual(cxg_artifact.uri, "s3://cellxgene/local.cxg")
+            self.business_logic.update_dataset_artifact(cxg_artifact.id, "s3://cellxgene/new-name.cxg")
 
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             updated_cxg_artifact = [
                 artifact for artifact in version_from_db.artifacts if artifact.id == cxg_artifact.id
             ][0]
-            self.assertEqual(updated_cxg_artifact.uri, "s3://fake-bucket/new-name.cxg")
+            self.assertEqual(updated_cxg_artifact.uri, "s3://cellxgene/new-name.cxg")
 
     def test_add_dataset_artifact_wrong_type_fail(self):
         """
