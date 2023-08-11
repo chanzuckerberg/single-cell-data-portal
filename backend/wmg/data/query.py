@@ -8,9 +8,6 @@ from tiledb import Array
 
 from backend.wmg.data.snapshot import WmgSnapshot
 
-VALID_ATTRIBUTES = ["gene_ontology_term_id", "cell_type_ontology_term_id"]
-VALID_DIMENSIONS = ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]
-
 
 class WmgQueryCriteria(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
@@ -77,9 +74,31 @@ class MarkerGeneQueryCriteria(BaseModel):
     cell_type_ontology_term_id: str  # required!
 
 
+class WmgCubeQueryParams:
+    def __init__(self, cube_query_valid_attrs, cube_query_valid_dims):
+        self.cube_query_valid_attrs = cube_query_valid_attrs
+        self.cube_query_valid_dims = cube_query_valid_dims
+
+    def get_indexed_dims_to_lookup_query_criteria(self, cube: Array, pluralize: bool = True) -> list[str]:
+        return [self._transform_cube_index_name(i.name, pluralize) for i in cube.schema.domain]
+
+    def get_attrs_for_cube_query(self, cube: Array) -> list[str]:
+        return [i.name for i in cube.schema if i.name in self.cube_query_valid_attrs]
+
+    def get_dims_for_cube_query(self, cube: Array) -> list[str]:
+        return [i.name for i in cube.schema.domain if i.name in self.cube_query_valid_dims]
+
+    def _transform_cube_index_name(self, index_name: str, pluralize: bool = True) -> str:
+        if index_name != "organism_ontology_term_id" and pluralize:
+            return index_name + "s"
+
+        return index_name
+
+
 class WmgQuery:
-    def __init__(self, snapshot: WmgSnapshot) -> None:
+    def __init__(self, snapshot: WmgSnapshot, cube_query_params: WmgCubeQueryParams) -> None:
         self._snapshot = snapshot
+        self._cube_query_params = cube_query_params
 
     def expression_summary(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         return self._query(
@@ -117,13 +136,15 @@ class WmgQuery:
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
-    @staticmethod
     def _query(
+        self,
         cube: Array,
         criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, FmgQueryCriteria, MarkerGeneQueryCriteria],
         compare_dimension=None,
     ) -> DataFrame:
-        indexed_dims = _get_indexed_dims_from_cube(cube, pluralize=not isinstance(criteria, MarkerGeneQueryCriteria))
+        indexed_dims = self._cube_query_params.get_indexed_dims_to_lookup_query_criteria(
+            cube, pluralize=not isinstance(criteria, MarkerGeneQueryCriteria)
+        )
 
         query_cond = ""
         attrs = {}
@@ -152,7 +173,7 @@ class WmgQuery:
 
         # get valid attributes from schema
         # valid means it is a required column for downstream processing
-        attrs = [i.name for i in cube.schema if i.name in VALID_ATTRIBUTES]
+        attrs = self._cube_query_params.get_attrs_for_cube_query(cube)
         if compare_dimension is not None:
             attrs.append(compare_dimension)
         if isinstance(criteria, FmgQueryCriteria) and compare_dimension != "dataset_id":
@@ -161,7 +182,7 @@ class WmgQuery:
         attrs += numeric_attrs
 
         # get valid dimensions from schema
-        dims = [i.name for i in cube.schema.domain if i.name in VALID_DIMENSIONS]
+        dims = self._cube_query_params.get_dims_for_cube_query(cube)
 
         query_result_df = pd.concat(
             cube.query(
@@ -231,7 +252,3 @@ def retrieve_top_n_markers(query_result, test, n_markers):
         markers = markers.sort_values("effect_size", ascending=False)
     records = markers[["gene_ontology_term_id"] + col_names].to_dict(orient="records")
     return records
-
-
-def _get_indexed_dims_from_cube(cube, pluralize=True):
-    return [i.name + "s" if i.name != "organism_ontology_term_id" and pluralize else i.name for i in cube.schema.domain]
