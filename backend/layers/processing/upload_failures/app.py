@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from typing import Optional
+from backend.common.corpora_config import CorporaConfig
 
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.result_notification import aws_batch_job_url_fmt_str, aws_sfn_url_fmt_str, notify_slack
@@ -153,7 +154,9 @@ def trigger_slack_notification(
         data = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_region, execution_arn
         )
-        notify_slack(data)
+        # For these notifications, we should alert #single-cell-wrangling
+        webhook = CorporaConfig().wrangling_slack_webhook
+        notify_slack(data, webhook)
 
 
 def cleanup_artifacts(dataset_id: str) -> None:
