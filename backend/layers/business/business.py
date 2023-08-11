@@ -694,26 +694,16 @@ class BusinessLogic(BusinessLogicInterface):
     ) -> Optional[DatasetVersion]:
         """
         Given a canonical dataset id, returns its mapped dataset version, i.e. the dataset version
-        that belongs to the most recently published collection. Otherwise will return the most recent
+        that belongs to the most recently published collection. If never published, will return the most recent
         unpublished version.
         """
-        dataset_version = self.database_provider.get_dataset_mapped_version(dataset_id, get_tombstoned=get_tombstoned)
+        dataset_version = self.database_provider.get_dataset_mapped_version(dataset_id, get_tombstoned)
         if dataset_version is not None:
             if dataset_version.canonical_dataset.tombstoned:
                 raise DatasetIsTombstonedException()
             return dataset_version
-        else:
-            canonical_dataset = self.database_provider.get_canonical_dataset(dataset_id)
-            if not canonical_dataset:
-                return None
-            # dataset has never been published, so fetch its most recently created version
-            latest = datetime.fromtimestamp(0)
-            unpublished_dataset = None
-            for dataset_version in self.database_provider.get_all_versions_for_dataset(dataset_id):
-                if dataset_version.created_at > latest:
-                    latest = dataset_version.created_at
-                    unpublished_dataset = dataset_version
-            return unpublished_dataset
+        # Dataset has never been published
+        return self.database_provider.get_most_recent_active_dataset_version(dataset_id)
 
     def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[PublishedDatasetVersion]:
         """

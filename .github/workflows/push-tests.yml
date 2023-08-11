@@ -89,7 +89,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: logs
+          name: fe-server-logs
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/dev_server.log
           retention-days: 30
 
