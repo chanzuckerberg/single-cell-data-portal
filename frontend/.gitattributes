@@ -1,0 +1,12 @@
+src/views/CellGuide/common/fixtures/ontologyTreeStatePerTissue.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/allCellTypeDescriptionsSEO.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/allCellTypeOwlDescriptions.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/allCellTypes.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/allSourceData.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/allTissueDescriptions.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/allTissues.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/ontologyTree.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/allCellTypeDescriptions.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/allCellTypeMarkerGenes.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/allEnrichedGenes.json filter=lfs diff=lfs merge=lfs -text
+src/views/CellGuide/common/fixtures/ontologyTreeStatePerCellType.json filter=lfs diff=lfs merge=lfs -text
