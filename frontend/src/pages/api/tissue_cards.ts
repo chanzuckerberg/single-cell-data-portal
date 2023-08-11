@@ -6,7 +6,7 @@ export const allTissues = readJson(
 );
 
 export const allTissueDescriptions = readJson(
-  "src/views/CellGuide/common/fixtures/tissueDescriptions.json"
+  "src/views/CellGuide/common/fixtures/allTissueDescriptions.json"
 );
 
 async function handler(_: NextApiRequest, res: NextApiResponse) {
