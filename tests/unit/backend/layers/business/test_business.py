@@ -257,13 +257,13 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         """
         for ext in ("h5ad", "rds"):
             self.database_provider.add_dataset_artifact(
-                dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://artifacts/local.{ext}"
+                dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://artifacts/{dataset_version_id}.{ext}"
             )
             self.database_provider.add_dataset_artifact(
                 dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://datasets/{dataset_version_id}.{ext}"
             )
         self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.CXG.value, "s3://cellxgene/local.cxg"
+            dataset_version_id, DatasetArtifactType.CXG.value, f"s3://cellxgene/{dataset_version_id}.cxg"
         )
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
@@ -1053,11 +1053,16 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         dataset_version_id = published_version.datasets[0].version_id
 
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
-        self.assertEqual(3, len(artifacts))
-        self.assertCountEqual(
-            [a.type for a in artifacts], [DatasetArtifactType.H5AD, DatasetArtifactType.CXG, DatasetArtifactType.RDS]
-        )
-        self.assertCountEqual([a.get_file_name() for a in artifacts], ["local.h5ad", "local.cxg", "local.rds"])
+        self.assertEqual(5, len(artifacts))
+        expected = [
+            f"s3://datasets/{dataset_version_id}.h5ad",
+            f"s3://datasets/{dataset_version_id}.rds",
+            f"s3://artifacts/{dataset_version_id}.h5ad",
+            f"s3://artifacts/{dataset_version_id}.rds",
+            f"s3://cellxgene/{dataset_version_id}.cxg",
+        ]
+        self.assertEqual(set(expected), {a.uri for a in artifacts})
+        # self.assertCountEqual([a.get_file_name() for a in artifacts], ["local.h5ad", "local.cxg", "local.rds"])
 
     def test_get_dataset_artifact_download_data_ok(self):
         """
@@ -1077,7 +1082,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         # TODO: requires mocking of the S3 provider. implement later
         download_data = self.business_logic.get_dataset_artifact_download_data(dataset.version_id, artifact.id)
         expected_download_data = DatasetArtifactDownloadData(
-            "local.h5ad", DatasetArtifactType.H5AD, expected_file_size, expected_presigned_url
+            f"{dataset.version_id}.h5ad", DatasetArtifactType.H5AD, expected_file_size, expected_presigned_url
         )
         self.assertEqual(download_data, expected_download_data)
 
@@ -1143,7 +1148,7 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         for dataset in published_collection.datasets:
             cxg_artifact = [artifact for artifact in dataset.artifacts if artifact.type == "cxg"][0]
-            self.assertEqual(cxg_artifact.uri, "s3://cellxgene/local.cxg")
+            self.assertEqual(cxg_artifact.uri, f"s3://cellxgene/{dataset.version_id}.cxg")
             self.business_logic.update_dataset_artifact(cxg_artifact.id, "s3://cellxgene/new-name.cxg")
 
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
