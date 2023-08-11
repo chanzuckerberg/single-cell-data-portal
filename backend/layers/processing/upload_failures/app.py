@@ -2,8 +2,8 @@ import json
 import logging
 import os
 from typing import Optional
-from backend.common.corpora_config import CorporaConfig
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.result_notification import aws_batch_job_url_fmt_str, aws_sfn_url_fmt_str, notify_slack
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
