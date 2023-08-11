@@ -1,6 +1,10 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import CellGuideCard from "src/views/CellGuide/components/CellGuideCard";
-import allCellTypeDescriptionsSEO from "src/views/CellGuide/common/fixtures/allCellTypeDescriptionsSEO.json";
+import { readJson } from "src/common/utils/api/readJson";
+
+const allCellTypeDescriptionsSEO = readJson(
+  "src/views/CellGuide/common/fixtures/allCellTypeDescriptionsSEO.json"
+);
 
 interface AllCellTypeDescriptionsSEO {
   [cellTypeId: string]: { name: string; description: string };

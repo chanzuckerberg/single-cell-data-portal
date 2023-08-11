@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import allTissues from "src/views/CellGuide/common/fixtures/allTissues.json";
+import { readJson } from "src/common/utils/api/readJson";
+
+const allTissues = readJson(
+  "src/views/CellGuide/common/fixtures/allTissues.json"
+);
 
 async function handler(_: NextApiRequest, res: NextApiResponse) {
   try {
