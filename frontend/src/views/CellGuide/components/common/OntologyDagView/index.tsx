@@ -95,7 +95,6 @@ export default function OntologyDagView({
   initialWidth,
 }: TreeProps) {
   skinnyMode = cellTypeId ? skinnyMode : true;
-
   const defaultHeight = initialHeight ?? DEFAULT_ONTOLOGY_HEIGHT;
   const defaultWidth = initialWidth ?? DEFAULT_ONTOLOGY_WIDTH;
 
@@ -172,7 +171,6 @@ export default function OntologyDagView({
   const toggleTriggerRender = () => {
     setTriggerRender(!triggerRender);
   };
-
   // Animation duration - initially zero so the animation doesn't play on load
   const [duration, setDuration] = useState(0);
 
@@ -180,7 +178,6 @@ export default function OntologyDagView({
   // the "isExpanded" property that is used to track the expanded state of each node, along with
   // other properties like the positions of the nodes.
   const { data: rawTree } = useCellOntologyTree();
-
   const entityId = cellTypeId ?? tissueId ?? "";
   const useTreeState = cellTypeId
     ? useCellOntologyTreeState
@@ -481,9 +478,8 @@ function setCellCountsInRawTree(
 ) {
   const cellTypeId = graph.id.split("__").at(0) ?? graph.id;
 
-  graph.n_cells = tissueCounts[cellTypeId]?.n_cells ?? graph.n_cells;
-  graph.n_cells_rollup =
-    tissueCounts[cellTypeId]?.n_cells_rollup ?? graph.n_cells_rollup;
+  graph.n_cells = tissueCounts[cellTypeId]?.n_cells ?? 0;
+  graph.n_cells_rollup = tissueCounts[cellTypeId]?.n_cells_rollup ?? 0;
 
   if (graph.children) {
     for (const child of graph.children) {
