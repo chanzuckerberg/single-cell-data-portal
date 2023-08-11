@@ -197,6 +197,7 @@ export default function OntologyDagView({
       const tissueCounts = initialTreeState?.tissueCounts ?? {};
       if (Object.keys(tissueCounts).length > 0) {
         setCellCountsInRawTree(newTree, tissueCounts);
+        deleteNodesWithNoDescendants(newTree);
       }
     }
     return newTree;
@@ -229,9 +230,9 @@ export default function OntologyDagView({
           }
         }
 
-        if (appendDummy && !d.showAllChildren) {
-          const numHiddenChildren =
-            (d.children?.length ?? 0) - newChildren.length;
+        const numHiddenChildren =
+          (d.children?.length ?? 0) - newChildren.length;
+        if (appendDummy && !d.showAllChildren && numHiddenChildren > 0) {
           newChildren.push({
             id: `dummy-child-${d.id}`,
             name: `${numHiddenChildren} cell types`,
@@ -485,5 +486,14 @@ function setCellCountsInRawTree(
     for (const child of graph.children) {
       setCellCountsInRawTree(child, tissueCounts);
     }
+  }
+}
+
+function deleteNodesWithNoDescendants(graph: TreeNodeWithState): void {
+  if (graph.children) {
+    graph.children = graph.children.filter((child) => {
+      deleteNodesWithNoDescendants(child);
+      return child.n_cells_rollup !== 0;
+    });
   }
 }
