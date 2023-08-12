@@ -102,12 +102,7 @@ export default function OntologyDagView({
   initialHeight,
   initialWidth,
 }: TreeProps) {
-  // isTissue = not cellTypeId and tissueId
-  const isTissue = (!cellTypeId && !!tissueId) || (!!cellTypeId && !!tissueId);
-  const isCellType =
-    (!!cellTypeId && !tissueId) || (!!cellTypeId && !!tissueId);
-
-  skinnyMode = isCellType ? skinnyMode : true;
+  skinnyMode = cellTypeId ? skinnyMode : true;
   const defaultHeight = initialHeight ?? DEFAULT_ONTOLOGY_HEIGHT;
   const defaultWidth = initialWidth ?? DEFAULT_ONTOLOGY_WIDTH;
 
@@ -263,8 +258,8 @@ export default function OntologyDagView({
   const data = useMemo(() => {
     if (!treeData) return null;
     return hierarchy(treeData, (d) => {
-      const newChildren: TreeNodeWithState[] = [];
-      if (d.isExpanded) {
+      if (d.isExpanded && d.children) {
+        const newChildren: TreeNodeWithState[] = [];
         const notShownWhenExpandedNodes =
           initialTreeState?.notShownWhenExpandedNodes ?? {};
         // If this node is a key in `notShownWhenExpandedNodes`, then it is a parent to nodes
@@ -275,7 +270,7 @@ export default function OntologyDagView({
 
         // `showAllChildren` is a flag that is set to `true` when the user clicks on a collapsed node.
         // It indicates that all of the children of the node should be shown.
-        for (const child of d?.children ?? []) {
+        for (const child of d.children) {
           if (
             d.showAllChildren ||
             !appendDummy ||
@@ -286,9 +281,8 @@ export default function OntologyDagView({
           }
         }
 
-        const numHiddenChildren =
-          (d.children?.length ?? 0) - newChildren.length;
-        if (appendDummy && !d.showAllChildren && numHiddenChildren > 0) {
+        const numHiddenChildren = d.children.length - newChildren.length;
+        if (appendDummy && numHiddenChildren > 0) {
           newChildren.push({
             id: `dummy-child-${d.id}`,
             name: `${numHiddenChildren} cell types`,
@@ -297,8 +291,8 @@ export default function OntologyDagView({
             isExpanded: false,
           });
         }
+        return newChildren;
       }
-      return newChildren.length ? newChildren : null;
     });
   }, [treeData, triggerRender, initialTreeState]);
 
