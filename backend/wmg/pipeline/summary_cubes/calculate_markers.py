@@ -273,7 +273,7 @@ def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids):
         t_n_cells_sum[k] = summer
 
     n_cells_array = np.vstack(list(t_n_cells_sum.values()))
-
+    cell_types = list(t_n_cells_sum.keys())
     n_cells_array = rollup_across_cell_type_descendants_array(n_cells_array, cell_types)
     index = pd.Index(cell_types, name="cell_type_ontology_term_id")
     return n_cells_array, index

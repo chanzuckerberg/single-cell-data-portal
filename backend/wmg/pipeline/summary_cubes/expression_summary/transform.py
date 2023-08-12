@@ -125,7 +125,6 @@ def make_cube_index(*, tdb_group: str, cube_dims: list) -> Tuple[pd.DataFrame, p
     cube_index["cube_idx"] = range(len(cube_index))
 
     cell_labels = cell_labels.join(cube_index.cube_idx, on=cube_dims)
-
     # we failed to correctly create the corpus if these are false
     assert len(cell_labels.index) == cell_labels.index[-1] + 1
     assert cell_labels.index[0] == 0
