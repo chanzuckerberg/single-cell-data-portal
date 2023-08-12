@@ -105,7 +105,12 @@ class WmgSnapshot:
 cached_snapshot: Optional[WmgSnapshot] = None
 
 
-def load_snapshot(*, snapshot_schema_version: str, explicit_snapshot_id_to_load: Optional[str] = None) -> WmgSnapshot:
+def load_snapshot(
+    *,
+    snapshot_schema_version: str,
+    explicit_snapshot_id_to_load: Optional[str] = None,
+    read_versioned_snapshot: bool = True,
+) -> WmgSnapshot:
     """
     Loads and caches the snapshot identified by the snapshot schema version and a snapshot id.
 
@@ -118,21 +123,32 @@ def load_snapshot(*, snapshot_schema_version: str, explicit_snapshot_id_to_load:
     """
     global cached_snapshot
 
-    should_reload, snapshot_id = _should_reload_snapshot(snapshot_schema_version, explicit_snapshot_id_to_load)
+    should_reload, snapshot_id = _should_reload_snapshot(
+        snapshot_schema_version=snapshot_schema_version,
+        explicit_snapshot_id_to_load=explicit_snapshot_id_to_load,
+        read_versioned_snapshot=read_versioned_snapshot,
+    )
 
     if should_reload:
-        cached_snapshot = _load_snapshot(snapshot_schema_version, snapshot_id)
+        cached_snapshot = _load_snapshot(
+            snapshot_schema_version=snapshot_schema_version,
+            snapshot_id=snapshot_id,
+            read_versioned_snapshot=read_versioned_snapshot,
+        )
         cached_snapshot.build_dataset_metadata_dict()
 
     return cached_snapshot
 
 
 ###################################### PRIVATE INTERFACE #################################
-def _get_latest_snapshot_id(snapshot_schema_version: str) -> str:
+def _get_latest_snapshot_id(*, snapshot_schema_version: str, read_versioned_snapshot: bool) -> str:
     """
     Get latest snapshot id for a given snapshot schema version
     """
-    data_schema_dir_path = _get_wmg_snapshot_schema_dir_path(snapshot_schema_version)
+    data_schema_dir_path = _get_wmg_snapshot_schema_dir_path(
+        snapshot_schema_version=snapshot_schema_version,
+        read_versioned_snapshot=read_versioned_snapshot,
+    )
     file_name = "latest_snapshot_identifier"
 
     key_path = f"{data_schema_dir_path}/{file_name}" if data_schema_dir_path else file_name
@@ -141,7 +157,7 @@ def _get_latest_snapshot_id(snapshot_schema_version: str) -> str:
     return latest_snapshot_id
 
 
-def _get_wmg_snapshot_schema_dir_path(snapshot_schema_version: str) -> str:
+def _get_wmg_snapshot_schema_dir_path(*, snapshot_schema_version: str, read_versioned_snapshot: bool) -> str:
     """
     Get path to a particular snapshot schema version.
     """
@@ -150,18 +166,19 @@ def _get_wmg_snapshot_schema_dir_path(snapshot_schema_version: str) -> str:
     if WMG_ROOT_DIR_PATH:
         data_schema_dir_path = f"{WMG_ROOT_DIR_PATH}/{data_schema_dir_path}"
 
-    # TODO(prathap) - change to using data_schema_dir_path by uncommenting the below 'return' statement
-    # when working on: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
-    # return data_schema_dir_path
-
+    if read_versioned_snapshot:
+        return data_schema_dir_path
     return WMG_ROOT_DIR_PATH
 
 
-def _get_wmg_snapshot_dir_path(snapshot_schema_version: str, snapshot_id: str) -> str:
+def _get_wmg_snapshot_dir_path(*, snapshot_schema_version: str, snapshot_id: str, read_versioned_snapshot: bool) -> str:
     """
     Get path to the snapshot id directory for a the given snapshot schema version.
     """
-    data_schema_dir_path = _get_wmg_snapshot_schema_dir_path(snapshot_schema_version)
+    data_schema_dir_path = _get_wmg_snapshot_schema_dir_path(
+        snapshot_schema_version=snapshot_schema_version,
+        read_versioned_snapshot=read_versioned_snapshot,
+    )
 
     snapshot_id_dir_path = f"{data_schema_dir_path}/{snapshot_id}" if data_schema_dir_path else snapshot_id
     return snapshot_id_dir_path
@@ -176,9 +193,12 @@ def _get_wmg_snapshot_dir_s3_uri(snapshot_dir_path: str) -> str:
     return os.path.join("s3://", wmg_config.bucket, snapshot_dir_path)
 
 
-def _load_snapshot(snapshot_schema_version: str, snapshot_id: str) -> WmgSnapshot:
-
-    snapshot_dir_path = _get_wmg_snapshot_dir_path(snapshot_schema_version, snapshot_id)
+def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versioned_snapshot: bool) -> WmgSnapshot:
+    snapshot_dir_path = _get_wmg_snapshot_dir_path(
+        snapshot_schema_version=snapshot_schema_version,
+        snapshot_id=snapshot_id,
+        read_versioned_snapshot=read_versioned_snapshot,
+    )
 
     cell_type_orderings = _load_cell_type_order(snapshot_dir_path)
     primary_filter_dimensions = _load_primary_filter_data(snapshot_dir_path)
@@ -186,7 +206,7 @@ def _load_snapshot(snapshot_schema_version: str, snapshot_id: str) -> WmgSnapsho
     filter_relationships = _load_filter_graph_data(snapshot_dir_path)
 
     snapshot_base_uri = _get_wmg_snapshot_dir_s3_uri(snapshot_dir_path)
-    logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
+    logger.info(f"Loading WMG snapshot from directory path {snapshot_dir_path} into URI {snapshot_base_uri}")
 
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
@@ -249,14 +269,19 @@ def _read_value_at_s3_key(key_path: str):
 
 
 def _should_reload_snapshot(
-    snapshot_schema_version: str, explicit_snapshot_id_to_load: Optional[str] = None
+    *,
+    snapshot_schema_version: str,
+    explicit_snapshot_id_to_load: Optional[str] = None,
+    read_versioned_snapshot: bool,
 ) -> tuple[bool, str]:
     """
     Returns a pair: (<should_reload>, <snapshot_id>) where <should_reload> is a boolean indicating
     whether then in-memory snapshot should be reloaded and <snapshot_id> is the id of the snapshot that
     the in-memory data structure represents.
     """
-    snapshot_id = explicit_snapshot_id_to_load or _get_latest_snapshot_id(snapshot_schema_version)
+    snapshot_id = explicit_snapshot_id_to_load or _get_latest_snapshot_id(
+        snapshot_schema_version=snapshot_schema_version, read_versioned_snapshot=read_versioned_snapshot
+    )
 
     if cached_snapshot is None:
         logger.info(f"Loading snapshot id: {snapshot_id}")
