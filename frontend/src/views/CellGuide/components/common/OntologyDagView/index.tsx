@@ -345,11 +345,6 @@ export default function OntologyDagView({
     }
   }, [data, cellTypeId, width, height]);
 
-  // Trigger re-render when full screen mode is toggled
-  useEffect(() => {
-    toggleTriggerRender();
-  }, [isFullScreen]);
-
   // Hover over node tooltip
   const {
     tooltipData,
