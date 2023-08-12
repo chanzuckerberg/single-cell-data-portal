@@ -30,17 +30,29 @@ def remap_anndata_normalized_X_to_raw_X_if_exists(adata: AnnData) -> None:
         gc.collect()
 
 
-def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) -> None:
+def decorate_anndata_with_assays_to_filter_out(adata: AnnData, assays_to_keep: list) -> None:
     """
-    Filter cell outliers based on numbers of genes expressed.
+    Decorate the anndata object with a 'filter_cells' attribute that indicates which
+    rows (ie cells) to filter because the assays used are not in the given list.
 
-    NOTE: This operation is *in place*
+    Parameters
+    ----------
+    data
+        The (annotated) data matrix of shape `n_obs` × `n_vars`.
+        Rows correspond to cells and columns to genes.
+    assays_to_keep
+        The assays that are NOT in this list will be marked to be filtered out
+    """
+    assays_to_filter_out = np.logical_not(adata.obs["assay_ontology_term_id"].isin(assays_to_keep))
 
-    This implementation is more memory efficient than `scanpy.pp.filter_cells`:
-    https://github.com/scverse/scanpy/blob/89804c26bcbdde4449dfe98b3193a9d28c2a0e2f/scanpy/preprocessing/_simple.py#L41C2-L41C2
+    # Do a LOGICAL_OR to update the 'filter_cells' boolean index
+    adata.obs["filter_cells"] |= assays_to_filter_out
 
-    The scanpy implementation is more memory intensive because it makes unnecessary copies
-    of the underlying data structures when performing computations.
+
+def decorate_anndata_with_lowly_covered_cells_to_filter_out(adata: AnnData, min_genes: int) -> None:
+    """
+    Decorate the anndata object with a 'filter_cells' attribute that indicates which
+    rows (ie cells) to filter because they don't have a minimum number of expressed genes.
 
     Parameters
     ----------
@@ -48,17 +60,18 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
         The (annotated) data matrix of shape `n_obs` × `n_vars`.
         Rows correspond to cells and columns to genes.
     min_genes
-        Minimum number of genes expressed required for a cell to pass filtering.
+        The minimum number of expressed genes threshold for a given cell to pass
+        the filtering criteria
 
     """
 
-    logger.info(f"Filtering cells with less than {min_genes} genes expressed, data matrix is type: {type(adata.X)}")
     # memory efficient implementation for getting count of non-zeros per row.
     # For CSR we use the `indptr` structure to compute number of non-zeros per row
     # For CSC we use the `indices` structure to compute number of non-zeros per row
     # And finally for ndarray, we simply filter the matrix and sum the resulting boolean matrix.
     if isinstance(adata.X, csr_matrix):
-        number_per_cell = np.diff(adata.X.indptr)
+        logger.info(f"Filtering cells for anndata.X csr_matrix of shape: {adata.X.shape}")
+        gene_counts_per_cell = np.diff(adata.X.indptr)
     elif isinstance(adata.X, csc_matrix):
         cell_indices, counts = np.unique(adata.X.indices, return_counts=True)
 
@@ -71,19 +84,41 @@ def anndata_filter_cells_by_gene_counts_inplace(adata: AnnData, min_genes: int) 
         # Example: 4X4 sparse matrix stored in column orientation where ROW 3 has no values.
         # That is, ROW 3 is not stored in the `adata.X.indices` array:
         # column_oriented_sparse_matrix = np.array([[1, 0, 0, 2], [0, 4, 1, 0], [0, 0, 0, 0], [0, 0, 5, 0]])
-        number_per_cell = np.zeros(adata.shape[0], dtype="int")
-        number_per_cell[cell_indices] = counts
+        logger.info(f"Filtering cells for anndata.X csc_matrix of shape: {adata.X.shape}")
+        gene_counts_per_cell = np.zeros(adata.shape[0], dtype="int")
+        gene_counts_per_cell[cell_indices] = counts
     elif isinstance(adata.X, np.ndarray):
-        number_per_cell = (adata.X > 0).sum(axis=1).flatten()
+        logger.info(f"Filtering cells for anndata.X ndarray of shape: {adata.X.shape}")
+        gene_counts_per_cell = (adata.X > 0).sum(axis=1).flatten()
     else:
         raise UnsupportedMatrixTypeError(f"Unsupported AnnData.X matrix type: {type(adata.X)}")
 
-    cell_subset = number_per_cell >= min_genes
+    logger.info(
+        f"Shape of gene_counts_per_cell array holding counts of non-zero column values: {gene_counts_per_cell.shape}"
+    )
 
-    # No subsetting is needed if there are no False values in the boolean index array.
-    # The False values are the ones to filter out. When the boolean index contains only
-    # True values, then the mean of the boolean index array is exactly 1.
-    if cell_subset.mean() < 1:
-        logger.info(f"Subsetting data down to {cell_subset.sum()} cells from {adata.shape[0]} cells")
-        adata._inplace_subset_obs(cell_subset)
-        logger.info(f"Completed subsetting data down to {cell_subset.sum()} cells")
+    # boolean index encoding the cells (rows) with number of expressed genes less than the threshold
+    # and that should be marked to be filtered out
+    lowly_covered_cells_to_filter_out = gene_counts_per_cell < min_genes
+
+    adata.obs["filter_cells"] = lowly_covered_cells_to_filter_out
+
+    # Do inplace zeroing of rows that should be filtered out
+    # This is done to make the anndata object sparser and memory efficient
+    if lowly_covered_cells_to_filter_out.sum() > 0:
+        logger.info("Performing in place zeroing of AnnData.X rows to be filtered out")
+        rows_to_zero = np.where(lowly_covered_cells_to_filter_out)[0]
+        if isinstance(adata.X, csr_matrix):
+            for row in rows_to_zero:
+                adata.X.data[adata.X.indptr[row] : adata.X.indptr[row + 1]] = 0
+            adata.X.eliminate_zeros()
+        elif isinstance(adata.X, csc_matrix):
+            adata.X.data[np.in1d(adata.X.indices, rows_to_zero)] = 0
+            adata.X.eliminate_zeros()
+        elif isinstance(adata.X, np.ndarray):
+            adata.X[lowly_covered_cells_to_filter_out] = 0
+        else:
+            raise UnsupportedMatrixTypeError(f"Unsupported AnnData.X matrix type: {type(adata.X)}")
+
+    else:
+        logger.info("Skipping inplace zeroing of AnnData.X")

@@ -24,7 +24,6 @@ from backend.wmg.data.snapshot import (
     WmgSnapshot,
     load_snapshot,
 )
-from backend.wmg.pipeline.summary_cubes.cell_count import add_missing_cell_types_to_df
 
 
 @njit(parallel=True)
@@ -152,7 +151,6 @@ def _query_tiledb_context(
     query = q.expression_summary_fmg(criteria)
     # group-by and sum
     agg = query.groupby(["cell_type_ontology_term_id", "gene_ontology_term_id"]).sum(numeric_only=True).reset_index()
-    agg = add_missing_cell_types_to_df(agg)
     agg = rollup_across_cell_type_descendants(agg)
     # remove tidy
     agg = agg.groupby(["cell_type_ontology_term_id", "gene_ontology_term_id"]).sum(numeric_only=True)

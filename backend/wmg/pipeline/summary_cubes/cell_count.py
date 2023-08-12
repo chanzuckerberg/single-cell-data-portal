@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.rollup import ancestors
 from backend.wmg.data.schemas.corpus_schema import (
     FILTER_RELATIONSHIPS_NAME,
     OBS_ARRAY_NAME,
@@ -94,11 +93,6 @@ def return_dataset_dict_w_publications():
     return dataset_dict
 
 
-def _get_ancestors_and_agg(x):
-    anc = [i for i in list(set(sum([ancestors(i) for i in x], []))) if i.startswith("CL:")]
-    return ";".join(anc)
-
-
 @log_func_runtime
 def create_cell_count_cube(corpus_path: str):
     """
@@ -115,8 +109,6 @@ def create_cell_count_cube(corpus_path: str):
     n_cells = df["n_cells"].to_numpy()
     df["n_cells"] = n_cells
 
-    df = add_missing_cell_types_to_df(df)
-
     filter_relationships_linked_list = create_filter_relationships_graph(df)
 
     with open(f"{corpus_path}/{FILTER_RELATIONSHIPS_NAME}.json", "w") as f:
@@ -127,6 +119,15 @@ def create_cell_count_cube(corpus_path: str):
     logger.info(f"{cell_count=}")
     logger.info(f"Cell count cube created and stored at {uri}")
 
+
+"""
+(alec) Keeping this function here for now in case we need to add it back in the future.
+It's a useful function for adding missing cell types to a dataframe stratified
+across metadata groups.
+
+def _get_ancestors_and_agg(x):
+    anc = [i for i in list(set(sum([ancestors(i) for i in x], []))) if i.startswith("CL:")]
+    return ";".join(anc)
 
 def add_missing_cell_types_to_df(df: pd.DataFrame):
     if "cell_type_ontology_term_id" not in df.columns:
@@ -169,6 +170,7 @@ def add_missing_cell_types_to_df(df: pd.DataFrame):
         new.loc[df.index, df_numeric_columns] += df[df_numeric_columns].values
         new = new.reset_index(drop=False)
     return new
+"""
 
 
 def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
