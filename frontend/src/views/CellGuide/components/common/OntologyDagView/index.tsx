@@ -258,31 +258,29 @@ export default function OntologyDagView({
   const data = useMemo(() => {
     if (!treeData) return null;
     return hierarchy(treeData, (d) => {
-      if (d.isExpanded && d.children) {
+      if (d.isExpanded && d.children && initialTreeState) {
         const newChildren: TreeNodeWithState[] = [];
         const notShownWhenExpandedNodes =
-          initialTreeState?.notShownWhenExpandedNodes ?? {};
-        // If this node is a key in `notShownWhenExpandedNodes`, then it is a parent to nodes
-        // that should be collapsed. Therefore, set `appendDummy` to `true`.
-        // The term "dummy" here is used to describe the collapsed node containing hidden terms.
-        // The text label of a "dummy" is the number of hidden terms, e.g. 52 cell types.
-        const appendDummy = d.id in notShownWhenExpandedNodes;
+          initialTreeState.notShownWhenExpandedNodes;
+        /**
+         * If a node is a key in `notShownWhenExpandedNodes`, then it is a parent to nodes
+         * that should be collapsed. The text label of this "dummy" node is the number of hidden terms,
+         * e.g. 52 cell types.
+         * `showAllChildren` is a flag that is set to `true` when the user clicks on a collapsed node.
+         * It indicates that all of the children of the node should be shown.
+         */
 
-        // `showAllChildren` is a flag that is set to `true` when the user clicks on a collapsed node.
-        // It indicates that all of the children of the node should be shown.
         for (const child of d.children) {
           if (
             d.showAllChildren ||
-            !appendDummy ||
-            // This is a child that should be shown because it is in a path to the target node.
-            (appendDummy && !notShownWhenExpandedNodes[d.id].includes(child.id))
+            !notShownWhenExpandedNodes[d.id]?.includes(child.id)
           ) {
             newChildren.push(child);
           }
         }
 
         const numHiddenChildren = d.children.length - newChildren.length;
-        if (appendDummy && numHiddenChildren > 0) {
+        if (numHiddenChildren > 0) {
           newChildren.push({
             id: `dummy-child-${d.id}`,
             name: `${numHiddenChildren} cell types`,
