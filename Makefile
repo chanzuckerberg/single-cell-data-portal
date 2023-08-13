@@ -35,7 +35,7 @@ wmg-processing-unittest:
 cellguide-pipeline-unittest:
 	# This target is intended to be run INSIDE the cellguide pipeline container
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning coverage run $(COVERAGE_RUN_ARGS) -m pytest \
-	tests/unit/cellguide/pipeline/ --rootdir=. --alluredir=./allure-results --verbose;
+	tests/unit/cellguide_pipeline/ --rootdir=. --alluredir=./allure-results --verbose;
 
 .PHONY: functional-test
 functional-test: local-functional-test
