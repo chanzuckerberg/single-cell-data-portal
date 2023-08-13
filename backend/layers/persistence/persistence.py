@@ -9,6 +9,9 @@ from typing import Any, Iterable, List, Optional, Tuple, Union
 from sqlalchemy import create_engine, delete
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
+from tenacity import retry
+from tenacity.stop import stop_after_attempt
+from tenacity.wait import wait_fixed
 
 from backend.common.corpora_config import CorporaDbConfig
 from backend.layers.business.exceptions import CollectionIsPublishedException, DatasetIsPublishedException
@@ -91,6 +94,12 @@ class DatabaseProvider(DatabaseProviderInterface):
         finally:
             if session is not None:
                 session.close()
+
+    @contextmanager
+    def _get_serializable_session(self, **kwargs):
+        with self._manage_session(**kwargs) as session:
+            session.connection(execution_options={"isolation_level": "SERIALIZABLE"})
+            yield session
 
     def _row_to_collection_version(self, row: Any, canonical_collection: CanonicalCollection) -> CollectionVersion:
         return CollectionVersion(
@@ -750,6 +759,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(dataset_version)
             return self._row_to_dataset_version(dataset_version, CanonicalDataset(dataset_id, None, False, None), [])
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def add_dataset_artifact(
         self, version_id: DatasetVersionId, artifact_type: DatasetArtifactType, artifact_uri: str
     ) -> DatasetArtifactId:
@@ -758,7 +768,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         artifact_id = DatasetArtifactId()
         artifact = DatasetArtifactTable(id=artifact_id.id, type=artifact_type, uri=artifact_uri)
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             session.add(artifact)
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             artifacts = list(dataset_version.artifacts)
@@ -774,50 +784,55 @@ class DatabaseProvider(DatabaseProviderInterface):
             artifact = session.query(DatasetArtifactTable).filter_by(id=artifact_id.id).one()
             artifact.uri = artifact_uri
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
         Updates the processing status for a dataset version.
         """
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["processing_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
         """
         Updates the validation status for a dataset version.
         """
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:
         """
         Updates the upload status for a dataset version.
         """
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["upload_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_conversion_status(
         self, version_id: DatasetVersionId, status_type: str, status: DatasetConversionStatus
     ) -> None:
         """
         Updates the conversion status for a dataset version and for `status_type`
         """
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status[status_type] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
-        with self._manage_session() as session:
+        with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_message"] = validation_message
