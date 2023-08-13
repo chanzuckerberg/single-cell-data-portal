@@ -122,11 +122,21 @@ def make_cube_index(*, tdb_group: str, cube_dims: list) -> Tuple[pd.DataFrame, p
     cell_labels = extract_obs_data(tdb_group, cube_dims)
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
-    cube_index["cube_idx"] = range(len(cube_index))
 
+    # filter out any groups with filter_cells=True
+    cube_index = cube_index[np.logical_not(list(cube_index.index.get_level_values("filter_cells")))]
+
+    # drop filter_cells
+    cube_index.index = cube_index.index.droplevel("filter_cells")
+
+    # add cube_idx column
+    cube_index["cube_idx"] = range(len(cube_index))
+    cube_index["cube_idx"] = cube_index["cube_idx"].astype("int")
+
+    # join cube_idx to cell_labels
     cell_labels = cell_labels.join(cube_index.cube_idx, on=cube_dims)
-    # we failed to correctly create the corpus if these are false
-    assert len(cell_labels.index) == cell_labels.index[-1] + 1
-    assert cell_labels.index[0] == 0
+
+    # filter out any cells with no cube_idx, these were filtered out
+    cell_labels = cell_labels[~np.isnan(cell_labels.cube_idx)]
 
     return cell_labels, cube_index
