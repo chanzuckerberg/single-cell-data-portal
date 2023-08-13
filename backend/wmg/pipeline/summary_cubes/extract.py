@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import tiledb
 
@@ -20,10 +19,7 @@ def extract_obs_data(tdb_group: str, cube_dims: list) -> pd.DataFrame:
     Extract obs (cell) data from the concatenated corpus
     """
     with tiledb.open(f"{tdb_group}/{OBS_ARRAY_NAME}") as obs:
-        obs_df = obs.query(use_arrow=False).df[:]
-
-        # filter out observations in the 'filter_cells' attribute
-        cell_labels = obs_df[np.logical_not(obs_df["filter_cells"])]
+        cell_labels = obs.query(use_arrow=False).df[:]
 
     cell_labels.sort_values(by=["obs_idx"], inplace=True, ignore_index=True)
 
