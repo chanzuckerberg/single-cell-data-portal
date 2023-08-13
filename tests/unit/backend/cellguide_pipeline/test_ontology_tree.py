@@ -42,11 +42,11 @@ def compare_dicts(dict1, dict2):
 
 class OntologyTreeBuilderTests(unittest.TestCase):
     def test__ontology_tree_builder(self):
-        with open("tests/unit/backend/cellguide/pipeline/fixtures/all_states_per_cell_type.json", "r") as f:
+        with open("tests/unit/backend/cellguide_pipeline/fixtures/all_states_per_cell_type.json", "r") as f:
             expected__all_states_per_cell_type = json.load(f)
-        with open("tests/unit/backend/cellguide/pipeline/fixtures/all_states_per_tissue.json", "r") as f:
+        with open("tests/unit/backend/cellguide_pipeline/fixtures/all_states_per_tissue.json", "r") as f:
             expected__all_states_per_tissue = json.load(f)
-        with open("tests/unit/backend/cellguide/pipeline/fixtures/ontology_graph.json", "r") as f:
+        with open("tests/unit/backend/cellguide_pipeline/fixtures/ontology_graph.json", "r") as f:
             expected__ontology_graph = json.load(f)
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]
