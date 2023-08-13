@@ -131,7 +131,6 @@ def make_cube_index(*, tdb_group: str, cube_dims: list) -> Tuple[pd.DataFrame, p
 
     # add cube_idx column
     cube_index["cube_idx"] = range(len(cube_index))
-    cube_index["cube_idx"] = cube_index["cube_idx"].astype("int")
 
     # join cube_idx to cell_labels
     cell_labels = cell_labels.join(cube_index.cube_idx, on=cube_dims)
