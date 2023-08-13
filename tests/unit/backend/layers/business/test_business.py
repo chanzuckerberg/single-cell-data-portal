@@ -928,19 +928,35 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
             [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
             self.business_logic.delete_collection_version(collection)
             [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
-        # with self.subTest("Not deleted until private Collection is published"):
-        #     collection = self.initialize_unpublished_collection(complete_dataset_ingestion=True)
-        #     dataset_to_replace = collection.datasets[0]
-        #     artifacts_to_be_removed = [a.uri for a in dataset_to_replace.artifacts]
-        #     new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
-        #         collection.version_id, dataset_to_replace.version_id
-        #     )
-        #     updated_collection = self.business_logic.get_collection_version(collection.version_id)
-        #     dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
-        #     self.assertNotIn(dataset_to_replace.version_id.id, dataset_version_id_strs)
-        #     [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
-        #     self.business_logic.publish_collection_version(collection.version_id)
-        #     [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
+        with self.subTest("Not deleted until private Collection is published"):
+            collection = self.initialize_unpublished_collection(complete_dataset_ingestion=True)
+            dataset_to_replace = collection.datasets[0]
+            dataset_to_keep = collection.datasets[1]
+            new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+                collection.version_id, dataset_to_replace.version_id
+            )
+            self.business_logic.set_dataset_metadata(new_dataset_version.version_id, self.sample_dataset_metadata)
+            self.complete_dataset_processing_with_success(new_dataset_version.version_id)
+
+            updated_collection = self.business_logic.get_collection_version(collection.version_id)
+            dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
+            self.assertNotIn(dataset_to_replace.version_id.id, dataset_version_id_strs)
+
+            # Artifacts for dataset_to_replace should exist
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
+            # Artifacts for dataset_to_keep should exist
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_keep.artifacts]
+            # Artifacts for new_dataset_version should exist
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
+
+            self.business_logic.publish_collection_version(collection.version_id)
+
+            # Artifacts for dataset_to_replace should be gone
+            [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
+            # Artifacts for dataset_to_keep should remain
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_keep.artifacts]
+            # Artifacts for new_dataset_version should remain
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
