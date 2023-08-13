@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import subprocess
@@ -19,9 +20,7 @@ wmg_s3_root_dir_path = stack_name.strip("/") if stack_name else ""
 wmg_bucket_name = os.environ.get("WMG_BUCKET")
 wmg_s3_bucket_uri = f"s3://{wmg_bucket_name}"
 
-# TODO(prathap): The functionality to fully integrate `snapshot_schema_version` will be done
-# in a future ticket:
-# https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
+logger = logging.getLogger(__name__)
 
 ###################################### PUBLIC FUNCTIONS #################################
 
@@ -82,8 +81,8 @@ def upload_artifacts_to_s3(
         snapshot_schema_version, snapshot_id, is_snapshot_validation_successful
     )
 
+    logger.info(f"Writing snapshot data to {snapshot_s3_dest_path}")
     sync_command = ["aws", "s3", "sync", snapshot_source_path, snapshot_s3_dest_path]
-
     subprocess.run(sync_command)
 
     _write_snapshot_metadata(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)
@@ -195,6 +194,7 @@ def _write_latest_snapshot_identifier_file(snapshot_schema_version: str, snapsho
 
     key_path = f"{data_schema_dir_path}/{file_name}" if data_schema_dir_path else file_name
 
+    logger.info(f"Writing latest snapshot identifier file to {key_path} with value {snapshot_id}")
     _write_value_to_s3_key(key_path=key_path, value=snapshot_id)
 
 
@@ -209,6 +209,7 @@ def _write_latest_snapshot_run_file(
     key_path = f"{wmg_s3_root_dir_path}/{file_name}" if wmg_s3_root_dir_path else file_name
     snapshot_path = _get_wmg_snapshot_s3_path(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)
 
+    logger.info(f"Writing latest snapshot run file to {key_path} with value {snapshot_path}")
     _write_value_to_s3_key(key_path=key_path, value=snapshot_path)
 
 
@@ -217,6 +218,9 @@ def _write_snapshot_metadata(snapshot_schema_version: str, snapshot_id: str, is_
     Write metadata about the data artifact generated
     """
     if is_snapshot_validation_successful:
+        logger.info(f"Snapshot {snapshot_id} passed validation, marking as active")
         _make_snapshot_active(snapshot_schema_version, snapshot_id)
+    else:
+        logger.info(f"Snapshot {snapshot_id} failed validation")
 
     _write_latest_snapshot_run_file(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)

@@ -1,7 +1,6 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import TissueCard from "src/views/CellGuide/components/TissueCard";
-import allTissues from "src/views/CellGuide/common/fixtures/allTissues.json";
-import allTissueDescriptions from "src/views/CellGuide/common/fixtures/allTissueDescriptions.json";
+import { allTissues, allTissueDescriptions } from "src/pages/api/tissue_cards";
 
 interface Tissues {
   id: string;

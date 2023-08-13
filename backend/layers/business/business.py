@@ -435,14 +435,6 @@ class BusinessLogic(BusinessLogicInterface):
                 new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
                     collection_version_id, existing_dataset_version_id
                 )
-                versions_to_delete = list(
-                    filter(
-                        lambda dv: dv.version_id != new_dataset_version.version_id,
-                        self.get_unpublished_dataset_versions(new_dataset_version.dataset_id),
-                    )
-                )  # resultant list will only contain one Dataset version unless a pipeline error had occurred
-                self.delete_dataset_version_assets(versions_to_delete)
-                self.database_provider.delete_dataset_versions(versions_to_delete)
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
             # adds new dataset version to collection version
@@ -477,15 +469,8 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionUpdateException from None
         if delete_published and not dataset_version.canonical_dataset.published_at:
             raise DatasetIsNotPublishedException from None
-        unpublished_versions = self.get_unpublished_dataset_versions(dataset_version.dataset_id)
-        self.delete_dataset_version_assets(unpublished_versions)
+        self.get_unpublished_dataset_versions(dataset_version.dataset_id)
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
-        if dataset_version.canonical_dataset.published_at:
-            # Dataset has been published; only delete unpublished version rows and artifact rows
-            self.database_provider.delete_dataset_versions(unpublished_versions)
-        else:
-            # Dataset has not been published; delete canonical row and all associated version rows and artifact rows
-            self.database_provider.delete_datasets([dataset_version.canonical_dataset])
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
@@ -668,11 +653,8 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Delete all associated publicly-accessible Datasets in s3
         """
-        collection_versions = self.database_provider.get_all_versions_for_collection(collection_id)
-        dataset_version_ids_to_delete = []
-        for collection_version in collection_versions:
-            dataset_version_ids_to_delete.extend([dv.version_id.id for dv in collection_version.datasets])
-        return self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete)
+        dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(collection_id)
+        return self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions])
 
     def get_unpublished_dataset_versions(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
@@ -727,21 +709,35 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionPublishException("Cannot publish a collection with datasets of different schema versions")
         schema_version = next(iter(schema_versions))
 
+        date_of_last_publish = datetime.min
         has_dataset_revisions = False
         # if collection is a revision and has no changes to previous version's datasets--don't update 'revised_at'
         # used for cases where revision only contains collection-level metadata changes
         if version.canonical_collection.version_id is not None:
+            date_of_last_publish = (
+                version.canonical_collection.revised_at or version.canonical_collection.originally_published_at
+            )
             canonical_version = self.database_provider.get_collection_version(version.canonical_collection.version_id)
             canonical_datasets = {dataset_version_id.id for dataset_version_id in canonical_version.datasets}
             version_datasets = {dataset.version_id.id for dataset in version.datasets}
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
+        # Finalize Collection publication and delete any tombstoned assets
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
             version.collection_id, version_id, schema_version, update_revised_at=has_dataset_revisions
         )
-
         self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete_from_s3)
+
+        # Handle cleanup of unpublished versions
+        dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(
+            version.collection_id, from_date=date_of_last_publish
+        )
+        versions_to_delete = list(
+            filter(lambda dv: dv.version_id.id not in {dv.version_id.id for dv in version.datasets}, dataset_versions)
+        )
+        self.delete_dataset_version_assets(versions_to_delete)
+        self.database_provider.delete_dataset_versions(versions_to_delete)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         """
@@ -754,26 +750,16 @@ class BusinessLogic(BusinessLogicInterface):
     ) -> Optional[DatasetVersion]:
         """
         Given a canonical dataset id, returns its mapped dataset version, i.e. the dataset version
-        that belongs to the most recently published collection. Otherwise will return the most recent
+        that belongs to the most recently published collection. If never published, will return the most recent
         unpublished version.
         """
-        dataset_version = self.database_provider.get_dataset_mapped_version(dataset_id, get_tombstoned=get_tombstoned)
+        dataset_version = self.database_provider.get_dataset_mapped_version(dataset_id, get_tombstoned)
         if dataset_version is not None:
             if dataset_version.canonical_dataset.tombstoned:
                 raise DatasetIsTombstonedException()
             return dataset_version
-        else:
-            canonical_dataset = self.database_provider.get_canonical_dataset(dataset_id)
-            if not canonical_dataset:
-                return None
-            # dataset has never been published, so fetch its most recently created version
-            latest = datetime.fromtimestamp(0)
-            unpublished_dataset = None
-            for dataset_version in self.database_provider.get_all_versions_for_dataset(dataset_id):
-                if dataset_version.created_at > latest:
-                    latest = dataset_version.created_at
-                    unpublished_dataset = dataset_version
-            return unpublished_dataset
+        # Dataset has never been published
+        return self.database_provider.get_most_recent_active_dataset_version(dataset_id)
 
     def get_prior_published_versions_for_dataset(self, dataset_id: DatasetId) -> List[PublishedDatasetVersion]:
         """

@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import ontologyTree from "src/views/CellGuide/common/fixtures/ontologyTree.json";
+import { readJson } from "src/common/utils/api/readJson";
+
+const ontologyTree = readJson(
+  "src/views/CellGuide/common/fixtures/ontologyTree.json"
+);
 
 async function handler(_: NextApiRequest, res: NextApiResponse) {
   try {
