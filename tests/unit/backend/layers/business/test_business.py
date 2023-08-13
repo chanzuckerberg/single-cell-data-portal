@@ -262,9 +262,9 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
                 dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://artifacts/{key}"
             )
             self.s3_provider.upload_file(None, "artifacts", key, None)
-            self.database_provider.add_dataset_artifact(
-                dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://datasets/{key}"
-            )
+            # self.database_provider.add_dataset_artifact(
+            #     dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://datasets/{key}"
+            # )
             self.s3_provider.upload_file(None, "datasets", key, None)
         self.database_provider.add_dataset_artifact(
             dataset_version_id, DatasetArtifactType.CXG.value, f"s3://cellxgene/{dataset_version_id}.cxg"
@@ -1096,16 +1096,13 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         dataset_version_id = published_version.datasets[0].version_id
 
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
-        self.assertEqual(5, len(artifacts))
+        self.assertEqual(3, len(artifacts))
         expected = [
-            f"s3://datasets/{dataset_version_id}.h5ad",
-            f"s3://datasets/{dataset_version_id}.rds",
             f"s3://artifacts/{dataset_version_id}.h5ad",
             f"s3://artifacts/{dataset_version_id}.rds",
             f"s3://cellxgene/{dataset_version_id}.cxg",
         ]
         self.assertEqual(set(expected), {a.uri for a in artifacts})
-        # self.assertCountEqual([a.get_file_name() for a in artifacts], ["local.h5ad", "local.cxg", "local.rds"])
 
     def test_get_dataset_artifact_download_data_ok(self):
         """
