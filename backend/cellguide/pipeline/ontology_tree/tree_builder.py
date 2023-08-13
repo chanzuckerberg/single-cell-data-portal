@@ -24,6 +24,23 @@ HEMATOPOIETIC_CELL_TYPE_ID = "CL:0000988"
 
 class OntologyTreeBuilder:
     def __init__(self, cell_counts_df, root_node="CL:0000548"):
+        """
+        OntologyTreeBuilder is a class that builds a nested dictionary representation of the cell ontology tree
+        and populates the nodes with cell type counts from the input cell counts dataframe. It also provides
+        functions to get the ontology tree state per cell type and per tissue. The ontology tree state is a
+        mask that determines which nodes are expanded by default and which nodes are shown when expanded in the
+        ontology.
+
+        Arguments
+        ---------
+        cell_counts_df: pandas.DataFrame
+            A dataframe with required columns "tissue_ontology_term_id", "cell_type_ontology_term_id", and "n_cells".
+            This dataframe is typically the cell counts cube from the WMG snapshot.
+
+        root_node: str, optional, default="CL:0000548" (animal cell)
+            The root node of the ontology tree. This is the node from which the ontology tree is traversed.
+        """
+
         logger.info("Loading CL ontology...")
         self.ontology = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
 
@@ -59,6 +76,26 @@ class OntologyTreeBuilder:
         self.start_node = f"{root_node}__0"
 
     def _initialize_cell_counts_df_rollup(self, cell_counts_df):
+        """
+        This function prepares the cell counts dataframe and its rollup for the ontology tree traversal.
+
+        Arguments
+        ---------
+        cell_counts_df: pandas.DataFrame
+            This dataframe is typically the cell counts cube from the WMG snapshot.
+
+        Returns
+        -------
+        cell_counts_df: pandas.Series
+            A series with index "cell_type_ontology_term_id" and values "n_cells".
+            This series is the cell counts dataframe with the following modification:
+            1. The cell type ontology term ids that are not in the input cell counts dataframe are added with 0 counts.
+
+        cell_counts_df_rollup: pandas.Series
+            A series with index "cell_type_ontology_term_id" and values "n_cells".
+            "n_cells" contains the sum of "n_cells" for the cell type and its descendants.
+        """
+
         cell_counts_df = (
             cell_counts_df.groupby("cell_type_ontology_term_id").sum(numeric_only=True)[["n_cells"]].reset_index()
         )
@@ -75,9 +112,20 @@ class OntologyTreeBuilder:
         return cell_counts_df, cell_counts_df_rollup
 
     def _get_deepcopy_of_ontology_graph(self):
+        """
+        Returns a deepcopy of the ontology graph.
+        """
         return json.loads(json.dumps(self.ontology_graph))
 
     def _delete_unknown_terms_from_ontology_graph(self, node):
+        """
+        Deletes nodes that have no name in the CL ontology from the ontology graph.
+
+        Arguments
+        ---------
+        node: dict
+            A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
+        """
         new_children = []
         for child in node.get("children", []):
             unknown = child["name"].startswith("CL:")
@@ -92,18 +140,57 @@ class OntologyTreeBuilder:
             self._delete_unknown_terms_from_ontology_graph(child)
 
     def _initialize_id_to_name(self):
+        """
+        Initializes a dictionary that maps cell type ontology term ids to their names.
+
+        Returns
+        -------
+        id_to_name: dict
+            A dictionary that maps cell type ontology term ids to their names.
+        all_cell_type_ids: list
+            A list of all cell type ontology term ids.
+        """
         id_to_name = {}
         for term in self.ontology.terms():
             if term.id.startswith("CL:"):
                 id_to_name[term.id] = term.name
-        return id_to_name, list(id_to_name)
+        all_cell_type_ids = list(id_to_name.keys())
+        return id_to_name, all_cell_type_ids
 
     def _initialize_children_and_parents_per_node(self):
+        """
+        Initializes dictionaries that map cell type ontology term ids to their children and parents.
+        While the cell ontology contains multiple instances of the same node, the ontology graph
+        contains only one instance of each node as each cell type has been suffixed with a unique integer.
+        Therefore, each node only has one parent and a unique set of children.
+
+        Returns
+        -------
+        all_children: dict
+            A dictionary that maps cell type ontology term ids to their children.
+        all_parents: dict
+            A dictionary that maps cell type ontology term ids to their parents.
+        """
         all_children = self._build_children_per_node(self.ontology_graph)
         all_parents = self._build_parents_per_node(self.ontology_graph)
         return all_children, all_parents
 
     def _build_children_per_node(self, node, all_children=None):
+        """
+        Builds a dictionary that maps cell type ontology term ids to their children.
+
+        Arguments
+        ---------
+        node: dict
+            A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
+        all_children: dict, optional, default=None
+            A dictionary that maps cell type ontology term ids to their children.
+
+        Returns
+        -------
+        all_children: dict
+            A dictionary that maps cell type ontology term ids to their children.
+        """
         if all_children is None:
             all_children = {}
         children = node.get("children", [])
@@ -115,6 +202,21 @@ class OntologyTreeBuilder:
         return all_children
 
     def _build_parents_per_node(self, node, all_parents=None):
+        """
+        Builds a dictionary that maps cell type ontology term ids to their parents.
+
+        Arguments
+        ---------
+        node: dict
+            A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
+        all_parents: dict, optional, default=None
+            A dictionary that maps cell type ontology term ids to their parents.
+
+        Returns
+        -------
+        all_parents: dict
+            A dictionary that maps cell type ontology term ids to their parents.
+        """
         if all_parents is None:
             all_parents = {}
         children = node.get("children", [])
@@ -125,6 +227,25 @@ class OntologyTreeBuilder:
         return all_parents
 
     def _traverse_ontology_with_counting(self, node, traverse_node_counter=None, all_unique_nodes=None):
+        """
+        This function traverses the cell ontology and builds a nested dictionary representation of the tree.
+        It also counts the number of times a node has been visited and adds a suffix to the node id to make it unique.
+        The suffix is the number of times the node had been visited prior.
+
+        Arguments
+        ---------
+        node: pronto.Term
+            A node of the cell ontology. This should be the root node of the ontology at the top-level.
+        traverse_node_counter: dict, optional, default=None
+            A dictionary that maps cell type ontology term ids to the number of times they have been visited.
+        all_unique_nodes: set, optional, default=None
+            A set of all unique cell type ontology term ids that have been visited.
+
+        Returns
+        -------
+        ontology_graph: dict
+            A nested dictionary representation of the cell ontology tree.
+        """
         if traverse_node_counter is None:
             traverse_node_counter = {}
         if all_unique_nodes is None:
@@ -170,6 +291,23 @@ class OntologyTreeBuilder:
         )
 
     def _depth_first_search_pathfinder(self, path_end_node, node=None, path=None):
+        """
+        This function finds a path backwards from the end node to the start node using depth-first search.
+
+        Arguments
+        ---------
+        path_end_node: str
+            The end node of the path.
+        node: str, optional, default=None
+            The current node in the depth-first search.
+        path: list, optional, default=None
+            The current path in the depth-first search.
+
+        Returns
+        -------
+        path: list
+            The path from the end node to the start node.
+        """
         if path is None:
             path = [path_end_node]
             node = path_end_node
@@ -183,6 +321,18 @@ class OntologyTreeBuilder:
                 return full_path
 
     def _truncate_graph_first_pass(self, graph, valid_nodes):
+        """
+        This function truncates the ontology graph in-place by removing nodes that are not in the valid nodes list.
+        It also adds a dummy node to the graph if the graph has children that are not in the valid nodes list.
+        The dummy node contains the ids of the invalid children.
+
+        Arguments
+        ---------
+        graph: dict
+            A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
+        valid_nodes: list
+            A list of valid cell type ontology term ids.
+        """
         if graph["id"] not in valid_nodes:
             return False
 
@@ -219,6 +369,22 @@ class OntologyTreeBuilder:
         return True
 
     def _truncate_graph_second_pass(self, graph, visited_nodes_in_paths, nodesWithChildrenFound=None):
+        """
+        We do not want to show cell types multiple times in the ontology tree unless they are nodes that are in one of the
+        paths to the target cell type. In this case, show the node in the path and collapse all its siblings into the
+        dummy node.
+
+        Arguments
+        ---------
+        graph: dict
+            A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
+        visited_nodes_in_paths: list
+            A list of cell type ontology term ids that are in one of the paths to the target cell type.
+            The target cell type may have multiple instances in the ontology graph (each instance with a unique suffix).
+        nodesWithChildrenFound: set, optional, default=None
+            A set of cell type ontology term ids that have children. This is used to remove children of nodes that
+            have already been encountered during the traversal.
+        """
         if nodesWithChildrenFound is None:
             nodesWithChildrenFound = set()
         if graph["id"].split("__")[0] in nodesWithChildrenFound:
@@ -259,6 +425,29 @@ class OntologyTreeBuilder:
     def _truncate_graph_in_tissue(
         self, graph, valid_nodes, total_count, tissue_cell_counts, seen_nodes_per_tissue=None, depth=0
     ):
+        """
+        This function truncates the ontology graph in-place by removing nodes with any of the following properties:
+         - The node is not in the valid nodes list.
+         - The node is an outlier branch (depth=1 and the node has less than 0.1% observed cells out of the total number of cells).
+         - The node is a child of a node that has already been encountered during the traversal.
+        This function is used for the ontology tree state per tissue.
+
+        Arguments
+        ---------
+        graph: dict
+            A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
+        valid_nodes: list
+            A list of valid cell type ontology term ids. These are cell types that are present in the tissue based on
+            the CELLxGENE corpus.
+        total_count: int
+            The total number of cells in the tissue.
+        tissue_cell_counts: dict
+            A dictionary that maps cell type ontology term ids to the number of cells in the tissue.
+        seen_nodes_per_tissue: set, optional, default=None
+            A set of cell type ontology term ids that have been encountered during the traversal.
+        depth: int, optional, default=0
+            The depth of the current node in the ontology graph.
+        """
         if seen_nodes_per_tissue is None:
             seen_nodes_per_tissue = set()
 
@@ -311,6 +500,28 @@ class OntologyTreeBuilder:
                     )
 
     def get_ontology_tree_state_per_celltype(self):
+        """
+        This function gets the ontology tree state per cell type. The ontology tree state is a mask that determines
+        which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
+
+        The following rules determine which cell types are expanded by default and not shown when expanded:
+         - All instances of the target cell type are shown.
+         - All children of the first instance of the target cell type are shown.
+         - All grandchildren of the first instance of the target cell type are shown.
+         - All siblings of the first instance of the target cell type are shown.
+         - All nodes in the paths to any instance of the target cell type are shown.
+        Nodes that are not shown when expanded will be collapsed into a dummy node that contains the ids of the
+        children that are not shown. Nodes will be collapsed into dummy nodes if they are siblings of nodes that are
+        in a path to any instances of the target cell type.
+
+        Returns
+        -------
+        all_states_per_cell_type: dict
+            A dictionary that maps cell type ontology term ids to their ontology tree states.
+            The ontology tree state is a dictionary with keys
+             - "isExpandedNodes": A list of cell type ontology term ids that are expanded by default.
+             - "notShownWhenExpandedNodes": A dictionary that maps cell type ontology term ids to their hidden children
+        """
         all_states_per_cell_type = {}
         for i, end_node in enumerate(self.all_cell_type_ids_in_corpus):
             if end_node in self.traverse_node_counter:
@@ -358,6 +569,28 @@ class OntologyTreeBuilder:
         return all_states_per_cell_type
 
     def get_ontology_tree_state_per_tissue(self):
+        """
+        This function gets the ontology tree state per tissue. The ontology tree state is a mask that determines
+        which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
+
+        The following rules determine which cell types are expanded by default and not shown when expanded:
+         - Only the first instance of each cell type present in the tissue is shown.
+         - All nodes in a path to any of the first instances of the cell types present in the tissue are shown.
+         - Nodes that are not outlier branches (depth=1 and the node has less than 0.1% observed cells out of the total number of cells) are shown.
+        Nodes that are not shown when expanded will be collapsed into a dummy node that contains the ids of the
+        children that are not shown. Nodes will be collapsed into dummy nodes if they are siblings of nodes that are
+        in a path to the first instances of cell types present in the tissue.
+
+        Returns
+        -------
+        all_states_per_tissue: dict
+            A dictionary that maps tissue ontology term ids to their ontology tree states.
+            The ontology tree state is a dictionary with keys
+                - "isExpandedNodes": A list of cell type ontology term ids that are expanded by default.
+                - "notShownWhenExpandedNodes": A dictionary that maps cell type ontology term ids to their hidden children
+                - "tissueCounts": A dictionary that maps cell type ontology term ids to the number of cells in the tissue.
+                    The number of cells is a dictionary with keys "n_cells" and "n_cells_rollup".
+        """
         all_states_per_tissue = {}
         tissue_by_cell_type = []
         for i, tissue in enumerate(self.uberon_by_celltype):
@@ -439,6 +672,19 @@ class OntologyTreeBuilder:
 
 
 def _getExpandedData(ontology_graph, isExpandedNodes=None):
+    """
+    This function gets the cell type ontology term ids of the nodes that are expanded by default.
+
+    Arguments
+    ---------
+    ontology_graph: dict
+        A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
+
+    Returns
+    -------
+    isExpandedNodes: list
+        A list of cell type ontology term ids that are expanded by default.
+    """
     if isExpandedNodes is None:
         isExpandedNodes = []
 
@@ -451,6 +697,19 @@ def _getExpandedData(ontology_graph, isExpandedNodes=None):
 
 
 def _getShownData(graph, notShownWhenExpandedNodes=None):
+    """
+    This function gets the children nodes that are not shown when expanded for each node in the ontology graph.
+
+    Arguments
+    ---------
+    graph: dict
+        A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
+
+    Returns
+    -------
+    notShownWhenExpandedNodes: list
+        A list of dictionaries that map cell type ontology term ids to their hidden children.
+    """
     if notShownWhenExpandedNodes is None:
         notShownWhenExpandedNodes = []
 
