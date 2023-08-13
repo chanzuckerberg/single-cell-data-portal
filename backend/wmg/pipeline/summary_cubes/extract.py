@@ -29,6 +29,6 @@ def extract_obs_data(tdb_group: str, cube_dims: list) -> pd.DataFrame:
 
     cell_labels = pd.DataFrame(
         data={k: cell_labels[k].astype("category") for k in cube_dims},
-        index=cell_labels.index,
+        index=cell_labels["obs_idx"].values,
     )
     return cell_labels

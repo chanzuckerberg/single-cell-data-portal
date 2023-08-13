@@ -80,7 +80,7 @@ def reduce_X(
             logger.info(f"reduce integrated expression data, i={i}")
             gene_expression_sum_x_cube_dimension(
                 rankit_values=result["rankit"].values,
-                obs_idxs=result.index.values,
+                obs_idxs=result["obs_idx"].values,
                 var_idx=result["var_idx"].values,
                 cube_indices=cube_indices,
                 sum_into=cube_sum,
