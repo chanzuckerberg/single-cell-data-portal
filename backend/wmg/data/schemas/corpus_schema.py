@@ -65,6 +65,7 @@ obs_labels = [
     # obs_idx is the join index with the X array, and IS ALSO the "iloc" from original dataset.
     LabelType("obs_idx", np.uint32, domain=uint32_domain, custom_decoder=gen_idx),
     LabelType("dataset_id", "ascii", encode_as_dim=True),
+    LabelType("filter_cells", "bool", encode_as_dim=False),
     *[
         LabelType(key, "ascii", encode_as_dim=True)
         for key in [

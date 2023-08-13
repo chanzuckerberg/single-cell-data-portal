@@ -189,6 +189,7 @@ interface EnrichedGenesQueryResponseEntry {
   symbol: string;
   name: string;
   organism: string;
+  tissue: string;
 }
 
 export type EnrichedGenesQueryResponse = EnrichedGenesQueryResponseEntry[];
@@ -209,8 +210,7 @@ export const USE_CANONICAL_MARKERS_QUERY = {
 };
 
 interface CanonicalMarkersQueryResponseEntry {
-  tissue_general: string;
-  tissue_specific: string;
+  tissue: string;
   symbol: string;
   name: string;
   publication: string;

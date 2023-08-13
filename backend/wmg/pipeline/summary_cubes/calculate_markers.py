@@ -8,13 +8,16 @@ import tiledb
 from scipy import stats
 
 from backend.common.utils.exceptions import MarkerGeneCalculationException
+from backend.wmg.data.query import FmgQueryCriteria, WmgCubeQueryParams, WmgQuery
 from backend.common.utils.rollup import (
     are_cell_types_colinear,
     rollup_across_cell_type_descendants,
     rollup_across_cell_type_descendants_array,
 )
-from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
-from backend.wmg.data.schemas.data_schema_config import WMG_DATA_SCHEMA_VERSION
+from backend.wmg.data.schemas.data_schema_config import (
+    WMG_DATA_SCHEMA_VERSION,
+    WRITER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+    WRITER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     DATASET_TO_GENE_IDS_FILENAME,
@@ -108,7 +111,12 @@ def _query_tiledb_context_memoized(
         primary_filter_dimensions=None,
         filter_relationships=None,
     )
-    q = WmgQuery(snapshot)
+    cube_query_params = WmgCubeQueryParams(
+        cube_query_valid_attrs=WRITER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+        cube_query_valid_dims=WRITER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+    )
+
+    q = WmgQuery(snapshot, cube_query_params)
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
 
