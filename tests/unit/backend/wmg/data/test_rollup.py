@@ -1,6 +1,6 @@
 """This module tests the low level functions encapsulating the roll up operation across the cell type ontology.
 
-In detail, this module tests the public and private functions defined in `backend.wmg.data.rollup` module.
+In detail, this module tests the public and private functions defined in `backend.common.utils.rollup` module.
 """
 
 import unittest
@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from backend.wmg.data.rollup import are_cell_types_colinear, rollup_across_cell_type_descendants
+from backend.common.utils.rollup import are_cell_types_colinear, rollup_across_cell_type_descendants
 
 
 class TestLowLevelRollupFunctionsTraversingCellTypeLineage(unittest.TestCase):

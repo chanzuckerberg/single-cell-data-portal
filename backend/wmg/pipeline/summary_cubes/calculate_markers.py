@@ -9,13 +9,13 @@ from numba import njit, prange
 from scipy import stats
 
 from backend.common.utils.exceptions import MarkerGeneCalculationException
-from backend.wmg.data.query import FmgQueryCriteria, WmgCubeQueryParams, WmgQuery
-from backend.wmg.data.rollup import (
+from backend.common.utils.rollup import (
     are_cell_types_colinear,
     descendants,
     rollup_across_cell_type_descendants,
     rollup_across_cell_type_descendants_array,
 )
+from backend.wmg.data.query import FmgQueryCriteria, WmgCubeQueryParams, WmgQuery
 from backend.wmg.data.schemas.data_schema_config import (
     WMG_DATA_SCHEMA_VERSION,
     WRITER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
