@@ -732,11 +732,9 @@ class BusinessLogic(BusinessLogicInterface):
         dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(
             version.collection_id, from_date=date_of_last_publish
         )
-        [print(f"djh dataset_versions {d.dataset_id, d.version_id}") for d in dataset_versions]
         versions_to_delete = list(
             filter(lambda dv: dv.version_id.id not in {dv.version_id.id for dv in version.datasets}, dataset_versions)
         )
-        print(f"djh versions to delete {[d.version_id for d in versions_to_delete]}")
         self.delete_dataset_version_assets(versions_to_delete)
         self.database_provider.delete_dataset_versions(versions_to_delete)
 
