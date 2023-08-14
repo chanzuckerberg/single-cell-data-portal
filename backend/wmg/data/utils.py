@@ -3,6 +3,7 @@ import os
 import time
 from typing import Dict, List
 
+import numpy as np
 import requests
 import tiledb
 from requests.adapters import HTTPAdapter
@@ -154,9 +155,9 @@ def _setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502
 
 
 def get_datasets_from_curation_api():
-    # hardcode to dev backend if deployment is rdev or test
+    # hardcode to staging backend if deployment is rdev or test
     API_URL = (
-        "https://api.cellxgene.dev.single-cell.czi.technology"
+        "https://api.cellxgene.staging.single-cell.czi.technology"
         if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
         else os.getenv("API_URL")
     )
@@ -173,9 +174,9 @@ def get_datasets_from_curation_api():
 
 
 def get_collections_from_curation_api():
-    # hardcode to dev backend if deployment is rdev or test
+    # hardcode to staging backend if deployment is rdev or test
     API_URL = (
-        "https://api.cellxgene.dev.single-cell.czi.technology"
+        "https://api.cellxgene.staging.single-cell.czi.technology"
         if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
         else os.getenv("API_URL")
     )
@@ -188,3 +189,21 @@ def get_collections_from_curation_api():
         if response.status_code == 200:
             collections = response.json()
     return collections
+
+
+def to_dict(a, b):
+    """
+    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
+    """
+    a = np.array(a)
+    b = np.array(b)
+    idx = np.argsort(a)
+    a = a[idx]
+    b = b[idx]
+    bounds = np.where(a[:-1] != a[1:])[0] + 1
+    bounds = np.append(np.append(0, bounds), a.size)
+    bounds_left = bounds[:-1]
+    bounds_right = bounds[1:]
+    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    return d

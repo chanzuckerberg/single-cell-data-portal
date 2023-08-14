@@ -15,7 +15,7 @@ const Page = ({
   description,
   name,
 }: InferGetServerSidePropsType<typeof getServerSideProps>): JSX.Element => (
-  <TissueCard name={name} description={description} />
+  <TissueCard key={name} name={name} description={description} />
 );
 
 export const getServerSideProps: GetServerSideProps<{

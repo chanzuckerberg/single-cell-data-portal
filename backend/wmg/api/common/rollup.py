@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from backend.wmg.data.rollup import rollup_across_cell_type_descendants
+from backend.common.utils.rollup import rollup_across_cell_type_descendants
 
 ######################### PUBLIC FUNCTIONS IN ALPHABETIC ORDER ##################################
 

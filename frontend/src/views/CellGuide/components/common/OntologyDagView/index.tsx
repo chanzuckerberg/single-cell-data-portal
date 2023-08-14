@@ -13,6 +13,7 @@ import {
 import { Zoom } from "@visx/zoom";
 import { RectClipPath } from "@visx/clip-path";
 import {
+  InitialCellOntologyTreeStateResponse,
   TissueCountsPerCellType,
   useCellOntologyTree,
   useCellOntologyTreeState,
@@ -74,7 +75,14 @@ interface TissueIdProps extends BaseTreeProps {
   tissueName: string;
 }
 
-type TreeProps = CellTypeIdProps | TissueIdProps;
+// Both cellTypeId and tissueId (with tissueName) are mandatory.
+interface BothCellAndTissueIdProps extends BaseTreeProps {
+  cellTypeId: string;
+  tissueId: string;
+  tissueName: string;
+}
+
+type TreeProps = BothCellAndTissueIdProps | CellTypeIdProps | TissueIdProps;
 
 // This determines the initial Zoom position and scale
 const initialTransformMatrixDefault = {
@@ -95,7 +103,6 @@ export default function OntologyDagView({
   initialWidth,
 }: TreeProps) {
   skinnyMode = cellTypeId ? skinnyMode : true;
-
   const defaultHeight = initialHeight ?? DEFAULT_ONTOLOGY_HEIGHT;
   const defaultWidth = initialWidth ?? DEFAULT_ONTOLOGY_WIDTH;
 
@@ -172,7 +179,6 @@ export default function OntologyDagView({
   const toggleTriggerRender = () => {
     setTriggerRender(!triggerRender);
   };
-
   // Animation duration - initially zero so the animation doesn't play on load
   const [duration, setDuration] = useState(0);
 
@@ -181,25 +187,72 @@ export default function OntologyDagView({
   // other properties like the positions of the nodes.
   const { data: rawTree } = useCellOntologyTree();
 
-  const entityId = cellTypeId ?? tissueId ?? "";
-  const useTreeState = cellTypeId
-    ? useCellOntologyTreeState
-    : useCellOntologyTreeStateTissue;
-  // Contains the nodes that are initially expanded (expandedNodes) and the nodes that are collapsed
-  // by default when their parents are expanded (notShownWhenExpanded).
-  // Also optionally contains cell counts for each node in the tissue ontology view (tissueCounts).
-  const { data: initialTreeState } = useTreeState(entityId);
+  const { data: initialTreeStateCell } = useCellOntologyTreeState(
+    cellTypeId ?? ""
+  );
+  const { data: initialTreeStateTissue } = useCellOntologyTreeStateTissue(
+    tissueId ?? ""
+  );
+  // (alec) This now handles the case where the initial tree state for both cell type and tissue is defined. We take the intersection of isExpanded and union of notShownWhenExpanded.
+  const initialTreeState: InitialCellOntologyTreeStateResponse | undefined =
+    useMemo(() => {
+      let initialTreeState;
+      if (initialTreeStateCell && initialTreeStateTissue) {
+        // Intersection of isExpandedNodes
+        const isExpandedIntersection =
+          initialTreeStateCell.isExpandedNodes.filter((node) =>
+            initialTreeStateTissue.isExpandedNodes.includes(node)
+          );
+
+        // Union of notShownWhenExpandedNodes
+        const notShownWhenExpandedUnion: {
+          [key: string]: string[];
+        } = { ...initialTreeStateCell.notShownWhenExpandedNodes };
+
+        for (const key of Object.keys(
+          initialTreeStateTissue.notShownWhenExpandedNodes
+        )) {
+          if (notShownWhenExpandedUnion[key]) {
+            // If the key exists in both, merge the arrays and de-duplicate
+            notShownWhenExpandedUnion[key] = Array.from(
+              new Set([
+                ...notShownWhenExpandedUnion[key],
+                ...initialTreeStateTissue.notShownWhenExpandedNodes[key],
+              ])
+            );
+          } else {
+            // If the key exists only in the tissue data, add it to the union
+            notShownWhenExpandedUnion[key] =
+              initialTreeStateTissue.notShownWhenExpandedNodes[key];
+          }
+        }
+
+        initialTreeState = {
+          isExpandedNodes: isExpandedIntersection,
+          notShownWhenExpandedNodes: notShownWhenExpandedUnion,
+          tissueCounts: initialTreeStateTissue.tissueCounts, // Only specified for tissueId
+        };
+      } else if (initialTreeStateCell) {
+        initialTreeState = initialTreeStateCell;
+      } else if (initialTreeStateTissue) {
+        initialTreeState = initialTreeStateTissue;
+      }
+      return initialTreeState;
+    }, [initialTreeStateCell, initialTreeStateTissue]);
 
   // Populate the tree data structure nodes with "isExpanded".
   const treeData: TreeNodeWithState | null = useMemo(() => {
     const newTree = rawTree ? JSON.parse(JSON.stringify(rawTree)) : null;
-    if (newTree) {
-      const expandedNodes = initialTreeState?.isExpandedNodes ?? [];
-      setIsExpandedInRawTree(newTree, expandedNodes);
-
-      const tissueCounts = initialTreeState?.tissueCounts ?? {};
-      if (Object.keys(tissueCounts).length > 0) {
-        setCellCountsInRawTree(newTree, tissueCounts);
+    if (newTree && initialTreeState) {
+      if (initialTreeState.isExpandedNodes) {
+        setIsExpandedInRawTree(newTree, initialTreeState.isExpandedNodes);
+      }
+      if (initialTreeState.tissueCounts) {
+        setCellCountsInRawTreeForTissueCardOntologyView(
+          newTree,
+          initialTreeState.tissueCounts
+        );
+        deleteNodesWithNoDescendantsForTissueCardOntologyView(newTree);
       }
     }
     return newTree;
@@ -209,32 +262,29 @@ export default function OntologyDagView({
   const data = useMemo(() => {
     if (!treeData) return null;
     return hierarchy(treeData, (d) => {
-      const newChildren: TreeNodeWithState[] = [];
-      if (d.isExpanded) {
+      if (d.isExpanded && d.children && initialTreeState) {
+        const newChildren: TreeNodeWithState[] = [];
         const notShownWhenExpandedNodes =
-          initialTreeState?.notShownWhenExpandedNodes ?? {};
-        // If this node is a key in `notShownWhenExpandedNodes`, then it is a parent to nodes
-        // that should be collapsed. Therefore, set `appendDummy` to `true`.
-        // The term "dummy" here is used to describe the collapsed node containing hidden terms.
-        // The text label of a "dummy" is the number of hidden terms, e.g. 52 cell types.
-        const appendDummy = d.id in notShownWhenExpandedNodes;
+          initialTreeState.notShownWhenExpandedNodes;
+        /**
+         * If a node is a key in `notShownWhenExpandedNodes`, then it is a parent to nodes
+         * that should be collapsed. The text label of this "dummy" node is the number of hidden terms,
+         * e.g. 52 cell types.
+         * `showAllChildren` is a flag that is set to `true` when the user clicks on a collapsed node.
+         * It indicates that all of the children of the node should be shown.
+         */
 
-        // `showAllChildren` is a flag that is set to `true` when the user clicks on a collapsed node.
-        // It indicates that all of the children of the node should be shown.
-        for (const child of d?.children ?? []) {
+        for (const child of d.children) {
           if (
             d.showAllChildren ||
-            !appendDummy ||
-            // This is a child that should be shown because it is in a path to the target node.
-            (appendDummy && !notShownWhenExpandedNodes[d.id].includes(child.id))
+            !notShownWhenExpandedNodes[d.id]?.includes(child.id)
           ) {
             newChildren.push(child);
           }
         }
 
-        if (appendDummy && !d.showAllChildren) {
-          const numHiddenChildren =
-            (d.children?.length ?? 0) - newChildren.length;
+        const numHiddenChildren = d.children.length - newChildren.length;
+        if (numHiddenChildren > 0) {
           newChildren.push({
             id: `dummy-child-${d.id}`,
             name: `${numHiddenChildren} cell types`,
@@ -242,35 +292,17 @@ export default function OntologyDagView({
             n_cells_rollup: 0,
             isExpanded: false,
           });
-        } else if (d.showAllChildren) {
-          // Sorting such that the first child in the `newChildren` array is the
-          // same as the first child in the original array (`d.children`) seems to
-          // ensure that the position of the visible node is preserved when its dummy
-          // sibling node is expanded. It makes for smoother animations.
-          if (d.children) {
-            const firstId = d.children[0].id;
-            newChildren.sort((a, b) => {
-              if (a.id === firstId) return -1;
-              if (b.id === firstId) return 1;
-              return a.id.localeCompare(b.id);
-            });
-          }
         }
+        return newChildren;
       }
-      return newChildren.length ? newChildren : null;
     });
+    /**
+     * TODO: Even though `triggerRender` is not used in the memo, it is used here to force a re-render
+     * when the node components update the tree data in-place when users collapse and expand nodes.
+     * This is a known anti-pattern and will be addressed in later work.
+     * See this ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5478
+     */
   }, [treeData, triggerRender, initialTreeState]);
-
-  // Cleanup when the cell type id changes
-  useEffect(() => {
-    setCenteredNodeCoords(false);
-    return () => {
-      setCenteredNodeCoords(false);
-      setInitialTransformMatrix(initialTransformMatrixDefault);
-      disableFullScreen();
-      hideTooltip();
-    };
-  }, [cellTypeId, tissueId]);
 
   // This useEffect is used to set the initial transform matrix when the tree data changes.
   // The initial transform matrix is used to center the tree view on the target node.
@@ -305,26 +337,23 @@ export default function OntologyDagView({
       }
       // If the target node is found and its position is known, set the initial transform matrix.
       // This will always be false when in tissue mode.
-      if (targetNode) {
-        if (targetNode.x !== undefined && targetNode.y !== undefined) {
-          setInitialTransformMatrix({
-            scaleX: 1,
-            scaleY: 1,
-            translateX: width / 2 - targetNode.y,
-            translateY: height / 2 - targetNode.x,
-            skewX: 0,
-            skewY: 0,
-          });
-          setCenteredNodeCoords(true);
-        }
+      if (
+        targetNode &&
+        targetNode.x !== undefined &&
+        targetNode.y !== undefined
+      ) {
+        setInitialTransformMatrix({
+          scaleX: 1,
+          scaleY: 1,
+          translateX: width / 2 - targetNode.y,
+          translateY: height / 2 - targetNode.x,
+          skewX: 0,
+          skewY: 0,
+        });
+        setCenteredNodeCoords(true);
       }
     }
   }, [data, cellTypeId, width, height]);
-
-  // Trigger re-render when full screen mode is toggled
-  useEffect(() => {
-    toggleTriggerRender();
-  }, [isFullScreen]);
 
   // Hover over node tooltip
   const {
@@ -475,19 +504,30 @@ function setIsExpandedInRawTree(
   }
 }
 
-function setCellCountsInRawTree(
+function setCellCountsInRawTreeForTissueCardOntologyView(
   graph: TreeNodeWithState,
   tissueCounts: TissueCountsPerCellType
 ) {
   const cellTypeId = graph.id.split("__").at(0) ?? graph.id;
-
-  graph.n_cells = tissueCounts[cellTypeId]?.n_cells ?? graph.n_cells;
-  graph.n_cells_rollup =
-    tissueCounts[cellTypeId]?.n_cells_rollup ?? graph.n_cells_rollup;
+  // (alec) this makes it so that cell types that aren't present in the tissue will be removed
+  // by deleteNodesWithNoDescendantsForTissueCardOntologyView
+  graph.n_cells = tissueCounts[cellTypeId]?.n_cells ?? 0;
+  graph.n_cells_rollup = tissueCounts[cellTypeId]?.n_cells_rollup ?? 0;
 
   if (graph.children) {
     for (const child of graph.children) {
-      setCellCountsInRawTree(child, tissueCounts);
+      setCellCountsInRawTreeForTissueCardOntologyView(child, tissueCounts);
     }
+  }
+}
+
+function deleteNodesWithNoDescendantsForTissueCardOntologyView(
+  graph: TreeNodeWithState
+): void {
+  if (graph.children) {
+    graph.children = graph.children.filter((child) => {
+      deleteNodesWithNoDescendantsForTissueCardOntologyView(child);
+      return child.n_cells_rollup !== 0;
+    });
   }
 }
