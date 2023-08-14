@@ -14,7 +14,7 @@ ontology.load()
 
 # cache finding descendants per cell type
 @lru_cache(maxsize=None)
-def _descendants(cell_type):
+def descendants(cell_type):
     global ontology
     cell_type_iri = cell_type.replace(":", "_")
     entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
@@ -23,7 +23,7 @@ def _descendants(cell_type):
 
 
 @lru_cache(maxsize=None)
-def _ancestors(cell_type):
+def ancestors(cell_type):
     global ontology
     cell_type_iri = cell_type.replace(":", "_")
     entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
@@ -48,7 +48,7 @@ def find_descendants_per_cell_type(cell_types):
 
     relatives_per_cell_type = []
     for cell_type in cell_types:
-        relatives = _descendants(cell_type)
+        relatives = descendants(cell_type)
         relatives_per_cell_type.append(relatives)
 
     for i, children in enumerate(relatives_per_cell_type):
@@ -73,10 +73,10 @@ def are_cell_types_colinear(cell_type1, cell_type2):
     -------
     bool
     """
-    descendants1 = _descendants(cell_type1)
-    descendants2 = _descendants(cell_type2)
-    ancestors1 = _ancestors(cell_type1)
-    ancestors2 = _ancestors(cell_type2)
+    descendants1 = descendants(cell_type1)
+    descendants2 = descendants(cell_type2)
+    ancestors1 = ancestors(cell_type1)
+    ancestors2 = ancestors(cell_type2)
     return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
 
 
