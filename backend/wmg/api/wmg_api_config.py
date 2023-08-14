@@ -14,7 +14,7 @@ WMG_API_SNAPSHOT_SCHEMA_VERSION = "v1"
 # NOTE: The snapshot id that should be force
 # loaded must belong to the schema version set
 # in WMG_API_SNAPSHOT_SCHEMA_VERSION
-WMG_API_FORCE_LOAD_SNAPSHOT_ID = None
+WMG_API_FORCE_LOAD_SNAPSHOT_ID = "old-snapshot-id"
 
 
 # These are the valid attributes and dimensions consulted by the
