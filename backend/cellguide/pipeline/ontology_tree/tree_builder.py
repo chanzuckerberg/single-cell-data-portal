@@ -14,7 +14,9 @@ logger = logging.getLogger(__name__)
 
 """
 This module contains the OntologyTreeBuilder class which is used to build a nested dictionary representation of the cell ontology tree.
-The tree is populated with cell type counts from an input dataframe.
+The tree is populated with cell type counts from an input dataframe. The class also provides functions to get the ontology tree state
+per cell type and per tissue. The ontology tree state is a mask that determines which nodes are expanded by default and which nodes 
+are shown when expanded in the ontology.
 """
 
 
@@ -29,7 +31,10 @@ class OntologyTreeBuilder:
     def __init__(self, cell_counts_df, root_node="CL:0000548"):
         """
         OntologyTreeBuilder is a class that builds a nested dictionary representation of the cell ontology tree
-        and populates the nodes with cell type counts from the input cell counts dataframe.
+        and populates the nodes with cell type counts from the input cell counts dataframe. It also provides
+        functions to get the ontology tree state per cell type and per tissue. The ontology tree state is a
+        mask that determines which nodes are expanded by default and which nodes are shown when expanded in the
+        ontology.
 
         Arguments
         ---------
