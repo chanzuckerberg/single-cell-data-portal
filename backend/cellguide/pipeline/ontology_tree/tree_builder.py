@@ -354,16 +354,18 @@ class OntologyTreeBuilder:
 
                 end_nodes = self.uberon_by_celltype[tissue]
                 uberon_ancestors = [i.id for i in tissue_term.superclasses()]
-                if len(list(set(TISSUES_IMMUNE_CELL_WHITELIST).intersection(uberon_ancestors))) == 0:
-                    end_nodes2 = [
+
+                uberon_ancestors_in_whitelist = list(set(TISSUES_IMMUNE_CELL_WHITELIST).intersection(uberon_ancestors))
+                if len(uberon_ancestors_in_whitelist) == 0:
+                    end_nodes_that_are_not_hematopoietic = [
                         e
                         for e in end_nodes
                         if HEMATOPOIETIC_CELL_TYPE_ID not in [i.id for i in self.ontology[e].superclasses()]
                     ]
-                    if len(end_nodes2) == 0:
+                    if len(end_nodes_that_are_not_hematopoietic) == 0:
                         logger.info(f"Not filtering out immune cell for {tissue_label}")
                     else:
-                        end_nodes = end_nodes2
+                        end_nodes = end_nodes_that_are_not_hematopoietic
                 else:
                     logger.info(f"Not filtering out immune cell for {tissue_label}")
 
