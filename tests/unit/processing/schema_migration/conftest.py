@@ -12,7 +12,7 @@ from backend.layers.common.entities import (
     DatasetStatus,
     DatasetVersionId,
 )
-from backend.layers.processing.schema_migration import SchemaMigrate
+from backend.processing.schema_migration import SchemaMigrate
 
 
 def make_mock_dataset_version(

@@ -1,6 +1,6 @@
 import pytest
 
-from backend.layers.processing.logger import LogSuppressed
+from backend.processing.logger import LogSuppressed
 
 
 def test_log_suppressed__caught(caplog):

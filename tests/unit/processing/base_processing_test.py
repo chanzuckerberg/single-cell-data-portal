@@ -1,9 +1,9 @@
 from unittest.mock import Mock
 
-from backend.layers.processing.downloader import Downloader
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
+from backend.processing.downloader import Downloader
 from tests.unit.backend.layers.common.base_test import BaseTest
 
 

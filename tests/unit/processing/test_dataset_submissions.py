@@ -6,7 +6,7 @@ from backend.common.utils.exceptions import (
     NonExistentDatasetException,
 )
 from backend.layers.common.entities import EntityId
-from backend.layers.processing.submissions.app import dataset_submissions_handler
+from backend.processing.submissions.app import dataset_submissions_handler
 from tests.unit.backend.layers.common.base_test import BaseTest
 
 

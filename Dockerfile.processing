@@ -21,6 +21,7 @@ RUN pip3 install -r requirements-processing.txt
 ADD backend/__init__.py backend/__init__.py
 ADD backend/layers backend/layers
 ADD backend/common backend/common
+ADD backend/processing backend/processing
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -29,4 +30,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "backend.layers.processing.process"]
+CMD ["python3", "-m", "backend.processing.process"]

@@ -10,11 +10,11 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetVersionId,
 )
-from backend.layers.processing.downloader import Downloader
-from backend.layers.processing.exceptions import ConversionFailed
-from backend.layers.processing.logger import logit
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from backend.processing.downloader import Downloader
+from backend.processing.exceptions import ConversionFailed
+from backend.processing.logger import logit
 
 
 class ProcessingLogic:  # TODO: ProcessingLogicBase

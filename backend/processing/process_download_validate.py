@@ -16,13 +16,13 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     OntologyTermId,
 )
-from backend.layers.processing.downloader import Downloader
-from backend.layers.processing.exceptions import ValidationFailed
-from backend.layers.processing.logger import logit
-from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from backend.processing.downloader import Downloader
+from backend.processing.exceptions import ValidationFailed
+from backend.processing.logger import logit
+from backend.processing.process_logic import ProcessingLogic
 
 
 class ProcessDownloadValidate(ProcessingLogic):

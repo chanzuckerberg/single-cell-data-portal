@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetStatus, DatasetVersionId
-from backend.layers.processing.upload_failures.app import (
+from backend.processing.upload_failures.app import (
     cleanup_artifacts,
     get_failure_slack_notification_message,
     parse_event,
