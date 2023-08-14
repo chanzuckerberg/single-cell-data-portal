@@ -9,7 +9,11 @@ import { getById } from "tests/utils/selectors";
 const { describe } = test;
 
 describe("Right side bar", () => {
-  conditionallyRunTests();
+  /**
+   * TODO(thuang): Remove forceRun when all WMG e2e tests are enabled.
+   * `forceRun` is just to incrementally add tests back in the meantime
+   */
+  conditionallyRunTests({ forceRun: true });
 
   test("Should link out to cellxgene documentation", async ({
     page,

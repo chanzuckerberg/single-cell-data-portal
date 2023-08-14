@@ -66,7 +66,11 @@ const ERROR_NO_TESTID_OR_LOCATOR = "Either testId or locator must be defined";
 const { describe } = test;
 
 describe("Where's My Gene", () => {
-  conditionallyRunTests();
+  /**
+   * TODO(thuang): Remove forceRun when all WMG e2e tests are enabled.
+   * `forceRun` is just to incrementally add tests back in the meantime
+   */
+  conditionallyRunTests({ forceRun: true });
 
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);

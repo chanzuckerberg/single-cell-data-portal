@@ -15,7 +15,11 @@ import {
 
 const { describe } = test;
 describe("CSV download tests", () => {
-  conditionallyRunTests();
+  /**
+   * TODO(thuang): Remove forceRun when all WMG e2e tests are enabled.
+   * `forceRun` is just to incrementally add tests back in the meantime
+   */
+  conditionallyRunTests({ forceRun: true });
 
   test(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
     page,

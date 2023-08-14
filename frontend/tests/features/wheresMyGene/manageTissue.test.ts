@@ -7,7 +7,11 @@ import { conditionallyRunTests } from "tests/utils/wmgUtils";
 const { describe } = test;
 
 describe("Add tissue tests", () => {
-  conditionallyRunTests();
+  /**
+   * TODO(thuang): Remove forceRun when all WMG e2e tests are enabled.
+   * `forceRun` is just to incrementally add tests back in the meantime
+   */
+  conditionallyRunTests({ forceRun: true });
 
   test("Should select tissue using keyboard arrow key to select", async ({
     page,

@@ -24,7 +24,11 @@ function goToWMG(page: Page) {
   ]);
 }
 describe("Tests for Gene Expression page", () => {
-  conditionallyRunTests();
+  /**
+   * TODO(thuang): Remove forceRun when all WMG e2e tests are enabled.
+   * `forceRun` is just to incrementally add tests back in the meantime
+   */
+  conditionallyRunTests({ forceRun: true });
 
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
