@@ -68,7 +68,7 @@ def load_data_and_create_cube(
         snapshot_source_path=corpus_path,
         snapshot_schema_version=WMG_DATA_SCHEMA_VERSION,
         snapshot_id=snapshot_id,
-        is_snapshot_validation_successful=cube_is_invalid,
+        is_snapshot_validation_successful=not cube_is_invalid,
     )
     if cube_is_invalid:
         sys.exit(f"Exiting due to cube validation failure. Failed data location: {cube_data_s3_path}")
