@@ -1,7 +1,7 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
 from pronto import Ontology, Term
@@ -215,7 +215,7 @@ class OntologyTreeBuilder:
         )
 
     ### Get the ontology tree state
-    def get_ontology_tree_state_per_celltype(self):
+    def get_ontology_tree_state_per_celltype(self) -> Dict[str, any]:
         """
         This function gets the ontology tree state per cell type. The ontology tree state is a mask that determines
         which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
@@ -284,7 +284,7 @@ class OntologyTreeBuilder:
 
         return all_states_per_cell_type
 
-    def _depth_first_search_pathfinder(self, path_end_node, node=None, path=None):
+    def _depth_first_search_pathfinder(self, path_end_node, node=None, path=None) -> list[str]:
         """
         This function finds a path backwards from the end node to the start node using depth-first search.
 
@@ -314,7 +314,7 @@ class OntologyTreeBuilder:
             if full_path:
                 return full_path
 
-    def _truncate_graph_first_pass(self, graph, valid_nodes):
+    def _truncate_graph_first_pass(self, graph, valid_nodes) -> bool:
         """
         This function truncates the ontology graph in-place by removing nodes that are not in the valid nodes list.
         It also adds a dummy node to the graph if the graph has children that are not in the valid nodes list.
@@ -326,13 +326,18 @@ class OntologyTreeBuilder:
             A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
         valid_nodes: list
             A list of valid cell type ontology term ids.
+
+        Returns
+        -------
+        bool
+            Returns True if the node is in valid nodes and False otherwise.
+            This is only used for the recursion.
         """
         if graph["id"] not in valid_nodes:
             return False
 
         children = graph.get("children", [])
         valid_children = []
-        append_dummy = False
 
         invalid_children_ids = []
         for child in children:
@@ -341,9 +346,8 @@ class OntologyTreeBuilder:
                 valid_children.append(child)
             elif child["id"] != "":
                 invalid_children_ids.append(child["id"])
-                append_dummy = True
 
-        if append_dummy and len(valid_children) > 0:
+        if len(invalid_children_ids) > 0 and len(valid_children) > 0:
             valid_children.append(
                 {
                     "id": "",
@@ -362,7 +366,7 @@ class OntologyTreeBuilder:
 
         return True
 
-    def _truncate_graph_second_pass(self, graph, visited_nodes_in_paths, nodesWithChildrenFound=None):
+    def _truncate_graph_second_pass(self, graph, visited_nodes_in_paths, nodesWithChildrenFound=None) -> None:
         """
         We do not want to show cell types multiple times in the ontology tree unless they are nodes that are in one of the
         paths to the target cell type. In this case, show the node in the path and collapse all its siblings into the
@@ -382,6 +386,8 @@ class OntologyTreeBuilder:
         if nodesWithChildrenFound is None:
             nodesWithChildrenFound = set()
         if graph["id"].split("__")[0] in nodesWithChildrenFound:
+            # if node is in path to target cell type, preserve it
+            # otherwise, collapse its siblings into a dummy node
             if "children" in graph:
                 children = graph["children"]
                 new_children = []
@@ -416,7 +422,7 @@ class OntologyTreeBuilder:
             if child["id"] != "":
                 self._truncate_graph_second_pass(child, visited_nodes_in_paths, nodesWithChildrenFound)
 
-    def _initialize_children_and_parents_per_node(self):
+    def _initialize_children_and_parents_per_node(self) -> Tuple[Dict[str, list[str]], Dict[str, list[str]]]:
         """
         Initializes dictionaries that map cell type ontology term ids to their children and parents.
         While the cell ontology contains multiple instances of the same node, the ontology graph
@@ -434,7 +440,7 @@ class OntologyTreeBuilder:
         all_parents = self._build_parents_per_node(self.ontology_graph)
         return all_children, all_parents
 
-    def _build_children_per_node(self, node, all_children=None):
+    def _build_children_per_node(self, node, all_children=None) -> Dict[str, list[str]]:
         """
         Builds a dictionary that maps cell type ontology term ids to their children.
 
@@ -460,7 +466,7 @@ class OntologyTreeBuilder:
             self._build_children_per_node(child, all_children)
         return all_children
 
-    def _build_parents_per_node(self, node, all_parents=None):
+    def _build_parents_per_node(self, node, all_parents=None) -> Dict[str, list[str]]:
         """
         Builds a dictionary that maps cell type ontology term ids to their parents.
 
@@ -485,14 +491,14 @@ class OntologyTreeBuilder:
             self._build_parents_per_node(child, all_parents)
         return all_parents
 
-    def _get_deepcopy_of_ontology_graph(self):
+    def _get_deepcopy_of_ontology_graph(self) -> Dict[str, Any]:
         """
         Returns a deepcopy of the ontology graph.
         """
         return json.loads(json.dumps(self.ontology_graph))
 
 
-def _getExpandedData(ontology_graph, isExpandedNodes=None):
+def _getExpandedData(ontology_graph, isExpandedNodes=None) -> Dict[str, list[str]]:
     """
     This function gets the cell type ontology term ids of the nodes that are expanded by default.
 
@@ -517,7 +523,7 @@ def _getExpandedData(ontology_graph, isExpandedNodes=None):
     return isExpandedNodes
 
 
-def _getShownData(graph, notShownWhenExpandedNodes=None):
+def _getShownData(graph, notShownWhenExpandedNodes=None) -> Dict[str, Dict[str, list[str]]]:
     """
     This function gets the children nodes that are not shown when expanded for each node in the ontology graph.
 
