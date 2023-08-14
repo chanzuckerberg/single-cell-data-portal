@@ -193,6 +193,7 @@ export default function OntologyDagView({
   const { data: initialTreeStateTissue } = useCellOntologyTreeStateTissue(
     tissueId ?? ""
   );
+  // (alec) This now handles the case where the initial tree state for both cell type and tissue is defined. We take the intersection of isExpanded and union of notShownWhenExpanded.
   const initialTreeState: InitialCellOntologyTreeStateResponse | undefined =
     useMemo(() => {
       let initialTreeState;
@@ -247,8 +248,11 @@ export default function OntologyDagView({
         setIsExpandedInRawTree(newTree, initialTreeState.isExpandedNodes);
       }
       if (initialTreeState.tissueCounts) {
-        setCellCountsInRawTree(newTree, initialTreeState.tissueCounts);
-        deleteNodesWithNoDescendants(newTree);
+        setCellCountsInRawTreeForTissueCardOntologyView(
+          newTree,
+          initialTreeState.tissueCounts
+        );
+        deleteNodesWithNoDescendantsForTissueCardOntologyView(newTree);
       }
     }
     return newTree;
@@ -292,6 +296,12 @@ export default function OntologyDagView({
         return newChildren;
       }
     });
+    /**
+     * TODO: Even though `triggerRender` is not used in the memo, it is used here to force a re-render
+     * when the node components update the tree data in-place when users collapse and expand nodes.
+     * This is a known anti-pattern and will be addressed in later work.
+     * See this ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5478
+     */
   }, [treeData, triggerRender, initialTreeState]);
 
   // This useEffect is used to set the initial transform matrix when the tree data changes.
@@ -494,26 +504,29 @@ function setIsExpandedInRawTree(
   }
 }
 
-function setCellCountsInRawTree(
+function setCellCountsInRawTreeForTissueCardOntologyView(
   graph: TreeNodeWithState,
   tissueCounts: TissueCountsPerCellType
 ) {
   const cellTypeId = graph.id.split("__").at(0) ?? graph.id;
-
+  // (alec) this makes it so that cell types that aren't present in the tissue will be removed
+  // by deleteNodesWithNoDescendantsForTissueCardOntologyView
   graph.n_cells = tissueCounts[cellTypeId]?.n_cells ?? 0;
   graph.n_cells_rollup = tissueCounts[cellTypeId]?.n_cells_rollup ?? 0;
 
   if (graph.children) {
     for (const child of graph.children) {
-      setCellCountsInRawTree(child, tissueCounts);
+      setCellCountsInRawTreeForTissueCardOntologyView(child, tissueCounts);
     }
   }
 }
 
-function deleteNodesWithNoDescendants(graph: TreeNodeWithState): void {
+function deleteNodesWithNoDescendantsForTissueCardOntologyView(
+  graph: TreeNodeWithState
+): void {
   if (graph.children) {
     graph.children = graph.children.filter((child) => {
-      deleteNodesWithNoDescendants(child);
+      deleteNodesWithNoDescendantsForTissueCardOntologyView(child);
       return child.n_cells_rollup !== 0;
     });
   }
