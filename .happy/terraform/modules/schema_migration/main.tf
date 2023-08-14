@@ -355,7 +355,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Resource": "arn:aws:states:::states:startExecution.sync:2",
                   "Parameters": {
                     "StateMachineArn": "arn:aws:states:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:stateMachine:dp-${var.deployment_stage}-${var.custom_stack_name}-sfn",
-                    "Name.$": "$.results.sfn_name",
+                    "Name.$": "$.result.sfn_name",
                     "Input": {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
                       "url.$": "$.result.uri",
