@@ -3,15 +3,13 @@ ARG BASE_TAG=branch-main
 FROM python:3.10
 RUN /usr/local/bin/python -m pip install --upgrade pip && \
     apt update && apt -y install graphviz graphviz-dev && \
-    rm -rf /var/lib/apt/lists/* && \
-    pip3 install awscli
+    rm -rf /var/lib/apt/lists/*
 
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /
 
-# TODO: Update this to use cellguide pipeline's own requirements file when it is made
 ADD requirements-cellguide-pipeline.txt requirements-cellguide-pipeline.txt
 RUN pip3 install -r requirements-cellguide-pipeline.txt
 
