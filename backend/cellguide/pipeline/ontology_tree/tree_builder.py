@@ -1,7 +1,8 @@
 import logging
+from typing import Any, Dict
 
 import pandas as pd
-from pronto import Ontology
+from pronto import Ontology, Optional, Term
 
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
@@ -13,6 +14,12 @@ logger = logging.getLogger(__name__)
 This module contains the OntologyTreeBuilder class which is used to build a nested dictionary representation of the cell ontology tree.
 The tree is populated with cell type counts from an input dataframe.
 """
+
+
+class TraverseOntologyResult:
+    subtree: Dict[str, Any]
+    traverse_node_counter: Dict[str, int]
+    all_unique_nodes: set[str]
 
 
 class OntologyTreeBuilder:
@@ -31,7 +38,7 @@ class OntologyTreeBuilder:
             The root node of the ontology tree. This is the node from which the ontology tree is traversed.
         """
 
-        logger.info("Loading CL ontology...")
+        logger.info(f"Loading CL ontology from root node {root_node}...")
         self.ontology = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
 
         logger.info("Initializing cell type data structures from the input cell counts dataframe...")
@@ -41,9 +48,11 @@ class OntologyTreeBuilder:
             self.cell_counts_df_rollup.values > 0
         ]
         logger.info("Initializing ontology tree data structures by traversing CL ontology...")
-        self.ontology_graph, self.traverse_node_counter, self.all_unique_nodes = self._traverse_ontology_with_counting(
-            self.ontology[root_node]
-        )
+        traverse_ontology_result = self._traverse_ontology_with_counting(self.ontology[root_node])
+        self.ontology_graph = traverse_ontology_result.subtree
+        self.traverse_node_counter = traverse_ontology_result.traverse_node_counter
+        self.all_unique_nodes = traverse_ontology_result.all_unique_nodes
+
         self._delete_unknown_terms_from_ontology_graph(self.ontology_graph)
         self.start_node = f"{root_node}__0"
 
@@ -72,6 +81,7 @@ class OntologyTreeBuilder:
             cell_counts_df.groupby("cell_type_ontology_term_id").sum(numeric_only=True)[["n_cells"]].reset_index()
         )
 
+        # to_attach is a DataFrame that will contain cell type ontology term ids that are not present in the input cell counts dataframe. These will be added with 0 counts.
         to_attach = pd.DataFrame()
         to_attach["cell_type_ontology_term_id"] = [
             i for i in self.all_cell_type_ids if i not in cell_counts_df["cell_type_ontology_term_id"].values
@@ -123,7 +133,12 @@ class OntologyTreeBuilder:
         all_cell_type_ids = list(id_to_name.keys())
         return id_to_name, all_cell_type_ids
 
-    def _traverse_ontology_with_counting(self, node, traverse_node_counter=None, all_unique_nodes=None):
+    def _traverse_ontology_with_counting(
+        self,
+        node: Term,
+        traverse_node_counter: Optional[Dict[str, int]] = None,
+        all_unique_nodes: Optional[set[str]] = None,
+    ) -> TraverseOntologyResult:
         """
         This function traverses the cell ontology and builds a nested dictionary representation of the tree.
         It also counts the number of times a node has been visited and adds a suffix to the node id to make it unique.
@@ -155,8 +170,8 @@ class OntologyTreeBuilder:
         subclasses = list(node.subclasses(with_self=False, distance=1))
 
         if len(subclasses) == 0:
-            return (
-                {
+            return TraverseOntologyResult(
+                subtree={
                     "id": node.id + "__" + str(node_count),
                     "name": self.id_to_name[node.id] if node.id in self.id_to_name else node.id,
                     "n_cells_rollup": int(
@@ -164,17 +179,19 @@ class OntologyTreeBuilder:
                     ),
                     "n_cells": int(self.cell_counts_df[node.id] if node.id in self.cell_counts_df else 0),
                 },
-                None,
-                None,
+                traverse_node_counter=None,
+                all_unique_nodes=None,
             )
 
         children = []
         for child in subclasses:
-            subtree, _, _ = self._traverse_ontology_with_counting(child, traverse_node_counter, all_unique_nodes)
-            children.append(subtree)
+            traverse_ontology_result = self._traverse_ontology_with_counting(
+                child, traverse_node_counter, all_unique_nodes
+            )
+            children.append(traverse_ontology_result.subtree)
 
-        return (
-            {
+        return TraverseOntologyResult(
+            subtree={
                 "id": node.id + "__" + str(node_count),
                 "name": self.id_to_name[node.id] if node.id in self.id_to_name else node.id,
                 "n_cells_rollup": int(
@@ -183,6 +200,6 @@ class OntologyTreeBuilder:
                 "n_cells": int(self.cell_counts_df[node.id] if node.id in self.cell_counts_df else 0),
                 "children": children,
             },
-            traverse_node_counter,
-            all_unique_nodes,
+            traverse_node_counter=traverse_node_counter,
+            all_unique_nodes=all_unique_nodes,
         )
