@@ -31,3 +31,4 @@ tiledb==0.22.2
 typing_extensions==4.7.1
 tzdata==2023.3
 urllib3==1.26.16
+coverage==7.2.7
