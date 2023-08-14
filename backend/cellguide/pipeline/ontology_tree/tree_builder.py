@@ -1,11 +1,14 @@
 import json
 import logging
+import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Tuple
 
+import numpy as np
 import pandas as pd
 from pronto import Ontology, Term
 
+from backend.cellguide.pipeline.constants import UBERON_BASIC_PERMANENT_URL_PRONTO
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
 
@@ -15,9 +18,22 @@ logger = logging.getLogger(__name__)
 """
 This module contains the OntologyTreeBuilder class which is used to build a nested dictionary representation of the cell ontology tree.
 The tree is populated with cell type counts from an input dataframe. The class also provides functions to get the ontology tree state
-per cell type. The ontology tree state is a mask that determines which nodes are expanded by default and which nodes 
+per cell type and per tissue. The ontology tree state is a mask that determines which nodes are expanded by default and which nodes 
 are shown when expanded in the ontology.
+
+The module also defines a list of tissues (TISSUES_IMMUNE_CELL_WHITELIST) in which we want to show immune cell types and a constant 
+HEMATOPOIETIC_CELL_TYPE_ID representing the immune cell type ancestor to be filtered out from non-whitelisted tissues.
 """
+
+# tissues in which we want to show immune cell types
+TISSUES_IMMUNE_CELL_WHITELIST = [
+    "UBERON:0002193",  # hemolymphoid system
+    "UBERON:0002390",  # hematopoietic system
+    "UBERON:0000178",  # blood
+    "UBERON:0005057",  # immune organ
+]
+# immune cell type ancestor to be filtered out from non-whitelisted tissues
+HEMATOPOIETIC_CELL_TYPE_ID = "CL:0000988"
 
 
 @dataclass
@@ -32,7 +48,7 @@ class OntologyTreeBuilder:
         """
         OntologyTreeBuilder is a class that builds a nested dictionary representation of the cell ontology tree
         and populates the nodes with cell type counts from the input cell counts dataframe. It also provides
-        functions to get the ontology tree state per cell type. The ontology tree state is a
+        functions to get the ontology tree state per cell type and per tissue. The ontology tree state is a
         mask that determines which nodes are expanded by default and which nodes are shown when expanded in the
         ontology.
 
@@ -48,6 +64,23 @@ class OntologyTreeBuilder:
 
         logger.info(f"Loading CL ontology from root node {root_node}...")
         self.ontology = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
+
+        logger.info("Loading UBERON ontology...")
+        with warnings.catch_warnings():
+            # loading uberon ontology has some warnings that we don't care about
+            warnings.simplefilter("ignore")
+            self.uberon_ontology = Ontology(UBERON_BASIC_PERMANENT_URL_PRONTO)
+
+        logger.info("Initializing tissue data structures from the input cell counts dataframe...")
+        self.tissue_counts_df = cell_counts_df.groupby("tissue_ontology_term_id").sum(numeric_only=True)["n_cells"]
+        self.tissue_celltypes_df = (
+            cell_counts_df.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"])
+            .sum(numeric_only=True)
+            .reset_index()
+        )
+        self.uberon_by_celltype = _to_dict(
+            cell_counts_df["tissue_ontology_term_id"], cell_counts_df["cell_type_ontology_term_id"]
+        )
 
         logger.info("Initializing cell type data structures from the input cell counts dataframe...")
         self.id_to_name, self.all_cell_type_ids = self._initialize_id_to_name()
@@ -215,7 +248,7 @@ class OntologyTreeBuilder:
         )
 
     ### Get the ontology tree state
-    def get_ontology_tree_state_per_celltype(self) -> Dict[str, any]:
+    def get_ontology_tree_state_per_celltype(self) -> Dict[str, Any]:
         """
         This function gets the ontology tree state per cell type. The ontology tree state is a mask that determines
         which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
@@ -283,6 +316,108 @@ class OntologyTreeBuilder:
                 }
 
         return all_states_per_cell_type
+
+    def get_ontology_tree_state_per_tissue(self) -> Dict[str, Any]:
+        """
+        This function gets the ontology tree state per tissue. The ontology tree state is a mask that determines
+        which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
+
+        The following rules determine which cell types are expanded by default and not shown when expanded:
+         - Only the first instance of each cell type present in the tissue is shown.
+         - All nodes in a path to any of the first instances of the cell types present in the tissue are shown.
+         - Nodes that are not outlier branches (depth=1 and the node has less than 0.1% observed cells out of the total number of cells) are shown.
+        Nodes that are not shown when expanded will be collapsed into a dummy node that contains the ids of the
+        children that are not shown. Nodes will be collapsed into dummy nodes if they are siblings of nodes that are
+        in a path to the first instances of cell types present in the tissue.
+
+        Returns
+        -------
+        all_states_per_tissue: dict
+            A dictionary that maps tissue ontology term ids to their ontology tree states.
+            The ontology tree state is a dictionary with keys
+                - "isExpandedNodes": A list of cell type ontology term ids that are expanded by default.
+                - "notShownWhenExpandedNodes": A dictionary that maps cell type ontology term ids to their hidden children
+                - "tissueCounts": A dictionary that maps cell type ontology term ids to the number of cells in the tissue.
+                    The number of cells is a dictionary with keys "n_cells" and "n_cells_rollup".
+        """
+        all_states_per_tissue = {}
+        tissue_by_cell_type = []
+        for i, tissue in enumerate(self.uberon_by_celltype):
+            if " (" not in tissue:
+                logger.info(
+                    "Getting ontology tree state for tissue %s (%s/%s)", tissue, i + 1, len(self.uberon_by_celltype)
+                )
+
+                tissueId = tissue
+                tissue_term = self.uberon_ontology[tissueId]
+                tissue_label = tissue_term.name
+
+                end_nodes = self.uberon_by_celltype[tissue]
+                uberon_ancestors = [i.id for i in tissue_term.superclasses()]
+                if len(list(set(TISSUES_IMMUNE_CELL_WHITELIST).intersection(uberon_ancestors))) == 0:
+                    end_nodes2 = [
+                        e
+                        for e in end_nodes
+                        if HEMATOPOIETIC_CELL_TYPE_ID not in [i.id for i in self.ontology[e].superclasses()]
+                    ]
+                    if len(end_nodes2) == 0:
+                        logger.info(f"Not filtering out immune cell for {tissue_label}")
+                    else:
+                        end_nodes = end_nodes2
+                else:
+                    logger.info(f"Not filtering out immune cell for {tissue_label}")
+
+                tissue_ct_df = self.tissue_celltypes_df[self.tissue_celltypes_df["tissue_ontology_term_id"] == tissue]
+
+                df = tissue_ct_df[["cell_type_ontology_term_id", "n_cells"]]
+                to_attach = pd.DataFrame()
+                to_attach["cell_type_ontology_term_id"] = [
+                    i for i in self.all_cell_type_ids if i not in df["cell_type_ontology_term_id"].values
+                ]
+                to_attach["n_cells"] = 0
+                df = pd.concat([df, to_attach], axis=0)
+                df["n_cells_rollup"] = df["n_cells"]
+                df_rollup = rollup_across_cell_type_descendants(df, ignore_cols=["n_cells"])
+                df_rollup = df_rollup[df_rollup["n_cells_rollup"] > 0]
+
+                celltype_counts_in_tissue = dict(
+                    zip(
+                        df_rollup["cell_type_ontology_term_id"],
+                        df_rollup[["n_cells", "n_cells_rollup"]].to_dict(orient="records"),
+                    )
+                )
+
+                tissue_by_cell_type.append({"id": tissue, "label": tissue_label})
+
+                all_paths = []
+                for end_node in end_nodes:
+                    if end_node in self.traverse_node_counter:
+                        end_node_0 = end_node + "__0"  # only get path to the first instance of a node.
+                        path = self._depth_first_search_pathfinder(end_node_0)
+                        path = path if path else [end_node_0]
+                        all_paths.append(path)
+
+                valid_nodes = list(set(sum(all_paths, [])))
+
+                ontology_graph_copy = self._get_deepcopy_of_ontology_graph()
+
+                self._truncate_graph_in_tissue(
+                    ontology_graph_copy, valid_nodes, self.tissue_counts_df[tissue], celltype_counts_in_tissue
+                )
+
+                isExpandedNodes = list(set(_getExpandedData(ontology_graph_copy)))
+                notShownWhenExpandedNodes = _getShownData(ontology_graph_copy)
+
+                notShownWhenExpanded = {}
+                for i in notShownWhenExpandedNodes:
+                    notShownWhenExpanded.update(i)
+
+                all_states_per_tissue[tissue] = {
+                    "isExpandedNodes": isExpandedNodes,
+                    "notShownWhenExpandedNodes": notShownWhenExpanded,
+                    "tissueCounts": celltype_counts_in_tissue,
+                }
+        return all_states_per_tissue
 
     def _depth_first_search_pathfinder(self, path_end_node, node=None, path=None) -> list[str]:
         """
@@ -422,6 +557,89 @@ class OntologyTreeBuilder:
             if child["id"] != "":
                 self._truncate_graph_second_pass(child, visited_nodes_in_paths, nodesWithChildrenFound)
 
+    def _truncate_graph_in_tissue(
+        self,
+        graph: Dict[str, Any],
+        valid_nodes: list[str],
+        total_count: int,
+        tissue_cell_counts: Dict[str, Dict[str, int]],
+        seen_nodes_per_tissue: set[str] = None,
+        depth: int = 0,
+    ):
+        """
+        This function truncates the ontology graph in-place by removing nodes with any of the following properties:
+         - The node is not in the valid nodes list.
+         - The node is an outlier branch (depth=1 and the node has less than 0.1% observed cells out of the total number of cells).
+         - The node is a child of a node that has already been encountered during the traversal.
+        This function is used for the ontology tree state per tissue.
+
+        Arguments
+        ---------
+        graph: dict
+            A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
+        valid_nodes: list
+            A list of valid cell type ontology term ids. These are cell types that are present in the tissue based on
+            the CELLxGENE corpus.
+        total_count: int
+            The total number of cells in the tissue.
+        tissue_cell_counts: dict
+            A dictionary that maps cell type ontology term ids to the number of cells in the tissue.
+        seen_nodes_per_tissue: set, optional, default=None
+            A set of cell type ontology term ids that have been encountered during the traversal.
+        depth: int, optional, default=0
+            The depth of the current node in the ontology graph.
+        """
+        if seen_nodes_per_tissue is None:
+            seen_nodes_per_tissue = set()
+
+        children = graph.get("children", [])
+        if len(children):
+            new_children = []
+            invalid_children_ids = []
+            for child in children:
+                # if depth is 1 and the child node has less than 0.1% observed cells out of the total number of cells, then it is an outlier branch and must be pruned
+                outlier_branch = (
+                    depth == 1
+                    and (
+                        tissue_cell_counts.get(child["id"].split("__")[0], {"n_cells_rollup": 0})["n_cells_rollup"]
+                        / total_count
+                        * 100
+                    )
+                    < 0.1
+                )
+                if child["id"] in valid_nodes and child["id"] not in seen_nodes_per_tissue and not outlier_branch:
+                    new_children.append(child)
+                    seen_nodes_per_tissue.add(child["id"])
+                else:
+                    invalid_children_ids.append(child["id"])
+            if len(new_children) == 0:
+                del graph["children"]
+            elif len(invalid_children_ids) > 0:
+                new_children.append(
+                    {
+                        "id": "",
+                        "name": "",
+                        "n_cells_rollup": 0,
+                        "n_cells": 0,
+                        "invalid_children_ids": invalid_children_ids,
+                        "parent": graph["id"],
+                    }
+                )
+                graph["children"] = new_children
+            else:
+                graph["children"] = new_children
+
+            for child in graph.get("children", []):
+                if child["id"] != "":
+                    self._truncate_graph_in_tissue(
+                        child,
+                        valid_nodes,
+                        total_count,
+                        tissue_cell_counts,
+                        seen_nodes_per_tissue=seen_nodes_per_tissue,
+                        depth=depth + 1,
+                    )
+
     def _initialize_children_and_parents_per_node(self) -> Tuple[Dict[str, list[str]], Dict[str, list[str]]]:
         """
         Initializes dictionaries that map cell type ontology term ids to their children and parents.
@@ -548,3 +766,21 @@ def _getShownData(graph, notShownWhenExpandedNodes=None) -> Dict[str, Dict[str, 
             else:
                 _getShownData(child, notShownWhenExpandedNodes)
     return notShownWhenExpandedNodes
+
+
+def _to_dict(a: list[Any], b: list[Any]) -> Dict[Any, list[Any]]:
+    """
+    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
+    """
+    a = np.array(a)
+    b = np.array(b)
+    idx = np.argsort(a)
+    a = a[idx]
+    b = b[idx]
+    bounds = np.where(a[:-1] != a[1:])[0] + 1
+    bounds = np.append(np.append(0, bounds), a.size)
+    bounds_left = bounds[:-1]
+    bounds_right = bounds[1:]
+    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    return d

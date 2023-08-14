@@ -50,6 +50,8 @@ class OntologyTreeBuilderTests(unittest.TestCase):
             expected__ontology_graph = json.load(f)
         with open("tests/unit/cellguide_pipeline/fixtures/all_states_per_cell_type.json", "r") as f:
             expected__all_states_per_cell_type = json.load(f)
+        with open("tests/unit/cellguide_pipeline/fixtures/all_states_per_tissue.json", "r") as f:
+            expected__all_states_per_tissue = json.load(f)
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
@@ -59,3 +61,6 @@ class OntologyTreeBuilderTests(unittest.TestCase):
 
             all_states_per_cell_type = tree_builder.get_ontology_tree_state_per_celltype()
             self.assertTrue(compare_dicts(all_states_per_cell_type, expected__all_states_per_cell_type))
+
+            all_states_per_tissue = tree_builder.get_ontology_tree_state_per_tissue()
+            self.assertTrue(compare_dicts(all_states_per_tissue, expected__all_states_per_tissue))
