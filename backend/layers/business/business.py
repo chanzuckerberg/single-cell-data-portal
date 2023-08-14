@@ -469,7 +469,6 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionUpdateException from None
         if delete_published and not dataset_version.canonical_dataset.published_at:
             raise DatasetIsNotPublishedException from None
-        self.get_unpublished_dataset_versions(dataset_version.dataset_id)
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
