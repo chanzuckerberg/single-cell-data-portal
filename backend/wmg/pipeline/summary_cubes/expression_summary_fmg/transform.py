@@ -113,7 +113,7 @@ def make_cube_index(*, tdb_group: str, cube_dims: list) -> Tuple[pd.DataFrame, p
     cell_labels = extract_obs_data(tdb_group, cube_dims)
     filter_cells = np.array(list(cell_labels["filter_cells"].values))
     del cell_labels["filter_cells"]
-    valid_obs_idx = cell_labels.index.values[filter_cells]
+    valid_obs_idx = cell_labels.index.values[~filter_cells]
 
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
