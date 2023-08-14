@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 """
 This module contains the OntologyTreeBuilder class which is used to build a nested dictionary representation of the cell ontology tree.
 The tree is populated with cell type counts from an input dataframe. The class also provides functions to get the ontology tree state
-per cell type and per tissue. The ontology tree state is a mask that determines which nodes are expanded by default and which nodes 
+per cell type. The ontology tree state is a mask that determines which nodes are expanded by default and which nodes 
 are shown when expanded in the ontology.
 """
 
@@ -32,7 +32,7 @@ class OntologyTreeBuilder:
         """
         OntologyTreeBuilder is a class that builds a nested dictionary representation of the cell ontology tree
         and populates the nodes with cell type counts from the input cell counts dataframe. It also provides
-        functions to get the ontology tree state per cell type and per tissue. The ontology tree state is a
+        functions to get the ontology tree state per cell type. The ontology tree state is a
         mask that determines which nodes are expanded by default and which nodes are shown when expanded in the
         ontology.
 
@@ -226,9 +226,9 @@ class OntologyTreeBuilder:
          - All grandchildren of the first instance of the target cell type are shown.
          - All siblings of the first instance of the target cell type are shown.
          - All nodes in the paths to any instance of the target cell type are shown.
-        Nodes that are not shown when expanded will be collapsed into a dummy node that contains the ids of the
-        children that are not shown. Nodes will be collapsed into dummy nodes if they are siblings of nodes that are
-        in a path to any instances of the target cell type.
+        Nodes that are not shown when their parents are expanded will be collapsed into a dummy node that contains the
+        ids of the children that are not shown. Nodes will be collapsed into dummy nodes if they are siblings of nodes
+        that are in a path to any instances of the target cell type.
 
         Returns
         -------
