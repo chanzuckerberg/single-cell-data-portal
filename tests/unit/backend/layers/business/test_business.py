@@ -989,32 +989,32 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
                 f"djh updated updated dataset {updated_updated_dataset_version.dataset_id} {updated_updated_dataset_version.version_id}"
             )
 
-            # # Add new Dataset
-            # new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            #     revision.version_id, "http://fake.url", None, None
-            # )
-            # self.business_logic.set_dataset_metadata(new_dataset_version_id, self.sample_dataset_metadata)
-            # new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
-            #
-            # # Update the new Dataset
-            # updated_new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            #     revision.version_id, "http://fake.url", None, new_dataset_version_id
-            # )
-            # self.business_logic.set_dataset_metadata(updated_new_dataset_version_id, self.sample_dataset_metadata)
-            # updated_new_dataset_version = self.business_logic.get_dataset_version(updated_new_dataset_version_id)
+            # Add new Dataset
+            new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+                revision.version_id, "http://fake.url", None, None
+            )
+            self.business_logic.set_dataset_metadata(new_dataset_version_id, self.sample_dataset_metadata)
+            new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
+
+            # Update the new Dataset
+            updated_new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+                revision.version_id, "http://fake.url", None, new_dataset_version_id
+            )
+            self.business_logic.set_dataset_metadata(updated_new_dataset_version_id, self.sample_dataset_metadata)
+            updated_new_dataset_version = self.business_logic.get_dataset_version(updated_new_dataset_version_id)
 
             # Artifacts for initial published Datasets should exist
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for dv in collection.datasets for a in dv.artifacts]
             # Artifacts for updated_dataset_version and updated_updated_dataset_version should exist
             [
                 self.assertTrue(self.s3_provider.uri_exists(a.uri))
                 for d in (updated_dataset_version, updated_updated_dataset_version)
                 for a in d.artifacts
             ]
-            # # Artifacts for new_dataset_version should exist
-            # [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
-            # # Artifacts for updated_new_dataset_version should exist
-            # [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_new_dataset_version.artifacts]
+            # Artifacts for new_dataset_version should exist
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
+            # Artifacts for updated_new_dataset_version should exist
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_new_dataset_version.artifacts]
             print("before publish")
             [
                 print(d.dataset_id, d.version_id)
@@ -1026,19 +1026,23 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
             print(
                 f"djh after publish should be None for {updated_dataset_version_id}: {self.business_logic.get_dataset_version(updated_dataset_version_id)}"
             )
-            # Artifacts for initial published Datasets should remain
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
-            # Artifacts for updated_dataset_version should be gone
-            [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in updated_dataset_version.artifacts]
-            # Artifacts for updated_updated_dataset_version should exist
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_updated_dataset_version.artifacts]
-            # # Artifacts for new_dataset_version should not exist
-            # [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
-            # # Artifacts for updated_new_dataset_version should exist
-            # [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_new_dataset_version.artifacts]
+            # Initial published Datasets should remain
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for dv in collection.datasets for a in dv.artifacts]
+            [self.assertIsNotNone(self.business_logic.get_dataset_version(dv.version_id)) for dv in collection.datasets]
 
-            self.assertIsNotNone(self.business_logic.get_dataset_version(updated_updated_dataset_version_id))
+            # updated_dataset_version should be gone
+            [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in updated_dataset_version.artifacts]
             self.assertIsNone(self.business_logic.get_dataset_version(updated_dataset_version_id))
+
+            # updated_updated_dataset_version should remain
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_updated_dataset_version.artifacts]
+            self.assertIsNotNone(self.business_logic.get_dataset_version(updated_updated_dataset_version_id))
+
+            # Artifacts for new_dataset_version should not exist
+            [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
+            # Artifacts for updated_new_dataset_version should exist
+            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_new_dataset_version.artifacts]
+
             # self.assertIsNone(self.business_logic.get_dataset_version(new_dataset_version_id))
             # self.assertIsNotNone(self.business_logic.get_dataset_version(updated_new_dataset_version_id))
 
