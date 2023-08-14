@@ -408,7 +408,10 @@ class OntologyTreeBuilder:
                 ontology_graph_copy = self._get_deepcopy_of_ontology_graph()
 
                 self._truncate_graph_in_tissue(
-                    ontology_graph_copy, valid_nodes, self.tissue_counts_df[tissue], celltype_counts_in_tissue
+                    graph=ontology_graph_copy,
+                    valid_nodes=valid_nodes,
+                    total_count=self.tissue_counts_df[tissue],
+                    tissue_cell_counts=celltype_counts_in_tissue,
                 )
 
                 isExpandedNodes = list(set(_getExpandedData(ontology_graph_copy)))
@@ -565,6 +568,7 @@ class OntologyTreeBuilder:
 
     def _truncate_graph_in_tissue(
         self,
+        *,
         graph: Dict[str, Any],
         valid_nodes: list[str],
         total_count: int,
@@ -638,10 +642,10 @@ class OntologyTreeBuilder:
             for child in graph.get("children", []):
                 if child["id"] != "":
                     self._truncate_graph_in_tissue(
-                        child,
-                        valid_nodes,
-                        total_count,
-                        tissue_cell_counts,
+                        graph=child,
+                        valid_nodes=valid_nodes,
+                        total_count=total_count,
+                        tissue_cell_counts=tissue_cell_counts,
                         seen_nodes_per_tissue=seen_nodes_per_tissue,
                         depth=depth + 1,
                     )
