@@ -1,8 +1,8 @@
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import pandas as pd
-from pronto import Ontology, Optional, Term
+from pronto import Ontology, Term
 
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
