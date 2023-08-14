@@ -1,0 +1,56 @@
+  pw:api => selectors.setTestIdAttribute started +10ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +193ms
+  pw:api   "commit" event fired +16ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +12ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +49ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +8ms
+  pw:api   "commit" event fired +129ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +32ms
+  pw:api <= page.goto succeeded +1s
+  pw:api => page.waitForLoadState started +9ms
+  pw:api   navigated to "about:blank" +1s
+  pw:api   "networkidle" event fired +685ms
+  pw:api <= page.waitForLoadState succeeded +5ms
+  pw:api => locator.all started +2ms
+  pw:api   "networkidle" event fired +2ms
+  pw:api <= locator.all succeeded +46ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.textContent started +2ms
+  pw:api => locator.textContent started +2ms
+  pw:api => locator.textContent started +3ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-source-data-table\'] thead th').first() +37ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-source-data-table\'] thead th').nth(1) +13ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-source-data-table\'] thead th').nth(2) +16ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-source-data-table\'] thead th').nth(3) +35ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-source-data-table\'] thead th').nth(4) +45ms
+  pw:api   locator resolved to <th id="Collection-header-cell" class="css-tlkusn-St…>Collection</th> +5ms
+  pw:api   locator resolved to <th id="Publication-header-cell" class="css-tlkusn-S…>Publication</th> +15ms
+  pw:api   locator resolved to <th id="Tissue-header-cell" class="css-tlkusn-Styled…>Tissue</th> +5ms
+  pw:api   locator resolved to <th id="Disease-header-cell" class="css-tlkusn-Style…>Disease</th> +17ms
+  pw:api   locator resolved to <th id="Organism-header-cell" class="css-tlkusn-Styl…>Organism</th> +6ms
+  pw:api <= locator.textContent succeeded +27ms
+  pw:api <= locator.textContent succeeded +20ms
+  pw:api <= locator.textContent succeeded +23ms
+  pw:api <= locator.textContent succeeded +12ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => locator.all started +3ms
+  pw:api <= locator.all succeeded +11ms
+  pw:api taking page screenshot +208ms
+  pw:api => browserContext.close started +125ms
+  pw:api <= browserContext.close succeeded +4s
