@@ -54,18 +54,7 @@ class WmgFiltersQueryCriteria(BaseModel):
 class FmgQueryCriteria(BaseModel):
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    # for now, we will only support finding marker genes for a single cell type.
-    # this is to account for the fact that roll-up becomes much more complex when
-    # multiple cell types are specified.
     cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0, max_items=1)
-    tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
-    # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
 class MarkerGeneQueryCriteria(BaseModel):
@@ -176,7 +165,11 @@ class WmgQuery:
         attrs = self._cube_query_params.get_attrs_for_cube_query(cube)
         if compare_dimension is not None:
             attrs.append(compare_dimension)
-        if isinstance(criteria, FmgQueryCriteria) and compare_dimension != "dataset_id":
+        if (
+            isinstance(criteria, FmgQueryCriteria)
+            and compare_dimension != "dataset_id"
+            and "dataset_id" in [i.name for i in cube.schema]
+        ):
             attrs.append("dataset_id")
 
         attrs += numeric_attrs

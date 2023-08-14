@@ -60,17 +60,17 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             if dataset_id and gene_ids:
                 dataset_gene_mapping[dataset_id] = gene_ids
 
-        logger.info("all loaded, now consolidating.")
-        for arr_name in [OBS_ARRAY_NAME, VAR_ARRAY_NAME, INTEGRATED_ARRAY_NAME]:
-            arr_path = f"{corpus_path}/{arr_name}"
-            tiledb.consolidate(arr_path)
-            tiledb.vacuum(arr_path)
         with tiledb.open(f"{corpus_path}/{VAR_ARRAY_NAME}") as var:
             gene_count = len(var.query().df[:])
         with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as obs:
             cell_count = len(obs.query().df[:])
         with open(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json", "w") as d2g:
             json.dump(dataset_gene_mapping, d2g)
+        logger.info("all loaded, now consolidating.")
+        for arr_name in [OBS_ARRAY_NAME, VAR_ARRAY_NAME, INTEGRATED_ARRAY_NAME]:
+            arr_path = f"{corpus_path}/{arr_name}"
+            tiledb.consolidate(arr_path)
+            tiledb.vacuum(arr_path)
 
     logger.info(f"{dataset_count=}, {gene_count=}, {cell_count=}")
 

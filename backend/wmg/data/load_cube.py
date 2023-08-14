@@ -82,7 +82,7 @@ def upload_artifacts_to_s3(
     )
 
     logger.info(f"Writing snapshot data to {snapshot_s3_dest_path}")
-    sync_command = ["aws", "s3", "sync", snapshot_source_path, snapshot_s3_dest_path]
+    sync_command = ["aws", "s3", "sync", snapshot_source_path, snapshot_s3_dest_path, "--quiet"]
     subprocess.run(sync_command)
 
     _write_snapshot_metadata(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)

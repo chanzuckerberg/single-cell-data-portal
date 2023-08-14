@@ -132,7 +132,6 @@ class QueryTest(unittest.TestCase):
 
     def test__query_expression_summary_fmg_cube__returns_correct_results(self):
         criteria = FmgQueryCriteria(
-            gene_ontology_term_ids=["ENSG00000238042", "ENSG00000168028"],
             organism_ontology_term_id="NCBITaxon:9606",
             tissue_ontology_term_ids=["UBERON:0002048"],
             cell_type_ontology_term_ids=["CL:0000786"],
@@ -140,8 +139,8 @@ class QueryTest(unittest.TestCase):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             q = WmgQuery(snapshot, self.cube_query_params)
             query_result = q.expression_summary_fmg(criteria)
-            query_sum = list(query_result[["sum", "sqsum", "nnz", "nnz_thr"]].sum())
-            expected = [120129.5703125, 343018.5625, 49966.0, 48978.0]
+            query_sum = list(query_result[["sum", "sqsum", "nnz"]].sum())
+            expected = [94218.3125, 276081.25, 37598.0]
             [self.assertEqual(round(query_sum[i]), round(expected[i])) for i in range(len(query_sum))]
 
     def test__query_expression_summary_default_cube__returns_correct_results(self):
@@ -154,7 +153,7 @@ class QueryTest(unittest.TestCase):
             q = WmgQuery(snapshot, self.cube_query_params)
             query_result = q.expression_summary_default(criteria)
             query_sum = list(query_result[["sum", "nnz", "sqsum"]].sum())
-            expected = [804599.0, 370972.0, 1822108.0]
+            expected = [657358, 301875, 1491223]
             [self.assertEqual(round(query_sum[i]), round(expected[i])) for i in range(len(query_sum))]
 
 

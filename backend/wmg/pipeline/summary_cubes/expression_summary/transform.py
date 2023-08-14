@@ -44,7 +44,7 @@ def transform(*, corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
         The squared sum of expression values for each gene for each group of cell attributes
     """
 
-    cell_labels, cube_index = make_cube_index(tdb_group=corpus_path, cube_dims=cube_dims)
+    cell_labels, cube_index, valid_obs_idx = make_cube_index(tdb_group=corpus_path, cube_dims=cube_dims)
     n_groups = len(cube_index)
     n_genes = len(gene_ontology_term_ids)
 
@@ -58,13 +58,20 @@ def transform(*, corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
         cube_sum=cube_sum,
         cube_nnz=cube_nnz,
         cube_sqsum=cube_sqsum,
+        valid_obs_idx=valid_obs_idx,
     )
     return TransformResult(cube_index, cube_sum, cube_nnz, cube_sqsum)
 
 
 @log_func_runtime
 def reduce_X(
-    *, tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cube_nnz: np.ndarray, cube_sqsum: np.ndarray
+    *,
+    tdb_group: str,
+    cube_indices: np.ndarray,
+    cube_sum: np.ndarray,
+    cube_nnz: np.ndarray,
+    cube_sqsum: np.ndarray,
+    valid_obs_idx: np.ndarray,
 ) -> None:
     """
     Reduce the expression data stored in the integrated corpus by summing it by gene for each cube row (unique combo
@@ -78,10 +85,19 @@ def reduce_X(
         query_results = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
         for i, result in enumerate(query_results.df[:]):
             logger.info(f"reduce integrated expression data, i={i}")
+            rankit_values = result["rankit"].values
+            obs_idxs = result["obs_idx"].values
+            var_idx = result["var_idx"].values
+
+            filt = np.isin(obs_idxs, valid_obs_idx)
+            obs_idxs = obs_idxs[filt]
+            rankit_values = rankit_values[filt]
+            var_idx = var_idx[filt]
+
             gene_expression_sum_x_cube_dimension(
-                rankit_values=result["rankit"].values,
-                obs_idxs=result["obs_idx"].values,
-                var_idx=result["var_idx"].values,
+                rankit_values=rankit_values,
+                obs_idxs=obs_idxs,
+                var_idx=var_idx,
                 cube_indices=cube_indices,
                 sum_into=cube_sum,
                 nnz_into=cube_nnz,
@@ -120,14 +136,19 @@ def make_cube_index(*, tdb_group: str, cube_dims: list) -> Tuple[pd.DataFrame, p
     Create index for queryable dimensions
     """
     cell_labels = extract_obs_data(tdb_group, cube_dims)
+    filter_cells = np.array(list(cell_labels["filter_cells"].values))
+    del cell_labels["filter_cells"]
+    valid_obs_idx = cell_labels.index.values[~filter_cells]
+
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
+
+    # add cube_idx column
     cube_index["cube_idx"] = range(len(cube_index))
+    cube_index["cube_idx"] = cube_index["cube_idx"].astype("int")
 
+    # join cube_idx to cell_labels
     cell_labels = cell_labels.join(cube_index.cube_idx, on=cube_dims)
+    cell_labels["cube_idx"] = cell_labels["cube_idx"].astype("int")
 
-    # we failed to correctly create the corpus if these are false
-    assert len(cell_labels.index) == cell_labels.index[-1] + 1
-    assert cell_labels.index[0] == 0
-
-    return cell_labels, cube_index
+    return cell_labels, cube_index, valid_obs_idx
