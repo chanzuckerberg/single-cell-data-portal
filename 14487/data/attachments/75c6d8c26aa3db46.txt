@@ -1,0 +1,64 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +54ms
+  pw:api   "commit" event fired +18ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +12ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +3ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +57ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/tos/", waiting until "load" +11ms
+  pw:api   "commit" event fired +4s
+  pw:api   navigated to "https://localhost:3000/tos" +1ms
+  pw:api   "networkidle" event fired +6s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/tos" +4ms
+  pw:api <= page.goto succeeded +120ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api   "networkidle" event fired +412ms
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api => expect.toBeVisible started +5ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api expect.toBeVisible with timeout 10000ms +12ms
+  pw:api waiting for locator('h1').getByText('Terms of Use') +1ms
+  pw:api   locator resolved to <h1 id="tos">Terms of Use</h1> +28ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api expect.toBeVisible with timeout 10000ms +7ms
+  pw:api waiting for getByTestId('cellxgene-logo') +0ms
+  pw:api   locator resolved to <img decoding="async" alt="CELLxGENE logo" data-nimg=…/> +7ms
+  pw:api <= expect.toBeVisible succeeded +7ms
+  pw:api => locator.evaluate started +8ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +9ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +7ms
+  pw:api <= locator.evaluate succeeded +33ms
+  pw:api => locator.click started +4ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +10ms
+  pw:api   locator resolved to <div data-testid="global-layout-wrapper" class="css-1…>…</div> +6ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +2ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +14ms
+  pw:api   click action done +17ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +15ms
+  pw:api => mouse.wheel started +19ms
+  pw:api <= mouse.wheel succeeded +11ms
+  pw:api => locator.evaluate started +2ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +6ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +23ms
+  pw:api <= locator.evaluate succeeded +66ms
+  pw:api taking page screenshot +202ms
+  pw:api => browserContext.close started +133ms
+  pw:api <= browserContext.close succeeded +6s
