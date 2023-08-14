@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 import pandas as pd
@@ -16,6 +17,7 @@ The tree is populated with cell type counts from an input dataframe.
 """
 
 
+@dataclass
 class TraverseOntologyResult:
     subtree: Dict[str, Any]
     traverse_node_counter: Dict[str, int]
