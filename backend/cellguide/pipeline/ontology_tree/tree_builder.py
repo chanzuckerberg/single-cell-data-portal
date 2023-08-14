@@ -355,6 +355,7 @@ class OntologyTreeBuilder:
                 end_nodes = self.uberon_by_celltype[tissue]
                 uberon_ancestors = [i.id for i in tissue_term.superclasses()]
 
+                # filter out hemaotoietic cell types from non-whitelisted tissues
                 uberon_ancestors_in_whitelist = list(set(TISSUES_IMMUNE_CELL_WHITELIST).intersection(uberon_ancestors))
                 if len(uberon_ancestors_in_whitelist) == 0:
                     end_nodes_that_are_not_hematopoietic = [
@@ -371,6 +372,8 @@ class OntologyTreeBuilder:
 
                 tissue_ct_df = self.tissue_celltypes_df[self.tissue_celltypes_df["tissue_ontology_term_id"] == tissue]
 
+                # attach cells not in the tissue cell types dataframe
+                # these cells will be added with 0 counts
                 df = tissue_ct_df[["cell_type_ontology_term_id", "n_cells"]]
                 to_attach = pd.DataFrame()
                 to_attach["cell_type_ontology_term_id"] = [
@@ -378,6 +381,7 @@ class OntologyTreeBuilder:
                 ]
                 to_attach["n_cells"] = 0
                 df = pd.concat([df, to_attach], axis=0)
+                # rollup the cell counts
                 df["n_cells_rollup"] = df["n_cells"]
                 df_rollup = rollup_across_cell_type_descendants(df, ignore_cols=["n_cells"])
                 df_rollup = df_rollup[df_rollup["n_cells_rollup"] > 0]
