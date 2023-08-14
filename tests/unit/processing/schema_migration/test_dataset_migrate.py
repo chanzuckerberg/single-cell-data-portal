@@ -3,7 +3,7 @@ from unittest.mock import patch
 from backend.layers.common.entities import DatasetArtifact, DatasetVersionId
 
 
-@patch("backend.layers.processing.schema_migration.cxs_migrate")
+@patch("backend.processing.schema_migration.cxs_migrate")
 class TestDatasetMigrate:
     def test_dataset_migrate_private(self, mock_cxs_migrate, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections

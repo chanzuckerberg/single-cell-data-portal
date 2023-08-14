@@ -32,8 +32,8 @@ def local_schema_migrate(schema_migrate):
     return schema_migrate
 
 
-@patch("backend.layers.processing.schema_migration.cxs_get_current_schema_version", return_value="1.0.0")
-@patch("backend.layers.processing.schema_migration.json.dump")
+@patch("backend.processing.schema_migration.cxs_get_current_schema_version", return_value="1.0.0")
+@patch("backend.processing.schema_migration.json.dump")
 class TestPublishAndCleanup:
     def test_OK(self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate):
         datasets = [

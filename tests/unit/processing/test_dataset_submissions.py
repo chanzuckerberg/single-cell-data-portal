@@ -14,9 +14,7 @@ class TestDatasetSubmissions(BaseTest):
     def setUp(self) -> None:
         super().setUp()
         self.user_name = "test_user_id"
-        self.mock = patch(
-            "backend.layers.processing.submissions.app.get_business_logic", return_value=self.business_logic
-        )
+        self.mock = patch("backend.processing.submissions.app.get_business_logic", return_value=self.business_logic)
         self.mock.start()
 
     def test__missing_curator_file_name__raises_error(self):

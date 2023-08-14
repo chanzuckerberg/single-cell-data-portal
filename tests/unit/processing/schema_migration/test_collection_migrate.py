@@ -4,7 +4,7 @@ from unittest.mock import patch
 from backend.layers.common.entities import CollectionVersionId
 
 
-@patch("backend.layers.processing.schema_migration.cxs_get_current_schema_version")
+@patch("backend.processing.schema_migration.cxs_get_current_schema_version")
 class TestCollectionMigrate:
     def test_can_publish_true(self, mock_cxs_get_current_schema_version, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections

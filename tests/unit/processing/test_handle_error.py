@@ -10,7 +10,7 @@ from backend.processing.upload_failures.app import (
     parse_event,
 )
 
-module_path = "backend.layers.processing.upload_failures.app"
+module_path = "backend.processing.upload_failures.app"
 
 
 @pytest.fixture
