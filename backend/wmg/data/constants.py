@@ -27,4 +27,4 @@ CL_PINNED_CONFIG_URL = "https://raw.githubusercontent.com/chanzuckerberg/single-
 CL_BASIC_OBO_NAME = "cl-basic.obo"
 CL_BASIC_OWL_NAME = "cl-basic.owl"
 
-WMG_PINNED_SCHEMA_VERSION = "3.1.0"
+WMG_PINNED_SCHEMA_VERSION = "3.0.0"
