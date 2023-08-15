@@ -223,6 +223,7 @@ def get_pinned_ontology_url(name: str):
 
     response = requests.get(CL_PINNED_CONFIG_URL)
     decoded_yaml = yaml.safe_load(response.content.decode())
-    cl_url = list(decoded_yaml["CL"]["urls"].values())[0]
+    key = decoded_yaml["CL"]["latest"]
+    cl_url = decoded_yaml["CL"]["urls"][key]
     cl_url = cl_url.split("cl.owl")[0] + name
     return cl_url
