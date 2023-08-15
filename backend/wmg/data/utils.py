@@ -185,7 +185,7 @@ def get_collections_from_curation_api():
     collections = {}
     if API_URL:
         session = _setup_retry_session()
-        dataset_metadata_url = f"{API_URL}/curation/v1/collections?schema_version={WMG_PINNED_SCHEMA_VERSION}"
+        dataset_metadata_url = f"{API_URL}/curation/v1/collections"
         response = session.get(dataset_metadata_url)
         if response.status_code == 200:
             collections = response.json()
