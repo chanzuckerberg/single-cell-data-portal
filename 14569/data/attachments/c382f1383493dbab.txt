@@ -1,0 +1,77 @@
+  pw:api => selectors.setTestIdAttribute started +4ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +30ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +6ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +37ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +8ms
+  pw:api   "commit" event fired +100ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +19ms
+  pw:api   "networkidle" event fired +561ms
+  pw:api <= page.goto succeeded +925ms
+  pw:api => page.waitForLoadState started +13ms
+  pw:api <= page.waitForLoadState succeeded +16ms
+  pw:api => locator.click started +1ms
+  pw:api   not waiting, "networkidle" event already fired +8ms
+  pw:api waiting for getByTestId('cell-guide-card-enriched-genes-table-selector') +92ms
+  pw:api   navigated to "about:blank" +50ms
+  pw:api   locator resolved to <button class="css-tw62df-TableSelectorButton e1mdzv35" …>Computational (CZI)</button> +38ms
+  pw:api attempting click action +7ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +185ms
+  pw:api   click action done +177ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +6ms
+  pw:api <= locator.click succeeded +33ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('marker-genes-computational-help-tooltip') to be visible +40ms
+  pw:api   locator resolved to visible <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +23ms
+  pw:api <= locator.waitFor succeeded +15ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('marker-genes-computational-help-tooltip') +27ms
+  pw:api <= locator.isVisible succeeded +62ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('marker-genes-computational-help-tooltip') +39ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +15ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +1ms
+  pw:api   element is visible and stable +36ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +10ms
+  pw:api   hover action done +14ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.hover succeeded +26ms
+  pw:api => locator.waitFor started +0ms
+  pw:api waiting for getByRole('tooltip') to be visible +9ms
+  pw:api   locator resolved to visible <div id="mui-3" role="tooltip" data-popper-placement=…>…</div> +107ms
+  pw:api   "networkidle" event fired +28ms
+  pw:api <= locator.waitFor succeeded +1ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByRole('tooltip') +33ms
+  pw:api <= locator.isVisible succeeded +41ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByRole('tooltip') +20ms
+  pw:api   locator resolved to <div id="mui-3" role="tooltip" data-popper-placement=…>…</div> +26ms
+  pw:api <= locator.textContent succeeded +24ms
+  pw:api taking page screenshot +272ms
+  pw:api => browserContext.close started +99ms
+  pw:api <= browserContext.close succeeded +2s
