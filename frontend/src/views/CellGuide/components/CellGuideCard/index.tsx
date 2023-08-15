@@ -26,7 +26,9 @@ import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
-import { useCellTypesById } from "src/common/queries/cellGuide";
+import { useCellTypesById, useTissueCards } from "src/common/queries/cellGuide";
+import DropdownSelect from "src/views/CellGuide/components/CellGuideCard/components/common/DropdownSelect";
+import { noop } from "src/common/constants/utils";
 
 export const CELL_GUIDE_CARD_HEADER_NAME = "cell-guide-card-header-name";
 export const CELL_GUIDE_CARD_HEADER_TAG = "cell-guide-card-header-tag";
@@ -96,6 +98,23 @@ export default function CellGuideCard({
     synonyms?.join(", ") || "N/A"
   }). ${rawSeoDescription}`;
 
+  const { data: tissueData } = useTissueCards();
+
+  const tissuesForDropdown = useMemo(() => {
+    return [
+      "All Tissues",
+      ...(tissueData?.map((tissue) => tissue.label) || []),
+    ];
+  }, [tissueData]);
+
+  const [selectedTissue, setSelectedTissue] = useState(tissuesForDropdown[0]);
+
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  console.log("-------tissuesForDropdown", tissuesForDropdown);
+  console.log("-------selectedTissue", selectedTissue);
+
   return (
     <>
       <Head>
@@ -153,6 +172,16 @@ export default function CellGuideCard({
                 />
               </a>
             </CellGuideCardHeaderInnerWrapper>
+
+            {/* where we want */}
+            {/* 1. Clarify with Alec if we could get the unique organs from just one of the hooks */}
+            {/* 2. Or should we just use `useTissueCards` - with the caveat that we might need to filter the available tissues based on cell type */}
+            <DropdownSelect
+              handleChange={noop}
+              options={tissuesForDropdown}
+              selectedOption={selectedTissue}
+              testId="hi"
+            />
           </CellGuideCardHeader>
 
           <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
