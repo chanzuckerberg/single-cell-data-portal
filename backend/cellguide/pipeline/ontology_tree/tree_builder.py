@@ -1,4 +1,4 @@
-import json
+import copy
 import logging
 import warnings
 from dataclasses import dataclass
@@ -137,7 +137,7 @@ class OntologyTreeBuilder:
         cell_counts_df_rollup = cell_counts_df_rollup.set_index("cell_type_ontology_term_id")["n_cells"]
         return cell_counts_df, cell_counts_df_rollup
 
-    def _delete_unknown_terms_from_ontology_graph(self, node):
+    def _delete_unknown_terms_from_ontology_graph(self, node: OntologyTree):
         """
         Deletes nodes that have no name in the CL ontology from the ontology graph.
 
@@ -147,16 +147,18 @@ class OntologyTreeBuilder:
             A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
         """
         new_children = []
-        for child in node.get("children", []):
-            unknown = child["name"].startswith("CL:")
+        children = [] if node.children is None else node.children
+        for child in children:
+            unknown = child.name.startswith("CL:")
             if not unknown:
                 new_children.append(child)
         if len(new_children) > 0:
-            node["children"] = new_children
-        elif "children" in node:
-            del node["children"]
+            node.children = new_children
+        else:
+            node.children = None
 
-        for child in node.get("children", []):
+        children = [] if node.children is None else node.children
+        for child in children:
             self._delete_unknown_terms_from_ontology_graph(child)
 
     def _initialize_id_to_name(self):
@@ -461,7 +463,7 @@ class OntologyTreeBuilder:
             if full_path:
                 return full_path
 
-    def _truncate_graph_first_pass(self, graph, valid_nodes) -> bool:
+    def _truncate_graph_first_pass(self, graph: OntologyTree, valid_nodes: list[str]) -> bool:
         """
         This function truncates the ontology graph in-place by removing nodes that are not in the valid nodes list.
         It also adds a dummy node to the graph if the graph has children that are not in the valid nodes list.
@@ -469,7 +471,7 @@ class OntologyTreeBuilder:
 
         Arguments
         ---------
-        graph: dict
+        graph: OntologyTree
             A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
         valid_nodes: list
             A list of valid cell type ontology term ids.
@@ -480,10 +482,10 @@ class OntologyTreeBuilder:
             Returns True if the node is in valid nodes and False otherwise.
             This is only used for the recursion.
         """
-        if graph["id"] not in valid_nodes:
+        if graph.id not in valid_nodes:
             return False
 
-        children = graph.get("children", [])
+        children = [] if graph.children is None else graph.children
         valid_children = []
 
         invalid_children_ids = []
@@ -491,29 +493,30 @@ class OntologyTreeBuilder:
             is_valid = self._truncate_graph_first_pass(child, valid_nodes)
             if is_valid:
                 valid_children.append(child)
-            elif child["id"] != "":
-                invalid_children_ids.append(child["id"])
+            elif child.id != "":
+                invalid_children_ids.append(child.id)
 
         if len(invalid_children_ids) > 0 and len(valid_children) > 0:
             valid_children.append(
-                {
-                    "id": "",
-                    "name": "",
-                    "n_cells_rollup": 0,
-                    "n_cells": 0,
-                    "invalid_children_ids": invalid_children_ids,
-                    "parent": graph["id"],
-                }
+                OntologyTree(
+                    id="",
+                    name="",
+                    n_cells_rollup=0,
+                    n_cells=0,
+                    invalid_children_ids=invalid_children_ids,
+                    parent=graph.id,
+                )
             )
         if len(valid_children) > 0:
-            graph["children"] = valid_children
+            graph.children = valid_children
         else:
-            if "children" in graph:
-                del graph["children"]
+            graph.children = None
 
         return True
 
-    def _truncate_graph_second_pass(self, graph, visited_nodes_in_paths, nodesWithChildrenFound=None) -> None:
+    def _truncate_graph_second_pass(
+        self, graph: OntologyTree, visited_nodes_in_paths: list[str], nodesWithChildrenFound: set[str] = None
+    ) -> None:
         """
         We do not want to show cell types multiple times in the ontology tree unless they are nodes that are in one of the
         paths to the target cell type. In this case, show the node in the path and collapse all its siblings into the
@@ -521,7 +524,7 @@ class OntologyTreeBuilder:
 
         Arguments
         ---------
-        graph: dict
+        graph: OntologyTree
             A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
         visited_nodes_in_paths: list
             A list of cell type ontology term ids that are in one of the paths to the target cell type.
@@ -532,47 +535,47 @@ class OntologyTreeBuilder:
         """
         if nodesWithChildrenFound is None:
             nodesWithChildrenFound = set()
-        if graph["id"].split("__")[0] in nodesWithChildrenFound:
+        if graph.id.split("__")[0] in nodesWithChildrenFound:
             # if node is in path to target cell type, preserve it
             # otherwise, collapse its siblings into a dummy node
-            if "children" in graph:
-                children = graph["children"]
+            if graph.children is not None:
+                children = graph.children
                 new_children = []
                 invalid_children_ids = []
                 for child in children:
-                    if child["id"] in visited_nodes_in_paths:
+                    if child.id in visited_nodes_in_paths:
                         new_children.append(child)
-                    elif child["id"] != "":
-                        invalid_children_ids.append(child["id"])
+                    elif child.id != "":
+                        invalid_children_ids.append(child.id)
 
                 if len(children) > len(new_children) and len(new_children) > 0:
                     # append dummy
                     new_children.append(
-                        {
-                            "id": "",
-                            "name": "",
-                            "n_cells_rollup": 0,
-                            "n_cells": 0,
-                            "invalid_children_ids": invalid_children_ids,
-                            "parent": graph["id"],
-                        }
+                        OntologyTree(
+                            id="",
+                            name="",
+                            n_cells=0,
+                            n_cells_rollup=0,
+                            invalid_children_ids=invalid_children_ids,
+                            parent=graph.id,
+                        )
                     )
                 if len(new_children) > 0:
-                    graph["children"] = new_children
+                    graph.children = new_children
                 else:
-                    del graph["children"]
-        elif "children" in graph:
-            nodesWithChildrenFound.add(graph["id"].split("__")[0])
+                    graph.children = None
+        elif graph.children is not None:
+            nodesWithChildrenFound.add(graph.id.split("__")[0])
 
-        children = graph.get("children", [])
+        children = [] if graph.children is None else graph.children
         for child in children:
-            if child["id"] != "":
+            if child.id != "":
                 self._truncate_graph_second_pass(child, visited_nodes_in_paths, nodesWithChildrenFound)
 
     def _truncate_graph_in_tissue(
         self,
         *,
-        graph: Dict[str, Any],
+        graph: OntologyTree,
         valid_nodes: list[str],
         total_count: int,
         tissue_cell_counts: Dict[str, Dict[str, int]],
@@ -588,7 +591,7 @@ class OntologyTreeBuilder:
 
         Arguments
         ---------
-        graph: dict
+        graph: OntologyTree
             A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
         valid_nodes: list
             A list of valid cell type ontology term ids. These are cell types that are present in the tissue based on
@@ -605,7 +608,7 @@ class OntologyTreeBuilder:
         if seen_nodes_per_tissue is None:
             seen_nodes_per_tissue = set()
 
-        children = graph.get("children", [])
+        children = [] if graph.children is None else graph.children
         if len(children):
             new_children = []
             invalid_children_ids = []
@@ -614,35 +617,36 @@ class OntologyTreeBuilder:
                 outlier_branch = (
                     depth == 1
                     and (
-                        tissue_cell_counts.get(child["id"].split("__")[0], {"n_cells_rollup": 0})["n_cells_rollup"]
+                        tissue_cell_counts.get(child.id.split("__")[0], {"n_cells_rollup": 0})["n_cells_rollup"]
                         / total_count
                         * 100
                     )
                     < 0.1
                 )
-                if child["id"] in valid_nodes and child["id"] not in seen_nodes_per_tissue and not outlier_branch:
+                if child.id in valid_nodes and child.id not in seen_nodes_per_tissue and not outlier_branch:
                     new_children.append(child)
-                    seen_nodes_per_tissue.add(child["id"])
+                    seen_nodes_per_tissue.add(child.id)
                 else:
-                    invalid_children_ids.append(child["id"])
+                    invalid_children_ids.append(child.id)
             if len(new_children) == 0:
-                del graph["children"]
+                graph.children = None
             elif len(invalid_children_ids) > 0:
                 new_children.append(
-                    {
-                        "id": "",
-                        "name": "",
-                        "n_cells_rollup": 0,
-                        "n_cells": 0,
-                        "invalid_children_ids": invalid_children_ids,
-                        "parent": graph["id"],
-                    }
+                    OntologyTree(
+                        id="",
+                        name="",
+                        n_cells=0,
+                        n_cells_rollup=0,
+                        invalid_children_ids=invalid_children_ids,
+                        parent=graph.id,
+                    )
                 )
                 graph["children"] = new_children
             else:
                 graph["children"] = new_children
 
-            for child in graph.get("children", []):
+            children = [] if graph.children is None else graph.children
+            for child in children:
                 if child["id"] != "":
                     self._truncate_graph_in_tissue(
                         graph=child,
@@ -671,13 +675,13 @@ class OntologyTreeBuilder:
         all_parents = self._build_parents_per_node(self.ontology_graph)
         return all_children, all_parents
 
-    def _build_children_per_node(self, node, all_children=None) -> Dict[str, list[str]]:
+    def _build_children_per_node(self, node: OntologyTree, all_children=None) -> Dict[str, list[str]]:
         """
         Builds a dictionary that maps cell type ontology term ids to their children.
 
         Arguments
         ---------
-        node: dict
+        node: OntologyTree
             A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
         all_children: dict, optional, default=None
             A dictionary that maps cell type ontology term ids to their children.
@@ -689,21 +693,21 @@ class OntologyTreeBuilder:
         """
         if all_children is None:
             all_children = {}
-        children = node.get("children", [])
-        ids = [] if len(children) == 0 else [child["id"] for child in children]
+        children = [] if node.children is None else node.children
+        ids = [] if len(children) == 0 else [child.id for child in children]
 
-        all_children[node["id"]] = ids
+        all_children[node.id] = ids
         for child in children:
             self._build_children_per_node(child, all_children)
         return all_children
 
-    def _build_parents_per_node(self, node, all_parents=None) -> Dict[str, list[str]]:
+    def _build_parents_per_node(self, node: OntologyTree, all_parents=None) -> Dict[str, list[str]]:
         """
         Builds a dictionary that maps cell type ontology term ids to their parents.
 
         Arguments
         ---------
-        node: dict
+        node: OntologyTree
             A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
         all_parents: dict, optional, default=None
             A dictionary that maps cell type ontology term ids to their parents.
@@ -715,10 +719,10 @@ class OntologyTreeBuilder:
         """
         if all_parents is None:
             all_parents = {}
-        children = node.get("children", [])
+        children = [] if node.children is None else node.children
 
         for child in children:
-            all_parents[child["id"]] = [node["id"]]
+            all_parents[child.id] = [node.id]
             self._build_parents_per_node(child, all_parents)
         return all_parents
 
@@ -726,16 +730,16 @@ class OntologyTreeBuilder:
         """
         Returns a deepcopy of the ontology graph.
         """
-        return json.loads(json.dumps(self.ontology_graph))
+        return copy.deepcopy(self.ontology_graph)
 
 
-def _getExpandedData(ontology_graph, isExpandedNodes=None) -> Dict[str, list[str]]:
+def _getExpandedData(ontology_graph: OntologyTree, isExpandedNodes=None) -> Dict[str, list[str]]:
     """
     This function gets the cell type ontology term ids of the nodes that are expanded by default.
 
     Arguments
     ---------
-    ontology_graph: dict
+    ontology_graph: OntologyTree
         A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
 
     Returns
@@ -746,21 +750,21 @@ def _getExpandedData(ontology_graph, isExpandedNodes=None) -> Dict[str, list[str
     if isExpandedNodes is None:
         isExpandedNodes = []
 
-    if "children" in ontology_graph:
-        isExpandedNodes.append(ontology_graph["id"])
-        for child in ontology_graph["children"]:
+    if ontology_graph.children is not None:
+        isExpandedNodes.append(ontology_graph.id)
+        for child in ontology_graph.children:
             _getExpandedData(child, isExpandedNodes)
 
     return isExpandedNodes
 
 
-def _getShownData(graph, notShownWhenExpandedNodes=None) -> Dict[str, Dict[str, list[str]]]:
+def _getShownData(graph: OntologyTree, notShownWhenExpandedNodes=None) -> Dict[str, Dict[str, list[str]]]:
     """
     This function gets the children nodes that are not shown when expanded for each node in the ontology graph.
 
     Arguments
     ---------
-    graph: dict
+    graph: OntologyTree
         A node of the ontology graph. At the top-level, this should be the root node of the ontology graph.
 
     Returns
@@ -771,11 +775,11 @@ def _getShownData(graph, notShownWhenExpandedNodes=None) -> Dict[str, Dict[str, 
     if notShownWhenExpandedNodes is None:
         notShownWhenExpandedNodes = []
 
-    if "children" in graph:
-        for child in graph["children"]:
-            if child["id"] == "":
-                if len(child["invalid_children_ids"]) > 0:
-                    notShownWhenExpandedNodes.append({child["parent"]: list(set(child["invalid_children_ids"]))})
+    if graph.children is not None:
+        for child in graph.children:
+            if child.id == "":
+                if child.invalid_children_ids is not None and len(child.invalid_children_ids) > 0:
+                    notShownWhenExpandedNodes.append({child.parent: list(set(child.invalid_children_ids))})
             else:
                 _getShownData(child, notShownWhenExpandedNodes)
     return notShownWhenExpandedNodes

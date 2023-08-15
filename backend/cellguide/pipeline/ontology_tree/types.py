@@ -16,3 +16,5 @@ class OntologyTree:
     n_cells_rollup: int
     n_cells: int
     children: Optional[List["OntologyTree"]] = field(default=None)
+    invalid_children_ids: Optional[List[str]] = field(default=None)
+    parent: Optional[str] = field(default=None)
