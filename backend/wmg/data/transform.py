@@ -4,6 +4,7 @@ from typing import Dict, Iterable, List, Set
 import pandas as pd
 import tiledb
 
+from backend.wmg.data.constants import CL_BASIC_OBO_NAME
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.snapshot import (
     CELL_TYPE_ORDERINGS_FILENAME,
@@ -80,7 +81,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     import pygraphviz as pgv
     from pronto import Ontology
 
-    onto = Ontology(get_pinned_ontology_url("cl-basic.obo"))
+    onto = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
     ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
     ancestors = [i for s in ancestors for i in s]
     ancestors = set(ancestors)
