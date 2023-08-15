@@ -9,6 +9,11 @@ import pandas as pd
 from pronto import Ontology, Term
 
 from backend.cellguide.pipeline.constants import UBERON_BASIC_PERMANENT_URL_PRONTO
+from backend.cellguide.pipeline.ontology_tree.types import (
+    OntologyTree,
+    OntologyTreeStatePerCellType,
+    OntologyTreeStatePerTissue,
+)
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
 
@@ -38,7 +43,7 @@ HEMATOPOIETIC_CELL_TYPE_ID = "CL:0000988"
 
 @dataclass
 class TraverseOntologyResult:
-    subtree: Dict[str, Any]
+    subtree: OntologyTree
     traverse_node_counter: Dict[str, int]
     all_unique_nodes: set[str]
 
@@ -247,8 +252,11 @@ class OntologyTreeBuilder:
             all_unique_nodes=all_unique_nodes,
         )
 
+    def get_ontology_tree(self) -> OntologyTree:
+        return self.ontology_graph
+
     ### Get the ontology tree state
-    def get_ontology_tree_state_per_celltype(self) -> Dict[str, Any]:
+    def get_ontology_tree_state_per_celltype(self) -> Dict[str, OntologyTreeStatePerCellType]:
         """
         This function gets the ontology tree state per cell type. The ontology tree state is a mask that determines
         which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
@@ -317,7 +325,7 @@ class OntologyTreeBuilder:
 
         return all_states_per_cell_type
 
-    def get_ontology_tree_state_per_tissue(self) -> Dict[str, Any]:
+    def get_ontology_tree_state_per_tissue(self) -> Dict[str, OntologyTreeStatePerTissue]:
         """
         This function gets the ontology tree state per tissue. The ontology tree state is a mask that determines
         which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
@@ -719,7 +727,7 @@ class OntologyTreeBuilder:
             self._build_parents_per_node(child, all_parents)
         return all_parents
 
-    def _get_deepcopy_of_ontology_graph(self) -> Dict[str, Any]:
+    def _get_deepcopy_of_ontology_graph(self) -> OntologyTree:
         """
         Returns a deepcopy of the ontology graph.
         """
