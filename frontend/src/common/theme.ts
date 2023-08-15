@@ -148,7 +148,7 @@ const typography = {
         fontSize: 22,
         fontWeight: fontWeights.semibold,
         letterSpacing: "-0.37px",
-        lineHeight: "32px",
+        lineHeight: "28px",
       },
       xs: {
         fontSize: 13,
