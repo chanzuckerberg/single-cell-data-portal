@@ -10,7 +10,7 @@ import yaml
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-from backend.wmg.data.constants import CL_PINNED_CONFIG_URL
+from backend.wmg.data.constants import CL_PINNED_CONFIG_URL, WMG_PINNED_SCHEMA_VERSION
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 
 
@@ -163,12 +163,11 @@ def get_datasets_from_curation_api():
         if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
         else os.getenv("API_URL")
     )
-    PINNED_SCHEMA_VERSION = "3.0.0"
 
     datasets = {}
     if API_URL:
         session = _setup_retry_session()
-        dataset_metadata_url = f"{API_URL}/curation/v1/datasets?schema_version={PINNED_SCHEMA_VERSION}"
+        dataset_metadata_url = f"{API_URL}/curation/v1/datasets?schema_version={WMG_PINNED_SCHEMA_VERSION}"
         response = session.get(dataset_metadata_url)
         if response.status_code == 200:
             datasets = response.json()
@@ -186,7 +185,7 @@ def get_collections_from_curation_api():
     collections = {}
     if API_URL:
         session = _setup_retry_session()
-        dataset_metadata_url = f"{API_URL}/curation/v1/collections"
+        dataset_metadata_url = f"{API_URL}/curation/v1/collections?schema_version={WMG_PINNED_SCHEMA_VERSION}"
         response = session.get(dataset_metadata_url)
         if response.status_code == 200:
             collections = response.json()

@@ -24,3 +24,4 @@ INCLUDED_ASSAYS = {
 }
 
 CL_PINNED_CONFIG_URL = "https://raw.githubusercontent.com/chanzuckerberg/single-cell-curation/main/cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
+WMG_PINNED_SCHEMA_VERSION = "3.1.0"
