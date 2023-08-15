@@ -84,10 +84,9 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
             </div>
           ) : (
             <Tooltip
-              sdsStyle="dark"
-              placement="right"
-              width="default"
-              arrow
+              sdsStyle="light"
+              placement="top"
+              width="wide"
               title={
                 <div>
                   {tissueNames.map((tissue) => {
@@ -108,11 +107,57 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
             </Tooltip>
           ),
         disease: (
-          <div>
-            {diseaseNames.map((disease) => {
-              return <div key={`disease-${disease}-${index}`}>{disease}</div>;
-            })}
-          </div>
+          <>
+            <div>
+              {diseaseNames.length <= 2 ? (
+                <div>
+                  {diseaseNames.map((disease) => {
+                    return (
+                      <div key={`disease-${disease}-${index}`}>{disease}</div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <>
+                  {/* If 'normal' exists then have it outside of the overflow tag */}
+                  {diseaseNames.includes("normal") && (
+                    <div key={`disease-normal`}>normal</div>
+                  )}
+
+                  <Tooltip
+                    sdsStyle="light"
+                    placement="top"
+                    width="wide"
+                    title={
+                      <div>
+                        {diseaseNames
+                          .filter((disease) => disease !== "normal")
+                          .map((disease) => {
+                            return (
+                              <div key={`disease-${disease}-${index}`}>
+                                {disease}
+                              </div>
+                            );
+                          })}
+                      </div>
+                    }
+                  >
+                    <span>
+                      <StyledTag
+                        color="gray"
+                        sdsType="secondary"
+                        label={`${
+                          diseaseNames.includes("normal")
+                            ? diseaseNames.length - 1
+                            : diseaseNames.length
+                        } diseases`}
+                      />
+                    </span>
+                  </Tooltip>
+                </>
+              )}
+            </div>
+          </>
         ),
         organism: (
           <div>
