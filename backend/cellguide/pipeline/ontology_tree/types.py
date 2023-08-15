@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 
@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 class OntologyTreeState:
     isExpandedNodes: Dict[str, list[str]]
     notShownWhenExpandedNodes: Dict[str, Dict[str, list[str]]]
-    tissueCounts: Optional[Dict[str, int]]
+    tissueCounts: Optional[Dict[str, int]] = field(default=None)
 
 
 @dataclass
@@ -15,4 +15,4 @@ class OntologyTree:
     name: str
     n_cells_rollup: int
     n_cells: int
-    children: Optional[List["OntologyTree"]]
+    children: Optional[List["OntologyTree"]] = field(default=None)
