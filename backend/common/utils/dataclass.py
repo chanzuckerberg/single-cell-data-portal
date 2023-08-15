@@ -1,10 +1,15 @@
 from dataclasses import asdict, is_dataclass
 
 
-def convert_dataclass_to_dict(data):
+def convert_dataclass_to_dict(data, remove_nones=True):
     """
-    Convert a dataclass or dict of dataclasses to a dict and remove all keys
-    with None values.
+    Convert a dataclass or dict of dataclasses to a dict and optionally
+    remove all keys with None values (default behavior).
+
+    Arguments
+    ---------
+    data - dataclass or dict of dataclasses
+    remove_nones - bool, if True, remove all keys with None values
     """
     if is_dataclass(data):
         data = asdict(data)
