@@ -9,11 +9,7 @@ import pandas as pd
 from pronto import Ontology, Term
 
 from backend.cellguide.pipeline.constants import UBERON_BASIC_PERMANENT_URL_PRONTO
-from backend.cellguide.pipeline.ontology_tree.types import (
-    OntologyTree,
-    OntologyTreeStatePerCellType,
-    OntologyTreeStatePerTissue,
-)
+from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
 
@@ -219,14 +215,14 @@ class OntologyTreeBuilder:
 
         if len(subclasses) == 0:
             return TraverseOntologyResult(
-                subtree={
-                    "id": node.id + "__" + str(node_count),
-                    "name": self.id_to_name[node.id] if node.id in self.id_to_name else node.id,
-                    "n_cells_rollup": int(
+                subtree=OntologyTree(
+                    id=node.id + "__" + str(node_count),
+                    name=self.id_to_name[node.id] if node.id in self.id_to_name else node.id,
+                    n_cells_rollup=int(
                         self.cell_counts_df_rollup[node.id] if node.id in self.cell_counts_df_rollup else 0
                     ),
-                    "n_cells": int(self.cell_counts_df[node.id] if node.id in self.cell_counts_df else 0),
-                },
+                    n_cells=int(self.cell_counts_df[node.id] if node.id in self.cell_counts_df else 0),
+                ),
                 traverse_node_counter=None,
                 all_unique_nodes=None,
             )
@@ -239,15 +235,13 @@ class OntologyTreeBuilder:
             children.append(traverse_ontology_result.subtree)
 
         return TraverseOntologyResult(
-            subtree={
-                "id": node.id + "__" + str(node_count),
-                "name": self.id_to_name[node.id] if node.id in self.id_to_name else node.id,
-                "n_cells_rollup": int(
-                    self.cell_counts_df_rollup[node.id] if node.id in self.cell_counts_df_rollup else 0
-                ),
-                "n_cells": int(self.cell_counts_df[node.id] if node.id in self.cell_counts_df else 0),
-                "children": children,
-            },
+            subtree=OntologyTree(
+                id=node.id + "__" + str(node_count),
+                name=self.id_to_name[node.id] if node.id in self.id_to_name else node.id,
+                n_cells_rollup=int(self.cell_counts_df_rollup[node.id] if node.id in self.cell_counts_df_rollup else 0),
+                n_cells=int(self.cell_counts_df[node.id] if node.id in self.cell_counts_df else 0),
+                children=children,
+            ),
             traverse_node_counter=traverse_node_counter,
             all_unique_nodes=all_unique_nodes,
         )
@@ -256,7 +250,7 @@ class OntologyTreeBuilder:
         return self.ontology_graph
 
     ### Get the ontology tree state
-    def get_ontology_tree_state_per_celltype(self) -> Dict[str, OntologyTreeStatePerCellType]:
+    def get_ontology_tree_state_per_celltype(self) -> Dict[str, OntologyTreeState]:
         """
         This function gets the ontology tree state per cell type. The ontology tree state is a mask that determines
         which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
@@ -318,14 +312,15 @@ class OntologyTreeBuilder:
                 notShownWhenExpanded = {}
                 for i in notShownWhenExpandedNodes:
                     notShownWhenExpanded.update(i)
-                all_states_per_cell_type[end_node] = {
-                    "isExpandedNodes": isExpandedNodes,
-                    "notShownWhenExpandedNodes": notShownWhenExpanded,
-                }
+
+                all_states_per_cell_type[end_node] = OntologyTreeState(
+                    isExpandedNodes=isExpandedNodes,
+                    notShownWhenExpandedNodes=notShownWhenExpanded,
+                )
 
         return all_states_per_cell_type
 
-    def get_ontology_tree_state_per_tissue(self) -> Dict[str, OntologyTreeStatePerTissue]:
+    def get_ontology_tree_state_per_tissue(self) -> Dict[str, OntologyTreeState]:
         """
         This function gets the ontology tree state per tissue. The ontology tree state is a mask that determines
         which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
@@ -429,11 +424,11 @@ class OntologyTreeBuilder:
                 for i in notShownWhenExpandedNodes:
                     notShownWhenExpanded.update(i)
 
-                all_states_per_tissue[tissue] = {
-                    "isExpandedNodes": isExpandedNodes,
-                    "notShownWhenExpandedNodes": notShownWhenExpanded,
-                    "tissueCounts": celltype_counts_in_tissue,
-                }
+                all_states_per_tissue[tissue] = OntologyTreeState(
+                    isExpandedNodes=isExpandedNodes,
+                    notShownWhenExpandedNodes=notShownWhenExpanded,
+                    tissueCounts=celltype_counts_in_tissue,
+                )
         return all_states_per_tissue
 
     def _depth_first_search_pathfinder(self, path_end_node, node=None, path=None) -> list[str]:

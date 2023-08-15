@@ -3,16 +3,10 @@ from typing import Dict, List, Optional
 
 
 @dataclass
-class OntologyTreeStatePerCellType:
+class OntologyTreeState:
     isExpandedNodes: Dict[str, list[str]]
     notShownWhenExpandedNodes: Dict[str, Dict[str, list[str]]]
-
-
-@dataclass
-class OntologyTreeStatePerTissue:
-    isExpandedNodes: Dict[str, list[str]]
-    notShownWhenExpandedNodes: Dict[str, Dict[str, list[str]]]
-    tissueCounts: Dict[str, int]
+    tissueCounts: Optional[Dict[str, int]]
 
 
 @dataclass
