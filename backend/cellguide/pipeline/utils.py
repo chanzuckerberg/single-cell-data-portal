@@ -3,6 +3,10 @@ from dataclasses import asdict, is_dataclass
 
 
 def convert_dataclass_to_dict(data):
+    """
+    Convert a dataclass or dict of dataclasses to a dict and remove all keys
+    with None values.
+    """
     if is_dataclass(data):
         data = asdict(data)
 
@@ -16,6 +20,10 @@ def convert_dataclass_to_dict(data):
 
 def output_json(data, path):
     """
+    Output JSON while handling the case where `data` is an instance of a dataclass
+
+    Arguments
+    ---------
     data - a dict or a dataclass
     path - str
     """
@@ -28,6 +36,13 @@ def output_json(data, path):
 
 
 def _remove_none_values(data):
+    """
+    Recursively remove keys with None values.
+
+    Arguments
+    ---------
+    data - dict
+    """
     if isinstance(data, dict):
         return {k: _remove_none_values(v) for k, v in data.items() if v is not None}
     elif isinstance(data, list):
