@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import allCellTypes from "src/views/CellGuide/common/fixtures/allCellTypes.json";
+import { readJson } from "src/common/utils/api/readJson";
+
+const allCellTypes = readJson(
+  "src/views/CellGuide/common/fixtures/allCellTypes.json"
+);
 
 async function handler(_: NextApiRequest, res: NextApiResponse) {
   try {

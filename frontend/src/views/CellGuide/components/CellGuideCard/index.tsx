@@ -165,12 +165,17 @@ export default function CellGuideCard({
           {/* Cell Ontology section */}
           <div ref={sectionRef1} id="section-1" data-testid="section-1" />
           <FullScreenProvider>
-            <OntologyDagView cellTypeId={cellTypeId} skinnyMode={skinnyMode} />
+            <OntologyDagView
+              key={cellTypeId}
+              cellTypeId={cellTypeId}
+              skinnyMode={skinnyMode}
+            />
           </FullScreenProvider>
 
           {/* Marker Genes section */}
           <div ref={sectionRef2} id="section-2" data-testid="section-2" />
           <MarkerGeneTables
+            key={cellTypeId}
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}
