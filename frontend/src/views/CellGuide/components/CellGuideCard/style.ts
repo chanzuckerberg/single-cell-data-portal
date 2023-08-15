@@ -64,9 +64,10 @@ export const CellGuideCardHeader = styled.div`
   justify-content: space-between;
 `;
 
-export const CellGuideCardName = styled.div`
+export const CellGuideCardName = styled.h1`
   ${fontHeaderXxl}
   font-weight: 700;
+  margin-bottom: 0;
 `;
 
 export const StyledTag = styled(Tag)`
