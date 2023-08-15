@@ -224,7 +224,7 @@ class SchemaMigrate(ProcessingLogic):
         if errors:
             self._store_sfn_response("report", collection_version_id, errors)
         elif can_publish:
-            self.business_logic.publish_collection_version(collection_version_id)
+            self.business_logic.publish_collection_version(collection_version)
         self.logger.info(
             "Deleting files", extra={"artifact_bucket": self.artifact_bucket, "object_keys": object_keys_to_delete}
         )
