@@ -2,13 +2,16 @@ import json
 from dataclasses import asdict, is_dataclass
 
 
-def remove_none_values(data):
-    if isinstance(data, dict):
-        return {k: remove_none_values(v) for k, v in data.items() if v is not None}
-    elif isinstance(data, list):
-        return [remove_none_values(i) for i in data]
-    else:
-        return data
+def convert_dataclass_to_dict(data):
+    if is_dataclass(data):
+        data = asdict(data)
+
+    elif isinstance(data, dict):
+        for key, value in data.items():
+            if is_dataclass(value):
+                data[key] = asdict(value)
+
+    return _remove_none_values(data)
 
 
 def output_json(data, path):
@@ -18,9 +21,16 @@ def output_json(data, path):
     """
 
     if is_dataclass(data):
-        data = asdict(data)
-        # remove values that are set to None as these were unset in the dataclass
-        data = remove_none_values(data)
+        data = convert_dataclass_to_dict(data)
 
     with open(path, "w") as f:
         json.dump(data, f)
+
+
+def _remove_none_values(data):
+    if isinstance(data, dict):
+        return {k: _remove_none_values(v) for k, v in data.items() if v is not None}
+    elif isinstance(data, list):
+        return [_remove_none_values(i) for i in data]
+    else:
+        return data

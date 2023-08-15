@@ -641,13 +641,13 @@ class OntologyTreeBuilder:
                         parent=graph.id,
                     )
                 )
-                graph["children"] = new_children
+                graph.children = new_children
             else:
-                graph["children"] = new_children
+                graph.children = new_children
 
             children = [] if graph.children is None else graph.children
             for child in children:
-                if child["id"] != "":
+                if child.id != "":
                     self._truncate_graph_in_tissue(
                         graph=child,
                         valid_nodes=valid_nodes,
