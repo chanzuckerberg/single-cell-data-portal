@@ -2,7 +2,7 @@ import json
 import unittest
 
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
-from backend.cellguide.pipeline.utils import convert_dataclass_to_dict
+from backend.common.utils.dataclass import convert_dataclass_to_dict
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )

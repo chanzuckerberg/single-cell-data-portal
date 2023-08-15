@@ -1,21 +1,7 @@
 import json
-from dataclasses import asdict, is_dataclass
+from dataclasses import is_dataclass
 
-
-def convert_dataclass_to_dict(data):
-    """
-    Convert a dataclass or dict of dataclasses to a dict and remove all keys
-    with None values.
-    """
-    if is_dataclass(data):
-        data = asdict(data)
-
-    elif isinstance(data, dict):
-        for key, value in data.items():
-            if is_dataclass(value):
-                data[key] = asdict(value)
-
-    return _remove_none_values(data)
+from backend.common.utils.dataclass import convert_dataclass_to_dict
 
 
 def output_json(data, path):
@@ -33,19 +19,3 @@ def output_json(data, path):
 
     with open(path, "w") as f:
         json.dump(data, f)
-
-
-def _remove_none_values(data):
-    """
-    Recursively remove keys with None values.
-
-    Arguments
-    ---------
-    data - dict
-    """
-    if isinstance(data, dict):
-        return {k: _remove_none_values(v) for k, v in data.items() if v is not None}
-    elif isinstance(data, list):
-        return [_remove_none_values(i) for i in data]
-    else:
-        return data
