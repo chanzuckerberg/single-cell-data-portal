@@ -5,10 +5,11 @@ import numpy as np
 import owlready2
 import pandas as pd
 
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_OWL
+from backend.wmg.data.constants import CL_BASIC_OWL_NAME
+from backend.wmg.data.utils import get_pinned_ontology_url
 
 # ontology object
-ontology = owlready2.get_ontology(CL_BASIC_PERMANENT_URL_OWL)
+ontology = owlready2.get_ontology(get_pinned_ontology_url(CL_BASIC_OWL_NAME))
 ontology.load()
 
 
