@@ -189,6 +189,7 @@ interface EnrichedGenesQueryResponseEntry {
   symbol: string;
   name: string;
   organism: string;
+  tissue: string;
 }
 
 export type EnrichedGenesQueryResponse = EnrichedGenesQueryResponseEntry[];
