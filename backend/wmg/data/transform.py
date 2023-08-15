@@ -4,7 +4,7 @@ from typing import Dict, Iterable, List, Set
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
+from backend.wmg.data.constants import CL_BASIC_OBO_NAME
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.snapshot import (
     CELL_TYPE_ORDERINGS_FILENAME,
@@ -12,34 +12,11 @@ from backend.wmg.data.snapshot import (
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
 from backend.wmg.data.tissue_mapper import TissueMapper
-from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.data.utils import get_pinned_ontology_url, log_func_runtime, to_dict
 
 
 @log_func_runtime
-def get_cell_types_by_tissue(corpus_group: str) -> Dict:
-    """
-    Return a list of all associated cell type ontologies for each tissue contained in the
-    provided corpus
-    """
-    with tiledb.open(f"{corpus_group}/obs", "r") as obs:
-        tissue_cell_types = (
-            obs.query(attrs=[], dims=["tissue_ontology_term_id", "cell_type_ontology_term_id"])
-            .df[:]
-            .drop_duplicates()
-            .sort_values(by="tissue_ontology_term_id")
-        )
-    unique_tissue_ontology_term_id = tissue_cell_types.tissue_ontology_term_id.unique()
-    cell_type_by_tissue = {}
-    for x in unique_tissue_ontology_term_id:
-        cell_type_by_tissue[x] = tissue_cell_types.loc[
-            tissue_cell_types["tissue_ontology_term_id"] == x, "cell_type_ontology_term_id"
-        ]
-
-    return cell_type_by_tissue
-
-
-@log_func_runtime
-def cell_type_ordering_create_file(snapshot_path: str, cell_type_by_tissue: Dict[str, pd.DataFrame]) -> None:
+def cell_type_ordering_create_file(snapshot_path: str) -> None:
     """
     Writes an ordered "table" of cell types to a json file. The table is written from a pandas data frame with the
     following columns:
@@ -54,6 +31,15 @@ def cell_type_ordering_create_file(snapshot_path: str, cell_type_by_tissue: Dict
 
     :return None
     """
+
+    cell_counts_cube = tiledb.open(f"{snapshot_path}/cell_counts")
+    cell_counts_df = cell_counts_cube.df[:]
+    cell_counts_df = (
+        cell_counts_df.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).first().reset_index()
+    )
+    cell_type_by_tissue = to_dict(
+        cell_counts_df["tissue_ontology_term_id"], cell_counts_df["cell_type_ontology_term_id"].values
+    )
 
     # Generates ordering for ALL cell types
     all_cells = {cell for cell_df in cell_type_by_tissue.values() for cell in cell_df}
@@ -95,7 +81,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     import pygraphviz as pgv
     from pronto import Ontology
 
-    onto = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
+    onto = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
     ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
     ancestors = [i for s in ancestors for i in s]
     ancestors = set(ancestors)
