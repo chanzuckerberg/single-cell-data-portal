@@ -6,9 +6,11 @@ from typing import Dict, List
 import numpy as np
 import requests
 import tiledb
+import yaml
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
+from backend.wmg.data.constants import CL_PINNED_CONFIG_URL
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 
 
@@ -207,3 +209,21 @@ def to_dict(a, b):
     slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
     d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
     return d
+
+
+def get_pinned_ontology_url(name: str):
+    """
+    This function retrieves the URL of the pinned ontology based on the provided name.
+
+    Parameters:
+    name (str): The name of the ontology (e.g. cl-basic.obo).
+
+    Returns:
+    str: The URL of the pinned ontology.
+    """
+
+    response = requests.get(CL_PINNED_CONFIG_URL)
+    decoded_yaml = yaml.safe_load(response.content.decode())
+    cl_url = list(decoded_yaml["CL"]["urls"].values())[0]
+    cl_url = cl_url.split("cl.owl")[0] + name
+    return cl_url

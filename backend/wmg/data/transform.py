@@ -4,7 +4,6 @@ from typing import Dict, Iterable, List, Set
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.snapshot import (
     CELL_TYPE_ORDERINGS_FILENAME,
@@ -12,7 +11,7 @@ from backend.wmg.data.snapshot import (
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
 from backend.wmg.data.tissue_mapper import TissueMapper
-from backend.wmg.data.utils import log_func_runtime, to_dict
+from backend.wmg.data.utils import get_pinned_ontology_url, log_func_runtime, to_dict
 
 
 @log_func_runtime
@@ -81,7 +80,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     import pygraphviz as pgv
     from pronto import Ontology
 
-    onto = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
+    onto = Ontology(get_pinned_ontology_url("cl-basic.obo"))
     ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
     ancestors = [i for s in ancestors for i in s]
     ancestors = set(ancestors)
