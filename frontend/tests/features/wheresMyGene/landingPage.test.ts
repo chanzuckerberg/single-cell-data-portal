@@ -24,12 +24,10 @@ function goToWMG(page: Page) {
   ]);
 }
 describe("Tests for Gene Expression page", () => {
-  conditionallyRunTests();
+  conditionallyRunTests({ forceRun: true });
 
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
-    // +Tissue button
-    await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // +Gene button
     await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // survey alert
