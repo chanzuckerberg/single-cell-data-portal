@@ -1,7 +1,7 @@
 from dataclasses import asdict, is_dataclass
 
 
-def convert_dataclass_to_dict(data, remove_nones=True):
+def convert_dataclass_to_dict(data, remove_nones=False):
     """
     Convert a dataclass or dict of dataclasses to a dict and optionally
     remove all keys with None values (default behavior).
@@ -19,7 +19,7 @@ def convert_dataclass_to_dict(data, remove_nones=True):
             if is_dataclass(value):
                 data[key] = asdict(value)
 
-    return _remove_none_values(data)
+    return _remove_none_values(data) if remove_nones else data
 
 
 def _remove_none_values(data):

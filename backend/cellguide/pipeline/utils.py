@@ -15,7 +15,7 @@ def output_json(data, path):
     """
 
     if is_dataclass(data):
-        data = convert_dataclass_to_dict(data)
+        data = convert_dataclass_to_dict(data, remove_nones=True)
 
     with open(path, "w") as f:
         json.dump(data, f)
