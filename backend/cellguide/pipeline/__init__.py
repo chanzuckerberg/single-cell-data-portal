@@ -12,7 +12,7 @@ def run_cellguide_pipeline():
     ontology_tree = run_ontology_tree_pipeline(output_directory)
 
     # Generate cell guide cards, synonyms, and descriptions
-    run_metadata_pipeline(ontology_tree)
+    run_metadata_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
 
 if __name__ == "__main__":
