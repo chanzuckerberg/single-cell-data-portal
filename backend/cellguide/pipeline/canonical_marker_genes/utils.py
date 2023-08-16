@@ -10,15 +10,6 @@ def clean_doi(doi):
     return doi
 
 
-def get_gene_name_from_gene_info(gene):
-    a = requests.get(f"https://api.cellxgene.dev.single-cell.czi.technology/gene_info/v1/gene_info?gene={gene}")
-    if a.status_code == 200:
-        r = a.json()
-        return r["name"]
-    else:
-        return gene
-
-
 def get_title_and_citation_from_doi(doi):
     url = f"https://api.crossref.org/works/{doi}"
 
@@ -56,19 +47,3 @@ def format_citation_mg(message):
     year = message["created"]["date-parts"][0][0]
 
     return f"{author_str} ({year}){journal}"
-
-
-def get_tissue_name_from_uberon(t):
-    t = t.replace(":", "_")
-    urls = [
-        f"https://www.ebi.ac.uk/ols4/api/ontologies/clo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F{t}",
-        f"https://www.ebi.ac.uk/ols4/api/ontologies/envo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F{t}",
-        f"https://www.ebi.ac.uk/ols4/api/ontologies/flopo/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F{t}",
-        f"https://www.ebi.ac.uk/ols4/api/ontologies/doid/terms/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F{t}",
-    ]
-    for url in urls:
-        response = requests.get(url)
-        if response.status_code == 200:
-            r = response.json()
-            return r["label"]
-    return t

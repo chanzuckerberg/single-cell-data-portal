@@ -1,51 +1,38 @@
 import json
 import logging
+import pathlib
 
 import pandas as pd
 import requests
 
 from backend.cellguide.pipeline.canonical_marker_genes.utils import (
     clean_doi,
-    get_gene_name_from_gene_info,
-    get_tissue_name_from_uberon,
     get_title_and_citation_from_doi,
 )
-from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL
-from backend.wmg.data.snapshot import WmgSnapshot
+from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL, ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME
+from backend.wmg.data.ontology_labels import ontology_term_label
 
 logger = logging.getLogger(__name__)
 
 
 class CanonicalMarkerGenesCompiler:
-    def __init__(self, snapshot: WmgSnapshot):
+    def __init__(self, wmg_tissues, wmg_human_genes):
+        logger.info("Fetching ASCTB data...")
         self.asctb_data = requests.get(ASCTB_MASTER_SHEET_URL).json()
+        self.wmg_tissues = [i for i in wmg_tissues if i.startswith("UBERON:")]
 
-        cell_counts_df = snapshot.cell_counts_df[:]
-        self.wmg_tissues = [i for i in cell_counts_df["tissue_ontology_term_id"].unique() if i.startswith("UBERON:")]
+        self.wmg_human_genes = wmg_human_genes
 
-        self.wmg_human_genes = [
-            next(iter(i.values())) for i in snapshot.primary_filter_dimensions["gene_terms"]["NCBITaxon:9606"]
-        ]
+        file_path = self._get_ensembl_to_gene_descriptions_file_path()
+        gene_id_to_name = pd.read_csv(file_path, sep="\t")
+        self.gene_id_to_name = gene_id_to_name.set_index("Symbols")["Description"].to_dict()
 
-        self.doi_to_citation = self._get_formatted_citations_per_doi()
-
-    def _get_formatted_citations_per_doi(self):
-        # get formatted citations per doi
-        doi_to_citation = {}
-        for i, tissue in enumerate(self.asctb_data):
-            logger.info(f"Getting formatted citations for DOIs in {tissue} tissue ({i}/{len(self.asctb_data)})")
-
-            data = self.asctb_data[tissue]["data"]
-            for row in data:
-                cell_types = [i["id"] for i in row["cell_types"] if i["id"].startswith("CL:")]
-                if len(cell_types) and len(row["biomarkers_gene"]):
-                    for ref in row["references"]:
-                        doi = clean_doi(ref["doi"])
-
-                        if doi != "" and doi not in doi_to_citation:
-                            title = get_title_and_citation_from_doi(doi)
-                            doi_to_citation[doi] = title
-        return doi_to_citation
+    def _get_ensembl_to_gene_descriptions_file_path(self):
+        return (
+            pathlib.Path(__file__)
+            .parent.absolute()
+            .parent.joinpath("fixtures", ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME)
+        )
 
     def _get_tissue_id(self, row):
         tissue_id = row["anatomical_structures"][0]["id"]
@@ -54,42 +41,45 @@ class CanonicalMarkerGenesCompiler:
                 tissue_id = entry["id"]
         return tissue_id
 
-    def _get_gene_info(self, row, gene_name_memory):
+    def _get_gene_info(self, row):
         gene_symbols = []
         gene_names = []
         for gene in row["biomarkers_gene"]:
             symbol = gene["name"].upper()
             if symbol and symbol in self.wmg_human_genes:
-                name = gene["rdfs_label"] or self._get_gene_name(symbol, gene_name_memory)
+                name = gene["rdfs_label"] or self.gene_id_to_name.get(symbol, symbol)
                 gene_symbols.append(symbol)
                 gene_names.append(name)
         return gene_symbols, gene_names
 
-    def _get_gene_name(self, symbol, gene_name_memory):
-        if symbol in gene_name_memory:
-            return gene_name_memory[symbol]
-        name = get_gene_name_from_gene_info(symbol)
-        gene_name_memory[symbol] = name
-        return name
-
-    def _get_references(self, row):
+    def _get_references(self, row, doi_to_citation):
         refs = []
         titles = []
         for ref in row["references"]:
             doi = clean_doi(ref["doi"])
             if doi:
-                title = self.doi_to_citation[doi]
+                if doi not in doi_to_citation:
+                    title = get_title_and_citation_from_doi(doi)
+                    doi_to_citation[doi] = title
+                else:
+                    title = doi_to_citation[doi]
                 refs.append(doi)
                 titles.append(title)
         return ";;".join(refs), ";;".join(titles)
 
     def get_processed_asctb_table_entries(self):
-        gene_name_memory = {}
+
+        # DOI to citation mapping
+        doi_to_citation = {}
+
         hashed_entries_seen = []
         parsed_table_entries = []
 
         for i, tissue in enumerate(self.asctb_data):
-            logger.info(f"Getting processed ASCTB table entry for {tissue} tissue ({i}/{len(self.asctb_data)})")
+            version = self.asctb_data[tissue]["metadata"]["version"]
+            logger.info(
+                f"Getting processed ASCTB table entry for {tissue} tissue ({version}) ({i+1}/{len(self.asctb_data)})"
+            )
             data = self.asctb_data[tissue]["data"]
 
             for row in data:
@@ -98,8 +88,8 @@ class CanonicalMarkerGenesCompiler:
                     continue
 
                 tissue_id = self._get_tissue_id(row)
-                gene_symbols, gene_names = self._get_gene_info(row, gene_name_memory)
-                refs, titles = self._get_references(row)
+                gene_symbols, gene_names = self._get_gene_info(row)
+                refs, titles = self._get_references(row, doi_to_citation)
 
                 for cell_type in cell_types:
                     for i in range(len(gene_symbols)):
@@ -119,8 +109,9 @@ class CanonicalMarkerGenesCompiler:
                             parsed_table_entries.append(entry)
                             hashed_entries_seen.append(entry)
 
+        logger.info("Fetching tissue names from UBERON ontology...")
         tissues_in_parsed_table_entries = [i["tissue"] for i in parsed_table_entries]
-        tissues_by_id = {t: get_tissue_name_from_uberon(t) for t in tissues_in_parsed_table_entries}
+        tissues_by_id = {t: ontology_term_label(t) for t in tissues_in_parsed_table_entries}
 
         gene_infos = {}
         for entry in parsed_table_entries:
@@ -132,6 +123,8 @@ class CanonicalMarkerGenesCompiler:
             entry["tissue"] = tissues_by_id.get(entry["tissue"], entry["tissue"])
             a.append(entry)
             gene_infos[ct] = a
+
+        logger.info("Aggregating gene biomarkers across tissues and publications across biomarkers and cell types...")
 
         def aggregate_publications(publication):
             # Remove empty publications and get unique ones with order preserved
