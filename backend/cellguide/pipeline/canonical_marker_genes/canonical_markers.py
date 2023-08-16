@@ -149,6 +149,18 @@ class CanonicalMarkerGenesCompiler:
         return ";;".join(refs), ";;".join(titles)
 
     def get_processed_asctb_table_entries(self) -> Dict[str, ParsedAsctbTableEntry]:
+        """
+        Processes the ASCTB table entries and returns a dictionary mapping cell type ontology term IDs to
+        ParsedAsctbTableEntry objects. The processing involves extracting relevant information from the ASCTB data
+        such as tissue ID, gene symbols and names, DOIs and citations, and cell type ontology term IDs. It also
+        involves cleaning and formatting the extracted data.
+
+        Returns
+        -------
+        Dict[str, ParsedAsctbTableEntry]
+            A dictionary mapping cell type ontology term IDs to ParsedAsctbTableEntry objects.
+        """
+
         # DOI to citation mapping
         doi_to_citation = {}
 
@@ -173,7 +185,9 @@ class CanonicalMarkerGenesCompiler:
                 gene_symbols, gene_names = self._get_gene_info(
                     [GeneBiomarker(**entry) for entry in row["biomarkers_gene"]]
                 )
-                refs, titles = self._get_references([Reference(**entry) for entry in row], doi_to_citation)
+                refs, titles = self._get_references(
+                    [Reference(**entry) for entry in row["references"]], doi_to_citation
+                )
 
                 for cell_type in cell_types:
                     for i in range(len(gene_symbols)):

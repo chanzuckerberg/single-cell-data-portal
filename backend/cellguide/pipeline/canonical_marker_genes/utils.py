@@ -1,16 +1,44 @@
 import requests
 
 
-def clean_doi(doi):
+def clean_doi(doi: str) -> str:
+    """
+    Cleans the DOI string.
+
+    Parameters
+    ----------
+    doi : str
+        The DOI string to be cleaned.
+
+    Returns
+    -------
+    str
+        The cleaned DOI string.
+    """
+
     if doi != "" and doi[-1] == ".":
         doi = doi[:-1]
     if " " in doi:
-        doi = doi.split(" ")[1]
+        doi = doi.split(" ")[1]  # this handles cases where the DOI string is "DOI: {doi}"
     doi = doi.strip()
     return doi
 
 
-def get_title_and_citation_from_doi(doi):
+def get_title_and_citation_from_doi(doi: str) -> str:
+    """
+    Retrieves the title and citation from a DOI.
+
+    Parameters
+    ----------
+    doi : str
+        The DOI string.
+
+    Returns
+    -------
+    str
+        The title and citation associated with the DOI.
+    """
+
     url = f"https://api.crossref.org/works/{doi}"
 
     # Send a GET request to the API
@@ -24,11 +52,11 @@ def get_title_and_citation_from_doi(doi):
         # Get the title and citation count from the data
         try:
             title = data["message"]["title"][0]
-            citation = format_citation_mg(data["message"])
+            citation = format_citation(data["message"])
         except Exception:
             try:
                 title = data["message"]["items"][0]["title"][0]
-                citation = format_citation_mg(data["message"]["items"][0])
+                citation = format_citation(data["message"]["items"][0])
             except Exception:
                 return doi
         return f"{title}\n\n - {citation}"
@@ -36,7 +64,21 @@ def get_title_and_citation_from_doi(doi):
         return doi
 
 
-def format_citation_mg(message):
+def format_citation(message: dict) -> str:
+    """
+    Formats the citation message.
+
+    Parameters
+    ----------
+    message : dict
+        The message containing citation details output from CrossRef.
+
+    Returns
+    -------
+    str
+        The formatted citation string.
+    """
+
     first_author = message["author"][0]
     if "family" in first_author:
         author_str = f"{first_author['family']}, {first_author['given']} et al."
