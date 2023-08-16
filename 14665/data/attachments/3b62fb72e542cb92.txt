@@ -1,0 +1,127 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +46ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +45ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +10ms
+  pw:api   "commit" event fired +3s
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/" +18ms
+  pw:api   navigated to "about:blank" +48ms
+  pw:api <= page.goto succeeded +65ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api   "networkidle" event fired +438ms
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api => locator.count started +1ms
+  pw:api   "networkidle" event fired +8ms
+  pw:api <= locator.count succeeded +28ms
+  pw:api => expect.toBeVisible started +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +11ms
+  pw:api waiting for getByTestId('collections-link') +0ms
+  pw:api   locator resolved to <a tabindex="0" role="button" href="/collections" d…>…</a> +4ms
+  pw:api <= expect.toBeVisible succeeded +11ms
+  pw:api => locator.evaluate started +1ms
+  pw:api waiting for locator('body') +7ms
+  pw:api   locator resolved to visible <body data-api-url="https://api.cellxgene.dev.single-c…>…</body> +13ms
+  pw:api <= locator.evaluate succeeded +20ms
+  pw:api => locator.evaluate started +1ms
+  pw:api waiting for locator('html') +5ms
+  pw:api   locator resolved to visible <html>…</html> +4ms
+  pw:api <= locator.evaluate succeeded +20ms
+  pw:api => expect.not.toBeInViewport started +3ms
+  pw:api expect.not.toBeInViewport with timeout 10000ms +5ms
+  pw:api waiting for locator('a').filter({ hasText: 'Sitemap' }) +1ms
+  pw:api   locator resolved to <a href="/sitemap">Sitemap</a> +6ms
+  pw:api <= expect.not.toBeInViewport succeeded +7ms
+  pw:api => mouse.wheel started +5ms
+  pw:api <= mouse.wheel succeeded +54ms
+  pw:api => locator.evaluate started +1ms
+  pw:api waiting for locator('html') +133ms
+  pw:api   locator resolved to visible <html>…</html> +106ms
+  pw:api <= locator.evaluate succeeded +100ms
+  pw:api => expect.toBeInViewport started +7ms
+  pw:api expect.toBeInViewport with timeout 10000ms +30ms
+  pw:api waiting for locator('a').filter({ hasText: 'Sitemap' }) +1ms
+  pw:api   locator resolved to <a href="/sitemap">Sitemap</a> +15ms
+  pw:api <= expect.toBeInViewport succeeded +14ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('collections-link') +8ms
+  pw:api   locator resolved to <a tabindex="0" role="button" href="/collections" d…>…</a> +9ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +32ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +8ms
+  pw:api   click action done +82ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +6ms
+  pw:api <= locator.click succeeded +9ms
+  pw:api => page.waitForURL started +1ms
+  pw:api waiting for navigation to "**/collections" until "load" +15ms
+  pw:api   navigated to "https://localhost:3000/collections" +18s
+  pw:api <= page.waitForURL succeeded +3ms
+  pw:api => locator.evaluate started +1ms
+  pw:api   navigated to "https://localhost:3000/collections" +2ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +274ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +17ms
+  pw:api <= locator.evaluate succeeded +14ms
+  pw:api => locator.click started +4ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +5ms
+  pw:api   locator resolved to <div data-testid="global-layout-wrapper" class="css-1…>…</div> +3ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +19ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +15ms
+  pw:api   click action done +29ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +3ms
+  pw:api => mouse.wheel started +1ms
+  pw:api <= mouse.wheel succeeded +17ms
+  pw:api => locator.evaluate started +2ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +6ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +13ms
+  pw:api <= locator.evaluate succeeded +21ms
+  pw:api => page.waitForTimeout started +16ms
+  pw:api <= page.waitForTimeout succeeded +470ms
+  pw:api => locator.click started +1ms
+  pw:api   "networkidle" event fired +424ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +2s
+  pw:api   locator resolved to <div data-testid="global-layout-wrapper" class="css-1…>…</div> +707ms
+  pw:api attempting click action +103ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +30ms
+  pw:api   click action done +52ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +10ms
+  pw:api => mouse.wheel started +0ms
+  pw:api <= mouse.wheel succeeded +43ms
+  pw:api => locator.evaluate started +1ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +30ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +120ms
+  pw:api <= locator.evaluate succeeded +21ms
+  pw:api taking page screenshot +457ms
+  pw:api => browserContext.close started +226ms
+  pw:api <= browserContext.close succeeded +3s
