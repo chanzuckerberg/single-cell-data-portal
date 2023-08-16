@@ -16,7 +16,7 @@ def run_cellguide_pipeline():
     run_metadata_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
     # Generate canonical marker genes from ASCT-B (HUBMAP)
-    run_canonical_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)    
+    run_canonical_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
 
 if __name__ == "__main__":
