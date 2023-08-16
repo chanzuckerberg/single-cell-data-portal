@@ -156,7 +156,7 @@ def _setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502
 def get_datasets_from_curation_api():
     # hardcode to dev backend if deployment is rdev or test
     API_URL = (
-        "https://api.cellxgene.dev.single-cell.czi.technology"
+        "https://api.cellxgene.staging.single-cell.czi.technology"
         if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
         else os.getenv("API_URL")
     )
@@ -175,7 +175,7 @@ def get_datasets_from_curation_api():
 def get_collections_from_curation_api():
     # hardcode to dev backend if deployment is rdev or test
     API_URL = (
-        "https://api.cellxgene.dev.single-cell.czi.technology"
+        "https://api.cellxgene.staging.single-cell.czi.technology"
         if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
         else os.getenv("API_URL")
     )
