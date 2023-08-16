@@ -47,6 +47,7 @@ export const Wrapper = styled.div`
   flex-direction: column;
   align-self: stretch;
   min-width: 640px;
+  margin-bottom: 80px;
 `;
 
 export const CellGuideCardHeaderInnerWrapper = styled.div`
