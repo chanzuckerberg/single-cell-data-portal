@@ -47,7 +47,9 @@ class TestPublishAndCleanup:
 
         errors = local_schema_migrate.publish_and_cleanup(collection_version.version_id.id, True)
         assert errors == []
-        local_schema_migrate.business_logic.publish_collection_version.assert_called_once_with(collection_version)
+        local_schema_migrate.business_logic.publish_collection_version.assert_called_once_with(
+            collection_version.version_id
+        )
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
         )
