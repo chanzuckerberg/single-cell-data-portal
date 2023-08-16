@@ -87,6 +87,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
               sdsStyle="light"
               placement="top"
               width="wide"
+              leaveDelay={0}
               title={
                 <div>
                   {tissueNames.map((tissue) => {
@@ -128,6 +129,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
                     sdsStyle="light"
                     placement="top"
                     width="wide"
+                    leaveDelay={0}
                     title={
                       <div>
                         {diseaseNames
