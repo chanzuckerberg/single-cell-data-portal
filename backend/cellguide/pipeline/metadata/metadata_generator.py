@@ -1,11 +1,12 @@
 from pronto import Ontology
 
 from backend.cellguide.pipeline.metadata.types import CellMetadata
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
+from backend.wmg.data.constants import CL_BASIC_OBO_NAME
+from backend.wmg.data.utils import get_pinned_ontology_url
 
 
 def generate_cellguide_card_metadata(all_cell_type_ids_in_corpus: list[str]) -> dict[str, CellMetadata]:
-    ontology = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
+    ontology = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
 
     cellguide_card_metadata: dict[str, CellMetadata] = {}
     for id in all_cell_type_ids_in_corpus:
