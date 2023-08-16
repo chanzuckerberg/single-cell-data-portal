@@ -5,11 +5,12 @@ from backend.cellguide.pipeline.constants import (
 )
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json
+from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 
-def run(output_directory):
-    snapshot: WmgSnapshot = load_snapshot()
+def run(output_directory) -> OntologyTreeBuilder:
+    snapshot: WmgSnapshot = load_snapshot(snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION)
     cell_counts_df = snapshot.cell_counts_cube.df[:]
 
     tree_builder = OntologyTreeBuilder(cell_counts_df)
@@ -22,3 +23,5 @@ def run(output_directory):
 
     all_states_per_tissue = tree_builder.get_ontology_tree_state_per_tissue()
     output_json(all_states_per_tissue, f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_TISSUE_FILENAME}")
+
+    return tree_builder
