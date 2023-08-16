@@ -23,5 +23,8 @@ INCLUDED_ASSAYS = {
     "EFO:0010010": "CEL-seq2",
 }
 
-CL_BASIC_PERMANENT_URL_PRONTO = "https://github.com/obophenotype/cell-ontology/releases/latest/download/cl-basic.obo"
-CL_BASIC_PERMANENT_URL_OWL = "https://github.com/obophenotype/cell-ontology/releases/latest/download/cl-basic.owl"
+CL_PINNED_CONFIG_URL = "https://raw.githubusercontent.com/chanzuckerberg/single-cell-curation/main/cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
+CL_BASIC_OBO_NAME = "cl-basic.obo"
+CL_BASIC_OWL_NAME = "cl-basic.owl"
+
+WMG_PINNED_SCHEMA_VERSION = "3.0.0"

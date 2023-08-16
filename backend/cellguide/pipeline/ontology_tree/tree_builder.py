@@ -11,7 +11,8 @@ from pronto import Ontology, Term
 from backend.cellguide.pipeline.constants import UBERON_BASIC_PERMANENT_URL_PRONTO
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
+from backend.wmg.data.constants import CL_BASIC_OBO_NAME
+from backend.wmg.data.utils import get_pinned_ontology_url
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class OntologyTreeBuilder:
         """
 
         logger.info(f"Loading CL ontology from root node {root_node}...")
-        self.ontology = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
+        self.ontology = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
 
         logger.info("Loading UBERON ontology...")
         with warnings.catch_warnings():
