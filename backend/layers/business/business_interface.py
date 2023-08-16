@@ -160,9 +160,6 @@ class BusinessLogicInterface:
     ) -> List[CollectionVersionWithPublishedDatasets]:
         pass
 
-    def _delete_from_bucket(self, bucket: str, keys: List[str], prefix: str) -> None:
-        pass
-
     def restore_previous_dataset_version(
         self, collection_version_id: CollectionVersionId, dataset_id: DatasetId
     ) -> None:
