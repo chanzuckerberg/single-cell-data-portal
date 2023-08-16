@@ -681,7 +681,6 @@ class BusinessLogic(BusinessLogicInterface):
 
     def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> None:
         self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions])
-        logger.info(f"djh going to delete artifacts for {[dv.version_id for dv in dataset_versions]}")
         self.delete_artifacts(reduce(lambda artifacts, dv: artifacts + dv.artifacts, dataset_versions, []))
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
@@ -829,9 +828,7 @@ class BusinessLogic(BusinessLogicInterface):
 
     def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         for artifact in artifacts:
-            logger.info(f"djh artifact is {artifact.uri} {artifact.type}")
             matches_dict = re.match(r"^s3://(?P<bucket>[^/]+)/((?P<prefix>.*/$)|(?P<key>.*))", artifact.uri).groupdict()
-            logger.info(f"djh matches are {matches_dict['bucket']} {matches_dict['key']} {matches_dict['prefix']}")
             bucket, key, prefix = matches_dict["bucket"], matches_dict["key"], matches_dict["prefix"]
             self._delete_from_bucket(bucket, keys=[key] if key else None, prefix=prefix)
 
