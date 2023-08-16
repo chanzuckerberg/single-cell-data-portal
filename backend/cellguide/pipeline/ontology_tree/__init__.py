@@ -13,7 +13,9 @@ def run(output_directory):
     cell_counts_df = snapshot.cell_counts_cube.df[:]
 
     tree_builder = OntologyTreeBuilder(cell_counts_df)
-    output_json(tree_builder.ontology_graph, f"{output_directory}/{ONTOLOGY_TREE_FILENAME}")
+    ontology_graph = tree_builder.get_ontology_tree()
+
+    output_json(ontology_graph, f"{output_directory}/{ONTOLOGY_TREE_FILENAME}")
 
     all_states_per_cell_type = tree_builder.get_ontology_tree_state_per_celltype()
     output_json(all_states_per_cell_type, f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_CELLTYPE_FILENAME}")
