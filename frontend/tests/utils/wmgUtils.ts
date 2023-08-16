@@ -2,32 +2,13 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page, test } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-import { selectFirstOption, tryUntil } from "./helpers";
+import { expandTissue, selectFirstOption, tryUntil } from "./helpers";
 import { ADD_GENE_BTN, ADD_TISSUE_ID } from "../common/constants";
 import { ADD_GENE_SEARCH_PLACEHOLDER_TEXT } from "tests/utils/geneUtils";
 
 const { skip, beforeEach } = test;
 
-/**
- * (thuang):
- * UBERON:0000178 is blood
- * UBERON:0002048 is lung
- */
-const WMG_SEED_TISSUES = ["UBERON:0000178", "UBERON:0002048"];
 const WMG_SEED_GENES = ["DPM1", "TNMD", "TSPAN6"];
-
-/**
- * (thuang): Seed app state with some tissues and genes
- */
-export const WMG_WITH_SEEDED_TISSUES_AND_GENES = {
-  URL:
-    `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
-    `tissues=${encodeURIComponent(
-      WMG_SEED_TISSUES.join(",")
-    )}&genes=${encodeURIComponent(WMG_SEED_GENES.join(","))}&ver=2`,
-  tissues: WMG_SEED_TISSUES,
-  genes: WMG_SEED_GENES,
-};
 
 /**
  * (thuang): Seed app state with some genes
@@ -88,7 +69,9 @@ export async function goToWMG(page: Page, url?: string) {
 }
 
 export async function goToWMGWithSeededState(page: Page) {
-  await goToWMG(page, WMG_WITH_SEEDED_TISSUES_AND_GENES.URL);
+  await goToWMG(page, WMG_WITH_SEEDED_GENES.URL);
+  await expandTissue(page, "lung");
+  await expandTissue(page, "blood");
   await waitForHeatmapToRender(page);
 }
 

@@ -432,3 +432,15 @@ export async function takeSnapshotOfMetaTags(name: string, page: Page) {
     { page }
   );
 }
+
+export async function expandTissue(page: Page, tissueName: string) {
+  await tryUntil(
+    async () => {
+      await page
+        .getByTestId(`cell-type-labels-${tissueName}`)
+        .getByTestId("tissue-name")
+        .click();
+    },
+    { page }
+  );
+}

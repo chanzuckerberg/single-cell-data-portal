@@ -4,7 +4,10 @@ import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/compo
 
 export default function Loader(): JSX.Element {
   return (
-    <Wrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
+    <Wrapper
+      className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+      data-testid="loading-spinner"
+    >
       <LoadingIndicator sdsStyle="tag" />
     </Wrapper>
   );

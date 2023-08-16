@@ -167,10 +167,7 @@ const TissueHeaderButton = ({
         />
         <TissueHeaderLabelStyle>
           <div>
-            <TissueLabel
-              className="cell-type-name"
-              data-testid="cell-type-name"
-            >
+            <TissueLabel className="tissue-name" data-testid="tissue-name">
               {capitalize(formattedName)}
             </TissueLabel>
           </div>
