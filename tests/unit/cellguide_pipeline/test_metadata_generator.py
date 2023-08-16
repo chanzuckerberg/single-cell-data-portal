@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from backend.cellguide.pipeline.metadata.metadata_generator import generate_cellguide_card_metadata
+from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.common.utils.dataclass import convert_dataclass_to_dict
 from tests.test_utils.dict_compare import compare_dicts
@@ -20,5 +20,5 @@ class TestMetadataGenerator(unittest.TestCase):
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
 
-            cell_metadata = generate_cellguide_card_metadata(tree_builder.all_cell_type_ids_in_corpus)
+            cell_metadata = run_metadata_pipeline(tree_builder)
             self.assertTrue(compare_dicts(convert_dataclass_to_dict(cell_metadata), expected__cell_metadata))
