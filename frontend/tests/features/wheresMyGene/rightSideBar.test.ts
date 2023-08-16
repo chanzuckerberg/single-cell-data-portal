@@ -9,7 +9,7 @@ import { getById } from "tests/utils/selectors";
 const { describe } = test;
 
 describe("Right side bar", () => {
-  conditionallyRunTests();
+  conditionallyRunTests({ forceRun: true });
 
   test("Should link out to cellxgene documentation", async ({
     page,
@@ -44,7 +44,6 @@ describe("Right side bar", () => {
     await expect(
       page.locator(getById("visualization-color-scale"))
     ).toBeVisible();
-    await page.getByTestId("add-tissue-btn").click();
 
     //click the source data icon
     await page.getByTestId("source-data-button").click();
