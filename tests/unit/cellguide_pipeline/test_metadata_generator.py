@@ -3,7 +3,7 @@ import unittest
 
 from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
-from backend.common.utils.dataclass import convert_dataclass_to_dict
+from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
 from tests.test_utils.dict_compare import compare_dicts
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
@@ -21,4 +21,6 @@ class TestMetadataGenerator(unittest.TestCase):
             tree_builder = OntologyTreeBuilder(cell_counts_df)
 
             cell_metadata = run_metadata_pipeline(tree_builder)
-            self.assertTrue(compare_dicts(convert_dataclass_to_dict(cell_metadata), expected__cell_metadata))
+            self.assertTrue(
+                compare_dicts(convert_dataclass_to_dict_and_strip_nones(cell_metadata), expected__cell_metadata)
+            )

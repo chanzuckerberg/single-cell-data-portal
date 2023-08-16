@@ -1,27 +1,61 @@
+import logging
+
 from pronto import Ontology
 
 from backend.cellguide.pipeline.metadata.types import CellMetadata
 from backend.wmg.data.constants import CL_BASIC_OBO_NAME
 from backend.wmg.data.utils import get_pinned_ontology_url
 
+logger = logging.getLogger(__name__)
+
 
 def generate_cellguide_card_metadata(all_cell_type_ids_in_corpus: list[str]) -> dict[str, CellMetadata]:
+    """
+    For all cell type ids in the corpus, this pipeline will generate metadata about each cell, including:
+    - name, ex: "native cell"
+    - id, ex: "CL:0000003"
+    - clDescription, ex: "A cell that is found in a natural setting, which includes multicellular organism cells 'in vivo'
+      (i.e. part of an organism), and unicellular organisms 'in environment' (i.e. part of a natural environment)."
+    - synonyms, ex: ["cell in vivo"]
+
+    Note that we will be filtering out obsolete cell types and invalid non-CL cell types.
+    """
+    logger.info(f"Generating cellguide card metadata for {len(all_cell_type_ids_in_corpus)} cell types...")
     ontology = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
 
     cellguide_card_metadata: dict[str, CellMetadata] = {}
+
+    obsolete_cell_ids: list[str] = []
+    invalid_non_cl_cell_ids: list[str] = []
+    cell_ids_with_cl_description = 0
+    cell_ids_without_cl_description = 0
+
     for id in all_cell_type_ids_in_corpus:
         cell = ontology[id]
         if not cell.id.startswith("CL:"):
-            continue
-        if cell.obsolete:
-            continue
+            invalid_non_cl_cell_ids.append(cell.id)
+        elif cell.obsolete:
+            obsolete_cell_ids.append(cell.id)
+        else:
+            description = None
+            if cell.definition is not None:
+                description = str(cell.definition)
+                cell_ids_with_cl_description += 1
+            else:
+                cell_ids_without_cl_description += 1
 
-        metadata = CellMetadata(
-            name=cell.name,
-            id=cell.id,
-            clDescription=str(cell.definition) if cell.definition is not None else None,
-            synonyms=[s.description for s in cell.synonyms],
-        )
-        cellguide_card_metadata[cell.id] = metadata
+            metadata = CellMetadata(
+                name=cell.name,
+                id=cell.id,
+                clDescription=description,
+                synonyms=[s.description for s in cell.synonyms],
+            )
+            cellguide_card_metadata[cell.id] = metadata
+
+    logger.info(f"Filtering out {len(obsolete_cell_ids)} obsolete cell types: {obsolete_cell_ids}")
+    logger.info(f"Filtering out {len(invalid_non_cl_cell_ids)} invalid non-CL cell types: {invalid_non_cl_cell_ids}")
+    logger.info(
+        f"Found {cell_ids_with_cl_description} cell types with CL descriptions and {cell_ids_without_cl_description} without CL descriptions"
+    )
 
     return cellguide_card_metadata
