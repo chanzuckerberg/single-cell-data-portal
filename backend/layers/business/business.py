@@ -621,16 +621,20 @@ class BusinessLogic(BusinessLogicInterface):
         unpublished_versions_of_published_datasets, unpublished_datasets, versions_to_delete_from_s3 = [], [], []
         for dv in collection_version.datasets:
             unpublished_versions = self.get_unpublished_dataset_versions(dv.canonical_dataset.dataset_id)
-            versions_to_delete_from_s3.extend(unpublished_versions)  # All unpublished s3 assets should be deleted
+            versions_to_delete_from_s3.extend(unpublished_versions)  # All unpublished s3 assets are to be deleted
             if dv.canonical_dataset.published_at:
                 unpublished_versions_of_published_datasets.extend(unpublished_versions)
             else:
                 unpublished_datasets.append(dv.canonical_dataset)
         self.delete_dataset_version_assets(versions_to_delete_from_s3)
+
         # Delete DatasetVersionTable rows and DatasetArtifactTable rows if Dataset is published
         self.database_provider.delete_dataset_versions(unpublished_versions_of_published_datasets)
+
         # Delete DatasetTable, DatasetVersionTable, and DatasetArtifactTable rows if Dataset is unpublished (new)
         self.database_provider.delete_datasets(unpublished_datasets)
+
+        # Delete the Collection version itself
         self.database_provider.delete_collection_version(collection_version.version_id)
         if not collection_version.canonical_collection.originally_published_at:
             # Collection was never published; delete CollectionTable row
