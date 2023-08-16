@@ -2,6 +2,7 @@ import json
 import unittest
 
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
+from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
@@ -56,11 +57,15 @@ class OntologyTreeBuilderTests(unittest.TestCase):
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
 
-            ontology_graph = tree_builder.ontology_graph
+            ontology_graph = convert_dataclass_to_dict_and_strip_nones(tree_builder.get_ontology_tree())
             self.assertTrue(compare_dicts(ontology_graph, expected__ontology_graph))
 
-            all_states_per_cell_type = tree_builder.get_ontology_tree_state_per_celltype()
+            all_states_per_cell_type = convert_dataclass_to_dict_and_strip_nones(
+                tree_builder.get_ontology_tree_state_per_celltype()
+            )
             self.assertTrue(compare_dicts(all_states_per_cell_type, expected__all_states_per_cell_type))
 
-            all_states_per_tissue = tree_builder.get_ontology_tree_state_per_tissue()
+            all_states_per_tissue = convert_dataclass_to_dict_and_strip_nones(
+                tree_builder.get_ontology_tree_state_per_tissue()
+            )
             self.assertTrue(compare_dicts(all_states_per_tissue, expected__all_states_per_tissue))
