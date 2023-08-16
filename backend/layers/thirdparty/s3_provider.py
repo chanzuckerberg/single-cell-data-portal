@@ -93,6 +93,24 @@ class S3Provider(S3ProviderInterface):
         """
         self.client.download_file(bucket_name, object_key, local_filename)
 
+    def resurrect_object(self, bucket_name: str, object_key: str) -> None:
+        response = self.client.list_object_versions(
+            Bucket=bucket_name,
+            Prefix=object_key,
+        )
+        if delete_markers := response.get("DeleteMarkers"):
+            for marker in delete_markers:
+                if not marker["IsLatest"]:
+                    continue
+                logger.info("restoring", marker["Key"])
+                response = self.client.delete_object(
+                    Bucket=bucket_name,
+                    Key=marker["Key"],
+                    VersionId=marker["VersionId"],
+                )
+                response.pop("ResponseMetadata")
+                logger.info(response)
+
     def upload_directory(self, src_dir: str, s3_uri: str):
         """
         Uploads a whole local directory `src_dir` to `s3_uri`

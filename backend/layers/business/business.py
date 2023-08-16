@@ -16,6 +16,7 @@ from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
     CollectionCreationException,
     CollectionDeleteException,
+    CollectionIsNotTombstonedException,
     CollectionIsPublishedException,
     CollectionNotFoundException,
     CollectionPublishException,
@@ -691,6 +692,20 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.delete_all_dataset_versions_from_public_bucket_for_collection(collection_id)
         self.database_provider.tombstone_collection(collection_id)
+
+    def resurrect_collection(self, collection_id: CollectionId) -> None:
+        """
+        Resurrect a tombstoned Collection (untombstone Collection and un-delete public s3 assets). For admin use only.
+        """
+        collection = self.get_canonical_collection(collection_id)
+        if not collection.tombstoned:
+            raise CollectionIsNotTombstonedException()
+        all_dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(collection_id)
+        for dv in all_dataset_versions:
+            for ext in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS):
+                object_key = f"{dv.version_id}.{ext}"
+                self.s3_provider.resurrect_object(os.getenv("DATASETS_BUCKET"), object_key)
+        self.database_provider.untombstone_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
         """

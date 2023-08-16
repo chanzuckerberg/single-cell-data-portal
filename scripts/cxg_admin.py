@@ -122,6 +122,15 @@ def tombstone_collection(ctx: click.Context, id: str):
 
 
 @cli.command()
+@click.argument("collection_id")
+@click.pass_context
+def resurrect_collection(ctx: click.Context, collection_id: str):
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)  # Suppress type-related warnings from db operations
+        tombstones.resurrect_collection(ctx, collection_id)
+
+
+@cli.command()
 @click.argument("id")
 @click.pass_context
 def tombstone_dataset(ctx, id):
