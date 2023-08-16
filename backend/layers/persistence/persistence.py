@@ -461,6 +461,22 @@ class DatabaseProvider(DatabaseProviderInterface):
             for dataset in datasets:
                 dataset.tombstone = True
 
+    def untombstone_collection(self, collection_id: CollectionId) -> None:
+        """
+        Untombstones a canonical collection.
+        """
+        with self._manage_session() as session:
+            canonical_collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()
+            if canonical_collection:
+                canonical_collection.tombstone = False
+            # Untombstone Datasets as well
+            dataset_versions = session.query(DatasetVersionTable).filter_by(collection_id=collection_id.id).all()
+            datasets = session.query(DatasetTable).filter(
+                DatasetTable.id.in_([dv.dataset_id for dv in dataset_versions])
+            )
+            for dataset in datasets:
+                dataset.tombstone = False
+
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
     ) -> None:

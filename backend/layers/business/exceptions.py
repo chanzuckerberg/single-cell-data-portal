@@ -127,5 +127,9 @@ class CollectionIsTombstonedException(BusinessException):
     pass
 
 
+class CollectionIsNotTombstonedException(BusinessException):
+    pass
+
+
 class DatasetIsTombstonedException(BusinessException):
     pass
