@@ -322,7 +322,32 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_versions.append(dataset_version)
         return dataset_versions
 
+    def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        """
+        Returns the most recent, active Dataset version for a canonical dataset_id
+        """
+        dataset_versions = list(filter(lambda dv: dv.dataset_id == dataset_id, self.datasets_versions.values()))
+        if not dataset_versions:
+            return None
+        dataset_versions_map = {str(dv.version_id): dv for dv in dataset_versions}
+        collection_id = dataset_versions[0].collection_id
+        cv_dataset_versions_ids = [
+            cv.datasets
+            for cv in sorted(
+                filter(lambda cv: cv.collection_id == collection_id, self.collections_versions.values()),
+                key=lambda cv: cv.created_at,
+                reverse=True,
+            )
+        ]
+        for cv_dataset_versions in cv_dataset_versions_ids:
+            for dv_id in dataset_versions_map:
+                if DatasetVersionId(dv_id) in cv_dataset_versions:
+                    return self._update_dataset_version_with_canonical(dataset_versions_map.get(dv_id))
+
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+        """
+        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
+        """
         versions = []
         for dataset_version in self.datasets_versions.values():
             if dataset_version.dataset_id == dataset_id:

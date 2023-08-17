@@ -3,11 +3,14 @@ import os
 import time
 from typing import Dict, List
 
+import numpy as np
 import requests
 import tiledb
+import yaml
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
+from backend.wmg.data.constants import CL_PINNED_CONFIG_URL, WMG_PINNED_SCHEMA_VERSION
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 
 
@@ -154,18 +157,17 @@ def _setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502
 
 
 def get_datasets_from_curation_api():
-    # hardcode to dev backend if deployment is rdev or test
+    # hardcode to staging backend if deployment is rdev or test
     API_URL = (
-        "https://api.cellxgene.dev.single-cell.czi.technology"
+        "https://api.cellxgene.staging.single-cell.czi.technology"
         if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
         else os.getenv("API_URL")
     )
-    PINNED_SCHEMA_VERSION = "3.0.0"
 
     datasets = {}
     if API_URL:
         session = _setup_retry_session()
-        dataset_metadata_url = f"{API_URL}/curation/v1/datasets?schema_version={PINNED_SCHEMA_VERSION}"
+        dataset_metadata_url = f"{API_URL}/curation/v1/datasets?schema_version={WMG_PINNED_SCHEMA_VERSION}"
         response = session.get(dataset_metadata_url)
         if response.status_code == 200:
             datasets = response.json()
@@ -173,9 +175,9 @@ def get_datasets_from_curation_api():
 
 
 def get_collections_from_curation_api():
-    # hardcode to dev backend if deployment is rdev or test
+    # hardcode to staging backend if deployment is rdev or test
     API_URL = (
-        "https://api.cellxgene.dev.single-cell.czi.technology"
+        "https://api.cellxgene.staging.single-cell.czi.technology"
         if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
         else os.getenv("API_URL")
     )
@@ -188,3 +190,40 @@ def get_collections_from_curation_api():
         if response.status_code == 200:
             collections = response.json()
     return collections
+
+
+def to_dict(a, b):
+    """
+    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
+    """
+    a = np.array(a)
+    b = np.array(b)
+    idx = np.argsort(a)
+    a = a[idx]
+    b = b[idx]
+    bounds = np.where(a[:-1] != a[1:])[0] + 1
+    bounds = np.append(np.append(0, bounds), a.size)
+    bounds_left = bounds[:-1]
+    bounds_right = bounds[1:]
+    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    return d
+
+
+def get_pinned_ontology_url(name: str):
+    """
+    This function retrieves the URL of the pinned ontology based on the provided name.
+
+    Parameters:
+    name (str): The name of the ontology (e.g. cl-basic.obo).
+
+    Returns:
+    str: The URL of the pinned ontology.
+    """
+
+    response = requests.get(CL_PINNED_CONFIG_URL)
+    decoded_yaml = yaml.safe_load(response.content.decode())
+    key = decoded_yaml["CL"]["latest"]
+    cl_url = decoded_yaml["CL"]["urls"][key]
+    cl_url = cl_url.split("cl.owl")[0] + name
+    return cl_url

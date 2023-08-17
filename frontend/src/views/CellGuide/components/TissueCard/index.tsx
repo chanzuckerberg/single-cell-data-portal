@@ -118,6 +118,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
         </DescriptionWrapper>
         <FullScreenProvider>
           <OntologyDagView
+            key={tissueId}
             tissueId={tissueId}
             tissueName={tissueName}
             skinnyMode={false}

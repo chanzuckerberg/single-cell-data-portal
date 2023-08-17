@@ -43,8 +43,9 @@ class TestIntegratedCorpusSchema(unittest.TestCase):
             corpus_path = f"{corpus_dir}/test_corpus"
             create_tdb_integrated_corpus(corpus_path)
             obs_schema = tiledb.ArraySchema.load(f"{corpus_path}/obs")
-            self.assertEqual(obs_schema.nattr, 16)
+            self.assertEqual(obs_schema.nattr, 17)
             self.assertTrue(obs_schema.has_attr("obs_idx"))
+            self.assertTrue(obs_schema.has_attr("filter_cells"))
             self.assertTrue(obs_schema.has_attr("cell_type"))
             self.assertTrue(obs_schema.has_attr("assay"))
             self.assertTrue(obs_schema.has_attr("assay_ontology_term_id"))
@@ -103,19 +104,11 @@ class TestFmgSummaryCubeSchema(unittest.TestCase):
         with tempfile.TemporaryDirectory() as summary_cube_dir:
             create_empty_cube(uri=f"{summary_cube_dir}/cube", schema=expression_summary_fmg_schema)
             summary_cube_schema = tiledb.ArraySchema.load(f"{summary_cube_dir}/cube")
-            self.assertEqual(summary_cube_schema.nattr, 12)
+            self.assertEqual(summary_cube_schema.nattr, 4)
             self.assertTrue(summary_cube_schema.has_attr("gene_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("tissue_original_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("dataset_id"))
-            self.assertTrue(summary_cube_schema.has_attr("assay_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("development_stage_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("disease_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("self_reported_ethnicity_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("sex_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("nnz"))
             self.assertTrue(summary_cube_schema.has_attr("sum"))
             self.assertTrue(summary_cube_schema.has_attr("sqsum"))
-            self.assertTrue(summary_cube_schema.has_attr("nnz_thr"))
 
 
 class TestCellCountCubeSchema(unittest.TestCase):

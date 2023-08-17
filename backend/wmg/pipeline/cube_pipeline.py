@@ -16,7 +16,6 @@ from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_
 from backend.wmg.data.transform import (
     cell_type_ordering_create_file,
     generate_primary_filter_dimensions,
-    get_cell_types_by_tissue,
 )
 from backend.wmg.data.utils import (
     get_all_dataset_ids,
@@ -49,30 +48,30 @@ def load_data_and_create_cube(
     corpus_path = f"{snapshot_path}/{snapshot_id}"
 
     integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
+
+    cube_is_invalid = False
     try:
         summary_cubes.run(corpus_path, validate_cube)
     except CubeValidationException as e:
-        cube_data_s3_path = upload_artifacts_to_s3(
-            snapshot_source_path=corpus_path,
-            snapshot_schema_version=WMG_DATA_SCHEMA_VERSION,
-            snapshot_id=snapshot_id,
-            is_snapshot_validation_successful=False,
-        )
         logger.exception(e)
-        sys.exit(f"Exiting due to cube validation failure. Failed data location: {cube_data_s3_path}")
+        cube_is_invalid = True
 
     stats = dict(
         dataset_count=len(get_all_dataset_ids(corpus_path)),
         gene_count=get_expression_summary_cube_gene_count(f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         cell_count=get_cell_count_cube_count(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"),
     )
-    cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
-    cell_type_ordering_create_file(corpus_path, cell_type_by_tissue)
+    cell_type_ordering_create_file(corpus_path)
     generate_primary_filter_dimensions(corpus_path, snapshot_id)
 
     cube_data_s3_path = upload_artifacts_to_s3(
-        snapshot_source_path=corpus_path, snapshot_schema_version=WMG_DATA_SCHEMA_VERSION, snapshot_id=snapshot_id
+        snapshot_source_path=corpus_path,
+        snapshot_schema_version=WMG_DATA_SCHEMA_VERSION,
+        snapshot_id=snapshot_id,
+        is_snapshot_validation_successful=not cube_is_invalid,
     )
+    if cube_is_invalid:
+        sys.exit(f"Exiting due to cube validation failure. Failed data location: {cube_data_s3_path}")
     if validate_cube:
         logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot location: {cube_data_s3_path}")
     return corpus_path, stats

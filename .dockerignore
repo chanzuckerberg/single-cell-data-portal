@@ -9,6 +9,7 @@
 !/requirements-upload-failures.txt
 !/requirements-upload-success.txt
 !/requirements-wmg-pipeline.txt
+!/requirements-cellguide-pipeline.txt
 !/backend/**
 !/tests/**
 !/scripts/**
