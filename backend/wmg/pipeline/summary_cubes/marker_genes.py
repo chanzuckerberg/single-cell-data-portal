@@ -58,8 +58,19 @@ def create_marker_genes_cube(corpus_path: str):
             organism = tiss_organisms[i]
 
             logger.info("Calculating markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
+            target = {
+                "tissue_ontology_term_ids": [tiss],
+                "cell_type_ontology_term_ids": [ct],
+                "organism_ontology_term_id": organism,
+            }
+            context = {
+                "tissue_ontology_term_ids": [tiss],
+                "organism_ontology_term_id": organism,
+            }
             try:
-                t_markers = get_markers(ct, tiss, organism, corpus=corpus_path, percentile=0.05, n_markers=None)
+                t_markers = get_markers(
+                    target, context, corpus=corpus_path, test="ttest", percentile=0.05, n_markers=None
+                )
             except MarkerGeneCalculationException as e:
                 # exception handling here so pipeline doesn't fail if no cells match query criteria
                 logger.info("Error finding markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
