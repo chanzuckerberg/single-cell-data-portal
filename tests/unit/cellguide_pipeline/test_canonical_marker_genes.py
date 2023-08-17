@@ -1,8 +1,13 @@
 import json
 import unittest
+from unittest.mock import Mock, patch
 
 from backend.cellguide.pipeline.canonical_marker_genes.canonical_markers import CanonicalMarkerGenesCompiler
-from backend.cellguide.pipeline.canonical_marker_genes.utils import clean_doi
+from backend.cellguide.pipeline.canonical_marker_genes.utils import (
+    clean_doi,
+    format_citation,
+    get_title_and_citation_from_doi,
+)
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
 from tests.test_utils.dict_compare import compare_dicts
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
@@ -50,3 +55,29 @@ class CanonicalMarkerGeneCompilerUtilsTests(unittest.TestCase):
         for doi, expected in test_cases:
             with self.subTest(doi=doi):
                 self.assertEqual(clean_doi(doi), expected)
+
+    @patch("requests.get")
+    def test_get_title_and_citation_from_doi(self, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "message": {
+                "title": ["Test Title"],
+                "author": [{"family": "Doe", "given": "John"}],
+                "container-title": ["Test Journal"],
+                "created": {"date-parts": [[2022]]},
+            }
+        }
+        mock_get.return_value = mock_response
+
+        result = get_title_and_citation_from_doi("10.1016/j.cell.2019.11.025")
+        self.assertEqual(result, "Test Title\n\n - Doe, John et al. (2022) Test Journal")
+
+    def test_format_citation(self):
+        message = {
+            "author": [{"family": "Doe", "given": "John"}],
+            "container-title": ["Test Journal"],
+            "created": {"date-parts": [[2022]]},
+        }
+        result = format_citation(message)
+        self.assertEqual(result, "Doe, John et al. (2022) Test Journal")
