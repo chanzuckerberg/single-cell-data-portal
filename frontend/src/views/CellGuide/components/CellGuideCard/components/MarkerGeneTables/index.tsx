@@ -46,33 +46,21 @@ import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { CENSUS_LINK } from "src/components/Header/components/Nav";
-
-export const CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM =
-  "cell-guide-card-marker-genes-table-dropdown-organism";
-export const CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN =
-  "cell-guide-card-marker-genes-table-dropdown-organ";
-export const CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE =
-  "cell-guide-card-canonical-marker-genes-table";
-export const CELL_GUIDE_CARD_ENRICHED_GENES_TABLE =
-  "cell-guide-card-enriched-genes-table";
-export const CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR =
-  "cell-guide-card-canonical-marker-genes-table-selector";
-export const CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR =
-  "cell-guide-card-enriched-genes-table-selector";
-
-export const EXPRESSION_SCORE_TOOLTIP_TEST_ID =
-  "cell-guide-card-expression-score-tooltip";
-export const PERCENT_OF_CELLS_TOOLTIP_TEST_ID =
-  "cell-guide-card-percent-of-cells-tooltip";
-export const MARKER_SCORE_TOOLTIP_TEST_ID =
-  "cell-guide-card-marker-score-tooltip";
+import {
+  CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE,
+  CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
+  CELL_GUIDE_CARD_ENRICHED_GENES_TABLE,
+  CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR,
+  CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN,
+  CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
+  EXPRESSION_SCORE_TOOLTIP_TEST_ID,
+  MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
+  MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
+  MARKER_SCORE_TOOLTIP_TEST_ID,
+  PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
+} from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 
 const ROWS_PER_PAGE = 10;
-
-export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
-  "marker-genes-computational-help-tooltip";
-export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =
-  "marker-genes-canonical-help-tooltip";
 
 // Computational marker gene table types
 interface TableRowEnrichedGenes {
