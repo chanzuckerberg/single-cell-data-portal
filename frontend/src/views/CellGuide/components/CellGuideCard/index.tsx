@@ -27,10 +27,12 @@ import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { useCellTypesById } from "src/common/queries/cellGuide";
+import {
+  CELL_GUIDE_CARD_HEADER_NAME,
+  CELL_GUIDE_CARD_HEADER_TAG,
+  CELL_GUIDE_CARD_SYNONYMS,
+} from "src/views/CellGuide/components/CellGuideCard/constants";
 
-export const CELL_GUIDE_CARD_HEADER_NAME = "cell-guide-card-header-name";
-export const CELL_GUIDE_CARD_HEADER_TAG = "cell-guide-card-header-tag";
-export const CELL_GUIDE_CARD_SYNONYMS = "cell-guide-card-synonyms";
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
 // This is the desired width of the CellGuideCard components right after the sidebar is hidden.
