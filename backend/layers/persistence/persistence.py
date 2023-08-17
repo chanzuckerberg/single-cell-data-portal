@@ -57,6 +57,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         self._engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
         self._session_maker = sessionmaker(bind=self._engine)
         self._schema_name = schema_name
+
+        self._session = None
+        self._session_depth = 0
         with contextlib.suppress(Exception):
             self._create_schema()
 
@@ -78,22 +81,30 @@ class DatabaseProvider(DatabaseProviderInterface):
     @contextmanager
     def _manage_session(self, **kwargs):
         try:
-            if not self._session_maker:
-                self._session_maker = sessionmaker(bind=self._engine)
-            session = self._session_maker(**kwargs)
-            yield session
-            if session.transaction:
-                session.commit()
+            if not self._session:
+                self._session = session = self._session_maker(**kwargs)
+                self._session_depth = 0
             else:
-                session.expire_all()
+                self._session_depth += 1
+                session = self._session
+            yield session
+            if self._session_depth == 0:
+                if session.transaction:
+                    session.commit()
+                else:
+                    session.expire_all()
+            else:
+                self._session_depth -= 1
+
         except SQLAlchemyError as e:
             logger.exception(e)
             if session is not None:
                 session.rollback()
             raise PersistenceException("Failed to commit.") from None
         finally:
-            if session is not None:
+            if session is not None and self._session_depth == 0:
                 session.close()
+                self._session = None
 
     @contextmanager
     def _get_serializable_session(self, **kwargs):
