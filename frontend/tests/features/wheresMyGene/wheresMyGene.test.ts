@@ -416,8 +416,7 @@ describe("Where's My Gene", () => {
       expect(numGenes).toBeGreaterThan(0);
     });
 
-    // disabled until #5521 is resolved
-    test.skip("Cell types with no marker genes display warning", async ({
+    test("Cell types with no marker genes display warning", async ({
       page,
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
