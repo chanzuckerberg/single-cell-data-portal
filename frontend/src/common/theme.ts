@@ -145,10 +145,10 @@ const typography = {
         lineHeight: "20px",
       },
       xl: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: fontWeights.semibold,
         letterSpacing: "-0.37px",
-        lineHeight: "28px",
+        lineHeight: "32px",
       },
       xs: {
         fontSize: 13,
@@ -157,10 +157,10 @@ const typography = {
         lineHeight: "16px",
       },
       xxl: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: fontWeights.semibold,
         letterSpacing: "-0.56px",
-        lineHeight: "32px",
+        lineHeight: "36px",
       },
       xxs: {
         fontSize: 12,
