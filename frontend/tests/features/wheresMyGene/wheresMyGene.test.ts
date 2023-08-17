@@ -234,8 +234,6 @@ describe("Where's My Gene", () => {
   test("Hierarchical Clustering", async ({ page }) => {
     await goToWMGWithSeededState(page);
 
-    await expandTissue(page, "lung");
-
     const beforeGeneNames = await getGeneNames(page);
     const beforeCellTypeNames = await getCellTypeNames(page);
 
