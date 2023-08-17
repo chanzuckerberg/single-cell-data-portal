@@ -3,7 +3,7 @@ import unittest
 import uuid
 from copy import deepcopy
 from datetime import datetime
-from typing import Tuple
+from typing import List, Tuple
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
@@ -29,6 +29,8 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    DatasetArtifact,
+    DatasetArtifactId,
     DatasetArtifactType,
     DatasetId,
     DatasetMetadata,
@@ -1034,6 +1036,20 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
             self.assertIsNone(self.business_logic.get_dataset_version(new_dataset_version_id))
             self.assertIsNotNone(self.business_logic.get_dataset_version(updated_new_dataset_version_id))
+
+    @patch("backend.layers.business.business.BusinessLogic._delete_from_bucket")
+    def test_delete_artifacts(self, _delete_from_bucket_mock):
+        bucket = "bucket"
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
+        ]
+        self.business_logic.delete_artifacts(artifacts)
+        _delete_from_bucket_mock.assert_called_with(bucket, keys=["file.h5ad"], prefix=None)
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/file.cxg/"),
+        ]
+        self.business_logic.delete_artifacts(artifacts)
+        _delete_from_bucket_mock.assert_called_with(bucket, keys=None, prefix="file.cxg/")
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
