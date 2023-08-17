@@ -1,20 +1,21 @@
 import itertools
 import logging
-import pathlib
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
 
+from backend.cellguide.pipeline.computational_marker_genes.types import ComputationalMarkerGenes
 from backend.cellguide.pipeline.computational_marker_genes.utils import (
     post_process_stats,
     run_ttest,
 )
+from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
 from backend.wmg.data.snapshot import WmgSnapshot
 
 logger = logging.getLogger(__name__)
 
-ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME = "ensembl_gene_ids_to_descriptions.tsv.gz"
 
 """
 This module contains the MarkerGenesCalculator class which is used to calculate marker genes for cell types.
@@ -40,10 +41,9 @@ class MarkerGenesCalculator:
             for k, v in i.items()
         }
 
-        file_path = self._get_symbol_to_gene_descriptions_file_path()
-        gene_metadata = pd.read_csv(file_path, sep="\t")
-        self.gene_id_to_name = gene_metadata.set_index("Ensembl GeneIDs")["Description"].to_dict()
-        self.gene_id_to_symbol = gene_metadata.set_index("Ensembl GeneIDs")["Symbols"].to_dict()
+        gene_metadata = get_gene_id_to_name_and_symbol()
+        self.gene_id_to_name = gene_metadata.gene_id_to_name
+        self.gene_id_to_symbol = gene_metadata.gene_id_to_symbol
 
         # Groupby variables used to group the data various operations
         # cell types are removed as they are treated differently
@@ -63,27 +63,30 @@ class MarkerGenesCalculator:
         expressions_df = snapshot.expression_summary_fmg_cube.df[:]
 
         # prep the cell counts and expressions dataframes
-        (self.universe_cell_counts_df, self.expressions_df) = self._prepare_cell_counts_and_gene_expression_dfs(
+        (self.cell_counts_df, self.expressions_df) = self._prepare_cell_counts_and_gene_expression_dfs(
             cell_counts_df, expressions_df
         )
 
-    def _get_symbol_to_gene_descriptions_file_path(self) -> pathlib.Path:
+    def _prepare_cell_counts_and_gene_expression_dfs(
+        self, cell_counts_df: pd.DataFrame, expressions_df: pd.DataFrame
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
-        TODO: Refactor this as a utility function as it will be shared with canonical marker genes
+        This method prepares the cell counts and gene expression dataframes for further processing.
+        It groups the cell counts and expressions dataframes by the terms specified in the groupby_terms_with_celltype attribute.
 
-        Returns the file path for the table mapping gene symbols to gene descriptions.
+        Arguments
+        ---------
+        cell_counts_df - pd.DataFrame
+            The dataframe containing cell counts data.
+        expressions_df - pd.DataFrame
+            The dataframe containing gene expression data.
+
         Returns
         -------
-        pathlib.Path: The file path for the ensembl to gene descriptions file.
+        Tuple[pd.DataFrame, pd.DataFrame]
+            A tuple containing the prepared cell counts and gene expression dataframes.
         """
 
-        return (
-            pathlib.Path(__file__)
-            .parent.absolute()
-            .parent.joinpath("fixtures", ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME)
-        )
-
-    def _prepare_cell_counts_and_gene_expression_dfs(self, cell_counts_df, expressions_df):
         # group by cell counts
         cell_counts_df = cell_counts_df.groupby(self.groupby_terms_with_celltype).sum(numeric_only=True)
         cell_counts_df = cell_counts_df[
@@ -110,20 +113,20 @@ class MarkerGenesCalculator:
         )
         index = index.set_names(self.groupby_terms_with_celltype)
         # instantiate an empty dataframe with the groups from the cartesian product as the index
-        universe_cell_counts_df = pd.DataFrame(index=index)
-        universe_cell_counts_df["n_cells"] = 0
+        cell_counts_df = pd.DataFrame(index=index)
+        cell_counts_df["n_cells"] = 0
         # populate the dataframe with the number of cells from the groups in the cell counts df
-        universe_cell_counts_df["n_cells"][cell_counts_df.index] = cell_counts_df["n_cells"]
+        cell_counts_df["n_cells"][cell_counts_df.index] = cell_counts_df["n_cells"]
         # roll up the cell counts
-        universe_cell_counts_df = rollup_across_cell_type_descendants(universe_cell_counts_df.reset_index())
+        cell_counts_df = rollup_across_cell_type_descendants(cell_counts_df.reset_index())
         # remove groups that still have 0 cells after the rollup operation
-        universe_cell_counts_df = universe_cell_counts_df[universe_cell_counts_df["n_cells"] > 0]
+        cell_counts_df = cell_counts_df[cell_counts_df["n_cells"] > 0]
         # remake the multi-index
-        universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
-        return universe_cell_counts_df, expressions_df
+        cell_counts_df = cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
+        return cell_counts_df, expressions_df
 
-    def get_computational_marker_genes(self):
-        universe_cell_counts_df = self.universe_cell_counts_df
+    def get_computational_marker_genes(self) -> ComputationalMarkerGenes:
+        cell_counts_df = self.cell_counts_df
 
         # the metadata groups (incl cell type) will be treated as row coordinates
         groupby_coords = list(zip(*self.expressions_df[self.groupby_terms_with_celltype].values.T))
@@ -147,7 +150,7 @@ class MarkerGenesCalculator:
         e_sqsum[groupby_index[groupby_coords].values, gene_index[gene_coords].values] = self.expressions_df["sqsum"]
 
         # get all available combinations from the augmented cell counts dataframe
-        available_combinations = set(universe_cell_counts_df.index.values)
+        available_combinations = set(cell_counts_df.index.values)
         # get all the combinations that are missing from the expressions dataframe
         missing_combinations = available_combinations.difference(groupby_coords_unique)
 
@@ -174,7 +177,7 @@ class MarkerGenesCalculator:
 
         # get the number of cells for each group and tile it into an array that is
         # the same shape as the expression arrays above
-        n_cells = universe_cell_counts_df["n_cells"][groupby_index.index]
+        n_cells = cell_counts_df["n_cells"][groupby_index.index]
         n_cells = np.tile(n_cells.values[:, None], (1, e_nnz_rollup.shape[1]))
 
         all_results = []
@@ -277,26 +280,6 @@ class MarkerGenesCalculator:
         # populate the rolled up expression dataframe
         new_expression_rollup["nnz"] = nnz_flat
         new_expression_rollup["sum"] = sum_flat
-        self.markers_df = markers_df
-        self.groupby_i_coords_new = groupby_i_coords_new
-        self.gene_i_coords_new = gene_i_coords_new
-        self.reverse_groupby_index = reverse_groupby_index
-        self.reverse_gene_index = reverse_gene_index
-        self.reverse_gene_coords_new = reverse_gene_coords_new
-        self.reverse_groupby_coords_new = reverse_groupby_coords_new
-        self.new_index = new_index
-        self.new_expression_rollup = new_expression_rollup
-        self.nnz_flat = nnz_flat
-        self.sum_flat = sum_flat
-        # Add the numpy arrays
-        self.e_nnz = e_nnz
-        self.e_sum = e_sum
-        self.e_sqsum = e_sqsum
-        self.e_nnz_rollup = e_nnz_rollup
-        self.e_sum_rollup = e_sum_rollup
-        self.e_sqsum_rollup = e_sqsum_rollup
-
-        return self
 
         # join the rolled up expression dataframe to the marker genes dataframe along the index
         # to combine the expression information with the marker gene scores
@@ -328,7 +311,7 @@ class MarkerGenesCalculator:
             list(zip(*new_expression_rollup[self.groupby_terms_with_celltype_and_gene].values.T))
         )
 
-        universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()["n_cells"]
+        cell_counts_df = cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()["n_cells"]
 
         data = {}
         for group in marker_gene_groups:
@@ -341,7 +324,7 @@ class MarkerGenesCalculator:
             s = new_expression_rollup["sum"][i]
             es = new_expression_rollup["effect_size"][i]
 
-            n_cells = universe_cell_counts_df[group_excluding_gene]
+            n_cells = cell_counts_df[group_excluding_gene]
 
             a = data.get(celltype, [])
             entry = {
@@ -351,9 +334,12 @@ class MarkerGenesCalculator:
                 "symbol": self.gene_id_to_symbol[gene],
                 "name": self.gene_id_to_name.get(gene, self.gene_id_to_symbol[gene]),
             }
+            groupby_dims = {}
             for i, term in enumerate(self.groupby_terms):
-                entry[term] = group[i]
-            a.append(entry)
+                groupby_dims[term] = group[i]
+            entry["groupby_dims"] = groupby_dims
+
+            a.append(ComputationalMarkerGenes(**entry))
             data[celltype] = a
 
         return data
