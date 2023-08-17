@@ -1,4 +1,4 @@
-import React, { ReactElement, useMemo } from "react";
+import React, { ReactElement, useEffect, useMemo, useState } from "react";
 import { Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
@@ -12,9 +12,9 @@ import Table from "../common/Table";
 import Link from "../common/Link";
 import { StyledTag } from "./style";
 import { useSourceData } from "src/common/queries/cellGuide";
+import { Pagination } from "@mui/material";
 
-export const CELL_GUIDE_CARD_SOURCE_DATA_TABLE =
-  "cell-guide-card-source-data-table";
+import { CELL_GUIDE_CARD_SOURCE_DATA_TABLE } from "src/views/CellGuide/components/CellGuideCard/components/SourceDataTable/constants";
 
 interface TableRow {
   collection: ReactElement;
@@ -35,8 +35,23 @@ interface Props {
   cellTypeId: string;
 }
 
+const ROWS_PER_PAGE = 10;
+
 const SourceDataTable = ({ cellTypeId }: Props) => {
   const { data: collections } = useSourceData(cellTypeId);
+  const [page, setPage] = useState(1);
+
+  const handlePageChange = (
+    _event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    setPage(page);
+  };
+
+  // Handle cell type change, set marker genes table page back to 1
+  useEffect(() => {
+    setPage(1);
+  }, [cellTypeId]);
 
   const tableRows: TableRow[] = useMemo(() => {
     if (!collections) return [];
@@ -176,24 +191,48 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
     return rows;
   }, [collections]);
 
+  const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
+
+  const tableUnavailableComponent = (
+    <TableUnavailableContainer>
+      <TableUnavailableHeader>Source data unavailable</TableUnavailableHeader>
+      <TableUnavailableDescription>
+        Neither this cell type nor its ancestors and descendants are available
+        in any collections.
+      </TableUnavailableDescription>
+    </TableUnavailableContainer>
+  );
+
+  const tableComponent = (
+    <Table<TableRow>
+      columns={tableColumns}
+      rows={
+        tableRows.slice(
+          (page - 1) * ROWS_PER_PAGE,
+          page * ROWS_PER_PAGE
+        ) as TableRow[]
+      }
+    />
+  );
+
   return (
     <div data-testid={CELL_GUIDE_CARD_SOURCE_DATA_TABLE}>
       <TableTitleWrapper>
         <TableTitle>Data</TableTitle>
       </TableTitleWrapper>
       <StyledDivider />
+
       {tableRows.length > 0 ? (
-        <Table<TableRow> columns={tableColumns} rows={tableRows} />
+        <div>
+          {tableComponent}
+          <Pagination
+            count={pageCount}
+            page={page}
+            onChange={handlePageChange}
+          />
+        </div>
       ) : (
-        <TableUnavailableContainer>
-          <TableUnavailableHeader>
-            Source data unavailable
-          </TableUnavailableHeader>
-          <TableUnavailableDescription>
-            Neither this cell type nor its ancestors and descendants are
-            available in any collections.
-          </TableUnavailableDescription>
-        </TableUnavailableContainer>
+        tableUnavailableComponent
       )}
     </div>
   );
