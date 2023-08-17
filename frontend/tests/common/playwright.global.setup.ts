@@ -1,7 +1,7 @@
 import { test, chromium } from "@playwright/test";
 import { SKIP_LOGIN } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
-import featureFlags from "tests/common/featureFlags";
+import { getFeatureFlags } from "tests/common/featureFlags";
 import { goToPage, isDevStaging, login } from "tests/utils/helpers";
 
 const { describe, skip } = test;
@@ -18,7 +18,7 @@ describe("global setup", () => {
 
     const browserContext = await browser.newContext({
       ...COMMON_PLAYWRIGHT_CONTEXT,
-      storageState: featureFlags,
+      storageState: getFeatureFlags({ curator: true }),
     });
 
     const page = await browserContext.newPage();

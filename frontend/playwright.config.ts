@@ -9,7 +9,7 @@ import { matchers } from "expect-playwright";
 import fs from "fs";
 import { LOGIN_STATE_FILENAME } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
-import featureFlags from "./tests/common/featureFlags";
+import { getFeatureFlags } from "tests/common/featureFlags";
 
 const CICD_MAX_FAILURE = 2;
 
@@ -209,24 +209,28 @@ function getStorageState(): {
     }>;
   }>;
 } {
-  const storageState = featureFlags;
-
   if (fs.existsSync(LOGIN_STATE_FILENAME)) {
     const loginState = JSON.parse(
       fs.readFileSync(LOGIN_STATE_FILENAME, "utf-8")
     );
 
+    const storageState = getFeatureFlags({ curator: true });
     // Merge loginState with featureFlags
-    storageState.cookies = storageState.cookies.concat(loginState.cookies);
-    storageState.origins = storageState.origins.concat(loginState.origins);
+    storageState.cookies = [...storageState.cookies, ...loginState.cookies];
+    storageState.origins = [...storageState.origins, ...loginState.origins];
+
+    return storageState;
   }
 
   // For testing auth tests locally with a manual cookie
   if (process.env.USE_COOKIE === "true") {
+    const storageState = getFeatureFlags({ curator: true });
     storageState.cookies = MANUAL_COOKIE;
+
+    return storageState;
   }
 
-  return storageState;
+  return getFeatureFlags();
 }
 
 export default defineConfig(config);
