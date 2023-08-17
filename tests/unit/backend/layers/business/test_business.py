@@ -967,7 +967,6 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
             collection = self.initialize_published_collection()
             dataset_to_replace = collection.datasets[0]
 
-            [a.uri for d in collection.datasets for a in d.artifacts]
             revision = self.business_logic.create_collection_version(collection.collection_id)
 
             updated_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -1174,6 +1173,19 @@ class TestGetDataset(BaseBusinessLogicTestCase):
             unpublished_dataset_revision_id
         )
         self.assertIsNone(unpublished_dataset_revision)
+
+    def test_get_dataset_version(self):
+        collection = self.initialize_published_collection()
+        dataset_to_tombstone = collection.datasets[0]
+
+        revision = self.business_logic.create_collection_version(collection.collection_id)
+        # Tombstone Dataset
+        self.business_logic.remove_dataset_version(revision.version_id, dataset_to_tombstone.version_id, True)
+        self.business_logic.publish_collection_version(revision.version_id)
+        self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_tombstone.version_id))
+        self.assertIsNotNone(
+            self.database_provider.get_dataset_version(dataset_to_tombstone.version_id, get_tombstoned=True)
+        )
 
     def test_get_dataset_artifacts_ok(self):
         """
