@@ -6,7 +6,7 @@ import { gray500 } from "src/common/theme";
 export const TableTitle = styled.div`
   ${fontHeaderL}
   cursor: default;
-  weight: 600;
+  font-weight: 600;
 `;
 
 export const TableTitleWrapper = styled.div`
