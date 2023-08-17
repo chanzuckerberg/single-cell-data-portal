@@ -94,7 +94,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-  e2e-test:
+  e2e-logged-in-test:
     timeout-minutes: 60
     runs-on: ubuntu-22.04
     needs:
@@ -123,7 +123,7 @@ jobs:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
-      - name: Run E2E tests
+      - name: Run E2E Logged In tests
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         ### config.js set-up required due to transient test dependencies on API_URL
@@ -139,15 +139,149 @@ jobs:
           npm ci
           npx playwright install --with-deps
           cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
-          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
+          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}-logged-in
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test-results
+          name: logged-in-test-results
           path: frontend/playwright-report/
           retention-days: 30
       ### Need to write success failure way because Github API doesn't allow doing
       ### "if: always(), state: ${{ success() }}:
+      - name: Set deployment status to success if no errors
+        uses: avakar/set-deployment-status@v1
+        with:
+          state: success
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set deployment status to failure if errors
+        uses: avakar/set-deployment-status@v1
+        if: failure()
+        with:
+          state: failure
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  run-e2e-tests:
+    timeout-minutes: 60
+    name: e2e-tests-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # Only run Chrome for now, since GHA only has 250 workers and will cancel jobs if it runs out
+        project: [chromium]
+        shardCurrent:
+          [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+          ]
+        shardTotal: [20]
+
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.14.2"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps
+          cp src/configs/local.js src/configs/configs.js
+
+      # Run E2E tests
+      - name: Run E2E tests
+        env:
+          CI: true
+          PROJECT: ${{ matrix.project }}
+          SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
+          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+        run: DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
+
+      - name: Upload FE test results as an artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          retention-days: 14
+
+      - name: Upload blob report to GitHub Actions Artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: all-blob-reports
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
+          retention-days: 1
+
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
+
+  wait-for-shards:
+    needs: run-e2e-tests # run after shards
+    runs-on: ubuntu-22.04
+    #if: success() # only run when all shards have passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "{success}={true}" >> $GITHUB_OUTPUT
+
+  e2e-test:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [run-e2e-tests, wait-for-shards]
+    steps:
+      - name: Check result
+        run: |
+          passed="${{ needs.run-e2e-tests.result }}"
+          if [[ $passed == "success" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
+        ### Need to write success failure way because Github API doesn't allow doing
+        ### "if: always(), state: ${{ success() }}:
       - name: Set deployment status to success if no errors
         uses: avakar/set-deployment-status@v1
         with:
@@ -274,6 +408,7 @@ jobs:
     if: ${{ always() }} # Ensures status is run after post-deploy tests, even if they fail
     needs:
       - performance-test
+      - e2e-logged-in-test
       - e2e-test
       - functional-test
     steps:

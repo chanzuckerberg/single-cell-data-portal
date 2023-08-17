@@ -32,6 +32,16 @@ type CollectionFormInput = Pick<
 >;
 
 describe("Collection", () => {
+  describe("Unit tests", () => {
+    test("dataset order", () => {
+      let lastValue = 1_000_000_000;
+      sortByCellCountDescending(datasets).forEach((dataset) => {
+        expect(dataset.cell_count).toBeLessThanOrEqual(lastValue);
+        lastValue = dataset.cell_count ?? 0;
+      });
+    });
+  });
+
   describe("Logged In Tests @loggedIn", () => {
     skip(
       !isDevStaging,
@@ -62,14 +72,6 @@ describe("Collection", () => {
         },
         { page }
       );
-    });
-
-    test("dataset order", () => {
-      let lastValue = 1_000_000_000;
-      sortByCellCountDescending(datasets).forEach((dataset) => {
-        expect(dataset.cell_count).toBeLessThanOrEqual(lastValue);
-        lastValue = dataset.cell_count ?? 0;
-      });
     });
 
     describe("Publish a collection", () => {
