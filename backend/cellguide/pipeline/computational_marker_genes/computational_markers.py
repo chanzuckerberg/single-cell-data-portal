@@ -210,6 +210,7 @@ class MarkerGenesCalculator:
 
             # for each cell type in the current subset
             for i in range(len(cell_types_o)):
+                logger.info(f"Getting marker genes for cell type {cell_types_o[i]} ({i+1} / {len(cell_types_o)})...")
                 # get the expressions and cell counts corresponding to the cell type
                 sum1 = e_sum_o[i][None, :].copy()
                 sumsq1 = e_sqsum_o[i][None, :].copy()
