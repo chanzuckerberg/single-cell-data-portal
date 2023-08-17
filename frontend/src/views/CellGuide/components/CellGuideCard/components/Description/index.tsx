@@ -13,12 +13,11 @@ import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { CELL_GUIDE_CORRECTION_SURVEY_LINK } from "src/common/constants/airtableLinks";
-
-export const CELL_GUIDE_CARD_CL_DESCRIPTION = "cell-guide-card-cl-description";
-export const CELL_GUIDE_CARD_GPT_DESCRIPTION =
-  "cell-guide-card-gpt-description";
-export const CELL_GUIDE_CARD_GPT_TOOLTIP_LINK =
-  "cell-guide-card-gpt-tooltip-link";
+import {
+  CELL_GUIDE_CARD_CL_DESCRIPTION,
+  CELL_GUIDE_CARD_GPT_DESCRIPTION,
+  CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
+} from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 
 interface DescriptionProps {
   cellTypeName: string;
