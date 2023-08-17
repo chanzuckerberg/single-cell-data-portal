@@ -158,7 +158,7 @@ describe("Where's My Gene", () => {
     await page.keyboard.press("Escape");
 
     // wait for spinner to disappear, coincides with y-axis update
-    await waitForElementToBeRemoved(page, "loading-spinner");
+    await waitForLoadingSpinnerToResolve(page);
 
     const numberOfTissuesAfter = await countLocator(
       page.getByTestId("tissue-name")
@@ -323,13 +323,14 @@ describe("Where's My Gene", () => {
       );
 
       // Check all 3 Compare options work
+      // Wait for loading spinner to disappear before checking (compare data is slow to load)
       await clickDropdownOptionByName({
         name: "Disease",
         page,
         testId: COMPARE_DROPDOWN_ID,
       });
 
-      await waitForElementToBeRemoved(page, "loading-spinner");
+      await waitForLoadingSpinnerToResolve(page);
 
       await tryUntil(
         async () => {
@@ -347,7 +348,7 @@ describe("Where's My Gene", () => {
         testId: COMPARE_DROPDOWN_ID,
       });
 
-      await waitForElementToBeRemoved(page, "loading-spinner");
+      await waitForLoadingSpinnerToResolve(page);
 
       await tryUntil(
         async () => {
@@ -366,7 +367,7 @@ describe("Where's My Gene", () => {
         testId: COMPARE_DROPDOWN_ID,
       });
 
-      await waitForElementToBeRemoved(page, "loading-spinner");
+      await waitForLoadingSpinnerToResolve(page);
 
       await tryUntil(
         async () => {
@@ -1057,4 +1058,8 @@ async function getTissueNames(page: Page) {
 // when counting
 async function countLocator(locator: Locator) {
   return (await locator.elementHandles()).length;
+}
+
+async function waitForLoadingSpinnerToResolve(page: Page) {
+  await waitForElementToBeRemoved(page, "loading-spinner");
 }
