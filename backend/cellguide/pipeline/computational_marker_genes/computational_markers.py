@@ -52,8 +52,8 @@ class MarkerGenesCalculator:
             raise ValueError("cell_type_ontology_term_id must be one of the groupby terms")
 
         self.groupby_terms = groupby_terms
-        self.group_by_terms_with_celltype = groupby_terms + ["cell_type_ontology_term_id"]
-        self.group_by_terms_with_celltype_and_gene = self.group_by_terms_with_celltype + ["cell_type_ontology_term_id"]
+        self.groupby_terms_with_celltype = groupby_terms + ["cell_type_ontology_term_id"]
+        self.groupby_terms_with_celltype_and_gene = self.groupby_terms_with_celltype + ["cell_type_ontology_term_id"]
 
         # load the cell counts and expression summary cubes fully in memory
         cell_counts_df = snapshot.cell_counts_cube.df[:]
@@ -82,13 +82,15 @@ class MarkerGenesCalculator:
 
     def _prepare_cell_counts_and_gene_expression_dfs(self, cell_counts_df, expressions_df):
         # group by cell counts
-        cell_counts_df = cell_counts_df.groupby(self.groupby_terms).sum(numeric_only=True)
+        cell_counts_df = cell_counts_df.groupby(self.groupby_terms_with_celltype).sum(numeric_only=True)
         cell_counts_df = cell_counts_df[
             cell_counts_df.index.get_level_values("cell_type_ontology_term_id").isin(self.all_cell_type_ids_in_corpus)
         ]
 
         # group by gene expressions
-        expressions_df = expressions_df.groupby(self.groupby_terms + ["gene_ontology_term_id"]).sum(numeric_only=True)
+        expressions_df = expressions_df.groupby(self.groupby_terms_with_celltype + ["gene_ontology_term_id"]).sum(
+            numeric_only=True
+        )
         expressions_df = expressions_df.reset_index()
         expressions_df = expressions_df[
             expressions_df["cell_type_ontology_term_id"].isin(self.all_cell_type_ids_in_corpus)
@@ -103,7 +105,7 @@ class MarkerGenesCalculator:
                 )
             )
         )
-        index = index.set_names(self.group_by_terms_with_celltype)
+        index = index.set_names(self.groupby_terms_with_celltype)
         # instantiate an empty dataframe with the groups from the cartesian product as the index
         universe_cell_counts_df = pd.DataFrame(index=index)
         universe_cell_counts_df["n_cells"] = 0
@@ -114,14 +116,14 @@ class MarkerGenesCalculator:
         # remove groups that still have 0 cells after the rollup operation
         universe_cell_counts_df = universe_cell_counts_df[universe_cell_counts_df["n_cells"] > 0]
         # remake the multi-index
-        universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms).sum()
+        universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
         return universe_cell_counts_df, expressions_df
 
     def get_computational_marker_genes(self):
         universe_cell_counts_df = self.universe_cell_counts_df
 
         # the metadata groups (incl cell type) will be treated as row coordinates
-        groupby_coords = list(zip(*self.expressions_df[self.group_by_terms_with_celltype].values.T))
+        groupby_coords = list(zip(*self.expressions_df[self.groupby_terms_with_celltype].values.T))
         groupby_coords_unique = list(set(groupby_coords))
         groupby_index = pd.Series(index=pd.Index(groupby_coords_unique), data=np.arange(len(groupby_coords_unique)))
 
@@ -242,7 +244,7 @@ class MarkerGenesCalculator:
         # filter out rows with p-values >= 1e-5 (arbitrary heuristic)
         markers_df = markers_df[markers_df["p_value"] < 1e-5]
         # use the groupby operation to convert the groupby columns into a MultiIndex
-        markers_df = markers_df.groupby(self.group_by_terms_with_celltype_and_gene).first()
+        markers_df = markers_df.groupby(self.groupby_terms_with_celltype_and_gene).first()
 
         # get the row and col indices corresponding to nonzero expression values
         groupby_i_coords_new, gene_i_coords_new = (e_nnz_rollup + e_sum_rollup).nonzero()
@@ -257,7 +259,7 @@ class MarkerGenesCalculator:
 
         # combine the metadata groups and genes into one MultiIndex
         new_index = pd.Index([i + (j,) for i, j in zip(reverse_groupby_coords_new, reverse_gene_coords_new)])
-        new_index = new_index.set_names(self.group_by_terms_with_celltype_and_gene)
+        new_index = new_index.set_names(self.groupby_terms_with_celltype_and_gene)
 
         # instantiate the rolled up expression dataframe
         new_expression_rollup = pd.DataFrame(index=new_index)
@@ -272,24 +274,24 @@ class MarkerGenesCalculator:
 
         # join the rolled up expression dataframe to the marker genes dataframe along the index
         # to combine the expression information with the marker gene scores
-        new_expression_rollup = new_expression_rollup.join(markers_df, on=self.group_by_terms_with_celltype_and_gene)
+        new_expression_rollup = new_expression_rollup.join(markers_df, on=self.groupby_terms_with_celltype_and_gene)
 
         # reset the index to convert MultiIndex back into columns
         markers_df = markers_df.reset_index()
 
         # get the top 100 genes per metadata group
-        top_per_group = markers_df.groupby(self.group_by_terms_with_celltype).apply(
+        top_per_group = markers_df.groupby(self.groupby_terms_with_celltype).apply(
             lambda x: x.nlargest(100, "effect_size")
         )
         # get the marker gene groups
-        marker_gene_groups = list(zip(*top_per_group[self.group_by_terms_with_celltype_and_gene].values.T))
+        marker_gene_groups = list(zip(*top_per_group[self.groupby_terms_with_celltype_and_gene].values.T))
 
         # filter the rollup expression df down to the rows that are among the top marker gene groups
         filt = (
             np.array(
                 [
                     new_expression_rollup.index.get_level_values(term).isin(top_per_group[term].unique())
-                    for term in self.group_by_terms_with_celltype_and_gene
+                    for term in self.groupby_terms_with_celltype_and_gene
                 ]
             ).prod(0)
             > 0
@@ -297,10 +299,10 @@ class MarkerGenesCalculator:
         new_expression_rollup = new_expression_rollup[filt]
         # copy the groupby+gene columns into a multi-index
         new_expression_rollup.index = pd.Index(
-            list(zip(*new_expression_rollup[self.group_by_terms_with_celltype_and_gene].values.T))
+            list(zip(*new_expression_rollup[self.groupby_terms_with_celltype_and_gene].values.T))
         )
 
-        universe_cell_counts_df = universe_cell_counts_df.groupby(self.group_by_terms_with_celltype).sum()["n_cells"]
+        universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()["n_cells"]
 
         data = {}
         for group in marker_gene_groups:
