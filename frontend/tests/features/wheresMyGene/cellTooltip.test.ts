@@ -24,12 +24,9 @@ describe("cell tooltip", () => {
     // get the number of cell names displayed
     const beforeCells = await page.getByTestId(cellName).allInnerTexts();
 
-    const bloodLabel = page.getByTestId(cellName).getByText("Blood");
-
     // (thuang): Expand blood tissue to find truncated cell names
     await tryUntil(
       async () => {
-        await bloodLabel.click();
         const afterCells = await page.getByTestId(cellName).allInnerTexts();
         expect(afterCells.length).toBeGreaterThan(beforeCells.length);
       },
