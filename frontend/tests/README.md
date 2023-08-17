@@ -1,5 +1,9 @@
 # Tests documentation
 
+## WARNING
+
+1. Do NOT import `.tsx` files in your tests, otherwise we'll get weird parsing errors, due to Playwright parser not parsing SVG files at the moment.
+
 ## How to run E2E tests locally
 
 There are a number of scripts for running E2E tests and one can choose depending on the their needs, especially when developing tests:
