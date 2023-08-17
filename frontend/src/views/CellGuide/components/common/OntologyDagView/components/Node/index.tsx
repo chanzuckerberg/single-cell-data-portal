@@ -8,9 +8,7 @@ import RectOrCircle from "./components/RectOrCircle";
 import { StyledGroup } from "./style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-
-export const CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL =
-  "cell-guide-card-ontology-dag-view-clickable-text-label";
+import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/constants";
 
 type HierarchyNode = HierarchyPointNode<TreeNodeWithState>;
 

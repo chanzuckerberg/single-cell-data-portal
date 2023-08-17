@@ -86,3 +86,17 @@ loginState.json
 # Sitemap + robots.txt
 public/sitemap*
 public/robots.txt
+
+# Cell Guide
+src/views/CellGuide/common/fixtures/allCellTypeDescriptions.json
+src/views/CellGuide/common/fixtures/allCellTypeDescriptionsSEO.json
+src/views/CellGuide/common/fixtures/allCellTypeMarkerGenes.json
+src/views/CellGuide/common/fixtures/allCellTypeOwlDescriptions.json
+src/views/CellGuide/common/fixtures/allCellTypes.json
+src/views/CellGuide/common/fixtures/allEnrichedGenes/
+src/views/CellGuide/common/fixtures/allSourceData.json
+src/views/CellGuide/common/fixtures/allTissueDescriptions.json
+src/views/CellGuide/common/fixtures/allTissues.json
+src/views/CellGuide/common/fixtures/ontologyTree.json
+src/views/CellGuide/common/fixtures/ontologyTreeStatePerCellType.json
+src/views/CellGuide/common/fixtures/ontologyTreeStatePerTissue.json
