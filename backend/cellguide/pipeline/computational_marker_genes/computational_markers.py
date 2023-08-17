@@ -1,4 +1,5 @@
 import itertools
+import logging
 import pathlib
 
 import numpy as np
@@ -10,6 +11,8 @@ from backend.cellguide.pipeline.computational_marker_genes.utils import (
 )
 from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
 from backend.wmg.data.snapshot import WmgSnapshot
+
+logger = logging.getLogger(__name__)
 
 ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME = "ensembl_gene_ids_to_descriptions.tsv.gz"
 
@@ -177,7 +180,9 @@ class MarkerGenesCalculator:
         all_results = []
         # for example, if self.groupby_terms contains organism and tissue, then this loop
         # iterates through each organism and tissue combination.
-        for combination in itertools.product(*groupby_term_to_unique_values.values()):
+        logger.info(f"Iterating through all combinations of groupby dimensions {self.groupby_terms}")
+        for combination in itertools.product(*groupby_term_to_unique_values):
+            logger.info(f"Getting marker genes for cell types in combination {combination}")
             # get the rows corresponding to groups that match the current "combination"
             filt = groupby_term_to_values[0] == combination[0]
             for _i in range(1, len(combination)):
