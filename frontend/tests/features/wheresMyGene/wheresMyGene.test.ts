@@ -313,7 +313,7 @@ describe("Where's My Gene", () => {
 
           /**
            * (thuang): Make sure the default y axis is not stratified by checking
-           * that there are no 2 spaces in the cell type names for indentation
+           * that there are no 4 spaces in the cell type names for indentation
            */
           expect(
             beforeCellTypeNames.find((name) => name.includes("    "))
