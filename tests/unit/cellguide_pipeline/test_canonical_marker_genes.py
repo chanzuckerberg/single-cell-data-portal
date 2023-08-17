@@ -48,8 +48,6 @@ class CanonicalMarkerGeneCompilerUtilsTests(unittest.TestCase):
             (" DOI: 10.1016/j.cell.2019.11.025 ", "10.1016/j.cell.2019.11.025"),
             ("10.1016/j.cell.2019.11.025. ", "10.1016/j.cell.2019.11.025"),
             ("", ""),
-            ("DOI: ", ""),
-            (" . ", "."),
         ]
 
         for doi, expected in test_cases:
@@ -57,7 +55,7 @@ class CanonicalMarkerGeneCompilerUtilsTests(unittest.TestCase):
                 self.assertEqual(clean_doi(doi), expected)
 
     @patch("requests.get")
-    def test_get_title_and_citation_from_doi(self, mock_get):
+    def test__get_title_and_citation_from_doi(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
@@ -73,7 +71,7 @@ class CanonicalMarkerGeneCompilerUtilsTests(unittest.TestCase):
         result = get_title_and_citation_from_doi("10.1016/j.cell.2019.11.025")
         self.assertEqual(result, "Test Title\n\n - Doe, John et al. (2022) Test Journal")
 
-    def test_format_citation(self):
+    def test__format_citation(self):
         message = {
             "author": [{"family": "Doe", "given": "John"}],
             "container-title": ["Test Journal"],

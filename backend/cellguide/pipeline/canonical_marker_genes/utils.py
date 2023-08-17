@@ -15,7 +15,7 @@ def clean_doi(doi: str) -> str:
     str
         The cleaned DOI string.
     """
-
+    doi = doi.strip()
     if doi != "" and doi[-1] == ".":
         doi = doi[:-1]
     if " " in doi:
