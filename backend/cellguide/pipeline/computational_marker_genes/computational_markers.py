@@ -277,6 +277,26 @@ class MarkerGenesCalculator:
         # populate the rolled up expression dataframe
         new_expression_rollup["nnz"] = nnz_flat
         new_expression_rollup["sum"] = sum_flat
+        self.markers_df = markers_df
+        self.groupby_i_coords_new = groupby_i_coords_new
+        self.gene_i_coords_new = gene_i_coords_new
+        self.reverse_groupby_index = reverse_groupby_index
+        self.reverse_gene_index = reverse_gene_index
+        self.reverse_gene_coords_new = reverse_gene_coords_new
+        self.reverse_groupby_coords_new = reverse_groupby_coords_new
+        self.new_index = new_index
+        self.new_expression_rollup = new_expression_rollup
+        self.nnz_flat = nnz_flat
+        self.sum_flat = sum_flat
+        # Add the numpy arrays
+        self.e_nnz = e_nnz
+        self.e_sum = e_sum
+        self.e_sqsum = e_sqsum
+        self.e_nnz_rollup = e_nnz_rollup
+        self.e_sum_rollup = e_sum_rollup
+        self.e_sqsum_rollup = e_sqsum_rollup
+
+        return self
 
         # join the rolled up expression dataframe to the marker genes dataframe along the index
         # to combine the expression information with the marker gene scores
