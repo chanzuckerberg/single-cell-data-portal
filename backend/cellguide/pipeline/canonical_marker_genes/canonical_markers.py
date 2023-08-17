@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class CanonicalMarkerGenesCompiler:
-    def __init__(self, wmg_tissues: list[str], wmg_human_genes: list[str]):
+    def __init__(self, *, wmg_tissues: list[str], wmg_human_genes: list[str]):
         """
         Initializes the CanonicalMarkerGenesCompiler class.
 
@@ -35,6 +35,9 @@ class CanonicalMarkerGenesCompiler:
 
         logger.info("Fetching ASCTB data...")
         self.asctb_data = requests.get(ASCTB_MASTER_SHEET_URL).json()
+
+        # WMG tissues have some terms that start with "CL" because they're cell cultures.
+        # We filter these out as they are specific to our platform and don't exist in ASCTB.
         self.wmg_tissues = [i for i in wmg_tissues if i.startswith("UBERON:")]
 
         self.wmg_human_genes = wmg_human_genes
@@ -112,9 +115,7 @@ class CanonicalMarkerGenesCompiler:
                 gene_names.append(name)
         return gene_symbols, gene_names
 
-    def _get_references(
-        self, references: list[Reference], doi_to_citation: Dict[str, str]
-    ) -> Tuple[list[str], list[str]]:
+    def _get_references(self, references: list[Reference], doi_to_citation: Dict[str, str]) -> Tuple[str, str]:
         """
         Extracts the DOIs and citations from the given list of references.
         This function cleans the DOI and gets the title and formatted citation from the DOI.
@@ -175,7 +176,7 @@ class CanonicalMarkerGenesCompiler:
             data = self.asctb_data[tissue]["data"]
 
             for row in data:
-                cell_types = [i["id"] for i in row["cell_types"] if i["id"].startswith("CL:")]
+                cell_types = [celltype["id"] for celltype in row["cell_types"] if celltype["id"].startswith("CL:")]
                 if not cell_types or not row["biomarkers_gene"]:
                     continue
 
@@ -190,9 +191,9 @@ class CanonicalMarkerGenesCompiler:
                 )
 
                 for cell_type in cell_types:
-                    for i in range(len(gene_symbols)):
-                        symbol = gene_symbols[i]
-                        name = gene_names[i]
+                    for index in range(len(gene_symbols)):
+                        symbol = gene_symbols[index]
+                        name = gene_names[index]
 
                         entry = {
                             "tissue": tissue_id,
@@ -213,14 +214,14 @@ class CanonicalMarkerGenesCompiler:
 
         gene_infos = {}
         for entry in parsed_table_entries:
-            entry = entry.copy()
-            ct = entry["cell_type_ontology_term_id"]
-            del entry["cell_type_ontology_term_id"]
+            entry_copy = entry.copy()
+            ct = entry_copy["cell_type_ontology_term_id"]
+            del entry_copy["cell_type_ontology_term_id"]
 
-            a = gene_infos.get(ct, [])
-            entry["tissue"] = tissues_by_id.get(entry["tissue"], entry["tissue"])
-            a.append(entry)
-            gene_infos[ct] = a
+            celltype_markers_list = gene_infos.get(ct, [])
+            entry_copy["tissue"] = tissues_by_id.get(entry_copy["tissue"], entry_copy["tissue"])
+            celltype_markers_list.append(entry_copy)
+            gene_infos[ct] = celltype_markers_list
 
         logger.info("Aggregating gene biomarkers across tissues and publications across biomarkers and cell types...")
 
