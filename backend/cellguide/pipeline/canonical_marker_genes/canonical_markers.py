@@ -129,10 +129,10 @@ class CanonicalMarkerGenesCompiler:
 
         Returns
         -------
-        refs - list[str]
-            The list of cleaned DOIs extracted from the input references.
+        refs - str
+            The ';;'-concatenated DOIs extracted from the input references.
         titles - list[str]
-            The list of titles extracted from the input references.
+            The ';;'-concatenated titles extracted from the input references.
         """
 
         refs = []
