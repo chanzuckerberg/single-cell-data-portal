@@ -1,0 +1,56 @@
+  pw:api => selectors.setTestIdAttribute started +4ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +46ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +58ms
+  pw:api => page.waitForResponse started +2ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +5ms
+  pw:api   "commit" event fired +190ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +15ms
+  pw:api   navigated to "about:blank" +96ms
+  pw:api <= page.goto succeeded +150ms
+  pw:api =>  started +5s
+  pw:api <= page.waitForResponse succeeded +4ms
+  pw:api => locator.click started +0ms
+  pw:api <=  succeeded +27ms
+  pw:api waiting for getByTestId('logo') +72ms
+  pw:api   locator resolved to <img decoding="async" data-testid="logo" alt="CELLxGE…/> +302ms
+  pw:api attempting click action +143ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +175ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +48ms
+  pw:api   click action done +60ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +21ms
+  pw:api <= locator.click succeeded +15ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api => expect.toBeVisible started +12ms
+  pw:api   not waiting, "load" event already fired +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +71ms
+  pw:api waiting for getByTestId('laptop-with-cell-data-on-screen') +1ms
+  pw:api waiting for getByTestId('laptop-with-cell-data-on-screen') +23ms
+  pw:api   navigated to "https://localhost:3000/" +3s
+  pw:api   locator resolved to <div class="Landing_laptopImg__y8GsM" data-testid="la…>…</div> +483ms
+  pw:api <= expect.toBeVisible succeeded +115ms
+  pw:api   navigated to "about:blank" +113ms
+  pw:api taking page screenshot +619ms
+  pw:api => browserContext.close started +268ms
+  pw:api <= browserContext.close succeeded +2s
