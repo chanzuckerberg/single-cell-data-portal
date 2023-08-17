@@ -16,5 +16,7 @@ def convert_dataclass_to_dict(data):
         for key, value in data.items():
             if is_dataclass(value):
                 data[key] = asdict(value)
+            elif isinstance(value, list):
+                data[key] = [asdict(i) for i in value]
 
     return data

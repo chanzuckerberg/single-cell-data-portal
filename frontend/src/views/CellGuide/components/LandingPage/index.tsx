@@ -2,10 +2,10 @@ import Head from "next/head";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import { StyledHeader, Wrapper } from "./style";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
-
-export const LANDING_PAGE_HEADER = "landing-page-header";
+import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/constants";
 
 const TITLE = "CellGuide Cell Types and Cell Tissues - CZ CELLxGENE";
+
 const DESCRIPTION =
   "Explore single-cell transcriptomics data in CellGuide, a comprehensive resource that empowers researchers with deep insights into the intricacies of cell types";
 
