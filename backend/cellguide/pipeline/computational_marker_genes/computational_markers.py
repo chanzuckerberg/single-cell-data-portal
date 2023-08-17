@@ -11,7 +11,7 @@ from backend.cellguide.pipeline.computational_marker_genes.utils import (
 from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
 from backend.wmg.data.snapshot import WmgSnapshot
 
-ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME = ""
+ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME = "ensembl_gene_ids_to_descriptions.tsv.gz"
 
 """
 This module contains the MarkerGenesCalculator class which is used to calculate marker genes for cell types.
@@ -48,6 +48,9 @@ class MarkerGenesCalculator:
         # which marker gene computation for cell types will be stratified
         if "cell_type_ontology_term_id" in groupby_terms:
             groupby_terms.remove("cell_type_ontology_term_id")
+        else:
+            raise ValueError("cell_type_ontology_term_id must be one of the groupby terms")
+
         self.groupby_terms = groupby_terms
         self.group_by_terms_with_celltype = groupby_terms + ["cell_type_ontology_term_id"]
         self.group_by_terms_with_celltype_and_gene = self.group_by_terms_with_celltype + ["cell_type_ontology_term_id"]
