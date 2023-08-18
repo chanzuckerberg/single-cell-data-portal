@@ -81,13 +81,23 @@ class MarkerGenesCalculator:
         return self.gene_id_to_symbol.get(gene_id, gene_id)
 
     def _get_gene_name_from_id(self, gene_id: str) -> str:
+        # If gene_id is already in the dictionary, return the name
         if gene_id in self.gene_id_to_name:
             return self.gene_id_to_name[gene_id]
-        else:
+
+        # If gene_id_to_name_memory doesn't exist, initialize it
+        if not hasattr(self, "gene_id_to_name_memory"):
+            self.gene_id_to_name_memory = {}
+
+        # If gene_id is not in the memory, query the gene info and store it
+        if gene_id not in self.gene_id_to_name_memory:
             gene_name = query_gene_info_for_gene_description(gene_id)
+            # If gene_name is in the gene_id_to_symbol dictionary, replace it
             if gene_name in self.gene_id_to_symbol:
                 gene_name = self.gene_id_to_symbol[gene_name]
-            return gene_name
+            self.gene_id_to_name_memory[gene_id] = gene_name
+
+        return self.gene_id_to_name_memory[gene_id]
 
     def _prepare_cell_counts_and_gene_expression_dfs(
         self, cell_counts_df: pd.DataFrame, expressions_df: pd.DataFrame
@@ -242,7 +252,9 @@ class MarkerGenesCalculator:
                 n1 = n_cells_o[i][None, :].copy()
 
                 # run the t-test elementwise against all other rows
-                pvals, effects = run_ttest(sum1, sumsq1, n1, e_sum_o, e_sqsum_o, n_cells_o)
+                pvals, effects = run_ttest(
+                    sum1=sum1, sumsq1=sumsq1, n1=n1, sum2=e_sum_o, sumsq2=e_sqsum_o, n2=n_cells_o
+                )
 
                 # set the results for the current cell type's row to nan
                 # (cell type should not be compared to itself)
@@ -251,7 +263,12 @@ class MarkerGenesCalculator:
 
                 # process the stats to get the ranked list of differentially expressed genes
                 ranked_genes = post_process_stats(
-                    cell_types_o[i], cell_types_o, gene_index.index.values, pvals, effects, percentile=0.05
+                    cell_type_target=cell_types_o[i],
+                    cell_types_context=cell_types_o,
+                    genes=gene_index.index.values,
+                    pvals=pvals,
+                    effects=effects,
+                    percentile=0.05,
                 )
 
                 # create a dataframe containing the ranked genes, p-values, effect sizes, current combination

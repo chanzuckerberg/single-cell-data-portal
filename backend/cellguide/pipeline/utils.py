@@ -1,4 +1,5 @@
 import json
+import os
 import pathlib
 from dataclasses import dataclass, is_dataclass
 
@@ -21,6 +22,7 @@ def output_json(data, path):
     if is_dataclass(data):
         data = convert_dataclass_to_dict_and_strip_nones(data)
 
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(data, f)
 
