@@ -19,6 +19,7 @@ export const StyledAutocomplete = styled(Autocomplete)`
   }
   & .MuiInputLabel-root {
     margin-top: -8px;
+    z-index: 0;
   }
   & .MuiInputLabel-root.MuiInputLabel-shrink {
     margin-top: 0px;
