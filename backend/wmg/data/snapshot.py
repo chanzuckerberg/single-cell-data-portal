@@ -124,24 +124,35 @@ def load_snapshot(
     """
     global cached_snapshot
     if os.getenv("DEPLOYMENT_STAGE") is None:
+        logger.info("DEPLOYMENT_STAGE is not set, assuming running locally")
+
         wmg_bucket_path = os.getenv("WMG_BUCKET_PATH")
         if wmg_bucket_path is None:
-            raise ValueError("WMG_BUCKET_PATH must be set when running locally")
+            raise ValueError("WMG_BUCKET_PATH environment variable must be set when running locally.")
 
         completed_process = subprocess.run(
-            ["aws", "s3", "cp", 'f"{wmg_bucket_path}/snapshots/v1/latest_snapshot_identifier', "-"],
+            [
+                "aws",
+                "s3",
+                "cp",
+                f"{wmg_bucket_path}/snapshots/{snapshot_schema_version}/latest_snapshot_identifier",
+                "-",
+            ],
             capture_output=True,
             text=True,
         )
-        latest_snapshot_id = completed_process.stdout
+        latest_snapshot_id = completed_process.stdout.strip()
+        if latest_snapshot_id == "":
+            raise ValueError("latest_snapshot_identifier file failed to be read. Perhaps AWS_PROFILE needs to be set?")
+
         sync_command = [
             "aws",
             "s3",
             "sync",
-            f"{wmg_bucket_path}/snapshots/v1/{latest_snapshot_id}",
+            f"{wmg_bucket_path}/snapshots/{snapshot_schema_version}/{latest_snapshot_id}/",
             f"{latest_snapshot_id}/",
         ]
-        subprocess.run(sync_command)
+        completed_process = subprocess.run(sync_command)
 
         cached_snapshot = _load_local_snapshot(latest_snapshot_id)
     else:
@@ -259,11 +270,11 @@ def _load_local_snapshot(snapshot_dir_path: str) -> WmgSnapshot:
 
     return WmgSnapshot(
         snapshot_identifier=snapshot_dir_path,
-        expression_summary_cube=_open_cube(f"{snapshot_dir_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
-        expression_summary_default_cube=_open_cube(f"{snapshot_dir_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
-        expression_summary_fmg_cube=_open_cube(f"{snapshot_dir_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
-        marker_genes_cube=_open_cube(f"{snapshot_dir_path}/{MARKER_GENES_CUBE_NAME}"),
-        cell_counts_cube=_open_cube(f"{snapshot_dir_path}/{CELL_COUNTS_CUBE_NAME}"),
+        expression_summary_cube=tiledb.open(f"{snapshot_dir_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        expression_summary_default_cube=tiledb.open(f"{snapshot_dir_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
+        expression_summary_fmg_cube=tiledb.open(f"{snapshot_dir_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
+        marker_genes_cube=tiledb.open(f"{snapshot_dir_path}/{MARKER_GENES_CUBE_NAME}"),
+        cell_counts_cube=tiledb.open(f"{snapshot_dir_path}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=pd.read_json(f"{snapshot_dir_path}/{CELL_TYPE_ORDERINGS_FILENAME}"),
         primary_filter_dimensions=primary_filter_dimensions,
         dataset_to_gene_ids=dataset_to_gene_ids,
