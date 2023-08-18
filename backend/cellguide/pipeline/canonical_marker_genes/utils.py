@@ -85,11 +85,10 @@ def format_citation_dp(message: dict) -> str:
     else:
         author_str = f"{first_author['name']} et al."
 
-    journal = message["journal"] if message["journal"] else ""
-
+    journal = " " + message["journal"] if message["journal"] else ""
     year = f"{message['published_year']}"
 
-    return f"{author_str} ({year}) {journal}"
+    return f"{author_str} ({year}){journal}"
 
 
 def format_citation_crossref(message: dict) -> str:
@@ -113,7 +112,7 @@ def format_citation_crossref(message: dict) -> str:
     else:
         author_str = f"{first_author['name']} et al."
 
-    journal = message["container-title"][0] if len(message["container-title"]) else ""
+    journal = " " + message["container-title"][0] if len(message["container-title"]) else ""
     year = message["created"]["date-parts"][0][0]
 
-    return f"{author_str} ({year}) {journal}"
+    return f"{author_str} ({year}){journal}"
