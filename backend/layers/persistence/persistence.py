@@ -507,7 +507,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(new_version)
             return CollectionVersionId(new_version_id)
 
-    def delete_collection(self, collection_id: CollectionId) -> None:
+    def delete_unpublished_collection(self, collection_id: CollectionId) -> None:
         """
         Delete an unpublished Collection
         """

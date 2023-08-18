@@ -105,7 +105,7 @@ class DatabaseProviderInterface:
         Returns the new version.
         """
 
-    def delete_collection(self, collection_id: CollectionId) -> None:
+    def delete_unpublished_collection(self, collection_id: CollectionId) -> None:
         """
         Delete an unpublished Collection
         """

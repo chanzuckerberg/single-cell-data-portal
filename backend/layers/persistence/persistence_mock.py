@@ -190,7 +190,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[new_version_id.id] = collection_version
         return new_version_id
 
-    def delete_collection(self, collection_id: CollectionId) -> None:
+    def delete_unpublished_collection(self, collection_id: CollectionId) -> None:
         collection = self.collections.get(collection_id.id)
         if collection:
             if collection.originally_published_at is not None:

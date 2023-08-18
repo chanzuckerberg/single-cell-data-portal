@@ -638,7 +638,7 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.delete_collection_version(collection_version.version_id)
         if not collection_version.canonical_collection.originally_published_at:
             # Collection was never published; delete CollectionTable row
-            self.database_provider.delete_collection(collection_version.collection_id)
+            self.database_provider.delete_unpublished_collection(collection_version.collection_id)
 
     def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
