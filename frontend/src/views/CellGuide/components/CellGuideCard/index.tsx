@@ -26,12 +26,16 @@ import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
-import { useCellTypesById } from "src/common/queries/cellGuide";
+import { useCellTypesById, useTissueCards } from "src/common/queries/cellGuide";
 import {
+  CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
+import DropdownSelect from "./components/common/DropdownSelect";
+import { ALL_TISSUES } from "./components/MarkerGeneTables/constants";
+import { SelectChangeEvent } from "@mui/material/Select";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -88,6 +92,27 @@ export default function CellGuideCard({
   }, [throttledHandleResize]);
 
   const [geneInfoGene, setGeneInfoGene] = useState<Gene["name"] | null>(null);
+
+  // TODO: (prathap): replace useTissueCards() with an API that returns tissues for a given cell type
+  const { data: organs } = useTissueCards();
+
+  function getSortedOrgans() {
+    const tissues = [ALL_TISSUES, ...(organs?.map((t) => t.label) || [])];
+
+    return tissues.sort((a, b) => {
+      if (a === ALL_TISSUES) return -1;
+      if (b === ALL_TISSUES) return 1;
+      return a.localeCompare(b);
+    });
+  }
+
+  const organsForDropdown = useMemo(getSortedOrgans, [organs]);
+
+  const [selectedOrgan, setSelectedOrgan] = useState(organsForDropdown[0]);
+
+  const handleChangeOrgan = (event: SelectChangeEvent<unknown>) => {
+    setSelectedOrgan(event.target.value as string);
+  };
 
   function handleCloseGeneInfoSideBar() {
     setGeneInfoGene(null);
@@ -155,6 +180,13 @@ export default function CellGuideCard({
                 />
               </a>
             </CellGuideCardHeaderInnerWrapper>
+
+            <DropdownSelect
+              handleChange={handleChangeOrgan}
+              options={organsForDropdown}
+              selectedOption={selectedOrgan}
+              testId={CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN}
+            />
           </CellGuideCardHeader>
 
           <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
