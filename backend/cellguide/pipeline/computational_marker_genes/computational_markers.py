@@ -30,7 +30,7 @@ or any arbitrary combinations of metadata dimensions.
 
 
 class MarkerGenesCalculator:
-    def __init__(self, snapshot: WmgSnapshot, all_cell_type_ids_in_corpus: list[str], groupby_terms: list[str]):
+    def __init__(self, *, snapshot: WmgSnapshot, all_cell_type_ids_in_corpus: list[str], groupby_terms: list[str]):
         self.all_cell_type_ids_in_corpus = all_cell_type_ids_in_corpus
         self.organism_id_to_name = {
             k: v for d in snapshot.primary_filter_dimensions["organism_terms"] for k, v in d.items()
@@ -341,17 +341,27 @@ class MarkerGenesCalculator:
         # filter the rollup expression df down to the rows that are among the top marker gene groups
         filt = new_expression_rollup.index.isin(top_per_group.index)
         new_expression_rollup = new_expression_rollup[filt].reset_index()
-        # copy the groupby+gene columns into a multi-index
+        # set the groupby+gene columns as a multi-index
         new_expression_rollup.set_index(self.groupby_terms_with_celltype_and_gene, inplace=True)
+
+        # filter the expressions down to the top marker gene groups
         new_expression_rollup = new_expression_rollup.loc[marker_gene_groups]
+
+        # join the cell counts dataframe to the expressions dataframe along its index
         new_expression_rollup = new_expression_rollup.join(cell_counts_df, on=cell_counts_df.index.names)
+
+        # calculate the mean expression and percent cells for each marker gene group
         new_expression_rollup["me"] = new_expression_rollup["sum"] / new_expression_rollup["nnz"]
         new_expression_rollup["pc"] = new_expression_rollup["nnz"] / new_expression_rollup["n_cells"]
+        # ensure that the percent cells is between 0 and 1
         assert new_expression_rollup["pc"].max() <= 1.0
 
-        data = new_expression_rollup.reset_index().to_dict(orient="records")
+        # get all the records from the expressions dataframe
+        records = new_expression_rollup.reset_index().to_dict(orient="records")
+
+        # format the records into a dictionary mapping cell type IDs to lists of marker genes
         formatted_data = {}
-        for datum in data:
+        for datum in records:
             marker_gene_list = formatted_data.get(datum["cell_type_ontology_term_id"], [])
             entry = {
                 "me": datum["me"],

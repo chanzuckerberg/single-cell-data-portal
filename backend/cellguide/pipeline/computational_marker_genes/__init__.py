@@ -20,12 +20,31 @@ def run(*, output_directory: str, ontology_tree: OntologyTreeBuilder):
 
 
 def get_marker_genes_per_and_across_tissues(*, snapshot: WmgSnapshot, all_cell_types_in_corpus: list[str]) -> dict:
-    groupby_terms = ["organism_ontology_term_id", "cell_type_ontology_term_id"]
-    calculator = MarkerGenesCalculator(snapshot, all_cell_types_in_corpus, groupby_terms)
+    """
+    This function calculates the marker genes per tissue and across tissues.
+
+    Arguments
+    ---------
+    snapshot - The WMG snapshot
+    all_cell_types_in_corpus - List of all cell types in the corpus.
+
+    Returns
+    -------
+    dict - A dictionary containing the marker genes per tissue and across tissues keyed by cell type ontology term ID.
+    """
+
+    calculator = MarkerGenesCalculator(
+        snapshot=snapshot,
+        all_cell_type_ids_in_corpus=all_cell_types_in_corpus,
+        groupby_terms=["organism_ontology_term_id", "cell_type_ontology_term_id"],
+    )
     marker_genes = calculator.get_computational_marker_genes()
 
-    groupby_terms = ["organism_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]
-    calculator = MarkerGenesCalculator(snapshot, all_cell_types_in_corpus, groupby_terms)
+    calculator = MarkerGenesCalculator(
+        snapshot=snapshot,
+        all_cell_type_ids_in_corpus=all_cell_types_in_corpus,
+        groupby_terms=["organism_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"],
+    )
     marker_genes_per_tissue = calculator.get_computational_marker_genes()
 
     for key in marker_genes_per_tissue:
@@ -38,5 +57,14 @@ def get_marker_genes_per_and_across_tissues(*, snapshot: WmgSnapshot, all_cell_t
 
 
 def output_marker_genes(marker_genes: dict, output_directory: str):
+    """
+    This function outputs the marker genes to a specified directory. Each cell type will be output to its own JSON file.
+
+    Arguments
+    ---------
+    marker_genes - A dictionary containing the marker genes per tissue and across tissues keyed by cell type ontology term ID.
+    output_directory - The directory where the output files will be saved.
+    """
+
     for key in marker_genes:
         output_json(marker_genes[key], f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FOLDERNAME}/{key}.json")

@@ -2,11 +2,11 @@ import os
 from typing import Tuple
 
 import numpy as np
-import requests
 from numba import njit, prange
 from scipy import stats
 
 from backend.common.utils.rollup import are_cell_types_colinear
+from backend.wmg.data.utils import setup_retry_session
 
 
 @njit(parallel=True)
@@ -179,9 +179,11 @@ def query_gene_info_for_gene_description(gene_id: str) -> str:
     API_URL = os.getenv("API_URL")
     if API_URL is None:
         API_URL = "https://api.cellxgene.dev.single-cell.czi.technology"
-    a = requests.get(f"{API_URL}/gene_info/v1/gene_info?gene={gene_id}")
-    if a.status_code == 200:
-        r = a.json()
-        return r["name"]
+
+    session = setup_retry_session()
+    response = session.get(f"{API_URL}/gene_info/v1/gene_info?gene={gene_id}")
+    if response.status_code == 200:
+        data = response.json()
+        return data["name"]
     else:
         return gene_id
