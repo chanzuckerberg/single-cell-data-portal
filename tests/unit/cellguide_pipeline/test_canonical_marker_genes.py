@@ -5,7 +5,8 @@ from unittest.mock import Mock, patch
 from backend.cellguide.pipeline.canonical_marker_genes.canonical_markers import CanonicalMarkerGenesCompiler
 from backend.cellguide.pipeline.canonical_marker_genes.utils import (
     clean_doi,
-    format_citation,
+    format_citation_crossref,
+    format_citation_dp,
     get_title_and_citation_from_doi,
 )
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
@@ -77,5 +78,22 @@ class CanonicalMarkerGeneCompilerUtilsTests(unittest.TestCase):
             "container-title": ["Test Journal"],
             "created": {"date-parts": [[2022]]},
         }
-        result = format_citation(message)
+        result = format_citation_crossref(message)
         self.assertEqual(result, "Doe, John et al. (2022) Test Journal")
+
+        message = {
+            "authors": [
+                {"family": "Gabitto", "given": "Mariano I."},
+                {"family": "Travaglini", "given": "Kyle J."},
+                {"family": "Rachleff", "given": "Victoria M."},
+                {"family": "Kaplan", "given": "Eitan S."},
+            ],
+            "is_preprint": True,
+            "journal": "bioRxiv",
+            "published_at": 1683590400.0,
+            "published_day": 9,
+            "published_month": 5,
+            "published_year": 2023,
+        }
+        result = format_citation_dp(message)
+        self.assertEqual(result, "Gabitto, Mariano I. et al. (2023) bioRxiv")

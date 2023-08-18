@@ -6,6 +6,7 @@ COMPUTATIONAL_MARKER_GENES_FOLDERNAME = "allEnrichedGenes"
 
 CELL_GUIDE_METADATA_FILENAME = "cellGuideMetadata.json"
 CELL_GUIDE_TISSUE_METADATA_FILENAME = "cellGuideTissueMetadata.json"
+SOURCE_COLLECTIONS_FILENAME = "sourceCollections.json"
 
 UBERON_BASIC_PERMANENT_URL_PRONTO = "http://purl.obolibrary.org/obo/uberon.obo"
 

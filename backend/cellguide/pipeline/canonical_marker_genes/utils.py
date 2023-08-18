@@ -52,11 +52,11 @@ def get_title_and_citation_from_doi(doi: str) -> str:
         # Get the title and citation count from the data
         try:
             title = data["message"]["title"][0]
-            citation = format_citation(data["message"])
+            citation = format_citation_crossref(data["message"])
         except Exception:
             try:
                 title = data["message"]["items"][0]["title"][0]
-                citation = format_citation(data["message"]["items"][0])
+                citation = format_citation_crossref(data["message"]["items"][0])
             except Exception:
                 return doi
         return f"{title}\n\n - {citation}"
@@ -64,7 +64,34 @@ def get_title_and_citation_from_doi(doi: str) -> str:
         return doi
 
 
-def format_citation(message: dict) -> str:
+def format_citation_dp(message: dict) -> str:
+    """
+    Formats the citation message.
+
+    Parameters
+    ----------
+    message : dict
+        The message containing publisher_metadata from the /collections API.
+
+    Returns
+    -------
+    str
+        The formatted citation string.
+    """
+
+    first_author = message["authors"][0]
+    if "family" in first_author:
+        author_str = f"{first_author['family']}, {first_author['given']} et al."
+    else:
+        author_str = f"{first_author['name']} et al."
+
+    journal = " " + message["journal"] if message["journal"] else ""
+    year = f"{message['published_year']}"
+
+    return f"{author_str} ({year}){journal}"
+
+
+def format_citation_crossref(message: dict) -> str:
     """
     Formats the citation message.
 
