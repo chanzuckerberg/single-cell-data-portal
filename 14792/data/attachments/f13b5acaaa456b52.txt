@@ -1,0 +1,41 @@
+  pw:api => selectors.setTestIdAttribute started +8ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +0ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +41ms
+  pw:api   "commit" event fired +12ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +6ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +41ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/tos/", waiting until "load" +5ms
+  pw:api   "commit" event fired +2s
+  pw:api   navigated to "https://localhost:3000/tos" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/tos" +2ms
+  pw:api <= page.goto succeeded +61ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api   "networkidle" event fired +462ms
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api => expect.toBeVisible started +1ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api expect.toBeVisible with timeout 10000ms +16ms
+  pw:api waiting for getByText('Terms of Use').first() +0ms
+  pw:api   locator resolved to <h1 id="tos">Terms of Use</h1> +29ms
+  pw:api <= expect.toBeVisible succeeded +3ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +7ms
+  pw:api waiting for getByTestId('cellxgene-logo') +0ms
+  pw:api   locator resolved to <img decoding="async" alt="CELLxGENE logo" data-nimg=…/> +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api taking page screenshot +119ms
+  pw:api => browserContext.close started +95ms
+  pw:api <= browserContext.close succeeded +3s
