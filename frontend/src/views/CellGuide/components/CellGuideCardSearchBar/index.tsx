@@ -8,10 +8,10 @@ import { useCellGuide, useTissueCards } from "src/common/queries/cellGuide";
 import { useRouter } from "next/router";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-
-export const CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT =
-  "cell-guide-card-search-bar-text-input";
-export const CELL_GUIDE_CARD_SEARCH_BAR = "cell-guide-card-search-bar";
+import {
+  CELL_GUIDE_CARD_SEARCH_BAR,
+  CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT,
+} from "src/views/CellGuide/components/CellGuideCardSearchBar/constants";
 
 interface Entity {
   id: string;

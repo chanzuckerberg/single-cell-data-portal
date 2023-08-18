@@ -27,6 +27,7 @@ from backend.wmg.data.snapshot import (
     CELL_TYPE_ORDERINGS_FILENAME,
     DATASET_TO_GENE_IDS_FILENAME,
     FILTER_RELATIONSHIPS_FILENAME,
+    PRIMARY_FILTER_DIMENSIONS_FILENAME,
     WmgSnapshot,
 )
 from backend.wmg.data.tiledb import create_ctx
@@ -197,9 +198,12 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_TO_GENE_IDS_FILENAME}", "r"
         ) as f, open(
             f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}", "r"
-        ) as fr:
+        ) as fr, open(
+            f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "r"
+        ) as fp:
             dataset_to_gene_ids = json.load(f)
             filter_relationships = json.load(fr)
+            primary_filter_dimensions = json.load(fp)
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
@@ -208,7 +212,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 marker_genes_cube=marker_genes_cube,
                 cell_counts_cube=cell_counts_cube,
                 cell_type_orderings=None,
-                primary_filter_dimensions=None,
+                primary_filter_dimensions=primary_filter_dimensions,
                 dataset_to_gene_ids=dataset_to_gene_ids,
                 filter_relationships=filter_relationships,
             )
