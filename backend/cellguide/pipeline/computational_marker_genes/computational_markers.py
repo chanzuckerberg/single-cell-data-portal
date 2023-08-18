@@ -162,12 +162,12 @@ class MarkerGenesCalculator:
 
         # the metadata groups (incl cell type) will be treated as row coordinates
         groupby_coords = list(zip(*self.expressions_df[self.groupby_terms_with_celltype].values.T))
-        groupby_coords_unique = list(set(groupby_coords))
+        groupby_coords_unique = sorted(set(groupby_coords))
         groupby_index = pd.Series(index=pd.Index(groupby_coords_unique), data=np.arange(len(groupby_coords_unique)))
 
         # the genes will be treated as column coordinates
         gene_coords = list(self.expressions_df["gene_ontology_term_id"])
-        gene_coords_unique = list(set(gene_coords))
+        gene_coords_unique = sorted(set(gene_coords))
         gene_index = pd.Series(index=pd.Index(gene_coords_unique), data=np.arange(len(gene_coords_unique)))
 
         # instantiate empty numpy arrays with number of rows equal to the number of groups
@@ -328,57 +328,41 @@ class MarkerGenesCalculator:
         markers_df = markers_df.reset_index()
 
         # get the top 100 genes per metadata group
-        top_per_group = markers_df.groupby(self.groupby_terms_with_celltype).apply(
-            lambda x: x.nlargest(100, "effect_size")
+        top_per_group = (
+            markers_df.groupby(self.groupby_terms_with_celltype)
+            .apply(lambda x: x.nlargest(100, "effect_size"))
+            .reset_index(drop=True)
         )
         # get the marker gene groups
         marker_gene_groups = list(zip(*top_per_group[self.groupby_terms_with_celltype_and_gene].values.T))
 
+        # convert columns to MultiIndex
+        top_per_group.set_index(self.groupby_terms_with_celltype_and_gene, inplace=True)
         # filter the rollup expression df down to the rows that are among the top marker gene groups
-        filt = (
-            np.array(
-                [
-                    new_expression_rollup.index.get_level_values(term).isin(top_per_group[term].unique())
-                    for term in self.groupby_terms_with_celltype_and_gene
-                ]
-            ).prod(0)
-            > 0
-        )
+        filt = new_expression_rollup.index.isin(top_per_group.index)
         new_expression_rollup = new_expression_rollup[filt].reset_index()
         # copy the groupby+gene columns into a multi-index
-        new_expression_rollup.index = pd.Index(
-            list(zip(*new_expression_rollup[self.groupby_terms_with_celltype_and_gene].values.T))
-        )
+        new_expression_rollup.set_index(self.groupby_terms_with_celltype_and_gene, inplace=True)
+        new_expression_rollup = new_expression_rollup.loc[marker_gene_groups]
+        new_expression_rollup = new_expression_rollup.join(cell_counts_df, on=cell_counts_df.index.names)
+        new_expression_rollup["me"] = new_expression_rollup["sum"] / new_expression_rollup["nnz"]
+        new_expression_rollup["pc"] = new_expression_rollup["nnz"] / new_expression_rollup["n_cells"]
+        assert new_expression_rollup["pc"].max() <= 1.0
 
-        cell_counts_df = cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()["n_cells"]
-
-        data = {}
-        for group in marker_gene_groups:
-            # each group is by convention going to be (...user-specified groupby dimensions..., cell type, gene)
-            gene = group[-1]
-            celltype = group[-2]
-            group_excluding_gene = group[:-1]
-
-            nnz = new_expression_rollup["nnz"][i]
-            s = new_expression_rollup["sum"][i]
-            es = new_expression_rollup["effect_size"][i]
-
-            n_cells = cell_counts_df[group_excluding_gene]
-
-            a = data.get(celltype, [])
+        data = new_expression_rollup.reset_index().to_dict(orient="records")
+        formatted_data = {}
+        for datum in data:
+            marker_gene_list = formatted_data.get(datum["cell_type_ontology_term_id"], [])
             entry = {
-                "me": s / nnz if nnz > 0 else 0,
-                "pc": nnz / n_cells,
-                "marker_score": es,
-                "symbol": self._get_gene_symbol_from_id(gene),
-                "name": self._get_gene_name_from_id(gene),
+                "me": datum["me"],
+                "pc": datum["pc"],
+                "marker_score": datum["effect_size"],
+                "symbol": self._get_gene_symbol_from_id(datum["gene_ontology_term_id"]),
+                "name": self._get_gene_name_from_id(datum["gene_ontology_term_id"]),
             }
-            groupby_dims = {}
-            for i, term in enumerate(self.groupby_terms):
-                groupby_dims[term] = group[i]
-            entry["groupby_dims"] = groupby_dims
+            entry["groupby_dims"] = {term: datum[term] for term in self.groupby_terms}
 
-            a.append(ComputationalMarkerGenes(**entry))
-            data[celltype] = a
+            marker_gene_list.append(ComputationalMarkerGenes(**entry))
+            formatted_data[datum["cell_type_ontology_term_id"]] = marker_gene_list
 
-        return data
+        return formatted_data
