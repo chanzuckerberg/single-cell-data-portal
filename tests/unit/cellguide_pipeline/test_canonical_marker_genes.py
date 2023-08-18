@@ -18,7 +18,7 @@ TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
 class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
-    def test__ontology_tree_builder(self):
+    def test__canonical_marker_genes(self):
         with open("tests/unit/cellguide_pipeline/fixtures/canonical_marker_genes.json", "r") as f:
             expected__canonical_marker_genes = json.load(f)
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
