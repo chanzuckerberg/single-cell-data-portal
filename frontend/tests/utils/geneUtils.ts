@@ -8,30 +8,29 @@ const CELL_TYPE_NAME_ID = "cell-type-name";
 const MARKER_GENE_BUTTON_ID = "marker-gene-button";
 const REGEX = /^\d+\.?\d{0,2}$/;
 
+export const ADD_GENE_SEARCH_PLACEHOLDER_TEXT =
+  "Search or paste comma separated gene names";
+
 export async function goToWMG(page: Page) {
   return Promise.all([
     page.waitForResponse(
       (resp: { url: () => string | string[]; status: () => number }) =>
-        resp.url().includes("/wmg/v1/filters") && resp.status() === 200
+        resp.url().includes("/wmg/v2/filters") && resp.status() === 200
     ),
     page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
   ]);
 }
 export async function searchAndAddGene(page: Page, geneName: string) {
   await goToWMG(page);
-  // click +Tissue button
+  // click +Gene button
   await page.getByTestId(ADD_GENE_BTN).click();
-  await page.getByPlaceholder("Search").type(geneName);
+  await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).type(geneName);
   await page.getByText(geneName).click();
 
   // close dropdown
   await page.keyboard.press("Escape");
 }
 export async function verifyAddedTissue(page: Page, tissue: string) {
-  // STEP 1 & Add Tissues texts should disappear
-  await expect(page.getByText("STEP 1")).not.toBeVisible();
-  await expect(page.getByTestId("Add Tissues")).not.toBeVisible();
-
   // selected tissue should be visible
   await expect(page.getByTestId(`cell-type-labels-${tissue}`)).toBeVisible();
 
@@ -62,10 +61,6 @@ export async function verifyAddedTissue(page: Page, tissue: string) {
 }
 
 export async function verifyAddedGene(page: Page, geneName: string) {
-  // STEP 1 & Add Tissues texts should disappear
-  await expect(page.getByText("STEP 2")).not.toBeVisible();
-  await expect(page.getByTestId("Add Genes")).not.toBeVisible();
-
   // selected gene should be visible
   expect(await page.getByTestId(`gene-name-${geneName}`).textContent()).toBe(
     geneName

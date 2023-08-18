@@ -47,6 +47,7 @@ export const Wrapper = styled.div`
   flex-direction: column;
   align-self: stretch;
   min-width: 640px;
+  margin-bottom: 80px;
 `;
 
 export const CellGuideCardHeaderInnerWrapper = styled.div`
@@ -63,9 +64,10 @@ export const CellGuideCardHeader = styled.div`
   justify-content: space-between;
 `;
 
-export const CellGuideCardName = styled.div`
+export const CellGuideCardName = styled.h1`
   ${fontHeaderXxl}
   font-weight: 700;
+  margin-bottom: 0;
 `;
 
 export const StyledTag = styled(Tag)`

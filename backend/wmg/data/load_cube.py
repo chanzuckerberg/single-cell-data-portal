@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import subprocess
@@ -19,9 +20,7 @@ wmg_s3_root_dir_path = stack_name.strip("/") if stack_name else ""
 wmg_bucket_name = os.environ.get("WMG_BUCKET")
 wmg_s3_bucket_uri = f"s3://{wmg_bucket_name}"
 
-# TODO(prathap): The functionality to fully integrate `snapshot_schema_version` will be done
-# in a future ticket:
-# https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
+logger = logging.getLogger(__name__)
 
 ###################################### PUBLIC FUNCTIONS #################################
 
@@ -35,28 +34,29 @@ def upload_artifacts_to_s3(
     information about the data schema version, the snapshot id, and the location
     of the snapshot.
 
-    TODO(prathap): This part of the docstring will be modified when work starts on ticket:
-    https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
+    The <destination_path> is set as s3://<environment_bucket_name>/snapshots/<data_schema_version>/
 
-    Specifically:
-
-    1. Snapshot artifacts are stored in s3://<environment_bucket_name>/<snapshot_id>/
+    1. Snapshot artifacts are stored in <destination_path>/<snapshot_id>/
        A. Note that, as of now, <snapshot_id> is a integer representing the time elapsed
           in seconds since epoch
        B. If the snapshot generation pipeline is run in a "remote dev environment", then the snapshot
-          is stored in s3://<environment_bucket_name>/<remote_stack_name>/<snapshot_id>/
+          is stored in s3://<environment_bucket_name>/<remote_stack_name>/snapshots/<data_schema_version>/<snapshot_id>/
        C. If validation checks on the snapshot fails, the data artifact will be stored in
-          s3://<environment_bucket_name>/<snapshot_id>_validation_failed_snapshot/
+          s3://<environment_bucket_name>/snapshots/<data_schema_version>/<snapshot_id>_validation_failed_snapshot/
           (or s3://<environment_bucket_name>/<remote_stack_name>/<snapshot_id>_validation_failed_snapshot/)
 
-    2. The file, s3://<environment_bucket_name>/latest_snapshot_identifer, contains the latest <snapshot_id>
-       that has passed validation. If snapshot generation pipeline is run in a "remote dev environment"
-       then the file will be at path: s3://<environment_bucket_name>/<remote_stack_name>/latest_snapshot_identifer
+    2. The file, s3://<environment_bucket_name>/snapshots/<data_schema_version>/latest_snapshot_identifer, contains
+       the latest <snapshot_id> that has passed validation for that schema version. If snapshot generation pipeline
+       is run in a "remote dev environment" then the file will be at path:
+       s3://<environment_bucket_name>/<remote_stack_name>/snapshots/<data_schema_version>/latest_snapshot_identifer
 
        NOTE that `latest_snapshot_identifier` will not be updated if validation checks fails on a newly generated
        data artifact
 
-    3. After each generation of the data artifact and successful validation checks, all but the two latest
+    3. The file, s3://<environment_bucket_name>/latest_snapshot_run, contains the path to the folder containing the
+        latest data generated (whether the generated data passed validation or not)
+
+    4. After each generation of the data artifact and successful validation checks, all but the two latest
        snapshots are deleted
 
     Parameters
@@ -81,8 +81,8 @@ def upload_artifacts_to_s3(
         snapshot_schema_version, snapshot_id, is_snapshot_validation_successful
     )
 
-    sync_command = ["aws", "s3", "sync", snapshot_source_path, snapshot_s3_dest_path]
-
+    logger.info(f"Writing snapshot data to {snapshot_s3_dest_path}")
+    sync_command = ["aws", "s3", "sync", snapshot_source_path, snapshot_s3_dest_path, "--quiet"]
     subprocess.run(sync_command)
 
     _write_snapshot_metadata(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)
@@ -102,11 +102,7 @@ def _get_wmg_s3_data_schema_dir_path(snapshot_schema_version: str) -> str:
     if wmg_s3_root_dir_path:
         data_schema_dir_path = f"{wmg_s3_root_dir_path}/{data_schema_dir_path}"
 
-    # TODO(prathap) - change to using data_schema_dir_path by uncommenting the below 'return' statement
-    # when working on: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5166
-    # return data_schema_dir_path
-
-    return wmg_s3_root_dir_path
+    return data_schema_dir_path
 
 
 def _get_wmg_snapshot_s3_path(
@@ -198,6 +194,7 @@ def _write_latest_snapshot_identifier_file(snapshot_schema_version: str, snapsho
 
     key_path = f"{data_schema_dir_path}/{file_name}" if data_schema_dir_path else file_name
 
+    logger.info(f"Writing latest snapshot identifier file to {key_path} with value {snapshot_id}")
     _write_value_to_s3_key(key_path=key_path, value=snapshot_id)
 
 
@@ -212,6 +209,7 @@ def _write_latest_snapshot_run_file(
     key_path = f"{wmg_s3_root_dir_path}/{file_name}" if wmg_s3_root_dir_path else file_name
     snapshot_path = _get_wmg_snapshot_s3_path(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)
 
+    logger.info(f"Writing latest snapshot run file to {key_path} with value {snapshot_path}")
     _write_value_to_s3_key(key_path=key_path, value=snapshot_path)
 
 
@@ -220,6 +218,9 @@ def _write_snapshot_metadata(snapshot_schema_version: str, snapshot_id: str, is_
     Write metadata about the data artifact generated
     """
     if is_snapshot_validation_successful:
+        logger.info(f"Snapshot {snapshot_id} passed validation, marking as active")
         _make_snapshot_active(snapshot_schema_version, snapshot_id)
+    else:
+        logger.info(f"Snapshot {snapshot_id} failed validation")
 
     _write_latest_snapshot_run_file(snapshot_schema_version, snapshot_id, is_snapshot_validation_successful)

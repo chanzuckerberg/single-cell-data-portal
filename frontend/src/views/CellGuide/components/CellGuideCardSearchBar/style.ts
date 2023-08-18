@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { Autocomplete } from "@mui/material";
-import { fontBodyXs, fontCapsXxxs, getColors } from "@czi-sds/components";
+import { fontBodyXs, fontCapsXxxs } from "@czi-sds/components";
+import { gray500 } from "src/common/theme";
 
 export const StyledAutocomplete = styled(Autocomplete)`
   height: 32px;
@@ -18,6 +19,7 @@ export const StyledAutocomplete = styled(Autocomplete)`
   }
   & .MuiInputLabel-root {
     margin-top: -8px;
+    z-index: 0;
   }
   & .MuiInputLabel-root.MuiInputLabel-shrink {
     margin-top: 0px;
@@ -30,13 +32,7 @@ export const SectionTitle = styled.div`
   margin-bottom: 0px !important;
   cursor: default;
   padding-left: 12px !important;
-
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.gray[500]};
-      `;
-  }}
+  color: ${gray500};
 `;
 
 export const SectionItem = styled.li`

@@ -71,18 +71,7 @@ describe("Where's My Gene", () => {
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-    // Getting Started section
-    await expect(page.getByText("STEP 1")).toBeTruthy();
-    await expect(page.getByText("Add Tissues")).toBeTruthy();
-
-    await expect(page.getByText("STEP 2")).toBeTruthy();
-    await expect(page.getByText("Add Genes")).toBeTruthy();
-
-    await expect(page.getByText("STEP 3")).toBeTruthy();
-    await expect(page.getByText("Explore Gene Expression")).toBeTruthy();
-
     await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    await selectFirstOption(page);
 
     await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstOption(page);

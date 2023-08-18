@@ -4,13 +4,25 @@
   "default_env": "rdev",
   "app": "data-portal",
   "default_compose_env_file": ".env.ecr",
-  "services": ["frontend", "backend", "processing", "dataset_submissions", "upload_failures", "upload_success", "wmg_processing"],
+  "services": [
+    "frontend",
+    "backend",
+    "cellguide_pipeline",
+    "processing",
+    "dataset_submissions",
+    "upload_failures",
+    "upload_success",
+    "wmg_processing"
+  ],
   "slices": {
     "frontend": {
         "profile": "frontend"
     },
     "backend": {
         "profile": "backend"
+    },
+    "cellguide_pipeline": {
+        "profile": "cellguide_pipeline"
     },
     "processing": {
         "profile": "processing"

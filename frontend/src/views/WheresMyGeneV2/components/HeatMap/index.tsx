@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeRow,
   generateTermsByKey,
@@ -36,7 +36,7 @@ import {
 } from "src/views/WheresMyGene/common/types";
 import YAxisChart from "./components/YAxisChart";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { memoize } from "lodash";
+
 import {
   useSortedGeneNames,
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
@@ -82,7 +82,6 @@ interface Props {
   isScaled: boolean;
   cellTypeSortBy: SORT_BY;
   geneSortBy: SORT_BY;
-  selectedOrganismId: string;
   echartsRendererMode: "svg" | "canvas";
   setAllChartProps: Dispatch<
     SetStateAction<{
@@ -90,6 +89,7 @@ interface Props {
     }>
   >;
   allChartProps: { [tissue: string]: ChartProps };
+  tissuesByName: { [name: string]: OntologyTerm };
   setTissuesByName: Dispatch<
     SetStateAction<{
       [name: string]: OntologyTerm;
@@ -110,19 +110,20 @@ export default memo(function HeatMap({
   isScaled,
   cellTypeSortBy,
   geneSortBy,
-  selectedOrganismId,
   echartsRendererMode,
   allChartProps,
   setAllChartProps,
+  tissuesByName,
   setTissuesByName,
   expandedTissues,
   setExpandedTissues,
 }: Props): JSX.Element {
   const {
     xAxisHeight,
-    selectedFilters: { tissues: filteredTissues },
+    selectedFilters: { tissues: filteredTissueIds },
     filteredCellTypes,
   } = useContext(StateContext);
+
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const chartWrapperRef = useRef<HTMLDivElement>(null);
@@ -131,27 +132,27 @@ export default memo(function HeatMap({
   const { data } = usePrimaryFilterDimensions(2); //temp explicit version
 
   // Get tissueName to ID map for use in find marker genes
-  const tissuesByName = useMemo(() => {
-    let result: { [name: string]: OntologyTerm } = {};
+  useEffect(() => {
+    let result: { [name: string]: OntologyTerm } = EMPTY_OBJECT;
 
-    if (!data) return result;
+    if (data) {
+      const { tissues } = data;
 
-    const { tissues } = data;
-
-    result = generateTermsByKey(tissues, "name");
+      result = generateTermsByKey(tissues, "name");
+    }
 
     setTissuesByName(result);
-
-    return result;
   }, [data, setTissuesByName]);
 
   const cellTypesByName = useMemo(() => {
     const result: { [name: string]: CellType } = {};
+
     Object.values(cellTypes).forEach((cellTypes) => {
       cellTypes.forEach((cellType) => {
         result[cellType.cellTypeName] = cellType;
       });
     });
+
     return result;
   }, [cellTypes]);
 
@@ -208,30 +209,27 @@ export default memo(function HeatMap({
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
-  const initialDisplayedCellTypes = useMemo(
-    () =>
-      Object.entries(tissuesByName).reduce((acc, [_, { id }]) => {
-        if (
-          (filteredTissues.length > 0 && filteredTissues.includes(id)) ||
-          filteredTissues.length === 0
-        ) {
-          acc.add(id + id);
-        }
-        return acc;
-      }, new Set<string>()),
-    [tissuesByName, filteredTissues]
-  );
+  const initialDisplayedCellTypeIds = useMemo(() => {
+    return Object.values(tissuesByName).reduce((acc, { id }) => {
+      if (
+        (filteredTissueIds.length > 0 && filteredTissueIds.includes(id)) ||
+        filteredTissueIds.length === 0
+      ) {
+        acc.add(id + id);
+      }
+      return acc;
+    }, new Set<string>());
+  }, [tissuesByName, filteredTissueIds]);
 
   // set of tissue names that are visible and set of cell types that are visible
   // presence is visible
   const [displayedCellTypes, setDisplayedCellTypes] = useState<Set<string>>(
-    initialDisplayedCellTypes
+    initialDisplayedCellTypeIds
   );
 
   useEffect(() => {
-    setDisplayedCellTypes(initialDisplayedCellTypes);
-    setExpandedTissues(new Set<string>());
-  }, [initialDisplayedCellTypes, setExpandedTissues, selectedOrganismId]);
+    setDisplayedCellTypes(initialDisplayedCellTypeIds);
+  }, [initialDisplayedCellTypeIds]);
 
   const handleExpandCollapse = useCallback(
     (tissueID: string, tissueName: Tissue) => {
@@ -265,6 +263,7 @@ export default memo(function HeatMap({
           }
         });
       }
+
       setDisplayedCellTypes(newDisplayedCellTypes);
       setExpandedTissues(newExpandedTissues);
     },
@@ -297,19 +296,21 @@ export default memo(function HeatMap({
   // update displayedCellTypes and expandedTissues
   useEffect(() => {
     if (filteredCellTypes.length === 0) {
-      setDisplayedCellTypes(initialDisplayedCellTypes);
-      setExpandedTissues(new Set<string>());
       return;
     }
+
     const newDisplayedCellTypes = new Set<string>();
     const newExpandedTissues = new Set<string>();
+
     Object.entries(sortedCellTypesByTissueName).forEach(
       ([tissue, cellTypes]) => {
         if (
-          filteredTissues.length > 0 &&
-          !filteredTissues.includes(tissuesByName[tissue].id)
-        )
+          filteredTissueIds.length > 0 &&
+          !filteredTissueIds.includes(tissuesByName[tissue].id)
+        ) {
           return;
+        }
+
         cellTypes.forEach((cellType) => {
           if (filteredCellTypes.includes(cellType.name)) {
             newDisplayedCellTypes.add(
@@ -321,11 +322,11 @@ export default memo(function HeatMap({
         });
       }
     );
-    const filteredCellTypeIDs = filteredCellTypes.map(
+    const filteredCellTypeIds = filteredCellTypes.map(
       (cellType) => cellTypesByName[cellType].id
     );
     track(EVENTS.WMG_SELECT_CELL_TYPE, {
-      cell_types: filteredCellTypeIDs,
+      cell_types: filteredCellTypeIds,
     });
 
     setDisplayedCellTypes(newDisplayedCellTypes);
@@ -335,8 +336,7 @@ export default memo(function HeatMap({
     dispatch,
     filteredCellTypes,
     filteredCellTypes.length,
-    filteredTissues,
-    initialDisplayedCellTypes,
+    filteredTissueIds,
     setExpandedTissues,
     sortedCellTypesByTissueName,
     tissuesByName,
@@ -356,15 +356,46 @@ export default memo(function HeatMap({
     selectedCellTypes: filteredCellTypes,
   });
 
+  /**
+   * All tissue cell types to render in YAxisCharts
+   */
+  const allTissueCellTypes = useMemo(() => {
+    return Object.values(tissuesByName)
+      .sort((a, b) => {
+        // sort tissues alphabetically
+        return a.name.localeCompare(b.name);
+      })
+      .map((tissue: OntologyTerm) => {
+        const { id, name } = tissue;
+
+        return {
+          tissueId: id,
+          tissueName: name,
+          tissueCellTypes: getTissueCellTypes({
+            cellTypeSortBy,
+            cellTypes,
+            sortedCellTypesByTissueName,
+            tissue: name,
+            tissueID: id,
+            displayedCellTypes,
+          }),
+        };
+      });
+  }, [
+    tissuesByName,
+    cellTypeSortBy,
+    cellTypes,
+    sortedCellTypesByTissueName,
+    displayedCellTypes,
+  ]);
+
   return (
     <>
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
-          <CellTypeFilterContainer
-            id="celltype-filter-container"
-            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-          >
+          <CellTypeFilterContainer id="celltype-filter-container">
             <StyledAutocomplete
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               multiple
               value={filteredCellTypes}
               onChange={handleFilteredCellTypesChange}
@@ -404,105 +435,76 @@ export default memo(function HeatMap({
             <XAxisChart geneNames={sortedGeneNames} />
           </XAxisWrapper>
           <YAxisWrapper top={0}>
-            {Object.values(tissuesByName)
-              .sort((a, b) =>
-                // sort tissues alphabetically
-                a.name.localeCompare(b.name)
-              )
-              .map((tissue: OntologyTerm) => {
-                const tissueCellTypes = memoizedGetTissueCellTypes({
-                  cellTypeSortBy,
-                  cellTypes,
-                  sortedCellTypesByTissueName,
-                  tissue: tissue.name,
-                  tissueID: tissue.id,
-                  displayedCellTypes,
-                });
-
+            {allTissueCellTypes.map(
+              ({ tissueId, tissueName, tissueCellTypes }) => {
                 return (
                   tissueCellTypes.length > 0 && (
                     <YAxisChart
-                      key={tissue.name}
-                      tissue={tissue.name}
-                      tissueID={tissue.id}
+                      key={tissueName}
+                      tissue={tissueName}
+                      tissueID={tissueId}
                       cellTypes={tissueCellTypes}
                       generateMarkerGenes={generateMarkerGenes}
-                      selectedOrganismId={selectedOrganismId}
                       expandedTissues={expandedTissues}
                       handleExpandCollapse={handleExpandCollapse}
                     />
                   )
                 );
-              })}
+              }
+            )}
           </YAxisWrapper>
           <ChartWrapper ref={chartWrapperRef} top={xAxisHeight}>
-            {Object.values(tissuesByName)
-              .sort((a, b) =>
-                // sort tissues alphabetically
-                a.name.localeCompare(b.name)
-              )
-              .map((tissue: OntologyTerm) => {
-                const tissueCellTypes = memoizedGetTissueCellTypes({
-                  cellTypeSortBy,
-                  cellTypes,
-                  sortedCellTypesByTissueName,
-                  tissue: tissue.name,
-                  tissueID: tissue.id,
-                  displayedCellTypes: displayedCellTypes,
-                });
+            {allTissueCellTypes.map(({ tissueName, tissueCellTypes }) => {
+              // Don't render anything if tissue has no cell types for some reason
+              if (!tissueCellTypes.length) return;
 
-                // Don't render anything if tissue has no cell types for some reason
-                if (!tissueCellTypes.length) return;
+              const selectedGeneData =
+                orderedSelectedGeneExpressionSummariesByTissueName[tissueName];
 
-                const selectedGeneData =
-                  orderedSelectedGeneExpressionSummariesByTissueName[
-                    tissue.name
-                  ];
-
-                /**
-                 * (thuang): If there is no selected gene data, we don't want to render
-                 * the chart, because it will cause the chart to render with 0 width,
-                 * which is an error for echarts
-                 */
-                if (!selectedGeneData?.length) {
-                  const height =
-                    document.getElementById(`${hyphenize(tissue.name)}-y-axis`)
-                      ?.clientHeight ?? 0;
-                  return (
-                    <div
-                      id={`no-chart-data-${hyphenize(tissue.name)}`} // Not used, just to make it stand out
-                      key={`${tissue.name}-${echartsRendererMode}`}
-                      style={{
-                        height: `${height + MARGIN_BETWEEN_HEATMAPS}px`,
-                      }}
-                    />
-                  );
-                }
-
+              /**
+               * (thuang): If there is no selected gene data, we don't want to render
+               * the chart, because it will cause the chart to render with 0 width,
+               * which is an error for echarts
+               */
+              if (!selectedGeneData?.length) {
+                const height =
+                  document.getElementById(`${hyphenize(tissueName)}-y-axis`)
+                    ?.clientHeight ?? 0;
                 return (
-                  <Chart
-                    isScaled={isScaled}
-                    /**
-                     * (thuang): We use `key` to force re-render the HeatMap component
-                     * when the renderer mode changes, so echarts can create new instances
-                     */
-                    key={`${tissue.name}-${echartsRendererMode}`}
-                    tissue={tissue.name}
-                    cellTypes={tissueCellTypes}
-                    selectedGeneData={
-                      orderedSelectedGeneExpressionSummariesByTissueName[
-                        tissue.name
-                      ]
-                    }
-                    setIsLoading={setIsLoading}
-                    scaledMeanExpressionMax={scaledMeanExpressionMax}
-                    scaledMeanExpressionMin={scaledMeanExpressionMin}
-                    echartsRendererMode={echartsRendererMode}
-                    setAllChartProps={setAllChartProps}
-                    chartProps={allChartProps[tissue.name]}
+                  <div
+                    id={`no-chart-data-${hyphenize(tissueName)}`} // Not used, just to make it stand out
+                    key={`${tissueName}-${echartsRendererMode}`}
+                    style={{
+                      height: `${height + MARGIN_BETWEEN_HEATMAPS}px`,
+                    }}
                   />
                 );
-              })}
+              }
+
+              return (
+                <Chart
+                  isScaled={isScaled}
+                  /**
+                   * (thuang): We use `key` to force re-render the HeatMap component
+                   * when the renderer mode changes, so echarts can create new instances
+                   */
+                  key={`${tissueName}-${echartsRendererMode}`}
+                  tissue={tissueName}
+                  cellTypes={tissueCellTypes}
+                  selectedGeneData={
+                    orderedSelectedGeneExpressionSummariesByTissueName[
+                      tissueName
+                    ]
+                  }
+                  setIsLoading={setIsLoading}
+                  scaledMeanExpressionMax={scaledMeanExpressionMax}
+                  scaledMeanExpressionMin={scaledMeanExpressionMin}
+                  echartsRendererMode={echartsRendererMode}
+                  setAllChartProps={setAllChartProps}
+                  chartProps={allChartProps[tissueName]}
+                />
+              );
+            })}
           </ChartWrapper>
         </Container>
       </ContainerWrapper>
@@ -527,8 +529,10 @@ function getTissueCellTypes({
 }) {
   const tissueCellTypes = cellTypes[tissue];
 
-  if (!tissueCellTypes || tissueCellTypes.length === 0) return [];
+  if (!tissueCellTypes || tissueCellTypes.length === 0) return EMPTY_ARRAY;
+
   const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
+
   let ret =
     (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY
       ? tissueCellTypes
@@ -540,24 +544,6 @@ function getTissueCellTypes({
 
   return ret;
 }
-
-const memoizedGetTissueCellTypes = memoize(
-  getTissueCellTypes,
-  ({
-    cellTypes,
-    sortedCellTypesByTissueName,
-    tissue,
-    tissueID,
-    cellTypeSortBy,
-    displayedCellTypes,
-  }) => {
-    return `${tissue}-${tissueID}-${cellTypeSortBy}-${[
-      ...displayedCellTypes,
-    ]?.join("")}-${cellTypes[tissue]
-      ?.map((cellType) => cellType.viewId)
-      .join("")}-${sortedCellTypesByTissueName[tissue]?.join("")}`;
-  }
-);
 
 function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {
   return Object.values(isLoading).some((isLoading) => isLoading);

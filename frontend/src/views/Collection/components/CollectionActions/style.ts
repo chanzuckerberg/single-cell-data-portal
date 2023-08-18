@@ -1,14 +1,6 @@
-import {
-  Button,
-  CommonThemeProps,
-  fontBodyS,
-  getSpaces,
-} from "@czi-sds/components";
+import { Button, fontBodyS } from "@czi-sds/components";
 import styled from "@emotion/styled";
-
-const spacesM = (props: CommonThemeProps) => getSpaces(props)?.m;
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
-const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
+import { spacesM, spacesS, spacesXs } from "src/common/theme";
 
 export const CollectionActions = styled.div`
   align-items: center;

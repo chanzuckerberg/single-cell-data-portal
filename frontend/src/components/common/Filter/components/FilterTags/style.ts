@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontBodyXs, getSpaces } from "@czi-sds/components";
-
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
+import { fontBodyXs } from "@czi-sds/components";
+import { spacesS } from "src/common/theme";
 
 export const SelectedTags = styled.span`
   display: flex;

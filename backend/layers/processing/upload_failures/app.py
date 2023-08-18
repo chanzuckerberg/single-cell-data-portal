@@ -3,6 +3,7 @@ import logging
 import os
 from typing import Optional
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.result_notification import aws_batch_job_url_fmt_str, aws_sfn_url_fmt_str, notify_slack
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
@@ -119,7 +120,7 @@ def get_failure_slack_notification_message(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Dataset processing job failed! @sc-oncall-eng\n"
+                    "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: {collection_owner}\n"
                     f"*Collection Version URL*: {collection_version_url}\n"
                     f"*Batch Job ID*: <{batch_url}|{job_id}>\n"
@@ -153,7 +154,9 @@ def trigger_slack_notification(
         data = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_region, execution_arn
         )
-        notify_slack(data)
+        # For these notifications, we should alert #single-cell-wrangling
+        webhook = CorporaConfig().wrangling_slack_webhook
+        notify_slack(data, webhook)
 
 
 def cleanup_artifacts(dataset_id: str) -> None:

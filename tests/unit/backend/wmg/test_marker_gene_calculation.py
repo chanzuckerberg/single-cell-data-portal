@@ -19,7 +19,7 @@ CONTEXT_FILTERS = {
     "organism_ontology_term_id": "NCBITaxon:9606",
 }
 
-# tests key functions in calculate_markers.py in order from most to least nested
+# Tests key functions in calculate_markers.py in order from most to least nested
 
 
 class MarkerGeneCalculationTest(unittest.TestCase):
@@ -33,19 +33,19 @@ class MarkerGeneCalculationTest(unittest.TestCase):
 
             test_sum_target = list(target_agg.sum(0))
             # check that returned dataframe is correct
-            expected_sum_target = [120129.5625, 343018.5625, 49966.0, 48978.0]
+            expected_sum_target = [94218.3125, 276081.25, 37598.0]
             for i in range(len(test_sum_target)):
                 assert abs(test_sum_target[i] - expected_sum_target[i]) < 0.05
 
             test_sum_context = list(context_agg.sum(0))
             # check that returned dataframe is correct
-            expected_sum_context = [44070720.0, 94173664.0, 23958398.0, 23044706.0]
+            expected_sum_context = [33003984.0, 71694680.0, 17508339.0]
             for i in range(len(test_sum_context)):
                 assert abs(test_sum_context[i] - expected_sum_context[i]) < 0.05
 
             # check that returned population sizes are correct
-            assert n_cells_per_gene_target.sum() == 2049199.0
-            assert n_cells_per_gene_context.sum() == 1464682914.0
+            assert n_cells_per_gene_target.sum() == 1582856.0
+            assert n_cells_per_gene_context.sum() == 1042538475.0
 
     def test__get_markers_ttest(self):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:

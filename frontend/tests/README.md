@@ -1,5 +1,9 @@
 # Tests documentation
 
+## WARNING
+
+1. Do NOT import `.tsx` files in your tests, otherwise we'll get weird parsing errors, due to Playwright parser not parsing SVG files at the moment.
+
 ## How to run E2E tests locally
 
 There are a number of scripts for running E2E tests and one can choose depending on the their needs, especially when developing tests:
@@ -14,10 +18,23 @@ NOTE. It is advised to run the default `npm run e2e` once PR is ready to ensure 
 
 ## Flags
 
-1. `SKIP_LOGIN`: Add `SKIP_LOGIN=true` to your test command if you don't need Playwright to log into Data Portal
+1. `LOGIN` and `SKIP_LOGIN`: Add `LOGIN=false` or `SKIP_LOGIN=true` to your test command if you don't need Playwright to log into Data Portal
 1. `HEADLESS` and `HEADFUL`: Add `HEADLESS=false` or `HEADFUL=true` to your test command to launch browser
 1. `RETRY`: Add `RETRY=false` if you don't want to retry your test. This is good for failing fast when you're writing tests
 1. `USE_COOKIE`: Manually use your own cookie for authenticated tests. Should only be used locally. The cookie value is set by modifying the `MANUAL_COOKIE` variable in `playwright.config.ts`
+
+## Playwright Cheat Sheet
+
+1. `--ui`: UI Mode lets you explore, run, and debug tests with a time travel experience complete with watch mode. All test files are loaded into the testing sidebar where you can expand each file and describe block to individually run, view, watch and debug each test.
+
+   - ![Image](https://user-images.githubusercontent.com/13063165/234295914-f7ee3d8b-33a7-41b3-bc91-d363baaa7305.png)
+   - [Source](https://playwright.dev/docs/test-ui-mode#running-tests-in-ui-mode)
+   - Example: `npm run e2e -- --ui -- FILE_PATH`
+
+2. `--debug`: Debug mode launches Playwright Inspector, which lets you play, pause, or step through each action of your test using the toolbar at the top of the Inspector. You can see the current action highlighted in the test code, and matching elements highlighted in the browser window.
+   - ![Image](https://user-images.githubusercontent.com/13063165/212924587-4b84e5f6-b147-40e9-8c75-d7b9ab6b7ca1.png)
+   - [Source](https://playwright.dev/docs/debug#playwright-inspector)
+   - Example: `npm run e2e -- --debug -- FILE_PATH`
 
 ### What
 

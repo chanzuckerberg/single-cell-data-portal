@@ -1,9 +1,7 @@
 import { Classes } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import FilterSearch from "src/components/common/Filter/components/FilterSearch";
-import { CommonThemeProps, getSpaces } from "@czi-sds/components";
-
-const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
+import { spacesXs } from "src/common/theme";
 
 export const Views = styled("div")`
   display: flex;

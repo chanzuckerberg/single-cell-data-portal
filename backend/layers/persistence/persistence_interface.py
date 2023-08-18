@@ -138,6 +138,11 @@ class DatabaseProviderInterface:
         Returns a dataset version by id.
         """
 
+    def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        """
+        Returns the most recent, active Dataset version for a canonical dataset_id
+        """
+
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
         Returns all dataset versions for a canonical dataset_id
@@ -221,7 +226,10 @@ class DatabaseProviderInterface:
         """
 
     def replace_dataset_in_collection_version(
-        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId = None,
     ) -> DatasetVersion:
         """
         Replaces an existing mapping between a collection version and a dataset version
@@ -236,4 +244,9 @@ class DatabaseProviderInterface:
         """
         Returns a list with all collection versions that match the given schema_version. schema_version may contain
          wildcards.
+        """
+
+    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
+        """
+        Returns the previously created dataset version for a dataset.
         """

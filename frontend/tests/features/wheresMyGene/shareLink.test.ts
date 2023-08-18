@@ -2,6 +2,7 @@
 import { Page, expect, test } from "@playwright/test";
 import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGene/components/GeneSearchBar/components/ShareButton/utils";
 import { TEST_URL } from "tests/common/constants";
+import { tryUntil } from "tests/utils/helpers";
 
 import {
   goToWMG,
@@ -10,62 +11,66 @@ import {
 } from "tests/utils/wmgUtils";
 
 const { describe } = test;
+
 const SHARE_BUTTON = "share-button";
-const tissues = ["blood", "lung"];
-const genes = ["DPM1", "TNMD", "TSPAN6"];
-const dataSets = [
+
+const BLOOD_TISSUE = {
+  id: "UBERON:0000178",
+  name: "blood",
+};
+
+const TISSUES = [BLOOD_TISSUE, { id: "UBERON:0002048", name: "lung" }];
+
+const tissueNames = TISSUES.map((tissue) => tissue.name);
+const tissueIds = TISSUES.map((tissue) => tissue.id);
+
+const GENES = ["DPM1", "TNMD", "TSPAN6"];
+
+const DATASETS = [
   {
-    id: "c874f155-9bf9-4928-b821-f52c876b3e48",
-    text: "49 years old male - Fresh PBMCs (1 day post-intubation)",
+    id: "d8da613f-e681-4c69-b463-e94f5e66847f",
+    text: "A molecular single-cell lung atlas of lethal COVID-19",
   },
   {
-    id: "db59611b-42de-4035-93aa-1ed39f38b467",
-    text: "49 years old male - Fresh PBMCs (2 days post-intubation)",
-  },
-  {
-    id: "eeacb0c1-2217-4cf6-b8ce-1f0fedf1b569",
-    text: "49 years old male - Fresh PBMCs (3 days post-intubation)",
-  },
-  {
-    id: "881fe679-c6e0-45a3-9427-c4e81be6921f",
-    text: "66 years old female - Fresh PBMCs (2 days post-intubation)",
-  },
-  {
-    id: "ea786a06-5855-48b7-80d7-0313a21a2044",
-    text: "66 years old female - Fresh PBMCs (3 days post-intubation)",
-  },
-  {
-    id: "456e8b9b-f872-488b-871d-94534090a865",
-    text: "Single-cell atlas of peripheral immune response to SARS-CoV-2 infection",
+    id: "de2c780c-1747-40bd-9ccf-9588ec186cee",
+    text: "Immunophenotyping of COVID-19 and influenza highlights the role of type I interferons in development of severe COVID-19",
   },
 ];
-const diseases = [{ id: "MONDO:0100096", text: "COVID-19" }];
-const ethnicities = ["unknown"];
-const sexes = [
+
+const DISEASES = [{ id: "MONDO:0100096", text: "COVID-19" }];
+
+const ETHNICITIES = ["unknown"];
+
+const SEXES = [
   { id: "PATO:0000383", text: "female" },
   { id: "PATO:0000384", text: "male" },
 ];
 const COMPARE = "disease";
 
-const initialState =
+const SHARE_LINK =
   `${TEST_URL}/gene-expression?` +
-  "datasets=c874f155-9bf9-4928-b821-f52c876b3e48%2Cdb59611b-42de-4035-93aa-1ed39f38b467%2Ceeacb0c1-2217-4cf6-b8ce-1f0fedf1b569%2C881fe679-c6e0-45a3-9427-c4e81be6921f%2Cea786a06-5855-48b7-80d7-0313a21a2044%2C456e8b9b-f872-488b-871d-94534090a865&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2Clung&genes=DPM1%2CTNMD%2CTSPAN6&ver=2&compare=disease";
+  "compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2";
 
 describe("Share link tests", () => {
-  conditionallyRunTests();
+  conditionallyRunTests({ forceRun: true });
 
   test("Should share link with single tissue and single gene", async ({
     page,
     browserName,
   }) => {
     skipFirefox(browserName);
-    const _tissues = ["blood"];
     const _genes = ["SCYL3"];
 
     //set up sate
-    await setupStateAndCopyShareLink(page, _tissues, _genes);
-    //verify link
-    await verifyShareLink(page, LATEST_SHARE_LINK_VERSION, _tissues, _genes);
+    await setupStateAndCopyShareLink(page, [BLOOD_TISSUE.name], _genes);
+
+    // verify link
+    await verifyShareLink({
+      page,
+      linkVersion: LATEST_SHARE_LINK_VERSION,
+      tissueIds: [BLOOD_TISSUE.id],
+      genes: _genes,
+    });
   });
 
   test("Should share link with multiple tissues and multiple genes", async ({
@@ -74,10 +79,15 @@ describe("Share link tests", () => {
   }) => {
     skipFirefox(browserName);
 
-    await setupStateAndCopyShareLink(page, tissues, genes);
+    await setupStateAndCopyShareLink(page, tissueNames, GENES);
 
     // verify link
-    await verifyShareLink(page, LATEST_SHARE_LINK_VERSION, tissues, genes);
+    await verifyShareLink({
+      page,
+      linkVersion: LATEST_SHARE_LINK_VERSION,
+      tissueIds,
+      genes: GENES,
+    });
   });
 
   test("Should generate share link with correct format for all query param types", async ({
@@ -87,55 +97,73 @@ describe("Share link tests", () => {
     skipFirefox(browserName);
 
     // prepare state
-    await goToWMG(page, initialState);
+    await goToWMG(page, SHARE_LINK);
 
     // verify link parameters and app state
-    await verifyShareLink(
-      page,
-      LATEST_SHARE_LINK_VERSION,
-      tissues,
-      genes,
-      dataSets,
-      sexes,
-      diseases,
-      ethnicities,
-      COMPARE
+    await tryUntil(
+      async () => {
+        await verifyShareLink({
+          page,
+          linkVersion: LATEST_SHARE_LINK_VERSION,
+          tissueIds,
+          genes: GENES,
+          datasets: DATASETS,
+          sexes: SEXES,
+          diseases: DISEASES,
+          ethnicities: ETHNICITIES,
+          compare: COMPARE,
+        });
+      },
+      { page }
     );
   });
 });
 
 async function setupStateAndCopyShareLink(
   page: Page,
-  tissues: string[],
+  tissueNames: string[],
   genes: string[]
 ) {
   await goToWMG(page);
   await expect(page.getByTestId(SHARE_BUTTON)).toBeDisabled();
 
   // add tissues and genes
-  await addTissuesAndGenes(page, tissues, genes);
+  await addTissuesAndGenes(page, tissueNames, genes);
   // copy share link
   await page.getByTestId(SHARE_BUTTON).click();
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-async function verifyShareLink(
-  page: Page,
-  version: string,
-  tissues?: string[],
-  genes?: string[],
-  datasets?: Array<any>,
-  sexes?: Array<any>,
-  diseases?: Array<any>,
-  ethnicities?: string[],
-  _compare?: string
-) {
+interface ExpectedParam {
+  id: string;
+  text: string;
+}
+
+async function verifyShareLink({
+  page,
+  linkVersion,
+  tissueIds,
+  genes,
+  datasets,
+  sexes,
+  diseases,
+  ethnicities,
+  compare,
+}: {
+  page: Page;
+  linkVersion: string;
+  tissueIds?: string[];
+  genes?: string[];
+  datasets?: ExpectedParam[];
+  sexes?: ExpectedParam[];
+  diseases?: ExpectedParam[];
+  ethnicities?: string[];
+  compare?: string;
+}) {
   let encodedLink = `${TEST_URL}/gene-expression?`;
-  let isFirstParam = false;
-  let param = "";
-  let data;
+
   // copy link to clipboard
   await page.getByTestId("share-button").click();
+
   const clipboardText: string = await page.evaluate(
     "navigator.clipboard.readText()"
   );
@@ -146,66 +174,82 @@ async function verifyShareLink(
     decodeURIComponent(clipboardText.split("?")[1])
   );
 
+  let isFirstParam = false;
+
   // compare
-  if (_compare !== undefined) {
-    param = "compare";
+  if (compare !== undefined) {
+    const param = "compare";
     isFirstParam = true;
-    await verifyParameter(page, urlParams, param, [_compare]);
-    encodedLink += encodeLink(param, _compare, isFirstParam);
+
+    await verifyParameter(page, urlParams, param, [compare]);
+
+    encodedLink += encodeLink(param, compare, isFirstParam);
   }
 
-  //datasets
+  // datasets
   if (datasets !== undefined) {
-    param = "datasets";
-    data = await verifyParameter(page, urlParams, param, datasets || []);
-    encodedLink += encodeLink(param, data.toString());
+    const param = "datasets";
+
+    const data = await verifyParameter(page, urlParams, param, datasets);
+
+    encodedLink += encodeLink(param, String(data));
   }
 
-  //diseases
+  // diseases
   if (diseases !== undefined) {
-    param = "diseases";
-    data = await verifyParameter(page, urlParams, param, diseases || []);
-    encodedLink += encodeLink(param, data.toString());
+    const param = "diseases";
+
+    const data = await verifyParameter(page, urlParams, param, diseases);
+
+    encodedLink += encodeLink(param, String(data));
   }
 
-  // verify ethnicities
+  // ethnicities
   if (ethnicities !== undefined) {
-    param = "ethnicities";
-    data = await verifyParameter(page, urlParams, param, ethnicities || []);
-    encodedLink += encodeLink(param, data?.toString());
+    const param = "ethnicities";
+
+    const data = await verifyParameter(page, urlParams, param, ethnicities);
+
+    encodedLink += encodeLink(param, String(data));
   }
 
-  // verify sexes
+  // sexes
   if (sexes !== undefined) {
-    param = "sexes";
-    data = await verifyParameter(page, urlParams, param, sexes || []);
-    encodedLink += encodeLink(param, data.toString());
+    const param = "sexes";
+
+    const data = await verifyParameter(page, urlParams, param, sexes);
+
+    encodedLink += encodeLink(param, String(data));
   }
 
-  // verify tissues
-  if (tissues !== undefined) {
-    param = "tissues";
-    data = await verifyParameter(page, urlParams, param, tissues || []);
+  // tissues
+  if (tissueIds !== undefined) {
+    const param = "tissues";
+
+    const data = await verifyParameter(page, urlParams, param, tissueIds);
+
     if (!isFirstParam) {
-      encodedLink += encodeLink(param, data?.toString(), true);
+      encodedLink += encodeLink(param, String(data), true);
     } else {
-      encodedLink += encodeLink(param, data?.toString());
+      encodedLink += encodeLink(param, String(data));
     }
   }
 
-  // verify genes
+  // genes
   if (genes !== undefined) {
-    param = "genes";
-    data = await verifyParameter(page, urlParams, param, genes || []);
-    encodedLink += encodeLink(param, data?.toString());
+    const param = "genes";
+
+    const data = await verifyParameter(page, urlParams, param, genes);
+
+    encodedLink += encodeLink(param, String(data));
   }
 
-  // version
-  param = "ver";
-  data = await verifyParameter(page, urlParams, param, [version]);
-  encodedLink += encodeLink(param, data?.toString());
+  // linkVersion
+  const param = "ver";
+  const data = await verifyParameter(page, urlParams, param, [linkVersion]);
+  encodedLink += encodeLink(param, String(data));
 
-  // verify encoded link
+  // encoded link
   expect(clipboardText).toBe(encodedLink);
 }
 
@@ -216,43 +260,59 @@ async function verifyParameter(
   page: Page,
   urlParams: URLSearchParams,
   param: string,
-  data: Array<any>
+  expectedParams: Array<any>
 ): Promise<string[]> {
-  if (data.length > 0) {
-    let paramValues: string[] = [];
-    // extact array od id attribute for {id: sting, text: string} data
-    const ids = data.map((obj) => obj.id);
-    switch (param) {
-      case "datasets":
-        paramValues = urlParams.get("datasets")?.split(",") || [];
-        // verify datasets have been selected
-        paramValues.forEach(async (_id: string) => {
-          const item = data.find((item) => item.id === _id);
-          if (item) {
-            await expect(page.getByText(item.text)).toBeVisible();
-          }
-        });
-        // verify query param values match
-        expect(ids).toMatchObject(paramValues || {});
-        break;
-      case "tissues":
-      case "genes":
-      case "ethnicities":
-      case "ver":
-      case "compare":
-        paramValues = urlParams.get(param)?.split(",") || [];
-        //verify query param values match
-        expect(data).toMatchObject(paramValues || {});
-        break;
-      default:
-        paramValues = data.map((obj) => obj.id);
-        expect(paramValues).toMatchObject(
-          urlParams.get(param)?.split(",") || {}
+  if (!expectedParams.length) return [];
+
+  // extract array of id attribute for {id: sting, text: string} expectedParams
+  const expectedIds = expectedParams.map((expectedParam) => expectedParam.id);
+
+  switch (param) {
+    case "datasets": {
+      const paramValues = getParamValues(param);
+
+      // verify datasets have been selected
+      paramValues.forEach(async (_id: string) => {
+        const item = expectedParams.find(
+          (expectedParam) => expectedParam.id === _id
         );
+
+        if (item) {
+          await expect(page.getByText(item.text)).toBeVisible();
+        }
+      });
+
+      // verify query param values match
+      expect(paramValues).toMatchObject(expectedIds);
+
+      return paramValues;
     }
-    return paramValues;
+    case "tissues":
+    case "genes":
+    case "ethnicities":
+    case "ver":
+    case "compare": {
+      const paramValues = getParamValues(param);
+
+      // verify query param values match
+      expect(paramValues).toMatchObject(expectedParams);
+
+      return paramValues;
+    }
+    default: {
+      const paramValues = getParamValues(param);
+
+      expect(paramValues).toMatchObject(
+        expectedParams.map((expectedParam) => expectedParam.id)
+      );
+
+      return paramValues;
+    }
   }
-  return [];
+
+  function getParamValues(param: string): string[] {
+    return urlParams.get(param)?.split(",") || [];
+  }
 }
 
 function encodeLink(param: string, data: string, isFirstParam?: boolean) {

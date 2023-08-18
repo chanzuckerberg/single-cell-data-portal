@@ -1,6 +1,7 @@
 import isEqual from "lodash/isEqual";
 import { CompareId, X_AXIS_CHART_HEIGHT_PX } from "../constants";
 import { CellType, SORT_BY } from "../types";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
@@ -181,7 +182,8 @@ function selectOrganism(
     ...state,
     selectedGenes: [],
     selectedOrganismId: action.payload,
-    selectedTissues: [],
+    selectedTissues: EMPTY_ARRAY,
+    selectedFilters: EMPTY_FILTERS,
     cellInfoCellType: null,
   };
 }

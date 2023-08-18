@@ -1224,7 +1224,6 @@ export interface FetchMarkerGeneParams {
   tissueID: string;
   organismID: string;
   test?: "ttest" | "binomtest";
-  version?: 1 | 2;
 }
 
 export interface FetchGeneInfoParams {
@@ -1238,9 +1237,8 @@ export async function fetchMarkerGenes({
   organismID,
   tissueID,
   test = "ttest",
-  version = 1,
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
-  const url = API_URL + replaceV1WithV2(version).WMG_MARKER_GENES;
+  const url = API_URL + API.WMG_MARKER_GENES;
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -1308,7 +1306,6 @@ export function useMarkerGenes({
   organismID,
   tissueID,
   test,
-  version = 1,
 }: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse<MarkerGene>> {
   const { data } = usePrimaryFilterDimensions(2);
   const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
@@ -1342,7 +1339,6 @@ export function useMarkerGenes({
         organismID,
         test,
         tissueID,
-        version,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
         filterMarkerGenes(output.marker_genes).reduce(

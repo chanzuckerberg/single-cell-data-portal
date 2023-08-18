@@ -1,11 +1,5 @@
 import { Icon } from "@czi-sds/components";
-import React, {
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import {
@@ -50,34 +44,17 @@ export const GENE_LABEL_HOVER_CONTAINER_ID = "gene-hover-container";
 
 function GeneButton({
   geneName,
-  genesToDelete,
-  currentMaxLabelHeight,
-  setCurrentMaxLabelHeight,
+  active,
+  currentFont,
+  formattedLabel,
 }: {
+  active: boolean;
+  formattedLabel: string;
+  currentFont: string;
   geneName: string;
-  genesToDelete: string[];
   handleGeneClick: (gene: string) => void;
-  currentMaxLabelHeight: number;
-  setCurrentMaxLabelHeight: Dispatch<SetStateAction<number>>;
 }): JSX.Element {
   const dispatch = useContext(DispatchContext);
-
-  const active = genesToDelete.includes(geneName);
-  const currentFont = `
-    normal
-    ${active ? SELECTED_STYLE.fontWeight : "normal"}
-    ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily}
-  `;
-  const { text: formattedLabel, length } = formatLabel(
-    geneName,
-    X_AXIS_CHART_HEIGHT_PX, // Gene label length is capped to this value
-    currentFont
-  );
-
-  if (dispatch && length && length > currentMaxLabelHeight) {
-    setCurrentMaxLabelHeight(length);
-    dispatch(setXAxisHeight(length + X_AXIS_HOVER_CONTAINER_HEIGHT_PX)); // Account for hover icons
-  }
 
   return (
     <GeneButtonStyle
@@ -125,7 +102,7 @@ function GeneButton({
       </HoverContainer>
       <XAxisLabel className={"gene-label-container"}>
         <XAxisGeneName
-          active={genesToDelete.includes(geneName)}
+          active={active}
           font={currentFont}
           className={`gene-name-${geneName}`}
           data-testid={`gene-name-${geneName}`}
@@ -141,6 +118,7 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
   const { genesToDelete, handleGeneClick } = useDeleteGenes();
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
   const { xAxisHeight } = useContext(StateContext);
+  const dispatch = useContext(DispatchContext);
 
   // This is used to calculate the current longest gene name
   const [currentMaxLabelHeight, setCurrentMaxLabelHeight] = useState(0);
@@ -162,16 +140,39 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
         width={heatmapWidth}
         height={xAxisHeight}
       >
-        {geneNames.map((geneName) => (
-          <GeneButton
-            key={geneName}
-            geneName={geneName}
-            genesToDelete={genesToDelete}
-            handleGeneClick={handleGeneClick}
-            currentMaxLabelHeight={currentMaxLabelHeight}
-            setCurrentMaxLabelHeight={setCurrentMaxLabelHeight}
-          />
-        ))}
+        {geneNames.map((geneName) => {
+          const active = genesToDelete.includes(geneName);
+          const currentFont = `
+          normal
+          ${active ? SELECTED_STYLE.fontWeight : "normal"}
+          ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily}
+        `;
+          const { text: formattedLabel, length } = formatLabel(
+            geneName,
+            X_AXIS_CHART_HEIGHT_PX, // Gene label length is capped to this value
+            currentFont
+          );
+
+          if (length > currentMaxLabelHeight) {
+            setCurrentMaxLabelHeight(length);
+            if (dispatch) {
+              dispatch(
+                setXAxisHeight(length + X_AXIS_HOVER_CONTAINER_HEIGHT_PX)
+              );
+            }
+          }
+
+          return (
+            <GeneButton
+              key={geneName}
+              currentFont={currentFont}
+              formattedLabel={formattedLabel}
+              geneName={geneName}
+              active={active}
+              handleGeneClick={handleGeneClick}
+            />
+          );
+        })}
       </XAxisContainer>
     </XAxisWrapper>
   );

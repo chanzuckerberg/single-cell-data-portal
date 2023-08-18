@@ -177,7 +177,7 @@ def test_get_failure_slack_notification_message_with_dataset_id_none(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Dataset processing job failed! @sc-oncall-eng\n"
+                    "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     "*Owner*: \n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
@@ -228,7 +228,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Dataset processing job failed! @sc-oncall-eng\n"
+                    "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     "*Owner*: \n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
@@ -293,7 +293,7 @@ def test_get_failure_slack_notification_message_with_missing_collection(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Dataset processing job failed! @sc-oncall-eng\n"
+                    "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: \n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
@@ -351,7 +351,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Dataset processing job failed! @sc-oncall-eng\n"
+                    "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: {owner}\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"

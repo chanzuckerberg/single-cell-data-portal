@@ -285,6 +285,7 @@ export default memo(function Filters({
         }
 
         currentOptions = options;
+
         dispatch(
           selectFilters(
             key,

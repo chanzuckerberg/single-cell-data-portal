@@ -1,14 +1,13 @@
 import {
   CommonThemeProps,
   fontBodyS,
+  fontBodyXs,
   fontBodyXxs,
-  getColors,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
+import { gray200, gray400, gray500, primary400 } from "src/common/theme";
 
 const DIVIDER_WIDTH = 2;
-
-const gray200 = (props: CommonThemeProps) => getColors(props)?.gray[200];
 
 export const TableTitleOuterWrapper = styled.div`
   display: flex;
@@ -50,8 +49,7 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
   padding: 0;
   margin: 0;
   font-weight: 600;
-  color: ${(props) =>
-    `${props.isActive ? "#000000" : getColors(props)?.gray[500]}`};
+  color: ${(props) => `${props.isActive ? "#000000" : gray500(props)}`};
 
   &::after {
     content: "";
@@ -61,7 +59,27 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
     width: 100%;
     height: 2px;
     background-color: ${(props) =>
-      `${props.isActive ? getColors(props)?.primary[400] : gray200}`};
+      `${props.isActive ? primary400(props) : gray200(props)}`};
     transition: background-color 0.3s ease;
   }
+`;
+
+export const MarkerGenePagination = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+export const MarkerGeneInfo = styled.div`
+  ${fontBodyS}
+  color: ${gray500};
+`;
+
+export const MarkerGeneTooltipText = styled.div`
+  ${fontBodyXs}
+  font-weight: 500;
+`;
+
+export const MarkerGeneTooltipSubtext = styled.div`
+  ${fontBodyXxs}
+  color: ${gray400};
 `;

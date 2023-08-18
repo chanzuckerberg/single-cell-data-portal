@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getSpaces } from "@czi-sds/components";
+import { CommonThemeProps } from "@czi-sds/components";
 import {
   listCss,
   listItemButtonCss,
@@ -9,6 +9,7 @@ import {
   listItemTextCss,
   scrollbar,
 } from "src/components/common/Filter/components/FilterContent/components/common/style";
+import { spacesXs } from "src/common/theme";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
 const DIVIDER_HEIGHT_PX = 9;
@@ -19,7 +20,6 @@ const MAX_MENU_HEIGHT_PX =
 const MAX_DIVIDED_MENU_HEIGHT_PX =
   MAX_MENU_HEIGHT_PX +
   DIVIDER_HEIGHT_PX; /* Divided menu - max undivided menu height, plus divider height. */
-const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
 
 interface Props extends CommonThemeProps {
   isMenuDivided: boolean;

@@ -1,13 +1,8 @@
 import styled from "@emotion/styled";
-import {
-  ButtonIcon,
-  fontBodyXs,
-  fontBodyXxs,
-  getColors,
-  Icon,
-} from "@czi-sds/components";
+import { ButtonIcon, fontBodyXs, fontBodyXxs, Icon } from "@czi-sds/components";
 import { NotificationWrapper } from "src/components/common/Filter/common/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+import { gray500 } from "src/common/theme";
 
 export const StyledButtonDiv = styled.div`
   display: flex;
@@ -21,13 +16,7 @@ export const StyledLabel = styled.div`
 
   white-space: nowrap;
 
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.gray[500]}
-    `;
-  }}
+  color: ${gray500};
 `;
 
 export const StyledButtonIcon = styled(ButtonIcon)`
@@ -58,11 +47,5 @@ export const StyledNotificationDetails = styled.div`
 
   margin: 0 !important;
 
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.gray[500]}
-    `;
-  }}
+  color: ${gray500};
 `;

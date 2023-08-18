@@ -1,16 +1,18 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontCapsXxs, getColors } from "@czi-sds/components";
+import {
+  Tooltip,
+  fontBodyS,
+  fontBodyXs,
+  fontBodyXxs,
+  fontCapsXxs,
+} from "@czi-sds/components";
+import { gray100, gray500, gray400 } from "src/common/theme";
 
 export const CellGuideCardDescription = styled.div`
   ${fontBodyS}
   font-weight: 400;
   white-space: pre-wrap;
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      background-color: ${colors?.gray[100]};
-    `;
-  }}
+  background-color: ${gray100};
   padding: 12px 16px 12px 16px;
   border-radius: 8px;
 `;
@@ -24,27 +26,34 @@ export const Source = styled.div`
   margin-top: 16px;
   display: flex;
   justify-content: flex-end;
-  gap: 40px;
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  gap: 20px;
+  color: ${gray500};
 `;
 
 export const SourceLink = styled.div`
+  ${fontBodyS}
   white-space: nowrap;
+  align-self: end;
 `;
 
 export const DescriptionHeader = styled.div`
   ${fontCapsXxs}
   font-weight: 600;
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
   margin-bottom: 8px;
+`;
+
+export const StyledTooltip = styled(Tooltip)`
+  margin-right: 16px;
+`;
+
+export const ChatGptTooltipText = styled.div`
+  ${fontBodyXs}
+  color: #FFFFFF;
+  font-weight: 500;
+`;
+
+export const ChatGptTooltipSubtext = styled.div`
+  ${fontBodyXxs}
+  color: ${gray400};
 `;

@@ -20,7 +20,15 @@ from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProvider
-from scripts.cxg_admin_scripts import dataset_details, deletions, migrate, reprocess_datafile, tombstones, updates
+from scripts.cxg_admin_scripts import (
+    dataset_details,
+    deletions,
+    migrate,
+    reprocess_datafile,
+    schema_migration,
+    tombstones,
+    updates,
+)
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -351,6 +359,18 @@ def migrate_redesign_correct_published_at(ctx):
     ./scripts/cxg_admin.py --deployment dev migrate-redesign-debug
     """
     migrate.migrate_redesign_correct_published_at(ctx)
+
+
+@cli.command()
+@click.pass_context
+@click.argument("report_patj", type=click.Path(exists=True))
+def rollback_datasets(ctx, report_path: str):
+    """
+    Used to rollback a datasets to a previous version.
+
+    ./scripts/cxg_admin.py --deployment dev rollback-dataset report.json
+    """
+    schema_migration.rollback_dataset(ctx, report_path)
 
 
 if __name__ == "__main__":

@@ -23,10 +23,11 @@ import Link from "../CellGuideCard/components/common/Link";
 import Head from "next/head";
 import { titleize } from "src/common/utils/string";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
-
-export const TISSUE_CARD_HEADER_NAME = "tissue-card-header-name";
-export const TISSUE_CARD_HEADER_TAG = "tissue-card-header-tag";
-export const TISSUE_CARD_UBERON_DESCRIPTION = "tissue-card-uberon-description";
+import {
+  TISSUE_CARD_HEADER_NAME,
+  TISSUE_CARD_HEADER_TAG,
+  TISSUE_CARD_UBERON_DESCRIPTION,
+} from "src/views/CellGuide/components/TissueCard/constants";
 
 interface Props {
   // From getServerSideProps
@@ -118,6 +119,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
         </DescriptionWrapper>
         <FullScreenProvider>
           <OntologyDagView
+            key={tissueId}
             tissueId={tissueId}
             tissueName={tissueName}
             skinnyMode={false}

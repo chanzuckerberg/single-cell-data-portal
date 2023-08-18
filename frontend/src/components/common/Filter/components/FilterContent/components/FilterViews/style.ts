@@ -1,7 +1,5 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getSpaces } from "@czi-sds/components";
-
-const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
+import { spacesXs } from "src/common/theme";
 
 export const ViewsMenu = styled.span`
   display: grid;

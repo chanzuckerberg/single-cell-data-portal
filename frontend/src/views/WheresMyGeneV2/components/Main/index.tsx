@@ -65,6 +65,7 @@ import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
+import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -398,6 +399,10 @@ export default function WheresMyGene(): JSX.Element {
           <ScreenTint isDownloading={downloadStatus} />
 
           <HeatMap
+            /**
+             * (thuang): Use the selected organism ID to reset the heatmap state
+             */
+            key={selectedOrganismId}
             echartsRendererMode={echartsRendererMode}
             cellTypeSortBy={sortBy.cellTypes}
             geneSortBy={sortBy.genes}
@@ -410,17 +415,20 @@ export default function WheresMyGene(): JSX.Element {
             }
             scaledMeanExpressionMax={scaledMeanExpressionMax}
             scaledMeanExpressionMin={scaledMeanExpressionMin}
-            selectedOrganismId={selectedOrganismId}
             allChartProps={allChartProps}
             setAllChartProps={setAllChartProps}
             setTissuesByName={setTissuesByName}
+            tissuesByName={tissuesByName}
             expandedTissues={expandedTissues}
             setExpandedTissues={setExpandedTissues}
           />
         </Wrapper>
       </View>
 
-      <BottomBanner includeSurveyLink />
+      <BottomBanner
+        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
+        includeSurveyLink
+      />
     </>
   );
 }

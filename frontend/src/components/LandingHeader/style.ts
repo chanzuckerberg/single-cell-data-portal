@@ -1,12 +1,10 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getSpaces } from "@czi-sds/components";
 import { PT_TEXT_COLOR } from "../common/theme";
 import Nav from "src/components/Header/components/Nav";
 import { NavDivider } from "src/components/Header/components/Nav/components/NavDivider/style";
+import { spacesL, spacesXl } from "src/common/theme";
 
 export const HEADER_HEIGHT_PX = 48;
-const spacesL = (props: CommonThemeProps) => getSpaces(props)?.l;
-const spacesXl = (props: CommonThemeProps) => getSpaces(props)?.xl;
 
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
