@@ -1,0 +1,94 @@
+  pw:api => selectors.setTestIdAttribute started +3ms
+  pw:api => browser.newContext started +0ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +50ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +6ms
+  pw:api => tracing.start started +9ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +40ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +11ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +5ms
+  pw:api   "commit" event fired +98ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +21ms
+  pw:api   navigated to "about:blank" +49ms
+  pw:api <= page.goto succeeded +138ms
+  pw:api   "networkidle" event fired +2s
+  pw:api =>  started +587ms
+  pw:api <= page.waitForResponse succeeded +3ms
+  pw:api => locator.click started +1ms
+  pw:api <=  succeeded +36ms
+  pw:api waiting for getByTestId('add-gene-btn') +61ms
+  pw:api   locator resolved to <button tabindex="0" type="button" sdssize="medium" id="…>…</button> +246ms
+  pw:api attempting click action +44ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +72ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +33ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +31ms
+  pw:api <= locator.click succeeded +1s
+  pw:api => locator.type started +2ms
+  pw:api waiting for getByPlaceholder('Search or paste comma separated gene names') +1s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +11ms
+  pw:api   locator resolved to <input value="" id="mui-8" type="search" role="combobox…/> +28ms
+  pw:api elementHandle.type("FGR") +2ms
+  pw:api <= locator.type succeeded +443ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByText('FGR') +9ms
+  pw:api   locator resolved to <span class="primary-text css-g93qdt">FGR</span> +9ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +8ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +8ms
+  pw:api   click action done +537ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +14ms
+  pw:api <= locator.click succeeded +28ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +65ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByTestId('gene-name-FGR') +64ms
+  pw:api   locator resolved to <span data-testid="gene-name-FGR" class="gene-name-FGR…>FGR</span> +9ms
+  pw:api <= locator.textContent succeeded +13ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('gene-name-FGR') +12ms
+  pw:api   locator resolved to <span data-testid="gene-name-FGR" class="gene-name-FGR…>FGR</span> +12ms
+  pw:api attempting hover action +3ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +56ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +8ms
+  pw:api   hover action done +29ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +26ms
+  pw:api <= locator.hover succeeded +16ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +31ms
+  pw:api waiting for getByTestId('gene-info-icon-FGR') +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" alt="disp…/> +34ms
+  pw:api <= expect.toBeVisible succeeded +22ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +32ms
+  pw:api waiting for getByTestId('gene-delete-icon-FGR') +0ms
+  pw:api   locator resolved to <div data-testid="gene-delete-icon-FGR" class="gene-d…>…</div> +26ms
+  pw:api <= expect.toBeVisible succeeded +31ms
+  pw:api taking page screenshot +709ms
+  pw:api => browserContext.close started +246ms
+  pw:api <= browserContext.close succeeded +165ms
