@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Dict
 
 
 @dataclass
@@ -9,4 +8,4 @@ class ComputationalMarkerGenes:
     marker_score: float
     symbol: str
     name: str
-    groupby_dims: Dict[str, str]
+    groupby_dims: dict[str, str]

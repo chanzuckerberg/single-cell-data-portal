@@ -24,18 +24,11 @@ def nanpercentile_2d(arr: np.ndarray, percentile: float, axis: int) -> np.ndarra
     -------
     The specified percentile of the 2D array along the specified axis.
     """
-    if axis == 0:
-        result = np.empty(arr.shape[1])
-        for i in prange(arr.shape[1]):
-            arr_column = arr[:, i]
-            result[i] = nanpercentile(arr_column, percentile)
-        return result
-    else:
-        result = np.empty(arr.shape[0])
-        for i in prange(arr.shape[0]):
-            arr_row = arr[i, :]
-            result[i] = nanpercentile(arr_row, percentile)
-        return result
+    result = np.empty(arr.shape[axis])
+    for i in prange(arr.shape[axis]):
+        arr_column = arr[:, i] if axis == 1 else arr[i, :]
+        result[i] = nanpercentile(arr_column, percentile)
+    return result
 
 
 @njit
@@ -133,6 +126,8 @@ def post_process_stats(
     A dictionary mapping marker genes to their statistics.
     """
 
+    # parent nodes msut not be compared to their children because they share expressions,
+    # since the expressions are rolled up across descendants
     is_colinear = np.array([are_cell_types_colinear(cell_type, cell_type_target) for cell_type in cell_types_context])
     effects[is_colinear] = np.nan
     pvals[is_colinear] = np.nan
@@ -145,7 +140,6 @@ def post_process_stats(
 
     effects[effects == 0] = np.nan
 
-    # pvals = np.array([stats.combine_pvalues(x[np.invert(np.isnan(x))] + 1e-300)[-1] for x in pvals.T])
     pvals = np.sort(pvals, axis=0)[int(np.round(0.05 * pvals.shape[0]))]
 
     markers = np.array(genes)[np.argsort(-effects)]

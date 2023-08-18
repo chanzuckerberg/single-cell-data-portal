@@ -126,9 +126,7 @@ class MarkerGenesCalculator:
         ]
 
         # group by gene expressions
-        expressions_df = expressions_df.groupby(self.groupby_terms_with_celltype + ["gene_ontology_term_id"]).sum(
-            numeric_only=True
-        )
+        expressions_df = expressions_df.groupby(self.groupby_terms_with_celltype_and_gene).sum(numeric_only=True)
         expressions_df = expressions_df.reset_index()
         expressions_df = expressions_df[
             expressions_df["cell_type_ontology_term_id"].isin(self.all_cell_type_ids_in_corpus)
