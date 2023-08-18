@@ -6,7 +6,6 @@ import {
   TableUnavailableContainer,
   TableUnavailableHeader,
   TableUnavailableDescription,
-  StyledDivider,
 } from "../common/style";
 import Table from "../common/Table";
 import Link from "../common/Link";
@@ -220,7 +219,6 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
       <TableTitleWrapper>
         <TableTitle>Data</TableTitle>
       </TableTitleWrapper>
-      <StyledDivider />
 
       {tableRows.length > 0 ? (
         <div>
