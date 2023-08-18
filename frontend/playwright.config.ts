@@ -11,7 +11,11 @@ import { LOGIN_STATE_FILENAME } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
 import featureFlags from "./tests/common/featureFlags";
 
-const CICD_MAX_FAILURE = 2;
+/**
+ * (thuang): Playwright takes retries as part of the maxFailures count, so we
+ * need to set maxFailures to a high number to allow retries.
+ */
+const CICD_MAX_FAILURE = 10;
 
 expect.extend(matchers);
 
