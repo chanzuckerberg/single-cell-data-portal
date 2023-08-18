@@ -120,7 +120,7 @@ class MarkerGenesCalculator:
         # roll up the cell counts
         universe_cell_counts_df = rollup_across_cell_type_descendants(cell_counts_df.reset_index())
         # remove groups that still have 0 cells after the rollup operation
-        universe_cell_counts_df = universe_cell_counts_df[cell_counts_df["n_cells"] > 0]
+        universe_cell_counts_df = universe_cell_counts_df[universe_cell_counts_df["n_cells"] > 0]
         # remake the multi-index
         universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
         return universe_cell_counts_df, expressions_df
