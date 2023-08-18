@@ -71,7 +71,7 @@ def format_citation_dp(message: dict) -> str:
     Parameters
     ----------
     message : dict
-        The message containing publication details from the /collections API.
+        The message containing publisher_metadata from the /collections API.
 
     Returns
     -------
