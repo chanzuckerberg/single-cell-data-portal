@@ -734,7 +734,7 @@ class OntologyTreeBuilder:
         return copy.deepcopy(self.ontology_graph)
 
 
-def _getExpandedData(ontology_graph: OntologyTree, isExpandedNodes=None) -> Dict[str, list[str]]:
+def _getExpandedData(ontology_graph: OntologyTree, isExpandedNodes=None) -> list[str]:
     """
     This function gets the cell type ontology term ids of the nodes that are expanded by default.
 
