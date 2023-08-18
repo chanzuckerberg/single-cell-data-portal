@@ -103,6 +103,8 @@ def post_process_stats(cell_type_target, cell_types_context, genes, pvals, effec
 
 def query_gene_info_for_gene_description(gene_id: str) -> str:
     API_URL = os.getenv("API_URL")
+    if API_URL is None:
+        API_URL = "https://api.cellxgene.dev.single-cell.czi.technology"
     a = requests.get(f"{API_URL}/gene_info/v1/gene_info?gene={gene_id}")
     if a.status_code == 200:
         r = a.json()
