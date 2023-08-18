@@ -11,9 +11,7 @@ import { Global } from "@emotion/react";
 import { useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-
-export const CELL_GUIDE_CARD_NAVIGATION_SIDEBAR =
-  "cell-guide-card-navigation-sidebar";
+import { CELL_GUIDE_CARD_NAVIGATION_SIDEBAR } from "src/views/CellGuide/components/CellGuideCard/components/CellGuideCardSidebar/constants";
 
 export default function CellGuideCardSidebar({
   items,

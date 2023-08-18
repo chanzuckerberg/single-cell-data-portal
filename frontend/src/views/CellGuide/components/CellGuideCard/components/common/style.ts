@@ -1,18 +1,19 @@
 import styled from "@emotion/styled";
-import { fontHeaderM, fontBodyXxs, fontBodyS } from "@czi-sds/components";
+import { fontBodyXxs, fontBodyS, fontHeaderL } from "@czi-sds/components";
 import { Divider } from "@mui/material";
 import { gray500 } from "src/common/theme";
 
 export const TableTitle = styled.div`
-  ${fontHeaderM}
+  ${fontHeaderL}
   cursor: default;
+  font-weight: 600;
 `;
 
 export const TableTitleWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-top: 48px;
+  margin-top: 80px;
   margin-bottom: 8px;
 `;
 
