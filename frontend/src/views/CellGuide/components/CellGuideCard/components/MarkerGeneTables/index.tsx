@@ -24,6 +24,10 @@ import {
   TableTitleOuterWrapper,
   StyledHeadCellContent,
   MarkerStrengthContainer,
+  MarkerGenePagination,
+  MarkerGeneInfo,
+  MarkerGeneTooltipText,
+  MarkerGeneTooltipSubtext,
 } from "./style";
 import Table from "../common/Table";
 import DropdownSelect from "../common/DropdownSelect";
@@ -85,9 +89,10 @@ const tableColumnNamesEnrichedGenes: Record<
     <div>
       <StyledHeadCellContent>
         Marker Score
-        <HelpTooltipWrapper
+        <HelpTooltip
+          dark
           buttonDataTestId={MARKER_SCORE_TOOLTIP_TEST_ID}
-          content={
+          text={
             <>
               Marker score interpretation:
               <br />
@@ -114,9 +119,10 @@ const tableColumnNamesEnrichedGenes: Record<
   me: (
     <StyledHeadCellContent>
       Expression Score
-      <HelpTooltipWrapper
+      <HelpTooltip
+        dark
         buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
-        content={
+        text={
           <div>
             The expression score is the average{" "}
             <a
@@ -135,9 +141,10 @@ const tableColumnNamesEnrichedGenes: Record<
   pc: (
     <StyledHeadCellContent>
       % of Cells
-      <HelpTooltipWrapper
+      <HelpTooltip
+        dark
         buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
-        content={
+        text={
           <div>
             Percentage of cells expressing a gene in the cell type. These
             numbers are calculated after cells with{" "}
@@ -186,40 +193,45 @@ type TableRow = (TableRowEnrichedGenes | TableRowCanonicalGenes) & {
 // Tooltip components
 const enrichedGenesTooltipComponent = (
   <div>
-    {"Computational marker genes are derived from the "}
-    <Link label={"CELLxGENE Census"} url={CENSUS_LINK} />
-    {". They are computed utilizing the same methodology as featured in our "}
-    <Link
-      label={"Find Marker Genes feature from the Gene Expression application"}
-      url={ROUTES.FMG_DOCS}
-    />
-    {"."}
+    <MarkerGeneTooltipText>
+      {"Computational marker genes are derived from the "}
+      <Link label={"CELLxGENE Census"} url={CENSUS_LINK} />
+      {". They are computed utilizing the same methodology as featured in our "}
+      <Link
+        label={"Find Marker Genes feature from the Gene Expression application"}
+        url={ROUTES.FMG_DOCS}
+      />
+      {"."}
+    </MarkerGeneTooltipText>
   </div>
 );
 const canonicalMarkerGenesTooltipComponent = (
   <div>
-    {
-      "Canonical marker genes and associated publications were derived from the "
-    }
-    <Link
-      label={"Anatomical Structures, Cell Types and Biomarkers (ASCT+B)"}
-      url={"https://humanatlas.io/asctb-tables"}
-    />
-    {
-      " tables from the 5th Human Reference Atlas release (July 2023). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
-    }
-    <br />
-    <br />
-    <Link
-      label={
-        <i>
-          Börner, Katy, et al. "Anatomical structures, cell types and biomarkers
-          of the Human Reference Atlas." Nature cell biology 23.11 (2021):
-          1117-1128.
-        </i>
+    <MarkerGeneTooltipText>
+      {
+        "Canonical marker genes and associated publications were derived from the "
       }
-      url={"https://www.nature.com/articles/s41556-021-00788-6"}
-    />
+      <Link
+        label={"Anatomical Structures, Cell Types and Biomarkers (ASCT+B)"}
+        url={"https://humanatlas.io/asctb-tables"}
+      />
+      {
+        " tables from the 5th Human Reference Atlas release (July 2023). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+      }
+    </MarkerGeneTooltipText>
+    <br />
+    <MarkerGeneTooltipSubtext>
+      <Link
+        label={
+          <i>
+            Börner, Katy, et al. "Anatomical structures, cell types and
+            biomarkers of the Human Reference Atlas." Nature cell biology 23.11
+            (2021): 1117-1128.
+          </i>
+        }
+        url={"https://www.nature.com/articles/s41556-021-00788-6"}
+      />
+    </MarkerGeneTooltipSubtext>
   </div>
 );
 
@@ -513,12 +525,8 @@ const MarkerGeneTables = ({
                 track(EVENTS.CG_CANONICAL_TAB_CLICKED);
               }}
             >
-              Canonical (HuBMAP)
+              Canonical
             </TableSelectorButton>
-            <HelpTooltip
-              buttonDataTestId={MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID}
-              text={canonicalMarkerGenesTooltipComponent}
-            />
           </FlexRow>
           <FlexRow>
             <TableSelectorButton
@@ -530,23 +538,42 @@ const MarkerGeneTables = ({
                 track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED);
               }}
             >
-              Computational (CZI)
+              Computational
             </TableSelectorButton>
-            <HelpTooltip
-              buttonDataTestId={MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID}
-              text={enrichedGenesTooltipComponent}
-            />
           </FlexRow>
         </TableSelectorRow>
       </TableTitleOuterWrapper>
       {tableRows.length > 0 ? (
         <div>
           {tableComponent}
-          <Pagination
-            count={pageCount}
-            page={page}
-            onChange={handlePageChange}
-          />
+          <MarkerGenePagination>
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={handlePageChange}
+            />
+            {activeTable === 0 ? (
+              <MarkerGeneInfo>
+                Source: HuBMAP
+                <HelpTooltip
+                  dark
+                  placement="top-end"
+                  buttonDataTestId={MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID}
+                  text={canonicalMarkerGenesTooltipComponent}
+                />
+              </MarkerGeneInfo>
+            ) : (
+              <MarkerGeneInfo>
+                Source: CZI
+                <HelpTooltip
+                  dark
+                  placement="top-end"
+                  buttonDataTestId={MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID}
+                  text={enrichedGenesTooltipComponent}
+                />
+              </MarkerGeneInfo>
+            )}
+          </MarkerGenePagination>
         </div>
       ) : (
         tableUnavailableComponent
@@ -554,18 +581,5 @@ const MarkerGeneTables = ({
     </div>
   );
 };
-
-interface HelpTooltipWrapperProps {
-  buttonDataTestId: string;
-  content: ReactElement;
-}
-function HelpTooltipWrapper({
-  buttonDataTestId,
-  content,
-}: HelpTooltipWrapperProps) {
-  return (
-    <HelpTooltip dark buttonDataTestId={buttonDataTestId} text={content} />
-  );
-}
 
 export default MarkerGeneTables;
