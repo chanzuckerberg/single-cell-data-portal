@@ -26,7 +26,7 @@ def nanpercentile_2d(arr: np.ndarray, percentile: float, axis: int) -> np.ndarra
     """
     result = np.empty(arr.shape[axis])
     for i in prange(arr.shape[axis]):
-        arr_column = arr[:, i] if axis == 1 else arr[i, :]
+        arr_column = arr[:, i] if axis == 0 else arr[i, :]
         result[i] = nanpercentile(arr_column, percentile)
     return result
 
