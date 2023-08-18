@@ -239,18 +239,17 @@ interface Props {
   cellTypeId: string;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
   cellTypeName: string;
+  organName: string;
 }
 
 const MarkerGeneTables = ({
   cellTypeId,
   cellTypeName,
   setGeneInfoGene,
+  organName,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
-  const [selectedOrganCanonical, setSelectedOrganCanonical] = useState("");
-  const [selectedOrganComputational, setSelectedOrganComputational] =
-    useState("");
   const [selectedOrganismComputational, setSelectedOrganismComputational] =
     useState("");
   const [computationalMarkerGenes, setComputationalMarkerGenes] =
@@ -260,22 +259,6 @@ const MarkerGeneTables = ({
 
   const { data: enrichedGenes } = useEnrichedGenes(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
-
-  // useEffect(() => {
-  //   setPage(1);
-  //   setSelectedOrganismComputational("");
-  //   setSelectedOrganComputational("");
-  //   setSelectedOrganCanonical("");
-  //   setActiveTable(0);
-
-  //   return () => {
-  //     setSelectedOrganismComputational("");
-  //     setSelectedOrganComputational("");
-  //     setSelectedOrganCanonical("");
-  //     setActiveTable(0);
-  //     setPage(1);
-  //   };
-  // }, [cellTypeId]);
 
   useEffect(() => {
     if (enrichedGenes) {
@@ -299,7 +282,7 @@ const MarkerGeneTables = ({
     selectedOrganismFilter: selectedOrganismFilterComputational,
   } = useComputationalMarkerGenesTableRowsAndFilters({
     genes: computationalMarkerGenes,
-    selectedOrgan: selectedOrganComputational,
+    selectedOrgan: organName,
     selectedOrganism: selectedOrganismComputational,
   });
 
@@ -310,7 +293,7 @@ const MarkerGeneTables = ({
     selectedOrganFilter: selectedOrganFilterCanonical,
   } = useCanonicalMarkerGenesTableRowsAndFilters({
     genes: canonicalMarkerGenes,
-    selectedOrgan: selectedOrganCanonical,
+    selectedOrgan: organName,
   });
 
   const uniqueOrganisms = activeTable
@@ -415,14 +398,6 @@ const MarkerGeneTables = ({
   ) => {
     setSelectedOrganismComputational(event.target.value as string);
   };
-  const handleChangeOrganCanonical = (event: SelectChangeEvent<unknown>) => {
-    setSelectedOrganCanonical(event.target.value as string);
-  };
-  const handleChangeOrganComputational = (
-    event: SelectChangeEvent<unknown>
-  ) => {
-    setSelectedOrganComputational(event.target.value as string);
-  };
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
   const tableComponent = useMemo(
@@ -477,9 +452,6 @@ const MarkerGeneTables = ({
   const selectedOptionOrgan = activeTable
     ? selectedOrganFilterComputational
     : selectedOrganFilterCanonical;
-  const handleChangeOrgan = activeTable
-    ? handleChangeOrganComputational
-    : handleChangeOrganCanonical;
   return (
     <div>
       <TableTitleWrapper>
@@ -494,14 +466,6 @@ const MarkerGeneTables = ({
                 options={uniqueOrganisms}
                 selectedOption={selectedOrganismFilterComputational}
                 testId={CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
-              />
-            )}
-            {uniqueOrgans.length > 0 && (
-              <DropdownSelect
-                handleChange={handleChangeOrgan}
-                options={uniqueOrgans}
-                selectedOption={selectedOptionOrgan}
-                testId={CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
               />
             )}
             <Link

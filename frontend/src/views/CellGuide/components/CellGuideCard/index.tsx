@@ -213,6 +213,7 @@ export default function CellGuideCard({
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}
+            organName={selectedOrgan}
           />
 
           {/* Source Data section */}
