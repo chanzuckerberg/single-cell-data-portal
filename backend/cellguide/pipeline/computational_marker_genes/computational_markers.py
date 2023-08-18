@@ -56,7 +56,7 @@ class MarkerGenesCalculator:
 
         self.groupby_terms = groupby_terms
         self.groupby_terms_with_celltype = groupby_terms + ["cell_type_ontology_term_id"]
-        self.groupby_terms_with_celltype_and_gene = self.groupby_terms_with_celltype + ["cell_type_ontology_term_id"]
+        self.groupby_terms_with_celltype_and_gene = self.groupby_terms_with_celltype + ["gene_ontology_term_id"]
 
         # load the cell counts and expression summary cubes fully in memory
         cell_counts_df = snapshot.cell_counts_cube.df[:]
