@@ -193,7 +193,7 @@ export default function CellGuideCard({
               { elementRef: sectionRef0, title: "Intro" },
               { elementRef: sectionRef1, title: "Cell Ontology" },
               { elementRef: sectionRef2, title: "Marker Genes" },
-              { elementRef: sectionRef3, title: "Source Data" },
+              { elementRef: sectionRef3, title: "Data" },
             ]}
           />
         )}
