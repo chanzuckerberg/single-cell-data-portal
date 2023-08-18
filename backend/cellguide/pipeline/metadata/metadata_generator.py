@@ -73,7 +73,7 @@ def generate_cellguide_tissue_card_metadata(all_tissue_ids_in_corpus: list[str])
 
     Note that we will be filtering out obsolete tissues.
     """
-    logger.info(f"Generating cellguide tissue card metadata for {len(all_tissue_ids_in_corpus)} cell types...")
+    logger.info(f"Generating cellguide tissue card metadata for {len(all_tissue_ids_in_corpus)} tissues...")
     with warnings.catch_warnings():
         # loading uberon ontology has some warnings that we don't care about
         warnings.simplefilter("ignore")

@@ -1,6 +1,5 @@
 import json
 import logging
-import pathlib
 from typing import Dict, Tuple
 
 import pandas as pd
@@ -16,7 +15,8 @@ from backend.cellguide.pipeline.canonical_marker_genes.utils import (
     clean_doi,
     get_title_and_citation_from_doi,
 )
-from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL, ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME
+from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL
+from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.wmg.data.ontology_labels import ontology_term_label
 
 logger = logging.getLogger(__name__)
@@ -42,24 +42,8 @@ class CanonicalMarkerGenesCompiler:
 
         self.wmg_human_genes = wmg_human_genes
 
-        file_path = self._get_symbol_to_gene_descriptions_file_path()
-        gene_id_to_name = pd.read_csv(file_path, sep="\t")
-        self.gene_id_to_name = gene_id_to_name.set_index("Symbols")["Description"].to_dict()
-
-    def _get_symbol_to_gene_descriptions_file_path(self) -> pathlib.Path:
-        """
-        Returns the file path for the table mapping gene symbols to gene descriptions.
-
-        Returns
-        -------
-        pathlib.Path: The file path for the ensembl to gene descriptions file.
-        """
-
-        return (
-            pathlib.Path(__file__)
-            .parent.absolute()
-            .parent.joinpath("fixtures", ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME)
-        )
+        gene_metadata = get_gene_id_to_name_and_symbol()
+        self.gene_id_to_name = gene_metadata.gene_id_to_name
 
     def _get_tissue_id(self, anatomical_structures: list[AnatomicalStructure]) -> str:
         """
