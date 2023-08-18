@@ -22,6 +22,39 @@ permissions:
   deployments: write
 
 jobs:
+  submit-codecoverage:
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v3
+        with:
+          name: coverage
+          path: .
+      - name: coverage report
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make coverage/report-xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          env_vars: OS,PYTHON
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
   build-frontend-backend-images:
     runs-on: ubuntu-22.04
     steps:
