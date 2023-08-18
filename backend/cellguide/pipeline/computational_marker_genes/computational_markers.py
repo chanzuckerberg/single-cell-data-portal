@@ -113,17 +113,17 @@ class MarkerGenesCalculator:
         )
         index = index.set_names(self.groupby_terms_with_celltype)
         # instantiate an empty dataframe with the groups from the cartesian product as the index
-        cell_counts_df = pd.DataFrame(index=index)
-        cell_counts_df["n_cells"] = 0
+        universe_cell_counts_df = pd.DataFrame(index=index)
+        universe_cell_counts_df["n_cells"] = 0
         # populate the dataframe with the number of cells from the groups in the cell counts df
-        cell_counts_df["n_cells"][cell_counts_df.index] = cell_counts_df["n_cells"]
+        universe_cell_counts_df["n_cells"][cell_counts_df.index] = cell_counts_df["n_cells"]
         # roll up the cell counts
-        cell_counts_df = rollup_across_cell_type_descendants(cell_counts_df.reset_index())
+        universe_cell_counts_df = rollup_across_cell_type_descendants(cell_counts_df.reset_index())
         # remove groups that still have 0 cells after the rollup operation
-        cell_counts_df = cell_counts_df[cell_counts_df["n_cells"] > 0]
+        universe_cell_counts_df = universe_cell_counts_df[cell_counts_df["n_cells"] > 0]
         # remake the multi-index
-        cell_counts_df = cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
-        return cell_counts_df, expressions_df
+        universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
+        return universe_cell_counts_df, expressions_df
 
     def get_computational_marker_genes(self) -> ComputationalMarkerGenes:
         cell_counts_df = self.cell_counts_df
