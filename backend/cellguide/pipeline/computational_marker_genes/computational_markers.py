@@ -8,6 +8,7 @@ import pandas as pd
 from backend.cellguide.pipeline.computational_marker_genes.types import ComputationalMarkerGenes
 from backend.cellguide.pipeline.computational_marker_genes.utils import (
     post_process_stats,
+    query_gene_info_for_gene_description,
     run_ttest,
 )
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
@@ -40,11 +41,20 @@ class MarkerGenesCalculator:
             for i in snapshot.primary_filter_dimensions["tissue_terms"][organism]
             for k, v in i.items()
         }
-
         gene_metadata = get_gene_id_to_name_and_symbol()
         self.gene_id_to_name = gene_metadata.gene_id_to_name
         self.gene_id_to_symbol = gene_metadata.gene_id_to_symbol
 
+        # add the primary filter gene metadata to the gene_id_to_symbol dictionary read from Ensembl
+        # this is done in case the gene metadata file is missing some gene IDs, which could occur
+        # due to mismatch in gene reference versions.
+        primary_filters__gene_id_to_symbol = {
+            k: v
+            for organism in snapshot.primary_filter_dimensions["gene_terms"]
+            for i in snapshot.primary_filter_dimensions["gene_terms"][organism]
+            for k, v in i.items()
+        }
+        self.gene_id_to_symbol.update(primary_filters__gene_id_to_symbol)
         # Groupby variables used to group the data various operations
         # cell types are removed as they are treated differently
         # all other metadata (like tissue and organism) are dimensions across
@@ -66,6 +76,18 @@ class MarkerGenesCalculator:
         (self.cell_counts_df, self.expressions_df) = self._prepare_cell_counts_and_gene_expression_dfs(
             cell_counts_df, expressions_df
         )
+
+    def _get_gene_symbol_from_id(self, gene_id: str) -> str:
+        return self.gene_id_to_symbol.get(gene_id, gene_id)
+
+    def _get_gene_name_from_id(self, gene_id: str) -> str:
+        if gene_id in self.gene_id_to_name:
+            return self.gene_id_to_name[gene_id]
+        else:
+            gene_name = query_gene_info_for_gene_description(gene_id)
+            if gene_name in self.gene_id_to_symbol:
+                gene_name = self.gene_id_to_symbol[gene_name]
+            return gene_name
 
     def _prepare_cell_counts_and_gene_expression_dfs(
         self, cell_counts_df: pd.DataFrame, expressions_df: pd.DataFrame
@@ -331,8 +353,8 @@ class MarkerGenesCalculator:
                 "me": s / nnz if nnz > 0 else 0,
                 "pc": nnz / n_cells,
                 "marker_score": es,
-                "symbol": self.gene_id_to_symbol[gene],
-                "name": self.gene_id_to_name.get(gene, self.gene_id_to_symbol[gene]),
+                "symbol": self._get_gene_symbol_from_id(gene),
+                "name": self._get_gene_name_from_id(gene),
             }
             groupby_dims = {}
             for i, term in enumerate(self.groupby_terms):

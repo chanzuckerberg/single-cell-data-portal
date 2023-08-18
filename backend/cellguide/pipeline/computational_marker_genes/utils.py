@@ -1,4 +1,7 @@
+import os
+
 import numpy as np
+import requests
 from numba import njit, prange
 from scipy import stats
 
@@ -96,3 +99,13 @@ def post_process_stats(cell_type_target, cell_types_context, genes, pvals, effec
             statistics.append({"p_value": pi, "effect_size": ei})
             final_markers.append(markers[i])
     return dict(zip(list(final_markers), statistics))
+
+
+def query_gene_info_for_gene_description(gene_id: str) -> str:
+    API_URL = os.getenv("API_URL")
+    a = requests.get(f"{API_URL}/gene_info/v1/gene_info?gene={gene_id}")
+    if a.status_code == 200:
+        r = a.json()
+        return r["name"]
+    else:
+        return gene_id
