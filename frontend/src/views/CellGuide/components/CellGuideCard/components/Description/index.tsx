@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
 import {
   CellGuideCardDescription,
+  ChatGptTooltipSubtext,
+  ChatGptTooltipText,
   DescriptionHeader,
   Source,
   SourceLink,
+  StyledTooltip,
   Wrapper,
 } from "./style";
 import { useDescription, useClDescription } from "src/common/queries/cellGuide";
-import { Tooltip } from "@czi-sds/components";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { CELL_GUIDE_CORRECTION_SURVEY_LINK } from "src/common/constants/airtableLinks";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
+import { StyledIconImage } from "../common/HelpTooltip/style";
 import {
   CELL_GUIDE_CARD_CL_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
@@ -105,29 +109,35 @@ export default function Description({
           </div>
 
           <SourceLink>
-            {"Source: "}
-            <Tooltip
+            {"Source: ChatGPT "}
+            <StyledTooltip
+              sdsStyle="dark"
               leaveDelay={0}
               placement="left"
               width="wide"
               arrow
+              slotProps={{
+                tooltip: {
+                  style: {
+                    maxWidth: 550, // This is needed because SDS bug where width prop doesn't affect dark sdsStyle
+                    textAlign: "start", // Also dark sdsStyle aligns content to center by default
+                  },
+                },
+              }}
               title={
                 <div>
-                  {`This summary on \"${cellTypeName}\" was generated with ChatGPT, powered by the GPT4 model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below. CZI is currently offering this as a pilot feature and we may update or change this feature at our discretion.`}
+                  <ChatGptTooltipText>
+                    {`This summary on "${cellTypeName}" was generated with ChatGPT, powered by the GPT4 model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below. CZI is currently offering this as a pilot feature and we may update or change this feature at our discretion.`}
+                  </ChatGptTooltipText>
                   <br />
-                  <br />
-                  <b>System role</b>
-                  <blockquote>
-                    <i>
-                      You are a knowledgeable cell biologist that has
-                      professional experience writing and curating accurate and
-                      informative descriptions of cell types.
-                    </i>
-                  </blockquote>
-                  <b>User role</b>
-                  <blockquote>
-                    <i>{`I am making a knowledge-base about cell types. Each cell type is a term from the Cell Ontology and will have its own page with a detailed description of that cell type and its function. Please write me a description for "${cellTypeName}". Please return only the description and no other dialogue. The description should include information about the cell type's function. The description should be at least three paragraphs long.`}</i>
-                  </blockquote>
+                  <ChatGptTooltipSubtext>
+                    System role: You are a knowledgeable cell biologist that has
+                    professional experience writing and curating accurate and
+                    informative descriptions of cell types.
+                    <br />
+                    <br />
+                    {`User role: I am making a knowledge-base about cell types. Each cell type is a term from the Cell Ontology and will have its own page with a detailed description of that cell type and its function. Please write me a description for "${cellTypeName}". Please return only the description and no other dialogue. The description should include information about the cell type's function. The description should be at least three paragraphs long.`}
+                  </ChatGptTooltipSubtext>
                 </div>
               }
             >
@@ -148,9 +158,9 @@ export default function Description({
                   }
                 }}
               >
-                ChatGPT
+                <StyledIconImage src={questionMarkIcon} />
               </StyledLink>
-            </Tooltip>
+            </StyledTooltip>
           </SourceLink>
         </Source>
       </CellGuideCardDescription>
