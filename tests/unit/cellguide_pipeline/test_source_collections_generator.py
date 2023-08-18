@@ -23,6 +23,7 @@ class TestSourceCollectionsGenerator(unittest.TestCase):
             source_collections = generate_source_collections_data(
                 all_cell_type_ids_in_corpus=tree_builder.all_cell_type_ids_in_corpus
             )
+
             self.assertTrue(
                 compare_dicts(
                     convert_dataclass_to_dict_and_strip_nones(source_collections), expected__source_collections
