@@ -305,7 +305,7 @@ class MarkerGenesCalculator:
             ).prod(0)
             > 0
         )
-        new_expression_rollup = new_expression_rollup[filt]
+        new_expression_rollup = new_expression_rollup[filt].reset_index()
         # copy the groupby+gene columns into a multi-index
         new_expression_rollup.index = pd.Index(
             list(zip(*new_expression_rollup[self.groupby_terms_with_celltype_and_gene].values.T))
