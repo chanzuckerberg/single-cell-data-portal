@@ -14,7 +14,7 @@ export const StickyWrapper = styled.div`
 `;
 
 export const SearchBarWrapper = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: 64px;
   width: 240px;
 `;
 

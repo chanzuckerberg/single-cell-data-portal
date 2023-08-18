@@ -80,13 +80,13 @@ const typography = {
       s: {
         fontSize: 14,
         fontWeight: fontWeights.regular,
-        letterSpacing: "0px",
+        letterSpacing: "-0.08px",
         lineHeight: "20px",
       },
       xs: {
         fontSize: 13,
         fontWeight: fontWeights.regular,
-        letterSpacing: "0px",
+        letterSpacing: "-0.04px",
         lineHeight: "20px",
       },
       xxs: {
@@ -98,7 +98,7 @@ const typography = {
       xxxs: {
         fontSize: 11,
         fontWeight: fontWeights.regular,
-        letterSpacing: "0px",
+        letterSpacing: "-0.05px",
         lineHeight: "16px",
       },
     },
@@ -106,14 +106,14 @@ const typography = {
       xxs: {
         fontSize: 12,
         fontWeight: fontWeights.semibold,
-        letterSpacing: "1.0px",
+        letterSpacing: "0.36px",
         lineHeight: "16px",
         textTransform: "uppercase" as const,
       },
       xxxs: {
         fontSize: 11,
         fontWeight: fontWeights.semibold,
-        letterSpacing: "1.0px",
+        letterSpacing: "0.33px",
         lineHeight: "16px",
         textTransform: "uppercase" as const,
       },
@@ -127,27 +127,27 @@ const typography = {
     },
     header: {
       l: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: fontWeights.semibold,
-        letterSpacing: "0px",
+        letterSpacing: "-0.31px",
         lineHeight: "24px",
       },
       m: {
         fontSize: 16,
         fontWeight: fontWeights.semibold,
-        letterSpacing: "0px",
+        letterSpacing: "-0.18px",
         lineHeight: "20px",
       },
       s: {
         fontSize: 14,
         fontWeight: fontWeights.semibold,
-        letterSpacing: "0px",
+        letterSpacing: "-0.1px",
         lineHeight: "20px",
       },
       xl: {
         fontSize: 24,
         fontWeight: fontWeights.semibold,
-        letterSpacing: "0px",
+        letterSpacing: "-0.37px",
         lineHeight: "32px",
       },
       xs: {
@@ -157,10 +157,10 @@ const typography = {
         lineHeight: "16px",
       },
       xxl: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: fontWeights.semibold,
-        letterSpacing: "0px",
-        lineHeight: "32px",
+        letterSpacing: "-0.56px",
+        lineHeight: "36px",
       },
       xxs: {
         fontSize: 12,
