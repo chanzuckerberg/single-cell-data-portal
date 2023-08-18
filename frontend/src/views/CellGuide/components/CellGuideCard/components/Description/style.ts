@@ -1,6 +1,12 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontCapsXxs } from "@czi-sds/components";
-import { gray100, gray500 } from "src/common/theme";
+import {
+  Tooltip,
+  fontBodyS,
+  fontBodyXs,
+  fontBodyXxs,
+  fontCapsXxs,
+} from "@czi-sds/components";
+import { gray100, gray500, gray400 } from "src/common/theme";
 
 export const CellGuideCardDescription = styled.div`
   ${fontBodyS}
@@ -20,12 +26,14 @@ export const Source = styled.div`
   margin-top: 16px;
   display: flex;
   justify-content: flex-end;
-  gap: 40px;
+  gap: 20px;
   color: ${gray500};
 `;
 
 export const SourceLink = styled.div`
+  ${fontBodyS}
   white-space: nowrap;
+  align-self: end;
 `;
 
 export const DescriptionHeader = styled.div`
@@ -33,4 +41,19 @@ export const DescriptionHeader = styled.div`
   font-weight: 600;
   color: ${gray500};
   margin-bottom: 8px;
+`;
+
+export const StyledTooltip = styled(Tooltip)`
+  margin-right: 16px;
+`;
+
+export const ChatGptTooltipText = styled.div`
+  ${fontBodyXs}
+  color: #FFFFFF;
+  font-weight: 500;
+`;
+
+export const ChatGptTooltipSubtext = styled.div`
+  ${fontBodyXxs}
+  color: ${gray400};
 `;

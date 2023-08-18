@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 @dataclass
 class OntologyTreeState:
-    isExpandedNodes: Dict[str, list[str]]
+    isExpandedNodes: list[str]
     notShownWhenExpandedNodes: Dict[str, Dict[str, list[str]]]
     tissueCounts: Optional[Dict[str, int]] = field(default=None)
 

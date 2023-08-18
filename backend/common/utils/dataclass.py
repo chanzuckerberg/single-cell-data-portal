@@ -20,6 +20,6 @@ def convert_dataclass_to_dict(data):
             if is_dataclass(value):
                 data_copy[key] = asdict(value)
             elif isinstance(value, list):
-                data_copy[key] = [asdict(i) for i in value]
+                data_copy[key] = [asdict(i) if is_dataclass(i) else i for i in value]
 
     return data_copy
