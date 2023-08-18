@@ -1,0 +1,74 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +45ms
+  pw:api   "commit" event fired +18ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +60ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +7ms
+  pw:api   "commit" event fired +132ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +5ms
+  pw:api <= page.goto succeeded +2s
+  pw:api => page.waitForLoadState started +2ms
+  pw:api   navigated to "about:blank" +138ms
+  pw:api   "networkidle" event fired +528ms
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api => locator.waitFor started +2ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-hover-container') to be visible +55ms
+  pw:api   locator resolved to visible <div width="840" height="500" class="css-3jdket-Hover…>…</div> +33ms
+  pw:api <= locator.waitFor succeeded +18ms
+  pw:api => locator.boundingBox started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-hover-container') +12ms
+  pw:api   locator resolved to visible <div width="840" height="500" class="css-3jdket-Hover…>…</div> +7ms
+  pw:api <= locator.boundingBox succeeded +25ms
+  pw:api => locator.hover started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-hover-container') +27ms
+  pw:api   locator resolved to <div width="840" height="500" class="css-3jdket-Hover…>…</div> +9ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   performing hover action +219ms
+  pw:api   hover action done +124ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +23ms
+  pw:api <= locator.hover succeeded +66ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-fullscreen-button') to be visible +48ms
+  pw:api   locator resolved to visible <button tabindex="0" type="button" data-testid="cell-gui…>…</button> +60ms
+  pw:api <= locator.waitFor succeeded +62ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-fullscreen-button') +12ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="cell-gui…>…</button> +20ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +26ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   performing click action +16ms
+  pw:api   click action done +548ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +38ms
+  pw:api => locator.boundingBox started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-hover-container') +24ms
+  pw:api   locator resolved to visible <div height="720" width="1280" class="css-12i2bsq-Hov…>…</div> +186ms
+  pw:api <= locator.boundingBox succeeded +34ms
+  pw:api taking page screenshot +261ms
+  pw:api => browserContext.close started +133ms
+  pw:api <= browserContext.close succeeded +3s
