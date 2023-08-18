@@ -90,6 +90,7 @@ class OntologyTreeBuilder:
         self.all_cell_type_ids_in_corpus = self.cell_counts_df_rollup.index.values[
             self.cell_counts_df_rollup.values > 0
         ]
+        self.all_tissue_ids_in_corpus = list(self.uberon_by_celltype.keys())
         logger.info("Initializing ontology tree data structures by traversing CL ontology...")
         traverse_ontology_result = self._traverse_ontology_with_counting(self.ontology[root_node])
         self.ontology_graph = traverse_ontology_result.subtree
