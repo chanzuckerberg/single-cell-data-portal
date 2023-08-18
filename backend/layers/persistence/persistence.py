@@ -876,7 +876,6 @@ class DatabaseProvider(DatabaseProviderInterface):
 
         :param collection_version_id: the CollectionVersion or the CollectionVersionId
         :param dataset_version_id: the DatasetVersionId
-        :param delete_dv_row: boolean flag - when True, delete DatasetVersion row (and dependent DatasetArtifact rows)
         """
         with self._manage_session() as session:
             collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
