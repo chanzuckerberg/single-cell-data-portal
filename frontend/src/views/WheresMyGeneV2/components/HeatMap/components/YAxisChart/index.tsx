@@ -151,8 +151,8 @@ const TissueHeaderButton = ({
 
   return (
     <FlexRowJustified
-      className="cell-type-label-count"
-      data-testid="cell-type-label-count"
+      className="tissue-label-count"
+      data-testid="tissue-label-count"
     >
       <FlexRow
         onClick={useCallback(() => {
