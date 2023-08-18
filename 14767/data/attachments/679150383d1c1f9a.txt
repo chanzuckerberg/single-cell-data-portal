@@ -1,0 +1,81 @@
+  pw:api => selectors.setTestIdAttribute started +2ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +50ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +12ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +59ms
+  pw:api => page.waitForResponse started +3ms
+  pw:api => page.goto started +22ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +25ms
+  pw:api   "commit" event fired +96ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +44ms
+  pw:api   navigated to "about:blank" +16ms
+  pw:api <= page.goto succeeded +591ms
+  pw:api   "networkidle" event fired +187ms
+  pw:api =>  started +7s
+  pw:api <= page.waitForResponse succeeded +4ms
+  pw:api => locator.click started +3ms
+  pw:api <=  succeeded +9ms
+  pw:api waiting for getByTestId('source-data-button') +48ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="source-d…>…</button> +88ms
+  pw:api attempting click action +146ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +385ms
+  pw:api   element is visible, enabled and stable +23ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +30ms
+  pw:api   click action done +385ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +4ms
+  pw:api <= locator.click succeeded +85ms
+  pw:api => browserContext.waitForEvent started +1ms
+  pw:api => locator.click started +14ms
+  pw:api waiting for locator('a').getByText('our documentation') +201ms
+  pw:api   locator resolved to <a rel="noopener" target="_blank" href="/docs/04__A…>our documentation</a> +25ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +37ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +10ms
+  pw:api   click action done +61ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +9ms
+  pw:api <= locator.click succeeded +11ms
+  pw:api   "commit" event fired +8s
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_1__Get%20Started" +0ms
+  pw:api <= browserContext.waitForEvent succeeded +9ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "networkidle" event fired +22ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_1__Get%20Started" +3ms
+  pw:api <= page.waitForLoadState succeeded +21ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api   "load" event fired +9ms
+  pw:api expect.toBeVisible with timeout 10000ms +101ms
+  pw:api waiting for locator('[id="gene-expression--query-gene-expression-across-tissues"]') +1ms
+  pw:api   locator resolved to <h1 class="css-oojown-MDX_AVAILABLE_COMPONENTS esszz…>Gene Expression — Query Gene Expression Across Ti…</h1> +87ms
+  pw:api <= expect.toBeVisible succeeded +2ms
+  pw:api   "networkidle" event fired +307ms
+  pw:api taking page screenshot +145ms
+  pw:api taking page screenshot +1ms
+  pw:api => browserContext.close started +258ms
+  pw:api <= browserContext.close succeeded +7s
