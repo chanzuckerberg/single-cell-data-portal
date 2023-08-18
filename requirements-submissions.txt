@@ -1,0 +1,7 @@
+boto3
+dataclasses-json
+psycopg2-binary>=2.8.5
+python-json-logger
+requests
+SQLAlchemy>=1.3.17,<2
+tenacity

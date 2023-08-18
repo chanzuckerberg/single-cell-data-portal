@@ -51,3 +51,8 @@ variable desired_vcpus {
   description = "Number of desired vCPUs"
   default     = 2
 }
+
+variable "api_url" {
+  type        = string
+  description = "URL for the backend api."
+}

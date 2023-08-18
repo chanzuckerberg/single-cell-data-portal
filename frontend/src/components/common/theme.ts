@@ -14,8 +14,6 @@ export const OLD_BLUE = "#0076dc";
 
 /* TODO determine constant for primary blue and replace with this value. */
 export const PRIMARY_BLUE = "#0073ff";
-/* TODO replace with primary["500"]. */
-export const PRIMARY_BLUE_500 = "#0056C6";
 
 export enum OLD_GRAY {
   DARK = "#868686",

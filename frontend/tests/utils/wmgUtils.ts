@@ -1,44 +1,156 @@
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
-import { expect, Page } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-import { tryUntil } from "./helpers";
+import { selectFirstOption, tryUntil } from "./helpers";
+import { ADD_GENE_BTN, ADD_TISSUE_ID } from "../common/constants";
+import { ADD_GENE_SEARCH_PLACEHOLDER_TEXT } from "tests/utils/geneUtils";
+
+const { skip, beforeEach } = test;
+
+/**
+ * (thuang):
+ * UBERON:0000178 is blood
+ * UBERON:0002048 is lung
+ */
+const WMG_SEED_TISSUES = ["UBERON:0000178", "UBERON:0002048"];
+const WMG_SEED_GENES = ["DPM1", "TNMD", "TSPAN6"];
+
+/**
+ * (thuang): Seed app state with some tissues and genes
+ */
+export const WMG_WITH_SEEDED_TISSUES_AND_GENES = {
+  URL:
+    `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
+    `tissues=${encodeURIComponent(
+      WMG_SEED_TISSUES.join(",")
+    )}&genes=${encodeURIComponent(WMG_SEED_GENES.join(","))}&ver=2`,
+  tissues: WMG_SEED_TISSUES,
+  genes: WMG_SEED_GENES,
+};
+
+/**
+ * (thuang): Seed app state with some genes
+ */
+export const WMG_WITH_SEEDED_GENES = {
+  URL:
+    `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
+    `genes=${encodeURIComponent(WMG_SEED_GENES.join(","))}&ver=2`,
+  genes: WMG_SEED_GENES,
+};
+
+const ENVS_TO_RUN_TESTS = [
+  "api.cellxgene.dev.single-cell.czi.technology",
+  "api.cellxgene.staging.single-cell.czi.technology",
+  "api.cellxgene.cziscience.com",
+];
+
+export function conditionallyRunTests({
+  forceRun = false,
+}: {
+  forceRun?: boolean;
+} = {}) {
+  if (forceRun) return;
+
+  /**
+   * (thuang): `beforeEach()` is needed, since without it, `describe()` will
+   * just eager inventory tests to run BEFORE our global setup sets `process.env.API_URL`
+   */
+  beforeEach(() => {
+    skip(
+      // (thuang): Temporarily skip WMG tests
+      // (thuang): Temporarily skip WMG tests
+      // (thuang): Temporarily skip WMG tests
+      ENVS_TO_RUN_TESTS.every(() => true),
+      // ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
+      "WMG tests only work with dev/staging/prod API URLs"
+    );
+  });
+}
 
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
  */
-export async function goToWMG(page: Page) {
+export async function goToWMG(page: Page, url?: string) {
+  const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
   return await tryUntil(
     async () => {
       await Promise.all([
         page.waitForResponse(
           (resp: { url: () => string | string[]; status: () => number }) =>
-            resp.url().includes("/wmg/v1/filters") && resp.status() === 200
+            resp.url().includes("/wmg/v2/filters") && resp.status() === 200
         ),
-        page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
+        page.goto(targetUrl),
       ]);
     },
     { page }
   );
 }
 
-export const selectFilterOption = async (page: Page, filterName: string) => {
-  // click the filter at the corner this is done due to the fact that the default click is being intercepted by another element
-  await page.getByTestId(filterName).getByRole("button").click();
+export async function goToWMGWithSeededState(page: Page) {
+  await goToWMG(page, WMG_WITH_SEEDED_TISSUES_AND_GENES.URL);
+  await waitForHeatmapToRender(page);
+}
+
+export async function waitForHeatmapToRender(page: Page) {
+  await tryUntil(
+    async () => {
+      await expect(page.locator("canvas")).not.toHaveCount(0);
+    },
+    { page }
+  );
+}
+
+export async function searchAndAddTissue(page: Page, tissueName: string) {
+  await tryUntil(
+    async () => {
+      await page.getByTestId(ADD_TISSUE_ID).getByRole("button").first().click();
+      await page.getByRole("tooltip").waitFor();
+    },
+    { page }
+  );
+
+  await page.getByRole("tooltip").getByText(tissueName).first().click();
+
+  // close dropdown
+  await page.keyboard.press("Escape");
+}
+
+export async function addTissuesAndGenes(
+  page: Page,
+  tissueNames: string[],
+  genes: string[]
+) {
+  for await (const tissueName of tissueNames) {
+    await searchAndAddTissue(page, tissueName);
+  }
+  for await (const gene of genes) {
+    await searchAndAddGene(page, gene);
+  }
+}
+export const selectSecondaryFilterOption = async (
+  page: Page,
+  filterName: string
+) => {
+  await deleteChips({ page, filterName });
+
+  await page.getByTestId(filterName).getByRole("button").first().click();
 
   // select the first option
-  await page.locator("[data-option-index='0']").click();
+  await selectFirstOption(page);
 
-  // close the pop-up
-  await page.getByTestId("dataset-filter").click();
+  // wait till loading is complete
+  await page.getByText("Loading").first().waitFor({ state: "hidden" });
+
+  // close the secondary filter pop-up
+  await page.keyboard.press("Escape");
 
   const filter_label = `${getTestID(filterName)} [role="button"]`;
-  // expect the selected filter to be visible
-  await expect(page.locator(filter_label)).toBeVisible();
 
-  //wait till loading is complete
-  await page.locator(getText("Loading")).waitFor({ state: "hidden" });
+  // expect the selected filter chip to be visible under the dropdown button
+  await expect(page.locator(filter_label).first()).toBeVisible();
 };
+
 export const pickOptions = async (page: Page, n: number) => {
   for (let i = 0; i < n; i++) {
     // select the nth option
@@ -46,27 +158,55 @@ export const pickOptions = async (page: Page, n: number) => {
   }
 };
 
-export const deSelectFilterOption = async (page: Page, filterName: string) => {
-  const filter_label = `${getTestID(filterName)} [role="button"]`;
-  // expect the selected filter to be visible
-  await expect(page.locator(filter_label)).toBeVisible();
+export const deSelectSecondaryFilterOption = async (
+  page: Page,
+  filterName: string
+) => {
+  const chipLocator = page
+    .getByTestId(filterName)
+    .locator(".MuiChip-deletable");
 
-  // click the cancel button
-  await page.getByTestId("ClearIcon").click();
+  const filterChip = await chipLocator.first();
 
-  // verify the selected filter is not visible
-  const visibility = await page.locator(filter_label).isVisible();
-  expect(visibility).toBeFalsy();
+  await expect(filterChip).toBeVisible();
+
+  await deleteChips({ page, filterName });
 };
 
-export const selectOption = async (page: Page, filterName: string) => {
-  // click the filter
-  await page.getByTestId(filterName).click();
-};
+export async function deleteChips({
+  page,
+  filterName,
+}: {
+  page: Page;
+  filterName: string;
+}) {
+  const deleteChipLocator = page
+    .getByTestId(filterName)
+    .getByTestId("ClearIcon");
+
+  await tryUntil(
+    async () => {
+      const deleteChips = await deleteChipLocator.all();
+
+      deleteChips.forEach(async (deleteChip) => {
+        await tryUntil(
+          async () => {
+            // click the delete button
+            await deleteChip.click();
+          },
+          { page }
+        );
+      });
+
+      expect(await deleteChipLocator.count()).toBe(0);
+    },
+    { page }
+  );
+}
 
 export const selectTissueAndGeneOption = async (page: Page) => {
   // click Tissue button
-  await selectOption(page, "add-tissue-btn");
+  await page.getByTestId(ADD_TISSUE_ID).click();
 
   //pick the first 2 elements in tissue
   await pickOptions(page, 2);
@@ -78,7 +218,7 @@ export const selectTissueAndGeneOption = async (page: Page) => {
   await page.locator('[id="heatmap-container-id"]').waitFor();
 
   // click Gene button
-  await selectOption(page, "add-gene-btn");
+  await page.getByTestId(ADD_GENE_BTN).click();
 
   //pick the first n elements in tissue
   await pickOptions(page, 3);
@@ -130,18 +270,27 @@ export const checkSourceData = async (page: Page) => {
 
   return n;
 };
+
 export const checkPlotSize = async (page: Page) => {
+  const dotLocator = page.locator('[data-zr-dom-id*="zr"]');
+
+  await tryUntil(
+    async () => {
+      expect(await dotLocator.first().getAttribute("height")).toBeTruthy();
+    },
+    { page }
+  );
+
   //get the number of rows on the data plot
-  const n = await page.locator('[data-zr-dom-id*="zr"]').count();
-  let sumOfHeights = 0;
-  for (let i = 0; i < n; i++) {
-    const row = await page.locator('[data-zr-dom-id*="zr"]').nth(i);
-
-    const height = await row.getAttribute("height");
-
-    if (height !== null) {
-      sumOfHeights += parseInt(height);
-    }
-  }
-  return sumOfHeights;
+  return page.locator('[data-zr-dom-id*="zr"]').count();
 };
+
+export async function searchAndAddGene(page: Page, geneName: string) {
+  // click +Tissue button
+  await page.getByTestId(ADD_GENE_BTN).click();
+  await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).type(geneName);
+  await page.getByText(geneName).click();
+
+  // close dropdown
+  await page.keyboard.press("Escape");
+}

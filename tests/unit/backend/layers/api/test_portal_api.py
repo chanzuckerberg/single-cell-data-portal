@@ -27,7 +27,6 @@ from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, Da
 
 
 class TestCollection(BaseAPIPortalTest):
-
     # ✅
     def test__list_collection_options__allow(self):
         origin = "http://localhost:3000"
@@ -243,6 +242,38 @@ class TestCollection(BaseAPIPortalTest):
                 if expected_response_code == 200:
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
+
+    def test__get_collection_id_returns_revision_of_published_collection(self):
+        version = self.generate_published_collection()
+        revision = self.generate_revision(version.collection_id)
+        test_url = furl(path=f"/dp/v1/collections/{revision.version_id}")
+        headers = dict(host="localhost")
+        headers["Cookie"] = self.get_cxguser_token()
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(response.status_code, 200)
+
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PRIVATE")
+        self.assertEqual(body["access_type"], "WRITE")
+
+        # check revising_in is set if the collection has a revision and the
+        # user is logged in and has write access.
+        test_url = furl(path=f"/dp/v1/collections/{version.version_id}")
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+        self.assertEqual(body["access_type"], "WRITE")
+        self.assertEqual(body["revising_in"], revision.version_id.id)
+
+        # check revising_in is not set if the collection has a revision and the
+        # user is not logged in.
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(response.status_code, 200)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+        self.assertEqual(body["access_type"], "READ")
+        self.assertNotIn("revising_in", body)
 
     def test__get_collection_id_retrieves_published_version_by_collection_id(self):
         """
@@ -528,7 +559,6 @@ class TestCollection(BaseAPIPortalTest):
 
     # ✅
     def test__post_collection_adds_publisher_metadata(self):
-
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata())
 
         test_url = furl(path="/dp/v1/collections")
@@ -647,6 +677,19 @@ class TestCollection(BaseAPIPortalTest):
         response = self.app.get(test_url.url, headers=no_cookie_headers)
         self.assertEqual("READ", json.loads(response.data)["access_type"])
 
+        # test that owners have write access
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual("WRITE", json.loads(response.data)["access_type"])
+
+        # test that super curators have write access
+        super_curator_headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token("super"),
+        }
+        response = self.app.get(test_url.url, headers=super_curator_headers)
+        self.assertEqual("WRITE", json.loads(response.data)["access_type"])
+
     def test__create_collection_strip_string_fields(self):
         test_url = furl(path="/dp/v1/collections")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -683,7 +726,6 @@ class TestCollection(BaseAPIPortalTest):
             self.assertEqual(link["link_url"], link["link_url"].strip())
 
     def test__list_collection__check_owner__no_auth(self):
-
         # Generate test collection
         public_owned = self.generate_published_collection(owner="test_user_id")
         private_owned = self.generate_unpublished_collection(owner="test_user_id")
@@ -754,10 +796,7 @@ class TestCollection(BaseAPIPortalTest):
         collection_to_tombstone = self.generate_published_collection()
         private_collection = self.generate_unpublished_collection()
 
-        tombstone_url = furl(path=f"/dp/v1/collections/{collection_to_tombstone.collection_id}")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.delete(tombstone_url.url, headers=headers)
-        self.assertEqual(204, response.status_code)
+        self.business_logic.tombstone_collection(collection_to_tombstone.collection_id)
 
         test_url = furl(path="/dp/v1/collections/index")
         headers = {"host": "localhost", "Content-Type": "application/json"}
@@ -779,6 +818,123 @@ class TestCollection(BaseAPIPortalTest):
         # Both `published_at` and `revised_at` should point to the same timestamp
         self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
         self.assertEqual(actual_collection["revised_at"], collection.published_at.timestamp())
+
+        # test that the owner of a private collection can not see the private collection
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [collection["id"] for collection in body]
+        self.assertIn(collection.collection_id.id, ids)
+        self.assertNotIn(private_collection.collection_id.id, ids)
+        self.assertNotIn(private_collection.version_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.version_id.id, ids)
+
+        # test that super curators can not see the private collection
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [collection["id"] for collection in body]
+        self.assertIn(collection.collection_id.id, ids)
+        self.assertNotIn(private_collection.collection_id.id, ids)
+        self.assertNotIn(private_collection.version_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.version_id.id, ids)
+
+    def test__get_all_user_collections_for_index_requires_auth(self):
+        # test that non logged user returns 401
+        test_url = furl(path="/dp/v1/user-collections/index")
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(response.status_code, 401)
+
+    def test__get_all_user_collections_for_index(self):
+        """
+        The `my-collections/index` endpoint should return all public collections and the private
+        collections the user has WRITE access to. Curators can see all public collectoins and private collections where
+        they are the owner. Super Curators can see all public and private collections.
+        """
+
+        public_collection = self.generate_published_collection(owner="test_user_id")
+        private_collection = self.generate_unpublished_collection("test_user_id")
+
+        public_collection_not_owned = self.generate_published_collection("test_user_id_2")
+        private_collection_not_owned = self.generate_unpublished_collection("test_user_id_2")
+
+        collection_to_tombstone = self.generate_published_collection("test_user_id")
+        self.business_logic.tombstone_collection(collection_to_tombstone.collection_id)
+
+        # test that super curators can see the all public and private collections
+        test_url = furl(path="/dp/v1/user-collections/index")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [collection["id"] for collection in body]
+
+        collections_by_id = {collection["id"]: collection for collection in body}
+
+        self.assertIn(public_collection.collection_id.id, collections_by_id)
+        self.assertEqual(
+            collections_by_id[public_collection.collection_id.id]["curator_name"], public_collection.curator_name
+        )
+
+        self.assertIn(private_collection.collection_id.id, ids)
+        self.assertEqual(
+            collections_by_id[private_collection.collection_id.id]["curator_name"], private_collection.curator_name
+        )
+
+        self.assertIn(private_collection_not_owned.collection_id.id, collections_by_id)
+        self.assertEqual(
+            collections_by_id[private_collection_not_owned.collection_id.id]["curator_name"],
+            private_collection_not_owned.curator_name,
+        )
+
+        self.assertNotIn(private_collection.version_id.id, collections_by_id)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, collections_by_id)
+        self.assertNotIn(collection_to_tombstone.version_id.id, collections_by_id)
+        self.assertNotIn(private_collection_not_owned.version_id.id, collections_by_id)
+
+        # test that super curators can WRITE all collections
+        for collection in body:
+            self.assertEqual(collection["access_type"], "WRITE")
+
+        # test that the owners can see their private collections
+        # but not the private collections of other users, and that they can see public
+        # collections of other users.
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(),
+        }
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        ids = [collection["id"] for collection in body]
+
+        self.assertIn(public_collection.collection_id.id, ids)
+        self.assertIn(public_collection_not_owned.collection_id.id, ids)
+        self.assertIn(private_collection.collection_id.id, ids)
+
+        self.assertNotIn(private_collection_not_owned.collection_id.id, ids)
+        self.assertNotIn(private_collection_not_owned.version_id.id, ids)
+        self.assertNotIn(private_collection.version_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.version_id.id, ids)
+
+        # test that the owner of a collection can WRITE their collections
+        # but not other users collections
+        for collection in body:
+            if collection["owner"] == "test_user_id":
+                self.assertEqual(collection["access_type"], "WRITE")
+            else:
+                self.assertEqual(collection["access_type"], "READ")
 
     # ✅
     def test__create_collection__InvalidParameters_DOI(self):
@@ -881,7 +1037,7 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 405)
 
     def test_delete_published_collection__ok(self):
         """Published collections are tombstoned."""
@@ -892,8 +1048,7 @@ class TestCollectionDeletion(BaseAPIPortalTest):
             path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PUBLIC")
         )
         # tombstone public collection
-        response = self.app.delete(test_public_url.url, headers=headers)
-        self.assertEqual(response.status_code, 204)
+        self.business_logic.tombstone_collection(collection.collection_id)
 
         # check collection is gone
         response = self.app.get(test_public_url.url, headers=headers)
@@ -983,7 +1138,6 @@ class TestCollectionDeletion(BaseAPIPortalTest):
 
 
 class TestUpdateCollection(BaseAPIPortalTest):
-
     # ✅
     def test__update_collection__OK(self):
         collection = self.generate_unpublished_collection()
@@ -1221,7 +1375,6 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     # ✅
     def test__update_collection_new_doi_updates_metadata(self):
-
         # Generate a collection with "Old Journal" as publisher metadata
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("Old Journal"))
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
@@ -1250,7 +1403,6 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
     # ✅
     def test__update_collection_remove_doi_deletes_metadata(self):
-
         # Generate a collection with "Old Journal" as publisher metadata
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("Old Journal"))
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
@@ -1369,7 +1521,6 @@ class TestCollectionsCurators(BaseAPIPortalTest):
 
 # TODO: these tests all require the generation of a dataset
 class TestDataset(BaseAPIPortalTest):
-
     # ✅
     def test__post_dataset_asset__OK(self):
         self.business_logic.get_dataset_artifact_download_data = Mock(
@@ -1493,7 +1644,6 @@ class TestDataset(BaseAPIPortalTest):
             return [dataclasses.asdict(o) for o in ontologies]
 
         if actual_dataset is not None and persisted_dataset is not None:  # pylance
-
             self.assertNotIn("description", actual_dataset)
             self.assertEqual(actual_dataset["id"], persisted_dataset.version_id.id)
             self.assertEqual(actual_dataset["name"], persisted_dataset.metadata.name)
@@ -1520,9 +1670,49 @@ class TestDataset(BaseAPIPortalTest):
             )
             # self.assertEqual(actual_dataset["revised_at"], persisted_dataset.revised_at.timestamp())
 
+    def test__get_all_datasets_for_user_index(self):
+        # return the datasets related to the collections the user has WRITE access to.
+
+        private_dataset = self.generate_dataset()
+        public_dataset = self.generate_dataset(publish=True)
+        self.business_logic.create_collection_version(CollectionId(public_dataset.collection_id))
+
+        test_url = furl(path="/dp/v1/user-datasets/index")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        print(body)
+
+        # initialize an empty list to store the dataset ids
+        dataset_ids = []
+
+        # iterate over the collections in the body list
+        for collection in body:
+            # iterate over the datasets in the "dataset_assets" list for each collection
+            for dataset in collection["dataset_assets"]:
+                # append the dataset_id to the list of dataset ids
+                dataset_ids.append(dataset["dataset_id"])
+
+        self.assertEqual(len(dataset_ids), 6)
+
+        dataset_ids = list(dataset_ids)
+        print("dataset_ids: ", dataset_ids)
+        print("public_dataset.dataset_version_id: ", public_dataset.dataset_version_id)
+        print("private_dataset.dataset_version_id: ", private_dataset.dataset_version_id)
+
+        self.assertIn(public_dataset.dataset_version_id, dataset_ids)
+        self.assertIn(private_dataset.dataset_version_id, dataset_ids)
+
+    def test__get_all_user_datasets_for_index_requires_auth(self):
+        # test that non logged user returns 401
+        test_url = furl(path="/dp/v1/user-datasets/index")
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(response.status_code, 401)
+
     # ✅
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
-
         import copy
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -1549,7 +1739,6 @@ class TestDataset(BaseAPIPortalTest):
             return [dataclasses.asdict(o) for o in ontologies]
 
         if actual_dataset is not None:  # pylance
-
             self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
             self.assertEqual(
                 actual_dataset["development_stage_ancestors"],
@@ -1694,7 +1883,6 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__delete_public_dataset_returns__405(self):
-
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)],
             publish=True,
@@ -1708,7 +1896,6 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__cancel_dataset_download__user_not_collection_owner(self):
-
         dataset = self.generate_dataset(
             owner="someone_else",
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)],
@@ -1721,7 +1908,6 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__cancel_dataset_download__user_not_logged_in(self):
-
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)],
         )
@@ -1733,7 +1919,6 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__dataset_meta__ok(self):
-
         headers = {"host": "localhost", "Content-Type": "application/json"}
 
         with self.subTest("dataset is public"):
@@ -1813,7 +1998,6 @@ class TestDataset(BaseAPIPortalTest):
             return json.loads(response.data)
 
         with self.subTest("Dataset belonging to an unpublished collection"):
-
             test_uri = "some_uri_0"
 
             dataset = self.generate_dataset(
@@ -1832,7 +2016,6 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to an unpublished collection, replaced"):
-
             test_uri = "some_uri_0"
 
             dataset = self.generate_dataset(
@@ -1863,7 +2046,6 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a published collection"):
-
             test_uri = "some_uri_1"
 
             dataset = self.generate_dataset(
@@ -1881,7 +2063,6 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, not replaced"):
-
             test_uri = "some_uri_2"
 
             dataset = self.generate_dataset(
@@ -1901,7 +2082,6 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, replaced"):
-
             test_uri = "some_uri_1"
 
             dataset = self.generate_dataset(
@@ -2640,7 +2820,7 @@ class TestCollectionPutUploadLink(BaseAPIPortalTest):
         self.assert_datasets_are_updated(dataset, new_dataset)
 
     # ✅
-    @patch("backend.common.upload.start_upload_sfn")
+    @patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
     def test__reupload_unpublished_dataset__202(self, mock_upload_sfn):
         """
         Reuploads an unpublished dataset

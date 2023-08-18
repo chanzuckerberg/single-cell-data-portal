@@ -22,8 +22,6 @@ marker_genes_attrs = [
     tiledb.Attr(name="gene_ontology_term_id", dtype="ascii", var=True, filters=filters),
     tiledb.Attr(name="p_value_ttest", dtype=np.float32, filters=filters),
     tiledb.Attr(name="effect_size_ttest", dtype=np.float32, filters=filters),
-    tiledb.Attr(name="p_value_binomtest", dtype=np.float32, filters=filters),
-    tiledb.Attr(name="effect_size_binomtest", dtype=np.float32, filters=filters),
 ]
 
 marker_genes_domain = tiledb.Domain(

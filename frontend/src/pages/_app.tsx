@@ -2,6 +2,7 @@ import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { NextPage } from "next";
 import { AppProps } from "next/app";
+import Head from "next/head";
 import Script from "next/script";
 import { FC, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -14,6 +15,8 @@ import configs from "src/configs/configs";
 import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
 import "src/layout.css";
+
+const OG_PAGE_TITLE = "Cellxgene Data Portal";
 
 declare global {
   interface Window {
@@ -52,6 +55,49 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
 
   return (
     <>
+      <Head>
+        {/* meta tag must have a `key` prop to allow page specific overwrites */}
+        {/* See: https://nextjs.org/docs/pages/api-reference/components/head */}
+        <meta name="twitter:card" key="twitter:card" content="summary" />
+
+        {/* Open Graph */}
+        <meta
+          property="og:url"
+          key="og:url"
+          content="https://cellxgene.cziscience.com/"
+        />
+        <meta
+          property="og:image"
+          key="og:image"
+          content={"https://cellxgene.cziscience.com/open-graph.jpg"}
+        />
+        <meta property="og:creator" key="og:creator" content="@cziscience" />
+        <meta property="og:site" key="og:site" content="@cziscience" />
+        <meta
+          property="og:site_name"
+          key="og:site_name"
+          content={OG_PAGE_TITLE}
+        />
+        <meta property="og:title" key="og:title" content={OG_PAGE_TITLE} />
+        <meta
+          property="og:description"
+          key="og:description"
+          content="Find, download, and visually explore curated and standardized single cell datasets."
+        />
+        <meta
+          property="og:image"
+          key="og:image"
+          content="https://cellxgene.cziscience.com/open-graph.jpg"
+        />
+        <meta
+          property="twitter:image"
+          key="twitter:image"
+          content="https://cellxgene.cziscience.com/open-graph.jpg"
+        />
+
+        <meta property="twitter:card" key="twitter:card" content="summary" />
+        <meta property="og:type" key="og:type" content="website" />
+      </Head>
       <QueryClientProvider client={queryClient}>
         <StyledEngineProvider>
           <EmotionThemeProvider theme={theme}>

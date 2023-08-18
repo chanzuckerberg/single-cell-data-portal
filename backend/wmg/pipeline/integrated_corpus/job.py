@@ -17,6 +17,7 @@ from backend.wmg.data.utils import log_func_runtime
 from backend.wmg.pipeline.integrated_corpus import extract, load
 from backend.wmg.pipeline.integrated_corpus.transform import apply_pre_concatenation_filters, create_high_level_tissue
 from backend.wmg.pipeline.integrated_corpus.validate import should_load_dataset, validate_dataset_properties
+from backend.wmg.pipeline.utils import remap_anndata_normalized_X_to_raw_X_if_exists
 
 logger = logging.getLogger(__name__)
 
@@ -59,17 +60,17 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             if dataset_id and gene_ids:
                 dataset_gene_mapping[dataset_id] = gene_ids
 
-        logger.info("all loaded, now consolidating.")
-        for arr_name in [OBS_ARRAY_NAME, VAR_ARRAY_NAME, INTEGRATED_ARRAY_NAME]:
-            arr_path = f"{corpus_path}/{arr_name}"
-            tiledb.consolidate(arr_path)
-            tiledb.vacuum(arr_path)
         with tiledb.open(f"{corpus_path}/{VAR_ARRAY_NAME}") as var:
             gene_count = len(var.query().df[:])
         with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as obs:
             cell_count = len(obs.query().df[:])
         with open(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json", "w") as d2g:
             json.dump(dataset_gene_mapping, d2g)
+        logger.info("all loaded, now consolidating.")
+        for arr_name in [OBS_ARRAY_NAME, VAR_ARRAY_NAME, INTEGRATED_ARRAY_NAME]:
+            arr_path = f"{corpus_path}/{arr_name}"
+            tiledb.consolidate(arr_path)
+            tiledb.vacuum(arr_path)
 
     logger.info(f"{dataset_count=}, {gene_count=}, {cell_count=}")
 
@@ -88,7 +89,20 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str) -> Union[Tuple[str
         return None, None
 
     # extract
-    anndata_object = extract.extract_h5ad(h5ad_path=h5ad_path)
+    try:
+        anndata_object = extract.extract_h5ad(h5ad_path=h5ad_path)
+    except Exception as e:
+        logger.error(f"Failed to extract h5ad file {h5ad_path} with error: {e}")
+        return None, None
+
+    # A memory optimization to reduce memory consumption when loading large datasets
+    # is to remap AnnData.X = AnnData.raw.X if AnnData.raw.X exists and then garbage
+    # collect the original object pointed to by AnnData.X.
+    #
+    # This is significant memory savings because size_of(AnnData.X) ~= size_of(AnnData.raw.X)
+    # and so we reduce memory pressure by 50%. Moreover, the normalized value in the
+    # original AnnData.X is not used throughout the pipeline run.
+    remap_anndata_normalized_X_to_raw_X_if_exists(anndata_object)
 
     # transform
     apply_pre_concatenation_filters(anndata_object)

@@ -11,16 +11,15 @@ RUN apt-get update && \
 
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
-ADD requirements.txt requirements-base.txt
-ADD backend/api_server/requirements.txt requirements-api.txt
-RUN python3 -m pip install -r requirements-base.txt -r requirements-api.txt
+ADD requirements-backend.txt requirements-backend.txt
+RUN python3 -m pip install -r requirements-backend.txt
 EXPOSE 5000
 
 # Install utilities to /single-cell-data-portal so we can run db migrations.
 ADD tests /single-cell-data-portal/tests
 ADD scripts /single-cell-data-portal/scripts
 ADD backend /single-cell-data-portal/backend
-ADD container_init.sh container_init.sh
+ADD container_init.sh /single-cell-data-portal/container_init.sh
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -29,4 +28,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-ENTRYPOINT ["./container_init.sh"]
+ENTRYPOINT ["/single-cell-data-portal/container_init.sh"]

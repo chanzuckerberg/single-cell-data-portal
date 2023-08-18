@@ -1,12 +1,11 @@
 # Local Development Environment
 
-## Development quickstart
+## Install Docker
 
 1. [install docker](https://docs.docker.com/get-docker/). If brew is installed run `brew install docker`. If you have a Mac, [install Docker Desktop](https://www.docker.com/products/docker-desktop) and open it so it's running on your machine. Note: If you have a Mac M1 (arm64 CPU), follow instructions in [`docker-compose.yml`](docker-compose.yml) under `oidc` service, for manually building the oidc-server-mock images for the M1 architecture.
-1. [install jq](https://stedolan.github.io/jq/download/). If brew is installed run `brew install jq`.
-1. [install libpq](https://www.timescale.com/blog/how-to-install-psql-on-mac-ubuntu-debian-windows/). If brew is installed run ` brew install libpq`. We need this
-   tool to invoke the `psql` commandline utility.
-1. [install chamber](https://github.com/segmentio/chamber). If brew is installed run `brew install chamber`. (This is needed for running functional tests.)
+
+## Development quickstart
+
 1. From the root of this repository, run `make local-init` to build and run the dev environment. The first build takes awhile, but subsequent runs will use cached artifacts. Note: If Docker reports a conflict for port 5000, and you are on a Mac, you should turn off Control Center's "Airplay Receiver" in the "Sharing" System Preferences ([details](https://developer.apple.com/forums/thread/682332)).
 1. Visit [https://localhost:5000](https://localhost:5000) to view the backend, and [https://localhost:3000](https://localhost:3000) for the frontend.
 1. `make local-dbconsole` starts a connection with the local postgresql db.

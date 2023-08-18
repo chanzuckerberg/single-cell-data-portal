@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getColors } from "czifui";
+import { CommonThemeProps, getColors } from "@czi-sds/components";
 
 interface DotProps extends CommonThemeProps {
   size: number;

@@ -37,6 +37,8 @@ services:
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
     platform: linux/amd64
+    profiles:
+      - frontend
     build:
       context: frontend
       cache_from:
@@ -70,6 +72,8 @@ services:
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
     platform: linux/amd64
+    profiles:
+      - upload_failures
     build:
       context: .
       cache_from:
@@ -105,6 +109,8 @@ services:
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
     platform: linux/amd64
+    profiles:
+      - upload_success
     build:
       context: .
       cache_from:
@@ -140,6 +146,8 @@ services:
   dataset_submissions:
     image: "${DOCKER_REPO}dataset-submissions"
     platform: linux/amd64
+    profiles:
+      - dataset_submissions
     build:
       context: .
       cache_from:
@@ -174,11 +182,13 @@ services:
   processing:
     image: "${DOCKER_REPO}corpora-upload"
     platform: linux/amd64
+    profiles:
+      - processing
     build:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-upload:branch-main"
-      dockerfile: Dockerfile.processing_image
+      dockerfile: Dockerfile.processing
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
@@ -209,11 +219,48 @@ services:
   wmg_processing:
     image: "${DOCKER_REPO}wmg-processing"
     platform: linux/amd64
+    profiles:
+      - wmg_processing
     build:
       context: .
       cache_from:
         - "${DOCKER_REPO}wmg-processing:branch-main"
-      dockerfile: Dockerfile.data_cube_creation
+      dockerfile: Dockerfile.wmg_pipeline
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
+    restart: "no"
+    command: ["sleep", "infinity"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=test
+      - ARTIFACT_BUCKET=artifact-bucket
+      - CELLXGENE_BUCKET=cellxgene-bucket
+    volumes:
+      # Mount dirs in a layout suitable for running tests.
+      - .:/single-cell-data-portal
+    networks:
+      corporanet:
+        aliases:
+          - processing.corporanet.local
+  cellguide_pipeline:
+    image: "${DOCKER_REPO}cellguide-pipeline"
+    platform: linux/amd64
+    profiles:
+      - cellguide_pipeline
+    build:
+      context: .
+      cache_from:
+        - "${DOCKER_REPO}cellguide-pipeline:branch-main"
+      dockerfile: Dockerfile.cellguide_pipeline
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
@@ -242,6 +289,8 @@ services:
   backend:
     image: "${DOCKER_REPO}corpora-backend"
     platform: linux/amd64
+    profiles:
+      - backend
     build:
       context: .
       cache_from:

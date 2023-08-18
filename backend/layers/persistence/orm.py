@@ -35,6 +35,7 @@ class CollectionVersionTable:
     publisher_metadata = Column(JSON)
     published_at = Column(DateTime)
     created_at = Column(DateTime)
+    schema_version = Column(String)
     datasets = Column(ARRAY(UUID(as_uuid=True)))
 
 
@@ -46,6 +47,7 @@ class DatasetTable:
     id = Column(UUID(as_uuid=True), primary_key=True)
     version_id = Column(UUID(as_uuid=True))
     published_at = Column(DateTime)
+    tombstone = Column(BOOLEAN)
 
 
 @mapper_registry.mapped

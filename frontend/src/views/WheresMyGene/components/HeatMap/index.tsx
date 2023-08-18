@@ -15,11 +15,15 @@ import {
   OntologyTerm,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import { HEATMAP_CONTAINER_ID } from "../../common/constants";
-import { DispatchContext, State } from "../../common/store";
+import {
+  HEATMAP_CONTAINER_ID,
+  X_AXIS_CHART_HEIGHT_PX,
+} from "../../common/constants";
+import { DispatchContext, State, StateContext } from "../../common/store";
 import { addCellInfoCellType } from "../../common/store/actions";
 import {
   CellType,
+  ChartProps,
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
@@ -29,7 +33,6 @@ import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import { CellCountLabel } from "./components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
-import { ChartProps } from "./hooks/common/types";
 import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {
   useSortedGeneNames,
@@ -45,6 +48,7 @@ import {
   XAxisWrapper,
   YAxisWrapper,
 } from "./style";
+import { HEAT_MAP_BASE_CELL_PX, hyphenize } from "./utils";
 
 interface Props {
   className?: string;
@@ -88,6 +92,8 @@ export default memo(function HeatMap({
   setAllChartProps,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
+
+  const { xAxisHeight } = useContext(StateContext);
 
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
@@ -164,16 +170,16 @@ export default memo(function HeatMap({
 
   return (
     <ContainerWrapper>
-      <TopLeftCornerMask>
+      <TopLeftCornerMask height={xAxisHeight}>
         <CellCountLabel>Cell Count</CellCountLabel>
       </TopLeftCornerMask>
       <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
         {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
         <XAxisWrapper id="x-axis-wrapper">
-          <XAxisMask data-testid="x-axis-mask" />
+          <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
           <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
-        <YAxisWrapper>
+        <YAxisWrapper top={xAxisHeight}>
           {selectedTissues.map((tissue) => {
             const tissueCellTypes = getTissueCellTypes({
               cellTypeSortBy,
@@ -182,18 +188,20 @@ export default memo(function HeatMap({
               tissue,
             });
             return tissueCellTypes.length ? (
-              <YAxisChart
-                key={tissue}
-                tissue={tissue}
-                tissueID={tissuesByName[tissue].id}
-                cellTypes={tissueCellTypes}
-                generateMarkerGenes={generateMarkerGenes}
-                selectedOrganismId={selectedOrganismId}
-              />
+              <div id={`y-axis-${hyphenize(tissue)}`}>
+                <YAxisChart
+                  key={tissue}
+                  tissue={tissue}
+                  tissueID={tissuesByName[tissue].id}
+                  cellTypes={tissueCellTypes}
+                  generateMarkerGenes={generateMarkerGenes}
+                  selectedOrganismId={selectedOrganismId}
+                />
+              </div>
             ) : null;
           })}
         </YAxisWrapper>
-        <ChartWrapper ref={chartWrapperRef}>
+        <ChartWrapper ref={chartWrapperRef} top={xAxisHeight}>
           {selectedTissues.map((tissue) => {
             const tissueCellTypes = getTissueCellTypes({
               cellTypeSortBy,
@@ -210,7 +218,19 @@ export default memo(function HeatMap({
              * the chart, because it will cause the chart to render with 0 width,
              * which is an error for echarts
              */
-            if (!selectedGeneData?.length) return null;
+
+            if (!selectedGeneData?.length) {
+              const height = tissueCellTypes.length * HEAT_MAP_BASE_CELL_PX;
+              return (
+                <div
+                  key={`y-axis-${hyphenize(tissue)}`}
+                  style={{
+                    // If the height is 0, then set the heatmap height as 0. Else render the height normally
+                    height: `${height && height + X_AXIS_CHART_HEIGHT_PX}px`,
+                  }}
+                />
+              );
+            }
 
             return (
               <Chart

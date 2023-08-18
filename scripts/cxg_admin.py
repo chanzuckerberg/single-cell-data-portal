@@ -3,9 +3,9 @@ import json
 import logging
 import os
 import sys
+import warnings
 
 import click
-from click import Context
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -13,8 +13,22 @@ sys.path.insert(0, pkg_root)  # noqa
 from urllib.parse import urlparse
 
 from backend.common.corpora_config import CorporaDbConfig
-from backend.common.utils.db_session import DBSessionMaker
-from scripts.cxg_admin_scripts import dataset_details, deletions, migrate, reprocess_datafile, tombstones, updates
+from backend.common.utils.aws import AwsSecret
+from backend.layers.business.business import BusinessLogic
+from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.thirdparty.crossref_provider import CrossrefProvider
+from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
+from backend.layers.thirdparty.uri_provider import UriProvider
+from scripts.cxg_admin_scripts import (
+    dataset_details,
+    deletions,
+    migrate,
+    reprocess_datafile,
+    schema_migration,
+    tombstones,
+    updates,
+)
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -44,9 +58,20 @@ def cli(ctx, deployment):
     You must first set DEPLOYMENT_STAGE as an env var before running
 
     """
+    if deployment == "test":
+        return
+    if deployment not in ("dev", "staging", "prod"):
+        logging.error("The deployment arg must be one of 'dev', 'staging', or 'prod'")
+        exit(1)
+    happy_env = "stage" if deployment == "staging" else deployment
+    happy_config = json.loads(AwsSecret(f"happy/env-{happy_env}-config").value)
+    os.environ["DATASETS_BUCKET"] = happy_config["s3_buckets"]["datasets"]["name"]
+
     os.environ["DEPLOYMENT_STAGE"] = deployment
     ctx.obj["deployment"] = deployment
-    DBSessionMaker(get_database_uri())
+    ctx.obj["business_logic"] = BusinessLogic(
+        DatabaseProvider(get_database_uri()), CrossrefProvider(), StepFunctionProvider(), S3Provider(), UriProvider()
+    )
 
 
 # Commands to delete artifacts (collections or datasets)
@@ -82,7 +107,7 @@ def delete_collections(ctx, collection_name):
 @cli.command()
 @click.argument("id")
 @click.pass_context
-def tombstone_collection(ctx: Context, id: str):
+def tombstone_collection(ctx: click.Context, id: str):
     """
     Tombstones the collection specified by ID.
     To run:
@@ -91,8 +116,9 @@ def tombstone_collection(ctx: Context, id: str):
     :param ctx: command context
     :param id: ID that identifies the collection to tombstone
     """
-
-    tombstones.tombstone_collection(ctx, id)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)  # Suppress type-related warnings from db operations
+        tombstones.tombstone_collection(ctx, id)
 
 
 @cli.command()
@@ -251,7 +277,7 @@ def backfill_processing_status_for_datasets(ctx):
 @cli.command()
 @click.argument("dataset_id")
 @click.pass_context
-def reprocess_seurat(ctx: Context, dataset_id: str) -> None:
+def reprocess_seurat(ctx: click.Context, dataset_id: str) -> None:
     """
     Reconverts the specified dataset to Seurat format in place.
     :param ctx: command context
@@ -333,6 +359,18 @@ def migrate_redesign_correct_published_at(ctx):
     ./scripts/cxg_admin.py --deployment dev migrate-redesign-debug
     """
     migrate.migrate_redesign_correct_published_at(ctx)
+
+
+@cli.command()
+@click.pass_context
+@click.argument("report_patj", type=click.Path(exists=True))
+def rollback_datasets(ctx, report_path: str):
+    """
+    Used to rollback a datasets to a previous version.
+
+    ./scripts/cxg_admin.py --deployment dev rollback-dataset report.json
+    """
+    schema_migration.rollback_dataset(ctx, report_path)
 
 
 if __name__ == "__main__":

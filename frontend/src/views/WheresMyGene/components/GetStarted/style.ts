@@ -7,10 +7,7 @@ import {
 } from "src/components/Layout/style";
 import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
-import {
-  X_AXIS_CHART_HEIGHT_PX,
-  Y_AXIS_CHART_WIDTH_PX,
-} from "../HeatMap/utils";
+import { Y_AXIS_CHART_WIDTH_PX } from "../HeatMap/utils";
 import { LEGEND_HEIGHT_PX } from "../InfoPanel/components/Legend/style";
 
 export const Header = styled.h1`
@@ -83,12 +80,16 @@ export const StyledStepOne = styled.div`
   flex: 1;
 `;
 
-export const StyledStepTwo = styled.div`
+type Props = {
+  minHeight: number;
+  isHidden: boolean;
+};
+
+export const StyledStepTwo = styled.div<Props>`
   ${isHidden}
   z-index: ${Z_INDEX};
   flex: 0;
-
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
+  min-height: ${(props) => props.minHeight}px;
   margin-left: ${GAP_PX}px;
 `;
 

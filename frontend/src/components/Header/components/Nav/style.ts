@@ -1,10 +1,8 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getSpaces } from "czifui";
 import { Classes, Colors } from "@blueprintjs/core";
 import { GRAY } from "src/components/common/theme";
 import { css } from "@emotion/react";
-
-const spacesL = (props: CommonThemeProps) => getSpaces(props)?.l;
+import { spacesL } from "src/common/theme";
 
 export const Nav = styled.span`
   display: flex;

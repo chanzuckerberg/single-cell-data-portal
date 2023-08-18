@@ -418,6 +418,57 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
+  /v1/user-collections/index:
+    get:
+      tags:
+        - collections
+      summary: >-
+        Returns all public collections and any private collections that the user can update.
+      description: >-
+        Returns all public, non tombstoned collections and any private collections or revisions the user
+        has WRITE access to. This endpoint is meant to be used for displaying collections
+        in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
+      security:
+        - cxguserCookie: []
+      operationId: backend.portal.api.portal_api.get_user_collection_index
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - name
+                  properties:
+                    access_type:
+                      $ref: "#/components/schemas/access_type"
+                    curator_name:
+                      type: string
+                    id:
+                      $ref: "#/components/schemas/collection_id"
+                    name:
+                      type: string
+                    publisher_metadata:
+                      $ref: "#/components/schemas/publisher_metadata"
+                    published_at:
+                      type: number
+                      nullable: true
+                    revised_at:
+                      type: number
+                      nullable: true
+                    consortia:
+                      $ref: "#/components/schemas/consortia"
+                    visibility:
+                      $ref: "#/components/schemas/visibility"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+
   /v1/datasets/{dataset_id}:
     delete:
       tags:
@@ -702,7 +753,89 @@ paths:
                       type: number
         "400":
           $ref: "#/components/responses/400"
-
+  /v1/user-datasets/index:
+    get:
+      tags:
+        - datasets
+      summary: >-
+        Returns datasets related to all public non-tombstoned collections and all private non-revision collections the user can update.
+      security:
+        - cxguserCookie: []
+      description: >-
+        Returns datasets related to all public non-tombstoned collections and all private non-revision collections
+        where the user has WRITE access. This endpoint is meant to be used for displaying datasets in a compact view.
+        It doesn't return all the fields, so it is not suitable for general usage.
+      operationId: backend.portal.api.portal_api.get_user_datasets_index
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    collection_id:
+                      type: string
+                    assay:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    tissue:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    tissue_ancestors:
+                      type: array
+                      items:
+                        type: string
+                    disease:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    sex:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    self_reported_ethnicity:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    organism:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    development_stage:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    development_stage_ancestors:
+                      type: array
+                      items:
+                        type: string
+                    cell_count:
+                      type: integer
+                    cell_type:
+                      $ref: "#/components/schemas/ontology_element_array"
+                    cell_type_ancestors:
+                      type: array
+                      items:
+                        type: string
+                    mean_genes_per_cell:
+                      type: number
+                    is_primary_data:
+                      $ref: "#/components/schemas/is_primary_data"
+                    donor_id:
+                      type: array
+                      items:
+                        type: string
+                    suspension_type:
+                      type: array
+                      items:
+                        type: string
+                    schema_version:
+                      type: string
+                    explorer_url:
+                      type: string
+                    published_at:
+                      type: number
+                    revised_at:
+                      type: number
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
   /v1/login:
     get:
       tags:
@@ -824,6 +957,10 @@ paths:
 
 components:
   schemas:
+    access_type:
+      description: Indicates if the user will be allowed to make updates to the entity.
+      type: string
+      enum: [READ, WRITE]
     user_id:
       description: A unique identifier of a logged in User of Corpora.
       type: string
@@ -920,8 +1057,7 @@ components:
         - data_submission_policy_version
       properties:
         access_type:
-          type: string
-          enum: [READ, WRITE]
+          $ref: "#/components/schemas/access_type"
         created_at:
           type: number
         updated_at:
@@ -948,6 +1084,8 @@ components:
           type: string
         publisher_metadata:
           $ref: "#/components/schemas/publisher_metadata"
+        revising_in:
+          $ref: "#/components/schemas/revising_in"
         datasets:
           type: array
           items:
@@ -981,7 +1119,13 @@ components:
           type: number
         published_year:
           type: number
-
+    revising_in:
+      type: string
+      description: >-
+        If the Collection is published and has an outstanding private Revision, and the user has write access, then
+        `revising_in` is set to the id of the private Revision. The value is `None` if the user is not authorized or no
+        private Revision exists.
+      nullable: true
     ontology_element:
       type: object
       properties:

@@ -3,11 +3,18 @@ import logging
 import numpy as np
 import pandas as pd
 
+from backend.wmg.pipeline.summary_cubes.cell_count import remove_accents, return_dataset_dict_w_publications
+
 logger = logging.getLogger(__name__)
 
 
 def build_in_mem_cube(
-    gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray, cube_nnz: np.ndarray
+    *,
+    gene_ids: pd.DataFrame,
+    cube_index: pd.DataFrame,
+    other_cube_attrs: list,
+    cube_sum: np.ndarray,
+    cube_nnz: np.ndarray,
 ):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
@@ -34,7 +41,7 @@ def build_in_mem_cube(
 
     # populate buffers
     idx = 0
-
+    dataset_dict = return_dataset_dict_w_publications()
     for grp in cube_index.to_records():
         (
             tissue_ontology_term_id,
@@ -57,8 +64,16 @@ def build_in_mem_cube(
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
 
+        dataset_index = 0
         for i, k in enumerate(other_cube_attrs):
-            vals[k][idx : idx + n_vals] = attr_values[i]
+            if k == "dataset_id":
+                dataset_index = i
+            if k != "publication_citation":
+                vals[k][idx : idx + n_vals] = attr_values[i]
+
+        vals["publication_citation"][idx : idx + n_vals] = remove_accents(
+            dataset_dict.get(attr_values[dataset_index].decode(), "No Publication")
+        )
 
         idx += n_vals
 
@@ -66,12 +81,18 @@ def build_in_mem_cube(
 
 
 def build_in_mem_cube_default(
-    gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray, cube_nnz: np.ndarray
+    *,
+    gene_ids: pd.DataFrame,
+    cube_index: pd.DataFrame,
+    other_cube_attrs: list,
+    cube_sum: np.ndarray,
+    cube_nnz: np.ndarray,
+    cube_sqsum: np.ndarray,
 ):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
     """
-    logger.info("Building in-mem cube")
+    logger.info("Building in-mem default cube")
 
     # Count total values so we can allocate buffers once
     total_vals = 0
@@ -88,6 +109,7 @@ def build_in_mem_cube_default(
     vals = {
         "sum": np.empty((total_vals,)),
         "nnz": np.empty((total_vals,), dtype=np.uint64),
+        "sqsum": np.empty((total_vals,)),
         **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
     }
 
@@ -115,6 +137,7 @@ def build_in_mem_cube_default(
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
+        vals["sqsum"][idx : idx + n_vals] = cube_sqsum[cube_idx, mask]
 
         for i, k in enumerate(other_cube_attrs):
             vals[k][idx : idx + n_vals] = attr_values[i]

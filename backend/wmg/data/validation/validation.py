@@ -21,10 +21,10 @@ class Validation:
         self.cell_count_path = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
         self.env = os.getenv("DEPLOYMENT_STAGE")
         self.validation_dataset_id = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
-        self.MIN_CUBE_SIZE_GB = 1
-        self.MIN_TISSUE_COUNT = 15
-        self.MIN_SPECIES_COUNT = 2
-        self.MIN_DATASET_COUNT = 50
+        self.MIN_CUBE_SIZE_GB = 2.3
+        self.MIN_TISSUE_COUNT = 53
+        self.MIN_SPECIES_COUNT = 4
+        self.MIN_DATASET_COUNT = 254
         self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80
         self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60
         self.MIN_MALAT1_RANKIT_EXPRESSION = 4
@@ -42,6 +42,7 @@ class Validation:
         that we are validating the correct values in the cube
         """
         self.log_validation_details()
+
         # check size
         self.validate_cube_size()
 
@@ -71,9 +72,10 @@ class Validation:
         self.validate_expression_levels_for_particular_gene_dataset()
 
         if len(self.errors) > 0:
-            logger.info(f"Cube Validation Failed with {len(self.errors)} errors")
+            error_message = f"Cube Validation Failed with {len(self.errors)} errors"
             for error in self.errors:
-                logger.info(error)
+                error_message += f"\n{error}"
+            logger.error(error_message)
             return False
         return True
 
@@ -473,7 +475,9 @@ class Validation:
             datasets = cube.df[:].dataset_id.drop_duplicates()
             dataset_count = len(datasets)
             if dataset_count < self.MIN_DATASET_COUNT:
-                self.errors.append("Not enough datasets in the cube")
+                self.errors.append(
+                    f"Not enough datasets in the cube, found {dataset_count} but we need {self.MIN_DATASET_COUNT}"
+                )
             logger.info(f"{dataset_count} datasets included in {self.expression_summary_path}")
             logger.info(f"Included dataset ids are: {datasets}")
 

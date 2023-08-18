@@ -1,4 +1,4 @@
-import { agnes } from "ml-hclust";
+import { Cluster, agnes } from "ml-hclust";
 import { useMemo } from "react";
 import { CellTypeRow } from "src/common/queries/wheresMyGene";
 import {
@@ -89,7 +89,7 @@ function hierarchicalClustering({
     Map<string, CellTypeGeneExpressionSummaryData>
   >;
   genes: string[];
-}) {
+}): Cluster {
   const matrix = aggregatedOnly.map((cellType) => {
     const geneNameToCellTypeGeneExpressionSummaryData =
       cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData.get(
@@ -107,6 +107,9 @@ function hierarchicalClustering({
       if (!cellTypeGeneExpressionSummaryData) return 0;
 
       const { meanExpression, percentage } = cellTypeGeneExpressionSummaryData;
+
+      // push tissue summary expression to the front
+      if (!percentage) return -1;
 
       return meanExpression * percentage;
     });

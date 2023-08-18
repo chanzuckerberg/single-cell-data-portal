@@ -1,19 +1,12 @@
 import { Classes, Colors } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import {
-  Chip,
-  CommonThemeProps,
-  getColors,
-  getSpaces,
-  InputDropdown,
-} from "czifui";
+import { Chip, getColors, InputDropdown } from "@czi-sds/components";
 import { PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
 import { button } from "src/components/Header/components/Nav/style";
+import { spacesL, spacesXl } from "src/common/theme";
 
 export const HEADER_HEIGHT_PX = 48;
-const spacesL = (props: CommonThemeProps) => getSpaces(props)?.l;
-const spacesXl = (props: CommonThemeProps) => getSpaces(props)?.xl;
 
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};

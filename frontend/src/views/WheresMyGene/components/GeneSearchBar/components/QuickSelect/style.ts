@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { autocompleteClasses, menuItemClasses, Popper } from "@mui/material";
-import { Button, ButtonIcon, MenuItem } from "czifui";
+import { Button, ButtonIcon, MenuItem } from "@czi-sds/components";
 import { OFF_WHITE } from "src/common/theme";
 
 export const ButtonWrapper = styled.div`
@@ -12,6 +12,7 @@ export const StyledSelectButton = styled(Button)`
   min-width: 88px !important;
   width: 30px;
   height: 30px;
+  font-weight: 500;
 `;
 
 export const StyledButtonIcon = styled(ButtonIcon)`

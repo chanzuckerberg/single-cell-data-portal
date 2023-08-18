@@ -1,5 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import { LoadingIndicator } from "czifui";
+import { LoadingIndicator } from "@czi-sds/components";
 import React, {
   useCallback,
   useContext,
@@ -7,6 +7,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
+import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import {
   usePrimaryFilterDimensions,
@@ -14,10 +15,20 @@ import {
 } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
-import { selectGenes, selectTissues } from "../../common/store/actions";
+import {
+  deleteAllGenes,
+  selectGenes,
+  selectTissues,
+} from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import QuickSelect from "./components/QuickSelect";
-import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
+import {
+  ActionWrapper,
+  Container,
+  LoadingIndicatorWrapper,
+  StyledButtonWrapper,
+  StyledClearButton,
+} from "./style";
 
 interface Tissue {
   name: string;
@@ -58,7 +69,7 @@ export default function GeneSearchBar({
         const notCellCulture = !tissue.name.includes("(cell culture)");
         const notFiltered =
           filteredTissues.map((val) => val.name).includes(tissue.name) ||
-          selectedTissues.includes(tissue.name);
+          selectedTissues?.includes(tissue.name);
         return notCellCulture && notFiltered;
       });
       setTissues(newTissues);
@@ -90,9 +101,11 @@ export default function GeneSearchBar({
   }, [tissues]);
 
   const selectedTissueOptions: Tissue[] = useMemo(() => {
-    return selectedTissues.map((tissue: string) => {
-      return tissuesByName.get(tissue.toLowerCase()) as Tissue;
-    });
+    return (
+      selectedTissues?.map((tissue: string) => {
+        return tissuesByName.get(tissue.toLowerCase()) as Tissue;
+      }) || []
+    );
   }, [selectedTissues, tissuesByName]);
 
   const selectedGeneOptions: Gene[] = useMemo(() => {
@@ -139,6 +152,28 @@ export default function GeneSearchBar({
           isLoading={isLoadingPrimaryFilters}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
+
+        {/* Clear Genes button */}
+        {!selectedGenes.length || (
+          <StyledButtonWrapper
+            onClick={() => {
+              if (dispatch) {
+                track(EVENTS.WMG_CLEAR_GENES_CLICKED);
+
+                dispatch(deleteAllGenes());
+              }
+            }}
+          >
+            <StyledClearButton
+              data-testid="clear-genes-button"
+              sdsType="primary"
+              sdsStyle="minimal"
+              isAllCaps={false}
+            >
+              Clear Genes
+            </StyledClearButton>
+          </StyledButtonWrapper>
+        )}
 
         {isLoadingPrimaryFilters && (
           <LoadingIndicatorWrapper>

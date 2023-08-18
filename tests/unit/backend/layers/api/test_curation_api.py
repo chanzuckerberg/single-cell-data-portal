@@ -39,35 +39,46 @@ def mock_config_fn(name):
 
 
 class TestDeleteCollection(BaseAPIPortalTest):
-    def _test(self, collection_id, header, expected_status):
+    def _test(self, collection_id, header, expected_status, query_param_str=None):
         if header == "owner":
             headers = self.make_owner_header()
         elif header == "super":
             headers = self.make_super_curator_header()
+        elif header == "cxg_admin":
+            headers = self.make_cxg_admin_header()
         elif header == "not_owner":
             headers = self.make_not_owner_header()
         elif "noauth":
             headers = {}
-
-        response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
+        response = self.app.delete(
+            f"/curation/v1/collections/{collection_id}{'?' + query_param_str if query_param_str else ''}",
+            headers=headers,
+        )
         self.assertEqual(expected_status, response.status_code)
-        if response.status_code == 204:
-            response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
-            self.assertEqual(404, response.status_code)
 
     def test__delete_public_collection(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 405), ("super", 405)]
+        tests = [
+            ("not_owner", (403, 403)),
+            ("noauth", (401, 401)),
+            ("owner", (405, 405)),
+            ("super", (405, 405)),
+            ("cxg_admin", (405, 204)),
+        ]
+        query_param_strs = ("", "delete_published=true")
         public_collection_id = self.generate_published_collection().collection_id
-        for auth, expected_response in tests:
-            with self.subTest(auth):
-                self._test(public_collection_id, auth, expected_response)
+        for auth, expected_responses in tests:
+            for i, query_param_str in enumerate(query_param_strs):
+                with self.subTest(auth):
+                    self._test(public_collection_id, auth, expected_responses[i], query_param_str=query_param_str)
 
     def test__delete_revision_collection_by_collection_version_id(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 revision_collection = self.generate_collection_revision()
-                self._test(revision_collection.version_id.id, auth, expected_response)
+                self._test(revision_collection.version_id, auth, expected_response)
+                if expected_response == 204:
+                    self._test(revision_collection.version_id, auth, 404)
 
     def test__delete_private_collection(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
@@ -75,21 +86,31 @@ class TestDeleteCollection(BaseAPIPortalTest):
             with self.subTest(auth):
                 private_collection_id = self.generate_unpublished_collection().collection_id
                 self._test(private_collection_id, auth, expected_response)
+                if expected_response == 204:
+                    self._test(private_collection_id, auth, 404)
 
     def test__delete_private_collection_by_collection_version_id(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
+        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403), ("cxg_admin", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
                 private_collection_version_id = self.generate_unpublished_collection().version_id
                 self._test(private_collection_version_id, auth, expected_response)
 
     def test__delete_tombstone_collection(self):
-        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
-        for auth, expected_response in tests:
-            with self.subTest(auth):
-                collection = self.generate_published_collection()
-                self.business_logic.tombstone_collection(collection.collection_id)
-                self._test(collection.collection_id, auth, expected_response)
+        tests = [
+            ("not_owner", (410, 410)),
+            ("noauth", (401, 401)),
+            ("owner", (410, 410)),
+            ("super", (410, 410)),
+            ("cxg_admin", (410, 410)),
+        ]
+        query_param_strs = ("", "delete_published=true")
+        for auth, expected_responses in tests:
+            for i, query_param_str in enumerate(query_param_strs):
+                with self.subTest(auth):
+                    collection = self.generate_published_collection()
+                    self.business_logic.tombstone_collection(collection.collection_id)
+                    self._test(collection.collection_id, auth, expected_responses[i], query_param_str=query_param_str)
 
 
 class TestS3Credentials(BaseAPIPortalTest):
@@ -539,10 +560,10 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
         # Confirm fields are present on Collection version body but ignore equality comparison for timestamps
         self.assertIn("created_at", received_body)
         self.assertIn("published_at", received_body)
-        [self.assertIn("published_at", d) for d in received_body["datasets"]]
+        [self.assertIn("published_at", d) for d in received_body["dataset_versions"]]
         received_body.pop("created_at")
         received_body.pop("published_at")
-        [d.pop("published_at") for d in received_body["datasets"]]
+        [d.pop("published_at") for d in received_body["dataset_versions"]]
 
     def test__get_collection_versions__200(self):
         # Create published collection with 2 published revisions and 1 unpublished revision
@@ -928,10 +949,10 @@ class TestGetCollectionID(BaseAPIPortalTest):
             res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
             self.assertEqual(403, res.status_code)
 
-    def test__get_tombstoned_collection__403(self):
+    def test__get_tombstoned_collection__410(self):
         collection_version = self.generate_published_collection()
         self.business_logic.tombstone_collection(collection_version.collection_id)
-        self._test_response(collection_version, 403)
+        self._test_response(collection_version, 410)
 
     def test_get_collection_with_no_datasets(self):
         collection_version = self.generate_unpublished_collection(add_datasets=0)
@@ -996,7 +1017,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             "contact_email": "john.doe@email.com",
             "contact_name": "john doe",
             "curator_name": "Jane Smith",
-            "datasets": [
+            "dataset_versions": [
                 {
                     "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
                     "assets": [
@@ -1023,7 +1044,6 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     ],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
-                    "explorer_url": f"/e/{first_version.datasets[0].version_id.id}.cxg/",
                     "is_primary_data": [True, False],
                     "mean_genes_per_cell": 0.5,
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
@@ -1054,20 +1074,14 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
         received_body.pop("created_at")
         self.assertIn("published_at", received_body)
         received_body.pop("published_at")
-        [self.assertIn("published_at", d) for d in received_body["datasets"]]
-        [d.pop("published_at") for d in received_body["datasets"]]
+        [self.assertIn("published_at", d) for d in received_body["dataset_versions"]]
+        [d.pop("published_at") for d in received_body["dataset_versions"]]
 
         self.assertEqual(received_body, expected_body)
-        # test correct dataset explorer url is used
-        explorer_url = res.json["datasets"][0]["explorer_url"]
-        self.assertTrue(explorer_url.endswith(f"{first_version.datasets[0].version_id.id}.cxg/"))
 
         res = self.app.get(f"/curation/v1/collection_versions/{revision.version_id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertEqual(res.json["collection_version_id"], revision.version_id.id)
-        # test correct dataset explorer url is used
-        explorer_url = res.json["datasets"][0]["explorer_url"]
-        self.assertTrue(explorer_url.endswith(f"{revision.datasets[0].version_id.id}.cxg/"))
 
     def test_get_collection_version_4xx(self):
         with self.subTest("Query endpoint with incorrect ID"):
@@ -1084,13 +1098,24 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
         with self.subTest("Query endpoint with non-UUID"):
             res = self.app.get("/curation/v1/collection_versions/bad-input-id", headers=self.make_owner_header())
             self.assertEqual(403, res.status_code)
-        with self.subTest("Collection Version is part of tombstoned Collection"):
+        with self.subTest("Attempting to access tombstoned Collection via Collection version id returns 410 Gone"):
             collection = self.generate_published_collection()
             self.business_logic.tombstone_collection(collection.collection_id)
             res = self.app.get(
                 f"/curation/v1/collection_versions/{collection.version_id}", headers=self.make_owner_header()
             )
             self.assertEqual(410, res.status_code)
+
+        with self.subTest("Cannot access prior versions for a tombstoned Collection with multiple published versions"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            self.business_logic.publish_collection_version(revision.version_id)
+            self.business_logic.tombstone_collection(collection.collection_id)
+            res = self.app.get(f"/curation/v1/collection_versions/{collection.version_id}")
+            self.assertEqual(410, res.status_code)
+            res = self.app.get(f"/curation/v1/collection_versions/{revision.version_id}")
+            self.assertEqual(410, res.status_code)
+
         with self.subTest("Collection Version is unpublished collection"):
             collection = self.generate_unpublished_collection()
             res = self.app.get(
@@ -1449,11 +1474,11 @@ class TestDeleteDataset(BaseAPIPortalTest):
             (self.make_not_owner_header, "not_owner", 403),
         ]
 
-    def _delete(self, auth, collection_id, dataset_id):
+    def _delete(self, auth, collection_id, dataset_id, query_param_str=None):
         """
         Helper method to call the delete endpoint
         """
-        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}"
+        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}{'?' + query_param_str if query_param_str else ''}"
         headers = auth() if callable(auth) else auth
         return self.app.delete(test_url, headers=headers)
 
@@ -1489,6 +1514,49 @@ class TestDeleteDataset(BaseAPIPortalTest):
                 response = self._delete(auth, dataset.collection_id, dataset.dataset_id)
                 self.assertEqual(expected_status_code, response.status_code)
 
+    def test__delete_published_dataset__405(self):
+        """
+        A Dataset that has been published cannot be deleted via the API
+        """
+        for auth_func in (self.make_super_curator_header, self.make_owner_header):
+            with self.subTest("Cannot delete published Dataset in a revision"):
+                collection = self.generate_published_collection()
+                revision = self.generate_revision(collection.collection_id)
+                dataset_id, dataset_version_id = revision.datasets[0].dataset_id, revision.datasets[0].version_id
+                response = self._delete(auth_func, revision.collection_id, dataset_id)
+                self.assertEqual(405, response.status_code)
+            with self.subTest("Cannot delete published Dataset in a revision even after it has been updated"):
+                self.generate_dataset(collection_version=revision, replace_dataset_version_id=dataset_version_id)
+                response = self._delete(auth_func, revision.collection_id, dataset_id)
+                self.assertEqual(405, response.status_code)
+
+    def test__delete_published_dataset_cxg_admin(self):
+        """
+        cxg_admin role can delete published Datasets during revisions using query_param flag 'delete_published=true'
+        """
+        with self.subTest("Can delete published Dataset during a revision"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(
+                self.make_cxg_admin_header, revision.version_id, dataset_id, query_param_str="delete_published=true"
+            )
+            self.assertEqual(202, response.status_code)
+        with self.subTest("Cannot delete published Dataset without query param"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(self.make_cxg_admin_header, revision.version_id, dataset_id)
+            self.assertEqual(405, response.status_code)
+        with self.subTest("Cannot delete published Dataset from public Collection"):
+            collection = self.generate_published_collection()
+            revision = self.generate_revision(collection.collection_id)
+            dataset_id = revision.datasets[0].dataset_id
+            response = self._delete(
+                self.make_cxg_admin_header, revision.collection_id, dataset_id, query_param_str="delete_published=true"
+            )
+            self.assertEqual(405, response.status_code)
+
 
 class TestGetDatasets(BaseAPIPortalTest):
     def test_get_dataset_in_a_collection(self):
@@ -1522,6 +1590,32 @@ class TestGetDatasets(BaseAPIPortalTest):
             response = self.app.get(test_url)
             self.assertEqual(200, response.status_code)
             self.assertEqual(dataset_id, response.json["dataset_id"])
+
+    def test_get_dataset_in_a_tombstoned_collection_410(self):
+        collection = self.generate_published_collection(add_datasets=2)
+        dataset = collection.datasets[0]
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        self.assertEqual(200, response.status_code)
+        self.business_logic.tombstone_collection(collection.collection_id)
+        response = self.app.get(test_url)
+        self.assertEqual(410, response.status_code)
+
+    def test_get_tombstoned_dataset_in_a_collection_410(self):
+        collection = self.generate_published_collection(add_datasets=2)
+        self.assertEqual(2, len(collection.datasets))
+        dataset = collection.datasets[0]
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        self.assertEqual(200, response.status_code)
+        revision = self.generate_revision(collection.collection_id)
+        self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id, delete_published=True)
+        self.business_logic.publish_collection_version(revision.version_id)
+        new_published_version = self.database_provider.get_collection_version(revision.version_id)
+        self.assertEqual(1, len(new_published_version.datasets))
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        self.assertEqual(410, response.status_code)
 
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
     def test_get_dataset_shape(self, mock_config: Mock):
@@ -1785,6 +1879,115 @@ class TestGetDatasets(BaseAPIPortalTest):
             ]
             self.assertEqual(expected_assets, dataset["assets"])
 
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test_get_datasets_by_schema_200(self, mock_config: Mock):
+        published_collection_1 = self.generate_published_collection(
+            add_datasets=2,
+            metadata=CollectionMetadata(
+                "test_collection_1",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+        published_collection_2 = self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_2",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+            dataset_schema_version="3.1.0",
+        )
+        published_collection_3 = self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_3",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+            dataset_schema_version="4.0.0",
+        )
+        self.generate_unpublished_collection(add_datasets=4)
+        self.generate_revision(published_collection_1.collection_id)
+
+        sorted_dataset_ids = (
+            [published_collection_3.datasets[0].dataset_id.id]
+            + [published_collection_2.datasets[0].dataset_id.id]
+            + sorted([d.dataset_id.id for d in published_collection_1.datasets], reverse=True)
+        )
+
+        with self.subTest("Query without parameter"):
+            response = self.app.get("/curation/v1/datasets")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual(sorted_dataset_ids, received_dataset_ids)
+
+        with self.subTest("Query against major schema version 3"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual(sorted_dataset_ids[1:], received_dataset_ids)
+
+        with self.subTest("Query against major schema version 4"):
+            response = self.app.get("/curation/v1/datasets?schema_version=4")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual([published_collection_3.datasets[0].dataset_id.id], received_dataset_ids)
+
+        with self.subTest("Query against minor schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.0")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual(sorted_dataset_ids[2:], received_dataset_ids)
+
+        with self.subTest("Query against patch schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.1.0")
+            received_dataset_ids = []
+            for dataset in response.json:
+                received_dataset_ids.append(dataset["dataset_id"])
+            self.assertTrue(200, response.status_code)
+            self.assertEqual([published_collection_2.datasets[0].dataset_id.id], received_dataset_ids)
+
+        with self.subTest("Query against non-matching major schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=5")
+            self.assertTrue(200, response.status_code)
+            self.assertCountEqual(response.json, [])
+
+        with self.subTest("Query against non-matching minor schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.2")
+            self.assertTrue(200, response.status_code)
+            self.assertCountEqual(response.json, [])
+
+        with self.subTest("Query against non-matching patch schema version"):
+            response = self.app.get("/curation/v1/datasets?schema_version=3.1.1")
+            self.assertTrue(200, response.status_code)
+            self.assertCountEqual(response.json, [])
+
+        with self.subTest("Query against non-version input"):
+            response = self.app.get("/curation/v1/datasets?schema_version=invalid_input")
+            self.assertEqual(400, response.status_code)
+
 
 class TestGetDatasetVersion(BaseAPIPortalTest):
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
@@ -1801,7 +2004,6 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         )
 
         headers = self.make_owner_header()
-
         # get previously published dataset version
         test_url = f"/curation/v1/dataset_versions/{initial_published_dataset_version_id}"
         response = self.app.get(test_url, headers=headers)
@@ -1809,7 +2011,6 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         self.assertEqual(initial_published_dataset_version_id.id, response.json["dataset_version_id"])
         self.assertEqual(initial_published_dataset.dataset_id.id, response.json["dataset_id"])
         self.assertEqual(collection_id.id, response.json["collection_id"])
-        self.assertTrue(response.json["explorer_url"].endswith(f"/e/{initial_published_dataset_version_id}.cxg/"))
         expected_assets = [  # Filter out disallowed file types + properly construct url
             {
                 "filesize": -1,
@@ -1831,9 +2032,6 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         self.assertEqual(published_dataset_revision.dataset_version_id, response.json["dataset_version_id"])
         self.assertEqual(published_dataset_revision.dataset_id, response.json["dataset_id"])
         self.assertEqual(collection_id.id, response.json["collection_id"])
-        self.assertTrue(
-            response.json["explorer_url"].endswith(f"/e/{published_dataset_revision.dataset_version_id}.cxg/")
-        )
         expected_assets = [  # Filter out disallowed file types + properly construct url
             {
                 "filesize": -1,
@@ -1875,6 +2073,22 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
             test_url = f"/curation/v1/dataset_versions/{unpublished_dataset_revision.dataset_version_id}"
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(404, response.status_code)
+        with self.subTest("Dataset is part of a tombstoned Collection"):
+            collection = self.generate_published_collection()
+            dataset = collection.datasets[0]
+            self.business_logic.tombstone_collection(collection.collection_id)
+            test_url = f"/curation/v1/dataset_versions/{dataset.version_id}"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(410, response.status_code)
+        with self.subTest("Dataset version is prior published; Collection is tombstoned"):
+            collection = self.generate_published_collection(add_datasets=2)
+            dataset_version_id = collection.datasets[0].version_id
+            revision = self.generate_revision(collection.collection_id)
+            self.business_logic.publish_collection_version(revision.version_id)
+            self.business_logic.tombstone_collection(collection.collection_id)
+            test_url = f"/curation/v1/dataset_versions/{dataset_version_id}"
+            response = self.app.get(test_url, headers=headers)
+            self.assertEqual(410, response.status_code)
 
 
 class TestGetDatasetIdVersions(BaseAPIPortalTest):
@@ -1932,6 +2146,31 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             headers = self.make_owner_header()
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(404, response.status_code)
+        with self.subTest("Dataset is part of a tombstoned Collection"):
+            collection = self.generate_published_collection()
+            dataset = collection.datasets[0]
+            self.business_logic.tombstone_collection(collection.collection_id)
+            test_url = f"/curation/v1/datasets/{dataset.dataset_id}/versions"
+            response = self.app.get(test_url, headers=self.make_owner_header())
+            self.assertEqual(410, response.status_code)
+        with self.subTest("Dataset version is prior published; Collection is tombstoned"):
+            collection = self.generate_published_collection(add_datasets=2)
+            dataset_id = collection.datasets[0].dataset_id
+            revision = self.generate_revision(collection.collection_id)
+            self.business_logic.publish_collection_version(revision.version_id)
+            self.business_logic.tombstone_collection(collection.collection_id)
+            test_url = f"/curation/v1/datasets/{dataset_id}/versions"
+            response = self.app.get(test_url, headers=self.make_owner_header())
+            self.assertEqual(410, response.status_code)
+        with self.subTest("Dataset is tombstoned"):
+            collection = self.generate_published_collection(add_datasets=2)
+            dataset = collection.datasets[0]
+            revision = self.generate_revision(collection.collection_id)
+            self.business_logic.remove_dataset_version(revision.version_id, dataset.version_id, delete_published=True)
+            self.business_logic.publish_collection_version(revision.version_id)
+            test_url = f"/curation/v1/datasets/{dataset.dataset_id}/versions"
+            response = self.app.get(test_url, headers=self.make_owner_header())
+            self.assertEqual(410, response.status_code)
 
 
 class TestPostDataset(BaseAPIPortalTest):
@@ -2064,7 +2303,7 @@ class TestPostRevision(BaseAPIPortalTest):
     "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
     return_value={"size": 1, "name": "file.h5ad"},
 )
-@patch("backend.common.upload.start_upload_sfn")
+@patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
 class TestPutLink(BaseAPIPortalTest):
     @classmethod
     def setUpClass(cls):

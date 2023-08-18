@@ -58,22 +58,8 @@ def create_marker_genes_cube(corpus_path: str):
             organism = tiss_organisms[i]
 
             logger.info("Calculating markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
-            target = {
-                "tissue_ontology_term_ids": [tiss],
-                "cell_type_ontology_term_ids": [ct],
-                "organism_ontology_term_id": organism,
-            }
-            context = {
-                "tissue_ontology_term_ids": [tiss],
-                "organism_ontology_term_id": organism,
-            }
             try:
-                t_markers = get_markers(
-                    target, context, corpus=corpus_path, test="ttest", percentile=0.05, n_markers=None
-                )
-                b_markers = get_markers(
-                    target, context, corpus=corpus_path, test="binomtest", percentile=0.3, n_markers=None
-                )
+                t_markers = get_markers(ct, tiss, organism, corpus=corpus_path, percentile=0.05, n_markers=None)
             except MarkerGeneCalculationException as e:
                 # exception handling here so pipeline doesn't fail if no cells match query criteria
                 logger.info("Error finding markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
@@ -81,13 +67,11 @@ def create_marker_genes_cube(corpus_path: str):
                 continue
             gc.collect()
 
-            all_marker_genes = set(t_markers.keys()).union(b_markers.keys())
+            all_marker_genes = set(t_markers.keys())
             markers = []
             for g in all_marker_genes:
-                b_stats = b_markers.get(g, {"p_value_binomtest": np.nan, "effect_size_binomtest": np.nan})
                 t_stats = t_markers.get(g, {"p_value_ttest": np.nan, "effect_size_ttest": np.nan})
-                b_stats.update(t_stats)
-                b_stats.update(
+                t_stats.update(
                     {
                         "tissue_ontology_term_id": tiss,
                         "organism_ontology_term_id": organism,
@@ -95,14 +79,12 @@ def create_marker_genes_cube(corpus_path: str):
                         "gene_ontology_term_id": g,
                     }
                 )
-                markers.append(b_stats)
+                markers.append(t_stats)
 
             df = pd.DataFrame.from_records(markers)
             if df.shape[0] > 0:
                 df = df.astype(
                     {
-                        "p_value_binomtest": "float32",
-                        "effect_size_binomtest": "float32",
                         "p_value_ttest": "float32",
                         "effect_size_ttest": "float32",
                     }

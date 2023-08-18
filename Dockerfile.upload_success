@@ -3,7 +3,8 @@ FROM public.ecr.aws/lambda/python:3.8
 COPY backend/layers/processing/upload_success .
 COPY backend/layers ./backend/layers
 
-RUN pip3 install -r requirements.txt
+ADD requirements-upload-success.txt requirements-upload-success.txt
+RUN pip3 install -r requirements-upload-success.txt
 
 COPY backend/__init__.py ./backend/__init__.py
 COPY backend/common ./backend/common

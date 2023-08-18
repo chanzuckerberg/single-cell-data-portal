@@ -7,7 +7,6 @@ import tiledb
 from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import (
     expression_summary_fmg_indexed_dims,
     expression_summary_fmg_non_indexed_dims,
-    expression_summary_fmg_non_indexed_dims_no_gene_ontology,
     expression_summary_fmg_schema,
 )
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_FMG_CUBE_NAME
@@ -27,8 +26,7 @@ def _load(
     cube_sum: np.ndarray,
     cube_sqsum: np.ndarray,
     cube_nnz: np.ndarray,
-    cube_nnz_thr: np.ndarray,
-) -> (list, dict):
+) -> None:
     """
     Build expression summary fmg cube in memory and write to disk
     """
@@ -39,7 +37,6 @@ def _load(
         cube_sum,
         cube_sqsum,
         cube_nnz,
-        cube_nnz_thr,
     )
 
     logger.debug("Saving cube to tiledb")
@@ -60,7 +57,7 @@ def create_expression_summary_fmg_cube(corpus_path: str):
     """
     uri = f"{corpus_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"
     ctx = create_ctx()
-    cube_dims = expression_summary_fmg_indexed_dims + expression_summary_fmg_non_indexed_dims_no_gene_ontology
+    cube_dims = expression_summary_fmg_indexed_dims
 
     with tiledb.scope_ctx(ctx):
         # Create cube
@@ -70,9 +67,7 @@ def create_expression_summary_fmg_cube(corpus_path: str):
         gene_ontology_term_ids = extract_var_data(corpus_path, ctx)
 
         # transform
-        cube_index, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr = transform(
-            corpus_path, gene_ontology_term_ids, cube_dims
-        )
-        _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr)
+        cube_index, cube_sum, cube_sqsum, cube_nnz = transform(corpus_path, gene_ontology_term_ids, cube_dims)
+        _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_sqsum, cube_nnz)
     gene_count = len(gene_ontology_term_ids)
-    logger.info(f"create_expression_summary_fmg_cube: {gene_count=}")
+    logger.info(f"create_expression_summary_fmg_cube: gene_count={gene_count}")

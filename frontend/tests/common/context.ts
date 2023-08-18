@@ -7,9 +7,13 @@ if (isHeadful) {
   console.log("Running tests in headful mode");
 }
 
+/**
+ * (thuang): Keep the video size small to avoid test timing out from processing
+ * large video files.
+ */
 const VIEWPORT = {
-  height: 1080,
-  width: 1920,
+  height: 800,
+  width: 1280,
 };
 
 export const COMMON_PLAYWRIGHT_CONTEXT: Config["use"] = {

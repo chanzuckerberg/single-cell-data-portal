@@ -1,5 +1,6 @@
-import { Menu } from "@blueprintjs/core";
-import { Fragment, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Divider } from "@mui/material";
+import { List } from "@czi-sds/components";
 import {
   CATEGORY_FILTER_ID,
   OnFilterFn,
@@ -8,17 +9,11 @@ import {
 import FilterMenuItems from "src/components/common/Filter/components/FilterContent/components/FilterMenu/components/FilterMenuItems";
 import FilterSearch from "src/components/common/Filter/components/FilterSearch";
 import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
-import {
-  MAX_DISPLAYABLE_MENU_ITEMS,
-  MenuDivider,
-  MenuItemsWrapper,
-  MenuWrapper,
-  NoMatches,
-} from "./style";
+import { NoMatches } from "src/components/common/Filter/components/FilterContent/components/common/style";
+import { FilterMenu as Menu, MAX_DISPLAYABLE_MENU_ITEMS } from "./style";
 
 interface Props {
   categoryFilterId: CATEGORY_FILTER_ID;
-  isMultiselect: boolean;
   isSearchable: boolean;
   onFilter: OnFilterFn;
   pinnedValues: SelectCategoryValueView[];
@@ -28,11 +23,12 @@ interface Props {
   values: SelectCategoryValueView[];
 }
 
-const ADDITIONAL_MENU_WIDTH = 8;
+// Additional menu width facilitates the rendering of selected menu items (where font-weight is "semibold")
+// without any wrapping.
+export const ADDITIONAL_MENU_WIDTH = 24;
 
 export default function FilterMenu({
   categoryFilterId,
-  isMultiselect,
   isSearchable,
   onFilter,
   pinnedValues,
@@ -51,10 +47,8 @@ export default function FilterMenu({
   const filteredValues = filterCategoryValues(values, searchValue);
   const emptyItems = filteredValues.length === 0;
   const scrollable = isMenuScrollable(filteredValues, isSearchable);
-  const MenuItemsScroller = scrollable ? MenuItemsWrapper : Fragment;
   const isMenuDivided =
     filteredPinnedValues.length > 0 && filteredUnpinnedValues.length > 0;
-  const scrollerProps = scrollable ? { isMenuDivided } : {};
 
   // Set initial width on menu to prevent resizing on filter of menu items.
   useEffect(() => {
@@ -66,46 +60,45 @@ export default function FilterMenu({
   }, []);
 
   return (
-    <MenuWrapper menuWidth={menuWidth} ref={menuRef}>
-      <Menu>
-        {/* Optional search bar */}
-        {isSearchable && (
-          <FilterSearch
-            searchValue={searchValue}
-            setSearchValue={setSearchValue}
-          />
-        )}
+    <Menu
+      isMenuDivided={isMenuDivided}
+      menuWidth={menuWidth}
+      ref={menuRef}
+      scrollable={scrollable}
+    >
+      {/* Optional search bar */}
+      {isSearchable && (
+        <FilterSearch
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+        />
+      )}
+      <List>
         {/* No matches */}
         {emptyItems ? (
-          <NoMatches
-            multiline /* required when no matches text length is longer than longest category value */
-            shouldDismissPopover={false}
-            text={"No matches found"}
-          />
+          <NoMatches>No matches found</NoMatches>
         ) : (
-          <MenuItemsScroller {...scrollerProps}>
+          <>
             {/* Pinned values */}
             {filteredPinnedValues.length > 0 && (
               <FilterMenuItems
                 categoryFilterId={categoryFilterId}
-                isMultiselect={isMultiselect}
                 menuItems={filteredPinnedValues}
                 onFilter={onFilter}
               />
             )}
             {/* Menu divider */}
-            {isMenuDivided && <MenuDivider />}
+            {isMenuDivided && <Divider />}
             {/* Unpinned values */}
             <FilterMenuItems
               categoryFilterId={categoryFilterId}
-              isMultiselect={isMultiselect}
               menuItems={filteredUnpinnedValues}
               onFilter={onFilter}
             />
-          </MenuItemsScroller>
+          </>
         )}
-      </Menu>
-    </MenuWrapper>
+      </List>
+    </Menu>
   );
 }
 

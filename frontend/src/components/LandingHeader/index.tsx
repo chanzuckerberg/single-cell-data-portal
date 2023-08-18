@@ -1,14 +1,9 @@
 import { AnchorButton } from "@blueprintjs/core";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC, useRef, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
-import { BOOLEAN } from "src/common/localStorage/set";
-import { useUserInfo } from "src/common/queries/auth";
 import AuthButtons from "src/components/Header/components/AuthButtons";
 import { HomepageLink } from "../common/HomepageLink";
 import {
@@ -27,10 +22,7 @@ import {
 import { LinkWrapper } from "src/components/Header/components/Nav/style";
 
 const LandingHeader: FC = () => {
-  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
-  const { data: userInfo } = useUserInfo(isCurator);
   const { pathname } = useRouter();
-  const isMyCollectionsShown = userInfo?.name && isCurator;
 
   const mobileNavTray = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -68,18 +60,6 @@ const LandingHeader: FC = () => {
               <Nav pathname={pathname} />
             </Left>
             <Right>
-              {isMyCollectionsShown && (
-                <LinkWrapper>
-                  <Link href={ROUTES.MY_COLLECTIONS} passHref>
-                    <AnchorButton
-                      active={isRouteActive(pathname, ROUTES.MY_COLLECTIONS)}
-                      href="passHref"
-                      minimal
-                      text="My Collections"
-                    />
-                  </Link>
-                </LinkWrapper>
-              )}
               <LinkWrapper>
                 <AnchorButton
                   onClick={() => {

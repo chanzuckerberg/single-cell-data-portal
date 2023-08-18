@@ -1,6 +1,6 @@
 import itertools
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
@@ -29,6 +29,7 @@ from backend.layers.business.exceptions import (
     CollectionUpdateException,
     CollectionVersionException,
     DatasetInWrongStatusException,
+    DatasetIsTombstonedException,
     DatasetNotFoundException,
     InvalidMetadataException,
     InvalidURIException,
@@ -64,19 +65,10 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
     """
 
     all_published_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=True))
-
-    user_info = UserInfo(token_info)  # TODO: ideally, connexion should already return a UserInfo object
-    if user_info.is_none():
-        all_owned_collections = []
-    elif user_info.is_super_curator():
-        all_owned_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=False))
-    else:
-        all_owned_collections = get_business_logic().get_collections(
-            CollectionQueryFilter(is_published=False, owner=user_info.user_id)
-        )
+    user_private_collections = get_user_private_collections(token_info)
 
     collections = []
-    for version in itertools.chain(all_published_collections, all_owned_collections):
+    for version in itertools.chain(all_published_collections, user_private_collections):
         collection = {
             "visibility": "PRIVATE" if version.published_at is None else "PUBLIC",
             "owner": version.owner,
@@ -241,6 +233,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
     """
     Converts a CollectionVersion object to an object compliant to the API specifications
     """
+    revising_in = None
     if collection.is_unpublished_version():
         # In this case, the collection version is a revision of an already published collection.
         # We should expose version_id as the collection_id
@@ -259,6 +252,14 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
         # The last case is a published collection. We just return the canonical id and set revision_of to None
         revision_of = None
         collection_id = collection.collection_id.id
+        is_published = collection.published_at is not None
+
+        _revising_in = None
+        if is_published and access_type == "WRITE":  # can ony be WRITE if authenticated
+            _revising_in = get_business_logic().get_unpublished_collection_version_from_canonical(
+                collection.collection_id
+            )
+        revising_in = _revising_in.version_id.id if _revising_in else None
         is_in_revision = False
 
     is_tombstoned = collection.canonical_collection.tombstoned
@@ -287,6 +288,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "published_at": collection.canonical_collection.originally_published_at,
             "publisher_metadata": collection.publisher_metadata,  # TODO: convert
             "revision_of": revision_of,
+            "revising_in": revising_in,
             "updated_at": collection.published_at or collection.created_at,
             "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         }
@@ -303,7 +305,7 @@ def lookup_collection(collection_id: str):
     """
     version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
     if version is None:
-        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id), get_tombstoned=True)
     return version
 
 
@@ -434,6 +436,72 @@ def get_collection_index():
     return make_response(jsonify(response), 200)
 
 
+def get_user_private_collections(token_info: Optional[dict] = None):
+    user_info = UserInfo(token_info)
+
+    # Get all private collections the user has write access to
+    if user_info.is_none():
+        all_user_private_collections = []
+    elif user_info.is_super_curator():
+        all_user_private_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=False))
+    else:
+        all_user_private_collections = get_business_logic().get_collections(
+            CollectionQueryFilter(is_published=False, owner=user_info.user_id)
+        )
+    return all_user_private_collections
+
+
+def get_user_collection_index(token_info):
+    """
+    Returns a list of collections that are published and active.
+    Also returns a subset of fields and not datasets.
+    """
+
+    user_info = UserInfo(token_info)
+
+    # Get all user collections (public and private)
+    public_collections = get_business_logic().get_collections(CollectionQueryFilter(is_published=True))
+    user_private_collections = get_user_private_collections(token_info)
+
+    response = []
+    for collection in itertools.chain(public_collections, user_private_collections):
+        transformed_collection = {
+            "access_type": "WRITE" if user_info.is_user_owner_or_allowed(collection.owner) else "READ",
+            "created_at": collection.created_at,
+            "curator_name": collection.curator_name,
+            "id": collection.collection_id.id,
+            "name": collection.metadata.name,
+            "owner": collection.owner,
+            "visibility": "PRIVATE" if collection.published_at is None else "PUBLIC",
+        }
+
+        if collection.publisher_metadata is not None:
+            transformed_collection["publisher_metadata"] = _publisher_metadata_to_response(
+                collection.publisher_metadata
+            )
+
+        if collection.is_unpublished_version():
+            transformed_collection["id"] = collection.version_id.id
+        else:
+            transformed_collection["id"] = collection.collection_id.id
+
+        if not collection.is_published():
+            transformed_collection["revision_of"] = collection.collection_id.id
+        else:
+            transformed_collection["revision_of"] = None
+
+        if collection.is_published():
+            transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
+            transformed_collection["revised_at"] = collection.published_at
+        else:
+            transformed_collection["published_at"] = None
+            transformed_collection["revised_at"] = None
+
+        response.append(transformed_collection)
+
+    return make_response(jsonify(response), 200)
+
+
 def delete_collection(collection_id: str, token_info: dict):
     """
     Deletes a collection version from the persistence store, or tombstones a canonical collection.
@@ -448,6 +516,9 @@ def delete_collection(collection_id: str, token_info: dict):
 
     if not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
+
+    if version.published_at:
+        raise MethodNotAllowedException("Cannot delete a published Collection through API -- contact CXG Admins")
 
     if isinstance(resource_id, CollectionVersionId):
         try:
@@ -525,7 +596,6 @@ def publish_post(collection_id: str, body: object, token_info: dict):
 
 
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
-
     version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
@@ -680,8 +750,34 @@ def get_datasets_index():
     Returns a list of all the datasets that currently belong to a published and active collection
     """
 
+    datasets = get_business_logic().get_all_mapped_datasets()
+    response = enrich_dataset_response(datasets)
+
+    return make_response(jsonify(response), 200)
+
+
+def get_user_datasets_index(token_info: dict):
+    """
+    Returns a list of all Datasets associated with public Collections or with private Collections where
+    the user has WRITE access and the collection is not a revision.
+    """
+    public_datasets = get_business_logic().get_all_mapped_datasets()
+
+    private_collections = get_user_private_collections(token_info)
+    # filter out collections that are revisions
+    non_revisions = [c for c in private_collections if not c.is_unpublished_version()]
+    private_datasets = get_business_logic().get_datasets_for_collections(non_revisions)
+
+    response = enrich_dataset_response(itertools.chain(public_datasets, private_datasets))
+    return make_response(jsonify(response), 200)
+
+
+def enrich_dataset_response(datasets: Iterable[DatasetVersion]) -> List[dict]:
+    """
+    Enriches a list of datasets with ancestors of ontologized fields
+    """
     response = []
-    for dataset in get_business_logic().get_all_mapped_datasets():
+    for dataset in datasets:
         payload = _dataset_to_response(dataset, is_tombstoned=False)
         enrich_dataset_with_ancestors(
             payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
@@ -690,8 +786,7 @@ def get_datasets_index():
         enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
         payload["explorer_url"] = explorer_url.generate(dataset)
         response.append(payload)
-
-    return make_response(jsonify(response), 200)
+    return response
 
 
 def delete_dataset(dataset_id: str, token_info: dict):
@@ -726,9 +821,12 @@ def get_dataset_identifiers(url: str):
     dataset = get_business_logic().get_dataset_version(DatasetVersionId(_id))
     if dataset is None:
         # Lookup from canonical if the version cannot be found
-        dataset = get_business_logic().get_dataset_version_from_canonical(DatasetId(_id))
-    if dataset is None:
-        raise NotFoundHTTPException()
+        try:
+            dataset = get_business_logic().get_dataset_version_from_canonical(DatasetId(_id))
+            if dataset is None:
+                raise NotFoundHTTPException()
+        except DatasetIsTombstonedException:
+            raise NotFoundHTTPException() from None  # This should change to GoneHTTPException once FE is ready for 410
 
     # A dataset version can appear in multiple collections versions. This endpoint should:
     # 1. Return the most recent published version that contains the dataset version (aka the mapped version)

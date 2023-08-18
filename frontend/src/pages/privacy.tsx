@@ -14,7 +14,7 @@ const Privacy = (): JSX.Element => {
       <CommonStyle>
         <PrivacyStyle>
           <Head>
-            <title>CELL&times;GENE | Privacy</title>
+            <title>Privacy - CZ CELLxGENE</title>
           </Head>
           <header>
             <Image
@@ -30,7 +30,7 @@ const Privacy = (): JSX.Element => {
 
           <main>
             <h1>Privacy Policy</h1>
-            <p>Last updated: December 15, 2022.</p>
+            <p>Last updated: May 11, 2023.</p>
             {/* Introduction */}
             <>
               <h2>Introduction</h2>
@@ -56,15 +56,15 @@ const Privacy = (): JSX.Element => {
                   advance biomedical research.
                 </li>
                 <li>
-                  The data made available through the Site is{" "}
+                  The datasets made available through the Site are{" "}
                   <strong>not personally identifiable</strong>.
                 </li>
                 <li>
                   We use the privacy-friendly Plausible service to collect{" "}
                   <strong>basic analytics</strong> about our Site traffic (e.g.
                   the number of visitors and page views) so we know how it’s
-                  being used. This helps us improve the Site as well as get a
-                  sense of its impact.
+                  being used. We also analyze the usage of the Site which helps
+                  us improve the Site as well as get a sense of its impact.
                 </li>
               </ul>
             </>
@@ -102,22 +102,24 @@ const Privacy = (): JSX.Element => {
                 generated) and helps you visualize it for faster analysis,
                 exploration, and – hopefully – insight.
               </p>
-              <p>This data is not personally identifiable.</p>
+              <p>
+                The datasets available on the Site are not personally
+                identifiable.
+              </p>
               <ul className="text-list">
                 <li>
                   <h4>Data You Provide To Us.</h4> We collect certain
-                  information from you which may include identifiers,
-                  professional or employment-related information, and
-                  information from survey responses when you provide it to us
-                  directly. Specifically, this includes data you submit for
-                  display in CELLxGENE (ex: single-cell .h5ad matrix files),
+                  information from you which may include identifiers or
+                  professional or employment-related information. This includes
                   data you provide us as part of a submission or registering for
-                  an account (ex: name and email address), as well as if you
-                  contact us for support or with information about a dataset via
-                  email. This information is necessary in order to create your
-                  account and provide you with access to the services we offer
-                  on the Site. We also collect data you include in any survey
-                  responses or feedback sessions if you decide to participate.
+                  an account (ex: name and email address). This information is
+                  necessary in order to create your account and provide you with
+                  access to the services we offer on the Site. We collect your
+                  information if you decide to sign up for our newsletter, if
+                  you contact us for support or with information about a dataset
+                  via email, or if you respond to a survey or participate in a
+                  feedback session. We also collect the data you submit for
+                  display in CELLxGENE (ex: single-cell .h5ad matrix files).
                 </li>
                 <li>
                   <h4>Data From Your Browser or Device.</h4> Whenever you use
@@ -195,17 +197,21 @@ const Privacy = (): JSX.Element => {
                 </li>
                 <li>
                   <h4>Communications.</h4> We may also use your information to
-                  respond to an email from you, send a survey, and to engage
-                  with you about a dataset you wish to share. Survey responses
-                  and feedback sessions help us understand and improve the Site.
+                  respond to an email from you, send a survey, engage about a
+                  dataset you wish to share, or send our newsletter if you
+                  opt-in to receiving it. Survey responses and feedback sessions
+                  help us understand and improve the Site.
                 </li>
                 <li>
-                  <h4>Aggregate Insights.</h4> We use the privacy-friendly
-                  Plausible service to produce and share aggregated insights
-                  that do not identify you. For example we may receive from
-                  Plausible statistics about the location of our Visitors, and
-                  how many Visitors engage with the Site on a monthly basis.
-                  These aggregated insights are not personally identifiable.
+                  <h4>Aggregate Insights and Analytics.</h4> We use the
+                  privacy-friendly Plausible service to produce and share
+                  aggregated insights that do not identify you. For example we
+                  may receive from Plausible statistics about the location of
+                  our Visitors, and how many Visitors engage with the Site on a
+                  monthly basis. These aggregated insights are not personally
+                  identifiable. We also use your information to analyze how our
+                  Site is being used, such as understanding how many downloads
+                  there have been for a specific dataset.
                 </li>
                 <li>
                   <h4>Other Sources.</h4> We use information from Other Sources
@@ -403,7 +409,8 @@ const Privacy = (): JSX.Element => {
                 <li>
                   <h4>Consent.</h4> We rely on consent to engage in certain data
                   collection activities, like data you choose to submit to us
-                  for display on CELLxGENE Discover.
+                  for display on CELLxGENE Discover or if you decide to sign up
+                  for our newsletter.
                 </li>
                 <li>
                   <h4>Legitimate Interests.</h4> We rely on legitimate interests

@@ -1,26 +1,23 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getColors, Notification } from "czifui";
+import { Notification } from "@czi-sds/components";
 import { NotificationWrapper } from "src/components/common/Filter/common/style";
+import { beta100, beta400, beta600 } from "src/common/theme";
 
 export const BETA_NOTIFICATION_ID = "beta-notification";
 
 export const StyledNotification = styled(Notification)`
-  ${(props: CommonThemeProps) => {
-    const colors = getColors(props);
+  /*
+   * beta intent does not exist for SDS Notification, but the colors do targeting
+   * specific id because using the generic .elevated class selector was messing with the copy link notification
+   **/
+  #beta-notification {
+    border-color: ${beta400} !important;
+    background-color: ${beta100};
 
-    // beta intent does not exist for SDS Notification, but the colors do
-    // targeting specific id because using the generic .elevated class selector was messing with the copy link notification
-    return `
-      #beta-notification {
-        border-color: ${colors?.beta[400]} !important;
-        background-color: ${colors?.beta[100]};
-
-        path {
-          fill: ${colors?.beta[600]};
-        }
-      }
-    `;
-  }}
+    path {
+      fill: ${beta600};
+    }
+  }
 `;
 
 export const StyledNotificationWrapper = styled(NotificationWrapper)`
@@ -30,11 +27,5 @@ export const StyledNotificationWrapper = styled(NotificationWrapper)`
 `;
 
 export const SubmitIssue = styled.a`
-  ${(props: CommonThemeProps) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.beta[600]};
-    `;
-  }}
+  color: ${beta600};
 `;

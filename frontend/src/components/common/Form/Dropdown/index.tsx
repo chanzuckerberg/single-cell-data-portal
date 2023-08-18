@@ -1,4 +1,7 @@
-import { DefaultDropdownMenuOption, Dropdown as SDSDropdown } from "czifui";
+import {
+  DefaultDropdownMenuOption,
+  Dropdown as SDSDropdown,
+} from "@czi-sds/components";
 import {
   FormLabelText,
   Optional,

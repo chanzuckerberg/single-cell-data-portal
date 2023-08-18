@@ -1,46 +1,43 @@
-import { H3, Intent } from "@blueprintjs/core";
+import { Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { FC, useEffect, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { BOOLEAN } from "src/common/localStorage/set";
-import {
-  useCollection,
-  useCollectionUploadLinks,
-  useDeleteCollection,
-} from "src/common/queries/collections";
+import { useCollection } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import CollectionDescription from "src/components/Collection/components/CollectionDescription";
 import CollectionMetadata from "src/components/Collection/components/CollectionMetadata";
 import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
-import { UploadingFile } from "src/components/DropboxChooser";
 import DatasetTab from "src/views/Collection/components/DatasetTab";
-import ActionButtons from "./components/ActionButtons";
-import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
 import Toast from "./components/Toast";
 import {
   CollectionConsortia,
   CollectionDetail,
   CollectionHero,
-  ViewCollection,
+  CollectionView,
 } from "./style";
 import {
   buildCollectionMetadataLinks,
   getIsPublishable,
+  isCollectionHasPrivateRevision,
+  isCollectionPrivateRevision,
   revisionIsPublishable,
 } from "./utils";
+import CollectionActions from "src/views/Collection/components/CollectionActions";
 
 const Collection: FC = () => {
+  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
 
-  const [userWithdrawn, setUserWithdrawn] = useState(false);
+  const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
+  const [isUploadingLink, setIsUploadingLink] = useState(false);
 
   let id = "";
 
@@ -50,26 +47,7 @@ const Collection: FC = () => {
     id = params;
   }
 
-  const { mutateAsync: uploadLink } = useCollectionUploadLinks(id);
-
-  const [isUploadingLink, setIsUploadingLink] = useState(false);
-
-  const collectionState = useCollection({
-    id,
-  });
-
-  const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
-
-  const { data: collection, isError, isFetching } = collectionState;
-
-  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id,
-    collection && "visibility" in collection
-      ? collection.visibility
-      : VISIBILITY_TYPE.PRIVATE
-  );
-
-  const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
+  const { data: collection, isError, isFetching } = useCollection({ id });
 
   useEffect(() => {
     if (
@@ -91,11 +69,11 @@ const Collection: FC = () => {
   }, [tombstoned_dataset_id, collection, hasShownWithdrawToast]);
 
   useEffect(() => {
-    if (!userWithdrawn && isTombstonedCollection(collection)) {
+    if (isTombstonedCollection(collection)) {
       const redirectUrl = ROUTES.HOMEPAGE;
       router.push(redirectUrl + "?tombstoned_collection_id=" + id);
     }
-  }, [collection, id, router, userWithdrawn]);
+  }, [collection, id, router]);
 
   /* Pop toast if user has come from Explorer with work in progress */
   useExplainNewTab(
@@ -106,32 +84,8 @@ const Collection: FC = () => {
     return null;
   }
 
-  const isPrivate = collection.visibility === VISIBILITY_TYPE.PRIVATE;
-
-  const isRevision = isCurator && !!collection?.revision_of;
-
-  const addNewFile = (newFile: UploadingFile) => {
-    if (!newFile.link) return;
-
-    const payload = JSON.stringify({ url: newFile.link });
-
-    setIsUploadingLink(true);
-
-    uploadLink(
-      { collectionId: id, payload },
-      {
-        onSettled: () => setIsUploadingLink(false),
-        onSuccess: () => {
-          Toast.show({
-            icon: IconNames.TICK,
-            intent: Intent.PRIMARY,
-            message:
-              "Your file is being uploaded which will continue in the background, even if you close this window.",
-          });
-        },
-      }
-    );
-  };
+  const hasRevision = isCollectionHasPrivateRevision(collection);
+  const isRevision = isCollectionPrivateRevision(collection);
 
   let datasets = Array.from(collection.datasets.values());
 
@@ -147,11 +101,6 @@ const Collection: FC = () => {
     !isFetching &&
     revisionIsPublishable(collection, isCurator);
 
-  const hasWriteAccess = collection.access_type === ACCESS_TYPE.WRITE;
-  const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
-  const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
-  const shouldShowCollectionRevisionCallout =
-    collection.revision_of && isPrivate;
   const collectionConsortia = collection.consortia;
   const collectionMetadataLinks = buildCollectionMetadataLinks(
     collection.links,
@@ -160,47 +109,25 @@ const Collection: FC = () => {
     collection.summaryCitation
   );
 
-  const handleDeleteCollection = async () => {
-    setUserWithdrawn(true);
-
-    await deleteMutation({
-      collectionID: id,
-    });
-
-    router.push(ROUTES.MY_COLLECTIONS);
-  };
-
   return (
     <>
       <Head>
-        <title>CELL&times;GENE | {collection.name}</title>
+        <title>{collection.name} - CZ CELLxGENE Discover</title>
       </Head>
-      <ViewCollection>
+      <CollectionView>
         {/* Collection revision status callout */}
-        {shouldShowCollectionRevisionCallout && (
-          <CollectionRevisionStatusCallout
-            isRevisionDifferent={collection.revision_diff}
-          />
-        )}
+        <CollectionRevisionStatusCallout collection={collection} />
         {/* Collection title and actions */}
         <CollectionHero>
-          <H3 data-testid="collection-name">{collection.name}</H3>
-          {shouldShowPrivateWriteAction && (
-            <ActionButtons
-              id={id}
-              addNewFile={addNewFile}
-              isPublishable={isPublishable}
-              revisionOf={collection.revision_of}
-              visibility={collection.visibility}
-            />
-          )}
-          {shouldShowPublicWriteAction && (
-            <DeleteCollectionButton
-              collectionName={collection.name}
-              handleConfirm={handleDeleteCollection}
-              loading={isLoading}
-            />
-          )}
+          <h3 data-testid="collection-name">{collection.name}</h3>
+          {/* Collection actions */}
+          <CollectionActions
+            collection={collection}
+            hasRevision={hasRevision}
+            isPublishable={isPublishable}
+            isRevision={isRevision}
+            setIsUploadingLink={setIsUploadingLink}
+          />
         </CollectionHero>
         {/* Collection consortia, description and metadata */}
         <CollectionDetail>
@@ -219,12 +146,14 @@ const Collection: FC = () => {
         {/* Collection grid */}
         {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
         <DatasetTab
-          collectionID={id}
+          collectionId={id}
           datasets={datasets}
           isRevision={isRevision}
           visibility={collection.visibility}
         />
-      </ViewCollection>
+      </CollectionView>
+      {/* May be added in the future after sign off */}
+      {/* <BottomBanner /> */}
     </>
   );
 };

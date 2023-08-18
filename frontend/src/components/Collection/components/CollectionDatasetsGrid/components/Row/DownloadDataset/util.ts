@@ -10,7 +10,6 @@ export interface UseDatasetAssets {
 /**
  * Fetch dataset assets.
  * @param datasetId - ID of dataset to fetch dataset assets for.
- * @param explorerUrl - Dataset's explorer URL, used to fetch dataset metadata.
  * @param enabled - True if fetch is enabled.
  * @returns Fetched dataset assets, if any, as well as fetch loading and error states.
  *

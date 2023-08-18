@@ -2,17 +2,20 @@ import { expect, Page, test, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import {
-  goToPage,
-  isDevStagingProd,
-  selectNthOption,
-  tryUntil,
-} from "tests/utils/helpers";
+import { goToPage, selectNthOption, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
+import {
+  WMG_WITH_SEEDED_TISSUES_AND_GENES,
+  conditionallyRunTests,
+  goToWMGWithSeededState,
+  searchAndAddGene,
+  waitForHeatmapToRender,
+} from "tests/utils/wmgUtils";
+import { getCurrentDate } from "tests/utils/downloadUtils";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -41,7 +44,7 @@ const RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID = "right-sidebar-close-button";
 const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 
 // Export constants
-const CSV_START_FROM_ROW_NUM = 9; // This is the number of metadata rows + 1
+const CSV_START_FROM_ROW_NUM = 10; // This is the number of metadata rows + 1
 const PNG_CHECKBOX_ID = "png-checkbox";
 const CSV_CHECKBOX_ID = "csv-checkbox";
 const SVG_CHECKBOX_ID = "svg-checkbox";
@@ -60,26 +63,15 @@ const FILTERS_PANEL = "filters-panel";
 // Error messages
 const ERROR_NO_TESTID_OR_LOCATOR = "Either testId or locator must be defined";
 
-const { describe, skip } = test;
+const { describe } = test;
 
 describe("Where's My Gene", () => {
-  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+  conditionallyRunTests();
 
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-    // Getting Started section
-    await expect(page.getByText("STEP 1")).toBeTruthy();
-    await expect(page.getByText("Add Tissues")).toBeTruthy();
-
-    await expect(page.getByText("STEP 2")).toBeTruthy();
-    await expect(page.getByText("Add Genes")).toBeTruthy();
-
-    await expect(page.getByText("STEP 3")).toBeTruthy();
-    await expect(page.getByText("Explore Gene Expression")).toBeTruthy();
-
     await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    await selectFirstOption(page);
 
     await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstOption(page);
@@ -107,15 +99,7 @@ describe("Where's My Gene", () => {
   });
 
   test("Filters and Heatmap", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    await selectFirstOption(page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-    await selectFirstOption(page);
-
-    await waitForHeatmapToRender(page);
+    await goToWMGWithSeededState(page);
 
     const sexSelector = getSexSelector();
     const selectedSexesBefore = await sexSelector
@@ -152,16 +136,19 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDiseaseSelectorButton(),
+      locator: getDatasetSelectorButton(),
     });
-    const numberOfDiseasesBefore = await countLocator(page.getByRole("option"));
+    const numberOfDatasetsBefore = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDatasetSelectorButton(),
+      locator: getDiseaseSelectorButton(),
     });
-    const datasetOptions = await page.getByRole("option").elementHandles();
+    const datasetOptions = await page
+      .getByRole("option")
+      .getByText("acute kidney failure")
+      .elementHandles();
     await datasetOptions[0].click();
     await page.keyboard.press("Escape");
 
@@ -171,12 +158,12 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDiseaseSelectorButton(),
+      locator: getDatasetSelectorButton(),
     });
-    const numberOfDiseasesAfter = await countLocator(page.getByRole("option"));
+    const numberOfDatasetsAfter = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
-    expect(numberOfDiseasesBefore).toBeGreaterThan(numberOfDiseasesAfter);
+    expect(numberOfDatasetsBefore).toBeGreaterThan(numberOfDatasetsAfter);
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
 
     function getDiseaseSelector() {
@@ -210,15 +197,8 @@ describe("Where's My Gene", () => {
   });
 
   test("Source Data", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+    await goToWMGWithSeededState(page);
 
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    await selectFirstOption(page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-    await selectFirstOption(page);
-
-    await waitForHeatmapToRender(page);
     await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
     await expect(
       page.getByText(
@@ -257,21 +237,14 @@ describe("Where's My Gene", () => {
   });
 
   test("Hierarchical Clustering", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-    const TISSUE_COUNT = 1;
-    const GENE_COUNT = 3;
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    await selectFirstNOptions(TISSUE_COUNT, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-    await selectFirstNOptions(GENE_COUNT, page);
+    await goToWMGWithSeededState(page);
 
     const beforeGeneNames = await getGeneNames(page);
     const beforeCellTypeNames = await getCellTypeNames(page);
 
-    expect(beforeGeneNames.length).toBe(GENE_COUNT);
+    expect(beforeGeneNames.length).toBe(
+      WMG_WITH_SEEDED_TISSUES_AND_GENES.genes.length
+    );
 
     // (thuang): Sometimes when API response is slow, we'll not capture all the
     // cell type names, so a sanity check that we expect at least 100 names
@@ -330,13 +303,7 @@ describe("Where's My Gene", () => {
     test("Display stratified labels in y-axis as expected", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectFirstNOptions(1, page);
-
-      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-      await selectFirstNOptions(3, page);
+      await goToWMGWithSeededState(page);
 
       await waitForHeatmapToRender(page);
 
@@ -464,10 +431,10 @@ describe("Where's My Gene", () => {
       await clickDropdownOptionByName({
         page,
         testId: ADD_TISSUE_ID,
-        name: "lung",
+        name: "heart",
       });
 
-      await getCellTypeFmgButtonAndClick(page, "native cell");
+      await getCellTypeFmgButtonAndClick(page, "dendritic cell");
 
       await waitForElement(page, NO_MARKER_GENES_WARNING_TEST_ID);
     });
@@ -498,16 +465,20 @@ describe("Where's My Gene", () => {
   });
 
   describe("Gene info", () => {
+    const TEST_GENE = "DMP1";
+
     test("Display gene info panel in sidebar", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
       await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
       await selectFirstNOptions(1, page);
 
-      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-      await selectFirstNOptions(3, page);
+      await searchAndAddGene(page, TEST_GENE);
 
       await waitForHeatmapToRender(page);
+
+      // hover over gene label
+      await page.getByTestId(`gene-name-${TEST_GENE}`).hover();
 
       await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
 
@@ -532,8 +503,12 @@ describe("Where's My Gene", () => {
         name: "lung",
       });
 
-      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-      await selectFirstNOptions(3, page);
+      await searchAndAddGene(page, TEST_GENE);
+
+      await waitForHeatmapToRender(page);
+
+      // hover over gene label
+      await page.getByTestId(`gene-name-${TEST_GENE}`).hover();
 
       await waitForHeatmapToRender(page);
 
@@ -553,6 +528,9 @@ describe("Where's My Gene", () => {
       await getButtonAndClick(page, RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID);
 
       await waitForElementToBeRemoved(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
+
+      // hover over gene label
+      await page.getByTestId(`gene-name-${TEST_GENE}`).hover();
 
       await getFirstButtonAndClick(page, GENE_INFO_BUTTON_X_AXIS_TEST_ID);
 
@@ -720,7 +698,7 @@ describe("Where's My Gene", () => {
 
       const files = ["blood.csv", "blood.png", "blood.svg"];
 
-      expect(zipEntries.length).toBe(3);
+      expect(zipEntries.length).toBe(files.length);
 
       for (const entry of zipEntries) {
         expect(files.includes(entry.name)).toBe(true);
@@ -732,18 +710,7 @@ describe("Where's My Gene", () => {
     test("Download zip of all outputs (png,svg,csv) for two tissues", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-      // Select first tissue
-      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectFirstOption(page);
-
-      // Select second tissue
-      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectNthOption(page, 2);
-
-      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
-      await selectFirstOption(page);
+      await goToWMGWithSeededState(page);
 
       await waitForHeatmapToRender(page);
 
@@ -776,19 +743,133 @@ describe("Where's My Gene", () => {
       const zipEntries = zip.getEntries();
 
       const files = [
-        "blood.csv",
+        `CELLxGENE_gene_expression_${getCurrentDate()}.csv`,
         "blood.png",
         "blood.svg",
-        "lung.csv",
         "lung.png",
         "lung.svg",
       ];
 
-      expect(zipEntries.length).toBe(6);
+      expect(zipEntries.length).toBe(files.length);
 
       for (const entry of zipEntries) {
         expect(files.includes(entry.name)).toBe(true);
       }
+    });
+  });
+
+  describe("Newsletter", () => {
+    const NEWSLETTER_MODAL_CONTENT = "newsletter-modal-content";
+    const NEWSLETTER_MODAL_OPEN_BUTTON = "newsletter-modal-open-button";
+    const NEWSLETTER_MODAL_CLOSE_BUTTON = "newsletter-modal-close-button";
+    const NEWSLETTER_SUBSCRIBE_BUTTON = "newsletter-subscribe-button";
+    const NEWSLETTER_EMAIL_INPUT = "newsletter-email-input";
+    const NEWSLETTER_VALIDATION_ERROR_MESSAGE =
+      "newsletter-validation-error-message";
+    const FAILED_EMAIL_VALIDATION_STRING =
+      "Please provide a valid email address.";
+
+    test("Newsletter Modal - Open/Close", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Open modal
+      await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
+
+      await waitForElement(page, NEWSLETTER_MODAL_CONTENT);
+
+      const modalContent = page.getByTestId(NEWSLETTER_MODAL_CONTENT);
+
+      // modal content
+      expect(modalContent.getByText("Join Our Newsletter")).toBeTruthy();
+      expect(
+        modalContent.getByText(
+          "Get a quarterly email with the latest CELLxGENE features and data."
+        )
+      ).toBeTruthy();
+      expect(modalContent.getByText("Enter email address")).toBeTruthy();
+      expect(modalContent.getByText("Subscribe")).toBeTruthy();
+      expect(modalContent.getByText("Unsubscribe at any time.")).toBeTruthy();
+
+      // Close modal
+      await getButtonAndClick(page, NEWSLETTER_MODAL_CLOSE_BUTTON);
+
+      await waitForElementToBeRemoved(page, NEWSLETTER_MODAL_CONTENT);
+    });
+
+    test("Newsletter Modal - Validate Email", async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Open modal
+      await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
+
+      await waitForElement(page, NEWSLETTER_MODAL_CONTENT);
+
+      const emailInput = page.getByTestId(NEWSLETTER_EMAIL_INPUT);
+      const subscribeButton = page.getByTestId(NEWSLETTER_SUBSCRIBE_BUTTON);
+      const validationMessage = page.getByTestId(
+        NEWSLETTER_VALIDATION_ERROR_MESSAGE
+      );
+
+      // No input
+      expect(subscribeButton.isDisabled());
+
+      // Bad email 1
+      emailInput.fill("test");
+      expect(subscribeButton.isEnabled());
+      await subscribeButton.click();
+      expect(
+        validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
+      ).toBeTruthy();
+
+      emailInput.fill("");
+      expect(subscribeButton.isDisabled());
+
+      // Bad email 2
+      emailInput.fill("test@test");
+      expect(subscribeButton.isEnabled());
+      await subscribeButton.click();
+      expect(
+        validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
+      ).toBeTruthy();
+
+      emailInput.fill("");
+      expect(subscribeButton.isDisabled());
+
+      // Bad email 3
+      emailInput.fill("test@test.chanzuckerberg");
+      expect(subscribeButton.isEnabled());
+      await subscribeButton.click();
+      expect(
+        validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
+      ).toBeTruthy();
+    });
+  });
+
+  describe("Clear All Genes Button", () => {
+    const CLEAR_GENES_BUTTON_ID = "clear-genes-button";
+
+    test("Clear three genes", async ({ page }) => {
+      await goToWMGWithSeededState(page);
+
+      // Genes before clear
+      const beforeGeneNames = await getGeneNames(page);
+      expect(beforeGeneNames.length).toBe(
+        WMG_WITH_SEEDED_TISSUES_AND_GENES.genes.length
+      );
+
+      // Click clear all button
+      await page.getByTestId(CLEAR_GENES_BUTTON_ID).click();
+
+      // Count genes after clear
+      const afterGeneNames = await getGeneNames(page);
+
+      await tryUntil(
+        async () => {
+          expect(afterGeneNames.length).toBe(0);
+          expect(afterGeneNames).not.toEqual(beforeGeneNames);
+        },
+        { page }
+      );
     });
   });
 });
@@ -813,7 +894,9 @@ async function getNames({
   await tryUntil(
     async () => {
       const names = await labelsLocator.allTextContents();
-      expect(typeof names[0]).toBe("string");
+      if (names.length) {
+        expect(typeof names[0]).toBe("string");
+      }
     },
     { page }
   );
@@ -907,15 +990,6 @@ async function selectFirstNOptions(count: number, page: Page) {
   }
 
   await page.keyboard.press("Escape");
-}
-
-async function waitForHeatmapToRender(page: Page) {
-  await tryUntil(
-    async () => {
-      await expect(page.locator("canvas")).not.toHaveCount(0);
-    },
-    { page }
-  );
 }
 
 async function waitForElement(page: Page, testId: string) {

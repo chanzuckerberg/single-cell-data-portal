@@ -4,16 +4,19 @@ on:
   schedule:
     # Runs "every 55th minute" (see https://crontab.guru)
     - cron: "55 * * * *"
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     name: Clean happy stacks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800

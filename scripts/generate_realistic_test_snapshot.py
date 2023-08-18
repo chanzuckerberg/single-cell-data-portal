@@ -1,8 +1,14 @@
 import json
 import os
+import shutil
 import sys
 
 import tiledb
+
+# Add the root directory to the Python module search path so you can reference backend
+# without needing to move this script to the root directory to run it.
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(root_dir)
 
 from backend.wmg.data.snapshot import (
     DATASET_TO_GENE_IDS_FILENAME,
@@ -10,6 +16,14 @@ from backend.wmg.data.snapshot import (
 )
 from backend.wmg.pipeline.summary_cubes.cell_count import create_filter_relationships_graph
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
+
+"""
+This generates realistic test data. It should be re-run every time you make changes
+to our cube schemas.
+
+You can run this script from the root directory of single-cell-data-portal:
+python3 scripts/generate_realistic_test_snapshot.py <PATH_TO_LOCAL_SNAPSHOT> tests/unit/backend/wmg/fixtures/realistic-test-snapshot
+"""
 
 test_tissue = "UBERON:0002048"
 test_organism = "NCBITaxon:9606"
@@ -545,15 +559,18 @@ if __name__ == "__main__":
         print("Subsetting existing snapshot...")
         es = es_arr.df[(test_genes, test_tissue, test_organism)]
         esdef = es_def_arr.df[(test_genes, test_tissue, test_organism)]
-        esfmg = esfmg_arr.query(attr_cond=tiledb.QueryCondition(f"gene_ontology_term_id in {test_genes}")).df[
-            (test_tissue, test_organism, [])
-        ]
+        esfmg = esfmg_arr.query(cond=f"gene_ontology_term_id in {test_genes}").df[(test_tissue, test_organism, [])]
         cc = cc_arr.df[(test_tissue, test_organism)]
         filter_relationships = create_filter_relationships_graph(cc)
 
         print("Creating new snapshot...")
         with open(f"{new_snapshot}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as new_fr_file:
             json.dump(filter_relationships, new_fr_file)
+
+        es.to_csv(f"{new_snapshot}/expression_summary.csv.gz")
+        esdef.to_csv(f"{new_snapshot}/expression_summary_default.csv.gz")
+        esfmg.to_csv(f"{new_snapshot}/expression_summary_fmg.csv.gz")
+        cc.to_csv(f"{new_snapshot}/cell_counts.csv.gz")
 
         tiledb.Array.create(f"{new_snapshot}/expression_summary", es_arr.schema, overwrite=True)
         tiledb.Array.create(f"{new_snapshot}/expression_summary_fmg", esfmg_arr.schema, overwrite=True)
@@ -574,3 +591,11 @@ if __name__ == "__main__":
 
     print("Creating marker genes cube...")
     create_marker_genes_cube(new_snapshot)
+    with tiledb.open(f"{new_snapshot}/marker_genes") as mg_arr:
+        mg = mg_arr.df[:]
+        mg.to_csv(f"{new_snapshot}/marker_genes.csv.gz")
+        shutil.rmtree(f"{new_snapshot}/marker_genes")
+        shutil.rmtree(f"{new_snapshot}/expression_summary")
+        shutil.rmtree(f"{new_snapshot}/expression_summary_fmg")
+        shutil.rmtree(f"{new_snapshot}/expression_summary_default")
+        shutil.rmtree(f"{new_snapshot}/cell_counts")

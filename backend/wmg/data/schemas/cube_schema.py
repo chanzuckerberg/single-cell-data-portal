@@ -27,6 +27,7 @@ expression_summary_non_indexed_dims = [
     "disease_ontology_term_id",
     "self_reported_ethnicity_ontology_term_id",
     "sex_ontology_term_id",
+    "publication_citation",
 ]
 
 # The full set of logical cube dimensions by which the cube can be queried.

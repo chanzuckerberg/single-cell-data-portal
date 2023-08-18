@@ -26,6 +26,7 @@ from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.processing.process_seurat import ProcessSeurat
+from backend.layers.processing.schema_migration import SchemaMigrate
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import (
     SchemaValidatorProvider,
@@ -64,6 +65,7 @@ class ProcessMain(ProcessingLogic):
         )
         self.process_seurat = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
         self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
+        self.schema_migrate = SchemaMigrate(business_logic)
 
     def log_batch_environment(self):
         batch_environment_variables = [
@@ -77,6 +79,8 @@ class ProcessMain(ProcessingLogic):
             "DATASET_ID",
             "DEPLOYMENT_STAGE",
             "MAX_ATTEMPTS",
+            "MIGRATE",
+            "REMOTE_DEV_PREFIX",
         ]
         env_vars = dict()
         for var in batch_environment_variables:
@@ -95,17 +99,16 @@ class ProcessMain(ProcessingLogic):
         """
         Gets called by the step function at every different step, as defined by `step_name`
         """
-        self.log_batch_environment()
         self.logger.info(f"Processing dataset {dataset_id}")
         try:
             if step_name == "download-validate":
                 self.process_download_validate.process(dataset_id, dropbox_uri, artifact_bucket, datasets_bucket)
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)
+            elif step_name == "cxg_remaster":
+                self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket, is_reprocess=True)
             elif step_name == "seurat":
                 self.process_seurat.process(dataset_id, artifact_bucket, datasets_bucket)
-            elif step_name == "cxg_remaster":
-                raise NotImplementedError("cxg remasters are not supported anymore")
             else:
                 self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
@@ -132,27 +135,33 @@ class ProcessMain(ProcessingLogic):
                 self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
             elif step_name == "seurat":
                 self.update_processing_status(dataset_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED)
-            elif step_name == "cxg":
+            elif step_name == "cxg" or step_name == "cxg_remaster":
                 self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
             return False
 
         return True
 
     def main(self):
-        dataset_id = os.environ["DATASET_ID"]
+        self.log_batch_environment()
         step_name = os.environ["STEP_NAME"]
-        dropbox_uri = os.environ.get("DROPBOX_URL")
-        artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
-        datasets_bucket = os.environ.get("DATASETS_BUCKET")
-        cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
-        rv = self.process(
-            dataset_id=DatasetVersionId(dataset_id),
-            step_name=step_name,
-            dropbox_uri=dropbox_uri,
-            artifact_bucket=artifact_bucket,
-            datasets_bucket=datasets_bucket,
-            cxg_bucket=cxg_bucket,
-        )
+        if os.environ.get("MIGRATE"):
+            self.logger.info("Migrating schema")
+            rv = self.schema_migrate.migrate(step_name)
+        else:
+            dataset_id = os.environ["DATASET_ID"]
+
+            dropbox_uri = os.environ.get("DROPBOX_URL")
+            artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
+            datasets_bucket = os.environ.get("DATASETS_BUCKET")
+            cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
+            rv = self.process(
+                dataset_id=DatasetVersionId(dataset_id),
+                step_name=step_name,
+                dropbox_uri=dropbox_uri,
+                artifact_bucket=artifact_bucket,
+                datasets_bucket=datasets_bucket,
+                cxg_bucket=cxg_bucket,
+            )
         return 0 if rv else 1
 
 

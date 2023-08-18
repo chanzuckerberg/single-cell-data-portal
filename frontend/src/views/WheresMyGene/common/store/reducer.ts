@@ -1,6 +1,7 @@
 import isEqual from "lodash/isEqual";
-import { CompareId } from "../constants";
+import { CompareId, X_AXIS_CHART_HEIGHT_PX } from "../constants";
 import { CellType, SORT_BY } from "../types";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
@@ -10,14 +11,17 @@ export interface State {
   genesToDelete: string[];
   selectedGenes: string[];
   selectedOrganismId: string | null;
-  selectedTissues: string[];
+  selectedTissues?: string[];
   selectedFilters: {
     datasets: string[];
     developmentStages: string[];
     diseases: string[];
     ethnicities: string[];
+    publications: string[];
     sexes: string[];
+    tissues: string[];
   };
+
   /**
    * (thuang): BE API response always returns a snapshot ID. When the ID changes,
    * FE needs refresh the queries
@@ -31,6 +35,8 @@ export interface State {
   } | null;
   geneInfoGene: string | null;
   compare?: CompareId;
+  xAxisHeight: number;
+  filteredCellTypes: string[];
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -38,7 +44,9 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   developmentStages: [],
   diseases: [],
   ethnicities: [],
+  publications: [],
   sexes: [],
+  tissues: [],
 };
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -57,6 +65,8 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
+  xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+  filteredCellTypes: [],
 };
 
 export const REDUCERS = {
@@ -68,6 +78,7 @@ export const REDUCERS = {
   addSelectedGenes,
   deleteSelectedGenes,
   deleteSingleGene,
+  deleteAllGenes,
   loadStateFromURL,
   selectCompare,
   resetGenesToDelete,
@@ -79,6 +90,8 @@ export const REDUCERS = {
   selectTissues,
   setSnapshotId,
   toggleGeneToDelete,
+  setXAxisHeight,
+  setFilteredCellTypes,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -122,6 +135,15 @@ function deleteSingleGene(
   return {
     ...state,
     selectedGenes: newSelectedGenes,
+    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+  };
+}
+
+function deleteAllGenes(state: State, _: PayloadAction<null>): State {
+  return {
+    ...state,
+    selectedGenes: [],
+    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
   };
 }
 
@@ -160,7 +182,8 @@ function selectOrganism(
     ...state,
     selectedGenes: [],
     selectedOrganismId: action.payload,
-    selectedTissues: [],
+    selectedTissues: EMPTY_ARRAY,
+    selectedFilters: EMPTY_FILTERS,
     cellInfoCellType: null,
   };
 }
@@ -351,8 +374,9 @@ export interface LoadStateFromURLPayload {
   compare: State["compare"];
   filters: Partial<State["selectedFilters"]>;
   organism: State["selectedOrganismId"];
-  tissues: State["selectedTissues"];
+  tissues?: State["selectedTissues"];
   genes: State["selectedGenes"];
+  cellTypes?: State["filteredCellTypes"];
 }
 
 function loadStateFromURL(
@@ -370,6 +394,7 @@ function loadStateFromURL(
     selectedGenes: genes,
     selectedTissues: tissues,
     selectedOrganismId: payload.organism,
+    filteredCellTypes: payload.cellTypes ?? [],
   };
 }
 
@@ -380,5 +405,22 @@ function selectCompare(
   return {
     ...state,
     compare: action.payload,
+  };
+}
+
+function setXAxisHeight(state: State, action: PayloadAction<number>): State {
+  return {
+    ...state,
+    xAxisHeight: action.payload,
+  };
+}
+
+function setFilteredCellTypes(
+  state: State,
+  action: PayloadAction<State["filteredCellTypes"]>
+): State {
+  return {
+    ...state,
+    filteredCellTypes: action.payload,
   };
 }

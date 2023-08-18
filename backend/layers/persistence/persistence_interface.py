@@ -3,6 +3,7 @@ from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.common.entities import (
     CanonicalCollection,
+    CanonicalDataset,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -40,12 +41,19 @@ class DatabaseProviderInterface:
         Return the canonical collection with id `collection_id`
         """
 
+    def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:
+        """
+        Return the canonical Dataset with id `dataset_id`
+        """
+
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         """
         Retrieves a specific collection version by id
         """
 
-    def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
+    def get_collection_version_with_datasets(
+        self, version_id: CollectionVersionId, get_tombstoned: bool
+    ) -> CollectionVersionWithDatasets:
         """
         Retrieves a specific collection version by id, with datasets
         """
@@ -108,7 +116,7 @@ class DatabaseProviderInterface:
         version_id: CollectionVersionId,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> None:
+    ) -> List[str]:
         """
         Finalizes a collection version. This is equivalent to calling:
         1. update_collection_version_mapping
@@ -125,9 +133,14 @@ class DatabaseProviderInterface:
         Sets the `published_at` datetime for a collection version and its datasets
         """
 
-    def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> DatasetVersion:
+    def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool) -> DatasetVersion:
         """
         Returns a dataset version by id.
+        """
+
+    def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        """
+        Returns the most recent, active Dataset version for a canonical dataset_id
         """
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
@@ -213,13 +226,27 @@ class DatabaseProviderInterface:
         """
 
     def replace_dataset_in_collection_version(
-        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId = None,
     ) -> DatasetVersion:
         """
         Replaces an existing mapping between a collection version and a dataset version
         """
 
-    def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+    def get_dataset_mapped_version(self, dataset_id: DatasetId, get_tombstoned: bool) -> Optional[DatasetVersion]:
         """
         Returns the dataset version mapped to a canonical dataset_id, or None if not existing
+        """
+
+    def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
+        """
+        Returns a list with all collection versions that match the given schema_version. schema_version may contain
+         wildcards.
+        """
+
+    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
+        """
+        Returns the previously created dataset version for a dataset.
         """

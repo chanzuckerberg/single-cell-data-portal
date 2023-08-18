@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getSpaces, Chip } from "czifui";
+import { CommonThemeProps, getSpaces, Chip } from "@czi-sds/components";
 import { PINK } from "src/common/theme";
 
 export const NewChip = styled(Chip)`

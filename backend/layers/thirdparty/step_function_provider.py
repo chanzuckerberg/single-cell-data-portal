@@ -7,6 +7,13 @@ from backend.common.corpora_config import CorporaConfig
 from backend.layers.common.entities import CollectionVersionId, DatasetVersionId
 
 
+def sfn_name_generator(dataset_version_id: DatasetVersionId, prefix=None) -> str:
+    if prefix:
+        return f"{prefix}_{dataset_version_id}_{int(time())}"
+    else:
+        return f"{dataset_version_id}_{int(time())}"
+
+
 class StepFunctionProviderInterface:
     def start_step_function(
         self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, url: str
@@ -30,7 +37,7 @@ class StepFunctionProvider(StepFunctionProviderInterface):
             "url": url,
             "dataset_id": dataset_version_id.id,
         }
-        sfn_name = f"{dataset_version_id}_{int(time())}"
+        sfn_name = sfn_name_generator(dataset_version_id)
         response = self.client.start_execution(
             stateMachineArn=CorporaConfig().upload_sfn_arn,
             name=sfn_name,

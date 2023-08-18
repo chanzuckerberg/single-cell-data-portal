@@ -1,64 +1,28 @@
-import { Classes, Icon } from "@blueprintjs/core";
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { CommonThemeProps, getColors } from "czifui";
-import { PRIMARY_BLUE, PT_TEXT_COLOR } from "src/components/common/theme";
+import { Popover } from "@mui/material";
+import { shadowM, spacesS, spacesXxs } from "src/common/theme";
 
 export const Filter = styled.div`
   display: grid;
-  gap: 8px;
-  margin-bottom: 12px;
+  font-feature-settings: normal; /* required; overrides layout.css specification */
+  gap: ${spacesS}px;
+  margin-bottom: ${spacesS}px;
 
   &:last-child {
     margin-bottom: 0;
   }
-
-  /* Filter open with "active" button. */
-  & .${Classes.POPOVER_OPEN} {
-    .${Classes.BUTTON} {
-      color: ${PT_TEXT_COLOR};
-    }
-  }
 `;
 
-export const SelectionIcon = styled(Icon)`
-  && {
-    align-items: center;
-    color: ${PRIMARY_BLUE};
-    display: flex;
-    height: 18px;
-    justify-content: center;
-    margin: 0 8px 0 0;
-
-    > svg {
-      height: 14px;
-      width: 14px;
-    }
+export const FilterPopover = styled(Popover)`
+  & .MuiPopover-paper {
+    box-shadow: ${shadowM};
+    font-feature-settings: normal; /* required; overrides layout.css specification */
   }
 `;
-
-export const scrollbar = (props: CommonThemeProps) => {
-  const colors = getColors(props);
-  return css`
-    &::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background-clip: content-box;
-      background-color: ${colors?.gray["200"]};
-      border-radius: 4px;
-
-      &:hover {
-        background-color: ${colors?.gray["300"]};
-      }
-    }
-  `;
-};
 
 export const InfoButtonWrapper = styled.span`
-  padding-left: 4px;
   cursor: pointer;
+  margin-left: ${spacesXxs}px;
 `;
 
 export const NotificationWrapper = styled.div`

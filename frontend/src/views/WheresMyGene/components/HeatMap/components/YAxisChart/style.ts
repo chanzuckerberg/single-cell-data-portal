@@ -1,18 +1,16 @@
 import Image from "next/image";
 import styled from "@emotion/styled";
-import {
-  HEAT_MAP_BASE_CELL_PX,
-  X_AXIS_CHART_HEIGHT_PX,
-  Y_AXIS_CHART_WIDTH_PX,
-} from "../../utils";
+import { HEAT_MAP_BASE_CELL_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
 import { ECHART_AXIS_LABEL_COLOR_HEX } from "../XAxisChart/style";
 import { SELECTED_STYLE } from "../../style";
+import { MARGIN_BETWEEN_HEATMAPS } from "src/views/WheresMyGene/common/constants";
+import { gray500 } from "src/common/theme";
 
 export const Y_AXIS_TISSUE_WIDTH_PX = 30;
 
 export const Wrapper = styled.div`
   display: flex;
-  margin-bottom: ${X_AXIS_CHART_HEIGHT_PX}px;
+  margin-bottom: ${MARGIN_BETWEEN_HEATMAPS}px;
   margin-right: ${Y_AXIS_TISSUE_WIDTH_PX}px;
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
 `;
@@ -50,10 +48,21 @@ export const CellTypeLabelStyle = styled.div`
   margin: auto;
   font: normal 12px sans-serif;
   white-space: pre;
+  margin-left: 24px;
   border: none;
   width: 100%;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   text-align: left;
+`;
+
+export const TissueHeaderLabelStyle = styled.div`
+  margin: auto;
+  font: normal 12px sans-serif;
+  border: none;
+  width: 100%;
+  color: ${ECHART_AXIS_LABEL_COLOR_HEX};
+  text-align: left;
+  font-weight: 600;
 `;
 
 export const HiddenCellTypeLabelStyle = styled.div`
@@ -76,7 +85,7 @@ export const CellCountLabelStyle = styled.div`
   font: normal normal ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
   white-space: pre;
   border: none;
-  color: ${ECHART_AXIS_LABEL_COLOR_HEX};
+  color: ${gray500};
   text-align: right;
   padding-top: 3px;
 `;
@@ -91,6 +100,8 @@ export const FlexRowJustified = styled.div`
 export const FlexRow = styled.div`
   display: flex;
   flex-direction: row;
+  align-items: center;
+  cursor: pointer;
 `;
 
 function yAxisHeight({ height }: { height: number }) {
@@ -103,4 +114,8 @@ export const StyledImage = styled(Image)`
   :hover {
     filter: brightness(0);
   }
+`;
+
+export const TissueLabel = styled.div`
+  white-space: nowrap;
 `;

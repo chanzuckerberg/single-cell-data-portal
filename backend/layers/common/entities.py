@@ -172,7 +172,6 @@ class DatasetMetadata:
     development_stage: List[OntologyTermId]
     cell_type: List[OntologyTermId]
     cell_count: int
-    schema_version: str
     mean_genes_per_cell: float
     batch_condition: List[str]
     suspension_type: List[str]
@@ -185,6 +184,7 @@ class DatasetMetadata:
 class CanonicalDataset:
     dataset_id: DatasetId
     dataset_version_id: Optional[DatasetVersionId]
+    tombstoned: bool
     published_at: Optional[datetime] = None
     revised_at: Optional[datetime] = None  # The last time this Dataset Version was Published
 
@@ -251,6 +251,7 @@ class CollectionVersionBase:
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
     published_at: Optional[datetime]
     created_at: datetime
+    schema_version: str
     canonical_collection: CanonicalCollection
 
     def is_published(self) -> bool:
@@ -258,14 +259,14 @@ class CollectionVersionBase:
         This collection version has been published.
         TODO: After old API code is removed consider moving closer to API layer
         """
-        return self.published_at is not None
+        return self.published_at is not None and self.canonical_collection.originally_published_at is not None
 
     def is_unpublished_version(self) -> bool:
         """
         The collection has been published, and this is a unpublished version of the collection.
         TODO: After old API code is removed consider moving closer to API layer
         """
-        return self.canonical_collection.originally_published_at is not None and not self.is_published()
+        return self.published_at is None and self.canonical_collection.originally_published_at is not None
 
     def is_initial_unpublished_version(self) -> bool:
         """
@@ -273,7 +274,7 @@ class CollectionVersionBase:
         published.
         TODO: After old API code is removed consider moving closer to API layer
         """
-        return not self.is_published() and self.canonical_collection.originally_published_at is None
+        return self.published_at is None and self.canonical_collection.originally_published_at is None
 
 
 @dataclass

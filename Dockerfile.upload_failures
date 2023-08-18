@@ -4,7 +4,8 @@ COPY backend/layers/processing/upload_failures .
 COPY backend/layers ./backend/layers
 COPY backend/portal ./backend/portal
 
-RUN pip3 install -r requirements.txt
+ADD requirements-upload-failures.txt requirements-upload-failures.txt
+RUN pip3 install -r requirements-upload-failures.txt
 
 COPY backend/__init__.py ./backend/__init__.py
 COPY backend/common ./backend/common

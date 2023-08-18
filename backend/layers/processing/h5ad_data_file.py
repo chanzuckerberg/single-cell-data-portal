@@ -98,6 +98,7 @@ class H5ADDataFile:
         convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)
 
         suffixes = ["r", "c"] if is_sparse else [""]
+        logging.info("start consolidating")
         for suffix in suffixes:
             tiledb.consolidate(matrix_container + suffix, ctx=ctx)
             if hasattr(tiledb, "vacuum"):
@@ -196,20 +197,22 @@ class H5ADDataFile:
 
     def transform_dataframe_index_into_column(self, dataframe, dataframe_name, index_column_name):
         """
-        Convert the dataframe's index into another column in the dataframe. If an index_column_name is specified,
-        use that column as the index instead.
+        Convert the dataframe's index into another column in the dataframe and reset the index to the default.
+        If an index_column_name is specified, use that column as the index instead.
         """
 
-        if index_column_name is None:
+        def convert_index_to_column():
             # Create a unique column name for the index.
             suffix = 0
             while f"name_{suffix}" in dataframe.columns:
                 suffix += 1
-            index_column_name = f"name_{suffix}"
-
-            # Turn the index into a normal column
-            dataframe.rename_axis(index_column_name, inplace=True)
+            index_name = f"name_{suffix}"
+            dataframe.rename_axis(index_name, inplace=True)
             dataframe.reset_index(inplace=True)
+            return index_name
+
+        if index_column_name is None:
+            index_column_name = convert_index_to_column()
 
         elif index_column_name in dataframe.columns:
             # User has specified alternative column for unique names, and it exists
@@ -218,6 +221,9 @@ class H5ADDataFile:
                     f"Values in {dataframe_name}.{index_column_name} must be unique. Please prepare data to contain "
                     f"unique values."
                 )
+            # if not already in columns, save the current h5ad index as a column
+            if dataframe.index.name not in dataframe.columns:
+                convert_index_to_column()
         else:
             raise KeyError(f"Column {index_column_name} does not exist.")
 

@@ -1,61 +1,50 @@
 import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
-import { useRouter } from "next/router";
 import * as React from "react";
-import { FC, useState } from "react";
-import { ROUTES } from "src/common/constants/routes";
-import { Collection } from "src/common/entities";
-import { useDeleteCollection } from "src/common/queries/collections";
+import { FC, useEffect, useState } from "react";
+import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 
 const AsyncAlert = loadable(
   () =>
     /*webpackChunkName: 'src/components/Alert' */ import("src/components/Alert")
 );
+
 interface Props {
-  id: Collection["id"];
   Button?: React.ElementType;
+  handleDeleteCollection: DeleteCollectionFn;
+  isDeleting: boolean;
   isRevision: boolean;
-  visibility: Collection["visibility"];
 }
 
 const DeleteCollection: FC<Props> = ({
-  id,
   Button = RawButton,
+  handleDeleteCollection,
+  isDeleting,
   isRevision,
-  visibility,
 }) => {
-  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
-    id,
-    visibility
-  );
-  const router = useRouter();
-
-  const handleDelete = async () => {
-    // (thuang): `deleteMutation` should have supported `onSuccess` callback,
-    // but it doesn't seem to work. Thus we await the promise then redirect!
-    await deleteMutation({ collectionID: id });
-
-    router.push(ROUTES.MY_COLLECTIONS);
-  };
-
   const [isOpen, setIsOpen] = useState(false);
-
-  const toggleAlert = () => {
-    setIsOpen(!isOpen);
-  };
 
   const handleHover = () => {
     AsyncAlert.preload();
   };
 
+  // Closes delete collection dialog when component unmounts.
+  // If a private revision collection is successfully deleted or a private collection is deleted, the user will be
+  // directed to the corresponding published collection or the collections index, respectively.
+  // In either case, the component will unmount and the delete collection dialog will be closed.
+  useEffect(() => {
+    return () => {
+      setIsOpen(false);
+    };
+  }, []);
+
   return (
     <>
       <Button
-        onClick={toggleAlert}
+        onClick={() => setIsOpen(true)}
         onMouseEnter={handleHover}
         isRevision={isRevision}
       />
-
       {isOpen && (
         <AsyncAlert
           cancelButtonText={"Cancel"}
@@ -64,9 +53,9 @@ const DeleteCollection: FC<Props> = ({
           }
           intent={Intent.DANGER}
           isOpen={isOpen}
-          onCancel={toggleAlert}
-          onConfirm={handleDelete}
-          loading={isLoading}
+          onCancel={() => setIsOpen(false)}
+          onConfirm={handleDeleteCollection}
+          loading={isDeleting}
         >
           <H6>
             Are you sure you want to {isRevision ? "cancel" : "delete"} this{" "}

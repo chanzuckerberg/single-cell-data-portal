@@ -28,6 +28,15 @@ export function deleteSelectedGenes(): GetActionTypeOfReducer<
   };
 }
 
+export function deleteAllGenes(): GetActionTypeOfReducer<
+  typeof REDUCERS["deleteAllGenes"]
+> {
+  return {
+    payload: null,
+    type: "deleteAllGenes",
+  };
+}
+
 export function toggleGeneToDelete(
   geneToDelete: string
 ): GetActionTypeOfReducer<typeof REDUCERS["toggleGeneToDelete"]> {
@@ -179,6 +188,24 @@ export function loadStateFromURL(
   return {
     payload,
     type: "loadStateFromURL",
+  };
+}
+
+export function setXAxisHeight(
+  payload: number
+): GetActionTypeOfReducer<typeof REDUCERS["setXAxisHeight"]> {
+  return {
+    payload,
+    type: "setXAxisHeight",
+  };
+}
+
+export function setFilteredCellTypes(
+  payload: State["filteredCellTypes"]
+): GetActionTypeOfReducer<typeof REDUCERS["setFilteredCellTypes"]> {
+  return {
+    payload,
+    type: "setFilteredCellTypes",
   };
 }
 

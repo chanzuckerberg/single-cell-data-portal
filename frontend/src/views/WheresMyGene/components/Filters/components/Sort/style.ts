@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getSpaces } from "czifui";
+import { CommonThemeProps, getSpaces } from "@czi-sds/components";
 
 import { Wrapper as RawWrapper } from "../common/style";
 

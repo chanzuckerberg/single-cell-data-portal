@@ -1,13 +1,12 @@
-import { Intent } from "@blueprintjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
   CollectionDescription as Description,
-  DescriptionText,
   DESCRIPTION_LINE_HEIGHT_PX,
+  DescriptionText,
   MAX_LINE_COUNT,
 } from "src/components/Collection/components/CollectionDescription/style";
-import { StyledPrimaryMinimalButton } from "src/components/common/Button/common/style";
+import { Button } from "@czi-sds/components";
 
 enum EllipsisMode {
   "NONE" = "NONE",
@@ -23,9 +22,7 @@ export default function CollectionDescription({
   description,
 }: Props): JSX.Element {
   const descriptionRef = useRef<HTMLParagraphElement>(null);
-  const [ellipsisMode, setEllipsisMode] = useState<EllipsisMode>(
-    EllipsisMode.NONE
-  );
+  const [ellipsisMode, setEllipsisMode] = useState<EllipsisMode | undefined>();
   const isEllipsis = ellipsisMode === EllipsisMode.ON;
   const descriptionRect = useResizeObserver(descriptionRef);
   const { scrollHeight: descriptionScrollHeight } = descriptionRect || {};
@@ -43,6 +40,14 @@ export default function CollectionDescription({
   };
 
   /**
+   * Ellipsis mode state is initialized to "NONE" only when the component mounts,
+   * so we guarantee that `descriptionRef` gets the element handle for resize observer hook.
+   */
+  useEffect(() => {
+    setEllipsisMode(EllipsisMode.NONE);
+  }, []);
+
+  /**
    * Ellipsis mode state updates with changes to the description paragraph scroll height.
    */
   useEffect(() => {
@@ -57,12 +62,14 @@ export default function CollectionDescription({
         {description}
       </DescriptionText>
       {isModeActivated(ellipsisMode) && (
-        <StyledPrimaryMinimalButton
-          intent={Intent.PRIMARY}
-          minimal
+        <Button
+          isAllCaps={false}
           onClick={onToggleMode}
-          text={getModeText(ellipsisMode)}
-        />
+          sdsStyle="minimal"
+          sdsType="primary"
+        >
+          {getModeText(ellipsisMode)}
+        </Button>
       )}
     </Description>
   );
@@ -79,7 +86,7 @@ export default function CollectionDescription({
  */
 function getEllipsisMode(
   elScrollHeight: number | undefined,
-  currentMode: EllipsisMode
+  currentMode: EllipsisMode = EllipsisMode.NONE
 ): EllipsisMode {
   if (!elScrollHeight) {
     return currentMode;
@@ -109,7 +116,7 @@ function getEllipsisMode(
  * @param currentMode - current ellipsis mode.
  * @returns string for display as button text.
  */
-function getModeText(currentMode: EllipsisMode): string {
+function getModeText(currentMode?: EllipsisMode): string {
   if (currentMode === EllipsisMode.ON) {
     return "Show More";
   }
@@ -122,6 +129,6 @@ function getModeText(currentMode: EllipsisMode): string {
  * @param currentMode - current ellipsis mode.
  * @returns true when mode is not "NONE".
  */
-function isModeActivated(currentMode: EllipsisMode): boolean {
-  return currentMode !== EllipsisMode.NONE;
+function isModeActivated(currentMode?: EllipsisMode): boolean {
+  return !!currentMode && currentMode !== EllipsisMode.NONE;
 }

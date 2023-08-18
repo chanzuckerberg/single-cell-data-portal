@@ -17,5 +17,7 @@ class CorporaConstants:
     SUPER_CURATOR_SCOPE = "write:collections"
     SUPER_CURATOR_SUBMISSON_PATH = "super"
 
+    CXG_ADMIN_SCOPE = "delete:collections"
+
     ORIGINAL_H5AD_ARTIFACT_FILENAME = "raw.h5ad"
     LABELED_H5AD_ARTIFACT_FILENAME = "local.h5ad"

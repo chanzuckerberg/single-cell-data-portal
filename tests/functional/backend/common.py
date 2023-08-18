@@ -48,6 +48,15 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.test_file_id = "7c93775542b056e048aa474535b8e5c2"
         cls.bad_collection_id = "DNE"
         cls.bad_file_id = "DNE"
+        cls.curation_api_access_token = cls.get_curation_api_access_token()
+
+    @classmethod
+    def get_curation_api_access_token(cls):
+        response = cls.session.post(
+            f"https://api.cellxgene.{cls.deployment_stage}.single-cell.czi.technology/curation/v1/auth/token",
+            headers={"x-api-key": cls.config.super_curator_api_key},
+        )
+        return response.json()["access_token"]
 
     @classmethod
     def get_auth_token(cls, username: str, password: str, additional_claims: list = None):

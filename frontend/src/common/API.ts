@@ -5,7 +5,6 @@ export enum API {
   DATASET_ASSET_DOWNLOAD_LINK = "/dp/v1/datasets/{dataset_id}/asset/{asset_id}",
   DATASET_STATUS = "/dp/v1/datasets/{dataset_id}/status",
   DATASETS_INDEX = "/dp/v1/datasets/index", // Filter-specific endpoint
-  COLLECTIONS = "/dp/v1/collections",
   COLLECTIONS_INDEX = "/dp/v1/collections/index", // Filter-specific endpoint
   COLLECTION = "/dp/v1/collections/{id}",
   COLLECTION_UPLOAD_LINKS = "/dp/v1/collections/{id}/upload-links",
@@ -13,10 +12,12 @@ export enum API {
   CREATE_COLLECTION = "/dp/v1/collections",
   LOG_IN = "/dp/v1/login",
   LOG_OUT = "/dp/v1/logout",
+  USER_COLLECTIONS_INDEX = "/dp/v1/user-collections/index", // Filter-specific endpoint
+  USER_DATASETS_INDEX = "/dp/v1/user-datasets/index", // Filter-specific endpoint
   USER_INFO = "/dp/v1/userinfo",
   WMG_PRIMARY_FILTER_DIMENSIONS = "/wmg/v1/primary_filter_dimensions",
   WMG_QUERY = "/wmg/v1/query",
   WMG_FILTERS_QUERY = "/wmg/v1/filters",
-  WMG_MARKER_GENES = "/wmg/v1/markers",
+  WMG_MARKER_GENES = "/wmg/v2/markers",
   WMG_GENE_INFO = "/gene_info/v1/gene_info",
 }

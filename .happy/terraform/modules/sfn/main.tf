@@ -1,5 +1,8 @@
 # Same file as https://github.com/chanzuckerberg/single-cell-infra/blob/main/.happy/terraform/modules/sfn/main.tf
 # This is used for environment (dev, staging, prod) deployments
+locals {
+  timeout = 86400 # 24 hours
+}
 
 resource "aws_sfn_state_machine" "state_machine" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-sfn"
@@ -7,8 +10,25 @@ resource "aws_sfn_state_machine" "state_machine" {
 
   definition = <<EOF
 {
-    "StartAt": "DownloadValidate",
+    "StartAt": "DefineDefaults",
     "States": {
+      "DefineDefaults": {
+        "Type": "Pass",
+        "Next": "ApplyDefaults",
+        "ResultPath": "$.inputDefaults",
+        "Parameters": {
+          "job_queue": "${var.job_queue_arn}"
+        }
+      },
+      "ApplyDefaults": {
+        "Type": "Pass",
+        "Next": "DownloadValidate",
+        "Parameters": {
+          "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
+        },
+        "ResultPath": "$.withDefaults",
+        "OutputPath": "$.withDefaults.args"
+      },
       "DownloadValidate": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
@@ -16,7 +36,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Parameters": {
           "JobDefinition": "${var.job_definition_arn}",
           "JobName": "download-validate",
-          "JobQueue": "${var.job_queue_arn}",
+          "JobQueue.$": "$.job_queue",
           "RetryStrategy": {
             "Attempts": ${var.max_attempts},
             "EvaluateOnExit": [
@@ -38,7 +58,7 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "DATASET_ID",
-                "Value.$": "$.dataset_id"
+                 "Value.$": "$.dataset_id"
               },
               {
                 "Name": "STEP_NAME",
@@ -48,7 +68,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         },
         "ResultPath": null,
-        "TimeoutSeconds": 36000,
+        "TimeoutSeconds": ${local.timeout},
         "Catch": [
           {
             "ErrorEquals": [
@@ -74,7 +94,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Parameters": {
                   "JobDefinition": "${var.job_definition_arn}",
                   "JobName": "cxg",
-                  "JobQueue": "${var.job_queue_arn}",
+                  "JobQueue.$": "$.job_queue",
                   "RetryStrategy": {
                     "Attempts": ${var.max_attempts},
                     "EvaluateOnExit": [
@@ -102,7 +122,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                   }
                 },
                 "ResultPath": null,
-                "TimeoutSeconds": 36000
+                "TimeoutSeconds": 360000
               }
             }
           },
@@ -116,7 +136,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Parameters": {
                   "JobDefinition": "${var.job_definition_arn}",
                   "JobName": "seurat",
-                  "JobQueue": "${var.job_queue_arn}",
+                  "JobQueue.$": "$.job_queue",
                   "RetryStrategy": {
                     "Attempts": ${var.max_attempts},
                     "EvaluateOnExit": [
@@ -143,7 +163,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
-                "TimeoutSeconds": 36000
+                "TimeoutSeconds": ${local.timeout}
               }
             }
           }
@@ -174,6 +194,12 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Type": "Task",
         "InputPath": "$",
         "Resource": "${var.lambda_error_handler}",
+        "Parameters": {
+          "execution_id.$": "$$.Execution.Id",
+          "error.$": "$.error",
+          "dataset_id.$": "$.dataset_id",
+          "collection_id.$": "$.collection_id"
+        },
         "End": true,
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],
@@ -216,7 +242,7 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
           ]
         }
       },
-      "TimeoutSeconds": 36000
+      "TimeoutSeconds": ${local.timeout}
     }
   }
 }
@@ -238,7 +264,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
       "Parameters": {
         "JobDefinition": "${var.job_definition_arn}",
         "JobName": "cxg_remaster",
-        "JobQueue": "arn:aws:batch:us-west-2:699936264352:job-queue/dp-dev",
+        "JobQueue": "${var.job_queue_arn}",
         "ContainerOverrides": {
           "Environment": [
             {
@@ -252,7 +278,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
           ]
         }
       },
-      "TimeoutSeconds": 36000
+      "TimeoutSeconds": ${local.timeout}
     }
   }
 }

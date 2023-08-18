@@ -3,6 +3,7 @@ import {
   expect,
   PlaywrightTestConfig,
   ReporterDescription,
+  defineConfig,
 } from "@playwright/test";
 import { matchers } from "expect-playwright";
 import fs from "fs";
@@ -10,7 +11,29 @@ import { LOGIN_STATE_FILENAME } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
 import featureFlags from "./tests/common/featureFlags";
 
+const CICD_MAX_FAILURE = 2;
+
 expect.extend(matchers);
+
+/**
+ * This is used if you want to use your own cookie, specifically for local logged in tests.
+ * Only used if USE_COOKIE is set to true and will overwrite all other cookies that may be set.
+ * Replace `value` string with your own auth cookie.
+ * NOTE:: the string typically starts with "ey" and ends with "="
+ */
+const MANUAL_COOKIE = [
+  {
+    //DO NOT commit your cookie value into repo.
+    value: "ey...=",
+    name: "cxguser",
+    domain: "api.cellxgene.dev.single-cell.czi.technology",
+    path: "/",
+    expires: 1965216850,
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  } as never,
+];
 
 /**
  * (thuang): Add `czi-checker`, so Plausible will ignore it.
@@ -64,15 +87,18 @@ const config: PlaywrightTestConfig = {
   /* Run tests in files in parallel */
   fullyParallel: true,
 
-  globalSetup: require.resolve("./playwright-globalSetup"),
-
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   outputDir: "playwright-report/",
 
   /* Configure projects for major browsers */
   projects: [
     {
+      name: "setup",
+      testMatch: "**/*.setup.ts",
+    },
+    {
       name: "chromium",
+      dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
@@ -81,6 +107,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       name: "firefox",
+      dependencies: ["setup"],
       use: {
         ...devices["Desktop Firefox"],
         userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
@@ -88,6 +115,7 @@ const config: PlaywrightTestConfig = {
     },
     {
       name: "edge",
+      dependencies: ["setup"],
       use: {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
@@ -99,12 +127,19 @@ const config: PlaywrightTestConfig = {
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: PLAYWRIGHT_REPORTER,
 
-  //retries: SHOULD_RETRY ? 2 : 0,
+  retries: SHOULD_RETRY ? 2 : 0,
 
   /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: "./__snapshots__",
 
-  testDir: "tests",
+  /**
+   * (thuang): For colocation, component test files live in the same directory as
+   * their test pages. In the future, when Playwright component tests exit Beta,
+   * we can move test files to colocate with their component files.
+   *
+   * https://playwright.dev/docs/test-components
+   */
+  // testDir: "tests",
 
   /**
    * Maximum time one test can run for.
@@ -131,6 +166,7 @@ const config: PlaywrightTestConfig = {
   //   command: 'npm run start',
   //   port: 3000,
   // },
+  maxFailures: process.env.CI ? CICD_MAX_FAILURE : undefined,
 };
 
 function getStorageState(): {
@@ -185,7 +221,12 @@ function getStorageState(): {
     storageState.origins = storageState.origins.concat(loginState.origins);
   }
 
+  // For testing auth tests locally with a manual cookie
+  if (process.env.USE_COOKIE === "true") {
+    storageState.cookies = MANUAL_COOKIE;
+  }
+
   return storageState;
 }
 
-export default config;
+export default defineConfig(config);

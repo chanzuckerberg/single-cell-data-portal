@@ -16,9 +16,11 @@ module stack {
   batch_container_memory_limit = 300000
   wmg_batch_container_memory_limit = 248000
   wmg_desired_vcpus                = 128
-  backend_memory               = 8192
+  backend_memory               = 30 * 1024
   frontend_memory              = 4096
   backend_instance_count       = 6
+  backend_cpus                 = 4
+  backend_workers              = 5 # Rule of thumb is num CPUs + 1
 
   wait_for_steady_state        = var.wait_for_steady_state
 }

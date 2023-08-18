@@ -1,14 +1,10 @@
 import { H6, Intent } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
-import { useRouter } from "next/router";
-import { FC, useState } from "react";
-import { ROUTES } from "src/common/constants/routes";
+import { FC, useEffect, useState } from "react";
 import { Collection } from "src/common/entities";
-import { usePublishCollection } from "src/common/queries/collections";
-import { StyledPrimaryButton } from "src/components/common/Button/common/style";
-import Toast from "src/views/Collection/components/Toast";
-import Policy, { POLICY_BULLETS } from "./components/Policy";
+import Policy from "./components/Policy";
+import { ActionButton as Button } from "src/views/Collection/components/CollectionActions/style";
+import { PublishCollectionFn } from "src/views/Collection/components/CollectionActions";
 
 const AsyncAlert = loadable(
   () =>
@@ -16,85 +12,60 @@ const AsyncAlert = loadable(
 );
 
 interface Props {
-  id: Collection["id"];
+  handlePublishCollection: PublishCollectionFn;
   isPublishable: boolean;
-  revisionOf: Collection["revision_of"];
+  isPublishing: boolean;
+  revision_of: Collection["revision_of"];
 }
 
 const PublishCollection: FC<Props> = ({
-  id = "",
+  handlePublishCollection,
   isPublishable,
-  revisionOf,
+  isPublishing,
+  revision_of,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { mutateAsync: publish, isSuccess, isLoading } = usePublishCollection();
-  const router = useRouter();
-
-  if (isSuccess) {
-    console.log(
-      "IS SUCCESS, used to be private collection redirect, now just refreshes data?"
-    );
-    if (revisionOf) router.push(ROUTES.COLLECTION.replace(":id", revisionOf));
-    else router.reload();
-  }
-
-  const toggleAlert = () => setIsOpen(!isOpen);
-
-  const handleConfirm = async () => {
-    const payload = JSON.stringify({
-      data_submission_policy_version: POLICY_BULLETS.version,
-    });
-    await publish(
-      { id, payload },
-      {
-        onSuccess: () => {
-          //if revision show revision toast
-          if (revisionOf) {
-            console.log("Published a revision");
-            Toast.show({
-              icon: IconNames.TICK,
-              intent: Intent.SUCCESS,
-              message: "New version published",
-            });
-          }
-        },
-      }
-    );
-
-    toggleAlert();
-  };
+  const [isPublishOpen, setIsPublishOpen] = useState(false);
 
   const handleHover = () => {
     AsyncAlert.preload();
   };
 
-  const handleClick = () => {
-    setIsOpen(!isOpen);
-  };
+  // Closes publish collection dialog when component unmounts.
+  // When a collection is successfully published, its visibility is changed to "PUBLIC" either through cache
+  // invalidation (for a private collection) or by using the "usePublishCollection" mutate function's onSuccess
+  // callback to direct the user to the published collection (for a private revision).
+  // In either case, the PublishCollection component will unmount and the publish collection dialog will be closed.
+  useEffect(() => {
+    return () => {
+      setIsPublishOpen(false);
+    };
+  }, []);
 
   return (
     <>
-      <StyledPrimaryButton
-        onMouseEnter={handleHover}
-        onClick={handleClick}
-        intent={Intent.PRIMARY}
-        text="Publish"
-        disabled={!isPublishable}
+      <Button
         data-testid="publish-collection-button"
-      />
-      {isOpen && (
+        disabled={!isPublishable}
+        onClick={() => setIsPublishOpen(true)}
+        onMouseEnter={handleHover}
+        sdsStyle="square"
+        sdsType="primary"
+      >
+        Publish
+      </Button>
+      {isPublishOpen && (
         <AsyncAlert
           cancelButtonText={"Cancel"}
           confirmButtonText={
-            revisionOf ? "Publish Revision" : "Publish Collection"
+            revision_of ? "Publish Revision" : "Publish Collection"
           }
           intent={Intent.PRIMARY}
-          isOpen={isOpen}
-          onCancel={toggleAlert}
-          onConfirm={handleConfirm}
-          loading={isLoading}
+          isOpen={isPublishOpen}
+          onCancel={() => setIsPublishOpen(false)}
+          onConfirm={handlePublishCollection}
+          loading={isPublishing}
         >
-          {revisionOf ? (
+          {revision_of ? (
             <>
               <H6>
                 Are you sure you want to publish a revision to this collection?

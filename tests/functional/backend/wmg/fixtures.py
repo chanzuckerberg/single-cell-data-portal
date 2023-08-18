@@ -460,3 +460,30 @@ secondary_filter_extreme_case_request_data = {
         ],
     },
 }
+
+secondary_filter_data_with_ontology_term_ids = {
+    "filter": {
+        "dataset_ids": [],
+        "disease_ontology_term_ids": ["MONDO:0005812", "MONDO:0100096", "PATO:0000461"],
+        "gene_ontology_term_ids": list(genes_20_count.keys()),
+        "organism_ontology_term_id": "NCBITaxon:9606",
+        "sex_ontology_term_ids": ["PATO:0000383"],
+        "tissue_ontology_term_ids": ["UBERON:0000178"],
+        "cell_type_ontology_term_ids": ["CL:0000010"],
+    },
+}
+
+markers_happy_path = {
+    "celltype": "UBERON:0002048",
+    "organism": "NCBITaxon:9606",
+    "tissue": "UBERON:0000178",
+    "n_markers": 10,
+    "test": "ttest",
+}
+
+markers_missing_tissue = {
+    "celltype": "UBERON:0002048",
+    "organism": "NCBITaxon:9606",
+    "n_markers": 10,
+    "test": "ttest",
+}

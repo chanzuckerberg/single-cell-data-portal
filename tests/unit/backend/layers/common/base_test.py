@@ -171,6 +171,7 @@ class BaseTest(unittest.TestCase):
         links: List[Link] = None,
         add_datasets: int = 0,
         metadata=None,
+        dataset_schema_version="3.0.0",
     ) -> CollectionVersion:
         links = links or []
         if not metadata:
@@ -181,6 +182,7 @@ class BaseTest(unittest.TestCase):
         for _ in range(add_datasets):
 
             metadata = copy.deepcopy(self.sample_dataset_metadata)
+            metadata.schema_version = dataset_schema_version
             # TODO: generate a real dataset, with artifact and processing status
             dataset_version_id, _ = self.business_logic.ingest_dataset(
                 collection.version_id, "http://fake.url", None, None
@@ -207,10 +209,16 @@ class BaseTest(unittest.TestCase):
         add_datasets: int = 1,
         curator_name: str = "Jane Smith",
         metadata=None,
+        dataset_schema_version="3.0.0",
     ) -> CollectionVersionWithDatasets:
         links = links or []
         unpublished_collection = self.generate_unpublished_collection(
-            owner, curator_name, links, add_datasets=add_datasets, metadata=metadata
+            owner,
+            curator_name,
+            links,
+            add_datasets=add_datasets,
+            metadata=metadata,
+            dataset_schema_version=dataset_schema_version,
         )
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)

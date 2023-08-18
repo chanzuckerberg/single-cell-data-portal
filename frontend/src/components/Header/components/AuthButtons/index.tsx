@@ -1,6 +1,6 @@
 import { AnchorButton, Button, MenuDivider } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { Menu, MenuItem } from "czifui";
+import { Menu, MenuItem } from "@czi-sds/components";
 import { MouseEventHandler, useState } from "react";
 import { API } from "src/common/API";
 import { get } from "src/common/featureFlags";

@@ -39,7 +39,7 @@ import {
 import Dropdown, {
   Value as DropdownValue,
 } from "src/components/common/Form/Dropdown";
-import { DefaultDropdownMenuOption } from "czifui";
+import { DefaultDropdownMenuOption } from "@czi-sds/components";
 
 const REQUIRED_FIELD_TEXT = "Required";
 

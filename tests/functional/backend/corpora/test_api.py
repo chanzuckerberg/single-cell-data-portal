@@ -127,12 +127,12 @@ class TestApi(BaseFunctionalTestCase):
             collection_ids = [x["id"] for x in data["collections"]]
             self.assertIn(canonical_collection_id, collection_ids)
 
-        with self.subTest("Test a public collection can be tombstoned"):
+        with self.subTest("Test a public collection cannot be tombstoned"):
             res = self.session.delete(f"{self.api}/dp/v1/collections/{canonical_collection_id}", headers=headers)
-            self.assertStatusCode(requests.codes.no_content, res)
+            self.assertStatusCode(requests.codes.method_not_allowed, res)
 
             res = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-            self.assertStatusCode(requests.codes.gone, res)
+            self.assertStatusCode(requests.codes.ok, res)
 
     def test_delete_private_collection(self):
         # create collection

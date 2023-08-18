@@ -14,6 +14,7 @@ import LaptopImg from "src/components/common/staticPages/cellxgene-laptop-update
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
 import DownloadDataImg from "src/components/common/staticPages/download-data.png";
 import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaborative-analysis.png";
+import FreethinkThumbnailImg from "src/components/common/staticPages/freethink-video-thumbnail.png";
 import GeneExpressionImg from "src/components/common/staticPages/explore-gene-expression.png";
 import SingleCellDataImg from "src/components/common/staticPages/single-cell-data.png";
 import AnalyzeDatasetsIcon from "./icons/analyze-datasets";
@@ -52,9 +53,9 @@ const LandingPage = (): JSX.Element => {
   });
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
-  const [cellsHeroNum] = useState("40.1M");
-  const [datasetsHeroNum] = useState("770");
-  const [cellTypesHeroNum] = useState("661");
+  const [cellsHeroNum] = useState("45M");
+  const [datasetsHeroNum] = useState("842");
+  const [cellTypesHeroNum] = useState("682");
 
   const publications = [
     {
@@ -666,28 +667,30 @@ const LandingPage = (): JSX.Element => {
               </div>
             </div>
           </div>
-          {/* 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed */}
-          {/* <div className={styles.freethinkVideoSection}>
+
+          <div className={styles.freethinkVideoSection}>
             <div className={styles.freethinkVideoSectionWrapper}>
               <div className={styles.freethinkVideoSectionTextContainer}>
                 <h2>Behind-the-scenes of Chan Zuckerberg CELLxGENE</h2>
                 <p>
-                  Watch a behind-the-scenes look at CZ CELLxGENE and explore how
-                  the platform can help scientists quickly surface important
-                  information that could lead to discoveries in treating
-                  disease.
+                  Watch a behind-the-scenes look at Chan Zuckerberg CELLxGENE
+                  (CZ CELLxGENE) and explore how the platform can help
+                  scientists quickly surface important information that could
+                  lead to discoveries in treating disease.
                 </p>
               </div>
-              <iframe
-                title="Wistia video player"
-                frameBorder="0"
-                scrolling="no"
-                className="wistia_embed"
-                name="wistia_embed"
-                src="https://fast.wistia.net/embed/iframe/fgzei2rjkl"
-              ></iframe>
+              <a
+                href="https://chanzuckerberg.com/blog/behind-the-scenes-of-chan-zuckerberg-cellxgene/"
+                target="_blank"
+                rel="noopener"
+              >
+                <Image
+                  src={FreethinkThumbnailImg}
+                  alt="Chan Zuckerberg Initiative presents Mapping the Road to Health, a Freethink original video (external link)"
+                />
+              </a>
             </div>
-          </div> */}
+          </div>
           <div className={styles.publications}>
             <div className={styles.sciencePublications}>
               <span className={styles.pubSectionTitle}>Publications</span>

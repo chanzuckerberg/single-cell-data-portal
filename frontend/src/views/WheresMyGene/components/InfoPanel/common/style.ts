@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { fontBodyXxs, fontHeaderXxs, getColors } from "czifui";
+import { fontBodyXxs, fontHeaderXxs } from "@czi-sds/components";
+import { gray500 } from "src/common/theme";
 
 export const LowHigh = styled.div`
   display: flex;
@@ -19,26 +20,12 @@ export const Label = styled.label`
   ${fontBodyXxs}
 
   white-space: nowrap;
-
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.gray[500]}
-    `;
-  }}
+  color: ${gray500};
 `;
 
 export const Content = styled.div`
   ${fontBodyXxs}
 
   width: 120px;
-
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
 `;

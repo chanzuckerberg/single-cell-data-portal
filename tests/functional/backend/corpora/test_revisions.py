@@ -34,7 +34,13 @@ class TestRevisions(BaseFunctionalTestCase):
         collection_id = data["collection_id"]
 
         # Doesn't work since the collection is published. See issue #1375
-        self.addCleanup(self.session.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+        # Should work now via cxg-admin role thru Curation API
+        curation_api_headers = {"Authorization": f"Bearer {self.curation_api_access_token}"}
+        self.addCleanup(
+            self.session.delete,
+            f"{self.api}/curation/v1/collections/{collection_id}?delete_published=true",
+            headers=curation_api_headers,
+        )
         self.assertStatusCode(requests.codes.created, res)
         self.assertIn("collection_id", data)
         return collection_id
@@ -182,8 +188,18 @@ class TestRevisions(BaseFunctionalTestCase):
         revision_deleted_dataset_id = dataset_to_delete["id"]
         published_explorer_url = self.create_explorer_url(revision_deleted_dataset_id)
 
-        # Delete a dataset within the revision
-        res = self.session.delete(f"{self.api}/dp/v1/datasets/{revision_deleted_dataset_id}", headers=headers)
+        # Delete (tombstone) a dataset (using admin privileges) within the revision
+        revision_datasets = self.session.get(f"{self.api}/curation/v1/collections/{revision_id}").json()["datasets"]
+        dataset_id_to_delete = None
+        for dataset in revision_datasets:
+            if dataset["dataset_version_id"] == revision_deleted_dataset_id:
+                dataset_id_to_delete = dataset["dataset_id"]
+
+        curation_api_headers = {"Authorization": f"Bearer {self.curation_api_access_token}"}
+        res = self.session.delete(
+            f"{self.api}/curation/v1/collections/{revision_id}/datasets/{dataset_id_to_delete}?delete_published=true",
+            headers=curation_api_headers,
+        )
         self.assertStatusCode(202, res)
 
         with self.subTest("Deleting a dataset does not effect the published dataset"):

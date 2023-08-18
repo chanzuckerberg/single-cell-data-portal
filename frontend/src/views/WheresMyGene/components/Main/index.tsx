@@ -27,28 +27,25 @@ import {
   closeRightSidebar,
   deleteSelectedGenes,
 } from "../../common/store/actions";
-import { GeneExpressionSummary } from "../../common/types";
+import { ChartProps, GeneExpressionSummary } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
-import Beta from "../Beta";
 import CellInfoBar from "../CellInfoSideBar";
-import GeneInfoBar from "../GeneInfoSideBar";
+import GeneInfoBar from "../../../../components/GeneInfoSideBar";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
-import { ChartProps } from "../HeatMap/hooks/common/types";
 import InfoPanel from "../InfoPanel";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
-import {
-  SideBarLabel,
-  StyledBannerContainer,
-  StyledSidebarDrawer,
-} from "./style";
-import RightSideBar from "../RightSideBar";
+import { StyledBannerContainer, StyledSidebarDrawer } from "./style";
+import RightSideBar from "../../../../components/common/RightSideBar";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
+import BottomBanner from "src/components/BottomBanner";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
+import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -221,7 +218,7 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [dispatch]);
 
-  const hasSelectedTissues = selectedTissues.length > 0;
+  const hasSelectedTissues = (selectedTissues?.length ?? 0) > 0;
   const hasSelectedGenes = selectedGenes.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
@@ -280,11 +277,11 @@ export default function WheresMyGene(): JSX.Element {
   return (
     <>
       <Head>
-        <title>CELL&times;GENE | Gene Expression</title>
+        <title>Gene Expression - CZ CELLxGENE Discover</title>
       </Head>
 
       <SideBar
-        label={<SideBarLabel>Filters</SideBarLabel>}
+        label="Filters"
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
@@ -300,7 +297,7 @@ export default function WheresMyGene(): JSX.Element {
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
-        <RightSideBar>
+        <RightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
           <CellInfoBar
             generateGeneInfo={generateGeneInfo}
             cellInfoCellType={cellInfoCellType}
@@ -315,7 +312,7 @@ export default function WheresMyGene(): JSX.Element {
               <GeneInfoBar
                 geneInfoGene={geneInfoGene}
                 handleClose={handleCloseGeneInfoSideBar}
-                title={`${geneInfoGene}`}
+                title={geneInfoGene}
               />
             )
           }
@@ -327,7 +324,7 @@ export default function WheresMyGene(): JSX.Element {
             <GeneInfoBar
               geneInfoGene={geneInfoGene}
               handleClose={handleCloseGeneInfoSideBar}
-              title={`${geneInfoGene}`}
+              title={geneInfoGene}
             />
           </RightSideBar>
         )
@@ -384,7 +381,7 @@ export default function WheresMyGene(): JSX.Element {
               echartsRendererMode={echartsRendererMode}
               cellTypeSortBy={sortBy.cellTypes}
               geneSortBy={sortBy.genes}
-              selectedTissues={selectedTissues}
+              selectedTissues={selectedTissues ?? EMPTY_ARRAY}
               isScaled={isScaled}
               isLoadingAPI={isLoading}
               cellTypes={cellTypesByTissueName}
@@ -400,9 +397,12 @@ export default function WheresMyGene(): JSX.Element {
             />
           ) : null}
         </Wrapper>
-
-        <Beta />
       </View>
+
+      <BottomBanner
+        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
+        includeSurveyLink
+      />
     </>
   );
 }

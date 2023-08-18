@@ -1,16 +1,32 @@
 import {
   useMutation,
+  UseMutationResult,
   useQuery,
   useQueryClient,
   UseQueryResult,
 } from "react-query";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import { DatasetAsset, DatasetUploadStatus } from "../entities";
+import {
+  Collection,
+  Dataset,
+  DatasetAsset,
+  DatasetUploadStatus,
+  PROCESSING_STATUS,
+} from "../entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
 import { USE_COLLECTION } from "./collections";
 import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
+import { USE_DATASETS_INDEX } from "src/common/queries/filter";
+
+/**
+ * Cached query matching the refetch predicate, that are not being rendered, will be invalidated and refetched
+ * in the background.
+ */
+const DEFAULT_BACKGROUND_REFETCH = {
+  refetchInactive: true,
+};
 
 export const USE_DATASET_STATUS = {
   entities: [ENTITIES.DATASET_STATUS],
@@ -29,12 +45,29 @@ const REFETCH_INTERVAL_MS = 10 * 1000;
 
 export function useDatasetStatus(
   dataset_id: string,
+  collectionId: Collection["id"],
   shouldFetch: boolean
 ): UseQueryResult<DatasetUploadStatus> {
+  const queryClient = useQueryClient();
   return useQuery<DatasetUploadStatus>(
     [USE_DATASET_STATUS, dataset_id],
     () => fetchDatasetStatus(dataset_id),
-    { enabled: shouldFetch, refetchInterval: REFETCH_INTERVAL_MS }
+    {
+      enabled: shouldFetch,
+      onSuccess: async (data: DatasetUploadStatus): Promise<void> => {
+        // When the dataset has been successfully processed, invalidate the collection query, and the datasets index query.
+        // The collection query will fetch with the updated dataset list, which will no longer be in a loading state.
+        // As a result, the useDatasetStatus query's status will be updated to "idle".
+        if (data.processing_status === PROCESSING_STATUS.SUCCESS) {
+          await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+          await queryClient.invalidateQueries(
+            [USE_DATASETS_INDEX],
+            DEFAULT_BACKGROUND_REFETCH
+          );
+        }
+      },
+      refetchInterval: REFETCH_INTERVAL_MS,
+    }
   );
 }
 
@@ -43,33 +76,50 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(dataset_id = ""): Promise<DatasetUploadStatus> {
-  if (!dataset_id) throw new Error("No dataset id provided");
-
-  const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_id });
-  const response = await fetch(url, DELETE_FETCH_OPTIONS);
-
-  if (response.ok) return await response.json();
-
-  throw Error(response.statusText);
+export interface DeleteDataset {
+  collectionId: Collection["id"];
+  datasetId: Dataset["id"];
 }
 
-export function useDeleteDataset(collection_id = "") {
-  if (!collection_id) {
-    throw new Error("No collection id given");
+async function deleteDataset({
+  collectionId,
+  datasetId,
+}: DeleteDataset): Promise<DeleteDataset> {
+  const url = apiTemplateToUrl(API_URL + API.DATASET, {
+    dataset_id: datasetId,
+  });
+  const response = await fetch(url, DELETE_FETCH_OPTIONS);
+
+  if (!response.ok) {
+    throw Error(response.statusText);
   }
 
+  return { collectionId, datasetId };
+}
+
+export function useDeleteDataset(): UseMutationResult<
+  DeleteDataset,
+  unknown,
+  DeleteDataset
+> {
   const queryClient = useQueryClient();
-
   return useMutation(deleteDataset, {
-    onSuccess: (uploadStatus: DatasetUploadStatus) => {
-      queryClient.invalidateQueries([USE_COLLECTION, collection_id]);
-
-      queryClient.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
-
-      queryClient.setQueryData(
-        [USE_DATASET_STATUS, uploadStatus.dataset_id],
-        uploadStatus
+    onSuccess: async ({
+      collectionId,
+      datasetId,
+    }: DeleteDataset): Promise<void> => {
+      // If the dataset was in the process of loading, the dataset status query will be cancelled.
+      // This is not an essential step, but cancels the request prior to invalidating the collection query (which
+      // would have cancelled the dataset status query anyway).
+      await queryClient.cancelQueries([USE_DATASET_STATUS, datasetId]);
+      // Invalidate the collection query, and datasets index query.
+      // Invalidation of the collection query triggers an immediate re-fetch with the dataset removed from the
+      // list of datasets. Note, this re-fetch happens before the "useDeleteDataset" mutate function executes the
+      // "onSuccess" callback.
+      await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+      await queryClient.invalidateQueries(
+        [USE_DATASETS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
       );
     },
   });

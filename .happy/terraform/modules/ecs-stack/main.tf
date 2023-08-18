@@ -24,8 +24,11 @@ locals {
   frontend_cmd                 = []
   # TODO: Assess whether this is safe for Portal API as well. Trying 1 worker in rdev portal backend containers, to minimize use of memory by TileDB (allocates multi-GB per process)
   # Note: keep-alive timeout should always be greater than the idle timeout of the load balancer (60 seconds)
-  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "61", "--log-level", "info"]
-  data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_2023.sql"
+  backend_workers              = var.backend_workers 
+  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_workers}",
+    "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180",
+    "--keep-alive", "61", "--log-level", "info"]
+  data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_04_2f30f3bcc9aa.sql"
 
   vpc_id                          = local.secret["cloud_env"]["vpc_id"]
   subnets                         = local.secret["cloud_env"]["private_subnets"]
@@ -44,6 +47,8 @@ locals {
   batch_role_arn                  = local.secret["batch_queues"]["upload"]["role_arn"]
   job_queue_arn                   = local.secret["batch_queues"]["upload"]["queue_arn"]
   wmg_batch_role_arn              = local.secret["batch_queues"]["wmg"]["role_arn"]
+  schema_migration_job_queue_arn  = local.secret["batch_queues"]["schema_migration"]["queue_arn"]
+  schema_migration_batch_role_arn = local.secret["batch_queues"]["schema_migration"]["role_arn"]
   external_dns                    = local.secret["external_zone_name"]
   internal_dns                    = local.secret["internal_zone_name"]
 
@@ -63,6 +68,7 @@ locals {
   ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
   sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
   lambda_execution_role        = local.secret["service_roles"]["lambda_errorhandler"]
+  schema_migration_sfn_role_arn = local.secret["service_roles"]["schema_migration_sfn_service"]
 
   frontend_url = try(join("", ["https://", module.frontend_dns[0].dns_prefix, ".", local.external_dns]), var.frontend_url)
   backend_url  = try(join("", ["https://", module.backend_dns[0].dns_prefix, ".", local.external_dns]), var.backend_url)
@@ -131,7 +137,7 @@ module backend_service {
   task_role_arn              = local.ecs_role_arn
   service_port               = 5000
   memory                     = var.backend_memory
-  cpu                        = 2048
+  cpu                        = var.backend_cpus * 1024
   cmd                        = local.backend_cmd
   deployment_stage           = local.deployment_stage
   step_function_arn          = module.upload_sfn.step_function_arn
@@ -191,6 +197,7 @@ module wmg_batch {
   image                         = "${local.wmg_upload_image_repo}:${local.image_tag}"
   batch_role_arn                = local.wmg_batch_role_arn
   cmd                           = ""
+  api_url                       = local.backend_url
   custom_stack_name             = local.custom_stack_name
   remote_dev_prefix             = local.remote_dev_prefix
   deployment_stage              = local.deployment_stage
@@ -223,6 +230,7 @@ module upload_error_lambda {
   deployment_stage           = local.deployment_stage
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
+  datasets_bucket            = local.datasets_bucket
   lambda_execution_role      = local.lambda_execution_role
   subnets                    = local.subnets
   security_groups            = local.security_groups
@@ -252,6 +260,21 @@ module dataset_submissions_lambda {
   step_function_arn          = module.upload_sfn.step_function_arn
   subnets                    = local.subnets
   security_groups            = local.security_groups
+}
+
+module schema_migration {
+  source                        = "../schema_migration"
+  image                         = "${local.upload_image_repo}:${local.image_tag}"
+  batch_role_arn                = local.schema_migration_batch_role_arn
+  cmd                           = ""
+  custom_stack_name             = local.custom_stack_name
+  remote_dev_prefix             = local.remote_dev_prefix
+  deployment_stage              = local.deployment_stage
+  artifact_bucket               = local.artifact_bucket
+  batch_container_memory_limit  = local.batch_container_memory_limit
+  job_queue_arn                 = local.schema_migration_job_queue_arn
+  sfn_role_arn                  = local.schema_migration_sfn_role_arn
+
 }
 
 resource "aws_iam_role" "dataset_submissions_lambda_service_role" {

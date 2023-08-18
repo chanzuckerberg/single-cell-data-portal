@@ -1,38 +1,13 @@
 import { css } from "@emotion/css";
 import styled from "@emotion/styled";
-import { fontBodyXs, getColors, getSpaces, TooltipTable } from "czifui";
-import { X_AXIS_CHART_HEIGHT_PX } from "../../utils";
-
-export const ChartContainer = styled.div`
-  ${getWidthAndHeight}
-  margin-bottom: ${X_AXIS_CHART_HEIGHT_PX}px;
-`;
-
-function getWidthAndHeight({
-  width,
-  height,
-}: {
-  width: number;
-  height: number;
-}) {
-  return `
-    width: ${width}px;
-    height: ${height}px;
-  `;
-}
+import { fontBodyXs, TooltipTable } from "@czi-sds/components";
+import { gray500, spacesL, spacesXs } from "src/common/theme";
 
 export const StyledTooltipTable = styled(TooltipTable)`
   display: flex;
   flex-direction: column;
-
-  ${(props) => {
-    const spaces = getSpaces(props);
-
-    return `
-      gap: ${spaces?.l}px;
-      padding-bottom: ${spaces?.xs}px;
-    `;
-  }}
+  gap: ${spacesL}px;
+  padding-bottom: ${spacesXs}px;
 
   > div {
     padding-top: 0 !important;
@@ -53,13 +28,7 @@ export const StyledTooltipTable = styled(TooltipTable)`
   }
 
   .MuiTableCell-alignRight {
-    ${(props) => {
-      const colors = getColors(props);
-
-      return `
-        color: ${colors?.gray[500]};
-      `;
-    }}
+    color: ${gray500};
   }
 `;
 

@@ -1,4 +1,4 @@
-from typing import List
+from typing import Iterable, List
 
 
 class S3ProviderInterface:
@@ -18,4 +18,7 @@ class S3ProviderInterface:
         pass
 
     def upload_directory(self, src_dir: str, s3_uri: str):
+        pass
+
+    def list_directory(self, bucket_name: str, src_dir: str) -> Iterable[str]:
         pass

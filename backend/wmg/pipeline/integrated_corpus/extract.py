@@ -1,4 +1,5 @@
 import logging
+import pathlib
 import subprocess
 from typing import Dict, Union
 
@@ -52,6 +53,7 @@ def get_dataset_asset_urls(datasets=None) -> Dict[str, str]:
 def copy_datasets_to_instance(s3_uris: Dict, dataset_directory: str):
     """Copy given list of s3 uris to the provided path"""
     for dataset in s3_uris:
+        pathlib.Path(f"./{dataset_directory}/{dataset}").mkdir(parents=True, exist_ok=True)
         copy_command = ["wget", s3_uris[dataset], "-O", f"./{dataset_directory}/{dataset}/local.h5ad"]
         subprocess.run(copy_command)
 

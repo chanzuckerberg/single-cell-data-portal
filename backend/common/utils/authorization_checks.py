@@ -12,6 +12,10 @@ def is_super_curator(scope: Union[list, str]) -> bool:
     return has_scope(CorporaConstants.SUPER_CURATOR_SCOPE, scope)
 
 
+def is_cxg_admin(scope: Union[list, str]) -> bool:
+    return has_scope(CorporaConstants.CXG_ADMIN_SCOPE, scope)
+
+
 def is_user_owner_or_allowed(user: str, scope: Union[list, str], owner: str) -> bool:
     """
     Check if the user has ownership on a collection, or if it has superuser permissions

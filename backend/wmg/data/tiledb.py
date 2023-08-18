@@ -10,7 +10,7 @@ from backend.common.utils.tiledb import consolidation_buffer_size, virtual_memor
 def create_ctx(config_overrides: Optional[dict] = None) -> tiledb.Ctx:
     config_overrides = config_overrides or {}
     cfg = {
-        "py.init_buffer_bytes": int(0.5 * GB),
+        "py.init_buffer_bytes": int(0.05 * GB),
         "sm.tile_cache_size": 100 * MB if os.getenv("DEPLOYMENT_STAGE", "test") == "test" else virtual_memory_size(0.5),
         "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
         "sm.query.sparse_unordered_with_dups.non_overlapping_ranges": "true",

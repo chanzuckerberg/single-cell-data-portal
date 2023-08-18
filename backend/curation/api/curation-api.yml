@@ -14,6 +14,32 @@ info:
     ## Data Model
     <!-- Data model diagram created via Lucid: https://lucid.app/lucidchart/8d085832-34f4-4413-9c1d-44e77d06e326/edit?invitationId=inv_ed354532-7256-4e0a-9ad0-b622905e5198&page=Vfzkzdv~I1fL# -->
     <img src="/static/discover-api-data-model.png" width="50%"/>
+
+    ## Working with versions
+
+    #### Access to published version history
+    The CZ CELLxGENE Discover API supports access to all published versions of Collections and Datasets. For example,
+    if a Dataset was published and then later updated and published again, then both Dataset Versions can be accessed.
+
+    #### Different types of identifiers
+    The Collection identifier collection_id is set during the creation of a Collection; it does not change, even if the
+    Collection is updated. It always refers to the latest published version of the Collection and is the required
+    identifier to use with Collection endpoints.
+
+    The Collection Version identifier `collection_version_id` refers to one specific published version of a Collection
+    and is required by the Collection Version endpoint.
+
+    The Dataset identifier dataset_id is set during the creation of a Dataset; it does not change, even if the Dataset
+    is updated. It always refers to the latest published version of the Dataset and is the required identifier to use
+    with Dataset endpoints.
+
+    The Dataset Version identifier `dataset_version_id` refers to one specific published version of a Dataset and is
+    required by the Dataset Version endpoint.
+
+    **Important Note:** if a Dataset is NOT updated during a revision of its parent Collection and the revision is
+    published, then its Dataset Version (and identifier `dataset_version_id`) do not change even though there is a new
+    Collection Version (and identifier `collection_version_id`).
+
 servers:
   - description: Production environment
     url: https://api.cellxgene.cziscience.com/
@@ -26,7 +52,7 @@ paths:
     post:
       summary: Generate an access token
       tags:
-        - authentication
+        - Authentication
       description: |
         Returns a bearer access token that must be passed in an Authorization header to requests that
         require authorization such as creating a new Collection.
@@ -76,7 +102,7 @@ paths:
         - curatorAccessLenient: []
         - {}
       tags:
-        - collection
+        - Collection
       parameters:
         - description: |
             The visibility of the Collections to query for (and its constituent Datasets).
@@ -123,7 +149,7 @@ paths:
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.actions.post
       tags:
-        - collection
+        - Collection
       security:
         - curatorAccess: []
       requestBody:
@@ -166,7 +192,7 @@ paths:
         - curatorAccessLenient: []
         - {}
       tags:
-        - collection
+        - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -179,6 +205,8 @@ paths:
                   - $ref: "#/components/schemas/collection"
         "403":
           $ref: "#/components/responses/403"
+        "410":
+          $ref: "#/components/responses/410"
     patch:
       summary: Update a Collection's metadata.
       description: |
@@ -193,7 +221,7 @@ paths:
       security:
         - curatorAccess: []
       tags:
-        - collection
+        - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -249,9 +277,17 @@ paths:
       security:
         - curatorAccess: []
       tags:
-        - collection
+        - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
+        - name: delete_published
+          description: |
+            Perform the delete even if the Collection is published. Not allowed for users.
+          in: query
+          required: false
+          schema:
+            default: "false"
+            type: string
       responses:
         "204":
           $ref: "#/components/responses/204"
@@ -277,7 +313,7 @@ paths:
       security:
         - curatorAccess: []
       tags:
-        - collection
+        - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -307,7 +343,7 @@ paths:
       security:
         - curatorAccess: []
       tags:
-        - collection
+        - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -341,12 +377,20 @@ paths:
         * Required: provide your access token in the request header as `Authorization: bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.delete
       tags:
-        - collection
+        - Collection
       security:
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/path_dataset_id"
+        - name: delete_published
+          description: |
+            Perform the delete even if the Dataset is published. Not allowed for users.
+          in: query
+          required: false
+          schema:
+            default: "false"
+            type: string
       responses:
         "202":
           description: Accepted
@@ -370,7 +414,7 @@ paths:
         Fetch Dataset metadata for `dataset_id` in a `collection_id`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.get
       tags:
-        - collection
+        - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/path_dataset_id"
@@ -385,6 +429,8 @@ paths:
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
     put:
       summary: Upload a Dataset by providing a link
       description: |
@@ -395,7 +441,7 @@ paths:
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.put
       tags:
-        - collection
+        - Collection
       security:
         - curatorAccess: []
       parameters:
@@ -433,7 +479,7 @@ paths:
     get:
       summary: Get credentials for uploading local files
       tags:
-        - collection
+        - Collection
       description: |
         Retrieve temporary AWS credentials for uploading Dataset source files to S3 to create
         or update Datasets for the specified Collection.
@@ -510,17 +556,19 @@ paths:
                     type: string
         "401":
           $ref: "#/components/responses/401"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/collections/{collection_id}/versions:
     get:
-      summary: Fetch all versions of a Collection with corresponding Dataset versions
+      summary: Fetch all Collection Versions for a given Collection
       description: >
-        Fetch full metadata for all versions of a Collection and their corresponding Dataset versions. The
-        `collection_id` must reference a *Collection*, **NOT** a *Collection version*. Collection versions are returned
+        Fetch full metadata for all published Collection Versions and their constituent Dataset Versions. The
+        `collection_id` must reference a *Collection*, **NOT** a *Collection Version*. Collection Versions are returned
         in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.collections.collection_id.versions.get
       tags:
-        - collection_version
+        - Collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -531,7 +579,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/collection"
+                  $ref: "#/components/schemas/collection_version"
         "403":
           $ref: "#/components/responses/403"
         "404":
@@ -541,13 +589,13 @@ paths:
 
   /v1/collection_versions/{collection_version_id}:
     get:
-      summary: Fetch a Collection version with Dataset versions
+      summary: Fetch a Collection Version with Dataset Versions
       description: >
-        Fetch full metadata for a published Collection version and its Dataset versions. The `collection_version_id` 
-        must reference a *Collection version*, **NOT** a *Collection*.
+        Fetch full metadata for a published Collection Version and its Dataset Versions. The `collection_version_id`
+        must reference a *Collection Version*, **NOT** a *Collection*.
       operationId: backend.curation.api.v1.curation.collection_versions.collection_version_id.actions.get
       tags:
-        - collection_version
+        - Collection Version
       parameters:
         - $ref: "#/components/parameters/path_collection_version_id"
       responses:
@@ -569,10 +617,12 @@ paths:
     get:
       summary: List all Datasets
       tags:
-        - dataset
+        - Dataset
       description: |
         List all public Datasets with full metadata as well as Collection name and Collection doi.
       operationId: backend.curation.api.v1.curation.datasets.actions.get
+      parameters:
+        - $ref: "#/components/parameters/schema_version"
       responses:
         "200":
           description: OK
@@ -582,15 +632,17 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/dataset_index"
+        "400":
+          $ref: "#/components/responses/400"
 
   /v1/datasets/{dataset_id}/versions:
     get:
-      summary: List all versions for a Dataset
+      summary: List all Dataset Versions for a given Dataset
       tags:
-        - dataset_version
+        - Dataset
       description: |
-        List all versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a *Dataset version*.
-        Dataset versions are returned in reverse-chronological order.
+        List all published Dataset Versions for a given Dataset. The `dataset_id` must reference a *Dataset*, **NOT** a
+        *Dataset Version*. Dataset Versions are returned in reverse-chronological order.
       operationId: backend.curation.api.v1.curation.datasets.dataset_id.versions.actions.get
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
@@ -607,14 +659,16 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/dataset_versions/{dataset_version_id}:
     get:
-      summary: Get full metadata for a Dataset version
+      summary: Get full metadata for a Dataset Version
       tags:
-        - dataset_version
+        - Dataset Version
       description: |
-        Fetch Dataset metadata for a Dataset version. The `dataset_version_id` must reference a *Dataset version*,
+        Fetch Dataset metadata for a Dataset Version. The `dataset_version_id` must reference a *Dataset Version*,
         **NOT** a *Dataset*.
       operationId: backend.curation.api.v1.curation.dataset_versions.dataset_version_id.actions.get
       parameters:
@@ -630,6 +684,8 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
 
 components:
   schemas:
@@ -775,6 +831,9 @@ components:
       description: A timestamp indicating the last time a Revision for this Dataset was published.
       nullable: true
       type: string
+    collection_version_published_at:
+      description: A timestamp of when this Collection Version was published.
+      type: string
     collection_revising_in:
       type: string
       description: >
@@ -803,7 +862,7 @@ components:
         collection_url:
           $ref: "#/components/schemas/collection_url"
         collection_version_id:
-          $ref: "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_version_id"
         consortia:
           $ref: "#/components/schemas/consortia"
         contact_email:
@@ -843,14 +902,14 @@ components:
           $ref: "#/components/schemas/visibility"
       type: object
     collection_version:
-      description: Collection version metadata
+      description: Collection Version metadata
       properties:
         collection_id:
           $ref: "#/components/schemas/collection_id"
         collection_url:
           $ref: "#/components/schemas/collection_url"
         collection_version_id:
-          $ref: "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_version_id"
         consortia:
           $ref: "#/components/schemas/consortia"
         contact_email:
@@ -861,9 +920,9 @@ components:
           $ref: "#/components/schemas/created_at"
         curator_name:
           $ref: "#/components/schemas/curator_name"
-        datasets:
+        dataset_versions:
           type: array
-          description: A list of Dataset metadata associated with the Collection version
+          description: A list of Dataset Versions associated with the Collection Version
           items:
             $ref: "#/components/schemas/dataset_version"
         description:
@@ -875,7 +934,7 @@ components:
         name:
           $ref: "#/components/schemas/collection_name"
         published_at:
-          $ref: "#/components/schemas/published_at"
+          $ref: "#/components/schemas/collection_version_published_at"
         publisher_metadata:
           $ref: "#/components/schemas/publisher_metadata"
         visibility:
@@ -1112,7 +1171,7 @@ components:
           $ref: "#/components/schemas/collection_id"
         collection_version_id:
           description: |
-            The first Collection Version this Dataset Version was published under
+            The Collection Version in which this Dataset Version was first published.
           type: string
           format: uuid
         dataset_id:
@@ -1131,8 +1190,6 @@ components:
           $ref: "#/components/schemas/dataset_disease"
         donor_id:
           $ref: "#/components/schemas/donor_id"
-        explorer_url:
-          $ref: "#/components/schemas/explorer_url"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
@@ -1420,6 +1477,26 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/dataset_version_id"
+    schema_version:
+      description: |
+        Optional--Filter results by most recently published dataset versions with matching CELLxGENE schema version. Can
+        match against major, minor, or patch schema version. Returns empty list if no match is found. Input should be in
+        semver format (X, X.Y, or X.Y.Z where X, Y, and Z are positive integers).
+      in: query
+      name: schema_version
+      required: false
+      schema:
+        type: string
+      examples:
+        major_schema_version:
+          summary: Major Schema Version Filter
+          value: "3"
+        minor_schema_version:
+          summary: Minor Schema Version Filter
+          value: "3.0"
+        patch_schema_version:
+          summary: Patch Schema Version Filter
+          value: "3.0.0"
   responses:
     "200":
       description: OK

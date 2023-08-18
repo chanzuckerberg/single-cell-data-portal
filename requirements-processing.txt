@@ -1,0 +1,36 @@
+alembic>=1.9, <2
+anndata==0.8.0
+allure-pytest<3
+black==22.3.0  # Must be kept in sync with black version in .pre-commit-config.yaml
+boto3>=1.11.17
+botocore>=1.14.17
+cellxgene-schema
+click==8.1.3
+coverage>=6.5.0
+dataclasses-json
+furl
+jsonschema
+matplotlib==3.6.3 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
+moto==3.1.3
+numba==0.56.2
+numpy==1.23.2
+owlready2==0.40.0
+pandas==1.4.4
+parameterized
+psutil>=5.9.0
+psycopg2-binary>=2.8.5
+pyarrow>=1.0
+pydantic>=1.9.0
+PyMySQL==0.9.3
+pytest
+pytest-subtests
+python-json-logger
+requests>=2.22.0
+rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
+ruff==0.0.239 # Must be kept in sync with ruff version in .pre-commit-config.yaml
+s3fs==0.4.2
+scanpy==1.6.0
+SQLAlchemy>=1.4.0,<1.5
+SQLAlchemy-Utils>=0.36.8
+tenacity
+tiledb==0.21.4  # Portal's tiledb version should always be the same or older than Explorer's

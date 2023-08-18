@@ -39,6 +39,15 @@ export const COLLECTION_LINK_TYPE_OPTIONS = {
   },
 };
 
+/**
+ * Collection status, used to determine whether a collection is private or public, or in revision.
+ */
+export enum COLLECTION_STATUS {
+  PRIVATE = "Private",
+  PUBLISHED = "Published",
+  REVISION = "Revision",
+}
+
 export interface Link {
   link_name: string;
   link_url: string;
@@ -95,8 +104,8 @@ export interface Collection {
   revision_diff: boolean;
   summaryCitation?: string;
   tombstone?: boolean;
+  revising_in?: Collection["id"];
   revision_of?: Collection["id"];
-  revisioning_in?: Collection["id"];
 }
 
 /**
@@ -138,6 +147,7 @@ export interface Dataset {
   created_at: number;
   original_id?: string;
   published?: boolean;
+  published_at?: number;
   tombstone?: boolean;
   updated?: boolean;
   collection_visibility: Collection["visibility"];

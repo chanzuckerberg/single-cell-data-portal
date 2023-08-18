@@ -1,22 +1,23 @@
 import styled from "@emotion/styled";
-import { GRAY, PRIMARY_BLUE } from "src/components/common/theme";
+import { fontBodyS } from "@czi-sds/components";
+import { gray500, primary400, spacesS, spacesXl } from "src/common/theme";
 
 export const CollectionMetadata = styled.div`
   display: grid;
-  gap: 8px 24px;
+  ${fontBodyS}
+  gap: ${spacesS}px ${spacesXl}px;
   grid-area: metadata;
   grid-template-columns: 96px auto;
   justify-self: flex-start;
-  letter-spacing: -0.1px;
-  line-height: 18px;
+  letter-spacing: -0.006em;
 `;
 
 export const MetadataLabel = styled.span`
-  color: ${GRAY.A};
+  color: ${gray500};
 `;
 
 export const MetadataValue = styled.a`
-  color: ${PRIMARY_BLUE};
+  color: ${primary400};
   word-break: break-word;
 
   &:focus {
@@ -24,6 +25,6 @@ export const MetadataValue = styled.a`
   }
 
   &:hover {
-    color: ${PRIMARY_BLUE};
+    color: ${primary400};
   }
 `;

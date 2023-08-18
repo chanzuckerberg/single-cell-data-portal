@@ -1,8 +1,9 @@
 import { HTMLTable } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { Button, fontBodyS } from "czifui";
+import { Button, fontBodyS } from "@czi-sds/components";
 import Image from "next/image";
-import { fontBodyXxs, getColors } from "czifui";
+import { fontBodyXxs, getColors } from "@czi-sds/components";
+import { gray500 } from "src/common/theme";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
 
@@ -10,6 +11,7 @@ export const ButtonContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  margin-top: 40px;
 `;
 
 export const StyledIconImage = styled(Image)`
@@ -66,12 +68,7 @@ export const MarkerStrengthContainer = styled("div")`
 
 export const MarkerStrengthLabel = styled("div")`
   ${fontBodyXxs}
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
   line-height: unset;
 `;
 

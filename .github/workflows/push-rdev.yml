@@ -18,15 +18,17 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-push-images:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 900
@@ -42,9 +44,9 @@ jobs:
       - name: Build component
         shell: bash
         run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8}
+          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:7}
       - name: Create Summary With Happy Commands
         run: |
           echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
-          echo "* \`happy create <_stack-name_> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
-          echo "* \`happy update <_stack-name_> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy create <_stack-name_> --tag ${GITHUB_SHA:0:7} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy update <_stack-name_> --tag ${GITHUB_SHA:0:7} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY

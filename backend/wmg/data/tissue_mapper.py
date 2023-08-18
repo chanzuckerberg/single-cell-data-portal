@@ -92,6 +92,7 @@ class TissueMapper:
         "UBERON_0001511",  # skin of leg
         "UBERON_0002190",  # subcutaneous adipose tissue
         "UBERON_0000014",  # zone of skin
+        "UBERON_0000916",  # abdomen
     ]
 
     # Terms to ignore when mapping
@@ -106,7 +107,9 @@ class TissueMapper:
         "UBERON_0001062",  # anatomical entity
     ]
 
-    def __init__(self, uberon_ontology: str = "http://purl.obolibrary.org/obo/uberon.owl"):
+    def __init__(
+        self, uberon_ontology: str = "https://github.com/obophenotype/uberon/releases/latest/download/uberon.owl"
+    ):
         # TODO: use the pinned ontology at `single-cell-curation`
         self._uberon = owlready2.get_ontology(uberon_ontology)
         self._uberon.load()

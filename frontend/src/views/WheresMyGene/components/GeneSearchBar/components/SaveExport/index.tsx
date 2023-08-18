@@ -14,14 +14,19 @@ import {
   CompareId,
   getCompareOptionNameById,
   HEATMAP_CONTAINER_ID,
+  X_AXIS_CHART_HEIGHT_PX,
+  X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
 } from "src/views/WheresMyGene/common/constants";
-import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
-import { ChartProps } from "../../../HeatMap/hooks/common/types";
+import {
+  CellType,
+  ChartProps,
+  Tissue,
+} from "src/views/WheresMyGene/common/types";
 
 import {
   getHeatmapHeight,
   getHeatmapWidth,
-  X_AXIS_CHART_HEIGHT_PX,
+  hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../../HeatMap/utils";
 
@@ -58,8 +63,9 @@ import {
   buildCellTypeIdToMetadataMapping,
   csvGeneExpressionRow,
   csvHeaders,
+  getCurrentDate,
 } from "./csvUtils";
-import { InputCheckbox } from "czifui";
+import { InputCheckbox } from "@czi-sds/components";
 import {
   DATA_MESSAGE_BANNER_HEIGHT_PX,
   DATA_MESSAGE_BANNER_ID,
@@ -431,7 +437,6 @@ function generateCsv({
   allChartProps,
   compare,
   selectedGenes,
-  tissueName,
   availableFilters,
   selectedFilters,
   selectedOrganismId,
@@ -441,7 +446,6 @@ function generateCsv({
   allChartProps: { [tissue: string]: ChartProps };
   compare: CompareId | undefined;
   selectedGenes: Props["selectedGenes"];
-  tissueName: string;
   availableFilters: Partial<FilterDimensions>;
   selectedFilters: State["selectedFilters"];
   selectedOrganismId: string | null;
@@ -463,23 +467,25 @@ function generateCsv({
     })
   );
 
-  // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
-  const cellTypeIdToMetadataMapping = Object.values(
-    buildCellTypeIdToMetadataMapping(tissueName, allChartProps)
-  );
+  for (const tissueName of selectedTissues) {
+    // Create a mapping of cell type IDs to a metadata array. (ex. "CL:00000" => [aggregated, female, male])
+    const cellTypeIdToMetadataMapping = Object.values(
+      buildCellTypeIdToMetadataMapping(tissueName, allChartProps)
+    );
 
-  for (const metadataForCellType of cellTypeIdToMetadataMapping) {
-    for (const geneName of selectedGenes) {
-      for (const metadata of metadataForCellType) {
-        output.push(
-          csvGeneExpressionRow({
-            metadata,
-            tissueName,
-            allChartProps,
-            geneName,
-            compare,
-          })
-        );
+    for (const metadataForCellType of cellTypeIdToMetadataMapping) {
+      for (const geneName of selectedGenes) {
+        for (const metadata of metadataForCellType) {
+          output.push(
+            csvGeneExpressionRow({
+              metadata,
+              tissueName,
+              allChartProps,
+              geneName,
+              compare,
+            })
+          );
+        }
       }
     }
   }
@@ -509,6 +515,7 @@ async function generateImage({
     filter: screenshotFilter(tissueName),
     height:
       heatmapHeight +
+      X_AXIS_HOVER_CONTAINER_HEIGHT_PX +
       X_AXIS_CHART_HEIGHT_PX +
       DATA_MESSAGE_BANNER_HEIGHT_PX +
       LEGEND_HEIGHT_PX +
@@ -639,35 +646,23 @@ function download_({
         }px`;
       }
 
-      const exports: ExportData[] = (
-        await Promise.all(
-          selectedTissues.map(async (tissueName) => {
-            // Handles if whitespace is in the tissue name for the element ID
-            const formattedTissueName = tissueName.replace(/\s+/g, "-");
+      const exports: ExportData[] = [];
 
-            // Generate exports for each filetype for the tissue
-            return await Promise.all(
-              selectedFileTypes.map(async (fileType) => {
-                let input;
+      await Promise.all(
+        selectedTissues.map(async (tissueName) => {
+          // Handles if whitespace is in the tissue name for the element ID
+          const formattedTissueName = hyphenize(tissueName);
 
-                if (fileType === "csv") {
-                  input = generateCsv({
-                    allChartProps,
-                    compare,
-                    selectedGenes,
-                    tissueName,
-                    availableFilters,
-                    selectedFilters,
-                    selectedOrganismId,
-                    availableOrganisms,
-                    selectedTissues,
-                  });
-                } else {
-                  const heatmapHeight = getHeatmapHeight(
-                    selectedCellTypes[tissueName]
-                  );
+          // Generate exports for images only
+          return await Promise.all(
+            selectedFileTypes.map(async (fileType) => {
+              if (fileType === "png" || fileType === "svg") {
+                const heatmapHeight = getHeatmapHeight(
+                  selectedCellTypes[tissueName]
+                );
 
-                  input = await generateImage({
+                exports.push({
+                  input: await generateImage({
                     fileType,
                     heatmapNode,
                     heatmapHeight,
@@ -676,18 +671,34 @@ function download_({
                     isMultipleTissues:
                       selectedTissues.length > 1 ||
                       selectedFileTypes.length > 1,
-                  });
-                }
-
-                return {
-                  input,
+                  }),
                   name: `${formattedTissueName}.${fileType}`,
-                };
-              })
-            );
-          })
-        )
-      ).flat();
+                });
+              }
+            })
+          );
+        })
+      );
+
+      // CSV has all tissues in one file
+      if (selectedFileTypes.includes("csv")) {
+        exports.push({
+          input: generateCsv({
+            allChartProps,
+            compare,
+            selectedGenes,
+            availableFilters,
+            selectedFilters,
+            selectedOrganismId,
+            availableOrganisms,
+            selectedTissues,
+          }),
+          name:
+            selectedTissues.length === 1 // If only one tissue is selected, use tissue name as filename
+              ? `${selectedTissues[0]}.csv`
+              : `CELLxGENE_gene_expression_${getCurrentDate()}.csv`,
+        });
+      }
 
       if (isPng) {
         // Remove classes that were required for styling PNG
@@ -713,6 +724,7 @@ function download_({
         dataset_filter: selectedFilters.datasets,
         disease_filter: selectedFilters.diseases,
         self_reported_ethnicity_filter: selectedFilters.ethnicities,
+        publication_filter: selectedFilters.publications,
         sex_filter: selectedFilters.sexes,
         group_by_option: getCompareOptionNameById(compare),
 

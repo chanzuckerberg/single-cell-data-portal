@@ -1,6 +1,13 @@
 import styled from "@emotion/styled";
-import { Button, fontBodyS, fontBodyXs, fontCapsXxs, getColors } from "czifui";
+import {
+  Button,
+  fontBodyS,
+  fontBodyXs,
+  fontCapsXxs,
+  getColors,
+} from "@czi-sds/components";
 import Modal from "src/components/common/Modal";
+import { gray500 } from "src/common/theme";
 
 export const DOWNLOAD_MODAL_WIDTH_PX = 600;
 export const DOWNLOAD_MODAL_PADDING = 24;
@@ -31,13 +38,7 @@ export const StyledModal = styled(Modal)`
 export const StyledTitle = styled.div`
   ${fontCapsXxs}
 
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
 `;
 
 export const StyledModalContent = styled.div`

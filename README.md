@@ -13,6 +13,9 @@ CELLxGENE Discover enables the publication, discovery and exploration of interop
 
 1. Install pre-commit: `pre-commit install` or check doc [here](https://pre-commit.com/)
 1. Set up your machine to be able to work with AWS using the instructions [here](https://czi.atlassian.net/wiki/spaces/DC/pages/332892073/Getting+started+with+AWS). Please ensure to follow the step 3 `AWS CLI access` instructions all the way to the bottom so that you are also set up for SSH access. When you run the final command that requires the team's infra repo, use `single-cell-infra`.
+1. [install jq](https://stedolan.github.io/jq/download/). If brew is installed run `brew install jq`.
+1. [install libpq](https://www.timescale.com/blog/how-to-install-psql-on-mac-ubuntu-debian-windows/). If brew is installed run ` brew install libpq`. We need this
+   tool to invoke the `psql` commandline utility.
 1. Install chamber. For running functional tests below, you will need to install Chamber on your machine. Chamber is a tool for reading secrets stored in AWS Secret Store and Parameter Store. On Linux, go to https://github.com/segmentio/chamber/releases to download the latest version >= 2.9.0, and add it somewhere on your path. On Mac, run `brew install chamber`.
 
 ### Development Quickstart
@@ -20,6 +23,8 @@ CELLxGENE Discover enables the publication, discovery and exploration of interop
 **Note:** Make sure you are running your Python virtual environment before going through the development guides.
 
 Once you have run the pre-requisite sets, you are ready to begin developing for CELLxGENE Discover. As you start to change code, you may want to deploy a test instance of Discover so that you can check to see how your changes perform. We have two ways to deploy your changes:
+
+1. **Creating a local python-only development environment.** This local development environment is a minimal environment that is suitable for running the automated test suite quickly. It also allows you to run specific test cases which is not possible in the dockerized local deployment environment (see below) - the `make` commands invoke docker commands to run test suites in their entirety. Moreover, creating an environment without docker also makes for much faster test runs. To set up a python-only local development environment, see [this guide](DEV_ENV_WITHOUT_DOCKER.md)
 
 1. **Creating a local deployment environment.** This environment will be entirely hosted on your own machine. It relies upon Docker to run both CELLxGENE Discover servers, Discover unit tests, and infrastructure service dependencies (AWS, Postgres, OIDC). The environment will be initialized with a small amount of dummy data. This environment is great to have up and running while you are actively developing. See [this guide](DEV_ENV.md) for instructions on how to set up a local deployment.
 
@@ -54,6 +59,10 @@ If you need to make a change to the CELLxGENE Discover database, see [CELLxGENE 
 1. Ensure that you have set up your local development environment per the instructions above and run `make local-init` to launch a local dev environment.
 1. Run the tests using the command `$ make unit-test`.
 
+### Running the WMG pipeline and endpoints locally in an interactive environment
+
+Please take a look at the tutorial notebooks in `example_dev_notebooks` for examples on how to run the WMG pipeline and endpoints locally for development purposes.
+
 ### Troubleshooting Unit Tests
 
 1. If your unit tests crash due to an `Error 137`, that means the docker containers currently running are using up more memory than what the docker application
@@ -79,6 +88,6 @@ The base image is built using Github actions. It is built both nightly, and when
 
 The CELLxGENE Discover upload application code by default uses the base image tagged with the tag "branch-main" (which the nightly and on-change base image build reassigns).
 
-If a new base image build is needed but the Dockerfile has no functional change (e.g. upstream R libraries versions have changed), the Dockerfile.processing_image can be modified with a non-functional to force the build (e.g. adding a blank line).
+If a new base image build is needed but the Dockerfile has no functional change (e.g. upstream R libraries versions have changed), the `Dockerfile.processing` can be modified with a non-functional to force the build (e.g. adding a blank line).
 
 In the rare event a new build of the base image needs to be built without Github Actions (e.g. Github Actions is down), follow the steps [Github's documentation](https://docs.github.com/en/packages/guides/pushing-and-pulling-docker-images) for creating a personal access token, and build locally and push like any other Docker image.

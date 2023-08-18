@@ -1,4 +1,4 @@
-import { Notification } from "czifui";
+import { Notification } from "@czi-sds/components";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -55,6 +55,7 @@ export default function ShareButton(): JSX.Element {
       genes: selectedGenes,
       group_by_option: getCompareOptionNameById(compare),
       self_reported_ethnicity_filter: selectedFilters.ethnicities,
+      publication_filter: selectedFilters.publications,
       sex_filter: selectedFilters.sexes,
       tissues: selectedTissues,
     });
@@ -90,6 +91,7 @@ export default function ShareButton(): JSX.Element {
           disease_filter: loadedState.filters.diseases,
           group_by_option: getCompareOptionNameById(loadedState.compare),
           self_reported_ethnicity_filter: loadedState.filters.ethnicities,
+          publication_filter: loadedState.filters.publications,
           sex_filter: loadedState.filters.sexes,
         });
       }
@@ -110,7 +112,9 @@ export default function ShareButton(): JSX.Element {
               <StyledIcon sdsIcon={"link"} sdsSize={"s"} sdsType={"static"} />
             }
           >
-            <StyledNotificationLabel>Share link copied</StyledNotificationLabel>
+            <StyledNotificationLabel data-testid="share-link-notification">
+              Share link copied
+            </StyledNotificationLabel>
             <StyledNotificationDetails>
               We regularly expand our single cell data corpus to improve
               results. Downloaded data and figures may differ in the future.
@@ -128,7 +132,7 @@ export default function ShareButton(): JSX.Element {
           sdsSize="medium"
           sdsType="primary"
           sdsIcon="share"
-          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
+          disabled={selectedTissues?.length === 0 || selectedGenes.length === 0}
         />
       </StyledButtonDiv>
     </>

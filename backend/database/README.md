@@ -18,9 +18,19 @@
 6. [Test your migration](#test-a-migration)
 7. Check that [orm.py](../layers/persistence/orm.py) matches up with your changes.
 8. Once you've completed the changes, create a PR to get the functions reviewed.
-9. Once the PR is merged, migrations will be run as part of the deployment process to each env.
-10. [Connect to Remote RDS](#connect-to-remote-rds) to single-cell-dev
-11. In a new terminal, complete the migration in the single-cell-dev test env by running:
+9. Rdev compatibility:
+   1. If your migration requires changes to the seed data file for rdev, make those changes in a **new** seed data file with your migration hash in the name.
+      ```
+      s3://env-rdev-dataportal/database/seed_data_##_a1b2c3d4e5f6.sql
+      ```
+      where `##` is the migration number and `a1b2c3d4e5f6` is the migration hash, both taken from the migration file under `./versions/`. Do not delete older seed files from s3; the most recent version(s) will still be in active use by other developers before they incorporate your migration into their feature branches.
+   2. In your PR, change the `data_load_path` local variable [in the ecs-stack module](../../.happy/terraform/modules/ecs-stack/main.tf) to reflect the new dump file above that you have written to s3.
+10. Once the PR is merged, migrations will be run as part of the deployment process to each env.
+
+While migrations should run automatically as part of our deployment process, if a manual migration is required:
+
+1. [Connect to Remote RDS](#connect-to-remote-rds) to single-cell-dev
+2. In a new terminal, complete the migration in the single-cell-dev test env by running:
 
 ```shell
 cd $REPO_ROOT/backend

@@ -7,11 +7,19 @@ import {
   isDevStaging,
   tryUntil,
 } from "tests/utils/helpers";
-import { getTestID, getText } from "tests/utils/selectors";
+import { getTestID } from "tests/utils/selectors";
 
 const { describe, skip } = test;
 
-const COLLECTION_ROW_ID = "collection-row";
+const COLLECTION_ACTIONS_ID = "collection-actions";
+const COLLECTION_NAME_ID = "collection-link";
+const COLLECTION_STATUS_BANNER_ID = "revision-status";
+const COLLECTION_VIEW_REVISION = "view-collection-revision";
+const COLLECTION_ROW_WRITE_PUBLISHED_ID = "collection-row-write-published";
+const COLLECTION_ROW_WRITE_REVISION_ID =
+  "collection-row-write-published-revision";
+const COLLECTIONS_LINK_ID = "collections-link";
+const STATUS_TAG_ID = "status-tag";
 
 describe("Collection Revision", () => {
   skip(
@@ -26,13 +34,14 @@ describe("Collection Revision", () => {
 
     await expect(publishButton).toBeDisabled();
 
-    await page.getByText("My Collections").click();
+    await page.getByTestId(COLLECTIONS_LINK_ID).click();
+    await page.waitForURL("**" + ROUTES.COLLECTIONS);
 
     const collectionRowContinueLocator = page
-      .getByTestId(COLLECTION_ROW_ID)
+      .getByTestId(COLLECTION_ROW_WRITE_REVISION_ID)
       .filter({ hasText: collectionName })
       .filter({ hasText: "Published" })
-      .filter({ hasText: "Revision Pending" })
+      .filter({ hasText: "Revision" })
       .first();
 
     // (thuang): Staging is slow due to the amount of collections we fetch,
@@ -46,13 +55,13 @@ describe("Collection Revision", () => {
       { maxRetry: RETRY_TIMES, page }
     );
 
-    const actionButtonContinue = await collectionRowContinueLocator.getByTestId(
-      "revision-action-button"
+    const viewRevisionButton = await collectionRowContinueLocator.getByTestId(
+      COLLECTION_VIEW_REVISION
     );
 
-    await expect(actionButtonContinue).toMatchText("Continue");
+    await expect(viewRevisionButton).toBeVisible();
 
-    await actionButtonContinue?.click();
+    await viewRevisionButton?.click();
 
     await deleteRevision(page);
   });
@@ -117,11 +126,6 @@ describe("Collection Revision", () => {
       { page }
     );
 
-    const REVISION_STATUS_TEXT =
-      "This collection has changed since you last published it";
-
-    await expect(page).toMatchText(new RegExp(REVISION_STATUS_TEXT));
-
     expect(
       (
         await page.getAttribute(getTestID(COLLECTION_CONTACT_ID), "href")
@@ -137,22 +141,22 @@ describe("Collection Revision", () => {
 });
 
 async function startRevision(page: Page): Promise<string> {
-  await goToPage(TEST_URL + ROUTES.MY_COLLECTIONS, page);
-  // (thuang): Wait for collections to load to prevent race condition
-  await page.waitForLoadState("networkidle");
-
   const MIN_USABLE_COLLECTION_COUNT = 4;
 
   // (thuang): If we can't find at least 4 usable collections, we'll delete a revision
   await tryUntil(
     async () => {
+      await goToPage(TEST_URL + ROUTES.COLLECTIONS, page);
+
       try {
-        await expect(page.getByText("Start Revision")).toBeTruthy();
+        await expect(
+          page.getByTestId(COLLECTION_ROW_WRITE_PUBLISHED_ID)
+        ).toBeTruthy();
 
         await tryUntil(
           async () => {
-            const collectionRows = await page.locator(
-              getText("Start Revision")
+            const collectionRows = await page.getByTestId(
+              COLLECTION_ROW_WRITE_PUBLISHED_ID
             );
             expect(await collectionRows.count()).toBeGreaterThan(
               MIN_USABLE_COLLECTION_COUNT - 1
@@ -161,7 +165,11 @@ async function startRevision(page: Page): Promise<string> {
           { page }
         );
       } catch {
-        await page.getByText("Continue").first().click();
+        await page
+          .getByTestId(COLLECTION_ROW_WRITE_REVISION_ID)
+          .first()
+          .getByTestId(COLLECTION_VIEW_REVISION)
+          .click();
         await deleteRevision(page);
         throw new Error("No available collection");
       }
@@ -169,60 +177,69 @@ async function startRevision(page: Page): Promise<string> {
     { page }
   );
 
-  /**
-   * (thuang): NOTE: the `*` at the beginning of the string captures the
-   * `COLLECTION_ROW_ID` selector element
-   * @see https://playwright.dev/docs/selectors#intermediate-matches
-   */
-  const COLLECTION_ROW_SELECTOR_START = `*${getTestID(
-    COLLECTION_ROW_ID
-  )} >> text="Start Revision"`;
-
   // (thuang): We randomly select a collection row to start a revision
-  const collectionRows = await page.$$(COLLECTION_ROW_SELECTOR_START);
-  const collectionRowCount = await collectionRows.length;
-
-  const collectionRow =
-    collectionRows[Math.floor(Math.random() * collectionRowCount)];
+  const collectionRows = await page.getByTestId(
+    COLLECTION_ROW_WRITE_PUBLISHED_ID
+  );
+  const collectionRowCount = await collectionRows.count();
+  const randomIndex = Math.floor(Math.random() * collectionRowCount);
+  const collectionRow = collectionRows.nth(randomIndex);
 
   expect(collectionRow).not.toBe(null);
 
-  const VISIBILITY_TAG_ID = "visibility-tag";
+  const statusTag = await collectionRow?.getByTestId(STATUS_TAG_ID);
 
-  const visibilityTag = await collectionRow?.$(getTestID(VISIBILITY_TAG_ID));
+  // We expect to find one status tag, with the text "Published".
+  expect(statusTag).not.toBe(null);
+  await expect(statusTag).toHaveCount(1);
+  await expect(statusTag).toMatchText("Published");
 
-  expect(visibilityTag).not.toBe(null);
-
-  await expect(visibilityTag).toMatchText("Published");
-
-  const collectionName = await collectionRow?.$eval(
-    getTestID("collection-link"),
-    (element: HTMLElement) => element.textContent
-  );
-
-  const actionButton = await collectionRow?.$(
-    getTestID("revision-action-button")
-  );
-
-  await actionButton?.click();
-
-  const PRIVATE_REVISION_TEXT =
-    "This is a private revision of a public collection.";
+  // Grab the collection link.
+  const collectionLink = await collectionRow?.getByTestId(COLLECTION_NAME_ID);
+  // Grab the collection name.
+  const collectionName = await collectionLink.innerText();
+  // Go to collection page.
+  await collectionLink?.click();
 
   await tryUntil(
-    async () => await expect(page).toHaveSelector(getTestID("revision-status")),
+    async () =>
+      await expect(page).toHaveSelector(getTestID(COLLECTION_ACTIONS_ID)),
     { page }
   );
 
-  const revisionStatusElement = await page.$(getTestID("revision-status"));
+  // Start revision of collection
+  await page
+    .getByTestId(COLLECTION_ACTIONS_ID)
+    .locator("button")
+    .filter({ hasText: "Start Revision" })
+    .click();
 
-  await expect(revisionStatusElement).toMatchText(PRIVATE_REVISION_TEXT);
+  const PRIVATE_REVISION_TEXT =
+    "This is a private revision of a published collection. Open Published Collection";
 
-  return collectionName as string;
+  await tryUntil(
+    async () =>
+      await expect(page).toHaveSelector(getTestID(COLLECTION_STATUS_BANNER_ID)),
+    { page }
+  );
+
+  const collectionStatusBanner = await page.getByTestId(
+    COLLECTION_STATUS_BANNER_ID
+  );
+
+  await expect(collectionStatusBanner).toMatchText(PRIVATE_REVISION_TEXT);
+
+  return collectionName;
 }
 
 async function deleteRevision(page: Page) {
   const DROPDOWN_CANCEL_ID = "dropdown-cancel-revision";
+
+  // Grab the published collection route from the collection status banner.
+  const collectionRoute = await page
+    .getByTestId(COLLECTION_STATUS_BANNER_ID)
+    .locator("a")
+    .getAttribute("href");
 
   /**
    * (thuang): Sometimes the dropdown is already open, so we need to check if it's
@@ -246,7 +263,8 @@ async function deleteRevision(page: Page) {
     .filter({ hasText: "Cancel Revision" })
     .click();
 
-  await page.waitForURL(TEST_URL + ROUTES.MY_COLLECTIONS);
+  // The page routes to published collection when the revision is successfully deleted.
+  await page.waitForURL(`${TEST_URL}${collectionRoute}`);
 }
 
 function getCollectionMoreButtonLocator(page: Page) {

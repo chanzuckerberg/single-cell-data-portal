@@ -1,5 +1,14 @@
+import {
+  CommonThemeProps,
+  getColors,
+  getCorners,
+  getFontWeights,
+  getPalette,
+  getShadows,
+  getSpaces,
+} from "@czi-sds/components";
 import { createTheme } from "@mui/material/styles";
-import { defaultAppTheme, makeThemeOptions } from "czifui";
+import { defaultAppTheme, makeThemeOptions } from "@czi-sds/components";
 
 const { fontWeights } = defaultAppTheme;
 
@@ -24,12 +33,26 @@ const spacing = {
   xxxs: 2,
 };
 
+export const spacesXxl = (props: CommonThemeProps) => getSpaces(props)?.xxl;
+export const spacesXl = (props: CommonThemeProps) => getSpaces(props)?.xl;
+export const spacesL = (props: CommonThemeProps) => getSpaces(props)?.l;
+export const spacesM = (props: CommonThemeProps) => getSpaces(props)?.m;
+export const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
+export const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
+export const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
+export const spacesXxxs = (props: CommonThemeProps) => getSpaces(props)?.xxxs;
+
 const corners = {
   l: 16,
   m: 4,
   none: 0,
   s: 2,
 };
+
+export const cornersL = (props: CommonThemeProps) => getCorners(props)?.l;
+export const cornersM = (props: CommonThemeProps) => getCorners(props)?.m;
+export const cornersS = (props: CommonThemeProps) => getCorners(props)?.s;
+export const cornersNone = (props: CommonThemeProps) => getCorners(props)?.none;
 
 const typography = {
   fontFamily: "Inter",
@@ -164,6 +187,8 @@ const customTheme = {
 
 const themeOptions = { ...defaultAppTheme, ...customTheme };
 
+// Colors
+
 const primaryColors = {
   "100": "#EBF5FF",
   "200": "#7DBCFF",
@@ -172,6 +197,24 @@ const primaryColors = {
   "500": "#0056C6",
   "600": "#00429F",
 };
+
+export const textPrimary = (props: CommonThemeProps) =>
+  getPalette(props)?.text?.primary;
+
+export const textSecondary = (props: CommonThemeProps) =>
+  getPalette(props)?.text?.secondary;
+
+export const primary100 = (props: CommonThemeProps) =>
+  getColors(props)?.primary[100];
+
+export const primary400 = (props: CommonThemeProps) =>
+  getColors(props)?.primary[400];
+
+export const primary500 = (props: CommonThemeProps) =>
+  getColors(props)?.primary[500];
+
+export const primary600 = (props: CommonThemeProps) =>
+  getColors(props)?.primary[600];
 
 const infoColors = {
   "100": primaryColors["100"],
@@ -183,10 +226,82 @@ const infoColors = {
 themeOptions.colors.primary = primaryColors;
 themeOptions.colors.info = infoColors;
 
-const appTheme = makeThemeOptions(themeOptions);
+export const success100 = (props: CommonThemeProps) =>
+  getColors(props)?.success[100];
 
-export const theme = createTheme(appTheme);
+export const success500 = (props: CommonThemeProps) =>
+  getColors(props)?.success[500];
+
+export const warning100 = (props: CommonThemeProps) =>
+  getColors(props)?.warning[100];
+
+export const warning400 = (props: CommonThemeProps) =>
+  getColors(props)?.warning[400];
+
+export const warning500 = (props: CommonThemeProps) =>
+  getColors(props)?.warning[500];
+
+export const error100 = (props: CommonThemeProps) =>
+  getColors(props)?.error[100];
+
+export const error400 = (props: CommonThemeProps) =>
+  getColors(props)?.error[400];
+
+export const error500 = (props: CommonThemeProps) =>
+  getColors(props)?.error[500];
+
+export const grey100 = (props: CommonThemeProps) => getColors(props)?.gray[100];
+export const gray100 = grey100;
+
+export const grey200 = (props: CommonThemeProps) => getColors(props)?.gray[200];
+export const gray200 = grey200;
+
+export const grey300 = (props: CommonThemeProps) => getColors(props)?.gray[300];
+export const gray300 = grey300;
+
+export const grey400 = (props: CommonThemeProps) => getColors(props)?.gray[400];
+export const gray400 = grey400;
+
+export const grey500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
+export const gray500 = grey500;
+
+export const grey600 = (props: CommonThemeProps) => getColors(props)?.gray[600];
+export const gray600 = grey600;
+
+export const beta100 = (props: CommonThemeProps) => getColors(props)?.beta[100];
+
+export const beta400 = (props: CommonThemeProps) => getColors(props)?.beta[400];
+
+export const beta600 = (props: CommonThemeProps) => getColors(props)?.beta[600];
 
 export const OFF_WHITE = "#f8f8f8";
 
 export const PINK = "#E9429A";
+
+// Font Weights
+export const fontWeightBold = (props: CommonThemeProps) =>
+  getFontWeights(props)?.bold;
+
+export const fontWeightLight = (props: CommonThemeProps) =>
+  getFontWeights(props)?.light;
+
+export const fontWeightMedium = (props: CommonThemeProps) =>
+  getFontWeights(props)?.medium;
+
+export const fontWeightRegular = (props: CommonThemeProps) =>
+  getFontWeights(props)?.regular;
+
+/**
+ * font-weight 600
+ */
+export const fontWeightSemibold = (props: CommonThemeProps) =>
+  getFontWeights(props)?.semibold;
+
+// Shadow
+export const shadowL = (props: CommonThemeProps) => getShadows(props)?.l;
+export const shadowM = (props: CommonThemeProps) => getShadows(props)?.m;
+export const shadowS = (props: CommonThemeProps) => getShadows(props)?.s;
+
+const appTheme = makeThemeOptions(themeOptions);
+
+export const theme = createTheme(appTheme);

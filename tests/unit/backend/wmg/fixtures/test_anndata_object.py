@@ -39,7 +39,8 @@ def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):
     - slow column slicing operations (consider CSC)
     - changes to the sparsity structure are expensive (consider LIL or DOK)
     """
-    # make matrix of gene expression (one value per gene/cell combo)
+    # create sparse matrix of gene expression (one value per gene/cell combo)
+    # values are randomly populated using a poisson distribution
     counts = csr_matrix(np.random.poisson(1, size=(num_cells, num_genes)), dtype=np.float32)
     adata = ad.AnnData(counts)
     adata.obs_names = [f"Cell_{i:d}" for i in range(adata.n_obs)]

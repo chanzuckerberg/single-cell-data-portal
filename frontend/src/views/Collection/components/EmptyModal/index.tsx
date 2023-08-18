@@ -4,8 +4,8 @@ import { Border, CenterAlignedDiv } from "./style";
 
 interface Props {
   title: string;
-  content: ReactChild;
-  button: ReactChild;
+  content?: ReactChild;
+  button?: ReactChild;
 }
 
 const EmptyModal: FC<Props> = ({ title, content, button }) => {

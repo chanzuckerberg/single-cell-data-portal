@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontCapsXxs, fontHeaderL, getColors } from "czifui";
+import {
+  CommonThemeProps,
+  fontCapsXxs,
+  fontHeaderL,
+  getColors,
+} from "@czi-sds/components";
+import { gray500 } from "src/common/theme";
 
 const PADDING_PX = 24;
 
@@ -28,13 +34,7 @@ export const Header = styled.span`
 
   padding: ${PADDING_PX}px ${PADDING_PX}px 2px ${PADDING_PX}px;
 
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
 `;
 
 export const Details = styled.span`

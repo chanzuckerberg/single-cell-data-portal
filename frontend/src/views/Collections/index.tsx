@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
@@ -9,51 +9,69 @@ import { useFetchCollectionRows } from "src/common/queries/filter";
 import { KEYS } from "src/common/sessionStorage/set";
 import { useExplainTombstoned } from "src/components/Collections/common/utils";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
-import Filter from "src/components/common/Filter";
 import {
   CATEGORY_FILTER_ID,
+  CategoryView,
   CellPropsValue,
   CollectionRow,
   MultiPanelSelectedUIState,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
-import { buildTableCountSummary } from "src/components/common/Grid/common/utils";
+import {
+  arraySortingFn,
+  buildTableCountSummary,
+} from "src/components/common/Grid/common/utils";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { Title } from "src/components/common/Grid/components/Title";
-import SideBar from "src/components/common/SideBar";
 import CreateCollection from "src/components/CreateCollectionModal";
+import SideBar from "src/components/common/SideBar";
 import { CollectionsView as View } from "./style";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useUserInfo } from "src/common/queries/auth";
+import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
+import CountCell from "src/components/common/Grid/components/CountCell";
 import {
+  CATEGORY_FILTER_DENY_LIST,
+  CATEGORY_FILTER_PARTITION_LIST,
+  COLLECTION_CELL_COUNT,
+  COLLECTION_CURATOR_NAME,
   COLLECTION_ID,
   COLLECTION_NAME,
   COLLECTION_RECENCY,
+  COLLECTION_REVISED_BY,
+  COLLECTION_STATUS,
   COLLECTION_SUMMARY_CITATION,
-  COLLECTIONS_MODE,
+  COLLECTIONS_COLUMN_DENY_LIST,
+  COLUMN_DENY_LIST,
   COLUMN_ID_RECENCY,
 } from "src/views/Collections/common/constants";
-import { get } from "src/common/featureFlags";
-import { BOOLEAN } from "src/common/localStorage/set";
+import { ALIGNMENT } from "src/components/common/Grid/common/entities";
+import StatusCell from "src/components/common/Grid/components/StatusCell";
+import RevisionButton from "src/components/common/Grid/components/RevisionButton";
+import CategoryFilters from "src/components/common/Filter/components/Filters";
+import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
+import Loader from "src/components/common/Grid/components/Loader";
 
 export default function Collections(): JSX.Element {
-  const isCuratorEnabled = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
-  const { status } = useUserInfo(isCuratorEnabled);
-  const mode = useMemo((): COLLECTIONS_MODE => {
-    return status === "success"
-      ? COLLECTIONS_MODE.MY_COLLECTIONS
-      : COLLECTIONS_MODE.COLLECTIONS;
-  }, [status]);
+  const { mode, status } = useViewMode();
 
   // Pop toast if user has been redirected from a tombstoned collection.
   useExplainTombstoned();
 
-  // Filterable collection datasets joined from datasets index and collections index responses.
-  const { isError, isLoading, rows: collectionRows } = useFetchCollectionRows();
+  // Filterable collection datasets joined from datasets index and collections (or user-collections) index responses.
+  const {
+    isError,
+    isSuccess,
+    rows: collectionRows,
+  } = useFetchCollectionRows(mode, status);
+
+  // Show collections list when collections are successfully loaded.
+  const shouldShowCollections = !isError && isSuccess;
+
+  // Loading indicator for curator mode, when collections are not yet successfully loaded.
+  const shouldShowLoader = mode === VIEW_MODE.CURATOR && !shouldShowCollections;
 
   // Column configuration backing table.
   const columnConfig: Column<CollectionRow>[] = useMemo(
@@ -72,14 +90,43 @@ export default function Collections(): JSX.Element {
         },
         Header: "Collections",
         accessor: COLLECTION_NAME,
+        disableSortBy: true,
         showCountAndTotal: true,
       },
+      // Viewable only in curator mode, required for filter.
+      {
+        Cell: ({ row }: RowPropsValue<CollectionRow>) => {
+          return (
+            <StatusCell
+              revisionButton={<RevisionButton id={row.values.revisedBy} />}
+              status={row.values.STATUS}
+            />
+          );
+        },
+        Header: "Status",
+        accessor: COLLECTION_STATUS,
+        disableSortBy: false,
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.STATUS,
+        sortType: arraySortingFn,
+      },
+      // Viewable only in curator mode, required for filter.
+      {
+        Header: "Curator",
+        accessor: COLLECTION_CURATOR_NAME,
+        disableSortBy: false,
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.CURATOR_NAME,
+        sortType: "alphanumeric",
+      },
+      // Viewable in collections mode, hidden in curator mode.
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
           return <div>{row.values.summaryCitation || "No publication"}</div>;
         },
         Header: "Publication",
         accessor: COLLECTION_SUMMARY_CITATION,
+        disableSortBy: true,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -87,6 +134,7 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Tissue",
         accessor: ontologyLabelCellAccessorFn("tissue"),
+        disableSortBy: true,
         id: "tissue",
       },
       {
@@ -98,8 +146,20 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Disease",
         accessor: ontologyLabelCellAccessorFn("disease"),
+        disableSortBy: true,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.DISEASE,
+      },
+      // Viewable only in curator mode, required for filter.
+      {
+        Cell: ({ value }: CellPropsValue<string[]>) => (
+          <NTagCell label={PLURALIZED_METADATA_LABEL.ASSAY} values={value} />
+        ),
+        Header: "Assay",
+        accessor: ontologyLabelCellAccessorFn("assay"),
+        disableSortBy: true,
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.ASSAY,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -107,8 +167,23 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Organism",
         accessor: ontologyLabelCellAccessorFn("organism"),
+        disableSortBy: true,
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ORGANISM,
+      },
+      // Viewable only in curator mode.
+      {
+        Cell: ({ value }: CellPropsValue<number | null>) => (
+          <RightAlignCell>
+            <CountCell cellCount={value || 0} />
+          </RightAlignCell>
+        ),
+        Header: "Cells",
+        accessor: COLLECTION_CELL_COUNT,
+        alignment: ALIGNMENT.RIGHT,
+        disableSortBy: true,
+        filter: "between",
+        id: CATEGORY_FILTER_ID.CELL_COUNT,
       },
       // Hidden, required for sorting
       {
@@ -118,12 +193,6 @@ export default function Collections(): JSX.Element {
       // Hidden, required for accessing collection ID via row.values, for building link to collection detail page.
       {
         accessor: COLLECTION_ID,
-      },
-      // Hidden, required for filter.
-      {
-        accessor: ontologyLabelCellAccessorFn("assay"),
-        filter: "includesSome",
-        id: CATEGORY_FILTER_ID.ASSAY,
       },
       // Hidden, required for filter.
       {
@@ -153,6 +222,10 @@ export default function Collections(): JSX.Element {
         accessor: "publicationDateValues",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
+      },
+      // Hidden, required for accessing revised by via row.values, for building status.
+      {
+        accessor: COLLECTION_REVISED_BY,
       },
       // Hidden, required for filter.
       {
@@ -193,22 +266,10 @@ export default function Collections(): JSX.Element {
     {
       columns: columnConfig,
       data: collectionRows,
+      disableSortBy: false,
       initialState: {
         filters: initialFilters,
-        // Only display tissue, disease and organism values.
-        hiddenColumns: [
-          COLLECTION_ID,
-          COLUMN_ID_RECENCY,
-          CATEGORY_FILTER_ID.ASSAY,
-          CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
-          CATEGORY_FILTER_ID.SELF_REPORTED_ETHNICITY,
-          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
-          CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
-          CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
-          CATEGORY_FILTER_ID.SEX,
-          CATEGORY_FILTER_ID.SUSPENSION_TYPE,
-          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
-        ],
+        hiddenColumns: COLLECTIONS_COLUMN_DENY_LIST,
         sortBy: [
           {
             desc: true,
@@ -224,40 +285,48 @@ export default function Collections(): JSX.Element {
   // Determine the set of categories to display for the collections view.
   const categories = useMemo<Set<CATEGORY_FILTER_ID>>(() => {
     return Object.values(CATEGORY_FILTER_ID)
-      .filter((categoryFilterId: CATEGORY_FILTER_ID) => {
-        return (
-          categoryFilterId !== CATEGORY_FILTER_ID.CELL_COUNT &&
-          categoryFilterId !== CATEGORY_FILTER_ID.GENE_COUNT
-        );
-      })
+      .filter(
+        (categoryFilterId: CATEGORY_FILTER_ID) =>
+          !CATEGORY_FILTER_DENY_LIST[mode].includes(categoryFilterId)
+      )
       .reduce((accum, categoryFilterId: CATEGORY_FILTER_ID) => {
         accum.add(categoryFilterId);
         return accum;
       }, new Set<CATEGORY_FILTER_ID>());
-  }, []);
+  }, [mode]);
+
+  // Determine the hidden columns.
+  const hiddenColumns = useMemo<string[]>(() => COLUMN_DENY_LIST[mode], [mode]);
 
   // Filter init.
   const {
     preFilteredRows,
     rows,
     setFilter,
+    setHiddenColumns,
     state: { filters },
   } = tableInstance;
-  const filterInstance = useCategoryFilter(
-    preFilteredRows,
-    categories,
-    filters,
-    setFilter,
-    initialMultiPanelSelectedUIState
-  );
+  const { categoryViews, onFilter, multiPanelSelectedUIState } =
+    useCategoryFilter(
+      preFilteredRows,
+      categories,
+      filters,
+      setFilter,
+      initialMultiPanelSelectedUIState
+    );
+
+  // Updates table hidden columns state.
+  useEffect(() => {
+    setHiddenColumns(hiddenColumns);
+  }, [hiddenColumns, setHiddenColumns]);
 
   // Store latest filter state.
   useEffect(() => {
     storeFilters(filters);
-    storeMultiPanelSelectedUIState(filterInstance.multiPanelSelectedUIState);
+    storeMultiPanelSelectedUIState(multiPanelSelectedUIState);
   }, [
     filters,
-    filterInstance.multiPanelSelectedUIState,
+    multiPanelSelectedUIState,
     storeFilters,
     storeMultiPanelSelectedUIState,
   ]);
@@ -271,37 +340,78 @@ export default function Collections(): JSX.Element {
   return (
     <>
       <Head>
-        <title>CELL&times;GENE | Collections</title>
+        <title>Collections - CZ CELLxGENE Discover</title>
       </Head>
-      {isError || isLoading ? null : (
-        <>
-          <SideBar
-            label="Filters"
-            isOpen={isSideBarOpen}
-            onToggle={storeIsSideBarOpen}
-          >
-            <Filter {...filterInstance} />
-          </SideBar>
-          <View>
-            {mode === COLLECTIONS_MODE.MY_COLLECTIONS && <CreateCollection />}
-            {!rows || rows.length === 0 ? (
-              <GridHero>
-                <h3>No Results</h3>
-                <p>There are no collections matching those filters.</p>
-              </GridHero>
-            ) : (
-              <CollectionsGrid
-                tableCountSummary={buildTableCountSummary(
-                  rows,
-                  preFilteredRows
-                )}
-                // @ts-expect-error -- revisit tableInstance typing
-                tableInstance={tableInstance}
+      {isError ? null : shouldShowLoader ? (
+        <Loader />
+      ) : (
+        shouldShowCollections && (
+          <>
+            <SideBar
+              label="Filters"
+              isOpen={isSideBarOpen}
+              onToggle={storeIsSideBarOpen}
+            >
+              <CategoryFilters
+                filters={partitionCategoryViews(categoryViews, mode)}
+                onFilter={onFilter}
               />
-            )}
-          </View>
-        </>
+            </SideBar>
+            <View>
+              {mode === VIEW_MODE.CURATOR && <CreateCollection />}
+              {!rows || rows.length === 0 ? (
+                <GridHero>
+                  <h3>No Results</h3>
+                  <p>There are no collections matching those filters.</p>
+                </GridHero>
+              ) : (
+                <CollectionsGrid
+                  mode={mode}
+                  tableCountSummary={buildTableCountSummary(
+                    rows,
+                    preFilteredRows
+                  )}
+                  // @ts-expect-error -- revisit tableInstance typing
+                  tableInstance={tableInstance}
+                />
+              )}
+            </View>
+            {/* May be added in the future after sign off */}
+            {/* <BottomBanner /> */}
+          </>
+        )
       )}
     </>
   );
+}
+
+/**
+ * Partitions the category views for collections and curator mode filtering.
+ * @param categoryViews - View models of categories to display.
+ * @param mode - View mode.
+ * @returns partitioned category views.
+ */
+function partitionCategoryViews(
+  categoryViews: CategoryView[],
+  mode: VIEW_MODE
+): CategoryView[][] {
+  const partitionedValues: CategoryView[][] = [[]];
+  for (const categoryView of categoryViews) {
+    if (
+      CATEGORY_FILTER_PARTITION_LIST[mode].includes(
+        categoryView.categoryFilterId
+      )
+    ) {
+      if (!partitionedValues[1]) {
+        // Create the second partition if not already defined.
+        partitionedValues.push([]);
+      }
+      // Assign category to the second partition.
+      partitionedValues[1].push(categoryView);
+    } else {
+      // Assign category to the first partition.
+      partitionedValues[0].push(categoryView);
+    }
+  }
+  return partitionedValues;
 }

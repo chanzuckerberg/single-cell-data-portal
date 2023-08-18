@@ -1,19 +1,17 @@
-import { IconNames } from "@blueprintjs/icons";
-import { List } from "czifui";
+import { Icon, ListItem } from "@czi-sds/components";
 import React, { Fragment, ReactElement } from "react";
+import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import {
   CATEGORY_FILTER_ID,
   OnFilterFn,
   OntologyCategoryTreeNodeView,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
-import { SelectionIcon } from "src/components/common/Filter/common/style";
 import {
+  List,
   NoMatches,
-  ViewListItem,
-  ViewListItemText,
-  ViewSublist,
-} from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList/style";
+} from "src/components/common/Filter/components/FilterContent/components/common/style";
+import { ViewSublist } from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList/style";
 
 interface Props {
   categoryFilterId: CATEGORY_FILTER_ID;
@@ -77,31 +75,32 @@ export default function FilterViewList({
           return (
             <Fragment key={categoryValueId}>
               {/* List item */}
-              <ViewListItem
-                button
-                disabled={!count}
-                onClick={() =>
-                  onFilter(categoryFilterId, categoryValueId, label)
-                }
-              >
-                {/* Icon - bp icon to uphold ui consistency between filter menu and filter views */}
-                <SelectionIcon
-                  icon={
-                    selected
-                      ? IconNames.TICK
-                      : selectedPartial
-                      ? IconNames.MINUS
-                      : IconNames.BLANK
+              <ListItem>
+                <ListItemButton
+                  disabled={!count}
+                  onClick={() =>
+                    onFilter(categoryFilterId, categoryValueId, label)
                   }
-                />
-                {/* List item text and count */}
-                <ViewListItemText
-                  disableTypography
-                  primary={<span>{label}</span>}
-                  secondary={<span>{count}</span>}
-                  selected={selected}
-                />
-              </ViewListItem>
+                  selected={selected || selectedPartial}
+                >
+                  {/* Icon */}
+                  <ListItemIcon>
+                    {(selected || selectedPartial) && (
+                      <Icon
+                        sdsIcon={selected ? "check" : "minus"}
+                        sdsSize="s"
+                        sdsType="iconButton"
+                      />
+                    )}
+                  </ListItemIcon>
+                  {/* List item text and count */}
+                  <ListItemText
+                    disableTypography
+                    primary={<span>{label}</span>}
+                    secondary={<span>{count}</span>}
+                  />
+                </ListItemButton>
+              </ListItem>
               {/* Nested list */}
               {children && children.length && (
                 <FilterViewList

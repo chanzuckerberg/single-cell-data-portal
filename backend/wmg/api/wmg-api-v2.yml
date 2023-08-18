@@ -1,0 +1,859 @@
+openapi: 3.0.3
+info:
+  version: "1.0.0"
+  title: Chan Zuckerberg Initiative cellxgene Where's My Gene (WMG) API
+  description: >-
+    This API is for internal use only by WMG web client.
+servers:
+  - description: Local
+    url: /
+  - description: Production environment
+    url: https://api.cellxgene.cziscience.com/
+  - description: Development environment
+    url: https://api.dev.single-cell.czi.technology/
+  - description: Staging environment
+    url: https://api.staging.single-cell.czi.technology/
+
+paths:
+  /primary_filter_dimensions:
+    get:
+      summary: Returns the ontology terms for organism and tissue type that can be used when specifying a WMG query.
+      description: >-
+      tags:
+        - wmg
+      operationId: backend.wmg.api.v2.primary_filter_dimensions
+      parameters: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/wmg_snapshot_id"
+                  organism_terms:
+                    $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                  tissue_terms:
+                    # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+                    # {"organism_ontology_term_id_0": [ {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],}
+                    type: object
+                  gene_terms:
+                    # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+                    # {"organism_ontology_term_id_0": [ {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],}
+                    type: object
+        "404":
+          $ref: "#/components/responses/404"
+  /query:
+    post:
+      tags:
+        - wmg
+      operationId: backend.wmg.api.v2.query
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filter:
+                  type: object
+                  required:
+                    - gene_ontology_term_ids
+                    - organism_ontology_term_id
+                  properties:
+                    gene_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    organism_ontology_term_id:
+                      type: string
+                    dataset_ids:
+                      type: array
+                      items:
+                        type: string
+                        format: uuid
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    development_stage_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    publication_citations:
+                      type: array
+                      items:
+                        type: string
+                  additionalProperties: false
+                is_rollup:
+                  type: boolean
+                  default: true
+                compare:
+                  type: string
+                  enum:
+                    - sex
+                    - self_reported_ethnicity
+                    - disease
+                    - publication
+              required:
+                - filter
+              additionalProperties: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  "snapshot_id": "1681668176",
+                  "expression_summary":
+                    {
+                      "gene1":
+                        {
+                          "tissuetype1":
+                            {
+                              "tissue_stats":
+                                {
+                                  "aggregated":
+                                    { "me": 0.0, "n": 0, "tpc": 0.0 },
+                                },
+                              "celltype1":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                              "celltype2":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                              "celltype3":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                            },
+                          "tissuetype2":
+                            {
+                              "tissue_stats":
+                                {
+                                  "aggregated":
+                                    { "me": 0.0, "n": 0, "tpc": 0.0 },
+                                },
+                              "celltype1":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                              "celltype2":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                              "celltype3":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                            },
+                        },
+                      "gene2":
+                        {
+                          "tissuetype1":
+                            {
+                              "tissue_stats":
+                                {
+                                  "aggregated":
+                                    { "me": 0.0, "n": 0, "tpc": 0.0 },
+                                },
+                              "celltype1":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "id": "CL00001",
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "id": "CL00002",
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                              "celltype2":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                              "celltype3":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                            },
+                          "tissuetype2":
+                            {
+                              "tissue_stats":
+                                {
+                                  "aggregated":
+                                    { "me": 0.0, "n": 0, "tpc": 0.0 },
+                                },
+                              "celltype1":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                              "celltype2":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                              "celltype3":
+                                {
+                                  "aggregated":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "male":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                  "female":
+                                    {
+                                      "me": 0.0,
+                                      "n": 0,
+                                      "pc": 0.0,
+                                      "tpc": 0.0,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                  "term_id_labels":
+                    {
+                      "cell_types":
+                        {
+                          "tissuetype1":
+                            {
+                              "tissue_stats":
+                                {
+                                  "aggregated":
+                                    {
+                                      "name": "tissue type 1",
+                                      "tissue_ontology_term_id": "tissuetype1",
+                                      "total_count": 4,
+                                    },
+                                },
+                              "celltype1":
+                                {
+                                  "aggregated":
+                                    {
+                                      "name": "cell type 1",
+                                      "cell_type_ontology_term_id": "celltype1",
+                                      "order": 1,
+                                      "total_count": 1,
+                                    },
+                                },
+                              "celltype2":
+                                {
+                                  "aggregated":
+                                    {
+                                      "name": "cell type 2",
+                                      "cell_type_ontology_term_id": "celltype2",
+                                      "order": 0,
+                                      "total_count": 1,
+                                    },
+                                },
+                              "celltype3":
+                                {
+                                  "aggregated":
+                                    {
+                                      "name": "cell type 3",
+                                      "cell_type_ontology_term_id": "celltype3",
+                                      "order": 2,
+                                      "total_count": 2,
+                                    },
+                                },
+                            },
+                        },
+                      "genes":
+                        [
+                          { "gene1": "gene1_label" },
+                          { "gene2": "gene2_label" },
+                        ],
+                    },
+                }
+              schema:
+                type: object
+                required:
+                  - expression_summary
+                  - term_id_labels
+                properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/wmg_snapshot_id"
+                  expression_summary:
+                    type: object
+                    # we use `additionalProperties` instead of `properties`, since the object's property names are
+                    # ontology term ids, rather than a fixed set of names
+                    additionalProperties:
+                      description: ->
+                        One property per gene, where the gene ontology term id is the property name, and the property
+                        value is an object of tissue types.
+                      type: object
+                      # we use `additionalProperties` instead of `properties`, since the object's property names are
+                      # ontology term ids, rather than a fixed set of names
+                      additionalProperties:
+                        description: ->
+                          One property per tissue type, where the tissue type ontology term id is the property name,
+                          and the property value is an ordered array of viz matrix "dots" (data points). The ordering of
+                          the array elements (cell types) should be preserved in the client's rendering of this
+                          data.
+                        type: object
+                        additionalProperties:
+                          description: ->
+                            One property per cell type, where the cell type ontology term id is the property name,
+                            and the value has has at least the "aggregated" property. If a user wishes to compare dimensions,
+                            properties will be added to the cell type object per filter for the selected dimension(s).
+                            The ordering of the array elements (cell types) should be preserved in the client's rendering of this
+                            data.
+                          type: object
+                          properties:
+                            me:
+                              description: mean expression
+                              type: number
+                              format: float
+                              maxLength: 4
+                            pc:
+                              description: percentage of cells expressing gene within this cell type
+                              type: number
+                              format: float
+                              maxLength: 4
+                              minimum: 0.0
+                              maximum: 100.0
+                            tpc:
+                              description: perecentage of cells for this cell type within tissue (cell type's cell count / tissue's total cell count)
+                              type: number
+                              format: float
+                              maxLength: 4
+                              minimum: 0.0
+                              maximum: 100.0
+                            n:
+                              description: number of expressed cells (non-zero expression) within this cell type
+                              type: integer
+                              minimum: 0.0
+                  term_id_labels:
+                    type: object
+                    required:
+                      - genes
+                      - cell_types
+                    properties:
+                      genes:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      cell_types:
+                        type: object
+                        description: ->
+                          One property per gene, where the gene ontology term id is the property name,
+                          and the value is an object of cell types
+                        additionalProperties:
+                          description: ->
+                            One property cell type, where the cell type ontology term id is the property name,
+                            and the value is an object of aggregated and compare dimension filters if applicable
+                          type: object
+                          additionalProperties:
+                            description: ->
+                              At least a property "aggregated" for aggregated cell types,
+                              and properties for each compare dimension filter if a compare dimension is selected.
+                              ex. 'male', 'female', 'unknown'
+                            type: object
+                            properties:
+                              cell_type_ontology_term_id:
+                                description: The cell type ontology term id
+                                type: string
+                              name:
+                                description: The cell type (or term in the compare dimension) name
+                                type: string
+                              order:
+                                description: The order for how the cell type should be displayed on the front end
+                                type: number
+                              total_count:
+                                description: The total count
+                                type: number
+
+  /filters:
+    post:
+      summary: Given a set of query criteria, returns the valid secondary filter and tissue terms
+      tags:
+        - wmg
+      operationId: backend.wmg.api.v2.filters
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                filter:
+                  type: object
+                  required:
+                    - organism_ontology_term_id
+                  additionalProperties: false
+                  properties:
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    gene_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    dataset_ids:
+                      type: array
+                      items:
+                        type: string
+                        format: uuid
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    development_stage_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    publication_citations:
+                      type: array
+                      items:
+                        type: string
+              required:
+                - filter
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - filter_dims
+                properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/wmg_snapshot_id"
+                  filter_dims:
+                    type: object
+                    properties:
+                      datasets:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            label:
+                              type: string
+                            collection_label:
+                              type: string
+                            collection_url:
+                              type: string
+                              format: url
+                      disease_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      sex_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      development_stage_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      self_reported_ethnicity_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      cell_type_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      tissue_terms:
+                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                      publication_citations:
+                        type: array
+                        items:
+                          type: string
+  /markers:
+    post:
+      summary: Given a cell type, organism, and tissue, returns the top `n_markers` precomputed marker genes for one of two statistical tests, the t-test or binomial test (`test="ttest"` or `test="binomtest"`, respectively). By default, `n_markers=10`. If `n_markers=0`, all marker genes will be returned.
+      tags:
+        - wmg
+      operationId: backend.wmg.api.v2.markers
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                celltype:
+                  type: string
+                organism:
+                  type: string
+                tissue:
+                  type: string
+                n_markers:
+                  type: integer
+                test:
+                  type: string
+                  enum:
+                    - ttest
+                    - binomtest
+              required:
+                - celltype
+                - organism
+                - tissue
+                - n_markers
+                - test
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              example:
+                {
+                  "snapshot_id": "8ce15034-162a-4e2e-9987-eb1af08bd4d4",
+                  "marker_genes":
+                    [
+                      {
+                        "gene_ontology_term_id": "gene1",
+                        "p_value": 0.001,
+                        "effect_size": 1.1,
+                      },
+                      {
+                        "gene_ontology_term_id": "gene2",
+                        "p_value": 0.02,
+                        "effect_size": 0.82,
+                      },
+                    ],
+                }
+              schema:
+                type: object
+                required:
+                  - marker_genes
+                properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/wmg_snapshot_id"
+                  marker_genes:
+                    description: ->
+                      An ordered array of marker genes, where each element in an object with the gene ontology term id and effect size.
+                    type: array
+                    items:
+                      description: ->
+                        Object with gene id and effect size.
+                      type: object
+                      properties:
+                        gene_ontology_term_id:
+                          description: gene ontology term id
+                          type: string
+                        p_value:
+                          description: adjusted p-value
+                          type: number
+                          format: float
+                          maxLength: 4
+                          minimum: 0.0
+                          maximum: 1.0
+                        effect_size:
+                          description: effect size
+                          type: number
+                          format: float
+                          maxLength: 4
+
+components:
+  schemas:
+    problem:
+      type: object
+      description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+    wmg_ontology_term_id_label_list:
+      description: ->
+        An array of ontology term ids and labels, where array elements are single-element objects of the
+        form "<id>":"<label>"
+      type: array
+      items:
+        description: ->
+          A single-element object with the ontology term id as the element's property name and the ontology term label
+          as the element's property value.
+        type: object
+        # TODO: fix: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+        # `{"<ontology_term_id>": "<ontology_term_label"}`
+    #        maxProperties: 1
+    #        additionalProperties:
+    #          type: string
+    wmg_ontology_term_id_list:
+      type: array
+      items:
+        type: string
+    wmg_snapshot_id:
+      type: string
+      format: uuid
+
+  parameters: {}
+
+  responses:
+    200:
+      description: OK.
+    201:
+      description: Created.
+    202:
+      description: Accepted
+    204:
+      description: No Content
+    400:
+      description: Invalid parameter.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    401:
+      description: Failed to authenticate.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    403:
+      description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    404:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    405:
+      description: Method not allowed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    409:
+      description: File conflict.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    413:
+      description: Exceed File Size Limit
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+
+  securitySchemes: {}

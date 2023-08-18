@@ -7,13 +7,14 @@ import {
   PT_TEXT_COLOR,
   RED,
 } from "src/components/common/theme";
-import { CommonThemeProps, fontBodyS, getColors } from "czifui";
+import { CommonThemeProps, fontBodyS } from "@czi-sds/components";
+import { gray500, grey400, textPrimary } from "src/common/theme";
 
 export const formField = (props: CommonThemeProps) => {
-  const colors = getColors(props);
-  const grey400 = colors?.gray["400"];
   return css`
-    border-color: ${grey400} !important; /* required; overrides global.scss input border color specification with important style declaration */
+    border-color: ${grey400(
+      props
+    )} !important; /* required; overrides global.scss input border color specification with important style declaration */
     border-radius: 3px;
     color: ${PT_TEXT_COLOR};
     height: auto; /* required; upholds line height and height specification (where padding and line height determine overall height) */
@@ -113,14 +114,7 @@ export const SelectFormLabel = styled.div`
 
 export const FormLabelText = styled.span`
   ${fontBodyS}
-
-  ${(props: CommonThemeProps) => {
-    const textPrimary = props.theme?.palette?.text?.primary;
-    return `
-      color: ${textPrimary};
-    `;
-  }}
-
+  color: ${textPrimary};
   display: block; /* required for form select "button" */
   letter-spacing: -0.006em;
   margin-bottom: 8px;
@@ -128,12 +122,6 @@ export const FormLabelText = styled.span`
 
 /* Optional label */
 export const Optional = styled.span`
-  ${(props: CommonThemeProps) => {
-    const colors = getColors(props);
-    return css`
-      color: ${colors?.gray[500]};
-    `;
-  }}
-
+  color: ${gray500};
   padding-left: 4px;
 `;

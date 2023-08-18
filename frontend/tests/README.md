@@ -14,9 +14,23 @@ NOTE. It is advised to run the default `npm run e2e` once PR is ready to ensure 
 
 ## Flags
 
-1. `SKIP_LOGIN`: Add `SKIP_LOGIN=true` to your test command if you don't need Playwright to log into Data Portal
+1. `LOGIN` and `SKIP_LOGIN`: Add `LOGIN=false` or `SKIP_LOGIN=true` to your test command if you don't need Playwright to log into Data Portal
 1. `HEADLESS` and `HEADFUL`: Add `HEADLESS=false` or `HEADFUL=true` to your test command to launch browser
 1. `RETRY`: Add `RETRY=false` if you don't want to retry your test. This is good for failing fast when you're writing tests
+1. `USE_COOKIE`: Manually use your own cookie for authenticated tests. Should only be used locally. The cookie value is set by modifying the `MANUAL_COOKIE` variable in `playwright.config.ts`
+
+## Playwright Cheat Sheet
+
+1. `--ui`: UI Mode lets you explore, run, and debug tests with a time travel experience complete with watch mode. All test files are loaded into the testing sidebar where you can expand each file and describe block to individually run, view, watch and debug each test.
+
+   - ![Image](https://user-images.githubusercontent.com/13063165/234295914-f7ee3d8b-33a7-41b3-bc91-d363baaa7305.png)
+   - [Source](https://playwright.dev/docs/test-ui-mode#running-tests-in-ui-mode)
+   - Example: `npm run e2e -- --ui -- FILE_PATH`
+
+2. `--debug`: Debug mode launches Playwright Inspector, which lets you play, pause, or step through each action of your test using the toolbar at the top of the Inspector. You can see the current action highlighted in the test code, and matching elements highlighted in the browser window.
+   - ![Image](https://user-images.githubusercontent.com/13063165/212924587-4b84e5f6-b147-40e9-8c75-d7b9ab6b7ca1.png)
+   - [Source](https://playwright.dev/docs/debug#playwright-inspector)
+   - Example: `npm run e2e -- --debug -- FILE_PATH`
 
 ### What
 
@@ -104,10 +118,24 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
      add test data to prod database
 
 1. local -> rdev
+
    1. Manually check your rdev link is working. E.g., https://thuang-nav-explorer.rdev.single-cell.czi.technology
    1. In `frontend/` directory, run `RDEV_LINK=YOUR_RDEV_LINK_HERE TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-rdev`.
+
    - NOTE: Replace `YOUR_RDEV_LINK_HERE` with your rdev link. E.g., `https://thuang-nav-explorer.rdev.single-cell.czi.technology`
    - NOTE: Replace `PUT_PASSWORD_HERE` with `corpora/backend/rdev/auth0-secret.test_account_password` in AWS Secret Manager
+
+1. Running Auth-related Tests Locally
+
+   For cases such as testing collection revision tests, the tests require seeded published collections to make the revision from. Tests can’t create and publish a new collection since in order to publish a newly created collection it needs at least one dataset, and our tests cannot upload a dataset to DropBox.
+
+   1. Connect your local frontend app to the deployed `dev` API to fetch the data. This is done in the `configs.js` file.
+   1. In `playwright.config.ts`, modify the `MANUAL_COOKIE` variable by supplying a valid cookie `value`.
+      - This cookie is retrieved by logging into the `dev` environment and copying the cookie value.
+      - **Make sure that you do NOT commit the cookie value into the repo.**
+   1. Run your authenticated tests by adding the `USE_COOKIE=true` flag
+      - Example: `HEADFUL=true SKIP_LOGIN=true USE_COOKIE=true npm run e2e -- -- tests/features/collection/revision.test.ts`
+      - It is recommended to add `.only()` for the tests that you're interested in so that the whole test suite isn't run.
 
 ## How to debug Github action failed E2E tests
 

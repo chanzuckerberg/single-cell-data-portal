@@ -1,22 +1,33 @@
 import styled from "@emotion/styled";
-import { PT_TEXT_COLOR } from "src/components/common/theme";
+import { CommonThemeProps, fontBodyS } from "@czi-sds/components";
+import { spacesS } from "src/common/theme";
 
-export const DESCRIPTION_LINE_HEIGHT_PX = 18;
+export const DESCRIPTION_LINE_HEIGHT_PX = 20;
 export const MAX_LINE_COUNT = 6;
 
-interface Props {
+interface Props extends CommonThemeProps {
   isEllipsis: boolean;
 }
 
 export const CollectionDescription = styled.div`
+  display: grid;
+  gap: ${spacesS}px;
   grid-area: description;
+  justify-items: flex-start;
+
+  /* Show more button */
+
+  .MuiButton-root {
+    font-weight: 500;
+    letter-spacing: -0.006em;
+    padding: 0;
+  }
 `;
 
 export const DescriptionText = styled.p<Props>`
-  color: ${PT_TEXT_COLOR};
-  letter-spacing: -0.1px;
-  line-height: ${DESCRIPTION_LINE_HEIGHT_PX}px;
-  margin-bottom: 8px;
+  ${fontBodyS}
+  letter-spacing: -0.006em;
+  margin-bottom: 0;
   ${(props) => {
     return (
       props.isEllipsis &&

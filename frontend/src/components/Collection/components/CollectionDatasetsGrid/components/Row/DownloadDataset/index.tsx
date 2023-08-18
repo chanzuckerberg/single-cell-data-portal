@@ -50,6 +50,7 @@ const DownloadDataset: FC<Props> = ({
       />
       <Modal
         title="Download Dataset"
+        isCloseButtonShown={false}
         isOpen={isOpen}
         onClose={toggleOpen}
         className={isLoading || isError ? "modal-loading" : undefined}

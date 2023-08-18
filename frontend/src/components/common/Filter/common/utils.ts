@@ -3,9 +3,9 @@ import { Ontology } from "src/common/entities";
 import {
   Categories,
   CategoriesKeyOfTypeOntologyArray,
+  ONTOLOGY_VIEW_KEY,
   OntologyNode,
   OntologyTermSet,
-  ONTOLOGY_VIEW_KEY,
 } from "src/components/common/Filter/common/entities";
 
 /**

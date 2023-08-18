@@ -1,0 +1,13 @@
+export const primaryColor = "#0073FF";
+export const secondaryColor = "#999999";
+export const tertiaryColor = "#CCCCCC";
+export const highlightColor = "#3CB371";
+export const backgroundColor = "#F8F8F8";
+export const defaultTextColor = "#000000";
+export const smallSize = 4;
+export const largeSize = 8;
+export const defaultMargin = { top: 50, left: 0, right: 0, bottom: 0 };
+export const DEFAULT_ONTOLOGY_WIDTH = 1000;
+export const DEFAULT_ONTOLOGY_HEIGHT = 500;
+export const NODE_SPACINGS = [18, 200];
+export const TREE_ANIMATION_DURATION = 250;

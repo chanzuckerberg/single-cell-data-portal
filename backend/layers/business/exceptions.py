@@ -31,6 +31,18 @@ class CollectionIsPublishedException(CollectionUpdateException):
     """
 
 
+class CollectionIsNotPublishedException(CollectionUpdateException):
+    """
+    Raised when an operation is performed on a collection that must be published
+    """
+
+
+class NoPreviousDatasetVersionException(BusinessException):
+    """
+    Raised when a previous dataset version is expected, but does not exist
+    """
+
+
 class InvalidLinkException(BusinessException):
     def __init__(self, errors: Optional[List[str]] = None) -> None:
         self.errors: Optional[List[str]] = errors
@@ -101,3 +113,11 @@ class CollectionDeleteException(BusinessException):
     """
     Raised when an attempt to delete a Collection fails
     """
+
+
+class CollectionIsTombstonedException(BusinessException):
+    pass
+
+
+class DatasetIsTombstonedException(BusinessException):
+    pass

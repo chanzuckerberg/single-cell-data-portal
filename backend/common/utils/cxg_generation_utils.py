@@ -1,4 +1,5 @@
 import json
+import logging
 
 import numpy as np
 import pandas as pd
@@ -181,6 +182,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
     def create_matrix_array(
         matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array, compression=22, row=True
     ):
+        logging.info(f"create {matrix_name}")
         dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
         if not encode_as_sparse_array:
             attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
@@ -266,6 +268,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
         array_r = tiledb.open(matrix_name + "r", mode="w", ctx=ctx)
         array_c = tiledb.open(matrix_name + "c", mode="w", ctx=ctx)
 
+        logging.info(f"Store rows: {number_of_rows}")
         for start_row_index in range(0, number_of_rows, stride_rows):
             end_row_index = min(start_row_index + stride_rows, number_of_rows)
             matrix_subset = matrix[start_row_index:end_row_index, :]
@@ -279,6 +282,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
             obs, var, data = _sort_by_primary_obs_and_secondary_var(data_dict)
             array_r[obs] = {"var": var, "": data}
 
+        logging.info(f"Store columns: {number_of_columns}")
         for start_col_index in range(0, number_of_columns, stride_columns):
             end_col_index = min(start_col_index + stride_columns, number_of_columns)
             matrix_subset = matrix[:, start_col_index:end_col_index]

@@ -1,0 +1,44 @@
+name: Pull Ontology Mappings from S3 and Commit
+
+permissions:
+  id-token: write
+  contents: write
+  deployments: write
+
+on:
+  repository_dispatch:
+    types: [pull-ontology-mappings]
+
+jobs:
+  pull-ontology-mappings-and-commit:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Checkout main
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      - name: install requirements
+        run: |
+          pip install awscli==1.29.1
+      - name: setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+      - name: Pull Ontology Mappings from S3 and write to data-portal
+        run: |
+          aws s3 sync s3://cellxgene-schema-ref-files-prod/ontology-mappings/gzips backend/common/ontology_files 
+          aws s3 sync s3://cellxgene-schema-ref-files-prod/ontology-mappings/backend backend/common/utils/ontology_mappings/fixtures
+          aws s3 sync s3://cellxgene-schema-ref-files-prod/ontology-mappings/frontend frontend/src/components/common/Filter/descendant_mappings
+      - name: Commit
+        run: |
+          git add backend/common/ontology_files
+          git add backend/common/utils/ontology_mappings/fixtures
+          git add frontend/src/components/common/Filter/descendant_mappings
+          git commit -m "AUTO: pull latest ontology files after schema migration"
+          git push

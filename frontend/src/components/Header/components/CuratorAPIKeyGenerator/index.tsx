@@ -7,7 +7,7 @@ import {
   DialogProps,
   DialogTitle,
   MenuItem,
-} from "czifui";
+} from "@czi-sds/components";
 import { useCallback, useRef, useState } from "react";
 import {
   APIKeyResponse,

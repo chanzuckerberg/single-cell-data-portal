@@ -108,6 +108,36 @@ class ProcessingTest(BaseProcessingTest):
             artifact.type = "CXG"
             artifact.uri = f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"
 
+    def test_reprocess_cxg_success(self):
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, "nothing", None, None
+        )
+
+        with patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg") as mock:
+            mock.return_value = "local.cxg"
+            ps = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
+            self.business_logic.add_dataset_artifact(
+                dataset_version_id, "h5ad", f"s3://fake_bucket_name/{dataset_id}/local.h5ad"
+            )
+            ps.process(dataset_version_id, "fake_bucket_name", "fake_cxg_bucket")
+
+            status = self.business_logic.get_dataset_status(dataset_version_id)
+            self.assertEqual(status.cxg_status, DatasetConversionStatus.UPLOADED)
+
+            self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"))
+
+            ps.process(dataset_version_id, "fake_bucket_name", "diff_cxg_bucket", is_reprocess=True)
+
+            status = self.business_logic.get_dataset_status(dataset_version_id)
+            self.assertEqual(status.cxg_status, DatasetConversionStatus.UPLOADED)
+
+            self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"))
+
+            artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
+            cxg_artifact = [artifact for artifact in artifacts if artifact.type == "cxg"][0]
+            self.assertTrue(cxg_artifact, f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/")
+
     @patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata")
     @patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")

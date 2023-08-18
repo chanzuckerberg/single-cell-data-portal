@@ -1,38 +1,38 @@
-import { Classes } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
+import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
+import { spacesXxs } from "src/common/theme";
 
-export const CategoryButton = styled.span`
+interface Props extends CommonThemeProps {
+  isOpen: boolean;
+}
+
+const grey500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
+
+export const CategoryButton = styled("span")<Props>`
   display: block;
 
-  .${Classes.BUTTON} {
-    color: ${GRAY.A};
-    display: flex;
+  .MuiButton-root {
+    ${fontBodyS}
+    color: ${(props) => (props.isOpen ? `#000000` : grey500(props))};
     font-weight: 500;
+    gap: ${spacesXxs}px;
     justify-content: flex-start;
-    letter-spacing: -0.1px;
-    line-height: 18px;
-    min-height: 20px; /* overrides specificity of bp4 button min height rule */
-    height: 20px; /* overrides specificity of bp4 button height rule */
+    letter-spacing: -0.006em;
+    min-width: 0;
     padding: 0;
-    width: 100%;
+    text-transform: capitalize;
 
     &:hover {
-      color: ${PT_TEXT_COLOR};
-      background: none;
+      color: #000000;
     }
 
-    &:focus {
-      outline: none;
-    }
-
-    &.${Classes.MINIMAL}:disabled {
-      color: ${GRAY.E};
-      cursor: auto;
-    }
-
-    .${Classes.ICON} {
-      color: inherit;
+    .MuiButton-endIcon {
+      align-items: center;
+      display: flex;
+      height: 16px;
+      justify-content: center;
+      margin: 0;
+      width: 16px;
     }
   }
 `;

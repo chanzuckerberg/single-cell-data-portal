@@ -1,35 +1,16 @@
-import { Classes } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { PT_TEXT_COLOR } from "src/components/common/theme";
+import { CommonThemeProps } from "@czi-sds/components";
+import { fontWeightSemibold } from "src/common/theme";
 
-interface Props {
-  isSelected: boolean;
+interface Props extends CommonThemeProps {
+  selected: boolean;
 }
 
-export const MenuItemWrapper = styled.span<Props>`
-  .${Classes.MENU_ITEM} {
-    color: ${PT_TEXT_COLOR};
-    letter-spacing: -0.1px;
-    line-height: 18px;
-    padding: 7px 8px;
-
-    .${Classes.FILL} {
-      font-weight: ${(props: Props) => (props.isSelected ? 500 : undefined)};
-      margin-right: 8px;
-    }
-
-    &:focus {
-      outline: none;
-    }
-
-    .${Classes.MENU_ITEM_ICON} {
-      height: 18px;
-      width: 14px;
-      margin-right: 8px;
-
-      .${Classes.ICON} {
-        width: 14px;
-      }
+export const ListItem = styled("li")<Props>`
+  .MuiListItemText-root {
+    span:first-of-type {
+      font-weight: ${(props) =>
+        props.selected ? fontWeightSemibold(props) : undefined};
     }
   }
 `;

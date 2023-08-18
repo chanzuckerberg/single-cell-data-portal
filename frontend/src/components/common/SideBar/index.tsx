@@ -1,12 +1,12 @@
-import { Button } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
 import { ReactNode, useEffect, useState } from "react";
+import { Button, Icon } from "@czi-sds/components";
 import {
   Position,
   SideBar as SideBarWrapper,
   SideBarClosedButtonWrapper,
   SideBarOpenButtonWrapper,
   SideBarPositioner,
+  ToggleButtonText,
 } from "src/components/common/SideBar/style";
 
 const COLLAPSED_WIDTH_PX = 36;
@@ -19,6 +19,7 @@ export type SideBarToggleFn = (expanded: boolean) => void;
 
 export interface Props {
   children: ReactNode;
+  className?: string;
   label: ReactNode;
   isOpen?: boolean;
   onToggle?: SideBarToggleFn;
@@ -26,7 +27,6 @@ export interface Props {
   position?: typeof Position[keyof typeof Position];
   SideBarWrapperComponent?: typeof SideBarWrapper;
   SideBarPositionerComponent?: typeof SideBarPositioner;
-  SideBarOpenButtonWrapperComponent?: typeof SideBarOpenButtonWrapper;
   testId?: string;
   disabled?: boolean;
   forceOpen?: boolean;
@@ -36,6 +36,7 @@ export interface Props {
 
 export default function SideBar({
   children: content,
+  className,
   label,
   isOpen = false,
   onToggle,
@@ -43,7 +44,6 @@ export default function SideBar({
   position = Position.LEFT,
   SideBarWrapperComponent = SideBarWrapper,
   SideBarPositionerComponent = SideBarPositioner,
-  SideBarOpenButtonWrapperComponent = SideBarOpenButtonWrapper,
   testId,
   disabled,
   forceOpen,
@@ -53,11 +53,8 @@ export default function SideBar({
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
   const SideBarToggleButtonWrapper = isExpanded
-    ? SideBarOpenButtonWrapperComponent
+    ? SideBarOpenButtonWrapper
     : SideBarClosedButtonWrapper;
-  const rightIcon = (position === Position.LEFT ? isExpanded : !isExpanded)
-    ? IconNames.CHEVRON_LEFT
-    : IconNames.CHEVRON_RIGHT;
 
   /**
    * Handle click on open/close icon; update state.
@@ -76,6 +73,7 @@ export default function SideBar({
 
   return (
     <SideBarWrapperComponent
+      className={className}
       sideBarWidth={sideBarWidth}
       position={position}
       data-testid={testId}
@@ -83,12 +81,28 @@ export default function SideBar({
       <SideBarPositionerComponent isExpanded={isExpanded}>
         <SideBarToggleButtonWrapper>
           <Button
-            minimal
-            onClick={() => handleExpandedClick(!isExpanded)}
-            rightIcon={rightIcon}
-            text={!isExpanded && truncatedLabel ? truncatedLabel : label}
+            data-testid="side-bar-toggle-button"
             disabled={disabled}
-          />
+            endIcon={
+              <Icon
+                sdsIcon={
+                  (position === Position.LEFT ? isExpanded : !isExpanded)
+                    ? "chevronLeft"
+                    : "chevronRight"
+                }
+                sdsSize="l"
+                sdsType="button"
+              />
+            }
+            onClick={() => handleExpandedClick(!isExpanded)}
+            sdsStyle="minimal"
+            sdsType="minimal"
+            size="large"
+          >
+            <ToggleButtonText>
+              {!isExpanded && truncatedLabel ? truncatedLabel : label}
+            </ToggleButtonText>
+          </Button>
         </SideBarToggleButtonWrapper>
         {isExpanded ? content : null}
       </SideBarPositionerComponent>
