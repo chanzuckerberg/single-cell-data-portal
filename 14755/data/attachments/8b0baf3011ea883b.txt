@@ -1,0 +1,94 @@
+  pw:api => selectors.setTestIdAttribute started +4ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +54ms
+  pw:api   "commit" event fired +20ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +7ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +85ms
+  pw:api => page.waitForResponse started +3ms
+  pw:api => page.goto started +18ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +22ms
+  pw:api   "commit" event fired +130ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +3ms
+  pw:api   navigated to "about:blank" +38ms
+  pw:api <= page.goto succeeded +190ms
+  pw:api   "networkidle" event fired +2s
+  pw:api =>  started +536ms
+  pw:api <= page.waitForResponse succeeded +4ms
+  pw:api => expect.toContainText started +4ms
+  pw:api <=  succeeded +63ms
+  pw:api expect.toContainText with timeout 10000ms +180ms
+  pw:api waiting for locator('[id="relative-gene-expression"] .low-high') +1ms
+  pw:api   locator resolved to <div class="low-high css-wzvuy0-LowHigh el5arxq0">…</div> +101ms
+  pw:api <= expect.toContainText succeeded +60ms
+  pw:api => expect.toContainText started +3ms
+  pw:api expect.toContainText with timeout 10000ms +20ms
+  pw:api waiting for locator('[id="relative-gene-expression"] .low-high') +1ms
+  pw:api   locator resolved to <div class="low-high css-wzvuy0-LowHigh el5arxq0">…</div> +28ms
+  pw:api <= expect.toContainText succeeded +27ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[aria-label="Close"]') +38ms
+  pw:api   locator resolved to <button tabindex="0" type="button" aria-label="Close" cl…>…</button> +47ms
+  pw:api attempting click action +20ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +74ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +8ms
+  pw:api   click action done +59ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +19ms
+  pw:api <= locator.click succeeded +8ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('color-scale-dropdown') +28ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Scaled" data-t…>…</button> +30ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +36ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +16ms
+  pw:api   click action done +210ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +8ms
+  pw:api <= locator.click succeeded +34ms
+  pw:api => locator.click started +4ms
+  pw:api waiting for locator('[data-option-index="1"]') +18ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-8-option-1" …>…</li> +24ms
+  pw:api attempting click action +5ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +55ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +23ms
+  pw:api   click action done +171ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +28ms
+  pw:api <= locator.click succeeded +10ms
+  pw:api => expect.toContainText started +17ms
+  pw:api expect.toContainText with timeout 10000ms +26ms
+  pw:api waiting for locator('[id="relative-gene-expression"] .low-high') +1ms
+  pw:api   locator resolved to <div class="low-high css-wzvuy0-LowHigh el5arxq0">…</div> +18ms
+  pw:api <= expect.toContainText succeeded +8ms
+  pw:api => expect.toContainText started +3ms
+  pw:api expect.toContainText with timeout 10000ms +6ms
+  pw:api waiting for locator('[id="relative-gene-expression"] .low-high') +1ms
+  pw:api   locator resolved to <div class="low-high css-wzvuy0-LowHigh el5arxq0">…</div> +18ms
+  pw:api <= expect.toContainText succeeded +11ms
+  pw:api   "networkidle" event fired +542ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +111ms
+  pw:api taking page screenshot +12ms
+  pw:api => browserContext.close started +109ms
+  pw:api <= browserContext.close succeeded +4s
