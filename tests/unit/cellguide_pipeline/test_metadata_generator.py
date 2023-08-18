@@ -23,6 +23,7 @@ class TestMetadataGenerator(unittest.TestCase):
             cell_metadata = generate_cellguide_card_metadata(
                 all_cell_type_ids_in_corpus=tree_builder.all_cell_type_ids_in_corpus
             )
+
             self.assertTrue(
                 compare_dicts(convert_dataclass_to_dict_and_strip_nones(cell_metadata), expected__cell_metadata)
             )
