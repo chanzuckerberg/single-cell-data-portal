@@ -1,0 +1,64 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +0ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +39ms
+  pw:api   "commit" event fired +16ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +7ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +37ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cellguide/tissues/UBERON_0002048", waiting until "load" +7ms
+  pw:api   "commit" event fired +101ms
+  pw:api   navigated to "https://localhost:3000/cellguide/tissues/UBERON_0002048" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/tissues/UBERON_0002048" +6ms
+  pw:api <= page.goto succeeded +251ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api   navigated to "about:blank" +17ms
+  pw:api   "networkidle" event fired +6s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api => locator.waitFor started +1ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +14ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +17ms
+  pw:api <= locator.waitFor succeeded +13ms
+  pw:api => page.waitForURL started +2ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for navigation to "https://localhost:3000/cellguide/CL_0000066" until "load" +4ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-clickable-text-label-CL:0000066__0') to be visible +16ms
+  pw:api   locator resolved to visible <g data-testid="cell-guide-card-ontology-dag-view-c…>…</g> +11ms
+  pw:api <= locator.waitFor succeeded +13ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-clickable-text-label-CL:0000066__0') +11ms
+  pw:api   locator resolved to <g data-testid="cell-guide-card-ontology-dag-view-c…>…</g> +12ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +12ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +18ms
+  pw:api   click action done +403ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +228ms
+  pw:api <= locator.click succeeded +20ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000066" +599ms
+  pw:api <= page.waitForURL succeeded +28ms
+  pw:api => locator.waitFor started +0ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000066" +17ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0000066__0-has-children-isTargetNode=true') to be visible +547ms
+  pw:api   navigated to "about:blank" +189ms
+  pw:api   locator resolved to visible <circle r="8" fill="#3CB371" stroke-width="0.5" class="c…></circle> +2s
+  pw:api <= locator.waitFor succeeded +314ms
+  pw:api taking page screenshot +282ms
+  pw:api   "networkidle" event fired +14ms
+  pw:api => browserContext.close started +106ms
+  pw:api <= browserContext.close succeeded +2s
