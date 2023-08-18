@@ -24,11 +24,18 @@ def nanpercentile_2d(arr: np.ndarray, percentile: float, axis: int) -> np.ndarra
     -------
     The specified percentile of the 2D array along the specified axis.
     """
-    result = np.empty(arr.shape[axis])
-    for i in prange(arr.shape[axis]):
-        arr_column = arr[:, i] if axis == 0 else arr[i, :]
-        result[i] = nanpercentile(arr_column, percentile)
-    return result
+    if axis == 0:
+        result = np.empty(arr.shape[1])
+        for i in prange(arr.shape[1]):
+            arr_column = arr[:, i]
+            result[i] = nanpercentile(arr_column, percentile)
+        return result
+    else:
+        result = np.empty(arr.shape[0])
+        for i in prange(arr.shape[0]):
+            arr_row = arr[i, :]
+            result[i] = nanpercentile(arr_row, percentile)
+        return result
 
 
 @njit
