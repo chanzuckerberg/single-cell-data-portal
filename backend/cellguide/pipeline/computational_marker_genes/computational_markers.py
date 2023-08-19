@@ -34,7 +34,7 @@ or any arbitrary combinations of metadata dimensions.
 # If CELLGUIDE_PIPELINE_NUM_CPUS is not set, use 24 CPUs by default
 # If the number of CPUs on the machine is less than 24, use the number of CPUs on the machine
 # 24 CPUs was chosen to balance memory usage and speed on a c6i.32xlarge EC2 machine
-# In trial runs, the memory usage did not exceed 25% of the available memory, which provides
+# In trial runs, the memory usage did not exceed 50% of the available memory, which provides
 # ample buffer.
 CELLGUIDE_PIPELINE_NUM_CPUS = min(os.cpu_count(), os.getenv("CELLGUIDE_PIPELINE_NUM_CPUS", 24))
 
