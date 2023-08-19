@@ -1,0 +1,73 @@
+  pw:api => selectors.setTestIdAttribute started +8ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +16ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +53ms
+  pw:api   "commit" event fired +16ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +55ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000084", waiting until "load" +5ms
+  pw:api   "commit" event fired +112ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +3ms
+  pw:api <= page.goto succeeded +1s
+  pw:api => page.waitForLoadState started +2ms
+  pw:api   navigated to "about:blank" +78ms
+  pw:api   "networkidle" event fired +503ms
+  pw:api <= page.waitForLoadState succeeded +5ms
+  pw:api => locator.click started +2ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api waiting for getByTestId('cell-guide-card-enriched-genes-table-selector') +25ms
+  pw:api   locator resolved to <button class="css-c7lv9m-TableSelectorButton e1mdzv35" …>Computational</button> +18ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +25ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +70ms
+  pw:api   click action done +247ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +12ms
+  pw:api <= locator.click succeeded +35ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\']') to be visible +63ms
+  pw:api   locator resolved to visible <div class="css-n08b0e-TableWrapper e161gt4e1" data-t…>…</div> +62ms
+  pw:api <= locator.waitFor succeeded +48ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +6ms
+  pw:api => locator.textContent started +2ms
+  pw:api => locator.textContent started +5ms
+  pw:api => locator.textContent started +2ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.textContent started +6ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\'] thead th').first() +26ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\'] thead th').nth(1) +5ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\'] thead th').nth(2) +5ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\'] thead th').nth(3) +6ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\'] thead th').nth(4) +9ms
+  pw:api   locator resolved to <th id="Symbol-header-cell" class="css-ipyisa-Styled…>Symbol</th> +5ms
+  pw:api   locator resolved to <th id="Name-header-cell" class="css-ipyisa-StyledHe…>Name</th> +4ms
+  pw:api   locator resolved to <th id="[object Object]-header-cell" class="css-ipyi…>…</th> +3ms
+  pw:api   locator resolved to <th id="[object Object]-header-cell" class="css-ipyi…>…</th> +7ms
+  pw:api   locator resolved to <th id="[object Object]-header-cell" class="css-ipyi…>…</th> +3ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.all started +3ms
+  pw:api <= locator.all succeeded +10ms
+  pw:api taking page screenshot +317ms
+  pw:api => browserContext.close started +111ms
+  pw:api <= browserContext.close succeeded +4s
