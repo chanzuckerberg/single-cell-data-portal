@@ -276,9 +276,7 @@ const MarkerGeneTables = ({
 
   const {
     uniqueOrganisms: uniqueOrganismsComputational,
-    uniqueOrgans: uniqueOrgansComputational,
     computationalMarkerGeneTableData,
-    selectedOrganFilter: selectedOrganFilterComputational,
     selectedOrganismFilter: selectedOrganismFilterComputational,
   } = useComputationalMarkerGenesTableRowsAndFilters({
     genes: computationalMarkerGenes,
@@ -288,9 +286,7 @@ const MarkerGeneTables = ({
 
   const {
     uniqueOrganisms: uniqueOrganismsCanonical,
-    uniqueOrgans: uniqueOrgansCanonical,
     canonicalMarkerGeneTableData,
-    selectedOrganFilter: selectedOrganFilterCanonical,
   } = useCanonicalMarkerGenesTableRowsAndFilters({
     genes: canonicalMarkerGenes,
     selectedOrgan: organName,
@@ -299,9 +295,7 @@ const MarkerGeneTables = ({
   const uniqueOrganisms = activeTable
     ? uniqueOrganismsComputational
     : uniqueOrganismsCanonical;
-  const uniqueOrgans = activeTable
-    ? uniqueOrgansComputational
-    : uniqueOrgansCanonical;
+
   const tableRows: TableRow[] = useMemo(
     () =>
       activeTable
@@ -449,9 +443,6 @@ const MarkerGeneTables = ({
     setPage(page);
   };
 
-  const selectedOptionOrgan = activeTable
-    ? selectedOrganFilterComputational
-    : selectedOrganFilterCanonical;
   return (
     <div>
       <TableTitleWrapper>

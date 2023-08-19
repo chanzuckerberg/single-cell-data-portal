@@ -83,17 +83,13 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
   genes: CanonicalMarkersQueryResponse;
   selectedOrgan: string;
 }): {
-  selectedOrganFilter: string;
   canonicalMarkerGeneTableData: CanonicalMarkerGeneTableData[];
-  uniqueOrgans: string[];
   uniqueOrganisms: string[];
 } {
   return useMemo(() => {
     if (!genes)
       return {
-        selectedOrganFilter: selectedOrgan,
         canonicalMarkerGeneTableData: [],
-        uniqueOrgans: [],
         uniqueOrganisms: [],
       };
 
@@ -136,9 +132,7 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
     }
 
     return {
-      selectedOrganFilter,
       canonicalMarkerGeneTableData: rows,
-      uniqueOrgans: sortedOrgans,
       uniqueOrganisms: sortedOrganisms,
     };
   }, [genes, selectedOrgan]);

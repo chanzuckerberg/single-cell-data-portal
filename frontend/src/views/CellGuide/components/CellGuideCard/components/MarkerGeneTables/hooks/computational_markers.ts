@@ -52,19 +52,15 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
   selectedOrgan: string;
 }): {
   selectedOrganismFilter: string;
-  selectedOrganFilter: string;
   computationalMarkerGeneTableData: ComputationalMarkerGeneTableData[];
   uniqueOrganisms: string[];
-  uniqueOrgans: string[];
 } {
   return useMemo(() => {
     if (!genes)
       return {
         selectedOrganismFilter: selectedOrganism,
-        selectedOrganFilter: selectedOrgan,
         computationalMarkerGeneTableData: [],
         uniqueOrganisms: [],
-        uniqueOrgans: [],
       };
 
     // get sorted organisms
@@ -99,10 +95,8 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
 
     return {
       selectedOrganismFilter,
-      selectedOrganFilter,
       computationalMarkerGeneTableData: rows,
       uniqueOrganisms: sortedOrganisms,
-      uniqueOrgans: sortedOrgans,
     };
   }, [genes, selectedOrganism, selectedOrgan]);
 }
