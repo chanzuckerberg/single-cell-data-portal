@@ -1,3 +1,4 @@
+import shutil
 import time
 
 from backend.cellguide.pipeline.canonical_marker_genes import run as run_canonical_marker_gene_pipeline
@@ -24,3 +25,6 @@ def run_cellguide_pipeline():
 
     # Generate computational marker genes from the CZI corpus
     run_computational_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+
+    # zip up the results
+    shutil.make_archive(output_directory, "zip", output_directory)
