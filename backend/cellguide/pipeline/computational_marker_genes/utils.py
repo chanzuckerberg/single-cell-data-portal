@@ -2,14 +2,14 @@ import os
 from typing import Tuple
 
 import numpy as np
-from numba import njit, prange
+from numba import njit
 from scipy import stats
 
 from backend.common.utils.rollup import are_cell_types_colinear
 from backend.wmg.data.utils import setup_retry_session
 
 
-@njit(parallel=True)
+@njit
 def nanpercentile_2d(arr: np.ndarray, percentile: float, axis: int) -> np.ndarray:
     """
     Calculate the specified percentile of a 2D array along an axis, ignoring NaN values.
@@ -26,13 +26,13 @@ def nanpercentile_2d(arr: np.ndarray, percentile: float, axis: int) -> np.ndarra
     """
     if axis == 0:
         result = np.empty(arr.shape[1])
-        for i in prange(arr.shape[1]):
+        for i in range(arr.shape[1]):
             arr_column = arr[:, i]
             result[i] = nanpercentile(arr_column, percentile)
         return result
     else:
         result = np.empty(arr.shape[0])
-        for i in prange(arr.shape[0]):
+        for i in range(arr.shape[0]):
             arr_row = arr[i, :]
             result[i] = nanpercentile(arr_row, percentile)
         return result
