@@ -350,89 +350,92 @@ class OntologyTreeBuilder:
         all_states_per_tissue = {}
         tissue_by_cell_type = []
         for i, tissue in enumerate(self.uberon_by_celltype):
-            if " (" not in tissue:
-                logger.info(
-                    "Getting ontology tree state for tissue %s (%s/%s)", tissue, i + 1, len(self.uberon_by_celltype)
-                )
+            if not tissue.startswith("UBERON:") or " (" in tissue:
+                logger.info(f"Skipping tissue {tissue} because it is not a UBERON term.")
+                continue
 
-                tissueId = tissue
-                tissue_term = self.uberon_ontology[tissueId]
-                tissue_label = tissue_term.name
+            logger.info(
+                "Getting ontology tree state for tissue %s (%s/%s)", tissue, i + 1, len(self.uberon_by_celltype)
+            )
 
-                end_nodes = self.uberon_by_celltype[tissue]
-                uberon_ancestors = [i.id for i in tissue_term.superclasses()]
+            tissueId = tissue
+            tissue_term = self.uberon_ontology[tissueId]
+            tissue_label = tissue_term.name
 
-                # filter out hemaotoietic cell types from non-whitelisted tissues
-                uberon_ancestors_in_whitelist = list(set(TISSUES_IMMUNE_CELL_WHITELIST).intersection(uberon_ancestors))
-                if len(uberon_ancestors_in_whitelist) == 0:
-                    end_nodes_that_are_not_hematopoietic = [
-                        e
-                        for e in end_nodes
-                        if HEMATOPOIETIC_CELL_TYPE_ID not in [i.id for i in self.ontology[e].superclasses()]
-                    ]
-                    if len(end_nodes_that_are_not_hematopoietic) == 0:
-                        logger.info(f"Not filtering out immune cell for {tissue_label}")
-                    else:
-                        end_nodes = end_nodes_that_are_not_hematopoietic
-                else:
-                    logger.info(f"Not filtering out immune cell for {tissue_label}")
+            end_nodes = self.uberon_by_celltype[tissue]
+            uberon_ancestors = [i.id for i in tissue_term.superclasses()]
 
-                tissue_ct_df = self.tissue_celltypes_df[self.tissue_celltypes_df["tissue_ontology_term_id"] == tissue]
-
-                # attach cells not in the tissue cell types dataframe
-                # these cells will be added with 0 counts
-                df = tissue_ct_df[["cell_type_ontology_term_id", "n_cells"]]
-                to_attach = pd.DataFrame()
-                to_attach["cell_type_ontology_term_id"] = [
-                    i for i in self.all_cell_type_ids if i not in df["cell_type_ontology_term_id"].values
+            # filter out hemaotoietic cell types from non-whitelisted tissues
+            uberon_ancestors_in_whitelist = list(set(TISSUES_IMMUNE_CELL_WHITELIST).intersection(uberon_ancestors))
+            if len(uberon_ancestors_in_whitelist) == 0:
+                end_nodes_that_are_not_hematopoietic = [
+                    e
+                    for e in end_nodes
+                    if HEMATOPOIETIC_CELL_TYPE_ID not in [i.id for i in self.ontology[e].superclasses()]
                 ]
-                to_attach["n_cells"] = 0
-                df = pd.concat([df, to_attach], axis=0)
-                # rollup the cell counts
-                df["n_cells_rollup"] = df["n_cells"]
-                df_rollup = rollup_across_cell_type_descendants(df, ignore_cols=["n_cells"])
-                df_rollup = df_rollup[df_rollup["n_cells_rollup"] > 0]
+                if len(end_nodes_that_are_not_hematopoietic) == 0:
+                    logger.info(f"Not filtering out immune cell for {tissue_label}")
+                else:
+                    end_nodes = end_nodes_that_are_not_hematopoietic
+            else:
+                logger.info(f"Not filtering out immune cell for {tissue_label}")
 
-                celltype_counts_in_tissue = dict(
-                    zip(
-                        df_rollup["cell_type_ontology_term_id"],
-                        df_rollup[["n_cells", "n_cells_rollup"]].to_dict(orient="records"),
-                    )
+            tissue_ct_df = self.tissue_celltypes_df[self.tissue_celltypes_df["tissue_ontology_term_id"] == tissue]
+
+            # attach cells not in the tissue cell types dataframe
+            # these cells will be added with 0 counts
+            df = tissue_ct_df[["cell_type_ontology_term_id", "n_cells"]]
+            to_attach = pd.DataFrame()
+            to_attach["cell_type_ontology_term_id"] = [
+                i for i in self.all_cell_type_ids if i not in df["cell_type_ontology_term_id"].values
+            ]
+            to_attach["n_cells"] = 0
+            df = pd.concat([df, to_attach], axis=0)
+            # rollup the cell counts
+            df["n_cells_rollup"] = df["n_cells"]
+            df_rollup = rollup_across_cell_type_descendants(df, ignore_cols=["n_cells"])
+            df_rollup = df_rollup[df_rollup["n_cells_rollup"] > 0]
+
+            celltype_counts_in_tissue = dict(
+                zip(
+                    df_rollup["cell_type_ontology_term_id"],
+                    df_rollup[["n_cells", "n_cells_rollup"]].to_dict(orient="records"),
                 )
+            )
 
-                tissue_by_cell_type.append({"id": tissue, "label": tissue_label})
+            tissue_by_cell_type.append({"id": tissue, "label": tissue_label})
 
-                all_paths = []
-                for end_node in end_nodes:
-                    if end_node in self.traverse_node_counter:
-                        end_node_0 = end_node + "__0"  # only get path to the first instance of a node.
-                        path = self._depth_first_search_pathfinder(end_node_0)
-                        path = path if path else [end_node_0]
-                        all_paths.append(path)
+            all_paths = []
+            for end_node in end_nodes:
+                if end_node in self.traverse_node_counter:
+                    end_node_0 = end_node + "__0"  # only get path to the first instance of a node.
+                    path = self._depth_first_search_pathfinder(end_node_0)
+                    path = path if path else [end_node_0]
+                    all_paths.append(path)
 
-                valid_nodes = list(set(sum(all_paths, [])))
+            valid_nodes = list(set(sum(all_paths, [])))
 
-                ontology_graph_copy = self._get_deepcopy_of_ontology_graph()
+            ontology_graph_copy = self._get_deepcopy_of_ontology_graph()
 
-                self._truncate_graph_in_tissue(
-                    graph=ontology_graph_copy,
-                    valid_nodes=valid_nodes,
-                    total_count=self.tissue_counts_df[tissue],
-                    tissue_cell_counts=celltype_counts_in_tissue,
-                )
+            self._truncate_graph_in_tissue(
+                graph=ontology_graph_copy,
+                valid_nodes=valid_nodes,
+                total_count=self.tissue_counts_df[tissue],
+                tissue_cell_counts=celltype_counts_in_tissue,
+            )
 
-                isExpandedNodes = list(set(_getExpandedData(ontology_graph_copy)))
-                notShownWhenExpandedNodes = _getShownData(ontology_graph_copy)
+            isExpandedNodes = list(set(_getExpandedData(ontology_graph_copy)))
+            notShownWhenExpandedNodes = _getShownData(ontology_graph_copy)
 
-                notShownWhenExpanded = {}
-                for i in notShownWhenExpandedNodes:
-                    notShownWhenExpanded.update(i)
+            notShownWhenExpanded = {}
+            for i in notShownWhenExpandedNodes:
+                notShownWhenExpanded.update(i)
 
-                all_states_per_tissue[tissue] = OntologyTreeState(
-                    isExpandedNodes=isExpandedNodes,
-                    notShownWhenExpandedNodes=notShownWhenExpanded,
-                    tissueCounts=celltype_counts_in_tissue,
-                )
+            all_states_per_tissue[tissue] = OntologyTreeState(
+                isExpandedNodes=isExpandedNodes,
+                notShownWhenExpandedNodes=notShownWhenExpanded,
+                tissueCounts=celltype_counts_in_tissue,
+            )
         return all_states_per_tissue
 
     def _depth_first_search_pathfinder(self, path_end_node, node=None, path=None) -> list[str]:

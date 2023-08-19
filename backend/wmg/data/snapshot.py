@@ -124,6 +124,13 @@ def load_snapshot(
     """
     global cached_snapshot
     if os.getenv("DEPLOYMENT_STAGE") is None:
+        """
+        The CellGuide pipeline invokes `load_snapshot` which currently only works when deployed on
+        AWS infrastructure. This is a hack to allow the CellGuide pipeline to run locally. It is also
+        convenient for development purposes as developers no longer need to manually download and instantiate
+        the WmgSnapshot.
+        """
+
         logger.info("DEPLOYMENT_STAGE is not set, assuming running locally")
 
         wmg_bucket_path = os.getenv("WMG_BUCKET_PATH")
