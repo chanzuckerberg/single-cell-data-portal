@@ -1,0 +1,85 @@
+  pw:api => selectors.setTestIdAttribute started +8ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +64ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +49ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +9ms
+  pw:api   "commit" event fired +125ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +11ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +34ms
+  pw:api   navigated to "about:blank" +15ms
+  pw:api <= page.goto succeeded +80ms
+  pw:api => page.waitForLoadState started +6ms
+  pw:api   "networkidle" event fired +7s
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api => locator.hover started +2ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api waiting for getByTestId('group-by-tooltip-icon') +163ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="group-by…>…</button> +43ms
+  pw:api attempting hover action +4ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +46ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +13ms
+  pw:api   hover action done +28ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.hover succeeded +10ms
+  pw:api => locator.hover started +2ms
+  pw:api waiting for getByTestId('color-scale-tooltip-icon') +8ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="color-sc…>…</button> +9ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +43ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +28ms
+  pw:api   hover action done +35ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +6ms
+  pw:api <= locator.hover succeeded +14ms
+  pw:api => locator.hover started +2ms
+  pw:api waiting for getByTestId('sort-cell-types-tooltip-icon') +19ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +96ms
+  pw:api attempting hover action +21ms
+  pw:api   waiting for element to be visible and stable +1ms
+  pw:api   element is visible and stable +293ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +16ms
+  pw:api   performing hover action +38ms
+  pw:api   hover action done +67ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +10ms
+  pw:api <= locator.hover succeeded +8ms
+  pw:api => locator.hover started +2ms
+  pw:api waiting for getByTestId('sort-genes-tooltip-icon') +37ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="sort-gen…>…</button> +56ms
+  pw:api attempting hover action +35ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +122ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +8ms
+  pw:api   hover action done +90ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +27ms
+  pw:api <= locator.hover succeeded +26ms
+  pw:api taking page screenshot +778ms
+  pw:api => browserContext.close started +286ms
+  pw:api <= browserContext.close succeeded +335ms
