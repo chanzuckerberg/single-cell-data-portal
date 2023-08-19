@@ -155,7 +155,7 @@ class MarkerGenesCalculator:
         universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
         return universe_cell_counts_df, expressions_df
 
-    def get_computational_marker_genes(self) -> ComputationalMarkerGenes:
+    def get_computational_marker_genes(self) -> dict[str, list[ComputationalMarkerGenes]]:
         cell_counts_df = self.cell_counts_df
 
         # the metadata groups (incl cell type) will be treated as row coordinates
