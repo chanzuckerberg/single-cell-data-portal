@@ -180,6 +180,6 @@ def query_gene_info_for_gene_description(gene_id: str) -> str:
     response = session.get(f"http://rest.ensembl.org/lookup/id/{gene_id}", headers={"Content-Type": "application/json"})
     if response.status_code == 200:
         data = response.json()
-        return data["description"]
+        return data.get("description", gene_id)
     else:
         return gene_id
