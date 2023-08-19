@@ -343,7 +343,7 @@ class MarkerGenesCalculator:
                 f"Getting marker genes for {len(cell_types_o)} cell types in combination {combination} using {CELLGUIDE_PIPELINE_NUM_CPUS} CPUs..."
             )
             with ProgressBar():
-                all_results = compute(*results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS)
+                all_results.extend(compute(*results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS))
 
         # concatenate all the results into one marker gene dataframe
         markers_df = pd.concat(all_results, axis=0)

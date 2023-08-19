@@ -1,4 +1,3 @@
-import os
 from typing import Tuple
 
 import numpy as np
@@ -177,14 +176,10 @@ def query_gene_info_for_gene_description(gene_id: str) -> str:
     The name of the gene if the query is successful, otherwise returns the gene ID.
     """
 
-    API_URL = os.getenv("API_URL")
-    if API_URL is None:
-        API_URL = "https://api.cellxgene.dev.single-cell.czi.technology"
-
     session = setup_retry_session()
-    response = session.get(f"{API_URL}/gene_info/v1/gene_info?gene={gene_id}")
+    response = session.get(f"http://rest.ensembl.org/lookup/id/{gene_id}", headers={"Content-Type": "application/json"})
     if response.status_code == 200:
         data = response.json()
-        return data["name"]
+        return data["description"]
     else:
         return gene_id
