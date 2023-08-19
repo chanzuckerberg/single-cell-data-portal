@@ -25,5 +25,4 @@ class MarkerGeneCalculatorTests(unittest.TestCase):
                     all_cell_types_in_corpus=tree_builder.all_cell_type_ids_in_corpus,
                 )
             )
-
             self.assertTrue(compare_dicts(computational_marker_genes, expected__computational_marker_genes))
