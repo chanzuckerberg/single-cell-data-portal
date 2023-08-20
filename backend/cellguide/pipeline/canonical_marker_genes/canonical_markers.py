@@ -3,7 +3,6 @@ import logging
 from typing import Dict, Tuple
 
 import pandas as pd
-import requests
 
 from backend.cellguide.pipeline.canonical_marker_genes.types import (
     AnatomicalStructure,
@@ -18,6 +17,7 @@ from backend.cellguide.pipeline.canonical_marker_genes.utils import (
 from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.wmg.data.ontology_labels import ontology_term_label
+from backend.wmg.data.utils import setup_retry_session
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,10 @@ class CanonicalMarkerGenesCompiler:
         """
 
         logger.info("Fetching ASCTB data...")
-        self.asctb_data = requests.get(ASCTB_MASTER_SHEET_URL).json()
+        session = setup_retry_session()
+        asctb_data_response = session.get(ASCTB_MASTER_SHEET_URL)
+        asctb_data_response.raise_for_status()
+        self.asctb_data = asctb_data_response.json()
 
         # WMG tissues have some terms that start with "CL" because they're cell cultures.
         # We filter these out as they are specific to our platform and don't exist in ASCTB.

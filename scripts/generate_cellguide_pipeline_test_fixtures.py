@@ -38,16 +38,21 @@ from tests.unit.cellguide_pipeline.constants import (
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-""" ################################# DANGER #################################### 
+TEST_SNAPSHOT = "realistic-test-snapshot"
+
+
+""" ################################# DANGER #######################################
 
 Run this file if and only if you are confident there are no bugs in the CellGuide
 pipeline.
 
 Any and all unit test assertion errors prior to running this script must be expected
 due to intended changes in the pipeline.
-"""
 
-TEST_SNAPSHOT = "realistic-test-snapshot"
+------------------------------------------------------------------------------------
+
+This module generates the CellGuide data using the test snapshot stored in {TEST_SNAPSHOT}.
+"""
 
 
 def custom_load_snapshot_into_cube_dir(cube_dir: str, **kwargs):
@@ -63,9 +68,7 @@ def run_cellguide_pipeline():
             # Run ontology tree pipeline
             ontology_tree = run_ontology_tree_pipeline(output_directory)
 
-        with unittest.mock.patch("backend.cellguide.pipeline.metadata.load_snapshot", new=custom_load_snapshot):
-            # Generate cell guide cards, synonyms, and descriptions
-            run_metadata_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+        run_metadata_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
         with unittest.mock.patch(
             "backend.cellguide.pipeline.canonical_marker_genes.load_snapshot", new=custom_load_snapshot
@@ -73,11 +76,8 @@ def run_cellguide_pipeline():
             # Generate canonical marker genes from ASCT-B (HUBMAP)
             run_canonical_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
-        with unittest.mock.patch(
-            "backend.cellguide.pipeline.source_collections.load_snapshot", new=custom_load_snapshot
-        ):
-            # Generate source data for each cell type
-            run_source_collections_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+        # Generate source data for each cell type
+        run_source_collections_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
         with unittest.mock.patch(
             "backend.cellguide.pipeline.computational_marker_genes.load_snapshot", new=custom_load_snapshot

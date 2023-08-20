@@ -1,4 +1,4 @@
-import requests
+from backend.wmg.data.utils import setup_retry_session
 
 
 def clean_doi(doi: str) -> str:
@@ -42,7 +42,8 @@ def get_title_and_citation_from_doi(doi: str) -> str:
     url = f"https://api.crossref.org/works/{doi}"
 
     # Send a GET request to the API
-    response = requests.get(url)
+    session = setup_retry_session()
+    response = session.get(url)
 
     # If the GET request is successful, the status code will be 200
     if response.status_code == 200:
