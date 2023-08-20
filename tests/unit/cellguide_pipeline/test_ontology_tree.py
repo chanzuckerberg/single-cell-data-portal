@@ -7,17 +7,23 @@ from tests.test_utils.dict_compare import compare_dicts
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
+from tests.unit.cellguide_pipeline.constants import (
+    CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
+    CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
+    ONTOLOGY_GRAPH_FIXTURE_FILENAME,
+    TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
+)
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
 class OntologyTreeBuilderTests(unittest.TestCase):
     def test__ontology_tree_builder(self):
-        with open("tests/unit/cellguide_pipeline/fixtures/ontology_graph.json", "r") as f:
+        with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ONTOLOGY_GRAPH_FIXTURE_FILENAME}", "r") as f:
             expected__ontology_graph = json.load(f)
-        with open("tests/unit/cellguide_pipeline/fixtures/all_states_per_cell_type.json", "r") as f:
+        with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}", "r") as f:
             expected__all_states_per_cell_type = json.load(f)
-        with open("tests/unit/cellguide_pipeline/fixtures/all_states_per_tissue.json", "r") as f:
+        with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}", "r") as f:
             expected__all_states_per_tissue = json.load(f)
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]
