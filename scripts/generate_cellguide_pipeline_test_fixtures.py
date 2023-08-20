@@ -30,14 +30,14 @@ sys.path.append(root_dir)
 Run this file if and only if you are confident there are no bugs in the CellGuide
 pipeline.
 
-Any and all unit test errors prior to running this script must be expected due to
-intended changes to the pipeline.
+Any and all unit test assertion errors prior to running this script must be expected
+due to intended changes in the pipeline.
 """
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
-def custom_load_snapshot():
+def custom_load_snapshot(*args, **kwargs):
     with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
         return snapshot
 
@@ -79,3 +79,7 @@ def run_cellguide_pipeline():
         shutil.move(
             f"{output_directory}/{CANONICAL_MARKER_GENES_FILENAME}", f"{output_directory}/canonical_marker_genes.json"
         )
+
+
+if __name__ == "__main__":
+    run_cellguide_pipeline()
