@@ -1,7 +1,9 @@
 import os
 import shutil
 import sys
+import tempfile
 import unittest.mock
+from functools import partial
 
 from backend.cellguide.pipeline.canonical_marker_genes import run as run_canonical_marker_gene_pipeline
 from backend.cellguide.pipeline.computational_marker_genes import (
@@ -36,38 +38,46 @@ due to intended changes in the pipeline.
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
+PATH_TO_FIXTURES = "tests/unit/cellguide_pipeline/fixtures/"
 
-def custom_load_snapshot(*args, **kwargs):
-    return load_realistic_test_snapshot_obj(TEST_SNAPSHOT)
+
+def custom_load_snapshot_into_cube_dir(cube_dir: str, **kwargs):
+    return load_realistic_test_snapshot_obj(TEST_SNAPSHOT, cube_dir)
 
 
 def run_cellguide_pipeline():
     output_directory = sys.argv[1]
-    # Patch load_snapshot with custom_load_snapshot
-    with unittest.mock.patch("backend.cellguide.pipeline.ontology_tree.load_snapshot", new=custom_load_snapshot):
-        # Run ontology tree pipeline
-        ontology_tree = run_ontology_tree_pipeline(output_directory)
+    with tempfile.TemporaryDirectory() as cube_dir:
+        # Patch load_snapshot with custom_load_snapshot
+        custom_load_snapshot = partial(custom_load_snapshot_into_cube_dir, cube_dir=cube_dir)
+        with unittest.mock.patch("backend.cellguide.pipeline.ontology_tree.load_snapshot", new=custom_load_snapshot):
+            # Run ontology tree pipeline
+            ontology_tree = run_ontology_tree_pipeline(output_directory)
 
-    with unittest.mock.patch("backend.cellguide.pipeline.metadata.load_snapshot", new=custom_load_snapshot):
-        # Generate cell guide cards, synonyms, and descriptions
-        run_metadata_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+        with unittest.mock.patch("backend.cellguide.pipeline.metadata.load_snapshot", new=custom_load_snapshot):
+            # Generate cell guide cards, synonyms, and descriptions
+            run_metadata_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
-    with unittest.mock.patch(
-        "backend.cellguide.pipeline.canonical_marker_genes.load_snapshot", new=custom_load_snapshot
-    ):
-        # Generate canonical marker genes from ASCT-B (HUBMAP)
-        run_canonical_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+        with unittest.mock.patch(
+            "backend.cellguide.pipeline.canonical_marker_genes.load_snapshot", new=custom_load_snapshot
+        ):
+            # Generate canonical marker genes from ASCT-B (HUBMAP)
+            run_canonical_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
-    with unittest.mock.patch("backend.cellguide.pipeline.source_collections.load_snapshot", new=custom_load_snapshot):
-        # Generate source data for each cell type
-        run_source_collections_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+        with unittest.mock.patch(
+            "backend.cellguide.pipeline.source_collections.load_snapshot", new=custom_load_snapshot
+        ):
+            # Generate source data for each cell type
+            run_source_collections_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
-    with unittest.mock.patch(
-        "backend.cellguide.pipeline.computational_marker_genes.load_snapshot", new=custom_load_snapshot
-    ):
-        # Generate computational marker genes from the CZI corpus
-        marker_genes = get_computational_marker_genes(output_directory=output_directory, ontology_tree=ontology_tree)
-        output_json(marker_genes, f"{output_directory}/computational_marker_genes.json")
+        with unittest.mock.patch(
+            "backend.cellguide.pipeline.computational_marker_genes.load_snapshot", new=custom_load_snapshot
+        ):
+            # Generate computational marker genes from the CZI corpus
+            marker_genes = get_computational_marker_genes(
+                output_directory=output_directory, ontology_tree=ontology_tree
+            )
+            output_json(marker_genes, f"{output_directory}/computational_marker_genes.json")
 
     shutil.move(f"{output_directory}/{ONTOLOGY_TREE_FILENAME}", f"{output_directory}/ontology_graph.json")
     shutil.move(
@@ -84,6 +94,7 @@ def run_cellguide_pipeline():
     shutil.move(
         f"{output_directory}/{CANONICAL_MARKER_GENES_FILENAME}", f"{output_directory}/canonical_marker_genes.json"
     )
+    shutil.move(output_directory, PATH_TO_FIXTURES)
 
 
 if __name__ == "__main__":
