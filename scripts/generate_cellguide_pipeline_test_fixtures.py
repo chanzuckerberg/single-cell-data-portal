@@ -6,9 +6,7 @@ import unittest.mock
 from functools import partial
 
 from backend.cellguide.pipeline.canonical_marker_genes import run as run_canonical_marker_gene_pipeline
-from backend.cellguide.pipeline.computational_marker_genes import (
-    get_marker_genes_per_and_across_tissues as get_computational_marker_genes,
-)
+from backend.cellguide.pipeline.computational_marker_genes import run as run_computational_marker_genes_pipeline
 from backend.cellguide.pipeline.constants import (
     CANONICAL_MARKER_GENES_FILENAME,
     CELL_GUIDE_METADATA_FILENAME,
@@ -52,6 +50,7 @@ due to intended changes in the pipeline.
 ------------------------------------------------------------------------------------
 
 This module generates the CellGuide data using the test snapshot stored in {TEST_SNAPSHOT}.
+Requires an internet connection.
 """
 
 
@@ -81,14 +80,17 @@ def run_cellguide_pipeline():
 
         with unittest.mock.patch(
             "backend.cellguide.pipeline.computational_marker_genes.load_snapshot", new=custom_load_snapshot
+        ), unittest.mock.patch(
+            "backend.cellguide.pipeline.computational_marker_genes.output_marker_genes", new=output_json
         ):
             # Generate computational marker genes from the CZI corpus
-            marker_genes = get_computational_marker_genes(
-                output_directory=output_directory, ontology_tree=ontology_tree
-            )
-            output_json(marker_genes, f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}")
+            run_computational_marker_genes_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
     shutil.move(f"{output_directory}/{ONTOLOGY_TREE_FILENAME}", f"{output_directory}/{ONTOLOGY_GRAPH_FIXTURE_FILENAME}")
+    shutil.move(
+        f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
+        f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
+    )
     shutil.move(
         f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_CELLTYPE_FILENAME}",
         f"{output_directory}/{CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
