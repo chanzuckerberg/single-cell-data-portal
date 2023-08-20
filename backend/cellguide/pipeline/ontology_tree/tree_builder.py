@@ -280,9 +280,9 @@ class OntologyTreeBuilder:
              - "notShownWhenExpandedNodes": A dictionary that maps cell type ontology term ids to their hidden children
         """
         results = {
-            end_node: delayed(self._process_cell_type__parallel)(end_node)
-            for end_node in self.all_cell_type_ids_in_corpus
-            if end_node in self.traverse_node_counter
+            celltype: delayed(self._process_cell_type__parallel)(celltype)
+            for celltype in self.all_cell_type_ids_in_corpus
+            if celltype in self.traverse_node_counter
         }
 
         logger.info(
@@ -296,11 +296,28 @@ class OntologyTreeBuilder:
 
         return all_states_per_cell_type
 
-    def _process_cell_type__parallel(self, end_node: str) -> OntologyTreeState:
+    def _process_cell_type__parallel(self, celltype: str) -> OntologyTreeState:
+        """
+        This function processes a cell type in parallel to generate its ontology tree state. The ontology tree state is a mask that determines
+        which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
+
+        Arguments
+        ---------
+        celltype: str
+            The cell type ontology term id.
+
+        Returns
+        -------
+        OntologyTreeState
+            The ontology tree state for the cell type. The ontology tree state is a dictionary with keys
+                - "isExpandedNodes": A list of cell type ontology term ids that are expanded by default.
+                - "notShownWhenExpandedNodes": A dictionary that maps cell type ontology term ids to their hidden children
+        """
+
         all_paths = []
         siblings = []
-        for i in range(self.traverse_node_counter[end_node]):
-            end_node_i = end_node + "__" + str(i)
+        for i in range(self.traverse_node_counter[celltype]):
+            end_node_i = celltype + "__" + str(i)
             path = self._depth_first_search_pathfinder(end_node_i)
             path = path if path else [end_node_i]
             all_paths.append(path)
@@ -311,7 +328,7 @@ class OntologyTreeBuilder:
 
         visited_nodes_in_paths = list(set(sum(all_paths, [])))  # in a path to target
 
-        children = self.all_children.get(end_node + "__0", [])  # children
+        children = self.all_children.get(celltype + "__0", [])  # children
         grandchildren = sum([self.all_children.get(child, []) for child in children], [])  # grandchildren
         siblings = list(set(sum(siblings, [])))  # siblings
         valid_nodes = list(set(visited_nodes_in_paths + children + grandchildren + siblings))
@@ -372,6 +389,25 @@ class OntologyTreeBuilder:
         return all_states_per_tissue
 
     def _process_tissue__parallel(self, tissueId: str) -> OntologyTreeState:
+        """
+        This function processes a tissue in parallel to generate its ontology tree state. The ontology tree state is a mask that determines
+        which nodes are expanded by default and which nodes are not shown when expanded in the ontology.
+
+        Arguments
+        ---------
+        tissueId: str
+            The tissue ontology term id.
+
+        Returns
+        -------
+        OntologyTreeState
+            The ontology tree state for the tissue. The ontology tree state is a dictionary with keys
+                - "isExpandedNodes": A list of cell type ontology term ids that are expanded by default.
+                - "notShownWhenExpandedNodes": A dictionary that maps cell type ontology term ids to their hidden children
+                - "tissueCounts": A dictionary that maps cell type ontology term ids to the number of cells in the tissue.
+                    The number of cells is a dictionary with keys "n_cells" and "n_cells_rollup".
+        """
+
         tissue_term = self.uberon_ontology[tissueId]
         tissue_label = tissue_term.name
 
