@@ -23,6 +23,17 @@ from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pi
 from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
 from backend.cellguide.pipeline.utils import output_json
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_obj
+from tests.unit.cellguide_pipeline.constants import (
+    CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
+    CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
+    CELLTYPE_METADATA_FIXTURE_FILENAME,
+    CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
+    COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
+    ONTOLOGY_GRAPH_FIXTURE_FILENAME,
+    SOURCE_COLLECTIONS_FIXTURE_FILENAME,
+    TISSUE_METADATA_FIXTURE_FILENAME,
+    TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
+)
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
@@ -37,8 +48,6 @@ due to intended changes in the pipeline.
 """
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
-
-PATH_TO_FIXTURES = "tests/unit/cellguide_pipeline/fixtures/"
 
 
 def custom_load_snapshot_into_cube_dir(cube_dir: str, **kwargs):
@@ -77,24 +86,32 @@ def run_cellguide_pipeline():
             marker_genes = get_computational_marker_genes(
                 output_directory=output_directory, ontology_tree=ontology_tree
             )
-            output_json(marker_genes, f"{output_directory}/computational_marker_genes.json")
+            output_json(marker_genes, f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}")
 
-    shutil.move(f"{output_directory}/{ONTOLOGY_TREE_FILENAME}", f"{output_directory}/ontology_graph.json")
+    shutil.move(f"{output_directory}/{ONTOLOGY_TREE_FILENAME}", f"{output_directory}/{ONTOLOGY_GRAPH_FIXTURE_FILENAME}")
     shutil.move(
         f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_CELLTYPE_FILENAME}",
-        f"{output_directory}/all_states_per_cell_type.json",
+        f"{output_directory}/{CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
     )
     shutil.move(
         f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_TISSUE_FILENAME}",
-        f"{output_directory}/all_states_per_tissue.json",
+        f"{output_directory}/{TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
     )
-    shutil.move(f"{output_directory}/{SOURCE_COLLECTIONS_FILENAME}", f"{output_directory}/source_collections.json")
-    shutil.move(f"{output_directory}/{CELL_GUIDE_METADATA_FILENAME}", f"{output_directory}/cell_metadata.json")
-    shutil.move(f"{output_directory}/{CELL_GUIDE_TISSUE_METADATA_FILENAME}", f"{output_directory}/tissue_metadata.json")
     shutil.move(
-        f"{output_directory}/{CANONICAL_MARKER_GENES_FILENAME}", f"{output_directory}/canonical_marker_genes.json"
+        f"{output_directory}/{SOURCE_COLLECTIONS_FILENAME}", f"{output_directory}/{SOURCE_COLLECTIONS_FIXTURE_FILENAME}"
     )
-    shutil.move(output_directory, PATH_TO_FIXTURES)
+    shutil.move(
+        f"{output_directory}/{CELL_GUIDE_METADATA_FILENAME}", f"{output_directory}/{CELLTYPE_METADATA_FIXTURE_FILENAME}"
+    )
+    shutil.move(
+        f"{output_directory}/{CELL_GUIDE_TISSUE_METADATA_FILENAME}",
+        f"{output_directory}/{TISSUE_METADATA_FIXTURE_FILENAME}",
+    )
+    shutil.move(
+        f"{output_directory}/{CANONICAL_MARKER_GENES_FILENAME}",
+        f"{output_directory}/{CANONICAL_MARKER_GENES_FIXTURE_FILENAME}",
+    )
+    shutil.move(output_directory, CELLGUIDE_PIPELINE_FIXTURES_BASEPATH)
 
 
 if __name__ == "__main__":
