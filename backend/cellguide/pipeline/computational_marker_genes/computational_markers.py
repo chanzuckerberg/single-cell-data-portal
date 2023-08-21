@@ -1,3 +1,4 @@
+import concurrent.futures
 import itertools
 import logging
 import os
@@ -417,6 +418,17 @@ class MarkerGenesCalculator:
         # get all the records from the expressions dataframe
         records = new_expression_rollup.reset_index().to_dict(orient="records")
 
+        # get gene names from IDs
+        gene_names_to_ids = {}
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(self._get_gene_name_from_id, datum["gene_ontology_term_id"]) for datum in records
+            ]
+
+        for future in concurrent.futures.as_completed(futures):
+            gene_id, gene_name = future.result()
+            gene_names_to_ids[gene_id] = gene_name
+
         # format the records into a dictionary mapping cell type IDs to lists of marker genes
         formatted_data = {}
         for datum in records:
@@ -426,7 +438,7 @@ class MarkerGenesCalculator:
                 "pc": datum["pc"],
                 "marker_score": datum["effect_size"],
                 "symbol": self._get_gene_symbol_from_id(datum["gene_ontology_term_id"]),
-                "name": self._get_gene_name_from_id(datum["gene_ontology_term_id"]),
+                "name": gene_names_to_ids[datum["gene_ontology_term_id"]],
             }
             entry["groupby_dims"] = {term: datum[term] for term in self.groupby_terms}
 
