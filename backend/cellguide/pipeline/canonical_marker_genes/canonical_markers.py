@@ -1,4 +1,3 @@
-import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import Tuple
@@ -265,7 +264,6 @@ class CanonicalMarkerGenesCompiler:
         """
 
         doi_to_citation = {}
-        hashed_entries_seen = []
 
         data = self.asctb_data[tissue]["data"]
 
@@ -292,8 +290,5 @@ class CanonicalMarkerGenesCompiler:
                         "publication_titles": titles,
                         "cell_type_ontology_term_id": cell_type,
                     }
-                    hashed_dict = hash(json.dumps(entry))
-                    if hashed_dict not in hashed_entries_seen:
-                        parsed_table_entries.append(entry)
-                        hashed_entries_seen.append(entry)
+                    parsed_table_entries.append(entry)
         return parsed_table_entries
