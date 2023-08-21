@@ -1,1 +1,0 @@
-{"levelname": "DEBUG", "asctime": "2023-08-21T15:35:57.021Z", "name": "h5py._debian_h5py_serial._conv", "message": "Creating converter from 3 to 5", "lineno": 77, "pathname": "/usr/lib/python3/dist-packages/h5py/_debian_h5py_serial/_hl/attrs.py", "request_id": ""}

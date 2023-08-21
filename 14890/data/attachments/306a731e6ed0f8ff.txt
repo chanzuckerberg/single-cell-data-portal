@@ -1,0 +1,2 @@
+INFO     backend.layers.processing.schema_migration:schema_migration.py:137 Collection has no datasets
+INFO     backend.layers.processing.schema_migration:schema_migration.py:249 Uploaded to S3
