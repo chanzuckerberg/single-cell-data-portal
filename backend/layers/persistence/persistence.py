@@ -59,7 +59,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         self._schema_name = schema_name
 
         self._session = None
-        self._session_depth: int = 0
+        self._session_depth = 0
         with contextlib.suppress(Exception):
             self._create_schema()
 
@@ -94,15 +94,11 @@ class DatabaseProvider(DatabaseProviderInterface):
                     session.commit()
                 else:
                     session.expire_all()
-            else:
-                session.flush()
 
         except SQLAlchemyError as e:
             logger.exception(e)
             if session is not None:
                 session.rollback()
-            session.close()
-            self._session = None
             raise PersistenceException("Failed to commit.") from None
         finally:
             if session is not None and self._session_depth == 0:
