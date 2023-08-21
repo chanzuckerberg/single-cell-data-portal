@@ -8,7 +8,7 @@ import {
   goToWMG,
   selectSecondaryFilterOption,
 } from "tests/utils/wmgUtils";
-import { goToPage, tryUntil } from "tests/utils/helpers";
+import { expandTissue, goToPage, tryUntil } from "tests/utils/helpers";
 import {
   COLOR_SCALE_TOOLTIP_TEXT,
   GROUP_BY_TOOLTIP_TEXT,
@@ -48,9 +48,6 @@ describe("Left side bar", () => {
       page,
     }) => {
       await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
-
-      // (thuang): This expands the first tissue
-      await page.getByTestId(CELL_TYPE_LABELS_ID).first().click();
 
       await tryUntil(
         async () => {
