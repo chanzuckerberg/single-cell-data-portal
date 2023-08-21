@@ -87,7 +87,12 @@ def generate_cellguide_tissue_card_metadata(all_tissue_ids_in_corpus: list[str])
     uberon_ids_without_description = 0
 
     for id in all_tissue_ids_in_corpus:
-        tissue = ontology[id]
+        try:
+            tissue = ontology[id]
+        except KeyError:
+            invalid_non_uberon_ids.append(id)
+            continue
+
         if not tissue.id.startswith("UBERON:"):
             invalid_non_uberon_ids.append(tissue.id)
         elif tissue.obsolete:

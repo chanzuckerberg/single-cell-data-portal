@@ -220,8 +220,9 @@ def get_pinned_ontology_url(name: str):
     Returns:
     str: The URL of the pinned ontology.
     """
-
-    response = requests.get(CL_PINNED_CONFIG_URL)
+    session = setup_retry_session()
+    response = session.get(CL_PINNED_CONFIG_URL)
+    response.raise_for_status()
     decoded_yaml = yaml.safe_load(response.content.decode())
     key = decoded_yaml["CL"]["latest"]
     cl_url = decoded_yaml["CL"]["urls"][key]
