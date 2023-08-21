@@ -205,7 +205,7 @@ class SchemaMigrate(ProcessingLogic):
                 self.logger.info("skipping dataset", extra=_log_extras)
                 continue
             self.logger.info("checking dataset", extra=_log_extras)
-            key_prefix = self.get_key_prefix(dataset_version_id)
+            key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if not self._check_dataset_is_latest_schema_version(dataset):
                 error = {
