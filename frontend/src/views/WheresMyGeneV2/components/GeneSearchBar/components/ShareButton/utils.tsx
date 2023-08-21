@@ -106,7 +106,7 @@ export const loadStateFromQueryParams = ({
     delimiter,
   });
 
-  //Check for genes
+  // Check for genes
   const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
 
@@ -118,19 +118,19 @@ export const loadStateFromQueryParams = ({
     return null;
   }
 
-  //Check for organism
+  // Check for organism
   const newSelectedOrganism = params.get("organism") || HUMAN_ORGANISM_ID;
 
   if (newSelectedOrganism) {
     paramsToRemove.push("organism");
   }
 
-  //Check for cell types
+  // Check for cell types
   const newFilteredCellTypes = params.get("cellTypes")?.split(delimiter) || [];
 
   if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
 
-  // check for compare
+  // Check for compare
   const newCompare = (params.get("compare") as CompareId) || undefined;
 
   if (newCompare) {
