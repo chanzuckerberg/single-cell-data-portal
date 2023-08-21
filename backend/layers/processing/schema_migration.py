@@ -198,7 +198,8 @@ class SchemaMigrate(ProcessingLogic):
                 # skip datasets that were not processed
                 continue
             # filepath to clean-up uses dataset_version_id from the replaced version; accessing with dataset_id as key
-            key_prefix = self.get_key_prefix(processed_datasets[dataset_id])
+            previous_dataset_version_id = processed_datasets[dataset_id]
+            key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if not self._check_dataset_is_latest_schema_version(dataset):
                 errors.append(
