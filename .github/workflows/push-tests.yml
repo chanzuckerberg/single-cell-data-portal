@@ -125,7 +125,8 @@ jobs:
         env:
           CI: true
           PROJECT: ${{ matrix.project }}
-        run: DEBUG=pw:api npx playwright test --project ${{ matrix.project }} --shard ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
+          SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
+        run: DEBUG=pw:api npm run e2e-pr
 
       - name: Upload FE server logs as an artifact
         if: always()
