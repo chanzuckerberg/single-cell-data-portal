@@ -158,6 +158,7 @@ function createTableRow(
       ))
     ) : (
       <>
+        {/* If 'normal' exists then have it outside of the overflow tag */}
         {diseaseNames.includes("normal") && (
           <div key={`disease-normal`}>normal</div>
         )}

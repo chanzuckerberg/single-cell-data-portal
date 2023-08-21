@@ -620,6 +620,8 @@ function download_({
   return async () => {
     try {
       const isPng = selectedFileTypes.includes("png");
+
+      // (ashin): #3569 Get scrollTop to go back to place after downloading image
       const heatmapContainer = document.getElementById(
         HEATMAP_CONTAINER_ID
       ) as HTMLCanvasElement;
@@ -648,6 +650,11 @@ function download_({
     cleanupAfterDownload();
   };
 
+  /**
+   * Add classes that are required for styling PNG
+   * Adding this class to the heatmap causes the y-axis scrolling to jump but is
+   * required for image download
+   */
   function applyPngStyling(heatmapWidth: number) {
     heatmapNode.classList.add(CLONED_CLASS);
     document.getElementById("top-legend")?.classList.add(CLONED_CLASS);
@@ -665,8 +672,10 @@ function download_({
 
     await Promise.all(
       selectedTissues.map(async (tissueName) => {
+        // Handles if whitespace is in the tissue name for the element ID
         const formattedTissueName = hyphenize(tissueName);
 
+        // Generate exports for images only
         await Promise.all(
           selectedFileTypes.map(async (fileType) => {
             if (fileType === "png" || fileType === "svg") {
@@ -692,6 +701,7 @@ function download_({
       })
     );
 
+    // CSV has all tissues in one file
     if (selectedFileTypes.includes("csv")) {
       const csvExport = generateCsv({
         allChartProps,
@@ -707,6 +717,7 @@ function download_({
       exports.push({
         input: csvExport,
         name:
+          // If only one tissue is selected, use tissue name as filename
           selectedTissues.length === 1
             ? `${selectedTissues[0]}.csv`
             : `CELLxGENE_gene_expression_${getCurrentDate()}.csv`,
@@ -720,9 +731,11 @@ function download_({
     initialWidth: string,
     heatmapContainer: HTMLCanvasElement
   ) {
+    // Remove classes that were required for styling PNG
     heatmapNode.classList.remove(CLONED_CLASS);
     document.getElementById("top-legend")?.classList.remove(CLONED_CLASS);
 
+    //(thuang): #3569 Restore scrollTop position
     heatmapNode.style.width = initialWidth;
     if (heatmapContainer) {
       heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;

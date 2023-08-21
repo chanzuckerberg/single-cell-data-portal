@@ -636,6 +636,10 @@ export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 2): {
 
     return { data: result, isLoading };
 
+    /**
+     * This produces a collection that contains all the expression summaries for
+     * a given tissue, including all the cell types and compare options
+     */
     function mergeExpressionSummaries(
       expressionSummariesByCellType: QueryResponse["expression_summary"][string][string],
       tissueId: string
