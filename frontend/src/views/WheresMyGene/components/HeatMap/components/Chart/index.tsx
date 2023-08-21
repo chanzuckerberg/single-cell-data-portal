@@ -86,7 +86,7 @@ const TOOLTIP_THROTTLE_MS = 100;
 let handleDotHoverAnalytic: NodeJS.Timeout;
 
 export default memo(function Chart({
-  cellTypes,
+  cellTypes: dataRows,
   selectedGeneData = EMPTY_ARRAY,
   setIsLoading,
   tissue,
@@ -107,7 +107,7 @@ export default memo(function Chart({
   );
 
   const [heatmapHeight, setHeatmapHeight] = useState(
-    getHeatmapHeight(cellTypes)
+    getHeatmapHeight(dataRows)
   );
 
   useEffect(() => {
@@ -116,7 +116,7 @@ export default memo(function Chart({
 
       return { ...isLoading, [tissue]: true };
     });
-  }, [cellTypes, selectedGeneData, setIsLoading, tissue]);
+  }, [dataRows, selectedGeneData, setIsLoading, tissue]);
 
   const handleChartMouseMove = useMemo(() => {
     return throttle((params: ElementEvent, chart: ECharts) => {
@@ -135,8 +135,8 @@ export default memo(function Chart({
   // Update heatmap size
   useEffect(() => {
     setHeatmapWidth(getHeatmapWidth(selectedGeneData));
-    setHeatmapHeight(getHeatmapHeight(cellTypes));
-  }, [cellTypes, selectedGeneData]);
+    setHeatmapHeight(getHeatmapHeight(dataRows));
+  }, [dataRows, selectedGeneData]);
 
   // Calculate cellTypeSummaries
   /**
@@ -174,8 +174,8 @@ export default memo(function Chart({
    * `getDebounceMs()`
    */
   useEffect(() => {
-    debouncedIntegrateCellTypesAndGenes(cellTypes, selectedGeneData);
-  }, [selectedGeneData, cellTypes, debouncedIntegrateCellTypesAndGenes]);
+    debouncedIntegrateCellTypesAndGenes(dataRows, selectedGeneData);
+  }, [selectedGeneData, dataRows, debouncedIntegrateCellTypesAndGenes]);
 
   // Generate chartProps
   const debouncedDataToChartFormat = useMemo(() => {
@@ -254,7 +254,7 @@ export default memo(function Chart({
     }, 100);
   }, []);
 
-  const [hoveredGeneIndex, hoveredCellTypeIndex] = currentIndices;
+  const [hoveredGeneIndex, hoveredDataRowIndex] = currentIndices;
 
   const { compare } = useContext(StateContext);
 
@@ -265,15 +265,16 @@ export default memo(function Chart({
 
     const { chartData } = chartProps;
 
+    // A row can either be a cell type or a tissue
     const dataPoint = chartData.find(
-      ({ geneIndex, cellTypeIndex }) =>
-        geneIndex === hoveredGeneIndex && cellTypeIndex === hoveredCellTypeIndex
+      ({ geneIndex, cellTypeIndex: dataRowIndex }) =>
+        geneIndex === hoveredGeneIndex && dataRowIndex === hoveredDataRowIndex
     );
 
-    const cellType = cellTypes[hoveredCellTypeIndex];
+    const dataRow = dataRows[hoveredDataRowIndex];
     const gene = selectedGeneData[hoveredGeneIndex];
 
-    if (!dataPoint || !cellType || !gene) return null;
+    if (!dataPoint || !dataRow || !gene) return null;
 
     const optionId = getOptionIdFromCellTypeViewId(
       dataPoint.id.split("-")[0] as ViewId
@@ -287,7 +288,7 @@ export default memo(function Chart({
       ((dataPoint.tissuePercentage || 0) * 100).toFixed(2)
     );
 
-    const totalCellCount = cellType.total_count;
+    const totalCellCount = dataRow.total_count;
 
     const firstPanel = {
       dataRows: [
@@ -306,9 +307,10 @@ export default memo(function Chart({
       ],
     };
 
-    const cellTypeName = cellType.cellTypeName.startsWith("UBERON")
-      ? cellType.name
-      : cellType.cellTypeName;
+    // cellTypeName will be the UBERON ID if the cell type is a tissue
+    const cellTypeName = dataRow.cellTypeName.startsWith("UBERON")
+      ? dataRow.name
+      : dataRow.cellTypeName;
 
     const secondPanel = {
       dataRows: [
@@ -325,7 +327,7 @@ export default memo(function Chart({
         secondPanel.dataRows[0],
         {
           label: getCompareOptionNameById(compare),
-          value: capitalize(cellType.name),
+          value: capitalize(dataRow.name),
         },
         ...secondPanel.dataRows.slice(1),
       ];
@@ -340,9 +342,9 @@ export default memo(function Chart({
     return <StyledTooltipTable data={data || undefined} />;
   }, [
     chartProps,
-    cellTypes,
+    dataRows,
     hoveredGeneIndex,
-    hoveredCellTypeIndex,
+    hoveredDataRowIndex,
     selectedGeneData,
     compare,
   ]);
