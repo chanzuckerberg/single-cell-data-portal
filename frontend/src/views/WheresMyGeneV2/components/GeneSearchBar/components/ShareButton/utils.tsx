@@ -1,4 +1,5 @@
 import { Dispatch } from "react";
+import { TissueCardsQueryResponse } from "src/common/queries/cellGuide";
 import { isSSR } from "src/common/utils/isSSR";
 import { removeParams } from "src/common/utils/removeParams";
 import { CompareId } from "src/views/WheresMyGene/common/constants";
@@ -35,15 +36,16 @@ export const generateAndCopyShareUrl = ({
   if (organism && organism !== HUMAN_ORGANISM_ID) {
     url.searchParams.set("organism", organism);
   }
+
+  if (compare) {
+    url.searchParams.set("compare", compare);
+  }
+
   Object.entries(stripEmptyFilters(filters)).forEach(([key, value]) => {
     url.searchParams.set(key, value.join(","));
   });
   url.searchParams.set("genes", genes.join(","));
   url.searchParams.set("ver", LATEST_SHARE_LINK_VERSION);
-
-  if (compare) {
-    url.searchParams.set("compare", compare);
-  }
 
   if (cellTypes.length > 0) {
     url.searchParams.set("cellTypes", cellTypes.join(","));
@@ -72,11 +74,17 @@ const stripEmptyFilters = (
   return strippedFilters;
 };
 
-export const loadStateFromQueryParams = (
-  params: URLSearchParams,
-  selectedFilters: State["selectedFilters"],
-  dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>
-): LoadStateFromURLPayload | null => {
+export const loadStateFromQueryParams = ({
+  params,
+  selectedFilters,
+  dispatch,
+  tissues,
+}: {
+  params: URLSearchParams;
+  selectedFilters: State["selectedFilters"];
+  dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>;
+  tissues?: TissueCardsQueryResponse;
+}): LoadStateFromURLPayload | null => {
   if (isSSR()) return null;
 
   const paramsToRemove = [];
@@ -94,13 +102,48 @@ export const loadStateFromQueryParams = (
   // Check for filter properties
 
   const newSelectedFilters: Partial<State["selectedFilters"]> = {};
+
+  /**
+   * (thuang): Map tissue names to IDs for backwards compatibility
+   */
+  const tissueIdsByName = new Map(
+    tissues?.map((tissue) => [tissue.label, tissue.id])
+  );
+
   Object.keys(selectedFilters).forEach((key) => {
     const value = params.get(key);
-    if (value) {
+
+    if (!value) return;
+
+    /**
+     * (thuang): Special case to allow tissues to be specified by name or ID
+     * https://github.com/chanzuckerberg/single-cell-data-portal/issues/5358
+     */
+    if (key === "tissues") {
+      // Check if the values are tissue names or IDs
+      const tissueParams = value.split(delimiter);
+      const tissueIds = [];
+      const tissueNames = [];
+      for (const tissueParam of tissueParams) {
+        if (tissueParam.includes("UBERON:")) {
+          tissueIds.push(tissueParam);
+        } else {
+          tissueNames.push(tissueParam);
+        }
+      }
+
+      newSelectedFilters["tissues"] = [
+        ...tissueIds,
+        ...(tissueNames.map((tissueName) =>
+          tissueIdsByName.get(tissueName)
+        ) as string[]),
+      ];
+    } else {
       newSelectedFilters[key as keyof State["selectedFilters"]] =
         value.split(delimiter);
-      paramsToRemove.push(key);
     }
+
+    paramsToRemove.push(key);
   });
 
   //Check for organism
@@ -117,8 +160,6 @@ export const loadStateFromQueryParams = (
   const newFilteredCellTypes = params.get("cellTypes")?.split(delimiter) || [];
   if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
 
-  removeParams(paramsToRemove);
-
   // If there are no filters and genes selected, don't update the state
   if (
     Object.values(Object.keys(newSelectedFilters)).length === 0 &&
@@ -134,21 +175,21 @@ export const loadStateFromQueryParams = (
     paramsToRemove.push("compare");
   }
 
-  dispatch(
-    loadStateFromURL({
-      compare: newCompare,
-      filters: newSelectedFilters,
-      organism: newSelectedOrganism,
-      genes: newSelectedGenes,
-      cellTypes: newFilteredCellTypes,
-    })
-  );
+  /**
+   * (thuang): Please makes sure we only remove params AFTER pushing all params
+   * to `paramsToRemove`
+   */
+  removeParams(paramsToRemove);
 
-  return {
+  const payload = {
     compare: newCompare,
     filters: newSelectedFilters,
     organism: newSelectedOrganism,
     genes: newSelectedGenes,
     cellTypes: newFilteredCellTypes,
   };
+
+  dispatch(loadStateFromURL(payload));
+
+  return payload;
 };
