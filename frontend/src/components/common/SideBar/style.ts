@@ -18,7 +18,7 @@ export enum Position {
 
 interface Props extends CommonThemeProps {
   sideBarWidth: number;
-  position: typeof Position[keyof typeof Position];
+  position: (typeof Position)[keyof typeof Position];
 }
 
 interface PositionerProps extends CommonThemeProps {

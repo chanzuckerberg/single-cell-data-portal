@@ -610,8 +610,8 @@ const Privacy = (): JSX.Element => {
                   <h4>Direct Marketing and Do Not Track Signals.</h4> We don’t
                   currently disclose personal data with third parties for their
                   direct marketing purposes, nor do we support any Do Not Track
-                  ("DNT") signals, since there’s currently no standard for how
-                  online services respond to those signals. As standards
+                  (&quot;DNT&quot;) signals, since there’s currently no standard
+                  for how online services respond to those signals. As standards
                   develop, we may establish policies for responding to DNT
                   signals that we would describe in this Privacy Policy.
                 </li>

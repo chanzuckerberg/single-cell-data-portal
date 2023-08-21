@@ -12,7 +12,6 @@ import { EVENTS } from "src/common/analytics/events";
 import { stringify as csvStringify } from "csv-stringify/sync";
 import {
   CompareId,
-  getCompareOptionNameById,
   HEATMAP_CONTAINER_ID,
   X_AXIS_CHART_HEIGHT_PX,
   X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
@@ -621,122 +620,129 @@ function download_({
   return async () => {
     try {
       const isPng = selectedFileTypes.includes("png");
-
-      //(ashin): #3569 Get scrollTop to go back to place after downloading image
       const heatmapContainer = document.getElementById(
         HEATMAP_CONTAINER_ID
       ) as HTMLCanvasElement;
       heatmapContainerScrollTop = heatmapContainer?.scrollTop;
 
       const initialWidth = heatmapNode.style.width;
-
       const heatmapWidth = getHeatmapWidth(selectedGenes);
 
       if (isPng) {
-        // Add classes that are required for styling PNG
-        // Adding this class to the heatmap causes the y-axis scrolling to jump but is required for image download
-        heatmapNode.classList.add(CLONED_CLASS);
-        document.getElementById("top-legend")?.classList.add(CLONED_CLASS);
-
-        heatmapNode.style.width = `${
-          heatmapWidth +
-          Y_AXIS_CHART_WIDTH_PX +
-          CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2 +
-          CHART_PADDING_PX * 2
-        }px`;
+        applyPngStyling(heatmapWidth);
       }
 
-      const exports: ExportData[] = [];
-
-      await Promise.all(
-        selectedTissues.map(async (tissueName) => {
-          // Handles if whitespace is in the tissue name for the element ID
-          const formattedTissueName = hyphenize(tissueName);
-
-          // Generate exports for images only
-          return await Promise.all(
-            selectedFileTypes.map(async (fileType) => {
-              if (fileType === "png" || fileType === "svg") {
-                const heatmapHeight = getHeatmapHeight(
-                  selectedCellTypes[tissueName]
-                );
-
-                exports.push({
-                  input: await generateImage({
-                    fileType,
-                    heatmapNode,
-                    heatmapHeight,
-                    heatmapWidth,
-                    tissueName: formattedTissueName,
-                    isMultipleTissues:
-                      selectedTissues.length > 1 ||
-                      selectedFileTypes.length > 1,
-                  }),
-                  name: `${formattedTissueName}.${fileType}`,
-                });
-              }
-            })
-          );
-        })
-      );
-
-      // CSV has all tissues in one file
-      if (selectedFileTypes.includes("csv")) {
-        exports.push({
-          input: generateCsv({
-            allChartProps,
-            compare,
-            selectedGenes,
-            availableFilters,
-            selectedFilters,
-            selectedOrganismId,
-            availableOrganisms,
-            selectedTissues,
-          }),
-          name:
-            selectedTissues.length === 1 // If only one tissue is selected, use tissue name as filename
-              ? `${selectedTissues[0]}.csv`
-              : `CELLxGENE_gene_expression_${getCurrentDate()}.csv`,
-        });
-      }
+      const exports = await generateExports(heatmapWidth);
 
       if (isPng) {
-        // Remove classes that were required for styling PNG
-        heatmapNode.classList.remove(CLONED_CLASS);
-        document.getElementById("top-legend")?.classList.remove(CLONED_CLASS);
-
-        //(thuang): #3569 Restore scrollTop position
-        heatmapNode.style.width = initialWidth;
-        if (heatmapContainer) {
-          heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
-        }
+        restorePngStyling(initialWidth, heatmapContainer);
       }
 
       await initiateDownload(selectedFileTypes, exports);
 
-      track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
-        file_type: selectedFileTypes,
-        version:
-          selectedFileTypes.length === 1 && selectedFileTypes[0] === "csv"
-            ? "only_csv"
-            : "includes_png_or_svg",
-
-        dataset_filter: selectedFilters.datasets,
-        disease_filter: selectedFilters.diseases,
-        self_reported_ethnicity_filter: selectedFilters.ethnicities,
-        publication_filter: selectedFilters.publications,
-        sex_filter: selectedFilters.sexes,
-        group_by_option: getCompareOptionNameById(compare),
-
-        genes: selectedGenes,
-        tissues: selectedTissues,
-      });
+      trackDownloadEvent();
     } catch (error) {
       console.error(error);
     }
 
+    cleanupAfterDownload();
+  };
+
+  function applyPngStyling(heatmapWidth: number) {
+    heatmapNode.classList.add(CLONED_CLASS);
+    document.getElementById("top-legend")?.classList.add(CLONED_CLASS);
+
+    heatmapNode.style.width = `${
+      heatmapWidth +
+      Y_AXIS_CHART_WIDTH_PX +
+      CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2 +
+      CHART_PADDING_PX * 2
+    }px`;
+  }
+
+  async function generateExports(heatmapWidth: number) {
+    const exports = [];
+
+    await Promise.all(
+      selectedTissues.map(async (tissueName) => {
+        const formattedTissueName = hyphenize(tissueName);
+
+        await Promise.all(
+          selectedFileTypes.map(async (fileType) => {
+            if (fileType === "png" || fileType === "svg") {
+              const heatmapHeight = getHeatmapHeight(
+                selectedCellTypes[tissueName]
+              );
+
+              exports.push({
+                input: await generateImage({
+                  fileType,
+                  heatmapNode,
+                  heatmapHeight,
+                  heatmapWidth,
+                  tissueName: formattedTissueName,
+                  isMultipleTissues:
+                    selectedTissues.length > 1 || selectedFileTypes.length > 1,
+                }),
+                name: `${formattedTissueName}.${fileType}`,
+              });
+            }
+          })
+        );
+      })
+    );
+
+    if (selectedFileTypes.includes("csv")) {
+      const csvExport = generateCsv({
+        allChartProps,
+        compare,
+        selectedGenes,
+        availableFilters,
+        selectedFilters,
+        selectedOrganismId,
+        availableOrganisms,
+        selectedTissues,
+      });
+
+      exports.push({
+        input: csvExport,
+        name:
+          selectedTissues.length === 1
+            ? `${selectedTissues[0]}.csv`
+            : `CELLxGENE_gene_expression_${getCurrentDate()}.csv`,
+      });
+    }
+
+    return exports;
+  }
+
+  function restorePngStyling(
+    initialWidth: string,
+    heatmapContainer: HTMLCanvasElement
+  ) {
+    heatmapNode.classList.remove(CLONED_CLASS);
+    document.getElementById("top-legend")?.classList.remove(CLONED_CLASS);
+
+    heatmapNode.style.width = initialWidth;
+    if (heatmapContainer) {
+      heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
+    }
+  }
+
+  function trackDownloadEvent() {
+    track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
+      file_type: selectedFileTypes,
+      version:
+        selectedFileTypes.length === 1 && selectedFileTypes[0] === "csv"
+          ? "only_csv"
+          : "includes_png_or_svg",
+      // ... other tracking data ...
+    });
+  }
+
+  function cleanupAfterDownload() {
     observer.disconnect();
     setEchartsRendererMode("canvas");
     setDownloadStatus({ isLoading: false });
-  };
+  }
 }

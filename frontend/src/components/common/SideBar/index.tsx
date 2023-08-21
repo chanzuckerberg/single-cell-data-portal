@@ -24,7 +24,7 @@ export interface Props {
   isOpen?: boolean;
   onToggle?: SideBarToggleFn;
   width?: number;
-  position?: typeof Position[keyof typeof Position];
+  position?: (typeof Position)[keyof typeof Position];
   SideBarWrapperComponent?: typeof SideBarWrapper;
   SideBarPositionerComponent?: typeof SideBarPositioner;
   testId?: string;

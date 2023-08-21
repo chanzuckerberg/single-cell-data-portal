@@ -299,6 +299,7 @@ export default function OntologyDagView({
      * This is a known anti-pattern and will be addressed in later work.
      * See this ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5478
      */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [treeData, triggerRender, initialTreeState]);
 
   // This useEffect is used to set the initial transform matrix when the tree data changes.

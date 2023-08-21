@@ -611,12 +611,8 @@ export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 2): {
     }
 
     const { tissues } = primaryFilterDimensions;
-
     const tissuesById = generateTermsByKey(tissues, "id");
-
-    const result: {
-      [tissueName: string]: { [geneName: string]: GeneExpressionSummary };
-    } = {};
+    const result: GeneExpressionSummariesByTissueName = {};
 
     for (const [geneId, expressionSummariesByTissue] of Object.entries(data)) {
       const geneName = termIdLabels.genes[geneId];
@@ -624,46 +620,79 @@ export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 2): {
       for (const [tissueId, expressionSummariesByCellType] of Object.entries(
         expressionSummariesByTissue
       )) {
-        /**
-         * This collection contains all the expression summaries for a given tissue,
-         * including all the cell types and compare options
-         */
-        const mergedExpressionSummaries = [];
-        for (const [
-          cellTypeId,
-          expressionSummariesByCompareOption,
-        ] of Object.entries(expressionSummariesByCellType)) {
-          for (const [compareOptionId, expressionSummary] of Object.entries(
-            expressionSummariesByCompareOption
-          )) {
-            mergedExpressionSummaries.push(
-              transformCellTypeGeneExpressionSummaryData({
-                ...expressionSummary,
-                viewId: getCellTypeViewId(
-                  cellTypeId === "tissue_stats" ? tissueId : cellTypeId,
-                  compareOptionId
-                ),
-              })
-            );
-          }
+        const mergedExpressionSummaries = mergeExpressionSummaries(
+          expressionSummariesByCellType,
+          tissueId
+        );
 
-          const tissueName = tissuesById[tissueId].name;
-
-          const tissueGeneExpressionSummaries: {
-            [geneName: string]: GeneExpressionSummary;
-          } = result[tissueName] || {};
-
-          tissueGeneExpressionSummaries[geneName] = {
-            cellTypeGeneExpressionSummaries: mergedExpressionSummaries,
-            name: geneName,
-          };
-
-          result[tissueName] = tissueGeneExpressionSummaries;
-        }
+        updateResult(
+          result,
+          tissuesById[tissueId].name,
+          geneName,
+          mergedExpressionSummaries
+        );
       }
     }
 
     return { data: result, isLoading };
+
+    function mergeExpressionSummaries(
+      expressionSummariesByCellType: QueryResponse["expression_summary"][string][string],
+      tissueId: string
+    ) {
+      const mergedExpressionSummaries = [];
+
+      for (const [
+        cellTypeId,
+        expressionSummariesByCompareOption,
+      ] of Object.entries(expressionSummariesByCellType)) {
+        for (const [compareOptionId, expressionSummary] of Object.entries(
+          expressionSummariesByCompareOption
+        )) {
+          mergedExpressionSummaries.push(
+            transformExpressionSummary(
+              expressionSummary,
+              cellTypeId,
+              tissueId,
+              compareOptionId
+            )
+          );
+        }
+      }
+
+      return mergedExpressionSummaries;
+    }
+
+    function transformExpressionSummary(
+      expressionSummary: RawCellTypeGeneExpressionSummaryData,
+      cellTypeId: string,
+      tissueId: string,
+      compareOptionId: string
+    ) {
+      return transformCellTypeGeneExpressionSummaryData({
+        ...expressionSummary,
+        viewId: getCellTypeViewId(
+          cellTypeId === "tissue_stats" ? tissueId : cellTypeId,
+          compareOptionId
+        ),
+      });
+    }
+
+    function updateResult(
+      result: GeneExpressionSummariesByTissueName,
+      tissueName: string,
+      geneName: string,
+      mergedExpressionSummaries: CellTypeGeneExpressionSummaryData[]
+    ) {
+      const tissueGeneExpressionSummaries = result[tissueName] || {};
+
+      tissueGeneExpressionSummaries[geneName] = {
+        cellTypeGeneExpressionSummaries: mergedExpressionSummaries,
+        name: geneName,
+      };
+
+      result[tissueName] = tissueGeneExpressionSummaries;
+    }
   }, [
     data,
     isLoading,
@@ -836,7 +865,7 @@ function getSortedCellTypeCompareOptions(
 ): [
   // compareOptionId
   string,
-  QueryResponse["term_id_labels"]["cell_types"][string][string][string]
+  QueryResponse["term_id_labels"]["cell_types"][string][string][string],
 ][] {
   return Object.entries(cellTypeWithCompareOptions).sort((a, b) => {
     const aCompareOptionId = a[0];
@@ -885,7 +914,7 @@ function addCellTypeRowToResult({
     (
       | CellTypeStats[string][CompareOptionId]
       | TissueStats["tissue_stats"]["aggregated"]
-    )
+    ),
   ][];
 }) {
   let cellTypeName = "";
@@ -1053,18 +1082,6 @@ function useWMGFiltersQueryRequestBody(
     publications,
   } = selectedFilters;
 
-  const tissuesByName = useMemo(() => {
-    let result: { [name: string]: OntologyTerm } = {};
-
-    if (!data) return result;
-
-    const { tissues } = data;
-
-    result = generateTermsByKey(tissues, "name");
-
-    return result;
-  }, [data]);
-
   return useMemo(() => {
     if (!data || !selectedOrganismId) {
       return null;
@@ -1086,14 +1103,12 @@ function useWMGFiltersQueryRequestBody(
     tissues,
     selectedOrganismId,
     data,
-    tissuesByName,
     datasets,
     developmentStages,
     diseases,
     ethnicities,
     publications,
     sexes,
-    version,
   ]);
 }
 
