@@ -52,6 +52,11 @@ due to intended changes in the pipeline.
 
 This module generates the CellGuide data using the test snapshot stored in {TEST_SNAPSHOT}.
 Requires an internet connection.
+
+Run this script with the below command from the root directory of this repo:
+```
+python -m scripts.generate_cellguide_pipeline_test_fixtures
+```
 """
 
 
