@@ -59,7 +59,7 @@ class CanonicalMarkerGeneCompilerUtilsTests(unittest.TestCase):
             with self.subTest(doi=doi):
                 self.assertEqual(clean_doi(doi), expected)
 
-    @patch("requests.get")
+    @patch("backend.cellguide.pipeline.canonical_marker_genes.utils._get_response_from_url")
     def test__get_title_and_citation_from_doi(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
