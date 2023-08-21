@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - "*"
-  merge_group:
+  push:
     branches:
       - "main"
 
@@ -78,11 +78,20 @@ jobs:
           npm i
           npx playwright install --with-deps
           cp src/configs/local.js src/configs/configs.js
-          npm run dev&
+          npm run dev > dev_server.log 2>&1 &
 
       # Run E2E tests
       - name: Run E2E tests
-        run: DEBUG=pw:api npm run e2e
+        run: |
+          DEBUG=pw:api npm run e2e
+
+      - name: Upload Artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: fe-server-logs
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/dev_server.log
+          retention-days: 30
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
@@ -303,11 +312,65 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-rebuild-processing
+          make local-rebuild-wmg-processing
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-wmg-processing
+      - name: Upload coverage results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
+          retention-days: 3
+      - name: Upload Allure results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
+      - uses: 8398a7/action-slack@v3.15.0
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+  cellguide-pipeline-unit-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+        with:
+          files: |
+            Dockerfile*
+            **/Dockerfile*
+            requirements*.txt
+            **/requirements*.txt
+      - name: Check if containers need to be rebuilt
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-rebuild-cellguide-pipeline
+      - name: Run tests in docker-compose
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-unit-test-cellguide-pipeline
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v3
         with:

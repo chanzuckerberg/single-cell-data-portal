@@ -20,10 +20,11 @@ def extract_obs_data(tdb_group: str, cube_dims: list) -> pd.DataFrame:
     """
     with tiledb.open(f"{tdb_group}/{OBS_ARRAY_NAME}") as obs:
         cell_labels = obs.query(use_arrow=False).df[:]
+
     cell_labels.sort_values(by=["obs_idx"], inplace=True, ignore_index=True)
 
     cell_labels = pd.DataFrame(
-        data={k: cell_labels[k].astype("category") for k in cube_dims},
-        index=cell_labels.obs_idx,
+        data={k: cell_labels[k].astype("category") for k in cube_dims + ["filter_cells"]},
+        index=cell_labels["obs_idx"].values,
     )
     return cell_labels

@@ -921,7 +921,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
 
     def test_get_dataset_version_from_canonical(self):
         """
-        Get currently published dataset version using canonical dataset ID, or most recently created unpublished dataset
+        Get currently published dataset version using canonical dataset ID, or most recent active unpublished dataset
         if none are published.
         """
         with self.subTest("Dataset is published with a revision open, get published dataset version"):
@@ -943,6 +943,17 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         with self.subTest("Dataset does not exist"):
             dataset_version = self.business_logic.get_dataset_version_from_canonical(DatasetId(str(uuid.uuid4())))
             self.assertIsNone(dataset_version)
+        with self.subTest("DatasetVersion has been rolled back from most recently-created"):
+            unpublished_collection = self.initialize_unpublished_collection()
+            init_dataset = unpublished_collection.datasets[0]
+            new_dataset = self.database_provider.replace_dataset_in_collection_version(
+                unpublished_collection.version_id, init_dataset.version_id
+            )
+            self.business_logic.restore_previous_dataset_version(
+                unpublished_collection.version_id, new_dataset.dataset_id
+            )
+            dataset_version = self.business_logic.get_dataset_version_from_canonical(init_dataset.dataset_id)
+            self.assertEqual(dataset_version.version_id, init_dataset.version_id)
 
     def test_get_prior_published_versions_for_dataset(self):
         """
@@ -1786,6 +1797,36 @@ class TestSetPreviousDatasetVersion(BaseBusinessLogicTestCase):
         datasets = [d.version_id for d in self.business_logic.get_collection_version(revision.version_id).datasets]
         assert new_dataset_version_id not in datasets
         assert previous_dataset.version_id in datasets
+
+
+class TestConcurrentUpdates(BaseBusinessLogicTestCase):
+    """
+    Test that concurrent updates to a "shared" field in DatasetVersion are properly supported.
+    This is simulated by calling a method that updates such field concurrently, using a thread pool.
+    Note: this test should always pass, but we can't guarantee that it actually prevents a race condition.
+    Different hosts might have different behaviors and might not yield a race condition in the first place
+    (for instance, if the runtime can only give 1 worker to ThreadPoolExecutor).
+    """
+
+    def test_concurrency(self):
+        collection = self.initialize_published_collection(num_datasets=1)
+        dataset = collection.datasets[0]
+
+        def add_artifact():
+            self.database_provider.add_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
+
+        self.assertEqual(len(dataset.artifacts), 3)
+
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=4) as e:
+            for _ in range(10):
+                e.submit(add_artifact)
+
+        dv = self.business_logic.get_dataset_version(dataset.version_id)
+        self.assertIsNotNone(dv)
+        if dv is not None:
+            self.assertEqual(len(dv.artifacts), 13)
 
 
 if __name__ == "__main__":

@@ -27,10 +27,12 @@ import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { useCellTypesById } from "src/common/queries/cellGuide";
+import {
+  CELL_GUIDE_CARD_HEADER_NAME,
+  CELL_GUIDE_CARD_HEADER_TAG,
+  CELL_GUIDE_CARD_SYNONYMS,
+} from "src/views/CellGuide/components/CellGuideCard/constants";
 
-export const CELL_GUIDE_CARD_HEADER_NAME = "cell-guide-card-header-name";
-export const CELL_GUIDE_CARD_HEADER_TAG = "cell-guide-card-header-tag";
-export const CELL_GUIDE_CARD_SYNONYMS = "cell-guide-card-synonyms";
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
 // This is the desired width of the CellGuideCard components right after the sidebar is hidden.
@@ -165,12 +167,17 @@ export default function CellGuideCard({
           {/* Cell Ontology section */}
           <div ref={sectionRef1} id="section-1" data-testid="section-1" />
           <FullScreenProvider>
-            <OntologyDagView cellTypeId={cellTypeId} skinnyMode={skinnyMode} />
+            <OntologyDagView
+              key={cellTypeId}
+              cellTypeId={cellTypeId}
+              skinnyMode={skinnyMode}
+            />
           </FullScreenProvider>
 
           {/* Marker Genes section */}
           <div ref={sectionRef2} id="section-2" data-testid="section-2" />
           <MarkerGeneTables
+            key={cellTypeId}
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}
@@ -186,7 +193,7 @@ export default function CellGuideCard({
               { elementRef: sectionRef0, title: "Intro" },
               { elementRef: sectionRef1, title: "Cell Ontology" },
               { elementRef: sectionRef2, title: "Marker Genes" },
-              { elementRef: sectionRef3, title: "Source Data" },
+              { elementRef: sectionRef3, title: "Data" },
             ]}
           />
         )}

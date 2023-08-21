@@ -1,11 +1,7 @@
 import { expect, Page, test } from "@playwright/test";
 import { TEST_URL } from "../../common/constants";
 import { ROUTES } from "src/common/constants/routes";
-import {
-  ADD_GENE_BTN,
-  ADD_GENE_LBL,
-  ADD_TISSUE_LBL,
-} from "tests/common/constants";
+import { ADD_GENE_BTN } from "tests/common/constants";
 import { getById } from "tests/utils/selectors";
 import { tryUntil } from "tests/utils/helpers";
 import { conditionallyRunTests } from "tests/utils/wmgUtils";
@@ -14,7 +10,7 @@ const { describe } = test;
 const ALERT = "Send us feedback with this quick survey";
 
 const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
-const EXPLORE_GENE_EXPRESSION = "explore-gene-expression";
+
 const LEGEND_WRAPPER = "legend-wrapper";
 const DOT_SIZES = ["4", "9", "12", "14", "16"];
 
@@ -22,18 +18,16 @@ function goToWMG(page: Page) {
   return Promise.all([
     page.waitForResponse(
       (resp: { url: () => string | string[]; status: () => number }) =>
-        resp.url().includes("/wmg/v1/filters") && resp.status() === 200
+        resp.url().includes("/wmg/v2/filters") && resp.status() === 200
     ),
     page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
   ]);
 }
 describe("Tests for Gene Expression page", () => {
-  conditionallyRunTests();
+  conditionallyRunTests({ forceRun: true });
 
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
-    // +Tissue button
-    await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // +Gene button
     await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // survey alert
@@ -47,24 +41,6 @@ describe("Tests for Gene Expression page", () => {
     // default organism filter
     await expect(page.getByTestId("add-organism")).toContainText(
       "Homo sapiens"
-    );
-
-    // STEP 1 column
-    await expect(page.getByTestId("column-one")).toBeVisible();
-    await expect(page.getByTestId(ADD_TISSUE_LBL)).toContainText("STEP 1");
-    await expect(page.getByTestId(ADD_TISSUE_LBL)).toContainText("Add Tissues");
-
-    // STEP 2 column
-    await expect(page.getByTestId("column-two")).toBeVisible();
-    await expect(page.getByTestId(ADD_GENE_LBL)).toContainText("STEP 2");
-    await expect(page.getByTestId(ADD_GENE_LBL)).toContainText("Add Genes");
-
-    // STEP 3 column
-    await expect(page.getByTestId(EXPLORE_GENE_EXPRESSION)).toContainText(
-      "STEP 3"
-    );
-    await expect(page.getByTestId(EXPLORE_GENE_EXPRESSION)).toContainText(
-      "Explore Gene Expression"
     );
 
     // Download
