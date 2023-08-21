@@ -1,0 +1,61 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +41ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +48ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +6ms
+  pw:api   "commit" event fired +131ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +2ms
+  pw:api <= page.goto succeeded +1s
+  pw:api => page.waitForLoadState started +2ms
+  pw:api   navigated to "about:blank" +417ms
+  pw:api   "networkidle" event fired +626ms
+  pw:api <= page.waitForLoadState succeeded +7ms
+  pw:api => locator.click started +2ms
+  pw:api   "networkidle" event fired +2ms
+  pw:api waiting for getByTestId('cell-guide-card-canonical-marker-genes-table-selector') +20ms
+  pw:api   locator resolved to <button class="css-1xhv06f-TableSelectorButton e1mdzv35"…>Canonical</button> +21ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +24ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +211ms
+  pw:api   click action done +111ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +15ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +57ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.textContent started +3ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-canonical-marker-genes-table\'] thead th').first() +27ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-canonical-marker-genes-table\'] thead th').nth(1) +19ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-canonical-marker-genes-table\'] thead th').nth(2) +19ms
+  pw:api   locator resolved to <th id="Symbol-header-cell" class="css-ipyisa-Styled…>Symbol</th> +4ms
+  pw:api   locator resolved to <th id="Name-header-cell" class="css-ipyisa-StyledHe…>Name</th> +7ms
+  pw:api   locator resolved to <th id="References-header-cell" class="css-ipyisa-St…>References</th> +7ms
+  pw:api <= locator.textContent succeeded +9ms
+  pw:api <= locator.textContent succeeded +4ms
+  pw:api <= locator.textContent succeeded +5ms
+  pw:api => locator.all started +3ms
+  pw:api <= locator.all succeeded +5ms
+  pw:api taking page screenshot +263ms
+  pw:api => browserContext.close started +105ms
+  pw:api <= browserContext.close succeeded +3s
