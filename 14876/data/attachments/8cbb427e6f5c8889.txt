@@ -1,0 +1,63 @@
+  pw:api => selectors.setTestIdAttribute started +3ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +51ms
+  pw:api   "commit" event fired +12ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +43ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +10ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +6ms
+  pw:api   "commit" event fired +219ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +6s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +48ms
+  pw:api   navigated to "about:blank" +24ms
+  pw:api <= page.goto succeeded +465ms
+  pw:api =>  started +4s
+  pw:api <= page.waitForResponse succeeded +4ms
+  pw:api => expect.toBeVisible started +9ms
+  pw:api <=  succeeded +12ms
+  pw:api expect.toBeVisible with timeout 10000ms +51ms
+  pw:api waiting for locator('[id="visualization-color-scale"]') +0ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" id="visua…/> +106ms
+  pw:api <= expect.toBeVisible succeeded +200ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('source-data-button') +197ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="source-d…>…</button> +188ms
+  pw:api attempting click action +25ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +71ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +4ms
+  pw:api   performing click action +10ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +110ms
+  pw:api   "networkidle" event fired +528ms
+  pw:api <= locator.click succeeded +684ms
+  pw:api => expect.toContainText started +25ms
+  pw:api expect.toContainText with timeout 10000ms +91ms
+  pw:api waiting for locator('h4') +0ms
+  pw:api   locator resolved to <h4 class="bp4-heading">Source Data</h4> +9ms
+  pw:api <= expect.toContainText succeeded +7ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +6ms
+  pw:api => expect.toContainText started +2ms
+  pw:api expect.toContainText with timeout 10000ms +7ms
+  pw:api waiting for locator('h5') +0ms
+  pw:api   locator resolved to <h5 class="css-ek3asa-Header el5arxq1">Methodology</h5> +4ms
+  pw:api <= expect.toContainText succeeded +5ms
+  pw:api taking page screenshot +463ms
+  pw:api => browserContext.close started +129ms
+  pw:api <= browserContext.close succeeded +4s
