@@ -20,7 +20,7 @@ describe("cell tooltip", () => {
     // (thuang): Expand blood tissue to find truncated cell names
     await expandTissue(page, "blood");
 
-    const cellsAfter = await await getCellTypeNames(page);
+    const cellsAfter = await getCellTypeNames(page);
     expect(cellsAfter.length).toBeGreaterThan(0);
 
     // get the number of cell names displayed
