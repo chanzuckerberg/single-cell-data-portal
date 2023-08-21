@@ -180,7 +180,7 @@ class SchemaMigrate(ProcessingLogic):
         self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response)
         return response
 
-    def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
+    def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> list:
         errors = []
         collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         cxs_get_current_schema_version()
@@ -194,16 +194,16 @@ class SchemaMigrate(ProcessingLogic):
         for dataset in collection_version.datasets:
             dataset_id = dataset.dataset_id.id
             dataset_version_id = dataset.version_id.id
-            # filepath to clean-up uses dataset_version_id from the replaced version; accessing with dataset_id as key
-            previous_dataset_version_id = processed_datasets[dataset_id]
             _log_extras = {
                 "dataset_id": dataset_id,
                 "dataset_version_id": dataset_version_id,
-                "previous_dataset_version_id": previous_dataset_version_id,
             }
             if dataset_id not in processed_datasets:
                 self.logger.info("skipping dataset", extra=_log_extras)
                 continue
+            # filepath to clean-up uses dataset_version_id from the replaced version; accessing with dataset_id as key
+            previous_dataset_version_id = processed_datasets[dataset_id]
+            _log_extras["previous_dataset_version_id"] = previous_dataset_version_id
             self.logger.info("checking dataset", extra=_log_extras)
             key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
