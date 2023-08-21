@@ -421,12 +421,16 @@ class MarkerGenesCalculator:
         # get gene names from IDs
         gene_names_to_ids = {}
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = [
-                executor.submit(self._get_gene_name_from_id, datum["gene_ontology_term_id"]) for datum in records
-            ]
+            futures = {
+                executor.submit(self._get_gene_name_from_id, datum["gene_ontology_term_id"]): datum[
+                    "gene_ontology_term_id"
+                ]
+                for datum in records
+            }
 
         for future in concurrent.futures.as_completed(futures):
-            gene_id, gene_name = future.result()
+            gene_name = future.result()
+            gene_id = futures[future]
             gene_names_to_ids[gene_id] = gene_name
 
         # format the records into a dictionary mapping cell type IDs to lists of marker genes
