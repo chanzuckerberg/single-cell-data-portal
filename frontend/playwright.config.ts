@@ -15,7 +15,7 @@ import featureFlags from "./tests/common/featureFlags";
  * (thuang): Playwright takes retries as part of the maxFailures count, so we
  * need to set maxFailures to a high number to allow retries.
  */
-const CICD_MAX_FAILURE = 10;
+const CICD_MAX_FAILURE = 5;
 
 expect.extend(matchers);
 
