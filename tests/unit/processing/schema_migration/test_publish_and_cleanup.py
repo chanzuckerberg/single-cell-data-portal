@@ -13,13 +13,16 @@ def local_schema_migrate(schema_migrate):
         contents = {
             "datasets": [
                 {
-                    "dataset_version_id": "successful_dataset_version_id",
+                    "dataset_id": "dataset_id_1",
+                    "dataset_version_id": "prev_successful_dataset_version_id",
                 },
                 {
-                    "dataset_version_id": "failed_dataset_version_id",
+                    "dataset_id": "dataset_id_2",
+                    "dataset_version_id": "prev_failed_dataset_version_id",
                 },
                 {
-                    "dataset_version_id": "non_migrated_dataset_version_id",
+                    "dataset_id": "dataset_id_3",
+                    "dataset_version_id": "prev_non_migrated_dataset_version_id",
                 },
             ]
             # these datasets populate the processed_dataset variable in the publish_and_cleanup function
@@ -38,7 +41,8 @@ class TestPublishAndCleanup:
     def test_OK(self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate):
         datasets = [
             make_mock_dataset_version(
-                version_id="successful_dataset_version_id",
+                dataset_id="dataset_id_1",
+                version_id="new_successful_dataset_version_id",
                 status=dict(processing_status=DatasetProcessingStatus.SUCCESS),
             )
         ]
@@ -55,17 +59,19 @@ class TestPublishAndCleanup:
         )
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
-            ["successful_dataset_version_id/migrated.h5ad"],
+            ["prev_successful_dataset_version_id/migrated.h5ad"],
         )
 
     def test_with_errors(self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate):
         failed_dataset = make_mock_dataset_version(
-            version_id="failed_dataset_version_id",
+            dataset_id="dataset_id_2",
+            version_id="new_failed_dataset_version_id",
             status=dict(processing_status=DatasetProcessingStatus.FAILURE, validation_message="rds conversion failed"),
             metadata=dict(schema_version="1.0.0"),
         )
         non_migrated_dataset = make_mock_dataset_version(
-            version_id="non_migrated_dataset_version_id",
+            dataset_id="dataset_id_3",
+            version_id="new_non_migrated_dataset_version_id",
             metadata=dict(schema_version="0.9.0"),
         )
         datasets = [
@@ -101,8 +107,8 @@ class TestPublishAndCleanup:
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
             [
-                "failed_dataset_version_id/migrated.h5ad",
-                "non_migrated_dataset_version_id/migrated.h5ad",
+                "prev_failed_dataset_version_id/migrated.h5ad",
+                "prev_non_migrated_dataset_version_id/migrated.h5ad",
             ],
         )
 
@@ -112,7 +118,10 @@ class TestPublishAndCleanup:
         collection_version = make_mock_collection_version(
             [
                 make_mock_dataset_version(
-                    version_id="successful_dataset_version_id", status=dataset_status, metadata=metadata
+                    dataset_id="dataset_id_1",
+                    version_id="new_successful_dataset_version_id",
+                    status=dataset_status,
+                    metadata=metadata,
                 )
             ]
         )
@@ -124,7 +133,7 @@ class TestPublishAndCleanup:
             "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
         )
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["successful_dataset_version_id/migrated.h5ad"]
+            "artifact-bucket", ["prev_successful_dataset_version_id/migrated.h5ad"]
         )
 
     def test_skip_unprocessed_datasets(self, mock_json, mock_cxs_get_current_schema_version, local_schema_migrate):
