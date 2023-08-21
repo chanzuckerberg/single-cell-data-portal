@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { CanonicalMarkersQueryResponse } from "src/common/queries/cellGuide";
-import { HOMO_SAPIENS, ALL_TISSUES } from "../constants";
+import { HOMO_SAPIENS } from "../constants";
 
 interface CanonicalMarkerGeneTableData {
   symbol: string;
@@ -19,8 +19,6 @@ function _getSortedOrgans(genes: CanonicalMarkersQueryResponse): string[] {
     organs.add(markerGene.tissue);
   }
   return Array.from(organs).sort((a, b) => {
-    if (a === ALL_TISSUES) return -1;
-    if (b === ALL_TISSUES) return 1;
     return a.localeCompare(b);
   });
 }
@@ -95,10 +93,10 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
 
     // get sorted organs
     const sortedOrgans = _getSortedOrgans(genes);
-    const selectedOrganFilter =
-      selectedOrgan === "" || !sortedOrgans.includes(selectedOrgan)
-        ? sortedOrgans.at(0) ?? ""
-        : selectedOrgan;
+    const selectedOrganFilter = !sortedOrgans.includes(selectedOrgan)
+      ? ""
+      : selectedOrgan;
+
     const sortedOrganisms = [HOMO_SAPIENS]; // ASCTB tables only report data for humans
 
     const rows: CanonicalMarkerGeneTableData[] = [];

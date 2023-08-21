@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { EnrichedGenesQueryResponse } from "src/common/queries/cellGuide";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import { HOMO_SAPIENS, ALL_TISSUES } from "../constants";
+import { HOMO_SAPIENS } from "../constants";
 
 interface ComputationalMarkerGeneTableData {
   symbol: string;
@@ -36,8 +36,6 @@ function _getSortedOrgans(
   }
 
   return Array.from(organs).sort((a, b) => {
-    if (a === ALL_TISSUES) return -1;
-    if (b === ALL_TISSUES) return 1;
     return a.localeCompare(b);
   });
 }
@@ -72,10 +70,9 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
 
     // get sorted organs
     const sortedOrgans = _getSortedOrgans(genes, selectedOrganismFilter);
-    const selectedOrganFilter =
-      selectedOrgan === "" || !sortedOrgans.includes(selectedOrgan)
-        ? sortedOrgans.at(0) ?? ""
-        : selectedOrgan;
+    const selectedOrganFilter = !sortedOrgans.includes(selectedOrgan)
+      ? ""
+      : selectedOrgan;
 
     const rows: ComputationalMarkerGeneTableData[] = [];
     for (const markerGene of genes) {
