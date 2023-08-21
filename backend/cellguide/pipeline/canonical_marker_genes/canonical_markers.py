@@ -157,7 +157,7 @@ class CanonicalMarkerGenesCompiler:
         # DOI to citation mapping
         parsed_table_entries = []
 
-        results = [delayed(self._process_asct_table__parallel)(tissue) for tissue in enumerate(self.asctb_data)]
+        results = [delayed(self._process_asct_table__parallel)(tissue) for tissue in self.asctb_data]
         logger.info(f"Getting processed ASCTB table entries for {len(self.asctb_data)} tissues...")
         with ProgressBar():
             parsed_table_entries.extend(compute(*results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS))
