@@ -87,20 +87,105 @@ export const loadStateFromQueryParams = ({
 }): LoadStateFromURLPayload | null => {
   if (isSSR()) return null;
 
-  const paramsToRemove = [];
+  const paramsToRemove: string[] = [];
 
   // Checks if the URL has any query params related to shared filter state
   // If so, it will update the state with the values from the URL
 
-  // Check for version
+  const { delimiter } = getMetadataForShareLinkParsing({
+    params,
+    paramsToRemove,
+  });
+
+  // Check for filter properties
+  const newSelectedFilters = getNewSelectedFilters({
+    tissues,
+    params,
+    paramsToRemove,
+    selectedFilters,
+    delimiter,
+  });
+
+  //Check for genes
+  const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
+  if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
+
+  // If there are no filters and genes selected, don't update the state
+  if (
+    Object.values(Object.keys(newSelectedFilters)).length === 0 &&
+    newSelectedGenes.length === 0
+  ) {
+    return null;
+  }
+
+  //Check for organism
+  const newSelectedOrganism = params.get("organism") || HUMAN_ORGANISM_ID;
+
+  if (newSelectedOrganism) {
+    paramsToRemove.push("organism");
+  }
+
+  //Check for cell types
+  const newFilteredCellTypes = params.get("cellTypes")?.split(delimiter) || [];
+
+  if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
+
+  // check for compare
+  const newCompare = (params.get("compare") as CompareId) || undefined;
+
+  if (newCompare) {
+    paramsToRemove.push("compare");
+  }
+
+  /**
+   * (thuang): Please makes sure we only remove params AFTER pushing all params
+   * to `paramsToRemove`
+   */
+  removeParams(paramsToRemove);
+
+  const payload = {
+    compare: newCompare,
+    filters: newSelectedFilters,
+    organism: newSelectedOrganism,
+    genes: newSelectedGenes,
+    cellTypes: newFilteredCellTypes,
+  };
+
+  dispatch(loadStateFromURL(payload));
+
+  return payload;
+};
+
+function getMetadataForShareLinkParsing({
+  params,
+  paramsToRemove,
+}: {
+  params: URLSearchParams;
+  paramsToRemove: string[];
+}) {
   const version = params.get("ver") || "1";
   if (params.get("ver")) paramsToRemove.push("ver");
 
-  // delimiter changed from - to , in version 2
-  const delimiter = version > "1" ? "," : "-";
+  return {
+    // delimiter changed from `-` to `,` in version 2
+    delimiter: version > "1" ? "," : "-",
+  };
+}
 
+function getNewSelectedFilters({
+  tissues,
+  params,
+  paramsToRemove,
+  selectedFilters,
+  delimiter,
+}: {
+  tissues?: TissueCardsQueryResponse;
+  params: URLSearchParams;
+  paramsToRemove: string[];
+  selectedFilters: State["selectedFilters"];
+  delimiter: string;
+}) {
   // Check for filter properties
-
   const newSelectedFilters: Partial<State["selectedFilters"]> = {};
 
   /**
@@ -146,50 +231,5 @@ export const loadStateFromQueryParams = ({
     paramsToRemove.push(key);
   });
 
-  //Check for organism
-  const newSelectedOrganism = params.get("organism") || HUMAN_ORGANISM_ID;
-  if (newSelectedOrganism) {
-    paramsToRemove.push("organism");
-  }
-
-  //Check for genes
-  const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
-  if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
-
-  //Check for cell types
-  const newFilteredCellTypes = params.get("cellTypes")?.split(delimiter) || [];
-  if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
-
-  // If there are no filters and genes selected, don't update the state
-  if (
-    Object.values(Object.keys(newSelectedFilters)).length === 0 &&
-    newSelectedGenes.length === 0
-  ) {
-    return null;
-  }
-
-  // check for compare
-  const newCompare = (params.get("compare") as CompareId) || undefined;
-
-  if (newCompare) {
-    paramsToRemove.push("compare");
-  }
-
-  /**
-   * (thuang): Please makes sure we only remove params AFTER pushing all params
-   * to `paramsToRemove`
-   */
-  removeParams(paramsToRemove);
-
-  const payload = {
-    compare: newCompare,
-    filters: newSelectedFilters,
-    organism: newSelectedOrganism,
-    genes: newSelectedGenes,
-    cellTypes: newFilteredCellTypes,
-  };
-
-  dispatch(loadStateFromURL(payload));
-
-  return payload;
-};
+  return newSelectedFilters;
+}
