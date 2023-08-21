@@ -43,6 +43,7 @@ import {
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 
 import {
+  CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
@@ -52,7 +53,6 @@ import {
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
   CELL_GUIDE_CARD_ENRICHED_GENES_TABLE,
   CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR,
-  CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN,
   CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
   EXPRESSION_SCORE_TOOLTIP_TEST_ID,
   MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
@@ -300,12 +300,19 @@ describe("Cell Guide", () => {
         expect(rowCountBefore).toBeGreaterThan(1);
 
         const dropdown = page.getByTestId(
-          CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN
+          CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN
         );
         await waitForElementAndClick(dropdown);
         await dropdown.press("ArrowDown");
         await dropdown.press("ArrowDown");
-        await dropdown.press("ArrowDown"); // selects kidney
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown"); // selects Brain
         await dropdown.press("Enter");
 
         const rowElementsAfter = await page
@@ -440,11 +447,11 @@ describe("Cell Guide", () => {
               await rowElementsBefore[0].textContent();
 
             const dropdown = page.getByTestId(
-              CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN
+              CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
             await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown");
+            await dropdown.press("ArrowDown"); // selects Abdominal Wall
             await dropdown.press("Enter");
 
             const rowElementsAfter = await page
