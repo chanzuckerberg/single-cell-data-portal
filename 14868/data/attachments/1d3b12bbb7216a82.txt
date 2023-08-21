@@ -1,0 +1,12 @@
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 5000ms exceeded.
+=========================== logs ===========================
+waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\']') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 5000ms exceeded.
+=========================== logs ===========================
+waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\']') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
