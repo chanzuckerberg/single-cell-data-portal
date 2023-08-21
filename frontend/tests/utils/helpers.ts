@@ -436,10 +436,15 @@ export async function takeSnapshotOfMetaTags(name: string, page: Page) {
 export async function expandTissue(page: Page, tissueName: string) {
   await tryUntil(
     async () => {
+      const beforeCellTypeNames = await getCellTypeNames(page);
       await page
         .getByTestId(`cell-type-labels-${tissueName}`)
         .getByTestId("tissue-name")
         .click();
+      const afterCellTypeNames = await getCellTypeNames(page);
+      expect(afterCellTypeNames.length).toBeGreaterThan(
+        beforeCellTypeNames.length
+      );
     },
     { page }
   );

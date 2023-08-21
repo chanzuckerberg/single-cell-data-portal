@@ -21,7 +21,6 @@ describe("cell tooltip", () => {
     await expandTissue(page, "blood");
 
     const cellsAfter = await getCellTypeNames(page);
-    expect(cellsAfter.length).toBeGreaterThan(0);
 
     // get the number of cell names displayed
 
