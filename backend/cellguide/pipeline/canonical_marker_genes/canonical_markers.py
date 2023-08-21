@@ -1,5 +1,6 @@
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Tuple
 
 import pandas as pd
@@ -124,9 +125,7 @@ class CanonicalMarkerGenesCompiler:
             The ';;'-concatenated titles extracted from the input references.
         """
 
-        refs = []
-        titles = []
-        for ref in references:
+        def fetch_doi_info(ref):
             doi = clean_doi(ref.doi)
             if doi:
                 if doi not in doi_to_citation:
@@ -134,8 +133,12 @@ class CanonicalMarkerGenesCompiler:
                     doi_to_citation[doi] = title
                 else:
                     title = doi_to_citation[doi]
-                refs.append(doi)
-                titles.append(title)
+                return doi, title
+
+        with ThreadPoolExecutor() as executor:
+            results = list(executor.map(fetch_doi_info, references))
+
+        refs, titles = zip(*[result for result in results if result is not None])
         return ";;".join(refs), ";;".join(titles)
 
     def get_processed_asctb_table_entries(self) -> dict[str, ParsedAsctbTableEntry]:
@@ -240,6 +243,25 @@ class CanonicalMarkerGenesCompiler:
         return gene_infos
 
     def _process_asct_table__parallel(self, tissue: str) -> list[dict[str, str]]:
+        """
+        Processes the ASCTB table entries for a given tissue in parallel and returns a list of dictionaries.
+        Each dictionary is an entry containing a tissue, gene symbol, gene name, publication,
+        publication title, and cell type ontology term ID. The processing involves extracting
+        relevant information from the ASCTB data such as tissue ID, gene symbols and names, DOIs and citations,
+        and cell type ontology term IDs. It also involves cleaning and formatting the extracted data.
+
+        Arguments
+        ---------
+        tissue - str
+            The tissue for which the ASCTB table entries are to be processed.
+
+        Returns
+        -------
+        list[dict[str, str]]
+            A list of dictionaries, each containing information about a unique combination of tissue, gene symbol,
+            gene name, publication, publication title, and cell type ontology term ID.
+        """
+
         doi_to_citation = {}
         hashed_entries_seen = []
 
