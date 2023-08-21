@@ -1,0 +1,41 @@
+  pw:api => selectors.setTestIdAttribute started +5ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +44ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => tracing.start started +0ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +48ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/privacy/", waiting until "load" +29ms
+  pw:api   "commit" event fired +2s
+  pw:api   navigated to "https://localhost:3000/privacy" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/privacy" +2ms
+  pw:api <= page.goto succeeded +114ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api   "networkidle" event fired +436ms
+  pw:api <= page.waitForLoadState succeeded +5ms
+  pw:api => expect.toBeVisible started +4ms
+  pw:api   "networkidle" event fired +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +11ms
+  pw:api waiting for getByText('Privacy Policy').first() +1ms
+  pw:api   locator resolved to <h1>Privacy Policy</h1> +45ms
+  pw:api <= expect.toBeVisible succeeded +8ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +10ms
+  pw:api waiting for getByTestId('cellxgene-logo') +0ms
+  pw:api   locator resolved to <img decoding="async" alt="CELLxGENE logo" data-nimg=…/> +4ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api taking page screenshot +122ms
+  pw:api => browserContext.close started +107ms
+  pw:api <= browserContext.close succeeded +4s
