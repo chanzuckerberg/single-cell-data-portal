@@ -93,30 +93,34 @@ def run_cellguide_pipeline():
             # Generate computational marker genes from the CZI corpus
             run_computational_marker_genes_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
-    shutil.move(f"{output_directory}/{ONTOLOGY_TREE_FILENAME}", f"{output_directory}/{ONTOLOGY_GRAPH_FIXTURE_FILENAME}")
-    shutil.move(
-        f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_CELLTYPE_FILENAME}",
-        f"{output_directory}/{CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
-    )
-    shutil.move(
-        f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_TISSUE_FILENAME}",
-        f"{output_directory}/{TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
-    )
-    shutil.move(
-        f"{output_directory}/{SOURCE_COLLECTIONS_FILENAME}", f"{output_directory}/{SOURCE_COLLECTIONS_FIXTURE_FILENAME}"
-    )
-    shutil.move(
-        f"{output_directory}/{CELL_GUIDE_METADATA_FILENAME}", f"{output_directory}/{CELLTYPE_METADATA_FIXTURE_FILENAME}"
-    )
-    shutil.move(
-        f"{output_directory}/{CELL_GUIDE_TISSUE_METADATA_FILENAME}",
-        f"{output_directory}/{TISSUE_METADATA_FIXTURE_FILENAME}",
-    )
-    shutil.move(
-        f"{output_directory}/{CANONICAL_MARKER_GENES_FILENAME}",
-        f"{output_directory}/{CANONICAL_MARKER_GENES_FIXTURE_FILENAME}",
-    )
-    shutil.move(output_directory, CELLGUIDE_PIPELINE_FIXTURES_BASEPATH)
+        shutil.move(
+            f"{output_directory}/{ONTOLOGY_TREE_FILENAME}",
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ONTOLOGY_GRAPH_FIXTURE_FILENAME}",
+        )
+        shutil.move(
+            f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_CELLTYPE_FILENAME}",
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
+        )
+        shutil.move(
+            f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_TISSUE_FILENAME}",
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
+        )
+        shutil.move(
+            f"{output_directory}/{SOURCE_COLLECTIONS_FILENAME}",
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{SOURCE_COLLECTIONS_FIXTURE_FILENAME}",
+        )
+        shutil.move(
+            f"{output_directory}/{CELL_GUIDE_METADATA_FILENAME}",
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CELLTYPE_METADATA_FIXTURE_FILENAME}",
+        )
+        shutil.move(
+            f"{output_directory}/{CELL_GUIDE_TISSUE_METADATA_FILENAME}",
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{TISSUE_METADATA_FIXTURE_FILENAME}",
+        )
+        shutil.move(
+            f"{output_directory}/{CANONICAL_MARKER_GENES_FILENAME}",
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CANONICAL_MARKER_GENES_FIXTURE_FILENAME}",
+        )
 
 
 if __name__ == "__main__":
