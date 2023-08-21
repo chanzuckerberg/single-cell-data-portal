@@ -8,7 +8,6 @@ export const StyledTable = styled.table`
 `;
 
 export const TableWrapper = styled.div`
-  max-height: 500px;
   overflow-y: auto;
 `;
 

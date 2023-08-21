@@ -5,51 +5,60 @@ import {
   takeSnapshotOfMetaTags,
   tryUntil,
 } from "tests/utils/helpers";
+
 import { TEST_URL } from "../../common/constants";
-import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage";
-import {
-  CELL_GUIDE_CARD_SEARCH_BAR,
-  CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT,
-} from "src/views/CellGuide/components/CellGuideCardSearchBar";
-import {
-  CELL_GUIDE_CARD_CL_DESCRIPTION,
-  CELL_GUIDE_CARD_GPT_DESCRIPTION,
-  CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
-} from "src/views/CellGuide/components/CellGuideCard/components/Description";
-import {
-  CELL_GUIDE_CARD_HEADER_NAME,
-  CELL_GUIDE_CARD_HEADER_TAG,
-  CELL_GUIDE_CARD_SYNONYMS,
-} from "src/views/CellGuide/components/CellGuideCard";
-import {
-  CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE,
-  CELL_GUIDE_CARD_ENRICHED_GENES_TABLE,
-  CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN,
-  CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
-  CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
-  CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR,
-  MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
-  MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
-} from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables";
+
 import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
-} from "src/views/CellGuide/components/common/OntologyDagView";
-import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellGuide/components/common/OntologyDagView/components/Node";
-import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/components/RectOrCircle";
-import { CELL_GUIDE_CARD_SOURCE_DATA_TABLE } from "src/views/CellGuide/components/CellGuideCard/components/SourceDataTable";
-import { CELL_GUIDE_CARD_NAVIGATION_SIDEBAR } from "src/views/CellGuide/components/CellGuideCard/components/CellGuideCardSidebar";
+} from "src/views/CellGuide/components/common/OntologyDagView/constants";
+
+import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/constants";
+
+import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/components/RectOrCircle/constants";
+
+import { CELL_GUIDE_CARD_SOURCE_DATA_TABLE } from "src/views/CellGuide/components/CellGuideCard/components/SourceDataTable/constants";
+
+import { CELL_GUIDE_CARD_NAVIGATION_SIDEBAR } from "src/views/CellGuide/components/CellGuideCard/components/CellGuideCardSidebar/constants";
+
 import {
   TISSUE_CARD_HEADER_NAME,
   TISSUE_CARD_HEADER_TAG,
   TISSUE_CARD_UBERON_DESCRIPTION,
-} from "src/views/CellGuide/components/TissueCard";
+} from "src/views/CellGuide/components/TissueCard/constants";
+
 import {
+  CELL_GUIDE_CARD_SEARCH_BAR,
+  CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT,
+} from "src/views/CellGuide/components/CellGuideCardSearchBar/constants";
+
+import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/constants";
+
+import {
+  CELL_GUIDE_CARD_CL_DESCRIPTION,
+  CELL_GUIDE_CARD_GPT_DESCRIPTION,
+  CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
+} from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
+
+import {
+  CELL_GUIDE_CARD_HEADER_NAME,
+  CELL_GUIDE_CARD_HEADER_TAG,
+  CELL_GUIDE_CARD_SYNONYMS,
+} from "src/views/CellGuide/components/CellGuideCard/constants";
+import {
+  CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE,
+  CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
+  CELL_GUIDE_CARD_ENRICHED_GENES_TABLE,
+  CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR,
+  CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN,
+  CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
   EXPRESSION_SCORE_TOOLTIP_TEST_ID,
+  MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
+  MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
-} from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables";
+} from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 
 const { describe } = test;
 

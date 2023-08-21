@@ -58,7 +58,7 @@ class DataArtifactCorrectness(unittest.TestCase):
             gene_ontology_term_ids=["ENSG00000182149"],
             organism_ontology_term_id="NCBITaxon:9606",
             disease_ontology_term_ids=[NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID],
-            tissue_ontology_term_ids=["UBERON:0002048"],
+            tissue_ontology_term_ids=["UBERON:0002048", "UBERON:0002113"],
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             dims = {
