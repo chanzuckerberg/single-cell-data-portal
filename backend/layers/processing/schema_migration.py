@@ -188,15 +188,17 @@ class SchemaMigrate(ProcessingLogic):
 
         # Get the datasets that were processed
         extra_info = self._retrieve_sfn_response("publish_and_cleanup", collection_version.collection_id.id)
-        processed_datasets = [d["dataset_version_id"] for d in extra_info["datasets"]]
+        processed_datasets = {d["dataset_id"]: d["dataset_version_id"] for d in extra_info["datasets"]}
 
         # Process datasets errors
         for dataset in collection_version.datasets:
+            dataset_id = dataset.dataset_id.id
             dataset_version_id = dataset.version_id.id
-            if dataset_version_id not in processed_datasets:
+            if dataset_id not in processed_datasets:
                 # skip datasets that were not processed
                 continue
-            key_prefix = self.get_key_prefix(dataset_version_id)
+            # filepath to clean-up uses dataset_version_id from the replaced version; accessing with dataset_id as key
+            key_prefix = self.get_key_prefix(processed_datasets[dataset_id])
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if not self._check_dataset_is_latest_schema_version(dataset):
                 errors.append(
@@ -205,7 +207,7 @@ class SchemaMigrate(ProcessingLogic):
                         "collection_id": collection_version.collection_id.id,
                         "collection_version_id": collection_version_id,
                         "dataset_version_id": dataset_version_id,
-                        "dataset_id": dataset.dataset_id.id,
+                        "dataset_id": dataset_id,
                         "rollback": False,
                     }
                 )
@@ -217,7 +219,7 @@ class SchemaMigrate(ProcessingLogic):
                         "collection_id": collection_version.collection_id.id,
                         "collection_version_id": collection_version_id,
                         "dataset_version_id": dataset_version_id,
-                        "dataset_id": dataset.dataset_id.id,
+                        "dataset_id": dataset_id,
                         "rollback": True,
                     }
                 )
