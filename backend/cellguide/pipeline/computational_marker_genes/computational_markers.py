@@ -41,6 +41,7 @@ CELLGUIDE_PIPELINE_NUM_CPUS = min(os.cpu_count(), os.getenv("CELLGUIDE_PIPELINE_
 
 
 def _process_cell_type__parallel(
+    *,
     i: int,
     cell_types_o: np.ndarray,
     e_sum_o: np.ndarray,
@@ -336,7 +337,14 @@ class MarkerGenesCalculator:
 
             results = [
                 delayed(_process_cell_type__parallel)(
-                    i, cell_types_o, e_sum_o, e_sqsum_o, n_cells_o, gene_index, combination, self.groupby_terms
+                    i=i,
+                    cell_types_o=cell_types_o,
+                    e_sum_o=e_sum_o,
+                    e_sqsum_o=e_sqsum_o,
+                    n_cells_o=n_cells_o,
+                    gene_index=gene_index,
+                    combination=combination,
+                    groupby_terms=self.groupby_terms,
                 )
                 for i in range(len(cell_types_o))
             ]
