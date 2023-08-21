@@ -138,7 +138,11 @@ class CanonicalMarkerGenesCompiler:
         with ThreadPoolExecutor() as executor:
             results = list(executor.map(fetch_doi_info, references))
 
-        refs, titles = zip(*[result for result in results if result is not None])
+        filtered_results = [result for result in results if result is not None]
+        if not filtered_results:
+            return "", ""
+
+        refs, titles = zip(*filtered_results)
         return ";;".join(refs), ";;".join(titles)
 
     def get_processed_asctb_table_entries(self) -> dict[str, ParsedAsctbTableEntry]:
@@ -155,12 +159,10 @@ class CanonicalMarkerGenesCompiler:
         """
 
         # DOI to citation mapping
-        parsed_table_entries = []
-
         results = [delayed(self._process_asct_table__parallel)(tissue) for tissue in self.asctb_data]
         logger.info(f"Getting processed ASCTB table entries for {len(self.asctb_data)} tissues...")
         with ProgressBar():
-            parsed_table_entries.extend(compute(*results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS))
+            parsed_table_entries = sum(compute(*results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS), [])
 
         # Drop duplicate entries if they exist
         parsed_table_entries = pd.DataFrame(parsed_table_entries).drop_duplicates().to_dict("records")
