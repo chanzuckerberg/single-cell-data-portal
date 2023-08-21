@@ -11,7 +11,11 @@ import {
   useState,
 } from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
+import {
+  EMPTY_ARRAY,
+  EMPTY_OBJECT,
+  EMPTY_SET,
+} from "src/common/constants/utils";
 import {
   CellTypeRow,
   generateTermsByKey,
@@ -296,6 +300,8 @@ export default memo(function HeatMap({
   // update displayedCellTypes and expandedTissues
   useEffect(() => {
     if (filteredCellTypes.length === 0) {
+      setDisplayedCellTypes(initialDisplayedCellTypeIds);
+      setExpandedTissues(EMPTY_SET as Set<string>);
       return;
     }
 
@@ -337,6 +343,7 @@ export default memo(function HeatMap({
     filteredCellTypes,
     filteredCellTypes.length,
     filteredTissueIds,
+    initialDisplayedCellTypeIds,
     setExpandedTissues,
     sortedCellTypesByTissueName,
     tissuesByName,
