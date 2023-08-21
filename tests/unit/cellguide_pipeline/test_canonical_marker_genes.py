@@ -14,13 +14,17 @@ from tests.test_utils.dict_compare import compare_dicts
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
+from tests.unit.cellguide_pipeline.constants import (
+    CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
+    CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
+)
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
 class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
     def test__canonical_marker_genes(self):
-        with open("tests/unit/cellguide_pipeline/fixtures/canonical_marker_genes.json", "r") as f:
+        with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CANONICAL_MARKER_GENES_FIXTURE_FILENAME}", "r") as f:
             expected__canonical_marker_genes = json.load(f)
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             wmg_tissues = [
@@ -55,7 +59,7 @@ class CanonicalMarkerGeneCompilerUtilsTests(unittest.TestCase):
             with self.subTest(doi=doi):
                 self.assertEqual(clean_doi(doi), expected)
 
-    @patch("requests.get")
+    @patch("backend.cellguide.pipeline.canonical_marker_genes.utils._get_response_from_url")
     def test__get_title_and_citation_from_doi(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200

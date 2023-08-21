@@ -9,11 +9,14 @@ from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 
-def run(output_directory) -> OntologyTreeBuilder:
+def run(output_directory, get_tree_builder_only=False) -> OntologyTreeBuilder:
     snapshot: WmgSnapshot = load_snapshot(snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION)
     cell_counts_df = snapshot.cell_counts_cube.df[:]
 
     tree_builder = OntologyTreeBuilder(cell_counts_df)
+    if get_tree_builder_only:
+        return tree_builder
+
     ontology_graph = tree_builder.get_ontology_tree()
 
     output_json(ontology_graph, f"{output_directory}/{ONTOLOGY_TREE_FILENAME}")
