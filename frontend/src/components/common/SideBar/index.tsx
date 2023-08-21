@@ -67,6 +67,7 @@ export default function SideBar({
     }
   };
 
+  // TODO: Need help fixing this
   useEffect(() => {
     if (!(disabled && !isExpanded) && wmgSideBar) handleExpandedClick(true);
   }, [forceOpen]);
