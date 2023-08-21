@@ -1,8 +1,10 @@
 import json
 import logging
-from typing import Dict, Tuple
+from typing import Tuple
 
 import pandas as pd
+from dask import compute, delayed
+from dask.diagnostics import ProgressBar
 
 from backend.cellguide.pipeline.canonical_marker_genes.types import (
     AnatomicalStructure,
@@ -14,7 +16,7 @@ from backend.cellguide.pipeline.canonical_marker_genes.utils import (
     clean_doi,
     get_title_and_citation_from_doi,
 )
-from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL
+from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL, CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.wmg.data.ontology_labels import ontology_term_label
 from backend.wmg.data.utils import setup_retry_session
@@ -102,7 +104,7 @@ class CanonicalMarkerGenesCompiler:
                 gene_names.append(name)
         return gene_symbols, gene_names
 
-    def _get_references(self, references: list[Reference], doi_to_citation: Dict[str, str]) -> Tuple[str, str]:
+    def _get_references(self, references: list[Reference], doi_to_citation: dict[str, str]) -> Tuple[str, str]:
         """
         Extracts the DOIs and citations from the given list of references.
         This function cleans the DOI and gets the title and formatted citation from the DOI.
@@ -111,7 +113,7 @@ class CanonicalMarkerGenesCompiler:
         ---------
         references - list[Reference]
             a list of references for a particular ASCTB table entry.
-        doi_to_citation - Dict[str,str]
+        doi_to_citation - dict[str,str]
             a dictionary mapping DOIs to citations.
 
         Returns
@@ -136,7 +138,7 @@ class CanonicalMarkerGenesCompiler:
                 titles.append(title)
         return ";;".join(refs), ";;".join(titles)
 
-    def get_processed_asctb_table_entries(self) -> Dict[str, ParsedAsctbTableEntry]:
+    def get_processed_asctb_table_entries(self) -> dict[str, ParsedAsctbTableEntry]:
         """
         Processes the ASCTB table entries and returns a dictionary mapping cell type ontology term IDs to
         ParsedAsctbTableEntry objects. The processing involves extracting relevant information from the ASCTB data
@@ -145,55 +147,20 @@ class CanonicalMarkerGenesCompiler:
 
         Returns
         -------
-        Dict[str, ParsedAsctbTableEntry]
+        dict[str, ParsedAsctbTableEntry]
             A dictionary mapping cell type ontology term IDs to ParsedAsctbTableEntry objects.
         """
 
         # DOI to citation mapping
-        doi_to_citation = {}
-
-        hashed_entries_seen = []
         parsed_table_entries = []
 
-        for i, tissue in enumerate(self.asctb_data):
-            version = self.asctb_data[tissue]["metadata"]["version"]
-            logger.info(
-                f"Getting processed ASCTB table entry for {tissue} tissue ({version}) ({i+1}/{len(self.asctb_data)})"
-            )
-            data = self.asctb_data[tissue]["data"]
+        results = [delayed(self._process_asct_table__parallel)(tissue) for tissue in enumerate(self.asctb_data)]
+        logger.info(f"Getting processed ASCTB table entries for {len(self.asctb_data)} tissues...")
+        with ProgressBar():
+            parsed_table_entries.extend(compute(*results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS))
 
-            for row in data:
-                cell_types = [celltype["id"] for celltype in row["cell_types"] if celltype["id"].startswith("CL:")]
-                if not cell_types or not row["biomarkers_gene"]:
-                    continue
-
-                tissue_id = self._get_tissue_id(
-                    [AnatomicalStructure(**entry) for entry in row["anatomical_structures"]]
-                )
-                gene_symbols, gene_names = self._get_gene_info(
-                    [GeneBiomarker(**entry) for entry in row["biomarkers_gene"]]
-                )
-                refs, titles = self._get_references(
-                    [Reference(**entry) for entry in row["references"]], doi_to_citation
-                )
-
-                for cell_type in cell_types:
-                    for index in range(len(gene_symbols)):
-                        symbol = gene_symbols[index]
-                        name = gene_names[index]
-
-                        entry = {
-                            "tissue": tissue_id,
-                            "symbol": symbol,
-                            "name": name,
-                            "publication": refs,
-                            "publication_titles": titles,
-                            "cell_type_ontology_term_id": cell_type,
-                        }
-                        hashed_dict = hash(json.dumps(entry))
-                        if hashed_dict not in hashed_entries_seen:
-                            parsed_table_entries.append(entry)
-                            hashed_entries_seen.append(entry)
+        # Drop duplicate entries if they exist
+        parsed_table_entries = pd.DataFrame(parsed_table_entries).drop_duplicates().to_dict("records")
 
         logger.info("Fetching tissue names from UBERON ontology...")
         tissues_in_parsed_table_entries = [i["tissue"] for i in parsed_table_entries]
@@ -271,3 +238,38 @@ class CanonicalMarkerGenesCompiler:
             gene_infos[cell_type] = [ParsedAsctbTableEntry(**entry) for entry in aggregated_gene_info]
 
         return gene_infos
+
+    def _process_asct_table__parallel(self, tissue: str) -> list[dict[str, str]]:
+        doi_to_citation = {}
+        hashed_entries_seen = []
+
+        data = self.asctb_data[tissue]["data"]
+
+        parsed_table_entries = []
+        for row in data:
+            cell_types = [celltype["id"] for celltype in row["cell_types"] if celltype["id"].startswith("CL:")]
+            if not cell_types or not row["biomarkers_gene"]:
+                continue
+
+            tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structures"]])
+            gene_symbols, gene_names = self._get_gene_info([GeneBiomarker(**entry) for entry in row["biomarkers_gene"]])
+            refs, titles = self._get_references([Reference(**entry) for entry in row["references"]], doi_to_citation)
+
+            for cell_type in cell_types:
+                for index in range(len(gene_symbols)):
+                    symbol = gene_symbols[index]
+                    name = gene_names[index]
+
+                    entry = {
+                        "tissue": tissue_id,
+                        "symbol": symbol,
+                        "name": name,
+                        "publication": refs,
+                        "publication_titles": titles,
+                        "cell_type_ontology_term_id": cell_type,
+                    }
+                    hashed_dict = hash(json.dumps(entry))
+                    if hashed_dict not in hashed_entries_seen:
+                        parsed_table_entries.append(entry)
+                        hashed_entries_seen.append(entry)
+        return parsed_table_entries
