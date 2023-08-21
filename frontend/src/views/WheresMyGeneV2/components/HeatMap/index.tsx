@@ -297,7 +297,7 @@ export default memo(function HeatMap({
     dispatch(setFilteredCellTypes(rawNewFilteredCellTypes as string[]));
   };
 
-  // update displayedCellTypes and expandedTissues
+  // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
   useEffect(() => {
     if (filteredCellTypes.length === 0) {
       setDisplayedCellTypes(initialDisplayedCellTypeIds);
