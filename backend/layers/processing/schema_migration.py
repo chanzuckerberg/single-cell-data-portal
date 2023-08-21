@@ -194,44 +194,52 @@ class SchemaMigrate(ProcessingLogic):
         for dataset in collection_version.datasets:
             dataset_id = dataset.dataset_id.id
             dataset_version_id = dataset.version_id.id
-            if dataset_id not in processed_datasets:
-                # skip datasets that were not processed
-                continue
             # filepath to clean-up uses dataset_version_id from the replaced version; accessing with dataset_id as key
             previous_dataset_version_id = processed_datasets[dataset_id]
-            key_prefix = self.get_key_prefix(previous_dataset_version_id)
+            _log_extras = {
+                "dataset_id": dataset_id,
+                "dataset_version_id": dataset_version_id,
+                "previous_dataset_version_id": previous_dataset_version_id,
+            }
+            if dataset_id not in processed_datasets:
+                self.logger.info("skipping dataset", extra=_log_extras)
+                continue
+            self.logger.info("checking dataset", extra=_log_extras)
+            key_prefix = self.get_key_prefix(dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if not self._check_dataset_is_latest_schema_version(dataset):
-                errors.append(
-                    {
-                        "message": "Did Not Migrate.",
-                        "collection_id": collection_version.collection_id.id,
-                        "collection_version_id": collection_version_id,
-                        "dataset_version_id": dataset_version_id,
-                        "dataset_id": dataset_id,
-                        "rollback": False,
-                    }
-                )
+                error = {
+                    "message": "Did Not Migrate.",
+                    "collection_id": collection_version.collection_id.id,
+                    "collection_version_id": collection_version_id,
+                    "dataset_version_id": dataset_version_id,
+                    "dataset_id": dataset_id,
+                    "rollback": False,
+                }
+                self.logger.error(error)
+                errors.append(error)
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                errors.append(
-                    {
-                        "message": dataset.status.validation_message,
-                        "dataset_status": dataset.status.to_dict(),
-                        "collection_id": collection_version.collection_id.id,
-                        "collection_version_id": collection_version_id,
-                        "dataset_version_id": dataset_version_id,
-                        "dataset_id": dataset_id,
-                        "rollback": True,
-                    }
-                )
-        if errors:
-            self._store_sfn_response("report", collection_version_id, errors)
-        elif can_publish:
-            self.business_logic.publish_collection_version(collection_version.version_id)
+                error = {
+                    "message": dataset.status.validation_message,
+                    "dataset_status": dataset.status.to_dict(),
+                    "collection_id": collection_version.collection_id.id,
+                    "collection_version_id": collection_version_id,
+                    "dataset_version_id": dataset_version_id,
+                    "dataset_id": dataset_id,
+                    "rollback": True,
+                }
+                self.logger.error(error)
+                errors.append(error)
+            else:
+                self.logger.info("checked dataset")
         self.logger.info(
             "Deleting files", extra={"artifact_bucket": self.artifact_bucket, "object_keys": object_keys_to_delete}
         )
         self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
+        if errors:
+            self._store_sfn_response("report", collection_version_id, errors)
+        elif can_publish:
+            self.business_logic.publish_collection_version(collection_version.version_id)
         return errors
 
     def _store_sfn_response(self, step_name, file_name, response: Dict[str, str]):
