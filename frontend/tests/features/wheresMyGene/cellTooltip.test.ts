@@ -60,6 +60,7 @@ describe("cell tooltip", () => {
 
           //expect the hover text to be displayed
           await expect(page.getByText(hoverText)).toBeVisible();
+          expect(hoverText).not.toContain("UBERON");
         },
         { page }
       );

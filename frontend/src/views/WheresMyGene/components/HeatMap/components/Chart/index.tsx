@@ -306,9 +306,13 @@ export default memo(function Chart({
       ],
     };
 
+    const cellTypeName = cellType.cellTypeName.startsWith("UBERON")
+      ? cellType.name
+      : cellType.cellTypeName;
+
     const secondPanel = {
       dataRows: [
-        { label: "Cell Type", value: cellType.cellTypeName },
+        { label: "Cell Type", value: cellTypeName },
         {
           label: "Tissue Composition",
           value: tissuePercentage + "%" || "",
