@@ -8,13 +8,17 @@ from tests.test_utils.dict_compare import compare_dicts
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
+from tests.unit.cellguide_pipeline.constants import (
+    CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
+    SOURCE_COLLECTIONS_FIXTURE_FILENAME,
+)
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
 class TestSourceCollectionsGenerator(unittest.TestCase):
     def test__source_collections_generator(self):
-        with open("tests/unit/cellguide_pipeline/fixtures/source_collections.json", "r") as f:
+        with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{SOURCE_COLLECTIONS_FIXTURE_FILENAME}", "r") as f:
             expected__source_collections = json.load(f)
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]

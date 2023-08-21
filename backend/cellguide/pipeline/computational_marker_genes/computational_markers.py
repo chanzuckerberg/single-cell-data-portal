@@ -1,7 +1,6 @@
 import concurrent.futures
 import itertools
 import logging
-import os
 from typing import Tuple
 
 import numpy as np
@@ -15,6 +14,7 @@ from backend.cellguide.pipeline.computational_marker_genes.utils import (
     query_gene_info_for_gene_description,
     run_ttest,
 )
+from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
 from backend.wmg.data.snapshot import WmgSnapshot
@@ -31,13 +31,6 @@ The groupby terms provided by the user determine the dimensions across which the
 For instance, users can stratify marker gene calculation across just organisms, each combination of organism and tissue, 
 or any arbitrary combinations of metadata dimensions.
 """
-
-# If CELLGUIDE_PIPELINE_NUM_CPUS is not set, use 24 CPUs by default
-# If the number of CPUs on the machine is less than 24, use the number of CPUs on the machine
-# 24 CPUs was chosen to balance memory usage and speed on a c6i.32xlarge EC2 machine
-# In trial runs, the memory usage did not exceed 50% of the available memory, which provides
-# ample buffer.
-CELLGUIDE_PIPELINE_NUM_CPUS = min(os.cpu_count(), os.getenv("CELLGUIDE_PIPELINE_NUM_CPUS", 24))
 
 
 def _process_cell_type__parallel(

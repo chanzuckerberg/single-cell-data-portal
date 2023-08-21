@@ -8,13 +8,17 @@ from tests.test_utils.dict_compare import compare_dicts
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
+from tests.unit.cellguide_pipeline.constants import (
+    CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
+    COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
+)
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
 class MarkerGeneCalculatorTests(unittest.TestCase):
     def test__marker_gene_calculation(self):
-        with open("tests/unit/cellguide_pipeline/fixtures/computational_marker_genes.json", "r") as f:
+        with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}", "r") as f:
             expected__computational_marker_genes = json.load(f)
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]
