@@ -533,12 +533,18 @@ describe("Cell Guide", () => {
 
         const nodesLocator = `[data-testid^='${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
 
-        // collapse node's children
-        const nodesBefore = await page.locator(nodesLocator).all();
-        const numNodesBefore = nodesBefore.length;
-
+        // Collapse node's children
         await tryUntil(
           async () => {
+            const nodesBefore = await page.locator(nodesLocator).all();
+            const numNodesBefore = nodesBefore.length;
+
+            /**
+             * (thuang): This is needed to ensure that we don't query the tree
+             * before it's rendered
+             */
+            expect(numNodesBefore).toBeGreaterThan(0);
+
             const node = page.getByTestId(
               `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
             );
