@@ -1,0 +1,181 @@
+  pw:api => selectors.setTestIdAttribute started +4ms
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +60ms
+  pw:api   "commit" event fired +18ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +46ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +5ms
+  pw:api   "commit" event fired +104ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +1ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +45ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +13ms
+  pw:api <= page.goto succeeded +150ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api   navigated to "about:blank" +25ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForLoadState succeeded +21ms
+  pw:api => locator.click started +2ms
+  pw:api   "networkidle" event fired +9ms
+  pw:api waiting for getByTestId('cell-type-name').first() +251ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +3s
+  pw:api   locator resolved to <div data-testid="cell-type-name" class="cell-type-na…>Abdomen</div> +578ms
+  pw:api attempting click action +56ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +79ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +143ms
+  pw:api   click action done +272ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +30ms
+  pw:api <= locator.click succeeded +38ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for locator('[data-testid="source-data-button"]') +46ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="source-d…>…</button> +56ms
+  pw:api attempting click action +20ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +99ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +20ms
+  pw:api   performing click action +79ms
+  pw:api   click action done +615ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +24ms
+  pw:api <= locator.click succeeded +255ms
+  pw:api => locator.count started +10ms
+  pw:api <= locator.count succeeded +20ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +195ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of locator('[data-testid="source-data-list"]') +49ms
+  pw:api <= locator.isVisible succeeded +92ms
+  pw:api => page.waitForTimeout started +39ms
+  pw:api <= page.waitForTimeout succeeded +297ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of locator('[data-testid="source-data-list"]') +44ms
+  pw:api <= locator.isVisible succeeded +78ms
+  pw:api => locator.getAttribute started +5ms
+  pw:api waiting for locator('[data-zr-dom-id*="zr"]').first() +16ms
+  pw:api   locator resolved to <canvas width="60" height="20" data-zr-dom-id="zr_0"></canvas> +12s
+  pw:api <= locator.getAttribute succeeded +80ms
+  pw:api => locator.count started +8ms
+  pw:api <= locator.count succeeded +28ms
+  pw:api => locator.all started +3ms
+  pw:api <= locator.all succeeded +5ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('disease-filter').getByRole('button').first() +10ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Disease" class…>…</button> +8ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +36ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +22ms
+  pw:api   click action done +457ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +4ms
+  pw:api <= locator.click succeeded +34ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +64ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +255ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +471ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByText('Loading').first() to be hidden +32ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +83ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +90ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +118ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +119ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +183ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +216ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +515ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +554ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +539ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +544ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +7s
+  pw:api <= locator.waitFor succeeded +535ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +54ms
+  pw:api => expect.toBeVisible started +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +9ms
+  pw:api waiting for locator('[data-testid="disease-filter"] [role="button"]').first() +0ms
+  pw:api   locator resolved to <div tabindex="0" role="button" class="MuiButtonBase-…>…</div> +9ms
+  pw:api <= expect.toBeVisible succeeded +11ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for locator('[data-testid="source-data-button"]') +12ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="source-d…>…</button> +5ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +12ms
+  pw:api   click action done +430ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +35ms
+  pw:api => locator.count started +3ms
+  pw:api <= locator.count succeeded +32ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +245ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of locator('[data-testid="source-data-list"]') +76ms
+  pw:api <= locator.isVisible succeeded +22ms
+  pw:api => page.waitForTimeout started +13ms
+  pw:api <= page.waitForTimeout succeeded +249ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of locator('[data-testid="source-data-list"]') +18ms
+  pw:api <= locator.isVisible succeeded +13ms
+  pw:api => locator.getAttribute started +15ms
+  pw:api waiting for locator('[data-zr-dom-id*="zr"]').first() +15ms
+  pw:api   locator resolved to <canvas width="60" height="20" data-zr-dom-id="zr_0"></canvas> +13ms
+  pw:api <= locator.getAttribute succeeded +13ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +6ms
+  pw:api => expect.toBeVisible started +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +10ms
+  pw:api waiting for getByTestId('disease-filter').locator('.MuiChip-deletable').first() +0ms
+  pw:api   locator resolved to <div tabindex="0" role="button" class="MuiButtonBase-…>…</div> +5ms
+  pw:api <= expect.toBeVisible succeeded +9ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +11ms
+  pw:api => locator.click started +1ms
+  pw:api => locator.count started +2ms
+  pw:api waiting for getByTestId('disease-filter').getByTestId('ClearIcon').first() +12ms
+  pw:api <= locator.count succeeded +4ms
+  pw:api => page.waitForTimeout started +5ms
+  pw:api   locator resolved to <svg focusable="false" aria-hidden="true" viewBox="0 …>…</svg> +20ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +11ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +14ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api <= page.waitForTimeout succeeded +57ms
+  pw:api => locator.all started +2ms
+  pw:api   navigations have finished +8s
+  pw:api <= locator.all succeeded +31ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.click succeeded +34ms
+  pw:api <= locator.count succeeded +9ms
+  pw:api taking page screenshot +2s
+  pw:api => browserContext.close started +118ms
+  pw:api <= browserContext.close succeeded +746ms
