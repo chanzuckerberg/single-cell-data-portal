@@ -11,13 +11,18 @@ from tests.test_utils.dict_compare import compare_dicts
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
+from tests.unit.cellguide_pipeline.constants import (
+    CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
+    CELLTYPE_METADATA_FIXTURE_FILENAME,
+    TISSUE_METADATA_FIXTURE_FILENAME,
+)
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
 class TestMetadataGenerator(unittest.TestCase):
     def test__cell_metadata_generator(self):
-        with open("tests/unit/cellguide_pipeline/fixtures/cell_metadata.json", "r") as f:
+        with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CELLTYPE_METADATA_FIXTURE_FILENAME}", "r") as f:
             expected__cell_metadata = json.load(f)
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]
@@ -32,7 +37,7 @@ class TestMetadataGenerator(unittest.TestCase):
             )
 
     def test__tissue_metadata_generator(self):
-        with open("tests/unit/cellguide_pipeline/fixtures/tissue_metadata.json", "r") as f:
+        with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{TISSUE_METADATA_FIXTURE_FILENAME}", "r") as f:
             expected__tissue_metadata = json.load(f)
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]
