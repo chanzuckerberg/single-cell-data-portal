@@ -21,7 +21,12 @@ import {
 } from "./style";
 import { LinkWrapper } from "src/components/Header/components/Nav/style";
 
-const LandingHeader: FC = () => {
+interface Props {
+  title?: string;
+  homeUrl?: string;
+}
+
+const LandingHeader: FC<Props> = ({ title = "", homeUrl }) => {
   const { pathname } = useRouter();
 
   const mobileNavTray = useRef<HTMLDivElement>(null);
@@ -40,8 +45,11 @@ const LandingHeader: FC = () => {
   return (
     <MobileNavWrapper>
       <MobileHomeLink>
-        <HomepageLink />
+        <HomepageLink homeUrl={homeUrl} />
       </MobileHomeLink>
+      <div id="asdfasfd" style={{ color: "white" }}>
+        {title}
+      </div>
       <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />

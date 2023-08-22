@@ -15,8 +15,10 @@ import { CELL_GUIDE_CARD_NAVIGATION_SIDEBAR } from "src/views/CellGuide/componen
 
 export default function CellGuideCardSidebar({
   items,
+  skinnyMode,
 }: {
   items: { elementRef: React.MutableRefObject<null>; title: string }[];
+  skinnyMode: boolean;
 }): JSX.Element {
   /**
    * (thuang): SDS `NavigationJumpTo` currently assumes `window` is always available,
@@ -36,9 +38,11 @@ export default function CellGuideCardSidebar({
     <CellGuideSidebarWrapper data-testid={CELL_GUIDE_CARD_NAVIGATION_SIDEBAR}>
       <Global styles={StickySidebarStyle} />
       <StickyWrapper>
-        <SearchBarWrapper>
-          <CellGuideCardSearchBar />
-        </SearchBarWrapper>
+        {!skinnyMode && (
+          <SearchBarWrapper>
+            <CellGuideCardSearchBar />
+          </SearchBarWrapper>
+        )}
         {isClient && (
           <NavigationJumpTo
             items={items}

@@ -46,7 +46,7 @@ export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  min-width: 640px;
+  // min-width: 640px;
   margin-bottom: 80px;
 `;
 
@@ -82,7 +82,7 @@ export const SearchBarPositioner = styled.div`
 
 export const SearchBarWrapper = styled.div`
   margin-bottom: 20px;
-  width: 240px;
+  width: 100%;
 `;
 
 export const StyledRightSideBar = styled(RightSideBar)`

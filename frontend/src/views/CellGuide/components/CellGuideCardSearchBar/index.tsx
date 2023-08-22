@@ -20,7 +20,11 @@ interface Entity {
   synonyms?: string[]; // only cell types (optionally) have synonyms
 }
 
-export default function CellGuideCardSearchBar(): JSX.Element {
+export default function CellGuideCardSearchBar({
+  autoFocus = false,
+}: {
+  autoFocus?: boolean;
+}): JSX.Element {
   const router = useRouter();
   const { data: tissueData } = useTissueCards();
   const { data: cellTypes } = useCellGuide();
@@ -71,6 +75,14 @@ export default function CellGuideCardSearchBar(): JSX.Element {
   return (
     <div data-testid={CELL_GUIDE_CARD_SEARCH_BAR}>
       <StyledAutocomplete
+        // sx={{
+        //   "& + .MuiAutocomplete-popper": {
+        //     width: "100% !important",
+        //   },
+        //   "& + .MuiAutocomplete-popper .MuiPaper-root": {
+        //     boxShadow: "none !important",
+        //   },
+        // }}
         open={open}
         value={inputValue}
         onChange={() => {
@@ -104,6 +116,7 @@ export default function CellGuideCardSearchBar(): JSX.Element {
         }}
         renderInput={(params) => (
           <TextField
+            autoFocus={autoFocus}
             {...params}
             data-testid={CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT}
             onFocus={handleFocus}

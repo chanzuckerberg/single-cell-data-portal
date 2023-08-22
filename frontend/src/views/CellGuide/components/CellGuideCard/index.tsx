@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useRouter } from "next/router";
 import {
   Wrapper,
@@ -7,14 +13,11 @@ import {
   StyledTag,
   CellGuideView,
   CellGuideCardHeaderInnerWrapper,
-  SearchBarWrapper,
   LEFT_RIGHT_PADDING_PX,
-  SearchBarPositioner,
   StyledRightSideBar,
   StyledSynonyms,
 } from "./style";
 import Description from "./components/Description";
-import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import MarkerGeneTables from "./components/MarkerGeneTables";
 import OntologyDagView from "../common/OntologyDagView";
 import FullScreenProvider from "../common/FullScreenProvider";
@@ -32,6 +35,8 @@ import {
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
+import { DispatchContext, StateContext } from "../../common/store";
+import { setCellGuideNav, setCellGuideTitle } from "../../common/store/actions";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -51,6 +56,9 @@ export default function CellGuideCard({
 }: Props): JSX.Element {
   const router = useRouter();
 
+  const { cellGuideTitle: titleizedCellTypeName } = useContext(StateContext);
+  const dispatch = useContext(DispatchContext);
+
   // Navigation
   const sectionRef0 = React.useRef(null);
   const sectionRef1 = React.useRef(null);
@@ -58,11 +66,25 @@ export default function CellGuideCard({
   const sectionRef3 = React.useRef(null);
 
   const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
+
+  const cellGuideSideBar = useMemo(() => {
+    return (
+      <CellGuideCardSidebar
+        skinnyMode={skinnyMode}
+        items={[
+          { elementRef: sectionRef0, title: "Intro" },
+          { elementRef: sectionRef1, title: "Cell Ontology" },
+          { elementRef: sectionRef2, title: "Marker Genes" },
+          { elementRef: sectionRef3, title: "Data" },
+        ]}
+      />
+    );
+  }, [skinnyMode]);
+
   // cell type id
   const { cellTypeId: cellTypeIdRaw } = router.query;
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
   const cellTypeName = name || "";
-  const titleizedCellTypeName = titleize(cellTypeName);
 
   const cellTypesById = useCellTypesById();
 
@@ -84,8 +106,14 @@ export default function CellGuideCard({
     throttledHandleResize();
     window.addEventListener("resize", throttledHandleResize);
 
+    if (dispatch) {
+      dispatch(setCellGuideTitle(titleize(cellTypeName)));
+
+      dispatch(setCellGuideNav(cellGuideSideBar));
+    }
+
     return () => window.removeEventListener("resize", throttledHandleResize);
-  }, [throttledHandleResize]);
+  }, [cellGuideSideBar, cellTypeName, dispatch, throttledHandleResize]);
 
   const [geneInfoGene, setGeneInfoGene] = useState<Gene["name"] | null>(null);
 
@@ -124,15 +152,6 @@ export default function CellGuideCard({
           {/* (thuang): Somehow we need a parent to prevent error:
           NotFoundError: Failed to execute 'insertBefore' on 'Node'
          */}
-          <div>
-            {skinnyMode && (
-              <SearchBarPositioner>
-                <SearchBarWrapper>
-                  <CellGuideCardSearchBar />
-                </SearchBarWrapper>
-              </SearchBarPositioner>
-            )}
-          </div>
           {/* Intro section */}
           <div ref={sectionRef0} id="section-0" data-testid="section-0" />
           <CellGuideCardHeader>
@@ -187,16 +206,9 @@ export default function CellGuideCard({
           <div ref={sectionRef3} id="section-3" data-testid="section-3" />
           <SourceDataTable cellTypeId={cellTypeId} />
         </Wrapper>
-        {!skinnyMode && (
-          <CellGuideCardSidebar
-            items={[
-              { elementRef: sectionRef0, title: "Intro" },
-              { elementRef: sectionRef1, title: "Cell Ontology" },
-              { elementRef: sectionRef2, title: "Marker Genes" },
-              { elementRef: sectionRef3, title: "Data" },
-            ]}
-          />
-        )}
+
+        {/* Side bar */}
+        {!skinnyMode && cellGuideSideBar}
       </CellGuideView>
       <StyledRightSideBar width={RIGHT_SIDEBAR_WIDTH_PX}>
         {geneInfoGene && (
