@@ -1,13 +1,13 @@
 import os
 
-ONTOLOGY_TREE_FILENAME = "ontologyTree.json"
-ONTOLOGY_TREE_STATE_PER_CELLTYPE_FILENAME = "ontologyTreeStatePerCellType.json"
-ONTOLOGY_TREE_STATE_PER_TISSUE_FILENAME = "ontologyTreeStatePerTissue.json"
-CANONICAL_MARKER_GENES_FILENAME = "canonicalMarkerGenes.json"
-COMPUTATIONAL_MARKER_GENES_FOLDERNAME = "computationalMarkerGenes"
-CELL_GUIDE_METADATA_FILENAME = "cellTypeMetadata.json"
-CELL_GUIDE_TISSUE_METADATA_FILENAME = "tissueMetadata.json"
-SOURCE_COLLECTIONS_FILENAME = "sourceCollections.json"
+ONTOLOGY_TREE_FILENAME = "ontology_graph.json"
+CELL_GUIDE_METADATA_FILENAME = "celltype_metadata.json"
+CELL_GUIDE_TISSUE_METADATA_FILENAME = "tissue_metadata.json"
+ONTOLOGY_TREE_STATE_PER_CELLTYPE_FOLDERNAME = "cell_type_ontology_tree_state"
+ONTOLOGY_TREE_STATE_PER_TISSUE_FOLDERNAME = "tissue_ontology_tree_state"
+CANONICAL_MARKER_GENES_FOLDERNAME = "canonical_marker_genes"
+COMPUTATIONAL_MARKER_GENES_FOLDERNAME = "computational_marker_genes"
+SOURCE_COLLECTIONS_FOLDERNAME = "source_collections"
 
 UBERON_BASIC_PERMANENT_URL_PRONTO = "http://purl.obolibrary.org/obo/uberon.obo"
 

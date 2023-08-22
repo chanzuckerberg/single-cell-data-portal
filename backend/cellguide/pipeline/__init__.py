@@ -18,7 +18,7 @@ def run_cellguide_pipeline():
     output_directory = f"cellguide_pipeline_output__{int(time.time())}"
 
     # Run ontology tree pipeline
-    ontology_tree = run_ontology_tree_pipeline(output_directory)
+    ontology_tree = run_ontology_tree_pipeline(output_directory=output_directory)
 
     # Generate cell guide cards, synonyms, and descriptions
     run_metadata_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
@@ -32,10 +32,10 @@ def run_cellguide_pipeline():
     # Generate computational marker genes from the CZI corpus
     run_computational_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
 
-    upload_cellguide_pipeline_output_to_s3(output_directory)
+    upload_cellguide_pipeline_output_to_s3(output_directory=output_directory)
 
 
-def upload_cellguide_pipeline_output_to_s3(output_directory: str):
+def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
     """
     If the pipeline is running in a deployed environment, then this function uploads
     the CellGuide snapshot to the corresponding environment's CellGuide data bucket.
