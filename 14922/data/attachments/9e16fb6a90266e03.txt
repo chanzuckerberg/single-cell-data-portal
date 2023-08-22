@@ -1,0 +1,3 @@
+INFO     backend.layers.processing.schema_migration:schema_migration.py:207 checking dataset
+INFO     backend.layers.processing.schema_migration:schema_migration.py:234 checked dataset
+INFO     backend.layers.processing.schema_migration:schema_migration.py:235 Deleting files
