@@ -1,0 +1,76 @@
+  pw:api => selectors.setTestIdAttribute started +4ms
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +8ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +54ms
+  pw:api   "commit" event fired +11ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +7ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +0ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +39ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +5ms
+  pw:api   "commit" event fired +82ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +4ms
+  pw:api <= page.goto succeeded +632ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api   navigated to "about:blank" +839ms
+  pw:api   "networkidle" event fired +572ms
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api => locator.click started +1ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api waiting for getByTestId('cell-guide-card-enriched-genes-table-selector') +25ms
+  pw:api   locator resolved to <button class="css-c7lv9m-TableSelectorButton e1mdzv35" …>Computational</button> +17ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +9ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +17ms
+  pw:api   click action done +254ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +80ms
+  pw:api <= locator.click succeeded +42ms
+  pw:api => locator.waitFor started +0ms
+  pw:api waiting for getByTestId('cell-guide-card-expression-score-tooltip') to be visible +42ms
+  pw:api   locator resolved to visible <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +35ms
+  pw:api <= locator.waitFor succeeded +44ms
+  pw:api => locator.isVisible started +0ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-expression-score-tooltip') +32ms
+  pw:api <= locator.isVisible succeeded +30ms
+  pw:api => locator.hover started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-expression-score-tooltip') +14ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +4ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +1ms
+  pw:api   element is visible and stable +33ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +10ms
+  pw:api   hover action done +17ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.hover succeeded +7ms
+  pw:api => locator.waitFor started +0ms
+  pw:api waiting for getByRole('tooltip') to be visible +12ms
+  pw:api   locator resolved to visible <div id="mui-42" role="tooltip" data-popper-placement…>…</div> +146ms
+  pw:api <= locator.waitFor succeeded +29ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByRole('tooltip') +17ms
+  pw:api <= locator.isVisible succeeded +39ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByRole('tooltip') +15ms
+  pw:api   locator resolved to <div id="mui-42" role="tooltip" data-popper-placement…>…</div> +43ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api taking page screenshot +331ms
+  pw:api => browserContext.close started +99ms
+  pw:api <= browserContext.close succeeded +2s
