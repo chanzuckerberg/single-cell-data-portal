@@ -402,11 +402,11 @@ const QUERY_MAPPING: {
   },
   GPT_DESCRIPTION: {
     queryKey: USE_GPT_DESCRIPTION_QUERY,
-    url: `/gpt_description/%s`,
+    url: `/gpt_descriptions/%s`,
   },
   GPT_SEO_DESCRIPTION: {
     queryKey: USE_GPT_SEO_DESCRIPTION_QUERY,
-    url: `/gpt_description/%s`,
+    url: `/gpt_seo_descriptions/%s`,
   },
   CELLTYPE_METADATA: {
     queryKey: USE_CELLTYPE_METADATA_QUERY,
