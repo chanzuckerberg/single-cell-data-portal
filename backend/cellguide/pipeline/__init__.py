@@ -18,19 +18,19 @@ def run_cellguide_pipeline():
     output_directory = f"cellguide_pipeline_output__{int(time.time())}"
 
     # Run ontology tree pipeline
-    ontology_tree = run_ontology_tree_pipeline(output_directory=output_directory)
+    run_ontology_tree_pipeline(output_directory=output_directory)
 
     # Generate cell guide cards, synonyms, and descriptions
-    run_metadata_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+    run_metadata_pipeline(output_directory=output_directory)
 
     # Generate canonical marker genes from ASCT-B (HUBMAP)
-    run_canonical_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+    run_canonical_marker_gene_pipeline(output_directory=output_directory)
 
     # Generate source data for each cell type
-    run_source_collections_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+    run_source_collections_pipeline(output_directory=output_directory)
 
     # Generate computational marker genes from the CZI corpus
-    run_computational_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+    run_computational_marker_gene_pipeline(output_directory=output_directory)
 
     upload_cellguide_pipeline_output_to_s3(output_directory=output_directory)
 

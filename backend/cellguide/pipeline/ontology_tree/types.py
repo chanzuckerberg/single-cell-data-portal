@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
-
 
 @dataclass
 class OntologyTreeState:
@@ -24,7 +22,6 @@ class OntologyTree:
 
 @dataclass
 class OntologyTreeData:
-    tree_builder: OntologyTreeBuilder
     ontology_graph: OntologyTree
     all_states_per_cell_type: OntologyTreeState
     all_states_per_tissue: OntologyTreeState

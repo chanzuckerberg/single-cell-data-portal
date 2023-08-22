@@ -50,8 +50,7 @@ python -m scripts.generate_cellguide_pipeline_test_fixtures
 def run_cellguide_pipeline():
     with TemporaryDirectory(), TemporaryDirectory(), load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
         # Get ontology tree data
-        ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
-        ontology_tree = ontology_tree_data.tree_builder
+        ontology_tree, ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
 
         # Get cell metadata
         cell_metadata = get_cell_metadata(ontology_tree=ontology_tree)
