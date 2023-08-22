@@ -3,6 +3,7 @@ import { PT_TEXT_COLOR } from "../common/theme";
 import Nav from "src/components/Header/components/Nav";
 import { NavDivider } from "src/components/Header/components/Nav/components/NavDivider/style";
 import { spacesL, spacesXl } from "src/common/theme";
+import { fontHeaderM } from "@czi-sds/components";
 
 export const HEADER_HEIGHT_PX = 48;
 
@@ -33,7 +34,7 @@ export const MainWrapper = styled.div`
     align-items: flex-start;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: ${HEADER_HEIGHT_PX}px;
+    // padding-top: ${HEADER_HEIGHT_PX}px;
   }
 `;
 
@@ -95,8 +96,8 @@ export const MobileNavTray = styled.div`
     position: absolute;
     transform: translateX(100vw);
     right: 0;
-    top: 0;
-    width: 80%;
+    top: ${HEADER_HEIGHT_PX}px;
+    width: 100%;
     height: 100vh;
     transition: transform 0.35s ease-out;
 
@@ -160,4 +161,9 @@ export const Navigation = styled(Nav)`
       width: 100%;
     }
   }
+`;
+
+export const HeaderTitle = styled.div`
+  ${fontHeaderM}
+  color: white;
 `;

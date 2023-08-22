@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import { ButtonIcon } from "@czi-sds/components";
-import { MobileHeaderWrapper } from "./style";
+import { MobileHeaderWrapper, StyledTitle } from "./style";
 import { StateContext } from "../../common/store";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
@@ -23,12 +23,14 @@ const CellGuideMobileHeader = () => {
             alignItems: "center",
             backgroundColor: "white",
             padding: "0 8px",
+            gap: 16,
           }}
         >
           {searchIsOpen ? (
             <div
-              style={{ width: "100%", padding: "8px 16px" }}
+              style={{ width: "100%", padding: "0px 16px" }}
               onBlur={() => {
+                // Hide the input box
                 setSearchIsOpen(false);
               }}
             >
@@ -36,6 +38,7 @@ const CellGuideMobileHeader = () => {
             </div>
           ) : (
             <>
+              {/* Flex Item Left */}
               <div id="cellguide-search-icon">
                 <ButtonIcon
                   sdsIcon="search"
@@ -45,7 +48,11 @@ const CellGuideMobileHeader = () => {
                   }}
                 />
               </div>
-              <div id="cellguide-topic">{cellGuideTitle}</div>
+
+              {/* Flex Item Middle */}
+              <StyledTitle id="cellguide-topic">{cellGuideTitle}</StyledTitle>
+
+              {/* Flex Item Right */}
               <div id="cellguide-nav-dropdown">
                 <ButtonIcon
                   sdsIcon="chevronDown"
@@ -61,6 +68,9 @@ const CellGuideMobileHeader = () => {
 
         {/* CellGuide Page Nav */}
         <div
+          onClick={() => {
+            setPageNavIsOpen(false);
+          }}
           style={{
             width: "100%",
             position: "relative",

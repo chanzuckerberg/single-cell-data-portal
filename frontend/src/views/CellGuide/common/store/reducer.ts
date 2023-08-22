@@ -41,24 +41,18 @@ function setCellGuideTitle(
   state: State,
   action: PayloadAction<State["cellGuideTitle"]>
 ): State {
-  console.log(action.payload, "******************");
-  const newState = {
+  return {
     ...state,
     cellGuideTitle: action.payload,
   };
-  console.log(newState);
-  return newState;
 }
 
 function setCellGuideNav(
   state: State,
   action: PayloadAction<State["cellGuideNav"]>
 ): State {
-  console.log(action.payload, "******************");
-  const newState = {
+  return {
     ...state,
     cellGuideNav: action.payload,
   };
-  console.log(newState);
-  return newState;
 }

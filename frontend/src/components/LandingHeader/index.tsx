@@ -8,6 +8,7 @@ import AuthButtons from "src/components/Header/components/AuthButtons";
 import { HomepageLink } from "../common/HomepageLink";
 import {
   DesktopHomeLink,
+  HeaderTitle,
   Left,
   MainWrapper,
   MobileHomeLink,
@@ -44,12 +45,15 @@ const LandingHeader: FC<Props> = ({ title = "", homeUrl }) => {
 
   return (
     <MobileNavWrapper>
+      {/* Left */}
       <MobileHomeLink>
         <HomepageLink homeUrl={homeUrl} />
       </MobileHomeLink>
-      <div id="asdfasfd" style={{ color: "white" }}>
-        {title}
-      </div>
+
+      {/* Middle */}
+      <HeaderTitle>{title}</HeaderTitle>
+
+      {/* Right */}
       <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />

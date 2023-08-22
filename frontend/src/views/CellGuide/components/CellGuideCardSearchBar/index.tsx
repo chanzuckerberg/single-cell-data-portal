@@ -75,14 +75,17 @@ export default function CellGuideCardSearchBar({
   return (
     <div data-testid={CELL_GUIDE_CARD_SEARCH_BAR}>
       <StyledAutocomplete
-        // sx={{
-        //   "& + .MuiAutocomplete-popper": {
-        //     width: "100% !important",
-        //   },
-        //   "& + .MuiAutocomplete-popper .MuiPaper-root": {
-        //     boxShadow: "none !important",
-        //   },
-        // }}
+        // This is used to style the autocomplete dropdown for mobile
+        sx={{
+          "@media (max-width: 768px)": {
+            "& + .MuiAutocomplete-popper": {
+              width: "100% !important",
+            },
+            "& + .MuiAutocomplete-popper .MuiPaper-root": {
+              boxShadow: "0 4px 4px 0 rgba(0,0,0, 0.25)", // Hides top shadow for seamless look
+            },
+          },
+        }}
         open={open}
         value={inputValue}
         onChange={() => {
