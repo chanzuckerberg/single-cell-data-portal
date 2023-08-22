@@ -1,2 +1,0 @@
-INFO     backend.layers.processing.schema_migration:schema_migration.py:288 Error files found
-INFO     backend.layers.processing.schema_migration:schema_migration.py:295 Report
