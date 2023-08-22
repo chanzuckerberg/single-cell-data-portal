@@ -10,7 +10,9 @@ function getCellGuideDataUrl(urlSuffix: string) {
   const [, ...domainParts] = currentUrl.hostname.split(".");
   const baseDomain = domainParts.join(".");
   currentUrl.hostname = `${CELLGUIDE_DATA_URL_PREFIX}.${baseDomain}`;
-  return `${currentUrl.toString()}${urlSuffix}`;
+  currentUrl.pathname = ""; // This line removes any routes after the base domain
+  // return `${currentUrl.toString()}${urlSuffix}`;
+  return `https://cellguide.cellxgene.dev.single-cell.czi.technology${urlSuffix}`;
 }
 
 export enum TYPES {
