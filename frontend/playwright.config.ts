@@ -59,12 +59,7 @@ if (!SHOULD_RETRY) {
 
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
 const PLAYWRIGHT_REPORTER = process.env.CI
-  ? ([
-      ["blob"],
-      ["github"],
-      ["line"],
-      ["allure-playwright"],
-    ] as ReporterDescription[])
+  ? ([["github"], ["line"], ["allure-playwright"]] as ReporterDescription[])
   : ([
       ["list"],
       [

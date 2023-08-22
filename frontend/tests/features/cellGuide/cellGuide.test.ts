@@ -257,34 +257,27 @@ describe("Cell Guide", () => {
           page
         );
 
-        await tryUntil(
-          async () => {
-            // set canonical marker genes table as active
-            await page
-              .getByTestId(
-                CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR
-              )
-              .click();
+        // set canonical marker genes table as active
+        await page
+          .getByTestId(CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+          .click();
 
-            const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
-            const columnHeaderElements = await page
-              .locator(`${tableSelector} thead th`)
-              .all();
-            // get text content of each column header
-            const columnHeaders = await Promise.all(
-              columnHeaderElements.map(async (element) => {
-                return await element.textContent();
-              })
-            );
-            expect(columnHeaders).toEqual(["Symbol", "Name", "References"]);
-            const rowElements = await page
-              .locator(`${tableSelector} tbody tr`)
-              .all();
-            const rowCount = rowElements.length;
-            expect(rowCount).toBeGreaterThan(1);
-          },
-          { page }
+        const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
+        const columnHeaderElements = await page
+          .locator(`${tableSelector} thead th`)
+          .all();
+        // get text content of each column header
+        const columnHeaders = await Promise.all(
+          columnHeaderElements.map(async (element) => {
+            return await element.textContent();
+          })
         );
+        expect(columnHeaders).toEqual(["Symbol", "Name", "References"]);
+        const rowElements = await page
+          .locator(`${tableSelector} tbody tr`)
+          .all();
+        const rowCount = rowElements.length;
+        expect(rowCount).toBeGreaterThan(1);
       });
 
       test("Canonical marker gene table is updated by the tissue dropdown", async ({
@@ -294,41 +287,33 @@ describe("Cell Guide", () => {
           `${TEST_URL}${ROUTES.CELL_GUIDE}/${T_CELL_CELL_TYPE_ID}`,
           page
         );
+        // set canonical marker genes table as active
+        await page
+          .getByTestId(CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+          .click();
 
-        await tryUntil(
-          async () => {
-            // set canonical marker genes table as active
-            await page
-              .getByTestId(
-                CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR
-              )
-              .click();
+        const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
+        const rowElementsBefore = await page
+          .locator(`${tableSelector} tbody tr`)
+          .all();
+        const rowCountBefore = rowElementsBefore.length;
+        expect(rowCountBefore).toBeGreaterThan(1);
 
-            const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
-            const rowElementsBefore = await page
-              .locator(`${tableSelector} tbody tr`)
-              .all();
-            const rowCountBefore = rowElementsBefore.length;
-            expect(rowCountBefore).toBeGreaterThan(1);
-
-            const dropdown = page.getByTestId(
-              CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN
-            );
-            await waitForElementAndClick(dropdown);
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown"); // selects kidney
-            await dropdown.press("Enter");
-
-            const rowElementsAfter = await page
-              .locator(`${tableSelector} tbody tr`)
-              .all();
-            const rowCountAfter = rowElementsAfter.length;
-            expect(rowCountAfter).toBeGreaterThan(1);
-            expect(rowCountAfter).not.toBe(rowCountBefore);
-          },
-          { page }
+        const dropdown = page.getByTestId(
+          CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN
         );
+        await waitForElementAndClick(dropdown);
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown");
+        await dropdown.press("ArrowDown"); // selects kidney
+        await dropdown.press("Enter");
+
+        const rowElementsAfter = await page
+          .locator(`${tableSelector} tbody tr`)
+          .all();
+        const rowCountAfter = rowElementsAfter.length;
+        expect(rowCountAfter).toBeGreaterThan(1);
+        expect(rowCountAfter).not.toBe(rowCountBefore);
       });
     });
 
@@ -533,18 +518,12 @@ describe("Cell Guide", () => {
 
         const nodesLocator = `[data-testid^='${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
 
-        // Collapse node's children
+        // collapse node's children
+        const nodesBefore = await page.locator(nodesLocator).all();
+        const numNodesBefore = nodesBefore.length;
+
         await tryUntil(
           async () => {
-            const nodesBefore = await page.locator(nodesLocator).all();
-            const numNodesBefore = nodesBefore.length;
-
-            /**
-             * (thuang): This is needed to ensure that we don't query the tree
-             * before it's rendered
-             */
-            expect(numNodesBefore).toBeGreaterThan(0);
-
             const node = page.getByTestId(
               `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
             );
@@ -747,18 +726,6 @@ describe("Cell Guide", () => {
         await goToPage(
           `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
           page
-        );
-
-        await tryUntil(
-          async () => {
-            const emptyState = await page
-              .getByText(
-                "marker genes for this cell type are unavailable at this time"
-              )
-              .all();
-            expect(emptyState.length).toBe(0);
-          },
-          { page }
         );
 
         const navbar = page.getByTestId(CELL_GUIDE_CARD_NAVIGATION_SIDEBAR);

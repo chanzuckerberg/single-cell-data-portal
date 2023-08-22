@@ -57,21 +57,14 @@ const TEST_ENVS_DEV_STAGING = ["dev", "staging"];
 
 export const isDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
 
-const GO_TO_PAGE_TIMEOUT_MS = 2 * 60 * 1000;
+const GO_TO_PAGE_TIMEOUT_MS = 120 * 1000;
 
 export async function goToPage(
   url: string = TEST_URL,
   page: Page
 ): Promise<void> {
-  await tryUntil(
-    async () => {
-      await Promise.all([
-        page.waitForLoadState("networkidle"),
-        page.goto(url, { timeout: GO_TO_PAGE_TIMEOUT_MS }),
-      ]);
-    },
-    { page }
-  );
+  await page.goto(url, { timeout: GO_TO_PAGE_TIMEOUT_MS });
+  await page.waitForLoadState("networkidle");
 }
 
 export async function login(page: Page): Promise<void> {
