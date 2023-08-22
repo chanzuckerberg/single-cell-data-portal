@@ -43,7 +43,8 @@ import {
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 
 import {
-  CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN,
+  CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
+  CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
@@ -53,7 +54,6 @@ import {
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
   CELL_GUIDE_CARD_ENRICHED_GENES_TABLE,
   CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR,
-  CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
   EXPRESSION_SCORE_TOOLTIP_TEST_ID,
   MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
   MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
@@ -300,7 +300,7 @@ describe("Cell Guide", () => {
         expect(rowCountBefore).toBeGreaterThan(1);
 
         const dropdown = page.getByTestId(
-          CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN
+          CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN
         );
         await waitForElementAndClick(dropdown);
         await dropdown.press("ArrowDown");
@@ -320,6 +320,40 @@ describe("Cell Guide", () => {
           .all();
         const rowCountAfter = rowElementsAfter.length;
         expect(rowCountAfter).toBeGreaterThan(1);
+        expect(rowCountAfter).not.toBe(rowCountBefore);
+      });
+
+      test("Canonical marker gene table is updated by the organism dropdown", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_GUIDE}/${T_CELL_CELL_TYPE_ID}`,
+          page
+        );
+        // set canonical marker genes table as active
+        await page
+          .getByTestId(CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+          .click();
+
+        const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
+        const rowElementsBefore = await page
+          .locator(`${tableSelector} tbody tr`)
+          .all();
+        const rowCountBefore = rowElementsBefore.length;
+        expect(rowCountBefore).toBeGreaterThanOrEqual(1);
+
+        const dropdown = page.getByTestId(
+          CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
+        );
+        await waitForElementAndClick(dropdown);
+        await dropdown.press("ArrowDown"); // selects Macaca Mulatta
+        await dropdown.press("Enter");
+
+        const rowElementsAfter = await page
+          .locator(`${tableSelector} tbody tr`)
+          .all();
+        const rowCountAfter = rowElementsAfter.length;
+        expect(rowCountAfter).toBe(0);
         expect(rowCountAfter).not.toBe(rowCountBefore);
       });
     });
@@ -402,7 +436,7 @@ describe("Cell Guide", () => {
               await rowElementsBefore[0].textContent();
 
             const dropdown = page.getByTestId(
-              CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM
+              CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
             await dropdown.press("ArrowDown");
@@ -447,7 +481,7 @@ describe("Cell Guide", () => {
               await rowElementsBefore[0].textContent();
 
             const dropdown = page.getByTestId(
-              CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN
+              CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
             await dropdown.press("ArrowDown");

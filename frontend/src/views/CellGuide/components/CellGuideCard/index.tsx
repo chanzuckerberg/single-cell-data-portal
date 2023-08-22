@@ -28,7 +28,8 @@ import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { useCellTypesById } from "src/common/queries/cellGuide";
 import {
-  CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN,
+  CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
+  CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
@@ -93,15 +94,19 @@ export default function CellGuideCard({
 
   const [geneInfoGene, setGeneInfoGene] = useState<Gene["name"] | null>(null);
 
-  const {
-    uniqueOrganisms: organismsForDropdown,
-    uniqueTissues: organsForDropdown,
-  } = useMarkerGenesTableTissueAndOrganismFilterListForCelltype(cellTypeId);
+  const { uniqueOrganisms, uniqueTissues } =
+    useMarkerGenesTableTissueAndOrganismFilterListForCelltype(cellTypeId);
 
-  const [selectedOrgan, setSelectedOrgan] = useState(organsForDropdown[0]);
+  const [selectedTissue, setSelectedTissue] = useState(uniqueTissues[0]);
 
-  const handleChangeOrgan = (event: SelectChangeEvent<unknown>) => {
-    setSelectedOrgan(event.target.value as string);
+  const handleChangeTissue = (event: SelectChangeEvent<unknown>) => {
+    setSelectedTissue(event.target.value as string);
+  };
+
+  const [selectedOrganism, setSelectedOrganism] = useState(uniqueOrganisms[0]);
+
+  const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
+    setSelectedOrganism(event.target.value as string);
   };
 
   function handleCloseGeneInfoSideBar() {
@@ -170,12 +175,17 @@ export default function CellGuideCard({
                 />
               </a>
             </CellGuideCardHeaderInnerWrapper>
-
             <DropdownSelect
-              handleChange={handleChangeOrgan}
-              options={organsForDropdown}
-              selectedOption={selectedOrgan}
-              testId={CELL_GUIDE_CARD_GLOBAL_ORGAN_FILTER_DROPDOWN}
+              handleChange={handleChangeOrganism}
+              options={uniqueOrganisms}
+              selectedOption={selectedOrganism}
+              testId={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+            />
+            <DropdownSelect
+              handleChange={handleChangeTissue}
+              options={uniqueTissues}
+              selectedOption={selectedTissue}
+              testId={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
             />
           </CellGuideCardHeader>
 
@@ -203,7 +213,8 @@ export default function CellGuideCard({
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}
-            organName={selectedOrgan}
+            tissueName={selectedTissue}
+            organismName={selectedOrganism}
           />
 
           {/* Source Data section */}

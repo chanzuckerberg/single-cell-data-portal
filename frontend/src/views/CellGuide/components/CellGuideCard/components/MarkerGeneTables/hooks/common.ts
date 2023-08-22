@@ -1,7 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
-  CanonicalMarkersQueryResponse,
-  EnrichedGenesQueryResponse,
   useCanonicalMarkers,
   useEnrichedGenes,
 } from "src/common/queries/cellGuide";
@@ -13,11 +11,6 @@ export function useMarkerGenesTableTissueAndOrganismFilterListForCelltype(
   uniqueTissues: string[];
   uniqueOrganisms: string[];
 } {
-  const [computationalMarkerGenes, setComputationalMarkerGenes] =
-    useState<EnrichedGenesQueryResponse>([]);
-  const [canonicalMarkerGenes, setCanonicalMarkerGenes] =
-    useState<CanonicalMarkersQueryResponse>([]);
-
   const { data: enrichedGenes } = useEnrichedGenes(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
 
@@ -26,20 +19,16 @@ export function useMarkerGenesTableTissueAndOrganismFilterListForCelltype(
     const organisms = new Set<string>([HOMO_SAPIENS]);
 
     if (canonicalMarkers) {
-      setCanonicalMarkerGenes(canonicalMarkers);
+      for (const markerGene of canonicalMarkers) {
+        tissues.add(markerGene.tissue);
+      }
     }
 
     if (enrichedGenes) {
-      setComputationalMarkerGenes(enrichedGenes);
-    }
-
-    for (const markerGene of canonicalMarkerGenes) {
-      tissues.add(markerGene.tissue);
-    }
-
-    for (const markerGene of computationalMarkerGenes) {
-      tissues.add(markerGene.tissue);
-      organisms.add(markerGene.organism);
+      for (const markerGene of enrichedGenes) {
+        tissues.add(markerGene.tissue);
+        organisms.add(markerGene.organism);
+      }
     }
 
     const tissueList = Array.from(tissues).sort((a, b) => {
@@ -58,10 +47,5 @@ export function useMarkerGenesTableTissueAndOrganismFilterListForCelltype(
       uniqueTissues: tissueList,
       uniqueOrganisms: organismList,
     };
-  }, [
-    canonicalMarkerGenes,
-    canonicalMarkers,
-    computationalMarkerGenes,
-    enrichedGenes,
-  ]);
+  }, [canonicalMarkers, enrichedGenes]);
 }

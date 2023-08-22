@@ -30,8 +30,6 @@ import {
   MarkerGeneTooltipSubtext,
 } from "./style";
 import Table from "../common/Table";
-import DropdownSelect from "../common/DropdownSelect";
-import { SelectChangeEvent } from "@mui/material/Select";
 import { Pagination } from "@mui/material";
 import {
   CanonicalMarkersQueryResponse,
@@ -51,7 +49,6 @@ import {
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
   CELL_GUIDE_CARD_ENRICHED_GENES_TABLE,
   CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR,
-  CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM,
   EXPRESSION_SCORE_TOOLTIP_TEST_ID,
   MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
   MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
@@ -238,19 +235,19 @@ interface Props {
   cellTypeId: string;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
   cellTypeName: string;
-  organName: string;
+  tissueName: string;
+  organismName: string;
 }
 
 const MarkerGeneTables = ({
   cellTypeId,
   cellTypeName,
   setGeneInfoGene,
-  organName,
+  tissueName,
+  organismName,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
-  const [selectedOrganismComputational, setSelectedOrganismComputational] =
-    useState("");
   const [computationalMarkerGenes, setComputationalMarkerGenes] =
     useState<EnrichedGenesQueryResponse>([]);
   const [canonicalMarkerGenes, setCanonicalMarkerGenes] =
@@ -273,27 +270,19 @@ const MarkerGeneTables = ({
 
   const [page, setPage] = useState(1);
 
-  const {
-    uniqueOrganisms: uniqueOrganismsComputational,
-    computationalMarkerGeneTableData,
-    selectedOrganismFilter: selectedOrganismFilterComputational,
-  } = useComputationalMarkerGenesTableRowsAndFilters({
-    genes: computationalMarkerGenes,
-    selectedOrgan: organName,
-    selectedOrganism: selectedOrganismComputational,
-  });
+  const { computationalMarkerGeneTableData } =
+    useComputationalMarkerGenesTableRowsAndFilters({
+      genes: computationalMarkerGenes,
+      selectedOrgan: tissueName,
+      selectedOrganism: organismName,
+    });
 
-  const {
-    uniqueOrganisms: uniqueOrganismsCanonical,
-    canonicalMarkerGeneTableData,
-  } = useCanonicalMarkerGenesTableRowsAndFilters({
-    genes: canonicalMarkerGenes,
-    selectedOrgan: organName,
-  });
-
-  const uniqueOrganisms = activeTable
-    ? uniqueOrganismsComputational
-    : uniqueOrganismsCanonical;
+  const { canonicalMarkerGeneTableData } =
+    useCanonicalMarkerGenesTableRowsAndFilters({
+      genes: canonicalMarkerGenes,
+      selectedOrgan: tissueName,
+      selectedOrganism: organismName,
+    });
 
   const tableRows: TableRow[] = useMemo(
     () =>
@@ -386,12 +375,6 @@ const MarkerGeneTables = ({
     .map((row) => row.symbolId)
     .join("%2C")}&cellTypes=${cellTypeName.replace(" ", "+")}`;
 
-  const handleChangeOrganismComputational = (
-    event: SelectChangeEvent<unknown>
-  ) => {
-    setSelectedOrganismComputational(event.target.value as string);
-  };
-
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
   const tableComponent = useMemo(
     () =>
@@ -450,14 +433,6 @@ const MarkerGeneTables = ({
             <TableTitle>Marker Genes</TableTitle>
           </TableTitleInnerWrapper>
           <TableTitleInnerWrapper>
-            {activeTable === 1 && uniqueOrganisms.length > 0 && (
-              <DropdownSelect
-                handleChange={handleChangeOrganismComputational}
-                options={uniqueOrganisms}
-                selectedOption={selectedOrganismFilterComputational}
-                testId={CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM}
-              />
-            )}
             <Link
               url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
               label="Open in Gene Expression"

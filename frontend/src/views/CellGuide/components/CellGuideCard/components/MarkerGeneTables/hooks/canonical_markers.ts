@@ -76,19 +76,19 @@ function _getReferenceData(
 
 export function useCanonicalMarkerGenesTableRowsAndFilters({
   genes,
+  selectedOrganism,
   selectedOrgan,
 }: {
   genes: CanonicalMarkersQueryResponse;
+  selectedOrganism: string;
   selectedOrgan: string;
 }): {
   canonicalMarkerGeneTableData: CanonicalMarkerGeneTableData[];
-  uniqueOrganisms: string[];
 } {
   return useMemo(() => {
-    if (!genes)
+    if (!genes || selectedOrganism != HOMO_SAPIENS)
       return {
         canonicalMarkerGeneTableData: [],
-        uniqueOrganisms: [],
       };
 
     // get sorted organs
@@ -97,9 +97,8 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
       ? ""
       : selectedOrgan;
 
-    const sortedOrganisms = [HOMO_SAPIENS]; // ASCTB tables only report data for humans
-
     const rows: CanonicalMarkerGeneTableData[] = [];
+
     const publicationTitlesToIndex = _getPublicationTitlesToIndex(
       genes,
       selectedOrganFilter
@@ -131,7 +130,6 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
 
     return {
       canonicalMarkerGeneTableData: rows,
-      uniqueOrganisms: sortedOrganisms,
     };
-  }, [genes, selectedOrgan]);
+  }, [genes, selectedOrgan, selectedOrganism]);
 }
