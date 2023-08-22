@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def run_cellguide_pipeline():
-    output_directory = f"cellguide_pipeline_output__{int(time.time())}"
+    output_directory = f"cellguide_snapshot__{int(time.time())}"
 
     # Run ontology tree pipeline
     run_ontology_tree_pipeline(output_directory=output_directory)
@@ -63,7 +63,21 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
         return
 
     logger.info(f"Uploading the pipeline output at {output_directory} to {bucket_path}")
-    sync_command = ["aws", "s3", "sync", f"{output_directory}/", bucket_path, "--quiet"]
+    sync_command = ["aws", "s3", "sync", f"{output_directory}/", f"{bucket_path}{output_directory}", "--quiet"]
+
+    with open("latest_snapshot_identifier", "w") as file:
+        file.write(output_directory.split("__")[1])
+
+    copy_command = [
+        "aws",
+        "s3",
+        "cp",
+        "latest_snapshot_identifier",
+        f"{bucket_path}latest_snapshot_identifier",
+        "--quiet",
+    ]
+    subprocess.run(copy_command)
+
     subprocess.run(sync_command)
 
 
