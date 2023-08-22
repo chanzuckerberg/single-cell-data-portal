@@ -1,6 +1,7 @@
 import logging
 
 from backend.cellguide.pipeline.computational_marker_genes.computational_markers import MarkerGenesCalculator
+from backend.cellguide.pipeline.computational_marker_genes.types import ComputationalMarkerGenes
 from backend.cellguide.pipeline.constants import COMPUTATIONAL_MARKER_GENES_FOLDERNAME
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json
@@ -56,7 +57,7 @@ def get_marker_genes_per_and_across_tissues(*, snapshot: WmgSnapshot, all_cell_t
     return marker_genes
 
 
-def output_marker_genes(marker_genes: dict, output_directory: str):
+def output_marker_genes(marker_genes: dict[str, list[ComputationalMarkerGenes]], output_directory: str):
     """
     This function outputs the marker genes to a specified directory. Each cell type will be output to its own JSON file.
 
