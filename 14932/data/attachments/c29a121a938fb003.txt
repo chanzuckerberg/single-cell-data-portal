@@ -1,0 +1,81 @@
+  pw:api => selectors.setTestIdAttribute started +12ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +38ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +8ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +0ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +36ms
+  pw:api => page.waitForResponse started +3ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +57ms
+  pw:api   "commit" event fired +117ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +41ms
+  pw:api   navigated to "about:blank" +29ms
+  pw:api <= page.goto succeeded +56ms
+  pw:api   "networkidle" event fired +3s
+  pw:api =>  started +642ms
+  pw:api <= page.waitForResponse succeeded +2ms
+  pw:api => locator.click started +1ms
+  pw:api <=  succeeded +11ms
+  pw:api waiting for getByTestId('add-gene-btn') +35ms
+  pw:api   locator resolved to <button tabindex="0" type="button" sdssize="medium" id="…>…</button> +55ms
+  pw:api attempting click action +10ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +272ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +14ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +21ms
+  pw:api => keyboard.press started +6ms
+  pw:api <= keyboard.press succeeded +100ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +85ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +6s
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +107ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByTestId('gene-name-TNMD') +40ms
+  pw:api   locator resolved to <span data-testid="gene-name-TNMD" class="gene-name-TN…>TNMD</span> +19ms
+  pw:api <= locator.textContent succeeded +53ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('gene-name-TNMD') +35ms
+  pw:api   locator resolved to <span data-testid="gene-name-TNMD" class="gene-name-TN…>TNMD</span> +38ms
+  pw:api attempting hover action +4ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +67ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +52ms
+  pw:api   performing hover action +68ms
+  pw:api   hover action done +32ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +15ms
+  pw:api <= locator.hover succeeded +16ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api expect.toBeVisible with timeout 10000ms +32ms
+  pw:api waiting for getByTestId('gene-info-icon-TNMD') +0ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" alt="disp…/> +24ms
+  pw:api <= expect.toBeVisible succeeded +33ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +37ms
+  pw:api waiting for getByTestId('gene-delete-icon-TNMD') +0ms
+  pw:api   locator resolved to <div data-testid="gene-delete-icon-TNMD" class="gene-…>…</div> +37ms
+  pw:api <= expect.toBeVisible succeeded +36ms
+  pw:api taking page screenshot +753ms
+  pw:api => browserContext.close started +211ms
+  pw:api <= browserContext.close succeeded +850ms
