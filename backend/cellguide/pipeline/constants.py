@@ -23,3 +23,5 @@ HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID = "NCBITaxon:9606"
 # In trial runs, the memory usage did not exceed 50% of the available memory, which provides
 # ample buffer.
 CELLGUIDE_PIPELINE_NUM_CPUS = min(os.cpu_count(), os.getenv("CELLGUIDE_PIPELINE_NUM_CPUS", 24))
+
+CELL_GUIDE_DATA_BUCKET_PATH_PREFIX = "s3://cellguide-data-public-"
