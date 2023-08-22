@@ -82,7 +82,7 @@ def are_cell_types_colinear(cell_type1, cell_type2):
 
 
 def rollup_across_cell_type_descendants(
-    df, cell_type_col="cell_type_ontology_term_id", ignore_cols=None
+    df, cell_type_col="cell_type_ontology_term_id", parallel=True, ignore_cols=None
 ) -> pd.DataFrame:
     """
     Aggregate values for each cell type across its descendants in the input dataframe.
@@ -105,6 +105,10 @@ def rollup_across_cell_type_descendants(
 
     cell_type_col : str, optional, default="cell_type_ontology_term_id"
         Name of the column in the input dataframe containing the cell type ontology term IDs.
+
+    parallel : bool, optional, default=True
+        If True, uses numba's `prange` to parallelize the rollup operation.
+        Set to False if invoking this function in parallel subprocesses.
 
     ignore_cols : list, optional, default=None
         List of column names to ignore when rolling up the numeric columns.
@@ -144,7 +148,7 @@ def rollup_across_cell_type_descendants(
     array_to_sum[tuple(dim_indices)] = numeric_df.to_numpy()
     cell_types = cell_type_column.unique()
 
-    summed = rollup_across_cell_type_descendants_array(array_to_sum, cell_types)
+    summed = rollup_across_cell_type_descendants_array(array_to_sum, cell_types, parallel=parallel)
     # extract numeric data and write back into the dataframe
     summed = summed[tuple(dim_indices)]
     dtypes = numeric_df.dtypes
@@ -155,7 +159,7 @@ def rollup_across_cell_type_descendants(
     return df
 
 
-def rollup_across_cell_type_descendants_array(array_to_sum, cell_types) -> np.ndarray:
+def rollup_across_cell_type_descendants_array(array_to_sum, cell_types, parallel=True) -> np.ndarray:
     """
     Aggregate values for each cell type across its descendants in the input array.
     Cell types must be the first dimension of the input array.
@@ -168,6 +172,10 @@ def rollup_across_cell_type_descendants_array(array_to_sum, cell_types) -> np.nd
 
     cell_types : list
         List of cell type ontology term IDs corresponding to the first dimension of the input
+
+    parallel : bool, optional, default=True
+        If True, uses numba's `prange` to parallelize the rollup operation.
+        Set to False if invoking this function in parallel subprocesses.
 
     Returns
     -------
@@ -191,13 +199,24 @@ def rollup_across_cell_type_descendants_array(array_to_sum, cell_types) -> np.nd
 
     # roll up the multi-dimensional array across cell types (first axis)
     summed = np.zeros_like(array_to_sum)
-    _sum_array_elements(array_to_sum, summed, descendants_indexes, linear_indices)
+    if parallel:
+        _sum_array_elements__parallel(array_to_sum, summed, descendants_indexes, linear_indices)
+    else:
+        _sum_array_elements(array_to_sum, summed, descendants_indexes, linear_indices)
     return summed
 
 
 @nb.njit(parallel=True, fastmath=True, nogil=True)
-def _sum_array_elements(array, summed, descendants_indexes, linear_indices):
+def _sum_array_elements__parallel(array, summed, descendants_indexes, linear_indices):
     for i in nb.prange(len(linear_indices) - 1):
+        index = descendants_indexes[linear_indices[i] : linear_indices[i + 1]]
+        for j in index:
+            summed[i] += array[j]
+
+
+@nb.njit(fastmath=True, nogil=True)
+def _sum_array_elements(array, summed, descendants_indexes, linear_indices):
+    for i in range(len(linear_indices) - 1):
         index = descendants_indexes[linear_indices[i] : linear_indices[i + 1]]
         for j in index:
             summed[i] += array[j]

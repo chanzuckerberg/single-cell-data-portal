@@ -4,10 +4,6 @@ import { Button } from "@czi-sds/components";
 
 export const StyledTooltip = styled.div`
   text-align: left;
-  font-size: 13px;
-  line-height: 20px;
-  font-weight: 500;
-  padding: 8px 14px;
   width: 100%;
 
   a {

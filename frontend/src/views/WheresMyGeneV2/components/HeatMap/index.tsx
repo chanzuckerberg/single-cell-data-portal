@@ -11,7 +11,11 @@ import {
   useState,
 } from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
+import {
+  EMPTY_ARRAY,
+  EMPTY_OBJECT,
+  EMPTY_SET,
+} from "src/common/constants/utils";
 import {
   CellTypeRow,
   generateTermsByKey,
@@ -293,9 +297,11 @@ export default memo(function HeatMap({
     dispatch(setFilteredCellTypes(rawNewFilteredCellTypes as string[]));
   };
 
-  // update displayedCellTypes and expandedTissues
+  // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
   useEffect(() => {
     if (filteredCellTypes.length === 0) {
+      setDisplayedCellTypes(initialDisplayedCellTypeIds);
+      setExpandedTissues(EMPTY_SET as Set<string>);
       return;
     }
 
@@ -337,6 +343,7 @@ export default memo(function HeatMap({
     filteredCellTypes,
     filteredCellTypes.length,
     filteredTissueIds,
+    initialDisplayedCellTypeIds,
     setExpandedTissues,
     sortedCellTypesByTissueName,
     tissuesByName,
@@ -393,11 +400,9 @@ export default memo(function HeatMap({
     <>
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
-          <CellTypeFilterContainer
-            id="celltype-filter-container"
-            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-          >
+          <CellTypeFilterContainer id="celltype-filter-container">
             <StyledAutocomplete
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               multiple
               value={filteredCellTypes}
               onChange={handleFilteredCellTypesChange}
