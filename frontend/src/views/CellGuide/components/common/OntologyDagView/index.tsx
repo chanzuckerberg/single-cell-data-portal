@@ -13,10 +13,10 @@ import {
 import { Zoom } from "@visx/zoom";
 import { RectClipPath } from "@visx/clip-path";
 import {
-  InitialCellOntologyTreeStateResponse,
+  CellOntologyTreeStateResponse,
   TissueCountsPerCellType,
   useCellOntologyTree,
-  useCellOntologyTreeState,
+  useCellOntologyTreeStateCellType,
   useCellOntologyTreeStateTissue,
 } from "src/common/queries/cellGuide";
 import {
@@ -184,14 +184,14 @@ export default function OntologyDagView({
   // other properties like the positions of the nodes.
   const { data: rawTree } = useCellOntologyTree();
 
-  const { data: initialTreeStateCell } = useCellOntologyTreeState(
+  const { data: initialTreeStateCell } = useCellOntologyTreeStateCellType(
     cellTypeId ?? ""
   );
   const { data: initialTreeStateTissue } = useCellOntologyTreeStateTissue(
     tissueId ?? ""
   );
   // (alec) This now handles the case where the initial tree state for both cell type and tissue is defined. We take the intersection of isExpanded and union of notShownWhenExpanded.
-  const initialTreeState: InitialCellOntologyTreeStateResponse | undefined =
+  const initialTreeState: CellOntologyTreeStateResponse | undefined =
     useMemo(() => {
       let initialTreeState;
       if (initialTreeStateCell && initialTreeStateTissue) {

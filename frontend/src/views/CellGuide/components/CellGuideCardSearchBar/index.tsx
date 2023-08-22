@@ -4,7 +4,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import InputAdornment from "@mui/material/InputAdornment";
 import { SectionItem, SectionTitle, StyledAutocomplete } from "./style";
 import { ROUTES } from "src/common/constants/routes";
-import { useCellGuide, useTissueCards } from "src/common/queries/cellGuide";
+import {
+  useCellTypeMetadata,
+  useTissueMetadata,
+} from "src/common/queries/cellGuide";
 import { useRouter } from "next/router";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -22,8 +25,8 @@ interface Entity {
 
 export default function CellGuideCardSearchBar(): JSX.Element {
   const router = useRouter();
-  const { data: tissueData } = useTissueCards();
-  const { data: cellTypes } = useCellGuide();
+  const { data: tissueData } = useCellTypeMetadata();
+  const { data: cellTypes } = useTissueMetadata();
 
   const options: Entity[] = useMemo(() => {
     if (!tissueData || !cellTypes) return [];

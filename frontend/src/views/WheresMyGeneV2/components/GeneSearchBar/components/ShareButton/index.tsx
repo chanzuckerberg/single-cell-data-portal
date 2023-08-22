@@ -27,11 +27,11 @@ import {
 } from "src/common/queries/wheresMyGene";
 import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
-import { useTissueCards } from "src/common/queries/cellGuide";
+import { useTissueMetadata } from "src/common/queries/cellGuide";
 
 export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
-  const { data: tissues } = useTissueCards();
+  const { data: tissues } = useTissueMetadata();
 
   const {
     selectedFilters,

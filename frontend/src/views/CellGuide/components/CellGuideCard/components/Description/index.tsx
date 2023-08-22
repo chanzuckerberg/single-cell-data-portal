@@ -9,7 +9,10 @@ import {
   StyledTooltip,
   Wrapper,
 } from "./style";
-import { useDescription, useClDescription } from "src/common/queries/cellGuide";
+import {
+  useGptDescription,
+  useCellTypesById,
+} from "src/common/queries/cellGuide";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
@@ -36,8 +39,9 @@ export default function Description({
 
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For chatgpt hover event
 
-  const { data: rawDescriptionGpt } = useDescription(cellTypeId);
-  const { data: rawDescriptionCl } = useClDescription(cellTypeId);
+  const { data: rawDescriptionGpt } = useGptDescription(cellTypeId);
+  const cellTypesById = useCellTypesById();
+  const rawDescriptionCl = cellTypesById?.[cellTypeId].clDescription;
 
   useEffect(() => {
     if (rawDescriptionGpt) setDescriptionGpt(rawDescriptionGpt);

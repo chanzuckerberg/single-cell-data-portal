@@ -1,5 +1,5 @@
 import { Dispatch } from "react";
-import { TissueCardsQueryResponse } from "src/common/queries/cellGuide";
+import { TissueMetadataQueryResponse } from "src/common/queries/cellGuide";
 import { isSSR } from "src/common/utils/isSSR";
 import { removeParams } from "src/common/utils/removeParams";
 import { CompareId } from "src/views/WheresMyGene/common/constants";
@@ -83,7 +83,7 @@ export const loadStateFromQueryParams = ({
   params: URLSearchParams;
   selectedFilters: State["selectedFilters"];
   dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>;
-  tissues?: TissueCardsQueryResponse;
+  tissues?: TissueMetadataQueryResponse;
 }): LoadStateFromURLPayload | null => {
   if (isSSR()) return null;
 

@@ -197,8 +197,8 @@ interface ComputationalMarkersQueryResponseEntry {
   symbol: string;
   name: string;
   groupby_dims: {
-    organism_ontology_term_id: string;
-    tissue_ontology_term_id?: string;
+    organism_ontology_term_label: string;
+    tissue_ontology_term_label?: string;
   };
 }
 

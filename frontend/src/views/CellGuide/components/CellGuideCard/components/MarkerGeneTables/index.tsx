@@ -35,7 +35,7 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import { Pagination } from "@mui/material";
 import {
   CanonicalMarkersQueryResponse,
-  EnrichedGenesQueryResponse,
+  ComputationalMarkersQueryResponse,
   useCanonicalMarkers,
   useEnrichedGenes,
 } from "src/common/queries/cellGuide";
@@ -254,28 +254,12 @@ const MarkerGeneTables = ({
   const [selectedOrganismComputational, setSelectedOrganismComputational] =
     useState("");
   const [computationalMarkerGenes, setComputationalMarkerGenes] =
-    useState<EnrichedGenesQueryResponse>([]);
+    useState<ComputationalMarkersQueryResponse>([]);
   const [canonicalMarkerGenes, setCanonicalMarkerGenes] =
     useState<CanonicalMarkersQueryResponse>([]);
 
   const { data: enrichedGenes } = useEnrichedGenes(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
-
-  // useEffect(() => {
-  //   setPage(1);
-  //   setSelectedOrganismComputational("");
-  //   setSelectedOrganComputational("");
-  //   setSelectedOrganCanonical("");
-  //   setActiveTable(0);
-
-  //   return () => {
-  //     setSelectedOrganismComputational("");
-  //     setSelectedOrganComputational("");
-  //     setSelectedOrganCanonical("");
-  //     setActiveTable(0);
-  //     setPage(1);
-  //   };
-  // }, [cellTypeId]);
 
   useEffect(() => {
     if (enrichedGenes) {
