@@ -175,18 +175,20 @@ export default function CellGuideCard({
                 />
               </a>
             </CellGuideCardHeaderInnerWrapper>
-            <DropdownSelect
-              handleChange={handleChangeOrganism}
-              options={uniqueOrganisms}
-              selectedOption={selectedOrganism}
-              testId={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
-            />
-            <DropdownSelect
-              handleChange={handleChangeTissue}
-              options={uniqueTissues}
-              selectedOption={selectedTissue}
-              testId={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
-            />
+            <CellGuideCardHeaderInnerWrapper>
+              <DropdownSelect
+                handleChange={handleChangeOrganism}
+                options={uniqueOrganisms}
+                selectedOption={selectedOrganism}
+                testId={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+              />
+              <DropdownSelect
+                handleChange={handleChangeTissue}
+                options={uniqueTissues}
+                selectedOption={selectedTissue}
+                testId={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
+              />
+            </CellGuideCardHeaderInnerWrapper>
           </CellGuideCardHeader>
 
           <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
