@@ -1,1 +1,0 @@
-INFO     backend.layers.processing.schema_migration:schema_migration.py:231 Deleting files
