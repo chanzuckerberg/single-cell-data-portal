@@ -3,18 +3,26 @@ import { useQuery, UseQueryResult } from "react-query";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
+const CELLGUIDE_DATA_URL_PREFIX = "cellguide";
+
+function getCellGuideDataUrl(urlSuffix: string) {
+  const currentUrl = new URL(window.location.href);
+  const [, ...domainParts] = currentUrl.hostname.split(".");
+  const baseDomain = domainParts.join(".");
+  currentUrl.hostname = `${CELLGUIDE_DATA_URL_PREFIX}.${baseDomain}`;
+  return `${currentUrl.toString()}${urlSuffix}`;
+}
+
 export enum TYPES {
   CELL_ONTOLOGY_TREE = "CELL_ONTOLOGY_TREE",
-  INITIAL_CELL_ONTOLOGY_TREE = "INITIAL_CELL_ONTOLOGY_TREE",
-  SOURCE_DATA = "SOURCE_DATA",
-  ENRICHED_GENES = "ENRICHED_GENES",
+  CELL_ONTOLOGY_TREE_STATE_CELLTYPE = "CELL_ONTOLOGY_TREE_STATE_CELLTYPE",
+  SOURCE_COLLECTIONS = "SOURCE_COLLECTIONS",
+  COMPUTATIONAL_MARKERS = "COMPUTATIONAL_MARKERS",
   CANONICAL_MARKERS = "CANONICAL_MARKERS",
-  CL_DESCRIPTION = "CL_DESCRIPTION",
-  DESCRIPTION = "DESCRIPTION",
-  CELL_GUIDE = "CELL_GUIDE",
-  INITIAL_CELL_ONTOLOGY_TREE_TISSUE = "INITIAL_CELL_ONTOLOGY_TREE_TISSUE",
-  TISSUE_CARDS = "TISSUE_CARDS",
-  UBERON_DESCRIPTION = "UBERON_DESCRIPTION",
+  GPT_DESCRIPTION = "GPT_DESCRIPTION",
+  CELL_ONTOLOGY_TREE_STATE_TISSUE = "CELL_ONTOLOGY_TREE_STATE_TISSUE",
+  TISSUE_METADATA = "TISSUE_METADATA",
+  CELLTYPE_METADATA = "CELLTYPE_METADATA",
 }
 
 interface CellGuideQuery {
@@ -27,14 +35,13 @@ interface CellGuideQuery {
 
 export type CellGuideResponse =
   | CellOntologyTreeResponse
-  | InitialCellOntologyTreeStateResponse
-  | SourceDataQueryResponse
-  | EnrichedGenesQueryResponse
+  | CellOntologyTreeStateResponse
+  | SourceCollectionsQueryResponse
+  | ComputationalMarkersQueryResponse
   | CanonicalMarkersQueryResponse
-  | ClDescriptionQueryResponse
-  | DescriptionQueryResponse
-  | CellGuideQueryResponse
-  | UberonDescriptionQueryResponse;
+  | GptDescriptionQueryResponse
+  | CellTypeMetadataQueryResponse
+  | TissueMetadataQueryResponse;
 
 /**
  * Generic fetch function
@@ -74,7 +81,7 @@ export function useCellGuideQuery<T = CellGuideResponse>(
     queryId ? [queryKey, queryId] : [queryKey],
     ({ signal }) =>
       fetchQuery({
-        url: rawUrl.replace("%s", queryId), // Replacing raw url with entityId if applicable
+        url: getCellGuideDataUrl(rawUrl.replace("%s", queryId)), // Replacing raw url with entityId if applicable
         signal,
       }),
     {
@@ -106,9 +113,9 @@ export const useCellOntologyTree =
   };
 
 /* ========== ontology_tree_state ========== */
-export const USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_INITIAL_CELL_ONTOLOGY_TREE_STATE],
-  id: "cell-guide-cell-ontology-tree-state-query",
+export const USE_CELL_ONTOLOGY_TREE_STATE_CELLTYPE_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_CELL_ONTOLOGY_TREE_STATE_CELLTYPE],
+  id: "cell-guide-cell-ontology-tree-state-celltype-query",
 };
 
 export interface TissueCountsPerCellType {
@@ -117,7 +124,7 @@ export interface TissueCountsPerCellType {
     n_cells_rollup: number;
   };
 }
-export interface InitialCellOntologyTreeStateResponse {
+export interface CellOntologyTreeStateResponse {
   isExpandedNodes: string[];
   notShownWhenExpandedNodes: {
     [key: string]: string[];
@@ -125,37 +132,37 @@ export interface InitialCellOntologyTreeStateResponse {
   tissueCounts?: TissueCountsPerCellType;
 }
 
-export const useCellOntologyTreeState = (
+export const useCellOntologyTreeStateCellType = (
   entityId: string
-): UseQueryResult<InitialCellOntologyTreeStateResponse> => {
-  return useCellGuideQuery<InitialCellOntologyTreeStateResponse>(
-    TYPES.INITIAL_CELL_ONTOLOGY_TREE,
+): UseQueryResult<CellOntologyTreeStateResponse> => {
+  return useCellGuideQuery<CellOntologyTreeStateResponse>(
+    TYPES.CELL_ONTOLOGY_TREE_STATE_CELLTYPE,
     entityId
   );
 };
 
 /* ========== ontology_tree_state_tissue ========== */
-export const USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_INITIAL_CELL_ONTOLOGY_TREE_STATE_TISSUE],
+export const USE_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_CELL_ONTOLOGY_TREE_STATE_TISSUE],
   id: "cell-guide-cell-ontology-tree-state-tissue-query",
 };
 
 export const useCellOntologyTreeStateTissue = (
   entityId: string
-): UseQueryResult<InitialCellOntologyTreeStateResponse> => {
-  return useCellGuideQuery<InitialCellOntologyTreeStateResponse>(
-    TYPES.INITIAL_CELL_ONTOLOGY_TREE_TISSUE,
+): UseQueryResult<CellOntologyTreeStateResponse> => {
+  return useCellGuideQuery<CellOntologyTreeStateResponse>(
+    TYPES.CELL_ONTOLOGY_TREE_STATE_TISSUE,
     entityId
   );
 };
 
 /* ========== source_data ========== */
-export const USE_SOURCE_DATA_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_SOURCE_DATA],
-  id: "cell-guide-source-data-query",
+export const USE_SOURCE_COLLECTIONS_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_SOURCE_COLLECTIONS],
+  id: "cell-guide-source-collections-query",
 };
 
-interface SourceDataQueryResponseEntry {
+interface SourceCollectionsQueryResponseEntry {
   collection_name: string;
   collection_url: string;
   publication_url: string;
@@ -165,40 +172,44 @@ interface SourceDataQueryResponseEntry {
   organism: { label: string; ontology_term_id: string }[];
 }
 
-export type SourceDataQueryResponse = SourceDataQueryResponseEntry[];
+export type SourceCollectionsQueryResponse =
+  SourceCollectionsQueryResponseEntry[];
 
 export const useSourceData = (
   entityId: string
-): UseQueryResult<SourceDataQueryResponse> => {
-  return useCellGuideQuery<SourceDataQueryResponse>(
-    TYPES.SOURCE_DATA,
+): UseQueryResult<SourceCollectionsQueryResponse> => {
+  return useCellGuideQuery<SourceCollectionsQueryResponse>(
+    TYPES.SOURCE_COLLECTIONS,
     entityId
   );
 };
 
 /* ========== enriched_genes ========== */
-export const USE_ENRICHED_GENES_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_ENRICHED_GENES],
-  id: "cell-guide-enriched-genes-query",
+export const USE_COMPUTATIONAL_MARKERS_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_COMPUTATIONAL_MARKERS],
+  id: "cell-guide-computational-markers-query",
 };
 
-interface EnrichedGenesQueryResponseEntry {
+interface ComputationalMarkersQueryResponseEntry {
   me: number;
   pc: number;
   marker_score: number;
   symbol: string;
   name: string;
-  organism: string;
-  tissue: string;
+  groupby_dims: {
+    organism_ontology_term_id: string;
+    tissue_ontology_term_id?: string;
+  };
 }
 
-export type EnrichedGenesQueryResponse = EnrichedGenesQueryResponseEntry[];
+export type ComputationalMarkersQueryResponse =
+  ComputationalMarkersQueryResponseEntry[];
 
 export const useEnrichedGenes = (
   entityId: string
-): UseQueryResult<EnrichedGenesQueryResponse> => {
-  return useCellGuideQuery<EnrichedGenesQueryResponse>(
-    TYPES.ENRICHED_GENES,
+): UseQueryResult<ComputationalMarkersQueryResponse> => {
+  return useCellGuideQuery<ComputationalMarkersQueryResponse>(
+    TYPES.COMPUTATIONAL_MARKERS,
     entityId
   );
 };
@@ -229,73 +240,52 @@ export const useCanonicalMarkers = (
   );
 };
 
-/* ========== CL description ========== */
-export const USE_CL_DESCRIPTION_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_CL_DESCRIPTION],
-  id: "cell-guide-cl-description-query",
-};
-
-export type ClDescriptionQueryResponse = string;
-
-export const useClDescription = (entityId: string): UseQueryResult<string> => {
-  return useCellGuideQuery<string>(TYPES.CL_DESCRIPTION, entityId);
-};
-
-/* ========== UBERON description ========== */
-export const USE_UBERON_DESCRIPTION_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_UBERON_DESCRIPTION],
-  id: "cell-guide-uberon-description-query",
-};
-
-export type UberonDescriptionQueryResponse = string;
-
-export const useUberonDescription = (
-  entityId: string
-): UseQueryResult<string> => {
-  return useCellGuideQuery<string>(TYPES.UBERON_DESCRIPTION, entityId);
-};
-
 /* ========== description ========== */
-export const USE_DESCRIPTION_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_DESCRIPTION],
-  id: "cell-guide-description-query",
+export const USE_GPT_DESCRIPTION_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_GPT_DESCRIPTION],
+  id: "cell-guide-gpt-description-query",
 };
 
-export type DescriptionQueryResponse = string;
+export type GptDescriptionQueryResponse = string;
 
-export const useDescription = (entityId: string): UseQueryResult<string> => {
-  return useCellGuideQuery<string>(TYPES.DESCRIPTION, entityId);
+export const useGptDescription = (entityId: string): UseQueryResult<string> => {
+  return useCellGuideQuery<string>(TYPES.GPT_DESCRIPTION, entityId);
 };
 
 /* ========== cell_guide_cards ========== */
-export const USE_CELL_GUIDE_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_CELL_GUIDE],
-  id: "cell-guide-query",
+export const USE_CELLTYPE_METADATA_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_CELLTYPE_METADATA],
+  id: "cell-guide-celltype-metadata-query",
 };
 
-interface CellGuideQueryResponseEntry {
+interface CellTypeMetadataQueryResponseEntry {
   id: string;
   label: string;
   synonyms?: string[];
+  clDescription?: string;
 }
 
-export type CellGuideQueryResponse = CellGuideQueryResponseEntry[];
+export type CellTypeMetadataQueryResponse =
+  CellTypeMetadataQueryResponseEntry[];
 
-export const useCellGuide = (): UseQueryResult<CellGuideQueryResponse> => {
-  return useCellGuideQuery<CellGuideQueryResponse>(TYPES.CELL_GUIDE);
-};
+export const useCellTypeMetadata =
+  (): UseQueryResult<CellTypeMetadataQueryResponse> => {
+    return useCellGuideQuery<CellTypeMetadataQueryResponse>(
+      TYPES.CELLTYPE_METADATA
+    );
+  };
 
 /* ========== cell types by Id ========== */
 export function useCellTypesById():
-  | { [cellTypeId: string]: CellGuideQueryResponseEntry }
+  | { [cellTypeId: string]: CellTypeMetadataQueryResponseEntry }
   | undefined {
-  const { data, isLoading } = useCellGuide();
+  const { data, isLoading } = useCellTypeMetadata();
 
   return useMemo(() => {
     if (!data || isLoading) return;
 
     const cellTypesById = {} as {
-      [cellTypeId: string]: CellGuideQueryResponseEntry;
+      [cellTypeId: string]: CellTypeMetadataQueryResponseEntry;
     };
 
     for (const cellType of data) {
@@ -309,7 +299,7 @@ export function useCellTypesById():
 /* ========== cell type names by Id ========== */
 
 export function useCellTypeNamesById(): { [id: string]: string } | undefined {
-  const { data, isLoading } = useCellGuide();
+  const { data, isLoading } = useCellTypeMetadata();
 
   return useMemo(() => {
     if (!data || isLoading) return;
@@ -323,21 +313,26 @@ export function useCellTypeNamesById(): { [id: string]: string } | undefined {
 }
 
 /* ========== tissue_cards ========== */
-export const USE_TISSUE_CARDS_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_TISSUE_CARDS],
-  id: "tissue-cards-query",
+export const USE_TISSUE_METADATA_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_TISSUE_METADATA],
+  id: "cell-guide-tissue-metadata-query",
 };
 
-interface TissueCardsQueryResponseEntry {
+interface TissueMetadataQueryResponseEntry {
   id: string;
   label: string;
+  synonyms?: string[];
+  uberonDescription?: string;
 }
 
-export type TissueCardsQueryResponse = TissueCardsQueryResponseEntry[];
+export type TissueMetadataQueryResponse = TissueMetadataQueryResponseEntry[];
 
-export const useTissueCards = (): UseQueryResult<TissueCardsQueryResponse> => {
-  return useCellGuideQuery<TissueCardsQueryResponse>(TYPES.TISSUE_CARDS);
-};
+export const useTissueMetadata =
+  (): UseQueryResult<TissueMetadataQueryResponse> => {
+    return useCellGuideQuery<TissueMetadataQueryResponse>(
+      TYPES.TISSUE_METADATA
+    );
+  };
 
 /**
  * Mapping from data/response type to properties used for querying
@@ -347,46 +342,38 @@ const QUERY_MAPPING: {
 } = {
   CELL_ONTOLOGY_TREE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_QUERY,
-    url: "/api/ontology_tree",
+    url: "/ontology_graph.json",
   },
-  INITIAL_CELL_ONTOLOGY_TREE: {
-    queryKey: USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_QUERY,
-    url: `/api/ontology_tree_state?entityId=%s`,
+  CELL_ONTOLOGY_TREE_STATE_CELLTYPE: {
+    queryKey: USE_CELL_ONTOLOGY_TREE_STATE_CELLTYPE_QUERY,
+    url: `/cell_type_ontology_tree_state/%s`,
   },
-  INITIAL_CELL_ONTOLOGY_TREE_TISSUE: {
-    queryKey: USE_INITIAL_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY,
-    url: `/api/ontology_tree_state_tissue?entityId=%s`,
+  CELL_ONTOLOGY_TREE_STATE_TISSUE: {
+    queryKey: USE_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY,
+    url: `/tissue_ontology_tree_state/%s`,
   },
-  SOURCE_DATA: {
-    queryKey: USE_SOURCE_DATA_QUERY,
-    url: `/api/source_data?entityId=%s`,
+  SOURCE_COLLECTIONS: {
+    queryKey: USE_SOURCE_COLLECTIONS_QUERY,
+    url: `/source_collections/%s`,
   },
-  ENRICHED_GENES: {
-    queryKey: USE_ENRICHED_GENES_QUERY,
-    url: `/api/enriched_genes?entityId=%s`,
+  COMPUTATIONAL_MARKERS: {
+    queryKey: USE_COMPUTATIONAL_MARKERS_QUERY,
+    url: `/computational_marker_genes/%s`,
   },
   CANONICAL_MARKERS: {
     queryKey: USE_CANONICAL_MARKERS_QUERY,
-    url: `/api/canonical_markers?entityId=%s`,
+    url: `/canonical_marker_genes/%s`,
   },
-  CL_DESCRIPTION: {
-    queryKey: USE_CL_DESCRIPTION_QUERY,
-    url: `/api/cl_description?entityId=%s`,
+  GPT_DESCRIPTION: {
+    queryKey: USE_GPT_DESCRIPTION_QUERY,
+    url: `/gpt_description/%s`,
   },
-  UBERON_DESCRIPTION: {
-    queryKey: USE_UBERON_DESCRIPTION_QUERY,
-    url: `/api/uberon_description?entityId=%s`,
+  CELLTYPE_METADATA: {
+    queryKey: USE_CELLTYPE_METADATA_QUERY,
+    url: "/celltype_metadata.json",
   },
-  DESCRIPTION: {
-    queryKey: USE_DESCRIPTION_QUERY,
-    url: `/api/description?entityId=%s`,
-  },
-  CELL_GUIDE: {
-    queryKey: USE_CELL_GUIDE_QUERY,
-    url: "/api/cell_guide_cards",
-  },
-  TISSUE_CARDS: {
-    queryKey: USE_TISSUE_CARDS_QUERY,
-    url: "/api/tissue_cards",
+  TISSUE_METADATA: {
+    queryKey: USE_TISSUE_METADATA_QUERY,
+    url: "/tissue_metadata.json",
   },
 };
