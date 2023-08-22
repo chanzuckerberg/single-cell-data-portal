@@ -23,6 +23,7 @@ export enum TYPES {
   CELL_ONTOLOGY_TREE_STATE_TISSUE = "CELL_ONTOLOGY_TREE_STATE_TISSUE",
   TISSUE_METADATA = "TISSUE_METADATA",
   CELLTYPE_METADATA = "CELLTYPE_METADATA",
+  GPT_SEO_DESCRIPTION = "GPT_SEO_DESCRIPTION",
 }
 
 interface CellGuideQuery {
@@ -252,6 +253,30 @@ export const useGptDescription = (entityId: string): UseQueryResult<string> => {
   return useCellGuideQuery<string>(TYPES.GPT_DESCRIPTION, entityId);
 };
 
+/* ========== SEO description ========== */
+export const USE_GPT_SEO_DESCRIPTION_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_GPT_SEO_DESCRIPTION],
+  id: "cell-guide-gpt-seo-description-query",
+};
+
+interface GptSeoDescriptionQueryResponse {
+  [cellTypeId: string]: { name: string; description: string };
+}
+
+export const fetchGptSeoDescription = async (
+  entityId: string
+): Promise<GptSeoDescriptionQueryResponse> => {
+  // This function is used server-side to fetch the GPT SEO description.
+  const url = getCellGuideDataUrl(
+    QUERY_MAPPING[TYPES.GPT_SEO_DESCRIPTION].url.replace("%s", entityId)
+  );
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return await response.json();
+};
+
 /* ========== cell_guide_cards ========== */
 export const USE_CELLTYPE_METADATA_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_CELLTYPE_METADATA],
@@ -334,6 +359,17 @@ export const useTissueMetadata =
     );
   };
 
+export const fetchTissueMetadata =
+  async (): Promise<TissueMetadataQueryResponse> => {
+    // This function is used server-side to fetch the GPT SEO description.
+    const url = getCellGuideDataUrl(QUERY_MAPPING[TYPES.TISSUE_METADATA].url);
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  };
+
 /**
  * Mapping from data/response type to properties used for querying
  */
@@ -366,6 +402,10 @@ const QUERY_MAPPING: {
   },
   GPT_DESCRIPTION: {
     queryKey: USE_GPT_DESCRIPTION_QUERY,
+    url: `/gpt_description/%s`,
+  },
+  GPT_SEO_DESCRIPTION: {
+    queryKey: USE_GPT_SEO_DESCRIPTION_QUERY,
     url: `/gpt_description/%s`,
   },
   CELLTYPE_METADATA: {

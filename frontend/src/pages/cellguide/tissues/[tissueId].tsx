@@ -1,15 +1,6 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { fetchTissueMetadata } from "src/common/queries/cellGuide";
 import TissueCard from "src/views/CellGuide/components/TissueCard";
-import { allTissues, allTissueDescriptions } from "src/pages/api/tissue_cards";
-
-interface Tissues {
-  id: string;
-  label: string;
-}
-
-interface AllTissueDescriptions {
-  [tissueId: string]: string;
-}
 
 const Page = ({
   description,
@@ -25,15 +16,10 @@ export const getServerSideProps: GetServerSideProps<{
   const { params } = context;
   const { tissueId: rawTissueId } = params ?? {};
   const tissueId = (rawTissueId as string)?.replace("_", ":");
-
-  const name =
-    (allTissues as Tissues[]).find(
-      (tissue: { id: string; label: string }) => tissue.id === tissueId
-    )?.label || "";
-
-  const description = (allTissueDescriptions as AllTissueDescriptions)[
-    tissueId
-  ];
+  const allTissues = await fetchTissueMetadata();
+  const tissueEntry = allTissues.find((tissue) => tissue.id === tissueId);
+  const name = tissueEntry?.label || "";
+  const description = tissueEntry?.uberonDescription || "";
 
   return { props: { description, name } };
 };

@@ -1,14 +1,6 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import CellGuideCard from "src/views/CellGuide/components/CellGuideCard";
-import { readJson } from "src/common/utils/api/readJson";
-
-const allCellTypeDescriptionsSEO = readJson(
-  "src/views/CellGuide/common/fixtures/allCellTypeDescriptionsSEO.json"
-);
-
-interface AllCellTypeDescriptionsSEO {
-  [cellTypeId: string]: { name: string; description: string };
-}
+import { fetchGptSeoDescription } from "src/common/queries/cellGuide";
 
 const Page = ({
   seoDescription,
@@ -24,12 +16,14 @@ export const getServerSideProps: GetServerSideProps<{
   const { params } = context;
   const { cellTypeId: rawCellTypeId } = params ?? {};
   const cellTypeId = (rawCellTypeId as string)?.replace("_", ":");
+  const allCellTypeDescriptionsSEO = await fetchGptSeoDescription(cellTypeId);
 
-  const cellType = (allCellTypeDescriptionsSEO as AllCellTypeDescriptionsSEO)[
-    cellTypeId
-  ];
+  const cellType = allCellTypeDescriptionsSEO?.[cellTypeId];
 
-  const { name, description: seoDescription } = cellType;
+  const { name, description: seoDescription } = cellType ?? {
+    name: "",
+    description: "",
+  };
 
   return { props: { seoDescription, name } };
 };
