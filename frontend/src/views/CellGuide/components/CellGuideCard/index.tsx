@@ -36,7 +36,11 @@ import {
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
 import { DispatchContext, StateContext } from "../../common/store";
-import { setCellGuideNav, setCellGuideTitle } from "../../common/store/actions";
+import {
+  setCellGuideNav,
+  setCellGuideTitle,
+  setSkinnyMode,
+} from "../../common/store/actions";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -56,7 +60,8 @@ export default function CellGuideCard({
 }: Props): JSX.Element {
   const router = useRouter();
 
-  const { cellGuideTitle: titleizedCellTypeName } = useContext(StateContext);
+  const { cellGuideTitle: titleizedCellTypeName, skinnyMode } =
+    useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
   // Navigation
@@ -64,8 +69,6 @@ export default function CellGuideCard({
   const sectionRef1 = React.useRef(null);
   const sectionRef2 = React.useRef(null);
   const sectionRef3 = React.useRef(null);
-
-  const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
 
   const cellGuideSideBar = useMemo(() => {
     return (
@@ -93,10 +96,14 @@ export default function CellGuideCard({
   const { synonyms } = cellType || {};
 
   const handleResize = useCallback(() => {
-    setSkinnyMode(
-      window.innerWidth < BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
-    );
-  }, []);
+    if (dispatch) {
+      dispatch(
+        setSkinnyMode(
+          window.innerWidth < BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
+        )
+      );
+    }
+  }, [dispatch]);
 
   const throttledHandleResize = useMemo(() => {
     return throttle(handleResize, 100);

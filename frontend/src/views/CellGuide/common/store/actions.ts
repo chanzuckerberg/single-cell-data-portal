@@ -23,6 +23,15 @@ export function setCellGuideNav(
   };
 }
 
+export function setSkinnyMode(
+  payload: State["skinnyMode"]
+): GetActionTypeOfReducer<typeof REDUCERS["setSkinnyMode"]> {
+  return {
+    payload,
+    type: "setSkinnyMode",
+  };
+}
+
 type GetActionTypeOfReducer<T> = T extends (
   state: never,
   action: infer Action

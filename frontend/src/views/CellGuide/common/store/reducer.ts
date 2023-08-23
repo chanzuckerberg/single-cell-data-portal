@@ -5,6 +5,7 @@ export interface PayloadAction<Payload> {
 export interface State {
   cellGuideTitle: string | null;
   cellGuideNav: JSX.Element | null;
+  skinnyMode: boolean;
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -12,11 +13,13 @@ export interface State {
 export const INITIAL_STATE: State = {
   cellGuideTitle: null,
   cellGuideNav: null,
+  skinnyMode: false,
 };
 
 export const REDUCERS = {
   setCellGuideTitle,
   setCellGuideNav,
+  setSkinnyMode,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -54,5 +57,15 @@ function setCellGuideNav(
   return {
     ...state,
     cellGuideNav: action.payload,
+  };
+}
+
+function setSkinnyMode(
+  state: State,
+  action: PayloadAction<State["skinnyMode"]>
+): State {
+  return {
+    ...state,
+    skinnyMode: action.payload,
   };
 }
