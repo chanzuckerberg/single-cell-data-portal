@@ -1,6 +1,0 @@
-⚠️  tryUntil error-----------------START
-expect(received).toContain(expected) // indexOf
-
-Expected substring: "Mui-focused"
-Received string:    "MuiAutocomplete-option css-8ht3px-SectionItem e1nz75as2"
-⚠️  tryUntil error-----------------END
