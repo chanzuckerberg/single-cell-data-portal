@@ -1,0 +1,69 @@
+  pw:api => selectors.setTestIdAttribute started +6ms
+  pw:api => browser.newContext started +1ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +41ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +1ms
+  pw:api <= browserContext.newPage succeeded +40ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/sitemap", waiting until "load" +14ms
+  pw:api   "commit" event fired +1s
+  pw:api   navigated to "https://localhost:3000/sitemap" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/sitemap" +3ms
+  pw:api   navigated to "about:blank" +22ms
+  pw:api <= page.goto succeeded +63ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api   "networkidle" event fired +437ms
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api expect.toBeVisible with timeout 10000ms +12ms
+  pw:api waiting for locator('h1').getByText('Sitemap') +1ms
+  pw:api   locator resolved to <h1 class="css-lyzsg4-SitemapTitle ec4q4xw1">Sitemap</h1> +17ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api => locator.evaluate started +1ms
+  pw:api waiting for locator('body') +6ms
+  pw:api   locator resolved to visible <body data-api-url="https://api.cellxgene.dev.single-c…>…</body> +4ms
+  pw:api <= locator.evaluate succeeded +16ms
+  pw:api => locator.evaluate started +2ms
+  pw:api waiting for locator('html') +25ms
+  pw:api   locator resolved to visible <html>…</html> +4ms
+  pw:api <= locator.evaluate succeeded +28ms
+  pw:api => expect.not.toBeInViewport started +9ms
+  pw:api expect.not.toBeInViewport with timeout 10000ms +13ms
+  pw:api waiting for locator('a').filter({ hasText: 'Sitemap' }) +1ms
+  pw:api   locator resolved to <a href="/sitemap">Sitemap</a> +13ms
+  pw:api <= expect.not.toBeInViewport succeeded +5ms
+  pw:api => mouse.wheel started +2ms
+  pw:api <= mouse.wheel succeeded +32ms
+  pw:api => locator.evaluate started +0ms
+  pw:api waiting for locator('html') +7ms
+  pw:api   locator resolved to visible <html>…</html> +4ms
+  pw:api <= locator.evaluate succeeded +37ms
+  pw:api => page.waitForTimeout started +15ms
+  pw:api <= page.waitForTimeout succeeded +294ms
+  pw:api => mouse.wheel started +1ms
+  pw:api <= mouse.wheel succeeded +19ms
+  pw:api => locator.evaluate started +1ms
+  pw:api waiting for locator('html') +6ms
+  pw:api   locator resolved to visible <html>…</html> +9ms
+  pw:api <= locator.evaluate succeeded +12ms
+  pw:api => expect.toBeInViewport started +7ms
+  pw:api expect.toBeInViewport with timeout 10000ms +4ms
+  pw:api waiting for locator('a').filter({ hasText: 'Sitemap' }) +1ms
+  pw:api   locator resolved to <a href="/sitemap">Sitemap</a> +14ms
+  pw:api <= expect.toBeInViewport succeeded +4ms
+  pw:api taking page screenshot +101ms
+  pw:api => browserContext.close started +84ms
+  pw:api <= browserContext.close succeeded +2s
