@@ -51,4 +51,4 @@ def create_invalidation_for_index_paths():
 
 
 def create_invalidation_for_cellguide_data():
-    return create_invalidation(["/*"])
+    return create_invalidation_cellguide(["/*"])
