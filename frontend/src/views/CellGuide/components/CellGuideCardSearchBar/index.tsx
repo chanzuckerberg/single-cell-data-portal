@@ -18,7 +18,7 @@ import {
 
 interface Entity {
   id: string;
-  name: string;
+  label: string;
   synonyms?: string[]; // only cell types (optionally) have synonyms
 }
 
@@ -33,10 +33,16 @@ export default function CellGuideCardSearchBar(): JSX.Element {
     if (!tissueData || !cellTypes) return [];
     const entities: Entity[] = [];
     for (const cellType in cellTypes) {
-      entities.push(cellTypes[cellType]);
+      entities.push({
+        label: cellTypes[cellType].name,
+        ...cellTypes[cellType],
+      });
     }
     for (const tissue in tissueData) {
-      entities.push(tissueData[tissue]);
+      entities.push({
+        label: tissueData[tissue].name,
+        ...tissueData[tissue],
+      });
     }
     return entities;
   }, [tissueData, cellTypes]);
@@ -132,24 +138,21 @@ export default function CellGuideCardSearchBar(): JSX.Element {
               onClick={() => {
                 if (!entity.id.startsWith(TISSUE_PREFIX)) {
                   track(EVENTS.CG_SEARCH_CT_TISSUE, {
-                    cell_type: entity.name,
+                    cell_type: entity.label,
                   });
                 } else {
                   track(EVENTS.CG_SEARCH_CT_TISSUE, {
-                    tissue: entity.name,
+                    tissue: entity.label,
                   });
                 }
 
                 changeEntity(entity.id);
               }}
             >
-              {entity.name}
+              {entity.label}
             </SectionItem>
           );
         }}
-        getOptionLabel={(option: unknown) =>
-          option ? (option as Entity).name : ""
-        }
         autoComplete
         filterOptions={(options, state) => {
           return options
@@ -163,16 +166,16 @@ export default function CellGuideCardSearchBar(): JSX.Element {
               );
 
               return (
-                entity.name &&
-                (entity.name.toLowerCase().includes(searchTerm) ||
+                entity.label &&
+                (entity.label.toLowerCase().includes(searchTerm) ||
                   synonymStartsWithSearch)
               );
             })
             .sort((entity1, entity2) => {
               const entityA = entity1 as Entity;
               const entityB = entity2 as Entity;
-              const aRaw = entityA.name;
-              const bRaw = entityB.name;
+              const aRaw = entityA.label;
+              const bRaw = entityB.label;
               const a = aRaw.toLowerCase();
               const b = bRaw.toLowerCase();
               const searchTerm = state.inputValue.toLowerCase();
