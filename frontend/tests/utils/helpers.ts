@@ -130,6 +130,11 @@ export async function tryUntil(
     } catch (error) {
       retry += 1;
       savedError = error as Error;
+
+      console.log("⚠️  tryUntil error-----------------START");
+      console.log(savedError.message);
+      console.log("⚠️  tryUntil error-----------------END");
+
       await page.waitForTimeout(WAIT_FOR_MS);
     }
   }

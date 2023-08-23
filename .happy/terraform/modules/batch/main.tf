@@ -8,11 +8,10 @@ data aws_caller_identity current {}
 resource aws_batch_job_definition batch_job_def {
   type = "container"
   name = "dp-${var.deployment_stage}-${var.custom_stack_name}-upload"
-  container_properties = <<EOF
-{
+  container_properties = jsonencode({
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": ${var.batch_container_memory_limit},
+  "memory": var.batch_container_memory_limit,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -55,8 +54,7 @@ resource aws_batch_job_definition batch_job_def {
       "awslogs-region": "${data.aws_region.current.name}"
     }
   }
-}
-EOF
+})
 }
 
 resource aws_cloudwatch_log_group cloud_watch_logs_group {
