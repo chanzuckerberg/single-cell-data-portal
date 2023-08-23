@@ -1,0 +1,8 @@
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).toBeVisible()
+Call log:
+  - expect.toBeVisible with timeout 10000ms
+  - waiting for getByTestId('laptop-with-cell-data-on-screen')
+  - waiting for getByTestId('laptop-with-cell-data-on-screen')
+
+⚠️  tryUntil error-----------------END
