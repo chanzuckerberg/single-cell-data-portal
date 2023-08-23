@@ -1,19 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
+import { CELLGUIDE_DATA_URL } from "src/configs/configs";
 import { ENTITIES } from "./entities";
-
-const CELLGUIDE_DATA_URL_PREFIX = "cellguide";
-
-function getCellGuideDataUrl(urlSuffix: string) {
-  const currentUrl = new URL(window.location.href);
-  const [, ...domainParts] = currentUrl.hostname.split(".");
-  const baseDomain = domainParts.join(".");
-  currentUrl.hostname = `${CELLGUIDE_DATA_URL_PREFIX}.${baseDomain}`;
-  currentUrl.pathname = ""; // This line removes any routes after the base domain
-  // return `${currentUrl.toString()}${urlSuffix}`;
-  return `https://cellguide.cellxgene.dev.single-cell.czi.technology${urlSuffix}`;
-}
 
 export enum TYPES {
   CELL_ONTOLOGY_TREE = "CELL_ONTOLOGY_TREE",
@@ -26,6 +15,7 @@ export enum TYPES {
   TISSUE_METADATA = "TISSUE_METADATA",
   CELLTYPE_METADATA = "CELLTYPE_METADATA",
   GPT_SEO_DESCRIPTION = "GPT_SEO_DESCRIPTION",
+  LATEST_SNAPSHOT_IDENTIFIER = "LATEST_SNAPSHOT_IDENTIFIER",
 }
 
 interface CellGuideQuery {
@@ -33,7 +23,7 @@ interface CellGuideQuery {
     entities: ENTITIES[];
     id: string;
   };
-  url: string;
+  urlSuffix: string;
 }
 
 export type CellGuideResponse =
@@ -44,7 +34,8 @@ export type CellGuideResponse =
   | CanonicalMarkersQueryResponse
   | GptDescriptionQueryResponse
   | CellTypeMetadataQueryResponse
-  | TissueMetadataQueryResponse;
+  | TissueMetadataQueryResponse
+  | LatestSnapshotIdentifierQueryResponse;
 
 /**
  * Generic fetch function
@@ -75,20 +66,56 @@ async function fetchQuery({
 /**
  * Generic cell guide hook
  */
+
 export function useCellGuideQuery<T = CellGuideResponse>(
   dataType: TYPES,
   queryId = "" // Empty string if cell type is not needed for fetch function
 ): UseQueryResult<T> {
-  const { queryKey, url: rawUrl } = QUERY_MAPPING[dataType];
-  return useQuery(
-    queryId ? [queryKey, queryId] : [queryKey],
+  const { queryKey, urlSuffix } = QUERY_MAPPING[dataType];
+
+  const [latestSnapshotIdentifier, setLatestSnapshotIdentifier] = useState<
+    LatestSnapshotIdentifierQueryResponse | undefined
+  >(undefined);
+  const {
+    queryKey: queryKeyLatestSnapshotIdentifier,
+    urlSuffix: urlSuffixLatestSnapshotIdentifier,
+  } = QUERY_MAPPING[TYPES.LATEST_SNAPSHOT_IDENTIFIER];
+  const { data: rawLatestSnapshotIdentifier } = useQuery(
+    [queryKeyLatestSnapshotIdentifier],
     ({ signal }) =>
       fetchQuery({
-        url: getCellGuideDataUrl(rawUrl.replace("%s", queryId)), // Replacing raw url with entityId if applicable
+        url: `${CELLGUIDE_DATA_URL}/${urlSuffixLatestSnapshotIdentifier.replace(
+          "%s",
+          queryId
+        )}`,
         signal,
       }),
     {
       enabled: true,
+      staleTime: Infinity,
+    }
+  );
+
+  useEffect(() => {
+    if (rawLatestSnapshotIdentifier) {
+      setLatestSnapshotIdentifier(
+        rawLatestSnapshotIdentifier as LatestSnapshotIdentifierQueryResponse
+      );
+    }
+  }, [rawLatestSnapshotIdentifier]);
+
+  return useQuery(
+    queryId ? [queryKey, queryId, latestSnapshotIdentifier] : [queryKey],
+    ({ signal }) =>
+      fetchQuery({
+        url: `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${urlSuffix.replace(
+          "%s",
+          queryId
+        )}`,
+        signal,
+      }),
+    {
+      enabled: !!latestSnapshotIdentifier,
       staleTime: Infinity,
     }
   );
@@ -243,6 +270,18 @@ export const useCanonicalMarkers = (
   );
 };
 
+/* ========== latest snapshot identifier ========== */
+export const USE_LATEST_SNAPSHOT_IDENTIFIER_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_LATEST_SNAPSHOT_IDENTIFIER],
+  id: "cell-guide-latest-snapshot-identifier-query",
+};
+
+export type LatestSnapshotIdentifierQueryResponse = string;
+
+export const useLatestSnapshotIdentifier = (): UseQueryResult<string> => {
+  return useCellGuideQuery<string>(TYPES.LATEST_SNAPSHOT_IDENTIFIER);
+};
+
 /* ========== description ========== */
 export const USE_GPT_DESCRIPTION_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_GPT_DESCRIPTION],
@@ -270,7 +309,7 @@ export const fetchGptSeoDescription = async (
 ): Promise<GptSeoDescriptionQueryResponse> => {
   // This function is used server-side to fetch the GPT SEO description.
   const url = getCellGuideDataUrl(
-    QUERY_MAPPING[TYPES.GPT_SEO_DESCRIPTION].url.replace("%s", entityId)
+    QUERY_MAPPING[TYPES.GPT_SEO_DESCRIPTION].urlSuffix.replace("%s", entityId)
   );
   const response = await fetch(url);
   if (!response.ok) {
@@ -364,7 +403,9 @@ export const useTissueMetadata =
 export const fetchTissueMetadata =
   async (): Promise<TissueMetadataQueryResponse> => {
     // This function is used server-side to fetch the GPT SEO description.
-    const url = getCellGuideDataUrl(QUERY_MAPPING[TYPES.TISSUE_METADATA].url);
+    const url = getCellGuideDataUrl(
+      QUERY_MAPPING[TYPES.TISSUE_METADATA].urlSuffix
+    );
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -380,42 +421,46 @@ const QUERY_MAPPING: {
 } = {
   CELL_ONTOLOGY_TREE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_QUERY,
-    url: "/ontology_graph.json",
+    urlSuffix: "ontology_graph.json",
   },
   CELL_ONTOLOGY_TREE_STATE_CELLTYPE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_STATE_CELLTYPE_QUERY,
-    url: `/cell_type_ontology_tree_state/%s`,
+    urlSuffix: `cell_type_ontology_tree_state/%s`,
   },
   CELL_ONTOLOGY_TREE_STATE_TISSUE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY,
-    url: `/tissue_ontology_tree_state/%s`,
+    urlSuffix: `tissue_ontology_tree_state/%s`,
   },
   SOURCE_COLLECTIONS: {
     queryKey: USE_SOURCE_COLLECTIONS_QUERY,
-    url: `/source_collections/%s`,
+    urlSuffix: `source_collections/%s`,
   },
   COMPUTATIONAL_MARKERS: {
     queryKey: USE_COMPUTATIONAL_MARKERS_QUERY,
-    url: `/computational_marker_genes/%s`,
+    urlSuffix: `computational_marker_genes/%s`,
   },
   CANONICAL_MARKERS: {
     queryKey: USE_CANONICAL_MARKERS_QUERY,
-    url: `/canonical_marker_genes/%s`,
+    urlSuffix: `canonical_marker_genes/%s`,
   },
   GPT_DESCRIPTION: {
     queryKey: USE_GPT_DESCRIPTION_QUERY,
-    url: `/gpt_descriptions/%s`,
+    urlSuffix: `gpt_descriptions/%s`,
   },
   GPT_SEO_DESCRIPTION: {
     queryKey: USE_GPT_SEO_DESCRIPTION_QUERY,
-    url: `/gpt_seo_descriptions/%s`,
+    urlSuffix: `gpt_seo_descriptions/%s`,
   },
   CELLTYPE_METADATA: {
     queryKey: USE_CELLTYPE_METADATA_QUERY,
-    url: "/celltype_metadata.json",
+    urlSuffix: "celltype_metadata.json",
   },
   TISSUE_METADATA: {
     queryKey: USE_TISSUE_METADATA_QUERY,
-    url: "/tissue_metadata.json",
+    urlSuffix: "tissue_metadata.json",
+  },
+  LATEST_SNAPSHOT_IDENTIFIER: {
+    queryKey: USE_TISSUE_METADATA_QUERY,
+    urlSuffix: "latest_snapshot_identifier",
   },
 };
