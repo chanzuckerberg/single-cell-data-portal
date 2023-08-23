@@ -1,0 +1,41 @@
+  pw:api => selectors.setTestIdAttribute started +2ms
+  pw:api => browser.newContext started +0ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +47ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +14ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => tracing.start started +1ms
+  pw:api <= tracing.start succeeded +0ms
+  pw:api => browserContext.newPage started +0ms
+  pw:api <= browserContext.newPage succeeded +36ms
+  pw:api => page.goto started +1ms
+  pw:api navigating to "https://localhost:3000/privacy/", waiting until "load" +4ms
+  pw:api   "commit" event fired +1s
+  pw:api   navigated to "https://localhost:3000/privacy" +1ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/privacy" +3ms
+  pw:api <= page.goto succeeded +75ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api   "networkidle" event fired +466ms
+  pw:api <= page.waitForLoadState succeeded +2ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api expect.toBeVisible with timeout 10000ms +6ms
+  pw:api waiting for getByText('Privacy Policy').first() +1ms
+  pw:api   locator resolved to <h1>Privacy Policy</h1> +35ms
+  pw:api <= expect.toBeVisible succeeded +7ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByTestId('cellxgene-logo') +0ms
+  pw:api   locator resolved to <img decoding="async" alt="CELLxGENE logo" data-nimg=…/> +3ms
+  pw:api <= expect.toBeVisible succeeded +2ms
+  pw:api taking page screenshot +77ms
+  pw:api => browserContext.close started +90ms
+  pw:api <= browserContext.close succeeded +2s
