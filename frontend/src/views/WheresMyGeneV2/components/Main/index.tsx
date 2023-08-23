@@ -265,22 +265,6 @@ export default function WheresMyGene(): JSX.Element {
     isLoading: false,
   });
 
-  const usePrevious = <T,>(value: T): T | undefined => {
-    const ref = useRef<T>();
-    useEffect(() => {
-      ref.current = value;
-    });
-    return ref.current;
-  };
-  const prevState = usePrevious({ cellInfoCellType });
-  useEffect(() => {
-    if (
-      prevState?.cellInfoCellType?.cellType.id !== cellInfoCellType?.cellType.id
-    ) {
-      setForceOpen(!forceOpen); //the value of this boolean isn't actually read downstream, it just checks for uniqueness across renders
-    }
-  }, [cellInfoCellType, prevState?.cellInfoCellType?.cellType.id, forceOpen]);
-
   const [echartsRendererMode, setEchartsRendererMode] = useState<
     "canvas" | "svg"
   >("canvas");
@@ -311,8 +295,6 @@ export default function WheresMyGene(): JSX.Element {
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
-        disabled={false}
-        forceOpen={true}
         wmgSideBar
       >
         <Filters
