@@ -307,6 +307,7 @@ interface GptSeoDescriptionQueryResponse {
 export const fetchGptSeoDescription = async (
   entityId: string
 ): Promise<GptSeoDescriptionQueryResponse> => {
+  entityId = entityId.replace(":", "_");
   // This function is used server-side to fetch the GPT SEO description.
   const latestSnapshotIdentifierUrl = `${CELLGUIDE_DATA_URL}/${
     QUERY_MAPPING[TYPES.LATEST_SNAPSHOT_IDENTIFIER].urlSuffix

@@ -15,9 +15,8 @@ export const getServerSideProps: GetServerSideProps<{
 }> = async (context) => {
   const { params } = context;
   const { tissueId: rawTissueId } = params ?? {};
-  const tissueId = (rawTissueId as string)?.replace("_", ":");
   const allTissues = await fetchTissueMetadata();
-  const tissueEntry = allTissues[tissueId];
+  const tissueEntry = allTissues[rawTissueId as string];
   const name = tissueEntry?.name || "";
   const description = tissueEntry?.uberonDescription || "";
 
