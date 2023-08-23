@@ -4,7 +4,7 @@ import { localPoint } from "@visx/event";
 import Node from "../Node";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { TreeNodeWithState } from "../../common/types";
-import { useCellTypeNamesById } from "src/common/queries/cellGuide";
+import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 import { NODE_SPACINGS, TREE_ANIMATION_DURATION } from "../../common/constants";
 import { EVENTS } from "src/common/analytics/events";
 import { track } from "src/common/analytics";
@@ -37,7 +37,7 @@ export default function AnimatedNodes({
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
 
-  const cellTypeNamesById = useCellTypeNamesById() || {};
+  const { data: cellTypeMetadata } = useCellTypeMetadata() || {};
   const handleMouseOver = (
     event: React.MouseEvent<SVGElement>,
     datum: TreeNodeWithState
@@ -111,7 +111,7 @@ export default function AnimatedNodes({
             {nodes.map(({ key, data: node, state }) => {
               const isInCorpus =
                 (node.data.id.split("__").at(0)?.replace("_", ":") ?? "") in
-                cellTypeNamesById;
+                (cellTypeMetadata ?? {});
 
               return (
                 <Node

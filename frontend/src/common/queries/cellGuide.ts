@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { CELLGUIDE_DATA_URL } from "src/configs/configs";
@@ -333,15 +333,14 @@ export const USE_CELLTYPE_METADATA_QUERY = {
   id: "cell-guide-celltype-metadata-query",
 };
 
-interface CellTypeMetadataQueryResponseEntry {
-  id: string;
-  label: string;
-  synonyms?: string[];
-  clDescription?: string;
+interface CellTypeMetadataQueryResponse {
+  [cellTypeId: string]: {
+    id: string;
+    label: string;
+    synonyms?: string[];
+    clDescription?: string;
+  };
 }
-
-export type CellTypeMetadataQueryResponse =
-  CellTypeMetadataQueryResponseEntry[];
 
 export const useCellTypeMetadata =
   (): UseQueryResult<CellTypeMetadataQueryResponse> => {
@@ -349,43 +348,6 @@ export const useCellTypeMetadata =
       TYPES.CELLTYPE_METADATA
     );
   };
-
-/* ========== cell types by Id ========== */
-export function useCellTypesById():
-  | { [cellTypeId: string]: CellTypeMetadataQueryResponseEntry }
-  | undefined {
-  const { data, isLoading } = useCellTypeMetadata();
-
-  return useMemo(() => {
-    if (!data || isLoading) return;
-
-    const cellTypesById = {} as {
-      [cellTypeId: string]: CellTypeMetadataQueryResponseEntry;
-    };
-
-    for (const cellType of data) {
-      cellTypesById[cellType.id] = cellType;
-    }
-
-    return cellTypesById;
-  }, [data, isLoading]);
-}
-
-/* ========== cell type names by Id ========== */
-
-export function useCellTypeNamesById(): { [id: string]: string } | undefined {
-  const { data, isLoading } = useCellTypeMetadata();
-
-  return useMemo(() => {
-    if (!data || isLoading) return;
-    const accumulator: { [id: string]: string } = {};
-    return data.reduce((acc, curr) => {
-      const { id, label } = curr;
-      acc[id] = label;
-      return acc;
-    }, accumulator);
-  }, [data, isLoading]);
-}
 
 /* ========== tissue_cards ========== */
 export const USE_TISSUE_METADATA_QUERY = {

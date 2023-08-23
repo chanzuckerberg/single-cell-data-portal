@@ -11,7 +11,7 @@ import {
 } from "./style";
 import {
   useGptDescription,
-  useCellTypesById,
+  useCellTypeMetadata,
 } from "src/common/queries/cellGuide";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
@@ -40,7 +40,7 @@ export default function Description({
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For chatgpt hover event
 
   const { data: rawDescriptionGpt } = useGptDescription(cellTypeId);
-  const cellTypesById = useCellTypesById();
+  const { data: cellTypesById } = useCellTypeMetadata();
   const rawDescriptionCl = cellTypesById?.[cellTypeId].clDescription;
 
   useEffect(() => {
