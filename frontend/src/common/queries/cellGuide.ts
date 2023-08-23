@@ -69,7 +69,8 @@ async function fetchQuery({
 
 export function useCellGuideQuery<T = CellGuideResponse>(
   dataType: TYPES,
-  queryId = "" // Empty string if cell type is not needed for fetch function
+  queryId = "", // Empty string if cell type is not needed for fetch function
+  skip = false
 ): UseQueryResult<T> {
   const { queryKey, urlSuffix } = QUERY_MAPPING[dataType];
 
@@ -91,7 +92,7 @@ export function useCellGuideQuery<T = CellGuideResponse>(
         signal,
       }),
     {
-      enabled: true,
+      enabled: !skip,
       staleTime: Infinity,
     }
   );
@@ -114,7 +115,7 @@ export function useCellGuideQuery<T = CellGuideResponse>(
         signal,
       }),
     {
-      enabled: !!latestSnapshotIdentifier,
+      enabled: !!latestSnapshotIdentifier && !skip,
       staleTime: Infinity,
     }
   );
@@ -166,7 +167,8 @@ export const useCellOntologyTreeStateCellType = (
 ): UseQueryResult<CellOntologyTreeStateResponse> => {
   return useCellGuideQuery<CellOntologyTreeStateResponse>(
     TYPES.CELL_ONTOLOGY_TREE_STATE_CELLTYPE,
-    entityId
+    entityId,
+    entityId === ""
   );
 };
 
@@ -181,7 +183,8 @@ export const useCellOntologyTreeStateTissue = (
 ): UseQueryResult<CellOntologyTreeStateResponse> => {
   return useCellGuideQuery<CellOntologyTreeStateResponse>(
     TYPES.CELL_ONTOLOGY_TREE_STATE_TISSUE,
-    entityId
+    entityId,
+    entityId === ""
   );
 };
 
