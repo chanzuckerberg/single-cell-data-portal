@@ -22,7 +22,7 @@ from backend.layers.business.exceptions import (
     CollectionNotFoundException,
     CollectionUpdateException,
     DatasetInWrongStatusException,
-    DatasetIsNotPublishedException,
+    DatasetIsPrivateException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
     InvalidURIException,
@@ -93,7 +93,7 @@ def delete(token_info: dict, collection_id: str, dataset_id: str, delete_publish
             business_logic.remove_dataset_version(
                 collection_version.version_id, dataset_version.version_id, delete_published=True
             )
-        except DatasetIsNotPublishedException:
+        except DatasetIsPrivateException:
             raise InvalidParametersHTTPException(
                 detail='Query param "delete_published=true" is set but Dataset is not published.'
             ) from None

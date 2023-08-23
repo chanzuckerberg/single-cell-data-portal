@@ -24,7 +24,7 @@ from backend.layers.business.exceptions import (
     CollectionVersionException,
     DatasetIngestException,
     DatasetInWrongStatusException,
-    DatasetIsNotPublishedException,
+    DatasetIsPrivateException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
     DatasetUpdateException,
@@ -468,7 +468,7 @@ class BusinessLogic(BusinessLogicInterface):
         if dataset_version.canonical_dataset.published_at and not delete_published:
             raise CollectionUpdateException from None
         if delete_published and not dataset_version.canonical_dataset.published_at:
-            raise DatasetIsNotPublishedException from None
+            raise DatasetIsPrivateException from None
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
