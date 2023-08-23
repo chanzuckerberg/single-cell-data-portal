@@ -9,7 +9,7 @@ import {
 } from "../common/style";
 import Table from "../common/Table";
 import Link from "../common/Link";
-import { StyledTag } from "./style";
+import { SourceDataTableWrapper, StyledTag } from "./style";
 import { useSourceData } from "src/common/queries/cellGuide";
 import { Pagination } from "@mui/material";
 
@@ -215,7 +215,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
   );
 
   return (
-    <div data-testid={CELL_GUIDE_CARD_SOURCE_DATA_TABLE}>
+    <SourceDataTableWrapper data-testid={CELL_GUIDE_CARD_SOURCE_DATA_TABLE}>
       <TableTitleWrapper>
         <TableTitle>Data</TableTitle>
       </TableTitleWrapper>
@@ -232,7 +232,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
       ) : (
         tableUnavailableComponent
       )}
-    </div>
+    </SourceDataTableWrapper>
   );
 };
 export default SourceDataTable;

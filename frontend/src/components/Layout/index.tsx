@@ -1,24 +1,16 @@
 import { useRouter } from "next/router";
-import { ReactNode, useReducer } from "react";
+import { ReactNode } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import Header from "../Header";
 import LandingFooter from "../LandingFooter";
 import LandingHeader from "../LandingHeader";
 import { Wrapper } from "./style";
-import CellGuideMobileHeader from "src/views/CellGuide/components/CellGuideMobileHeader";
-import {
-  DispatchContext,
-  INITIAL_STATE,
-  StateContext,
-  reducer,
-} from "src/views/CellGuide/common/store";
 
 interface Props {
   children: ReactNode;
 }
 
 const Layout = ({ children }: Props) => {
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const { pathname } = useRouter();
 
   if (pathname === ROUTES.HOMEPAGE || pathname === ROUTES.SITEMAP) {
@@ -39,13 +31,10 @@ const Layout = ({ children }: Props) => {
     );
   } else if (pathname === ROUTES.CELL_GUIDE + "/[cellTypeId]") {
     return (
-      <DispatchContext.Provider value={dispatch}>
-        <StateContext.Provider value={state}>
-          <LandingHeader title="CellGuide" homeUrl={ROUTES.CELL_GUIDE} />
-          <CellGuideMobileHeader />
-          {children}
-        </StateContext.Provider>
-      </DispatchContext.Provider>
+      <>
+        <LandingHeader title="CellGuide" homeUrl={ROUTES.CELL_GUIDE} />
+        {children}
+      </>
     );
   } else {
     return (

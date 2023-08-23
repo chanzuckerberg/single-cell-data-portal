@@ -28,14 +28,15 @@ export const CellGuideView = styled.div`
   flex-direction: row;
   column-gap: ${SIDEBAR_COLUMN_GAP_PX}px;
   margin: auto;
-  max-width: 1440px;
 
   ${(props: CellGuideViewProps) => {
     const { skinnyMode } = props;
     const spaces = getSpaces(props);
     const space = skinnyMode ? spaces?.xl : spaces?.xxl;
+    const maxWidth = skinnyMode ? "100vw" : "1440px";
 
     return `
+    max-width: ${maxWidth};
     padding: ${TOP_PADDING_PX}px ${space}px 0px
       ${space}px;
 

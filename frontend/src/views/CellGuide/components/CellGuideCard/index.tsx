@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import {
   Wrapper,
@@ -16,7 +10,6 @@ import {
   LEFT_RIGHT_PADDING_PX,
   StyledRightSideBar,
   StyledSynonyms,
-  MobileSearchTint,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -36,12 +29,9 @@ import {
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
-import { DispatchContext, StateContext } from "../../common/store";
-import {
-  setCellGuideNav,
-  setCellGuideTitle,
-  setSkinnyMode,
-} from "../../common/store/actions";
+import CellGuideMobileHeader from "../CellGuideMobileHeader";
+import { Global } from "@emotion/react";
+import { StickySidebarStyle } from "./components/CellGuideCardSidebar/style";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -61,18 +51,13 @@ export default function CellGuideCard({
 }: Props): JSX.Element {
   const router = useRouter();
 
-  const {
-    cellGuideTitle: titleizedCellTypeName,
-    skinnyMode,
-    mobileSearchIsOpen,
-  } = useContext(StateContext);
-  const dispatch = useContext(DispatchContext);
-
   // Navigation
   const sectionRef0 = React.useRef(null);
   const sectionRef1 = React.useRef(null);
   const sectionRef2 = React.useRef(null);
   const sectionRef3 = React.useRef(null);
+
+  const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
 
   const cellGuideSideBar = useMemo(() => {
     return (
@@ -92,6 +77,7 @@ export default function CellGuideCard({
   const { cellTypeId: cellTypeIdRaw } = router.query;
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
   const cellTypeName = name || "";
+  const titleizedCellTypeName = titleize(cellTypeName);
 
   const cellTypesById = useCellTypesById();
 
@@ -100,14 +86,10 @@ export default function CellGuideCard({
   const { synonyms } = cellType || {};
 
   const handleResize = useCallback(() => {
-    if (dispatch) {
-      dispatch(
-        setSkinnyMode(
-          window.innerWidth < BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
-        )
-      );
-    }
-  }, [dispatch]);
+    setSkinnyMode(
+      window.innerWidth < BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
+    );
+  }, []);
 
   const throttledHandleResize = useMemo(() => {
     return throttle(handleResize, 100);
@@ -117,14 +99,8 @@ export default function CellGuideCard({
     throttledHandleResize();
     window.addEventListener("resize", throttledHandleResize);
 
-    if (dispatch) {
-      dispatch(setCellGuideTitle(titleize(cellTypeName)));
-
-      dispatch(setCellGuideNav(cellGuideSideBar));
-    }
-
     return () => window.removeEventListener("resize", throttledHandleResize);
-  }, [cellGuideSideBar, cellTypeName, dispatch, throttledHandleResize]);
+  }, [throttledHandleResize]);
 
   const [geneInfoGene, setGeneInfoGene] = useState<Gene["name"] | null>(null);
 
@@ -139,6 +115,9 @@ export default function CellGuideCard({
 
   return (
     <>
+      {/* This is a fix that overrides a global overflow css prop to get sticky elements to work */}
+      <Global styles={StickySidebarStyle} />
+
       <Head>
         <title>{title}</title>
         <meta property="title" key="title" content={title} />
@@ -164,8 +143,12 @@ export default function CellGuideCard({
         />
       </Head>
 
-      {/* Screen tint when mobile search is open */}
-      {mobileSearchIsOpen && <MobileSearchTint />}
+      {skinnyMode && (
+        <CellGuideMobileHeader
+          title={titleizedCellTypeName}
+          pageNav={cellGuideSideBar}
+        />
+      )}
 
       <CellGuideView skinnyMode={skinnyMode}>
         {/* Flex item left */}

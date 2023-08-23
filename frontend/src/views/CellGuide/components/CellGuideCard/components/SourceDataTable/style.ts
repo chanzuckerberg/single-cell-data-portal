@@ -7,3 +7,7 @@ export const StyledTag = styled(Tag)`
     color: #000000;
   }
 `;
+
+export const SourceDataTableWrapper = styled.div`
+  max-width: calc(100vw - 48px);
+`;

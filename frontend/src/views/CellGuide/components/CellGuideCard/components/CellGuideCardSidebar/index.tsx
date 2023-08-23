@@ -1,13 +1,8 @@
 import { SearchBarWrapper } from "./style";
 import CellGuideCardSearchBar from "../../../CellGuideCardSearchBar";
-import {
-  CellGuideSidebarWrapper,
-  StickyWrapper,
-  StickySidebarStyle,
-} from "./style";
+import { CellGuideSidebarWrapper, StickyWrapper } from "./style";
 import { NavigationJumpTo } from "@czi-sds/components";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { Global } from "@emotion/react";
 import { useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -36,7 +31,6 @@ export default function CellGuideCardSidebar({
 
   return (
     <CellGuideSidebarWrapper data-testid={CELL_GUIDE_CARD_NAVIGATION_SIDEBAR}>
-      <Global styles={StickySidebarStyle} />
       <StickyWrapper>
         {!skinnyMode && (
           <SearchBarWrapper>

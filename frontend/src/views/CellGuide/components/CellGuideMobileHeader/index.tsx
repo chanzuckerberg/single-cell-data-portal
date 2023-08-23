@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import { ButtonIcon } from "@czi-sds/components";
 import {
@@ -8,23 +8,22 @@ import {
   MobileSearchBarWrapper,
   StyledTitle,
 } from "./style";
-import { DispatchContext, StateContext } from "../../common/store";
-import { setMobileSearchOpen } from "../../common/store/actions";
+import { MobileSearchTint } from "../CellGuideCard/style";
 
-const CellGuideMobileHeader = () => {
-  const { cellGuideTitle, cellGuideNav, skinnyMode, mobileSearchIsOpen } =
-    useContext(StateContext);
-  const dispatch = useContext(DispatchContext);
+interface Props {
+  title: string;
+  pageNav: JSX.Element | null;
+}
 
+const CellGuideMobileHeader = ({ title = "", pageNav }: Props) => {
+  const [searchIsOpen, setSearchIsOpen] = useState(false);
   const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
 
   const search = (
     <MobileSearchBarWrapper
       onBlur={() => {
         // Hide the input box on blur
-        if (dispatch) {
-          dispatch(setMobileSearchOpen(false));
-        }
+        setSearchIsOpen(false);
       }}
     >
       <CellGuideCardSearchBar autoFocus />
@@ -39,15 +38,13 @@ const CellGuideMobileHeader = () => {
           sdsIcon="search"
           id="cellguide-search-icon"
           onClick={() => {
-            if (dispatch) {
-              dispatch(setMobileSearchOpen(true));
-            }
+            setSearchIsOpen(true);
           }}
         />
       </div>
 
       {/* Flex Item Middle */}
-      <StyledTitle id="cellguide-topic">{cellGuideTitle}</StyledTitle>
+      <StyledTitle id="cellguide-topic">{title}</StyledTitle>
 
       {/* Flex Item Right */}
       <div id="cellguide-nav-dropdown">
@@ -63,24 +60,23 @@ const CellGuideMobileHeader = () => {
 
   return (
     <>
-      {skinnyMode && (
-        <MobileHeaderWrapper>
-          {/* CellGuide Header - First Row */}
-          <MobileHeader>
-            {mobileSearchIsOpen ? search : navigation}
-          </MobileHeader>
+      {/* Screen tint when mobile search is open */}
+      {searchIsOpen && <MobileSearchTint />}
 
-          {/* CellGuide Page Nav - Second Row */}
-          <MobilePageNavWrapper
-            onClick={() => {
-              // Close nav when clicking on a section
-              setPageNavIsOpen(false);
-            }}
-          >
-            {pageNavIsOpen && cellGuideNav}
-          </MobilePageNavWrapper>
-        </MobileHeaderWrapper>
-      )}
+      <MobileHeaderWrapper>
+        {/* CellGuide Header - First Row */}
+        <MobileHeader>{searchIsOpen ? search : navigation}</MobileHeader>
+
+        {/* CellGuide Page Nav - Second Row */}
+        <MobilePageNavWrapper
+          onClick={() => {
+            // Close nav when clicking on a section
+            setPageNavIsOpen(false);
+          }}
+        >
+          {pageNavIsOpen && pageNav}
+        </MobilePageNavWrapper>
+      </MobileHeaderWrapper>
     </>
   );
 };

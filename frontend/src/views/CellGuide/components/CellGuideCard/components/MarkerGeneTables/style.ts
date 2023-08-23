@@ -14,6 +14,7 @@ export const TableTitleOuterWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  flex-wrap: wrap;
 `;
 
 export const PublicationLinkWrapper = styled.div`
@@ -82,4 +83,8 @@ export const MarkerGeneTooltipText = styled.div`
 export const MarkerGeneTooltipSubtext = styled.div`
   ${fontBodyXxs}
   color: ${gray400};
+`;
+
+export const MarkerGeneTableWrapper = styled.div`
+  max-width: calc(100vw - 48px);
 `;

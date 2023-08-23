@@ -28,6 +28,7 @@ import {
   MarkerGeneInfo,
   MarkerGeneTooltipText,
   MarkerGeneTooltipSubtext,
+  MarkerGeneTableWrapper,
 } from "./style";
 import Table from "../common/Table";
 import DropdownSelect from "../common/DropdownSelect";
@@ -481,7 +482,7 @@ const MarkerGeneTables = ({
     ? handleChangeOrganComputational
     : handleChangeOrganCanonical;
   return (
-    <div>
+    <MarkerGeneTableWrapper>
       <TableTitleWrapper>
         <TableTitleOuterWrapper>
           <TableTitleInnerWrapper columnGap={4}>
@@ -578,7 +579,7 @@ const MarkerGeneTables = ({
       ) : (
         tableUnavailableComponent
       )}
-    </div>
+    </MarkerGeneTableWrapper>
   );
 };
 

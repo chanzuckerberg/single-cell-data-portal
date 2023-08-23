@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 export const MobileHeaderWrapper = styled.div`
-  width: 100%;
+  width: 100vw;
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -18,7 +18,7 @@ export const MobileHeader = styled.div`
   align-items: center;
   background-color: white;
   padding: 0 8px;
-  gap: 16;
+  gap: 16px;
 `;
 
 export const StyledTitle = styled.div`
