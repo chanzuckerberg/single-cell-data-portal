@@ -446,7 +446,7 @@ class MarkerGenesCalculator:
                 "name": gene_names_to_ids[datum["gene_ontology_term_id"]],
             }
 
-            groupby_term_labels = [term.rsplit("_", 1)[0] for term in self.groupby_terms]
+            groupby_term_labels = [term.rsplit("_", 1)[0] + "_label" for term in self.groupby_terms]
             entry["groupby_dims"] = dict(zip(groupby_term_labels, (datum[term] for term in self.groupby_terms)))
 
             marker_gene_list.append(ComputationalMarkerGenes(**entry))
