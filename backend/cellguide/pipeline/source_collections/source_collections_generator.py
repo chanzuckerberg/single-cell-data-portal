@@ -16,9 +16,6 @@ def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> 
     datasets_dict = {dataset["dataset_id"]: dataset for dataset in all_datasets}
 
     source_collections_data: dict[str, list[SourceCollectionsData]] = {}
-    print(len(all_datasets))
-    print(len(all_collections))
-    print(len(all_cell_type_ids_in_corpus))
     for cell_id in all_cell_type_ids_in_corpus:
         lineage = descendants(cell_id)
         assert cell_id in lineage, f"{cell_id} not found in lineage"

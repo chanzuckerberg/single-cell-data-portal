@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def run_pipeline():
-    output_directory = f"cellguide_pipeline_output__{int(time.time())}"
+    output_directory = f"ontology_tree__{int(time.time())}"
 
     # Run ontology tree pipeline
     run_ontology_tree_pipeline(output_directory=output_directory)
