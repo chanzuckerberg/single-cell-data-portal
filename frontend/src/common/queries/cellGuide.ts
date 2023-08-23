@@ -34,8 +34,7 @@ export type CellGuideResponse =
   | CanonicalMarkersQueryResponse
   | GptDescriptionQueryResponse
   | CellTypeMetadataQueryResponse
-  | TissueMetadataQueryResponse
-  | LatestSnapshotIdentifierQueryResponse;
+  | TissueMetadataQueryResponse;
 
 /**
  * Generic fetch function
@@ -279,10 +278,6 @@ export const USE_LATEST_SNAPSHOT_IDENTIFIER_QUERY = {
 };
 
 export type LatestSnapshotIdentifierQueryResponse = string;
-
-export const useLatestSnapshotIdentifier = (): UseQueryResult<string> => {
-  return useCellGuideQuery<string>(TYPES.LATEST_SNAPSHOT_IDENTIFIER);
-};
 
 /* ========== description ========== */
 export const USE_GPT_DESCRIPTION_QUERY = {
