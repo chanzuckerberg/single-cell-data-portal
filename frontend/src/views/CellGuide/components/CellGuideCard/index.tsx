@@ -37,6 +37,7 @@ import {
 import DropdownSelect from "./components/common/DropdownSelect";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { useMarkerGenesTableTissueAndOrganismFilterListForCelltype } from "./components/MarkerGeneTables/hooks/common";
+import { NO_TISSUE_ID } from "./components/MarkerGeneTables/constants";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -100,9 +101,11 @@ export default function CellGuideCard({
   const uniqueTissues = Array.from(tissuesMap.keys());
 
   const [selectedTissue, setSelectedTissue] = useState(uniqueTissues[0]);
+  const [selectedTissueId, setSelectedTissueId] = useState(NO_TISSUE_ID);
 
   const handleChangeTissue = (event: SelectChangeEvent<unknown>) => {
     setSelectedTissue(event.target.value as string);
+    setSelectedTissueId(tissuesMap.get(event.target.value as string) ?? "");
   };
 
   const [selectedOrganism, setSelectedOrganism] = useState(organismsList[0]);
@@ -206,6 +209,8 @@ export default function CellGuideCard({
             <OntologyDagView
               key={cellTypeId}
               cellTypeId={cellTypeId}
+              tissueName={selectedTissue}
+              tissueId={selectedTissueId}
               skinnyMode={skinnyMode}
             />
           </FullScreenProvider>
