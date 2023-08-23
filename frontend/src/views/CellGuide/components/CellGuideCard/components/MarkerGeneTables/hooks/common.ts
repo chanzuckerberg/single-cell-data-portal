@@ -1,8 +1,5 @@
 import { useMemo } from "react";
-import {
-  useCanonicalMarkers,
-  useEnrichedGenes,
-} from "src/common/queries/cellGuide";
+import { useEnrichedGenes } from "src/common/queries/cellGuide";
 import { ALL_TISSUES, HOMO_SAPIENS } from "../constants";
 
 export function useMarkerGenesTableTissueAndOrganismFilterListForCelltype(
@@ -12,17 +9,10 @@ export function useMarkerGenesTableTissueAndOrganismFilterListForCelltype(
   uniqueOrganisms: string[];
 } {
   const { data: enrichedGenes } = useEnrichedGenes(cellTypeId);
-  const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
 
   return useMemo(() => {
     const tissues = new Set<string>([ALL_TISSUES]);
     const organisms = new Set<string>([HOMO_SAPIENS]);
-
-    if (canonicalMarkers) {
-      for (const markerGene of canonicalMarkers) {
-        tissues.add(markerGene.tissue);
-      }
-    }
 
     if (enrichedGenes) {
       for (const markerGene of enrichedGenes) {
@@ -47,5 +37,5 @@ export function useMarkerGenesTableTissueAndOrganismFilterListForCelltype(
       uniqueTissues: tissueList,
       uniqueOrganisms: organismList,
     };
-  }, [canonicalMarkers, enrichedGenes]);
+  }, [enrichedGenes]);
 }
