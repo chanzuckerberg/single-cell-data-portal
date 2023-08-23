@@ -34,7 +34,6 @@ export const MainWrapper = styled.div`
     align-items: flex-start;
     flex-direction: column;
     justify-content: flex-start;
-    // padding-top: ${HEADER_HEIGHT_PX}px;
   }
 `;
 
