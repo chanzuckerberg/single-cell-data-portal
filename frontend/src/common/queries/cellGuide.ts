@@ -52,10 +52,12 @@ async function fetchQuery({
     method: "GET",
     signal,
   });
-  if (response.status === 204) return undefined;
+  if (response.headers.get("Content-Length") === "0") {
+    return undefined;
+  }
   const json: CellGuideResponse = await response.json();
 
-  if (!response.ok) {
+  if (!response.ok && response.status !== 403) {
     throw json;
   }
 
@@ -68,8 +70,7 @@ async function fetchQuery({
 
 export function useCellGuideQuery<T = CellGuideResponse>(
   dataType: TYPES,
-  queryId = "", // Empty string if cell type is not needed for fetch function
-  skip = false
+  queryId = "" // Empty string if cell type is not needed for fetch function
 ): UseQueryResult<T> {
   const { queryKey, urlSuffix } = QUERY_MAPPING[dataType];
 
@@ -91,7 +92,7 @@ export function useCellGuideQuery<T = CellGuideResponse>(
         signal,
       }),
     {
-      enabled: !skip,
+      enabled: true,
       staleTime: Infinity,
     }
   );
@@ -114,7 +115,7 @@ export function useCellGuideQuery<T = CellGuideResponse>(
         signal,
       }),
     {
-      enabled: !!latestSnapshotIdentifier && !skip,
+      enabled: !!latestSnapshotIdentifier,
       staleTime: Infinity,
     }
   );
@@ -166,8 +167,7 @@ export const useCellOntologyTreeStateCellType = (
 ): UseQueryResult<CellOntologyTreeStateResponse> => {
   return useCellGuideQuery<CellOntologyTreeStateResponse>(
     TYPES.CELL_ONTOLOGY_TREE_STATE_CELLTYPE,
-    entityId,
-    entityId === ""
+    entityId
   );
 };
 
@@ -182,8 +182,7 @@ export const useCellOntologyTreeStateTissue = (
 ): UseQueryResult<CellOntologyTreeStateResponse> => {
   return useCellGuideQuery<CellOntologyTreeStateResponse>(
     TYPES.CELL_ONTOLOGY_TREE_STATE_TISSUE,
-    entityId,
-    entityId === ""
+    entityId
   );
 };
 
@@ -236,7 +235,7 @@ interface ComputationalMarkersQueryResponseEntry {
 export type ComputationalMarkersQueryResponse =
   ComputationalMarkersQueryResponseEntry[];
 
-export const useEnrichedGenes = (
+export const useComputationalMarkers = (
   entityId: string
 ): UseQueryResult<ComputationalMarkersQueryResponse> => {
   return useCellGuideQuery<ComputationalMarkersQueryResponse>(

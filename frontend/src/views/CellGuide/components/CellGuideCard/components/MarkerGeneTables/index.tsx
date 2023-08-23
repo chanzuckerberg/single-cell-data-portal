@@ -37,7 +37,7 @@ import {
   CanonicalMarkersQueryResponse,
   ComputationalMarkersQueryResponse,
   useCanonicalMarkers,
-  useEnrichedGenes,
+  useComputationalMarkers,
 } from "src/common/queries/cellGuide";
 import { useComputationalMarkerGenesTableRowsAndFilters } from "./hooks/computational_markers";
 import { useCanonicalMarkerGenesTableRowsAndFilters } from "./hooks/canonical_markers";
@@ -258,7 +258,7 @@ const MarkerGeneTables = ({
   const [canonicalMarkerGenes, setCanonicalMarkerGenes] =
     useState<CanonicalMarkersQueryResponse>([]);
 
-  const { data: enrichedGenes } = useEnrichedGenes(cellTypeId);
+  const { data: enrichedGenes } = useComputationalMarkers(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
 
   useEffect(() => {
