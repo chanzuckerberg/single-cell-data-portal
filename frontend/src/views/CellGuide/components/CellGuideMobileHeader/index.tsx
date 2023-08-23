@@ -8,19 +8,23 @@ import {
   MobileSearchBarWrapper,
   StyledTitle,
 } from "./style";
-import { StateContext } from "../../common/store";
+import { DispatchContext, StateContext } from "../../common/store";
+import { setMobileSearchOpen } from "../../common/store/actions";
 
 const CellGuideMobileHeader = () => {
-  const { cellGuideTitle, cellGuideNav, skinnyMode } = useContext(StateContext);
+  const { cellGuideTitle, cellGuideNav, skinnyMode, mobileSearchIsOpen } =
+    useContext(StateContext);
+  const dispatch = useContext(DispatchContext);
 
-  const [searchIsOpen, setSearchIsOpen] = useState(false);
   const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
 
   const search = (
     <MobileSearchBarWrapper
       onBlur={() => {
         // Hide the input box on blur
-        setSearchIsOpen(false);
+        if (dispatch) {
+          dispatch(setMobileSearchOpen(false));
+        }
       }}
     >
       <CellGuideCardSearchBar autoFocus />
@@ -35,7 +39,9 @@ const CellGuideMobileHeader = () => {
           sdsIcon="search"
           id="cellguide-search-icon"
           onClick={() => {
-            setSearchIsOpen(true);
+            if (dispatch) {
+              dispatch(setMobileSearchOpen(true));
+            }
           }}
         />
       </div>
@@ -60,7 +66,9 @@ const CellGuideMobileHeader = () => {
       {skinnyMode && (
         <MobileHeaderWrapper>
           {/* CellGuide Header - First Row */}
-          <MobileHeader>{searchIsOpen ? search : navigation}</MobileHeader>
+          <MobileHeader>
+            {mobileSearchIsOpen ? search : navigation}
+          </MobileHeader>
 
           {/* CellGuide Page Nav - Second Row */}
           <MobilePageNavWrapper

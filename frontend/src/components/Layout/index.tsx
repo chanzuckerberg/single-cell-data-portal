@@ -41,11 +41,9 @@ const Layout = ({ children }: Props) => {
     return (
       <DispatchContext.Provider value={dispatch}>
         <StateContext.Provider value={state}>
-          <Wrapper data-testid="global-layout-wrapper">
-            <LandingHeader title="CellGuide" homeUrl={ROUTES.CELL_GUIDE} />
-            <CellGuideMobileHeader />
-            {children}
-          </Wrapper>
+          <LandingHeader title="CellGuide" homeUrl={ROUTES.CELL_GUIDE} />
+          <CellGuideMobileHeader />
+          {children}
         </StateContext.Provider>
       </DispatchContext.Provider>
     );

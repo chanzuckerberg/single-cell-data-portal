@@ -16,6 +16,7 @@ import {
   LEFT_RIGHT_PADDING_PX,
   StyledRightSideBar,
   StyledSynonyms,
+  MobileSearchTint,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -60,8 +61,11 @@ export default function CellGuideCard({
 }: Props): JSX.Element {
   const router = useRouter();
 
-  const { cellGuideTitle: titleizedCellTypeName, skinnyMode } =
-    useContext(StateContext);
+  const {
+    cellGuideTitle: titleizedCellTypeName,
+    skinnyMode,
+    mobileSearchIsOpen,
+  } = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
   // Navigation
@@ -152,7 +156,17 @@ export default function CellGuideCard({
           key="twitter:description"
           content={seoDescription}
         />
+
+        {/* This prevents auto zooming on the input box on mobile */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+        />
       </Head>
+
+      {/* Screen tint when mobile search is open */}
+      {mobileSearchIsOpen && <MobileSearchTint />}
+
       <CellGuideView skinnyMode={skinnyMode}>
         {/* Flex item left */}
         <Wrapper>

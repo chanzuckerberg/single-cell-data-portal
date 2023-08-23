@@ -6,6 +6,7 @@ export interface State {
   cellGuideTitle: string | null;
   cellGuideNav: JSX.Element | null;
   skinnyMode: boolean;
+  mobileSearchIsOpen: boolean;
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -14,12 +15,14 @@ export const INITIAL_STATE: State = {
   cellGuideTitle: null,
   cellGuideNav: null,
   skinnyMode: false,
+  mobileSearchIsOpen: false,
 };
 
 export const REDUCERS = {
   setCellGuideTitle,
   setCellGuideNav,
   setSkinnyMode,
+  setMobileSearchIsOpen,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -67,5 +70,15 @@ function setSkinnyMode(
   return {
     ...state,
     skinnyMode: action.payload,
+  };
+}
+
+function setMobileSearchIsOpen(
+  state: State,
+  action: PayloadAction<State["mobileSearchIsOpen"]>
+): State {
+  return {
+    ...state,
+    mobileSearchIsOpen: action.payload,
   };
 }

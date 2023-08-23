@@ -29,6 +29,12 @@ export default function LandingPage(): JSX.Element {
           key="twitter:description"
           content={DESCRIPTION}
         />
+
+        {/* This prevents auto zooming on the input box on mobile */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+        />
       </Head>
       <Wrapper>
         <StyledHeader data-testid={LANDING_PAGE_HEADER}>

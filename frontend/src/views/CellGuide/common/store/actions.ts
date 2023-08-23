@@ -32,6 +32,15 @@ export function setSkinnyMode(
   };
 }
 
+export function setMobileSearchOpen(
+  payload: State["mobileSearchIsOpen"]
+): GetActionTypeOfReducer<typeof REDUCERS["setMobileSearchIsOpen"]> {
+  return {
+    payload,
+    type: "setMobileSearchIsOpen",
+  };
+}
+
 type GetActionTypeOfReducer<T> = T extends (
   state: never,
   action: infer Action

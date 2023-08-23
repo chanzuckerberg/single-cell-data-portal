@@ -10,6 +10,7 @@ import RightSideBar from "src/components/common/RightSideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import Synonyms from "src/components/Synonyms";
 import { spacesL, spacesXxs } from "src/common/theme";
+import { StyledDiv } from "src/views/WheresMyGene/components/ScreenTint/style";
 
 export const TOP_PADDING_PX = 32;
 export const SIDEBAR_COLUMN_GAP_PX = 120;
@@ -96,4 +97,10 @@ export const StyledRightSideBar = styled(RightSideBar)`
 export const StyledSynonyms = styled(Synonyms)`
   margin-top: ${spacesXxs}px;
   margin-left: ${spacesL}px;
+`;
+
+export const MobileSearchTint = styled(StyledDiv)`
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.3);
+  position: fixed;
 `;
