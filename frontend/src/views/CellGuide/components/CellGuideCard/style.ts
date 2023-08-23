@@ -49,7 +49,6 @@ export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  // min-width: 640px;
   margin-bottom: 80px;
 `;
 
