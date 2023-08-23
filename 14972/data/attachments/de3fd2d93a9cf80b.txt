@@ -1,0 +1,614 @@
+  pw:api => selectors.setTestIdAttribute started +5s
+  pw:api => browser.newContext started +16ms
+  pw:api <= selectors.setTestIdAttribute succeeded +9ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +105ms
+  pw:api   "commit" event fired +33ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +13ms
+  pw:api   "domcontentloaded" event fired +5ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +17ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +6ms
+  pw:api <= browserContext.newPage succeeded +66ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +6ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +7ms
+  pw:api   "commit" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +1ms
+  pw:api   "commit" event fired +4ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +20ms
+  pw:api <= page.goto succeeded +113ms
+  pw:api => locator.all started +2ms
+  pw:api   navigated to "about:blank" +162ms
+  pw:api <= locator.all succeeded +44ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +10ms
+  pw:api => locator.evaluate started +10ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +13ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +21ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +6ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +27ms
+  pw:api waiting for locator('meta').first() +48ms
+  pw:api waiting for locator('meta').nth(1) +17ms
+  pw:api waiting for locator('meta').nth(2) +40ms
+  pw:api waiting for locator('meta').nth(3) +18ms
+  pw:api waiting for locator('meta').nth(4) +43ms
+  pw:api waiting for locator('meta').nth(5) +44ms
+  pw:api waiting for locator('meta').nth(6) +26ms
+  pw:api waiting for locator('meta').nth(7) +24ms
+  pw:api waiting for locator('meta').nth(8) +29ms
+  pw:api waiting for locator('meta').nth(9) +13ms
+  pw:api waiting for locator('meta').nth(10) +12ms
+  pw:api waiting for locator('meta').nth(11) +12ms
+  pw:api waiting for locator('meta').nth(12) +8ms
+  pw:api waiting for locator('meta').nth(13) +8ms
+  pw:api waiting for locator('meta').nth(14) +17ms
+  pw:api waiting for locator('meta').nth(15) +12ms
+  pw:api waiting for locator('meta').nth(16) +7ms
+  pw:api waiting for locator('meta').nth(17) +13ms
+  pw:api   locator resolved to hidden <meta charset="utf-8"/> +102ms
+  pw:api   locator resolved to hidden <meta property="og:url" content="https://cellxgene.czi…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:creator" content="@cziscience"/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:site" content="@cziscience"/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:site_name" content="Cellxgene Data …/> +4ms
+  pw:api   locator resolved to hidden <meta property="og:image" content="https://cellxgene.c…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:image" content="https://cellxg…/> +1ms
+  pw:api   locator resolved to hidden <meta content="summary" property="twitter:card"/> +1ms
+  pw:api   locator resolved to hidden <meta content="website" property="og:type"/> +1ms
+  pw:api   locator resolved to hidden <meta property="title" content="Neuron Cell Types - CZ…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:title" content="Neuron Cell Types -…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:title" content="Neuron Cell Ty…/> +1ms
+  pw:api   locator resolved to hidden <meta name="description" content="Find comprehensive i…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:description" content="Find comprehe…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:description" content="Find com…/> +7ms
+  pw:api   locator resolved to hidden <meta name="viewport" id="newsletter-signup-meta" cont…/> +4ms
+  pw:api   locator resolved to hidden <meta content="17" name="next-head-count"/> +8ms
+  pw:api   locator resolved to hidden <meta content="#000000" name="theme-color"/> +2ms
+  pw:api <= locator.evaluate succeeded +480ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +7ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +2ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +63ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +42ms
+  pw:api <= locator.evaluate succeeded +10ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api => page.waitForTimeout started +44ms
+  pw:api <= page.waitForTimeout succeeded +226ms
+  pw:api => locator.evaluate started +1ms
+  pw:api => locator.evaluate started +8ms
+  pw:api => locator.evaluate started +9ms
+  pw:api => locator.evaluate started +10ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +9ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +22ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +10ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +14ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +11ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +23ms
+  pw:api => locator.evaluate started +2ms
+  pw:api waiting for locator('meta').first() +37ms
+  pw:api waiting for locator('meta').nth(1) +13ms
+  pw:api waiting for locator('meta').nth(2) +31ms
+  pw:api waiting for locator('meta').nth(3) +12ms
+  pw:api waiting for locator('meta').nth(4) +20ms
+  pw:api waiting for locator('meta').nth(5) +7ms
+  pw:api waiting for locator('meta').nth(6) +12ms
+  pw:api waiting for locator('meta').nth(7) +17ms
+  pw:api waiting for locator('meta').nth(8) +8ms
+  pw:api waiting for locator('meta').nth(9) +13ms
+  pw:api waiting for locator('meta').nth(10) +31ms
+  pw:api waiting for locator('meta').nth(11) +9ms
+  pw:api waiting for locator('meta').nth(12) +14ms
+  pw:api waiting for locator('meta').nth(13) +15ms
+  pw:api waiting for locator('meta').nth(14) +9ms
+  pw:api waiting for locator('meta').nth(15) +17ms
+  pw:api waiting for locator('meta').nth(16) +6ms
+  pw:api waiting for locator('meta').nth(17) +22ms
+  pw:api   locator resolved to hidden <meta charset="utf-8"/> +33ms
+  pw:api   locator resolved to hidden <meta property="og:url" content="https://cellxgene.czi…/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:creator" content="@cziscience"/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:site" content="@cziscience"/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:site_name" content="Cellxgene Data …/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:image" content="https://cellxgene.c…/> +0ms
+  pw:api   locator resolved to hidden <meta property="twitter:image" content="https://cellxg…/> +0ms
+  pw:api   locator resolved to hidden <meta content="summary" property="twitter:card"/> +3ms
+  pw:api   locator resolved to hidden <meta content="website" property="og:type"/> +1ms
+  pw:api   locator resolved to hidden <meta property="title" content="Neuron Cell Types - CZ…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:title" content="Neuron Cell Types -…/> +2ms
+  pw:api   locator resolved to hidden <meta property="twitter:title" content="Neuron Cell Ty…/> +1ms
+  pw:api   locator resolved to hidden <meta name="description" content="Find comprehensive i…/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:description" content="Find comprehe…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:description" content="Find com…/> +1ms
+  pw:api   locator resolved to hidden <meta name="viewport" id="newsletter-signup-meta" cont…/> +1ms
+  pw:api   locator resolved to hidden <meta content="17" name="next-head-count"/> +3ms
+  pw:api   locator resolved to hidden <meta content="#000000" name="theme-color"/> +1ms
+  pw:api <= locator.evaluate succeeded +282ms
+  pw:api <= locator.evaluate succeeded +4ms
+  pw:api <= locator.evaluate succeeded +5ms
+  pw:api <= locator.evaluate succeeded +18ms
+  pw:api <= locator.evaluate succeeded +50ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +21ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api => page.waitForTimeout started +14ms
+  pw:api <= page.waitForTimeout succeeded +279ms
+  pw:api => locator.evaluate started +1ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +12ms
+  pw:api => locator.evaluate started +19ms
+  pw:api => locator.evaluate started +10ms
+  pw:api => locator.evaluate started +7ms
+  pw:api => locator.evaluate started +19ms
+  pw:api => locator.evaluate started +8ms
+  pw:api => locator.evaluate started +19ms
+  pw:api => locator.evaluate started +9ms
+  pw:api => locator.evaluate started +16ms
+  pw:api => locator.evaluate started +15ms
+  pw:api => locator.evaluate started +12ms
+  pw:api => locator.evaluate started +16ms
+  pw:api => locator.evaluate started +14ms
+  pw:api => locator.evaluate started +22ms
+  pw:api => locator.evaluate started +10ms
+  pw:api waiting for locator('meta').first() +49ms
+  pw:api waiting for locator('meta').nth(1) +8ms
+  pw:api waiting for locator('meta').nth(2) +12ms
+  pw:api waiting for locator('meta').nth(3) +9ms
+  pw:api waiting for locator('meta').nth(4) +20ms
+  pw:api waiting for locator('meta').nth(5) +20ms
+  pw:api waiting for locator('meta').nth(6) +20ms
+  pw:api waiting for locator('meta').nth(7) +19ms
+  pw:api waiting for locator('meta').nth(8) +21ms
+  pw:api waiting for locator('meta').nth(9) +36ms
+  pw:api waiting for locator('meta').nth(10) +20ms
+  pw:api waiting for locator('meta').nth(11) +11ms
+  pw:api waiting for locator('meta').nth(12) +25ms
+  pw:api waiting for locator('meta').nth(13) +33ms
+  pw:api waiting for locator('meta').nth(14) +19ms
+  pw:api waiting for locator('meta').nth(15) +24ms
+  pw:api waiting for locator('meta').nth(16) +20ms
+  pw:api waiting for locator('meta').nth(17) +6ms
+  pw:api   locator resolved to hidden <meta charset="utf-8"/> +87ms
+  pw:api   locator resolved to hidden <meta property="og:url" content="https://cellxgene.czi…/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:creator" content="@cziscience"/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:site" content="@cziscience"/> +6ms
+  pw:api   locator resolved to hidden <meta property="og:site_name" content="Cellxgene Data …/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:image" content="https://cellxgene.c…/> +2ms
+  pw:api   locator resolved to hidden <meta property="twitter:image" content="https://cellxg…/> +0ms
+  pw:api   locator resolved to hidden <meta content="summary" property="twitter:card"/> +10ms
+  pw:api   locator resolved to hidden <meta content="website" property="og:type"/> +0ms
+  pw:api   locator resolved to hidden <meta property="title" content="Neuron Cell Types - CZ…/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:title" content="Neuron Cell Types -…/> +0ms
+  pw:api   locator resolved to hidden <meta property="twitter:title" content="Neuron Cell Ty…/> +0ms
+  pw:api   locator resolved to hidden <meta name="description" content="Find comprehensive i…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:description" content="Find comprehe…/> +0ms
+  pw:api   locator resolved to hidden <meta property="twitter:description" content="Find com…/> +0ms
+  pw:api   locator resolved to hidden <meta name="viewport" id="newsletter-signup-meta" cont…/> +0ms
+  pw:api   locator resolved to hidden <meta content="17" name="next-head-count"/> +1ms
+  pw:api   locator resolved to hidden <meta content="#000000" name="theme-color"/> +0ms
+  pw:api <= locator.evaluate succeeded +413ms
+  pw:api <= locator.evaluate succeeded +3ms
+  pw:api <= locator.evaluate succeeded +3ms
+  pw:api <= locator.evaluate succeeded +11ms
+  pw:api <= locator.evaluate succeeded +23ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +52ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api => page.waitForTimeout started +5ms
+  pw:api <= page.waitForTimeout succeeded +231ms
+  pw:api => locator.evaluate started +1ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +28ms
+  pw:api => locator.evaluate started +17ms
+  pw:api => locator.evaluate started +10ms
+  pw:api => locator.evaluate started +8ms
+  pw:api => locator.evaluate started +7ms
+  pw:api => locator.evaluate started +8ms
+  pw:api => locator.evaluate started +13ms
+  pw:api => locator.evaluate started +9ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +16ms
+  pw:api => locator.evaluate started +6ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +18ms
+  pw:api => locator.evaluate started +3ms
+  pw:api waiting for locator('meta').first() +41ms
+  pw:api waiting for locator('meta').nth(1) +7ms
+  pw:api waiting for locator('meta').nth(2) +13ms
+  pw:api waiting for locator('meta').nth(3) +20ms
+  pw:api waiting for locator('meta').nth(4) +20ms
+  pw:api waiting for locator('meta').nth(5) +16ms
+  pw:api waiting for locator('meta').nth(6) +20ms
+  pw:api waiting for locator('meta').nth(7) +16ms
+  pw:api waiting for locator('meta').nth(8) +12ms
+  pw:api waiting for locator('meta').nth(9) +17ms
+  pw:api waiting for locator('meta').nth(10) +19ms
+  pw:api waiting for locator('meta').nth(11) +20ms
+  pw:api waiting for locator('meta').nth(12) +20ms
+  pw:api waiting for locator('meta').nth(13) +33ms
+  pw:api waiting for locator('meta').nth(14) +11ms
+  pw:api waiting for locator('meta').nth(15) +20ms
+  pw:api waiting for locator('meta').nth(16) +30ms
+  pw:api waiting for locator('meta').nth(17) +26ms
+  pw:api   locator resolved to hidden <meta charset="utf-8"/> +87ms
+  pw:api   locator resolved to hidden <meta property="og:url" content="https://cellxgene.czi…/> +2ms
+  pw:api   locator resolved to hidden <meta property="og:creator" content="@cziscience"/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:site" content="@cziscience"/> +5ms
+  pw:api   locator resolved to hidden <meta property="og:site_name" content="Cellxgene Data …/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:image" content="https://cellxgene.c…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:image" content="https://cellxg…/> +1ms
+  pw:api   locator resolved to hidden <meta content="summary" property="twitter:card"/> +1ms
+  pw:api   locator resolved to hidden <meta content="website" property="og:type"/> +1ms
+  pw:api   locator resolved to hidden <meta property="title" content="Neuron Cell Types - CZ…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:title" content="Neuron Cell Types -…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:title" content="Neuron Cell Ty…/> +1ms
+  pw:api   locator resolved to hidden <meta name="description" content="Find comprehensive i…/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:description" content="Find comprehe…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:description" content="Find com…/> +1ms
+  pw:api   locator resolved to hidden <meta name="viewport" id="newsletter-signup-meta" cont…/> +1ms
+  pw:api   locator resolved to hidden <meta content="17" name="next-head-count"/> +1ms
+  pw:api   locator resolved to hidden <meta content="#000000" name="theme-color"/> +1ms
+  pw:api <= locator.evaluate succeeded +498ms
+  pw:api <= locator.evaluate succeeded +10ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +12ms
+  pw:api <= locator.evaluate succeeded +43ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +15ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +26ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api => page.waitForTimeout started +19ms
+  pw:api <= page.waitForTimeout succeeded +216ms
+  pw:api => locator.evaluate started +1ms
+  pw:api => locator.evaluate started +22ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +18ms
+  pw:api => locator.evaluate started +12ms
+  pw:api => locator.evaluate started +12ms
+  pw:api => locator.evaluate started +7ms
+  pw:api => locator.evaluate started +15ms
+  pw:api => locator.evaluate started +15ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +10ms
+  pw:api => locator.evaluate started +7ms
+  pw:api => locator.evaluate started +10ms
+  pw:api => locator.evaluate started +9ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +2ms
+  pw:api waiting for locator('meta').first() +10ms
+  pw:api waiting for locator('meta').nth(1) +12ms
+  pw:api waiting for locator('meta').nth(2) +10ms
+  pw:api waiting for locator('meta').nth(3) +5ms
+  pw:api waiting for locator('meta').nth(4) +8ms
+  pw:api waiting for locator('meta').nth(5) +7ms
+  pw:api waiting for locator('meta').nth(6) +6ms
+  pw:api waiting for locator('meta').nth(7) +6ms
+  pw:api waiting for locator('meta').nth(8) +6ms
+  pw:api waiting for locator('meta').nth(9) +7ms
+  pw:api waiting for locator('meta').nth(10) +8ms
+  pw:api waiting for locator('meta').nth(11) +6ms
+  pw:api waiting for locator('meta').nth(12) +6ms
+  pw:api waiting for locator('meta').nth(13) +6ms
+  pw:api waiting for locator('meta').nth(14) +17ms
+  pw:api waiting for locator('meta').nth(15) +15ms
+  pw:api waiting for locator('meta').nth(16) +12ms
+  pw:api waiting for locator('meta').nth(17) +4ms
+  pw:api   locator resolved to hidden <meta charset="utf-8"/> +42ms
+  pw:api   locator resolved to hidden <meta property="og:url" content="https://cellxgene.czi…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:creator" content="@cziscience"/> +8ms
+  pw:api   locator resolved to hidden <meta property="og:site" content="@cziscience"/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:site_name" content="Cellxgene Data …/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:image" content="https://cellxgene.c…/> +0ms
+  pw:api   locator resolved to hidden <meta property="twitter:image" content="https://cellxg…/> +2ms
+  pw:api   locator resolved to hidden <meta content="summary" property="twitter:card"/> +0ms
+  pw:api   locator resolved to hidden <meta content="website" property="og:type"/> +0ms
+  pw:api   locator resolved to hidden <meta property="title" content="Neuron Cell Types - CZ…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:title" content="Neuron Cell Types -…/> +0ms
+  pw:api   locator resolved to hidden <meta property="twitter:title" content="Neuron Cell Ty…/> +0ms
+  pw:api   locator resolved to hidden <meta name="description" content="Find comprehensive i…/> +2ms
+  pw:api   locator resolved to hidden <meta property="og:description" content="Find comprehe…/> +0ms
+  pw:api   locator resolved to hidden <meta property="twitter:description" content="Find com…/> +4ms
+  pw:api   locator resolved to hidden <meta name="viewport" id="newsletter-signup-meta" cont…/> +3ms
+  pw:api   locator resolved to hidden <meta content="17" name="next-head-count"/> +0ms
+  pw:api   locator resolved to hidden <meta content="#000000" name="theme-color"/> +1ms
+  pw:api <= locator.evaluate succeeded +378ms
+  pw:api <= locator.evaluate succeeded +2ms
+  pw:api <= locator.evaluate succeeded +2ms
+  pw:api <= locator.evaluate succeeded +3ms
+  pw:api <= locator.evaluate succeeded +7ms
+  pw:api <= locator.evaluate succeeded +98ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +14ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api => page.waitForTimeout started +21ms
+  pw:api <= page.waitForTimeout succeeded +219ms
+  pw:api => locator.evaluate started +1ms
+  pw:api => locator.evaluate started +5ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +19ms
+  pw:api => locator.evaluate started +8ms
+  pw:api => locator.evaluate started +16ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +13ms
+  pw:api => locator.evaluate started +5ms
+  pw:api => locator.evaluate started +12ms
+  pw:api => locator.evaluate started +31ms
+  pw:api => locator.evaluate started +13ms
+  pw:api => locator.evaluate started +12ms
+  pw:api => locator.evaluate started +8ms
+  pw:api => locator.evaluate started +8ms
+  pw:api => locator.evaluate started +16ms
+  pw:api => locator.evaluate started +17ms
+  pw:api => locator.evaluate started +8ms
+  pw:api waiting for locator('meta').first() +87ms
+  pw:api waiting for locator('meta').nth(1) +11ms
+  pw:api waiting for locator('meta').nth(2) +5ms
+  pw:api waiting for locator('meta').nth(3) +3ms
+  pw:api waiting for locator('meta').nth(4) +34ms
+  pw:api waiting for locator('meta').nth(5) +17ms
+  pw:api waiting for locator('meta').nth(6) +20ms
+  pw:api waiting for locator('meta').nth(7) +26ms
+  pw:api waiting for locator('meta').nth(8) +7ms
+  pw:api waiting for locator('meta').nth(9) +13ms
+  pw:api waiting for locator('meta').nth(10) +12ms
+  pw:api waiting for locator('meta').nth(11) +11ms
+  pw:api waiting for locator('meta').nth(12) +9ms
+  pw:api waiting for locator('meta').nth(13) +11ms
+  pw:api waiting for locator('meta').nth(14) +13ms
+  pw:api waiting for locator('meta').nth(15) +15ms
+  pw:api waiting for locator('meta').nth(16) +35ms
+  pw:api waiting for locator('meta').nth(17) +22ms
+  pw:api   locator resolved to hidden <meta charset="utf-8"/> +52ms
+  pw:api   locator resolved to hidden <meta property="og:url" content="https://cellxgene.czi…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:creator" content="@cziscience"/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:site" content="@cziscience"/> +2ms
+  pw:api   locator resolved to hidden <meta property="og:site_name" content="Cellxgene Data …/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:image" content="https://cellxgene.c…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:image" content="https://cellxg…/> +1ms
+  pw:api   locator resolved to hidden <meta content="summary" property="twitter:card"/> +2ms
+  pw:api   locator resolved to hidden <meta content="website" property="og:type"/> +1ms
+  pw:api   locator resolved to hidden <meta property="title" content="Neuron Cell Types - CZ…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:title" content="Neuron Cell Types -…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:title" content="Neuron Cell Ty…/> +1ms
+  pw:api   locator resolved to hidden <meta name="description" content="Find comprehensive i…/> +3ms
+  pw:api   locator resolved to hidden <meta property="og:description" content="Find comprehe…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:description" content="Find com…/> +1ms
+  pw:api   locator resolved to hidden <meta name="viewport" id="newsletter-signup-meta" cont…/> +9ms
+  pw:api   locator resolved to hidden <meta content="17" name="next-head-count"/> +2ms
+  pw:api   locator resolved to hidden <meta content="#000000" name="theme-color"/> +1ms
+  pw:api <= locator.evaluate succeeded +332ms
+  pw:api <= locator.evaluate succeeded +3ms
+  pw:api <= locator.evaluate succeeded +3ms
+  pw:api <= locator.evaluate succeeded +16ms
+  pw:api <= locator.evaluate succeeded +77ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +5ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api => page.waitForTimeout started +18ms
+  pw:api <= page.waitForTimeout succeeded +232ms
+  pw:api => locator.evaluate started +1ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +15ms
+  pw:api => locator.evaluate started +12ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +16ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +10ms
+  pw:api => locator.evaluate started +6ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +20ms
+  pw:api => locator.evaluate started +5ms
+  pw:api waiting for locator('meta').first() +844ms
+  pw:api waiting for locator('meta').nth(1) +5ms
+  pw:api waiting for locator('meta').nth(2) +16ms
+  pw:api waiting for locator('meta').nth(3) +9ms
+  pw:api waiting for locator('meta').nth(4) +111ms
+  pw:api waiting for locator('meta').nth(5) +41ms
+  pw:api waiting for locator('meta').nth(6) +46ms
+  pw:api waiting for locator('meta').nth(7) +179ms
+  pw:api waiting for locator('meta').nth(8) +24ms
+  pw:api waiting for locator('meta').nth(9) +21ms
+  pw:api   "networkidle" event fired +10ms
+  pw:api waiting for locator('meta').nth(10) +17ms
+  pw:api waiting for locator('meta').nth(11) +24ms
+  pw:api waiting for locator('meta').nth(12) +26ms
+  pw:api waiting for locator('meta').nth(13) +12ms
+  pw:api waiting for locator('meta').nth(14) +12ms
+  pw:api waiting for locator('meta').nth(15) +12ms
+  pw:api waiting for locator('meta').nth(16) +11ms
+  pw:api waiting for locator('meta').nth(17) +10ms
+  pw:api   locator resolved to hidden <meta charset="utf-8"/> +445ms
+  pw:api   locator resolved to hidden <meta property="og:url" content="https://cellxgene.czi…/> +2ms
+  pw:api   locator resolved to hidden <meta property="og:creator" content="@cziscience"/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:site" content="@cziscience"/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:site_name" content="Cellxgene Data …/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:image" content="https://cellxgene.c…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:image" content="https://cellxg…/> +1ms
+  pw:api   locator resolved to hidden <meta content="summary" property="twitter:card"/> +1ms
+  pw:api   locator resolved to hidden <meta content="website" property="og:type"/> +2ms
+  pw:api   locator resolved to hidden <meta property="title" content="Neuron Cell Types - CZ…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:title" content="Neuron Cell Types -…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:title" content="Neuron Cell Ty…/> +1ms
+  pw:api   locator resolved to hidden <meta name="viewport" id="newsletter-signup-meta" cont…/> +1ms
+  pw:api   locator resolved to hidden <meta name="description" content="Find comprehensive i…/> +2ms
+  pw:api   locator resolved to hidden <meta property="og:description" content="Find comprehe…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:description" content="Find com…/> +1ms
+  pw:api   locator resolved to hidden <meta content="17" name="next-head-count"/> +1ms
+  pw:api   locator resolved to hidden <meta content="#000000" name="theme-color"/> +2ms
+  pw:api <= locator.evaluate succeeded +331ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +15ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-header-name') to be visible +12ms
+  pw:api   locator resolved to visible <h1 data-testid="cell-guide-card-header-name" class=…>Neuron</h1> +8ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-header-name') +27ms
+  pw:api <= locator.isVisible succeeded +15ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-header-tag') to be visible +12ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-header-tag" class="…>…</div> +10ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-header-tag') +11ms
+  pw:api <= locator.isVisible succeeded +31ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-cl-description') to be visible +12ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-cl-description" cla…>…</div> +4ms
+  pw:api <= locator.waitFor succeeded +12ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-cl-description') +13ms
+  pw:api <= locator.isVisible succeeded +33ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-description') to be visible +11ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-gpt-description" cl…>…</div> +4ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +0ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-gpt-description') +11ms
+  pw:api <= locator.isVisible succeeded +12ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-synonyms') to be visible +21ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-synonyms" class="ep…>…</div> +5ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-synonyms') +12ms
+  pw:api <= locator.isVisible succeeded +13ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') to be visible +28ms
+  pw:api   locator resolved to visible <a target="_blank" data-mui-internal-clone-element=…>…</a> +7ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-gpt-tooltip-link') +13ms
+  pw:api <= locator.isVisible succeeded +12ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar') to be visible +11ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-search-bar">…</div> +12ms
+  pw:api <= locator.waitFor succeeded +14ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-search-bar') +15ms
+  pw:api <= locator.isVisible succeeded +15ms
+  pw:api => locator.waitFor started +6ms
+  pw:api waiting for getByTestId('cell-guide-card-canonical-marker-genes-table') to be visible +16ms
+  pw:api   locator resolved to visible <div class="css-n08b0e-TableWrapper e161gt4e1" data-t…>…</div> +16ms
+  pw:api <= locator.waitFor succeeded +12ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-canonical-marker-genes-table') +12ms
+  pw:api <= locator.isVisible succeeded +23ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +19ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +7ms
+  pw:api <= locator.waitFor succeeded +14ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-ontology-dag-view') +21ms
+  pw:api <= locator.isVisible succeeded +14ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-header-name') +11ms
+  pw:api   locator resolved to <h1 data-testid="cell-guide-card-header-name" class=…>Neuron</h1> +4ms
+  pw:api <= locator.textContent succeeded +11ms
+  pw:api taking page screenshot +6ms
