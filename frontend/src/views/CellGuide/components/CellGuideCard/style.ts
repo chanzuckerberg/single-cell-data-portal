@@ -28,6 +28,7 @@ export const CellGuideView = styled.div`
   flex-direction: row;
   column-gap: ${SIDEBAR_COLUMN_GAP_PX}px;
   margin: auto;
+  margin-bottom: 80px;
 
   ${(props: CellGuideViewProps) => {
     const { skinnyMode } = props;
