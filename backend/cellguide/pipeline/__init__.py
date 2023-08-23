@@ -80,6 +80,15 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
 
     subprocess.run(sync_command)
 
+    # Create an empty file named 404
+    with open("404", "w") as file:
+        pass
+
+    # Upload the empty 404 file to the bucket
+    # this is used for custom cloudfront error handling
+    upload_404_command = ["aws", "s3", "cp", "404", f"{bucket_path}404", "--quiet"]
+    subprocess.run(upload_404_command)
+
 
 if __name__ == "__main__":
     run_cellguide_pipeline()
