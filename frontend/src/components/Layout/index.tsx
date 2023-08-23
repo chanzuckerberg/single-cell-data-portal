@@ -26,7 +26,6 @@ const Layout = ({ children }: Props) => {
       <Wrapper data-testid="global-layout-wrapper">
         <LandingHeader title="CellGuide" />
         {children}
-        {/* <Footer /> */}
       </Wrapper>
     );
   } else if (pathname === ROUTES.CELL_GUIDE + "/[cellTypeId]") {
