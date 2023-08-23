@@ -143,6 +143,7 @@ export default function CellGuideCard({
         />
       </Head>
 
+      {/* Cell Guide Mobile Navigation */}
       {skinnyMode && (
         <CellGuideMobileHeader
           title={titleizedCellTypeName}
