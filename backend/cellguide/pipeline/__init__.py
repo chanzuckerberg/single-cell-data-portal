@@ -10,6 +10,7 @@ from backend.cellguide.pipeline.constants import CELL_GUIDE_DATA_BUCKET_PATH_PRE
 from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
 from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
+from backend.common.utils.cloudfront import create_invalidation_for_cellguide_data
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,9 @@ def run_cellguide_pipeline():
     run_computational_marker_gene_pipeline(output_directory=output_directory)
 
     upload_cellguide_pipeline_output_to_s3(output_directory=output_directory)
+
+    # invalidate cloudfront distribution to reset cache
+    create_invalidation_for_cellguide_data()
 
 
 def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
