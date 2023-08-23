@@ -94,8 +94,10 @@ export default function CellGuideCard({
 
   const [geneInfoGene, setGeneInfoGene] = useState<Gene["name"] | null>(null);
 
-  const { uniqueOrganisms, uniqueTissues } =
+  const { organismsList, tissuesMap } =
     useMarkerGenesTableTissueAndOrganismFilterListForCelltype(cellTypeId);
+
+  const uniqueTissues = Array.from(tissuesMap.keys());
 
   const [selectedTissue, setSelectedTissue] = useState(uniqueTissues[0]);
 
@@ -103,7 +105,7 @@ export default function CellGuideCard({
     setSelectedTissue(event.target.value as string);
   };
 
-  const [selectedOrganism, setSelectedOrganism] = useState(uniqueOrganisms[0]);
+  const [selectedOrganism, setSelectedOrganism] = useState(organismsList[0]);
 
   const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
     setSelectedOrganism(event.target.value as string);
@@ -178,7 +180,7 @@ export default function CellGuideCard({
             <CellGuideCardHeaderInnerWrapper>
               <DropdownSelect
                 handleChange={handleChangeOrganism}
-                options={uniqueOrganisms}
+                options={organismsList}
                 selectedOption={selectedOrganism}
                 testId={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
               />

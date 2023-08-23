@@ -311,7 +311,6 @@ describe("Cell Guide", () => {
         await dropdown.press("ArrowDown");
         await dropdown.press("ArrowDown");
         await dropdown.press("ArrowDown");
-        await dropdown.press("ArrowDown");
         await dropdown.press("ArrowDown"); // selects Brain
         await dropdown.press("Enter");
 
