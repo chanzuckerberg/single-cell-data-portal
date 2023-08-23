@@ -917,124 +917,132 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         revision = self.business_logic.get_collection_version(revision.version_id)
         self.assertNotIn(dataset_version_id_to_delete.id, [dv.version_id.id for dv in revision.datasets])
 
-    def test_deletion_of_dataset_assets_and_rows(self):
-        with self.subTest("Updated Dataset in private Collection not deleted until Collection is deleted"):
-            collection = self.initialize_unpublished_collection(complete_dataset_ingestion=True)
-            dataset_version_id_to_remove = collection.datasets[0].version_id
-            self.business_logic.remove_dataset_version(collection.version_id, dataset_version_id_to_remove)
-            self.assertIsNotNone(self.business_logic.get_dataset_version(dataset_version_id_to_remove))
-            updated_collection = self.business_logic.get_collection_version(collection.version_id)
-            dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
-            self.assertNotIn(dataset_version_id_to_remove.id, dataset_version_id_strs)
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
-            self.business_logic.delete_collection_version(collection)
-            self.assertIsNone(self.business_logic.get_dataset_version(dataset_version_id_to_remove))
-            [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
-        with self.subTest("Updated Dataset in private Collection not deleted until Collection is published"):
-            collection = self.initialize_unpublished_collection(complete_dataset_ingestion=True)
-            dataset_to_replace = collection.datasets[0]
-            dataset_to_keep = collection.datasets[1]
-            new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
-                collection.version_id, dataset_to_replace.version_id
-            )
-            self.business_logic.set_dataset_metadata(new_dataset_version.version_id, self.sample_dataset_metadata)
-            self.complete_dataset_processing_with_success(new_dataset_version.version_id)
+    def test_cleanup_occurs_after_deletion_for_private_collection(self):
+        """
+        Updated Dataset assets and rows in private Collection should not be deleted until after Collection is deleted
+        """
+        collection = self.initialize_unpublished_collection(complete_dataset_ingestion=True)
+        dataset_version_id_to_remove = collection.datasets[0].version_id
+        self.business_logic.remove_dataset_version(collection.version_id, dataset_version_id_to_remove)
+        self.assertIsNotNone(self.business_logic.get_dataset_version(dataset_version_id_to_remove))
+        updated_collection = self.business_logic.get_collection_version(collection.version_id)
+        dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
+        self.assertNotIn(dataset_version_id_to_remove.id, dataset_version_id_strs)
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
+        self.business_logic.delete_collection_version(collection)
+        self.assertIsNone(self.business_logic.get_dataset_version(dataset_version_id_to_remove))
+        [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for d in collection.datasets for a in d.artifacts]
 
-            self.assertIsNotNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
+    def test_cleanup_occurs_after_publication_of_private_collection(self):
+        """
+        Outdated, unused Dataset assets and rows in private Collection not deleted until after Collection is published
+        """
+        collection = self.initialize_unpublished_collection(complete_dataset_ingestion=True)
+        dataset_to_replace = collection.datasets[0]
+        dataset_to_keep = collection.datasets[1]
+        new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+            collection.version_id, dataset_to_replace.version_id
+        )
+        self.business_logic.set_dataset_metadata(new_dataset_version.version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(new_dataset_version.version_id)
 
-            updated_collection = self.business_logic.get_collection_version(collection.version_id)
-            dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
-            self.assertNotIn(dataset_to_replace.version_id.id, dataset_version_id_strs)
+        self.assertIsNotNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
 
-            # Artifacts for dataset_to_replace should exist
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
-            # Artifacts for dataset_to_keep should exist
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_keep.artifacts]
-            # Artifacts for new_dataset_version should exist
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
+        updated_collection = self.business_logic.get_collection_version(collection.version_id)
+        dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
+        self.assertNotIn(dataset_to_replace.version_id.id, dataset_version_id_strs)
 
-            self.business_logic.publish_collection_version(collection.version_id)
+        # Artifacts for dataset_to_replace should exist
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
+        # Artifacts for dataset_to_keep should exist
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_keep.artifacts]
+        # Artifacts for new_dataset_version should exist
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
 
-            self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
+        self.business_logic.publish_collection_version(collection.version_id)
 
-            # Artifacts for dataset_to_replace should be gone
-            [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
-            # Artifacts for dataset_to_keep should remain
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_keep.artifacts]
-            # Artifacts for new_dataset_version should remain
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
-        with self.subTest("New Dataset not deleted until revision is canceled"):
-            collection = self.initialize_published_collection()
-            dataset_to_replace = collection.datasets[0]
+        self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
 
-            revision = self.business_logic.create_collection_version(collection.collection_id)
+        # Artifacts for dataset_to_replace should be gone
+        [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
+        # Artifacts for dataset_to_keep should remain
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_keep.artifacts]
+        # Artifacts for new_dataset_version should remain
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
 
-            updated_dataset_version_id, _ = self.business_logic.ingest_dataset(
-                revision.version_id, "http://fake.url", None, dataset_to_replace.version_id
-            )
-            self.business_logic.set_dataset_metadata(updated_dataset_version_id, self.sample_dataset_metadata)
-            self.complete_dataset_processing_with_success(updated_dataset_version_id)
-            updated_dataset_version = self.business_logic.get_dataset_version(updated_dataset_version_id)
+    def test_cleanup_occurs_after_revision_is_canceled(self):
+        """
+        New Dataset assets and rows not deleted until after revision is canceled (for previously-published Collection)
+        """
+        collection = self.initialize_published_collection()
+        dataset_to_replace = collection.datasets[0]
 
-            updated_updated_dataset_version_id, _ = self.business_logic.ingest_dataset(
-                revision.version_id, "http://fake.url", None, updated_dataset_version_id
-            )
-            self.business_logic.set_dataset_metadata(updated_updated_dataset_version_id, self.sample_dataset_metadata)
-            self.complete_dataset_processing_with_success(updated_updated_dataset_version_id)
-            updated_updated_dataset_version = self.business_logic.get_dataset_version(
-                updated_updated_dataset_version_id
-            )
+        revision = self.business_logic.create_collection_version(collection.collection_id)
 
-            # Add new Dataset
-            new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-                revision.version_id, "http://fake.url", None, None
-            )
-            self.business_logic.set_dataset_metadata(new_dataset_version_id, self.sample_dataset_metadata)
-            self.complete_dataset_processing_with_success(new_dataset_version_id)
-            new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
+        updated_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision.version_id, "http://fake.url", None, dataset_to_replace.version_id
+        )
+        self.business_logic.set_dataset_metadata(updated_dataset_version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(updated_dataset_version_id)
+        updated_dataset_version = self.business_logic.get_dataset_version(updated_dataset_version_id)
 
-            # Update the new Dataset
-            updated_new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-                revision.version_id, "http://fake.url", None, new_dataset_version_id
-            )
-            self.business_logic.set_dataset_metadata(updated_new_dataset_version_id, self.sample_dataset_metadata)
-            self.complete_dataset_processing_with_success(updated_new_dataset_version_id)
-            updated_new_dataset_version = self.business_logic.get_dataset_version(updated_new_dataset_version_id)
+        updated_updated_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision.version_id, "http://fake.url", None, updated_dataset_version_id
+        )
+        self.business_logic.set_dataset_metadata(updated_updated_dataset_version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(updated_updated_dataset_version_id)
+        updated_updated_dataset_version = self.business_logic.get_dataset_version(updated_updated_dataset_version_id)
 
-            # Artifacts for initial published Datasets should exist
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for dv in collection.datasets for a in dv.artifacts]
-            # Artifacts for updated_dataset_version and updated_updated_dataset_version should exist
-            [
-                self.assertTrue(self.s3_provider.uri_exists(a.uri))
-                for d in (updated_dataset_version, updated_updated_dataset_version)
-                for a in d.artifacts
-            ]
-            # Artifacts for new_dataset_version should exist
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
-            # Artifacts for updated_new_dataset_version should exist
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_new_dataset_version.artifacts]
+        # Add new Dataset
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision.version_id, "http://fake.url", None, None
+        )
+        self.business_logic.set_dataset_metadata(new_dataset_version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(new_dataset_version_id)
+        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
 
-            self.business_logic.publish_collection_version(revision.version_id)
+        # Update the new Dataset
+        updated_new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision.version_id, "http://fake.url", None, new_dataset_version_id
+        )
+        self.business_logic.set_dataset_metadata(updated_new_dataset_version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(updated_new_dataset_version_id)
+        updated_new_dataset_version = self.business_logic.get_dataset_version(updated_new_dataset_version_id)
 
-            # Initial published Datasets should remain
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for dv in collection.datasets for a in dv.artifacts]
-            [self.assertIsNotNone(self.business_logic.get_dataset_version(dv.version_id)) for dv in collection.datasets]
+        # Artifacts for initial published Datasets should exist
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for dv in collection.datasets for a in dv.artifacts]
+        # Artifacts for updated_dataset_version and updated_updated_dataset_version should exist
+        [
+            self.assertTrue(self.s3_provider.uri_exists(a.uri))
+            for d in (updated_dataset_version, updated_updated_dataset_version)
+            for a in d.artifacts
+        ]
+        # Artifacts for new_dataset_version should exist
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
+        # Artifacts for updated_new_dataset_version should exist
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_new_dataset_version.artifacts]
 
-            # updated_dataset_version should be gone
-            [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in updated_dataset_version.artifacts]
-            self.assertIsNone(self.business_logic.get_dataset_version(updated_dataset_version_id))
+        self.business_logic.publish_collection_version(revision.version_id)
 
-            # updated_updated_dataset_version should remain
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_updated_dataset_version.artifacts]
-            self.assertIsNotNone(self.business_logic.get_dataset_version(updated_updated_dataset_version_id))
+        # Initial published Datasets should remain
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for dv in collection.datasets for a in dv.artifacts]
+        [self.assertIsNotNone(self.business_logic.get_dataset_version(dv.version_id)) for dv in collection.datasets]
 
-            # Artifacts for new_dataset_version should not exist
-            [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
-            # Artifacts for updated_new_dataset_version should exist
-            [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_new_dataset_version.artifacts]
+        # updated_dataset_version should be gone
+        [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in updated_dataset_version.artifacts]
+        self.assertIsNone(self.business_logic.get_dataset_version(updated_dataset_version_id))
 
-            self.assertIsNone(self.business_logic.get_dataset_version(new_dataset_version_id))
-            self.assertIsNotNone(self.business_logic.get_dataset_version(updated_new_dataset_version_id))
+        # updated_updated_dataset_version should remain
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_updated_dataset_version.artifacts]
+        self.assertIsNotNone(self.business_logic.get_dataset_version(updated_updated_dataset_version_id))
+
+        # Artifacts for new_dataset_version should not exist
+        [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
+        # Artifacts for updated_new_dataset_version should exist
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in updated_new_dataset_version.artifacts]
+
+        self.assertIsNone(self.business_logic.get_dataset_version(new_dataset_version_id))
+        self.assertIsNotNone(self.business_logic.get_dataset_version(updated_new_dataset_version_id))
 
     @patch("backend.layers.business.business.BusinessLogic._delete_from_bucket")
     def test_delete_artifacts(self, _delete_from_bucket_mock):
