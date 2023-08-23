@@ -303,7 +303,8 @@ export const USE_GPT_SEO_DESCRIPTION_QUERY = {
 };
 
 interface GptSeoDescriptionQueryResponse {
-  [cellTypeId: string]: { name: string; description: string };
+  name: string;
+  description: string;
 }
 
 export const fetchGptSeoDescription = async (
@@ -322,7 +323,6 @@ export const fetchGptSeoDescription = async (
   const url = `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${QUERY_MAPPING[
     TYPES.GPT_SEO_DESCRIPTION
   ].urlSuffix.replace("%s", entityId)}`;
-  console.log(url);
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

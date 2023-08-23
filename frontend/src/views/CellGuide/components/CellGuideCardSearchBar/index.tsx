@@ -147,6 +147,9 @@ export default function CellGuideCardSearchBar(): JSX.Element {
             </SectionItem>
           );
         }}
+        getOptionLabel={(option: unknown) =>
+          option ? (option as Entity).name : ""
+        }
         autoComplete
         filterOptions={(options, state) => {
           return options

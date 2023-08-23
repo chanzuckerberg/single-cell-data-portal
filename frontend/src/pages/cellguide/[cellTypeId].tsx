@@ -16,9 +16,7 @@ export const getServerSideProps: GetServerSideProps<{
   const { params } = context;
   const { cellTypeId: rawCellTypeId } = params ?? {};
   const cellTypeId = (rawCellTypeId as string)?.replace("_", ":");
-  const allCellTypeDescriptionsSEO = await fetchGptSeoDescription(cellTypeId);
-
-  const cellType = allCellTypeDescriptionsSEO?.[cellTypeId];
+  const cellType = await fetchGptSeoDescription(cellTypeId);
 
   const { name, description: seoDescription } = cellType ?? {
     name: "",
