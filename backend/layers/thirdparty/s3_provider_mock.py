@@ -29,18 +29,11 @@ class MockS3Provider(S3ProviderInterface):
             with contextlib.suppress(KeyError):  # if key is not in bucket
                 self.mock_s3_fs.remove(f"s3://{bucket_name}/{key}")
 
-    # def delete_recursive(self, bucket_name: str, prefix: str) -> None:
-    #     resp = self.resource.Bucket(bucket_name).objects.filter(Prefix=prefix).delete()
-    #     url_prefix = f"s3://{bucket_name}/{prefix}"
-    #     for key in self.mock_s3_fs:
-    #         if key.startswith(url_prefix):
-    #             del
-    #     if resp and isinstance(resp, list):
-    #         if deleted := resp[0].get("Deleted"):
-    #             logger.info(f"Deleted: {deleted}")
-    #         if errors := resp[0].get("Errors"):
-    #             logger.info(f"Errors: {errors}")
-    #             raise S3DeleteException(errors)
+    def delete_recursive(self, bucket_name: str, prefix: str) -> None:
+        bucket_and_prefix = f"s3://{bucket_name}/{prefix}"
+        for obj in self.mock_s3_fs:
+            if obj.startswith(bucket_and_prefix):
+                self.mock_s3_fs.remove(obj)
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         pass
