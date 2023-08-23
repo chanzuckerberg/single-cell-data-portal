@@ -103,7 +103,6 @@ export function useCellGuideQuery<T = CellGuideResponse>(
       );
     }
   }, [rawLatestSnapshotIdentifier]);
-
   return useQuery(
     queryId ? [queryKey, queryId, latestSnapshotIdentifier] : [queryKey],
     ({ signal }) =>
@@ -320,6 +319,7 @@ export const fetchGptSeoDescription = async (
   const url = `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${QUERY_MAPPING[
     TYPES.GPT_SEO_DESCRIPTION
   ].urlSuffix.replace("%s", entityId)}`;
+  console.log(url);
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
@@ -336,7 +336,7 @@ export const USE_CELLTYPE_METADATA_QUERY = {
 interface CellTypeMetadataQueryResponse {
   [cellTypeId: string]: {
     id: string;
-    label: string;
+    name: string;
     synonyms?: string[];
     clDescription?: string;
   };
@@ -355,14 +355,14 @@ export const USE_TISSUE_METADATA_QUERY = {
   id: "cell-guide-tissue-metadata-query",
 };
 
-interface TissueMetadataQueryResponseEntry {
-  id: string;
-  label: string;
-  synonyms?: string[];
-  uberonDescription?: string;
+export interface TissueMetadataQueryResponse {
+  [tissueId: string]: {
+    id: string;
+    name: string;
+    synonyms?: string[];
+    uberonDescription?: string;
+  };
 }
-
-export type TissueMetadataQueryResponse = TissueMetadataQueryResponseEntry[];
 
 export const useTissueMetadata =
   (): UseQueryResult<TissueMetadataQueryResponse> => {
@@ -404,31 +404,31 @@ const QUERY_MAPPING: {
   },
   CELL_ONTOLOGY_TREE_STATE_CELLTYPE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_STATE_CELLTYPE_QUERY,
-    urlSuffix: `cell_type_ontology_tree_state/%s`,
+    urlSuffix: `cell_type_ontology_tree_state/%s.json`,
   },
   CELL_ONTOLOGY_TREE_STATE_TISSUE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY,
-    urlSuffix: `tissue_ontology_tree_state/%s`,
+    urlSuffix: `tissue_ontology_tree_state/%s.json`,
   },
   SOURCE_COLLECTIONS: {
     queryKey: USE_SOURCE_COLLECTIONS_QUERY,
-    urlSuffix: `source_collections/%s`,
+    urlSuffix: `source_collections/%s.json`,
   },
   COMPUTATIONAL_MARKERS: {
     queryKey: USE_COMPUTATIONAL_MARKERS_QUERY,
-    urlSuffix: `computational_marker_genes/%s`,
+    urlSuffix: `computational_marker_genes/%s.json`,
   },
   CANONICAL_MARKERS: {
     queryKey: USE_CANONICAL_MARKERS_QUERY,
-    urlSuffix: `canonical_marker_genes/%s`,
+    urlSuffix: `canonical_marker_genes/%s.json`,
   },
   GPT_DESCRIPTION: {
     queryKey: USE_GPT_DESCRIPTION_QUERY,
-    urlSuffix: `gpt_descriptions/%s`,
+    urlSuffix: `gpt_descriptions/%s.json`,
   },
   GPT_SEO_DESCRIPTION: {
     queryKey: USE_GPT_SEO_DESCRIPTION_QUERY,
-    urlSuffix: `gpt_seo_descriptions/%s`,
+    urlSuffix: `gpt_seo_descriptions/%s.json`,
   },
   CELLTYPE_METADATA: {
     queryKey: USE_CELLTYPE_METADATA_QUERY,
@@ -439,7 +439,7 @@ const QUERY_MAPPING: {
     urlSuffix: "tissue_metadata.json",
   },
   LATEST_SNAPSHOT_IDENTIFIER: {
-    queryKey: USE_TISSUE_METADATA_QUERY,
+    queryKey: USE_LATEST_SNAPSHOT_IDENTIFIER_QUERY,
     urlSuffix: "latest_snapshot_identifier",
   },
 };

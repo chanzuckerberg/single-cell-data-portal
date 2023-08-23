@@ -18,24 +18,25 @@ import {
 
 interface Entity {
   id: string;
-  cell_types?: string[]; // only tissues have cell_types
-  label: string;
+  name: string;
   synonyms?: string[]; // only cell types (optionally) have synonyms
 }
 
+const TISSUE_PREFIX = "UBERON:";
+
 export default function CellGuideCardSearchBar(): JSX.Element {
   const router = useRouter();
-  const { data: tissueData } = useCellTypeMetadata();
-  const { data: cellTypes } = useTissueMetadata();
+  const { data: cellTypes } = useCellTypeMetadata();
+  const { data: tissueData } = useTissueMetadata();
 
   const options: Entity[] = useMemo(() => {
     if (!tissueData || !cellTypes) return [];
     const entities: Entity[] = [];
-    for (const cellType of cellTypes) {
-      entities.push(cellType);
+    for (const cellType in cellTypes) {
+      entities.push(cellTypes[cellType]);
     }
-    for (const tissue of tissueData) {
-      entities.push(tissue);
+    for (const tissue in tissueData) {
+      entities.push(tissueData[tissue]);
     }
     return entities;
   }, [tissueData, cellTypes]);
@@ -129,21 +130,20 @@ export default function CellGuideCardSearchBar(): JSX.Element {
               {...props}
               key={entity.id}
               onClick={() => {
-                // Only tissues have cell_types
-                if (!entity.cell_types) {
+                if (!entity.id.startsWith(TISSUE_PREFIX)) {
                   track(EVENTS.CG_SEARCH_CT_TISSUE, {
-                    cell_type: entity.label,
+                    cell_type: entity.name,
                   });
                 } else {
                   track(EVENTS.CG_SEARCH_CT_TISSUE, {
-                    tissue: entity.label,
+                    tissue: entity.name,
                   });
                 }
 
                 changeEntity(entity.id);
               }}
             >
-              {entity.label}
+              {entity.name}
             </SectionItem>
           );
         }}
@@ -160,16 +160,16 @@ export default function CellGuideCardSearchBar(): JSX.Element {
               );
 
               return (
-                entity.label &&
-                (entity.label.toLowerCase().includes(searchTerm) ||
+                entity.name &&
+                (entity.name.toLowerCase().includes(searchTerm) ||
                   synonymStartsWithSearch)
               );
             })
             .sort((entity1, entity2) => {
               const entityA = entity1 as Entity;
               const entityB = entity2 as Entity;
-              const aRaw = entityA.label;
-              const bRaw = entityB.label;
+              const aRaw = entityA.name;
+              const bRaw = entityB.name;
               const a = aRaw.toLowerCase();
               const b = bRaw.toLowerCase();
               const searchTerm = state.inputValue.toLowerCase();

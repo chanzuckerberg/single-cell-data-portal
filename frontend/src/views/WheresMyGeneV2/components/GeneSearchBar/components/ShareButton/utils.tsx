@@ -107,7 +107,7 @@ export const loadStateFromQueryParams = ({
    * (thuang): Map tissue names to IDs for backwards compatibility
    */
   const tissueIdsByName = new Map(
-    tissues?.map((tissue) => [tissue.label, tissue.id])
+    Object.entries(tissues ?? {}).map(([id, tissue]) => [tissue.name, id])
   );
 
   Object.keys(selectedFilters).forEach((key) => {
