@@ -1,0 +1,168 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +6ms
+  pw:api <= selectors.setTestIdAttribute succeeded +10ms
+  pw:api <= browserType.launch succeeded +195ms
+  pw:api => browser.newContext started +5ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +59ms
+  pw:api   "commit" event fired +18ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +13ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +6ms
+  pw:api => browserContext.newPage started +5ms
+  pw:api <= browserContext.newPage succeeded +58ms
+  pw:api => page.waitForLoadState started +21ms
+  pw:api => page.goto started +6ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +13ms
+  pw:api   "commit" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +4ms
+  pw:api   "commit" event fired +9ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api   "networkidle" event fired +0ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +4ms
+  pw:api <= page.goto succeeded +3s
+  pw:api => locator.waitFor started +9ms
+  pw:api   navigated to "about:blank" +103ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') to be visible +102ms
+  pw:api   locator resolved to visible <input value="" type="text" role="combobox" autocomplet…/> +117ms
+  pw:api <= locator.waitFor succeeded +65ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +26ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +20ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +29ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +48ms
+  pw:api   click action done +139ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +100ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +71ms
+  pw:api => page.waitForTimeout started +40ms
+  pw:api <= page.waitForTimeout succeeded +336ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +39ms
+  pw:api => page.waitForTimeout started +8ms
+  pw:api <= page.waitForTimeout succeeded +284ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +38ms
+  pw:api => page.waitForTimeout started +5ms
+  pw:api <= page.waitForTimeout succeeded +275ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +32ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +261ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +49ms
+  pw:api => page.waitForTimeout started +7ms
+  pw:api <= page.waitForTimeout succeeded +257ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +12ms
+  pw:api => page.waitForTimeout started +11ms
+  pw:api <= page.waitForTimeout succeeded +276ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +61ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +247ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +10ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +279ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +45ms
+  pw:api => page.waitForTimeout started +4ms
+  pw:api <= page.waitForTimeout succeeded +271ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +12ms
+  pw:api => page.waitForTimeout started +6ms
+  pw:api <= page.waitForTimeout succeeded +271ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +9ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +243ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +9ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +272ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +16ms
+  pw:api => page.waitForTimeout started +7ms
+  pw:api <= page.waitForTimeout succeeded +256ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +24ms
+  pw:api => page.waitForTimeout started +6ms
+  pw:api <= page.waitForTimeout succeeded +281ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +10ms
+  pw:api => page.waitForTimeout started +9ms
+  pw:api <= page.waitForTimeout succeeded +327ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +24ms
+  pw:api => page.waitForTimeout started +8ms
+  pw:api <= page.waitForTimeout succeeded +273ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +12ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +259ms
+  pw:api => locator.all started +0ms
+  pw:api <= locator.all succeeded +8ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +243ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +26ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +257ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +16ms
+  pw:api => page.waitForTimeout started +7ms
+  pw:api <= page.waitForTimeout succeeded +378ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +16ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api   "networkidle" event fired +487ms
+  pw:api <= page.waitForTimeout succeeded +366ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +32ms
+  pw:api => locator.all started +3ms
+  pw:api <= locator.all succeeded +29ms
+  pw:api => locator.type started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +22ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +8ms
+  pw:api elementHandle.type("acinar cell") +2ms
+  pw:api <= locator.type succeeded +560ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +11ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +8ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByRole('option').first() +16ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" data-option-index="0…>acinar cell</li> +8ms
+  pw:api <= locator.textContent succeeded +15ms
+  pw:api => page.waitForURL started +2ms
+  pw:api => locator.click started +5ms
+  pw:api waiting for navigation to "https://localhost:3000/cellguide/CL_0000622" until "load" +11ms
+  pw:api waiting for getByRole('option').first() +22ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" data-option-index="0…>acinar cell</li> +38ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +19ms
+  pw:api   click action done +41ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +10ms
+  pw:api <= locator.click succeeded +51ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000622" +8s
+  pw:api <= page.waitForURL succeeded +8ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000622" +23ms
+  pw:api taking page screenshot +9ms
+  pw:api   navigated to "about:blank" +679ms
