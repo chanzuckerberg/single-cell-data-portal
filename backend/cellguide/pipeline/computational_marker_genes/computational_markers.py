@@ -448,6 +448,12 @@ class MarkerGenesCalculator:
 
             groupby_term_labels = [term.rsplit("_", 1)[0] + "_label" for term in self.groupby_terms]
             entry["groupby_dims"] = dict(zip(groupby_term_labels, (datum[term] for term in self.groupby_terms)))
+            # map IDs to label
+            for key in entry["groupby_dims"]:
+                if key == "tissue_ontology_term_label":
+                    entry["groupby_dims"][key] = self.tissue_id_to_name.get(entry[key], entry[key])
+                elif key == "organism_ontology_term_label":
+                    entry["groupby_dims"][key] = self.organism_id_to_name.get(entry[key], entry[key])
 
             marker_gene_list.append(ComputationalMarkerGenes(**entry))
             formatted_data[datum["cell_type_ontology_term_id"]] = marker_gene_list
