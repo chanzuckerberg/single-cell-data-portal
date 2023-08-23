@@ -308,9 +308,18 @@ export const fetchGptSeoDescription = async (
   entityId: string
 ): Promise<GptSeoDescriptionQueryResponse> => {
   // This function is used server-side to fetch the GPT SEO description.
-  const url = getCellGuideDataUrl(
-    QUERY_MAPPING[TYPES.GPT_SEO_DESCRIPTION].urlSuffix.replace("%s", entityId)
+  const latestSnapshotIdentifierUrl = `${CELLGUIDE_DATA_URL}/${
+    QUERY_MAPPING[TYPES.LATEST_SNAPSHOT_IDENTIFIER].urlSuffix
+  }`;
+  const latestSnapshotIdentifierResponse = await fetch(
+    latestSnapshotIdentifierUrl
   );
+  const latestSnapshotIdentifier =
+    await latestSnapshotIdentifierResponse.text();
+
+  const url = `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${QUERY_MAPPING[
+    TYPES.GPT_SEO_DESCRIPTION
+  ].urlSuffix.replace("%s", entityId)}`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
@@ -403,9 +412,17 @@ export const useTissueMetadata =
 export const fetchTissueMetadata =
   async (): Promise<TissueMetadataQueryResponse> => {
     // This function is used server-side to fetch the GPT SEO description.
-    const url = getCellGuideDataUrl(
-      QUERY_MAPPING[TYPES.TISSUE_METADATA].urlSuffix
+    const latestSnapshotIdentifierUrl = `${CELLGUIDE_DATA_URL}/${
+      QUERY_MAPPING[TYPES.LATEST_SNAPSHOT_IDENTIFIER].urlSuffix
+    }`;
+    const latestSnapshotIdentifierResponse = await fetch(
+      latestSnapshotIdentifierUrl
     );
+    const latestSnapshotIdentifier =
+      await latestSnapshotIdentifierResponse.text();
+    const url = `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${
+      QUERY_MAPPING[TYPES.TISSUE_METADATA].urlSuffix
+    }`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
