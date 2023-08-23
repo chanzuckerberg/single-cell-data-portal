@@ -74,6 +74,9 @@ export function useCellGuideQuery<T = CellGuideResponse>(
 ): UseQueryResult<T> {
   const { queryKey, urlSuffix } = QUERY_MAPPING[dataType];
 
+  // if the query is "CL:0000000" make it "CL_0000000"
+  queryId = queryId.replace(":", "_");
+
   const [latestSnapshotIdentifier, setLatestSnapshotIdentifier] = useState<
     LatestSnapshotIdentifierQueryResponse | undefined
   >(undefined);
