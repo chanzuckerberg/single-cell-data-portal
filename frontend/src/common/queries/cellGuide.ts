@@ -57,7 +57,7 @@ async function fetchQuery({
   }
   const json: CellGuideResponse = await response.json();
 
-  if (!response.ok && response.status !== 403) {
+  if (!response.ok) {
     throw json;
   }
 
