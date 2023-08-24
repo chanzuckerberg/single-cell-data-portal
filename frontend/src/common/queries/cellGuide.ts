@@ -111,8 +111,8 @@ export function useCellGuideQuery<T = CellGuideResponse>(
 
   const queryUrlSuffix = urlSuffix.replace("%s", queryId);
   const queryUrl = queryLatestSnapshotIdentifier
-    ? `${CELLGUIDE_DATA_URL}/${queryUrlSuffix}`
-    : `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${queryUrlSuffix}`;
+    ? `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${queryUrlSuffix}`
+    : `${CELLGUIDE_DATA_URL}/${queryUrlSuffix}`;
   return useQuery(
     queryId ? [queryKey, queryId, latestSnapshotIdentifier] : [queryKey],
     ({ signal }) =>
