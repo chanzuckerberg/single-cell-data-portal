@@ -51,6 +51,8 @@ export const TableUnavailableContainer = styled("div")`
   justify-content: center;
   text-align: center;
   border-radius: 8px;
+
+  padding: 0 8px;
 `;
 
 export const TableUnavailableHeader = styled("span")`

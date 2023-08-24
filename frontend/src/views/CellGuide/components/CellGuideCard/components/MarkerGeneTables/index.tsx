@@ -240,12 +240,14 @@ interface Props {
   cellTypeId: string;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
   cellTypeName: string;
+  skinnyMode: boolean;
 }
 
 const MarkerGeneTables = ({
   cellTypeId,
   cellTypeName,
   setGeneInfoGene,
+  skinnyMode,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -505,10 +507,12 @@ const MarkerGeneTables = ({
                 testId={CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
               />
             )}
-            <Link
-              url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
-              label="Open in Gene Expression"
-            />
+            {skinnyMode && (
+              <Link
+                url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
+                label="Open in Gene Expression"
+              />
+            )}
           </TableTitleInnerWrapper>
         </TableTitleOuterWrapper>
       </TableTitleWrapper>

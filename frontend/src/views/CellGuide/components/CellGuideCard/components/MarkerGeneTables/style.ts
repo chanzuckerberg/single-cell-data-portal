@@ -68,6 +68,7 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
 export const MarkerGenePagination = styled.div`
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
 `;
 
 export const MarkerGeneInfo = styled.div`
@@ -86,5 +87,5 @@ export const MarkerGeneTooltipSubtext = styled.div`
 `;
 
 export const MarkerGeneTableWrapper = styled.div`
-  max-width: calc(100vw - 48px);
+  max-width: calc(100vw - 32px);
 `;

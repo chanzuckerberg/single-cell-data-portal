@@ -9,5 +9,5 @@ export const StyledTag = styled(Tag)`
 `;
 
 export const SourceDataTableWrapper = styled.div`
-  max-width: calc(100vw - 48px);
+  max-width: calc(100vw - 32px);
 `;

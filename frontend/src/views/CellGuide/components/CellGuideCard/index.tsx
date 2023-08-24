@@ -10,6 +10,8 @@ import {
   LEFT_RIGHT_PADDING_PX,
   StyledRightSideBar,
   StyledSynonyms,
+  FlexContainer,
+  StyledOntologyId,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -159,34 +161,48 @@ export default function CellGuideCard({
          */}
           {/* Intro section */}
           <div ref={sectionRef0} id="section-0" data-testid="section-0" />
-          <CellGuideCardHeader>
-            <CellGuideCardHeaderInnerWrapper>
-              <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
-                {!skinnyMode && titleizedCellTypeName}
-              </CellGuideCardName>
-              <a
-                href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                <StyledTag
-                  data-testid={CELL_GUIDE_CARD_HEADER_TAG}
-                  label={cellTypeId}
-                  sdsType="secondary"
-                  sdsStyle="square"
-                  color="gray"
-                  hover
-                />
-              </a>
-            </CellGuideCardHeaderInnerWrapper>
-          </CellGuideCardHeader>
+          {!skinnyMode && (
+            <CellGuideCardHeader>
+              <CellGuideCardHeaderInnerWrapper>
+                <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
+                  {titleizedCellTypeName}
+                </CellGuideCardName>
+                <a
+                  href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  <StyledTag
+                    data-testid={CELL_GUIDE_CARD_HEADER_TAG}
+                    label={cellTypeId}
+                    sdsType="secondary"
+                    sdsStyle="square"
+                    color="gray"
+                    hover
+                  />
+                </a>
+              </CellGuideCardHeaderInnerWrapper>
+            </CellGuideCardHeader>
+          )}
 
-          <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
-
-          <StyledSynonyms
-            synonyms={synonyms}
-            data-testid={CELL_GUIDE_CARD_SYNONYMS}
+          <Description
+            cellTypeId={cellTypeId}
+            cellTypeName={cellTypeName}
+            skinnyMode={skinnyMode}
           />
+
+          <FlexContainer>
+            {skinnyMode && (
+              <StyledOntologyId
+                cellTypeIdRaw={cellTypeIdRaw}
+                ontologyId={cellTypeId}
+              />
+            )}
+            <StyledSynonyms
+              synonyms={synonyms}
+              data-testid={CELL_GUIDE_CARD_SYNONYMS}
+            />
+          </FlexContainer>
 
           {/* Cell Ontology section */}
           <div ref={sectionRef1} id="section-1" data-testid="section-1" />
@@ -205,6 +221,7 @@ export default function CellGuideCard({
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}
+            skinnyMode={skinnyMode}
           />
 
           {/* Source Data section */}

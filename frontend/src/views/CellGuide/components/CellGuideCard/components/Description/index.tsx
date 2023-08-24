@@ -26,10 +26,12 @@ import {
 interface DescriptionProps {
   cellTypeName: string;
   cellTypeId: string;
+  skinnyMode: boolean;
 }
 export default function Description({
   cellTypeId,
   cellTypeName,
+  skinnyMode,
 }: DescriptionProps): JSX.Element {
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
   const [descriptionCl, setDescriptionCl] = useState<string>("");
@@ -86,27 +88,29 @@ export default function Description({
         <DescriptionHeader>Experimental Description</DescriptionHeader>
         {descriptionGpt}
         <Source>
-          <div>
-            <em>
-              We're still validating ChatGPT descriptions with our Biocurator
-              team. Once a description is validated, we'll add references and a
-              validation icon. If you believe a description is inaccurate,
-              please{" "}
-              <a
-                href={CELL_GUIDE_CORRECTION_SURVEY_LINK}
-                target="_blank"
-                rel="noreferrer noopener"
-                onClick={() => {
-                  track(EVENTS.SUBMIT_CORRECTION_CLICKED, {
-                    cell_type_name: cellTypeName,
-                  });
-                }}
-              >
-                submit a correction
-              </a>
-              .
-            </em>
-          </div>
+          {skinnyMode && (
+            <div>
+              <em>
+                We're still validating ChatGPT descriptions with our Biocurator
+                team. Once a description is validated, we'll add references and
+                a validation icon. If you believe a description is inaccurate,
+                please{" "}
+                <a
+                  href={CELL_GUIDE_CORRECTION_SURVEY_LINK}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  onClick={() => {
+                    track(EVENTS.SUBMIT_CORRECTION_CLICKED, {
+                      cell_type_name: cellTypeName,
+                    });
+                  }}
+                >
+                  submit a correction
+                </a>
+                .
+              </em>
+            </div>
+          )}
 
           <SourceLink>
             {"Source: ChatGPT "}

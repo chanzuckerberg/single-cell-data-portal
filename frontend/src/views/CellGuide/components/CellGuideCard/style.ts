@@ -11,6 +11,7 @@ import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import Synonyms from "src/components/Synonyms";
 import { spacesL, spacesXxs } from "src/common/theme";
 import { StyledDiv } from "src/views/WheresMyGene/components/ScreenTint/style";
+import OntologyId from "src/components/OntologyId";
 
 export const TOP_PADDING_PX = 32;
 export const SIDEBAR_COLUMN_GAP_PX = 120;
@@ -33,7 +34,7 @@ export const CellGuideView = styled.div`
   ${(props: CellGuideViewProps) => {
     const { skinnyMode } = props;
     const spaces = getSpaces(props);
-    const space = skinnyMode ? spaces?.xl : spaces?.xxl;
+    const space = skinnyMode ? spaces?.l : spaces?.xxl;
     const maxWidth = skinnyMode ? "100vw" : "1440px";
 
     return `
@@ -100,8 +101,18 @@ export const StyledSynonyms = styled(Synonyms)`
   margin-left: ${spacesL}px;
 `;
 
+export const StyledOntologyId = styled(OntologyId)`
+  margin-top: ${spacesXxs}px;
+  margin-left: ${spacesL}px;
+`;
+
 export const MobileSearchTint = styled(StyledDiv)`
   z-index: 1;
   background: rgba(0, 0, 0, 0.3);
   position: fixed;
+`;
+
+export const FlexContainer = styled.div`
+  display: flex;
+  flex-direction: column;
 `;

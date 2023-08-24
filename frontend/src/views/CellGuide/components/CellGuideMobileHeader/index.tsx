@@ -6,6 +6,8 @@ import {
   MobileHeaderWrapper,
   MobilePageNavWrapper,
   MobileSearchBarWrapper,
+  SearchBarWrapper,
+  StyledCancelButton,
   StyledTitle,
 } from "./style";
 import { MobileSearchTint } from "../CellGuideCard/style";
@@ -26,7 +28,17 @@ const CellGuideMobileHeader = ({ title = "", pageNav }: Props) => {
         setSearchIsOpen(false);
       }}
     >
-      <CellGuideCardSearchBar autoFocus />
+      <SearchBarWrapper>
+        <CellGuideCardSearchBar autoFocus />
+      </SearchBarWrapper>
+
+      <StyledCancelButton
+        onClick={() => {
+          setSearchIsOpen(false);
+        }}
+      >
+        Cancel
+      </StyledCancelButton>
     </MobileSearchBarWrapper>
   );
 
@@ -49,7 +61,7 @@ const CellGuideMobileHeader = ({ title = "", pageNav }: Props) => {
       {/* Flex Item Right */}
       <div id="cellguide-nav-dropdown">
         <ButtonIcon
-          sdsIcon="chevronDown"
+          sdsIcon={pageNavIsOpen ? "chevronUp" : "chevronDown"}
           onClick={() => {
             setPageNavIsOpen(!pageNavIsOpen);
           }}
