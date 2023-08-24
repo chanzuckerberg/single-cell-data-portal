@@ -8,14 +8,13 @@ import {
   goToWMG,
   selectSecondaryFilterOption,
 } from "tests/utils/wmgUtils";
-import { expandTissue, goToPage, tryUntil } from "tests/utils/helpers";
+import { goToPage, tryUntil } from "tests/utils/helpers";
 import {
   COLOR_SCALE_TOOLTIP_TEXT,
   GROUP_BY_TOOLTIP_TEXT,
   SORT_CELL_TYPES_TOOLTIP_TEXT,
   SORT_GENES_TOOLTIP_TEXT,
 } from "src/views/WheresMyGene/common/constants";
-import { CELL_TYPE_LABELS_ID } from "tests/common/constants";
 
 const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
 
