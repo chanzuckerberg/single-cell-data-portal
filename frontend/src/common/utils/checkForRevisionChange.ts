@@ -149,10 +149,8 @@ export default function checkForRevisionChange(
     )
       return true;
   }
-  if (
-    checkDatasetsForChanges(revision.datasets, publishedCollection.datasets)
-  ) {
-    return true;
-  }
-  return false;
+  return checkDatasetsForChanges(
+    revision.datasets,
+    publishedCollection.datasets
+  );
 }

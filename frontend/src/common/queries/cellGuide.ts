@@ -155,7 +155,7 @@ export const USE_SOURCE_DATA_QUERY = {
   id: "cell-guide-source-data-query",
 };
 
-interface SourceDataQueryResponseEntry {
+export interface SourceDataQueryResponseEntry {
   collection_name: string;
   collection_url: string;
   publication_url: string;

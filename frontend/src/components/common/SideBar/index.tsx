@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 import { Button, Icon } from "@czi-sds/components";
 import {
   Position,
@@ -24,12 +24,11 @@ export interface Props {
   isOpen?: boolean;
   onToggle?: SideBarToggleFn;
   width?: number;
-  position?: typeof Position[keyof typeof Position];
+  position?: (typeof Position)[keyof typeof Position];
   SideBarWrapperComponent?: typeof SideBarWrapper;
   SideBarPositionerComponent?: typeof SideBarPositioner;
   testId?: string;
   disabled?: boolean;
-  forceOpen?: boolean;
   wmgSideBar?: boolean;
   truncatedLabel?: string;
 }
@@ -46,11 +45,11 @@ export default function SideBar({
   SideBarPositionerComponent = SideBarPositioner,
   testId,
   disabled,
-  forceOpen,
   wmgSideBar,
   truncatedLabel = "",
 }: Props): JSX.Element {
-  const [isExpanded, setIsExpanded] = useState(isOpen);
+  // seve: wmgSideBar does not have isOpen prop, so we need to set default to true/open
+  const [isExpanded, setIsExpanded] = useState(isOpen || !!wmgSideBar);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
   const SideBarToggleButtonWrapper = isExpanded
     ? SideBarOpenButtonWrapper
@@ -66,10 +65,6 @@ export default function SideBar({
       onToggle(nextExpanded);
     }
   };
-
-  useEffect(() => {
-    if (!(disabled && !isExpanded) && wmgSideBar) handleExpandedClick(true);
-  }, [forceOpen]);
 
   return (
     <SideBarWrapperComponent

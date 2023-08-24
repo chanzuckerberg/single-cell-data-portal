@@ -73,7 +73,6 @@ docSiteSecureHeaders.contentSecurityPolicy.directives.frameSrc =
 
 module.exports = {
   compiler: { emotion: true },
-  eslint: { dirs: ["doc-site", "pages", "components", "lib"] },
   async generateBuildId() {
     // Return null to allow next.js to fallback to default behavior
     // if COMMIT_SHA env is missing or empty.
