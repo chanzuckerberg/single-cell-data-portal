@@ -70,7 +70,8 @@ async function fetchQuery({
 
 export function useCellGuideQuery<T = CellGuideResponse>(
   dataType: TYPES,
-  queryId = "" // Empty string if cell type is not needed for fetch function
+  queryId = "", // Empty string if cell type is not needed for fetch function
+  queryLatestSnapshotIdentifier = true
 ): UseQueryResult<T> {
   const { queryKey, urlSuffix } = QUERY_MAPPING[dataType];
 
@@ -95,7 +96,7 @@ export function useCellGuideQuery<T = CellGuideResponse>(
         signal,
       }),
     {
-      enabled: true,
+      enabled: queryLatestSnapshotIdentifier,
       staleTime: Infinity,
     }
   );
@@ -107,14 +108,16 @@ export function useCellGuideQuery<T = CellGuideResponse>(
       );
     }
   }, [rawLatestSnapshotIdentifier]);
+
+  const queryUrlSuffix = urlSuffix.replace("%s", queryId);
+  const queryUrl = queryLatestSnapshotIdentifier
+    ? `${CELLGUIDE_DATA_URL}/${queryUrlSuffix}`
+    : `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${queryUrlSuffix}`;
   return useQuery(
     queryId ? [queryKey, queryId, latestSnapshotIdentifier] : [queryKey],
     ({ signal }) =>
       fetchQuery({
-        url: `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${urlSuffix.replace(
-          "%s",
-          queryId
-        )}`,
+        url: queryUrl,
         signal,
       }),
     {
@@ -290,7 +293,7 @@ export const USE_GPT_DESCRIPTION_QUERY = {
 export type GptDescriptionQueryResponse = string;
 
 export const useGptDescription = (entityId: string): UseQueryResult<string> => {
-  return useCellGuideQuery<string>(TYPES.GPT_DESCRIPTION, entityId);
+  return useCellGuideQuery<string>(TYPES.GPT_DESCRIPTION, entityId, false);
 };
 
 /* ========== SEO description ========== */
@@ -309,16 +312,7 @@ export const fetchGptSeoDescription = async (
 ): Promise<GptSeoDescriptionQueryResponse> => {
   entityId = entityId.replace(":", "_");
   // This function is used server-side to fetch the GPT SEO description.
-  const latestSnapshotIdentifierUrl = `${CELLGUIDE_DATA_URL}/${
-    QUERY_MAPPING[TYPES.LATEST_SNAPSHOT_IDENTIFIER].urlSuffix
-  }`;
-  const latestSnapshotIdentifierResponse = await fetch(
-    latestSnapshotIdentifierUrl
-  );
-  const latestSnapshotIdentifier =
-    await latestSnapshotIdentifierResponse.text();
-
-  const url = `${CELLGUIDE_DATA_URL}/${latestSnapshotIdentifier}/${QUERY_MAPPING[
+  const url = `${CELLGUIDE_DATA_URL}/${QUERY_MAPPING[
     TYPES.GPT_SEO_DESCRIPTION
   ].urlSuffix.replace("%s", entityId)}`;
   const response = await fetch(url);
