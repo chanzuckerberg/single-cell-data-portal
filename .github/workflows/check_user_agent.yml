@@ -1,0 +1,15 @@
+name: Check User-Agent
+
+on: [push]
+
+jobs:
+  check-user-agent:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Fetch User-Agent
+        run: |
+          curl -s http://httpbin.org/user-agent | jq '.["user-agent"]'
