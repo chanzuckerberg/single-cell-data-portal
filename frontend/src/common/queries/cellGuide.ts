@@ -176,6 +176,27 @@ export const useSourceData = (
   );
 };
 
+/* Tissues for cell type from source data mapping tissue name to ontology_term_id */
+export function useSourceDataTissuesLabelToIdMap(
+  cellTypeId: string
+): Map<string, string> {
+  const { data: sourceData } = useSourceData(cellTypeId);
+
+  return useMemo(() => {
+    if (!sourceData) return new Map<string, string>();
+
+    const allTissuesMap = new Map<string, string>();
+    sourceData.reduce((acc, curr) => {
+      const { tissue } = curr;
+      for (const t of tissue) {
+        acc.set(t.label, t.ontology_term_id);
+      }
+      return acc;
+    }, allTissuesMap);
+    return allTissuesMap;
+  }, [sourceData]);
+}
+
 /* ========== enriched_genes ========== */
 export const USE_ENRICHED_GENES_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_ENRICHED_GENES],
@@ -338,6 +359,32 @@ export type TissueCardsQueryResponse = TissueCardsQueryResponseEntry[];
 export const useTissueCards = (): UseQueryResult<TissueCardsQueryResponse> => {
   return useCellGuideQuery<TissueCardsQueryResponse>(TYPES.TISSUE_CARDS);
 };
+
+/* ========== all tissues label to id map ========== */
+export function useAllTissuesLabelToIdMap(): Map<string, string> {
+  const { data: allTissueData } = useTissueCards();
+  return useMemo(() => {
+    if (!allTissueData) return new Map<string, string>();
+
+    const allTissuesMap = new Map<string, string>();
+    allTissueData.reduce((acc, curr) => {
+      const { id, label } = curr;
+      acc.set(label, id);
+      return acc;
+    }, allTissuesMap);
+    return allTissuesMap;
+  }, [allTissueData]);
+}
+
+/* ========== tissue descendants =========== */
+/* export function useTissueDescendants(): Map<string, string[]> | undefined {
+  return useMemo(() => {
+    const tissueDescJsonObj = readJson(
+      "src/components/common/Filter/descendant_mappings/tissue_descendants.json"
+    );
+    return new Map(Object.entries(tissueDescJsonObj));
+  }, []);
+}*/
 
 /**
  * Mapping from data/response type to properties used for querying

@@ -1,22 +1,9 @@
 import { useMemo } from "react";
 import {
-  TissueCardsQueryResponse,
+  useAllTissuesLabelToIdMap,
   useEnrichedGenes,
-  useTissueCards,
 } from "src/common/queries/cellGuide";
 import { ALL_TISSUES, HOMO_SAPIENS, NO_TISSUE_ID } from "../constants";
-
-function _getAllTissuesLabelToIdMap(
-  tissueData: TissueCardsQueryResponse
-): Map<string, string> {
-  const allTissuesMap = new Map<string, string>();
-  tissueData.reduce((acc, curr) => {
-    const { id, label } = curr;
-    acc.set(label, id);
-    return acc;
-  }, allTissuesMap);
-  return allTissuesMap;
-}
 
 export function useMarkerGenesTableTissueAndOrganismFilterListForCelltype(
   cellTypeId: string
@@ -25,20 +12,16 @@ export function useMarkerGenesTableTissueAndOrganismFilterListForCelltype(
   organismsList: string[];
 } {
   const { data: enrichedGenes } = useEnrichedGenes(cellTypeId);
-  const { data: allTissues } = useTissueCards();
+
+  // get tissue-label: tissue-id map for all tissues
+  const allTissuesMap = useAllTissuesLabelToIdMap();
 
   return useMemo(() => {
     const organisms = new Set<string>([HOMO_SAPIENS]);
-    let allTissuesMap = new Map<string, string>();
     const filteredTissuesMap = new Map<string, string>([
       [ALL_TISSUES, NO_TISSUE_ID],
     ]);
     let tissueId: string | undefined;
-
-    // get tissue-label: tissue-id map for all tissues
-    if (allTissues) {
-      allTissuesMap = _getAllTissuesLabelToIdMap(allTissues);
-    }
 
     // 1. construct a tissue-label: tissue-id map of the tissues in the enriched genes
     // 2. construct a list of unique organisms in the enriched genes
@@ -72,5 +55,5 @@ export function useMarkerGenesTableTissueAndOrganismFilterListForCelltype(
       tissuesMap: sortedFilteredTissueMap,
       organismsList: sortedOrganismList,
     };
-  }, [enrichedGenes, allTissues]);
+  }, [enrichedGenes, allTissuesMap]);
 }
