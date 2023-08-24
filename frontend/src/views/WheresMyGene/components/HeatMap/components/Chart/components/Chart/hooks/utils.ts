@@ -184,14 +184,13 @@ type OrdinalRawValue = string | number;
 /**
  * (thuang): This copies echarts' CategoryAxisBaseOption["data"] type, since it's not exported
  */
-type CategoryAxisData =
-  | (
-      | OrdinalRawValue
-      | {
-          value: OrdinalRawValue;
-          /**
-           * (thuang): This should be echarts `TextCommonOption` type, but it's not exported
-           */
-          textStyle?: never;
-        }
-    )[];
+type CategoryAxisData = (
+  | OrdinalRawValue
+  | {
+      value: OrdinalRawValue;
+      /**
+       * (thuang): This should be echarts `TextCommonOption` type, but it's not exported
+       */
+      textStyle?: never;
+    }
+)[];

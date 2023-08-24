@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface FullScreenContextProps {
   isFullScreen: boolean;
@@ -11,7 +17,7 @@ const FullScreenContext = createContext<FullScreenContextProps | undefined>(
   undefined
 );
 
-const FullScreenProvider: React.FC<React.PropsWithChildren<{}>> = ({
+const FullScreenProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -25,7 +31,7 @@ const FullScreenProvider: React.FC<React.PropsWithChildren<{}>> = ({
   });
 
   const enableFullScreen = () => setIsFullScreen(true);
-  const disableFullScreen = () => setIsFullScreen(false);
+  const disableFullScreen = useCallback(() => setIsFullScreen(false), []);
 
   useEffect(() => {
     const handleResize = () => {
