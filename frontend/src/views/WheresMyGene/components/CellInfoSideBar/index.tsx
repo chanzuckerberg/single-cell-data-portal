@@ -79,7 +79,7 @@ function CellInfoSideBar({
       if (Date.now() - hoverStartTime > 2 * 1000) {
         track(event, payload);
       }
-    }, [hoverStartTime]);
+    }, [event, payload]);
   };
 
   const handleFmgHoverEnd = useHandleHoverEnd(

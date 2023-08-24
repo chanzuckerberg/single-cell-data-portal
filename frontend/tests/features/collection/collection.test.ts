@@ -32,7 +32,7 @@ type CollectionFormInput = Pick<
 >;
 
 describe("Collection", () => {
-  describe("Logged In Tests", () => {
+  describe("Logged In Tests @loggedIn", () => {
     skip(
       !isDevStaging,
       `Currently push-test runs against dev BE, so login doesn't work for local containers.
@@ -92,7 +92,7 @@ describe("Collection", () => {
     });
   });
 
-  describe("Deployed Env Tests", () => {
+  describe("Deployed Env Tests @loggedIn", () => {
     skip(
       !isDevStaging,
       `BE DOI endpoints only work in dev, staging, and prod. And we also only run

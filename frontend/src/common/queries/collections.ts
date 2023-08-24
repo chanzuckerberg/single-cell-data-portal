@@ -5,7 +5,7 @@ import {
   useQueryClient,
   UseQueryResult,
 } from "react-query";
-import { Collection, COLLECTION_STATUS } from "src/common/entities";
+import { Collection, COLLECTION_STATUS, Dataset } from "src/common/entities";
 import {
   buildSummaryCitation,
   ProcessedCollectionResponse,
@@ -116,7 +116,7 @@ export type CollectionError = {
   type: string;
 };
 
-function generateDatasetMap(json: any) {
+function generateDatasetMap(json: { datasets: Dataset[] }) {
   const datasetMap = new Map() as Collection["datasets"];
   for (const dataset of json.datasets) {
     datasetMap.set(dataset.original_id || dataset.id, dataset);
