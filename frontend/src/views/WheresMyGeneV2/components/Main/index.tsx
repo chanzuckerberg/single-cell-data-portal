@@ -1,13 +1,6 @@
 import { DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   EMPTY_ARRAY,
   EMPTY_OBJECT,
@@ -256,8 +249,6 @@ export default function WheresMyGene(): JSX.Element {
   const handleSourceDatasetButtonClick = useCallback(() => {
     setSourceDatasetSidebarOpen(!isSourceDatasetSidebarOpen);
   }, [isSourceDatasetSidebarOpen]);
-
-  const [forceOpen, setForceOpen] = useState(false);
 
   const [downloadStatus, setDownloadStatus] = useState<{
     isLoading: boolean;
