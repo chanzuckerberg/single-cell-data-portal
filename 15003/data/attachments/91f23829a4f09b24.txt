@@ -1,0 +1,146 @@
+  pw:api => selectors.setTestIdAttribute started +9s
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +3ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +50ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +16ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +6ms
+  pw:api <= browserContext.newPage succeeded +51ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +15ms
+  pw:api navigating to "https://localhost:3000/cellguide", waiting until "load" +21ms
+  pw:api   "commit" event fired +265ms
+  pw:api   navigated to "https://localhost:3000/cellguide" +1ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/cellguide" +4ms
+  pw:api   navigated to "about:blank" +14ms
+  pw:api <= page.goto succeeded +28ms
+  pw:api => locator.waitFor started +22ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') to be visible +63ms
+  pw:api   locator resolved to visible <input value="" type="text" role="combobox" autocomplet…/> +95ms
+  pw:api <= locator.waitFor succeeded +7ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +13ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +11ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +27ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   performing click action +9ms
+  pw:api   click action done +144ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +6ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +42ms
+  pw:api => page.waitForTimeout started +49ms
+  pw:api <= page.waitForTimeout succeeded +236ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +6ms
+  pw:api => page.waitForTimeout started +7ms
+  pw:api <= page.waitForTimeout succeeded +222ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +6ms
+  pw:api => page.waitForTimeout started +13ms
+  pw:api <= page.waitForTimeout succeeded +228ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +17ms
+  pw:api => page.waitForTimeout started +6ms
+  pw:api <= page.waitForTimeout succeeded +227ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +5ms
+  pw:api => page.waitForTimeout started +19ms
+  pw:api <= page.waitForTimeout succeeded +216ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +5ms
+  pw:api => page.waitForTimeout started +9ms
+  pw:api <= page.waitForTimeout succeeded +225ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +6ms
+  pw:api => page.waitForTimeout started +6ms
+  pw:api <= page.waitForTimeout succeeded +218ms
+  pw:api => locator.all started +7ms
+  pw:api <= locator.all succeeded +13ms
+  pw:api => page.waitForTimeout started +20ms
+  pw:api <= page.waitForTimeout succeeded +217ms
+  pw:api => locator.all started +4ms
+  pw:api <= locator.all succeeded +14ms
+  pw:api => page.waitForTimeout started +14ms
+  pw:api <= page.waitForTimeout succeeded +218ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +5ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +227ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +7ms
+  pw:api => page.waitForTimeout started +20ms
+  pw:api <= page.waitForTimeout succeeded +225ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +7ms
+  pw:api => page.waitForTimeout started +29ms
+  pw:api <= page.waitForTimeout succeeded +226ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +9ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +221ms
+  pw:api => locator.all started +0ms
+  pw:api <= locator.all succeeded +6ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +217ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +11ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +235ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +23ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api   "networkidle" event fired +513ms
+  pw:api <= page.waitForTimeout succeeded +192ms
+  pw:api => locator.all started +0ms
+  pw:api <= locator.all succeeded +18ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +34ms
+  pw:api => locator.type started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +14ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +5ms
+  pw:api elementHandle.type("neuron") +2ms
+  pw:api <= locator.type succeeded +647ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +6ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +6ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByRole('option').first() +7ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" data-option-index="0…>neuron</li> +4ms
+  pw:api <= locator.textContent succeeded +7ms
+  pw:api => page.waitForURL started +2ms
+  pw:api => locator.click started +8ms
+  pw:api waiting for navigation to "https://localhost:3000/cellguide/CL_0000540" until "load" +3ms
+  pw:api waiting for getByRole('option').first() +7ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" data-option-index="0…>neuron</li> +6ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +20ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +8ms
+  pw:api   click action done +76ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +9ms
+  pw:api <= locator.click succeeded +24ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +10s
+  pw:api <= page.waitForURL succeeded +6ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +5ms
+  pw:api taking page screenshot +15ms
+  pw:api   navigated to "about:blank" +768ms
