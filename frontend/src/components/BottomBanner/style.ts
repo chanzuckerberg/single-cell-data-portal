@@ -24,6 +24,11 @@ export const StyledBanner = styled(Banner)`
 
   height: auto;
 
+  @media (max-width: 768px) {
+    padding: 8px 16px;
+    box-shadow: 0px 0px 4px 0px rgba(50, 50, 50, 0.75);
+  }
+
   /**
    * beta intent does not exist for SDS banner, but the colors do targeting
    * specific id to overwrite style
@@ -209,7 +214,7 @@ function asFooter({ asFooter }: { asFooter: boolean }) {
     `;
   } else {
     return `
-      position: absolute;
+      position: fixed;
       bottom: 0;
     `;
   }

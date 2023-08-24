@@ -224,7 +224,7 @@ export default function CellGuideCard({
           />
         )}
       </StyledRightSideBar>
-      <CellGuideBottomBanner />
+      <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </>
   );
 }
