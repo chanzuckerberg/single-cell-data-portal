@@ -20,27 +20,27 @@ declare module "react-table" {
       UseSortByOptions<D> {}
 
   export interface Hooks<
-    D extends Record<string, unknown> = Record<string, unknown>
+    D extends Record<string, unknown> = Record<string, unknown>,
   > extends UseSortByHooks<D> {}
 
   export interface TableInstance<
-    D extends Record<string, unknown> = Record<string, unknown>
+    D extends Record<string, unknown> = Record<string, unknown>,
   > extends UseFiltersInstanceProps<D>,
       UseSortByInstanceProps<D> {}
 
   export interface TableState<
-    D extends Record<string, unknown> = Record<string, unknown>
+    D extends Record<string, unknown> = Record<string, unknown>,
   > extends UseFiltersState<D>,
       UseSortByState<D> {}
 
   export interface ColumnInterface<
-    D extends Record<string, unknown> = Record<string, unknown>
+    D extends Record<string, unknown> = Record<string, unknown>,
   > extends UseFiltersColumnOptions<D>,
       UseSortByColumnOptions<D>,
       GridColumnProps {}
 
   export interface ColumnInstance<
-    D extends Record<string, unknown> = Record<string, unknown>
+    D extends Record<string, unknown> = Record<string, unknown>,
   > extends UseFiltersColumnProps<D>,
       UseSortByColumnProps<D>,
       GridColumnProps {}

@@ -1,27 +1,14 @@
 import os
-import shutil
 import sys
-import unittest.mock
-from functools import partial
 from tempfile import TemporaryDirectory
 
-from backend.cellguide.pipeline.canonical_marker_genes import run as run_canonical_marker_gene_pipeline
-from backend.cellguide.pipeline.computational_marker_genes import run as run_computational_marker_genes_pipeline
-from backend.cellguide.pipeline.computational_marker_genes.types import ComputationalMarkerGenes
-from backend.cellguide.pipeline.constants import (
-    CANONICAL_MARKER_GENES_FILENAME,
-    CELL_GUIDE_METADATA_FILENAME,
-    CELL_GUIDE_TISSUE_METADATA_FILENAME,
-    ONTOLOGY_TREE_FILENAME,
-    ONTOLOGY_TREE_STATE_PER_CELLTYPE_FILENAME,
-    ONTOLOGY_TREE_STATE_PER_TISSUE_FILENAME,
-    SOURCE_COLLECTIONS_FILENAME,
-)
-from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
-from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
-from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
+from backend.cellguide.pipeline.canonical_marker_genes import get_canonical_marker_genes
+from backend.cellguide.pipeline.computational_marker_genes import get_computational_marker_genes
+from backend.cellguide.pipeline.metadata import get_cell_metadata, get_tissue_metadata
+from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_data
+from backend.cellguide.pipeline.source_collections import get_source_collections_data
 from backend.cellguide.pipeline.utils import output_json
-from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_obj
+from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 from tests.unit.cellguide_pipeline.constants import (
     CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
@@ -60,71 +47,58 @@ python -m scripts.generate_cellguide_pipeline_test_fixtures
 """
 
 
-def custom_load_snapshot_into_cube_dir(cube_dir: str, **kwargs):
-    return load_realistic_test_snapshot_obj(TEST_SNAPSHOT, cube_dir)
-
-
-def custom_output_computational_marker_genes(
-    marker_genes: dict[str, list[ComputationalMarkerGenes]], output_directory: str
-):
-    output_json(marker_genes, f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}")
-
-
 def run_cellguide_pipeline():
-    with TemporaryDirectory() as cube_dir, TemporaryDirectory() as output_directory:
-        # Patch load_snapshot with custom_load_snapshot
-        custom_load_snapshot = partial(custom_load_snapshot_into_cube_dir, cube_dir=cube_dir)
-        with unittest.mock.patch("backend.cellguide.pipeline.ontology_tree.load_snapshot", new=custom_load_snapshot):
-            # Run ontology tree pipeline
-            ontology_tree = run_ontology_tree_pipeline(output_directory)
+    with TemporaryDirectory(), TemporaryDirectory(), load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
+        # Get ontology tree data
+        ontology_tree, ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
 
-        run_metadata_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+        # Get cell metadata
+        cell_metadata = get_cell_metadata(ontology_tree=ontology_tree)
 
-        with unittest.mock.patch(
-            "backend.cellguide.pipeline.canonical_marker_genes.load_snapshot", new=custom_load_snapshot
-        ):
-            # Generate canonical marker genes from ASCT-B (HUBMAP)
-            run_canonical_marker_gene_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+        # Get tissue metadata
+        tissue_metadata = get_tissue_metadata(ontology_tree=ontology_tree)
 
-        # Generate source data for each cell type
-        run_source_collections_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+        # Get canonical marker genes
+        canonical_marker_genes = get_canonical_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
 
-        with unittest.mock.patch(
-            "backend.cellguide.pipeline.computational_marker_genes.load_snapshot", new=custom_load_snapshot
-        ), unittest.mock.patch(
-            "backend.cellguide.pipeline.computational_marker_genes.output_marker_genes",
-            new=custom_output_computational_marker_genes,
-        ):
-            # Generate computational marker genes from the CZI corpus
-            run_computational_marker_genes_pipeline(output_directory=output_directory, ontology_tree=ontology_tree)
+        # Get source data
+        source_collections = get_source_collections_data(ontology_tree=ontology_tree)
 
-        shutil.move(
-            f"{output_directory}/{ONTOLOGY_TREE_FILENAME}",
+        # Get computatoinal marker genes
+        computational_marker_genes = get_computational_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
+
+        output_json(
+            ontology_tree_data.ontology_graph,
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ONTOLOGY_GRAPH_FIXTURE_FILENAME}",
         )
-        shutil.move(
-            f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_CELLTYPE_FILENAME}",
+        output_json(
+            ontology_tree_data.all_states_per_cell_type,
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
         )
-        shutil.move(
-            f"{output_directory}/{ONTOLOGY_TREE_STATE_PER_TISSUE_FILENAME}",
+        output_json(
+            ontology_tree_data.all_states_per_tissue,
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
         )
-        shutil.move(
-            f"{output_directory}/{SOURCE_COLLECTIONS_FILENAME}",
-            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{SOURCE_COLLECTIONS_FIXTURE_FILENAME}",
-        )
-        shutil.move(
-            f"{output_directory}/{CELL_GUIDE_METADATA_FILENAME}",
+        output_json(
+            cell_metadata,
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CELLTYPE_METADATA_FIXTURE_FILENAME}",
         )
-        shutil.move(
-            f"{output_directory}/{CELL_GUIDE_TISSUE_METADATA_FILENAME}",
+        output_json(
+            tissue_metadata,
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{TISSUE_METADATA_FIXTURE_FILENAME}",
         )
-        shutil.move(
-            f"{output_directory}/{CANONICAL_MARKER_GENES_FILENAME}",
+        output_json(
+            canonical_marker_genes,
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CANONICAL_MARKER_GENES_FIXTURE_FILENAME}",
+        )
+        output_json(
+            computational_marker_genes,
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
+        )
+
+        output_json(
+            source_collections,
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{SOURCE_COLLECTIONS_FIXTURE_FILENAME}",
         )
 
 

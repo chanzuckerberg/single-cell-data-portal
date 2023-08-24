@@ -229,7 +229,7 @@ function partitionSelectCategoryValueViews(
   // Otherwise, split category values into pinned and non-pinned arrays.
   const partitionedValues: [
     SelectCategoryValueView[],
-    SelectCategoryValueView[]
+    SelectCategoryValueView[],
   ] = [[], []];
   return categoryValues.reduce((accum, categoryValue) => {
     const [pinned, nonPinned] = accum;

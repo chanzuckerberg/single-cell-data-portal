@@ -26,7 +26,7 @@ class TestApi(BaseFunctionalTestCase):
         res.raise_for_status()
         self.assertStatusCode(requests.codes.ok, res)
         data = json.loads(res.content)
-        self.assertEqual(data["email"], "user@example.com")
+        self.assertEqual(data["email"], "functest@example.com")
 
     def test_root_route(self):
         res = self.session.get(f"{self.api}/")
