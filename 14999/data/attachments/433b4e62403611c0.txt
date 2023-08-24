@@ -1,0 +1,43 @@
+  pw:api => selectors.setTestIdAttribute started +4s
+  pw:api => browser.newContext started +6ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +46ms
+  pw:api   "commit" event fired +19ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +7ms
+  pw:api <= tracing.start succeeded +9ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +46ms
+  pw:api => page.waitForResponse started +11ms
+  pw:api => page.goto started +12ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +13ms
+  pw:api   "commit" event fired +331ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +39ms
+  pw:api   navigated to "about:blank" +69ms
+  pw:api <= page.goto succeeded +237ms
+  pw:api <= page.waitForResponse succeeded +7s
+  pw:api => locator.click started +16ms
+  pw:api waiting for getByTestId('side-bar-toggle-button') +77ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="side-bar…>…</button> +138ms
+  pw:api attempting click action +135ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   "networkidle" event fired +490ms
+  pw:api   element is visible, enabled and stable +31ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +60ms
+  pw:api   click action done +76ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +17ms
+  pw:api <= locator.click succeeded +25ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('add-organism') +37ms
+  pw:api <= locator.isVisible succeeded +54ms
+  pw:api taking page screenshot +32ms
