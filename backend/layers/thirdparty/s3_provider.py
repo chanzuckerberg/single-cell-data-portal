@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 class S3Provider(S3ProviderInterface):
     def __init__(self) -> None:
         self.client = boto3.client("s3")
-        self.resource = boto3.resource("s3")  # For recursive deleting
 
     @staticmethod
     def parse_s3_uri(s3_uri: str) -> Tuple[str, str]:
@@ -78,15 +77,6 @@ class S3Provider(S3ProviderInterface):
             if deleted := resp.get("Deleted"):
                 logger.info(f"Deleted: {deleted}")
             if errors := resp.get("Errors"):
-                logger.info(f"Errors: {errors}")
-                raise S3DeleteException(errors)
-
-    def delete_recursive(self, bucket_name: str, prefix: str) -> None:
-        resp = self.resource.Bucket(bucket_name).objects.filter(Prefix=prefix).delete()
-        if resp and isinstance(resp, list):
-            if deleted := resp[0].get("Deleted"):
-                logger.info(f"Deleted: {deleted}")
-            if errors := resp[0].get("Errors"):
                 logger.info(f"Errors: {errors}")
                 raise S3DeleteException(errors)
 

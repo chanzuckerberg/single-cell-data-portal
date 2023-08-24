@@ -14,9 +14,6 @@ class S3ProviderInterface:
     def delete_files(self, bucket_name: str, object_keys: List[str]):
         pass
 
-    def delete_recursive(self, bucket_name: str, prefix: str) -> None:
-        pass
-
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         pass
 

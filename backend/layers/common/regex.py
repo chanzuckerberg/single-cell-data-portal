@@ -10,3 +10,4 @@ DOI_REGEX_COMPILED = re.compile(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", flags=re.I)
 CURIE_REFERENCE_REGEX = r"^\d{2}\.\d{4}.*$"
 
 EMAIL_REGEX = re.compile(r"(.+)@(.+)\.(.+)")
+S3_URI_REGEX = re.compile(r"^s3://(?P<bucket>[^/]+)/((?P<prefix>.*/$)|(?P<key>.*))")

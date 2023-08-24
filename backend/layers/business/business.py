@@ -1,7 +1,6 @@
 import copy
 import logging
 import os
-import re
 from collections import defaultdict
 from datetime import datetime
 from functools import reduce
@@ -64,6 +63,7 @@ from backend.layers.common.entities import (
 from backend.layers.common.helpers import (
     get_published_at_and_collection_version_id_else_not_found,
 )
+from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
@@ -618,7 +618,9 @@ class BusinessLogic(BusinessLogicInterface):
         Deletes a collection version. This method will raise an error if the version is published.
         (Note: for performance reasons, the check is performed by the underlying layer)
         """
-        unpublished_versions_of_published_datasets, unpublished_datasets, versions_to_delete_from_s3 = [], [], []
+        unpublished_versions_of_published_datasets: List[DatasetVersion] = []
+        unpublished_datasets: List[DatasetVersion] = []
+        versions_to_delete_from_s3: List[DatasetVersion] = []
         for dv in collection_version.datasets:
             unpublished_versions = self.get_unpublished_dataset_versions(dv.canonical_dataset.dataset_id)
             versions_to_delete_from_s3.extend(unpublished_versions)  # All unpublished s3 assets are to be deleted
@@ -822,13 +824,14 @@ class BusinessLogic(BusinessLogicInterface):
             if keys:
                 self.s3_provider.delete_files(bucket, keys)
             if prefix:
-                self.s3_provider.delete_recursive(bucket, prefix)
+                object_keys = list(self.s3_provider.list_directory(bucket, prefix))
+                self.s3_provider.delete_files(bucket, object_keys)
         except S3DeleteException as e:
             raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
     def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         for artifact in artifacts:
-            matches_dict = re.match(r"^s3://(?P<bucket>[^/]+)/((?P<prefix>.*/$)|(?P<key>.*))", artifact.uri).groupdict()
+            matches_dict = S3_URI_REGEX.match(artifact.uri).groupdict()
             bucket, key, prefix = matches_dict["bucket"], matches_dict["key"], matches_dict["prefix"]
             self._delete_from_bucket(bucket, keys=[key] if key else None, prefix=prefix)
 
