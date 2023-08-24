@@ -133,7 +133,7 @@ export default function AnimatedNodes({
 
     const isInCorpus =
       (node.data.id.split("__")[0]?.replace("_", ":") ?? "") in
-      cellTypeMetadata;
+      (cellTypeMetadata ?? {});
 
     return (
       <Node
