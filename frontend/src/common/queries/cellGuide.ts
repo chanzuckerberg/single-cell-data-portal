@@ -176,8 +176,8 @@ export const useSourceData = (
   );
 };
 
-/* Tissues for cell type from source data mapping tissue name to ontology_term_id */
-export function useSourceDataTissuesLabelToIdMap(
+/* Tissues for cell type from source data dual mapping tissue name and ontology_term_id */
+export function useSourceDataTissuesLabelToIdDualMap(
   cellTypeId: string
 ): Map<string, string> {
   const { data: sourceData } = useSourceData(cellTypeId);
@@ -189,7 +189,9 @@ export function useSourceDataTissuesLabelToIdMap(
     sourceData.reduce((acc, curr) => {
       const { tissue } = curr;
       for (const t of tissue) {
+        // map tissue label to ontology_term_id and ontology_term_id to tissue label
         acc.set(t.label, t.ontology_term_id);
+        acc.set(t.ontology_term_id, t.label);
       }
       return acc;
     }, allTissuesMap);
@@ -360,20 +362,20 @@ export const useTissueCards = (): UseQueryResult<TissueCardsQueryResponse> => {
   return useCellGuideQuery<TissueCardsQueryResponse>(TYPES.TISSUE_CARDS);
 };
 
-/* ========== all tissues label to id map ========== */
-export function useAllTissuesLabelToIdMap(): Map<string, string> {
-  const { data: allTissueData } = useTissueCards();
+/* ========== all organs label to id map ========== */
+export function useAllOrgansLabelToIdMap(): Map<string, string> {
+  const { data: allOrgansData } = useTissueCards();
   return useMemo(() => {
-    if (!allTissueData) return new Map<string, string>();
+    if (!allOrgansData) return new Map<string, string>();
 
-    const allTissuesMap = new Map<string, string>();
-    allTissueData.reduce((acc, curr) => {
+    const allOrgansMap = new Map<string, string>();
+    allOrgansData.reduce((acc, curr) => {
       const { id, label } = curr;
       acc.set(label, id);
       return acc;
-    }, allTissuesMap);
-    return allTissuesMap;
-  }, [allTissueData]);
+    }, allOrgansMap);
+    return allOrgansMap;
+  }, [allOrgansData]);
 }
 
 /* ========== tissue descendants =========== */
