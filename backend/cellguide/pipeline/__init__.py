@@ -8,6 +8,7 @@ import time
 from backend.cellguide.pipeline.canonical_marker_genes import run as run_canonical_marker_gene_pipeline
 from backend.cellguide.pipeline.computational_marker_genes import run as run_computational_marker_gene_pipeline
 from backend.cellguide.pipeline.config import CellGuideConfig
+from backend.cellguide.pipeline.gpt_descriptions import run as run_gpt_description_pipeline
 from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
 from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
@@ -38,6 +39,9 @@ def run_cellguide_pipeline():
 
     # invalidate cloudfront distribution to reset cache
     create_invalidation_for_cellguide_data()
+
+    # Generate ChatGPT descriptions for any new cell ids
+    run_gpt_description_pipeline(output_directory=output_directory)
 
 
 def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
