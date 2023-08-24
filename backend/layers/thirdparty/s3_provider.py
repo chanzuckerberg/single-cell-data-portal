@@ -80,6 +80,10 @@ class S3Provider(S3ProviderInterface):
                 logger.info(f"Errors: {errors}")
                 raise S3DeleteException(errors)
 
+    def delete_prefix(self, bucket_name: str, prefix: str) -> None:
+        object_keys = list(self.list_directory(bucket_name, prefix))
+        self.delete_files(bucket_name, object_keys)
+
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """
         Downloads an S3 file located at s3://bucket_name/object_key to `local_filename`

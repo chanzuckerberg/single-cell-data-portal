@@ -824,8 +824,7 @@ class BusinessLogic(BusinessLogicInterface):
             if keys:
                 self.s3_provider.delete_files(bucket, keys)
             if prefix:
-                object_keys = list(self.s3_provider.list_directory(bucket, prefix))
-                self.s3_provider.delete_files(bucket, object_keys)
+                self.s3_provider.delete_prefix(bucket, prefix)
         except S3DeleteException as e:
             raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
