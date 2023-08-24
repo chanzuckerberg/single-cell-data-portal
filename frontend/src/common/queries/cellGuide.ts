@@ -198,7 +198,7 @@ export const USE_SOURCE_COLLECTIONS_QUERY = {
   id: "cell-guide-source-collections-query",
 };
 
-export interface SourceDataQueryResponseEntry {
+export interface SourceCollectionsQueryResponseEntry {
   collection_name: string;
   collection_url: string;
   publication_url: string;
