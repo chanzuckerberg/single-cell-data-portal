@@ -76,7 +76,7 @@ def _get_collection_and_dataset(
     return collection_version, dataset_version
 
 
-def delete(token_info: dict, collection_id: str, dataset_id: str, delete_published: str):
+def delete(token_info: dict, collection_id: str, dataset_id: str, delete_published: bool = False):
     business_logic = get_business_logic()
     user_info = UserInfo(token_info)
 
@@ -88,7 +88,7 @@ def delete(token_info: dict, collection_id: str, dataset_id: str, delete_publish
     if dataset_version.version_id not in [v.version_id for v in collection_version.datasets]:
         raise ForbiddenHTTPException(f"Dataset {dataset_id} does not belong to a collection")
 
-    if user_info.is_cxg_admin() and delete_published == "true" and not collection_version.published_at:
+    if user_info.is_cxg_admin() and delete_published and not collection_version.published_at:
         try:
             business_logic.remove_dataset_version(
                 collection_version.version_id, dataset_version.version_id, delete_published=True
