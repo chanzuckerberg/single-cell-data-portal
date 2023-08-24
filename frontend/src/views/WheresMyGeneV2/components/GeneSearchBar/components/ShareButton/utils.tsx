@@ -179,7 +179,7 @@ function getNewSelectedFilters({
   selectedFilters,
   delimiter,
 }: {
-  tissues?: TissueCardsQueryResponse;
+  tissues?: TissueMetadataQueryResponse;
   params: URLSearchParams;
   paramsToRemove: string[];
   selectedFilters: State["selectedFilters"];
