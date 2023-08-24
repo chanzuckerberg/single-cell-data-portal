@@ -14,9 +14,7 @@ describe("global setup", () => {
       `Skipping login for environment that is not "dev" or "staging"`
     );
 
-    const browser = await chromium.launch({
-      args: ["--disable-web-security"],
-    });
+    const browser = await chromium.launch();
     const browserContext = await browser.newContext({
       ...COMMON_PLAYWRIGHT_CONTEXT,
       storageState: featureFlags,
