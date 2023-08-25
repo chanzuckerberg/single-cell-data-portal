@@ -410,6 +410,21 @@ export const fetchTissueMetadata =
     return await response.json();
   };
 
+/* ========== all organs label to id map ========== */
+export function useAllOrgansLabelToIdMap(): Map<string, string> {
+  const { data: allOrgansData } = useTissueMetadata();
+  return useMemo(() => {
+    if (!allOrgansData) return new Map<string, string>();
+
+    const allOrgansMap = new Map<string, string>();
+    for (const organId in allOrgansData) {
+      const organData = allOrgansData[organId];
+      allOrgansMap.set(organData.name, organData.id);
+    }
+    return allOrgansMap;
+  }, [allOrgansData]);
+}
+
 /* ========== tissue descendants =========== */
 /* export function useTissueDescendants(): Map<string, string[]> | undefined {
   return useMemo(() => {

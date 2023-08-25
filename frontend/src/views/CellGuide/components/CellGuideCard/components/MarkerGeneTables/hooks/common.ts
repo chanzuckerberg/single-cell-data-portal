@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import {
   useComputationalMarkers,
-  useTissueMetadata,
+  useAllOrgansLabelToIdMap,
 } from "src/common/queries/cellGuide";
 import { ALL_TISSUES, HOMO_SAPIENS, NO_ORGAN_ID } from "../constants";
 
@@ -17,25 +17,28 @@ export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
   // get label: ontology-term-id map for all tissues
   // only a subset of the organs in this map will be used
   // to construct the tissue filter list
-  const { data: allOrgansMap } = useTissueMetadata();
+  const allOrgansMap = useAllOrgansLabelToIdMap();
+
   // eslint-disable-next-line sonarjs/cognitive-complexity
   return useMemo(() => {
     const organisms = new Set<string>([HOMO_SAPIENS]);
     const filteredOrgansMap = new Map<string, string>([
       [ALL_TISSUES, NO_ORGAN_ID],
     ]);
+    let organId: string | undefined;
 
     // 1. construct a label: id map of the tissues in the enriched genes
     // 2. construct a list of unique organisms in the enriched genes
     if (computationalMarkers) {
       for (const markerGene of computationalMarkers) {
+        const organLabel = markerGene.groupby_dims.tissue_ontology_term_label;
+        if (organLabel && allOrgansMap) {
+          organId = allOrgansMap.get(organLabel);
+          if (organId) {
+            filteredOrgansMap.set(organLabel, organId);
+          }
+        }
         organisms.add(markerGene.groupby_dims.organism_ontology_term_label);
-      }
-    }
-
-    if (allOrgansMap) {
-      for (const tissueId in allOrgansMap) {
-        filteredOrgansMap.set(allOrgansMap[tissueId].name, tissueId);
       }
     }
 
