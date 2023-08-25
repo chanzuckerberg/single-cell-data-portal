@@ -87,7 +87,7 @@ class S3Provider(S3ProviderInterface):
         logger.info(f"djh bucket is {bucket_name}")
         print(f"djh prefix for delete is {prefix}")
         logger.info(f"djh prefix for delete is {prefix}")
-        if not re.match(ID_REGEX, prefix):
+        if not re.search(ID_REGEX, prefix):
             raise IllegalS3RecursiveDelete("Cannot recursively delete without a valid UUID prefix")
         object_keys = list(self.list_directory(bucket_name, prefix))
         print(f"djh object keys are {object_keys}")
