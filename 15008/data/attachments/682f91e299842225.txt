@@ -1,2 +1,0 @@
-INFO     root:h5ad_data_file.py:172 Reading in AnnData dataset: 7e6e36a2-252e-43f2-b4c0-f531eee3d04d.h5ad
-INFO     root:h5ad_data_file.py:174 Completed reading in AnnData dataset!
