@@ -22,6 +22,11 @@ from tests.unit.cellguide_pipeline.constants import (
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
+def mock_get_asctb_master_sheet():
+    with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/asctb_master_sheet.json", "r") as f:
+        return json.load(f)
+
+
 class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
     def test__canonical_marker_genes(self):
         with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CANONICAL_MARKER_GENES_FIXTURE_FILENAME}", "r") as f:
@@ -33,13 +38,18 @@ class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
             wmg_human_genes = [
                 next(iter(i.values())) for i in snapshot.primary_filter_dimensions["gene_terms"]["NCBITaxon:9606"]
             ]
-            marker_gene_compiler = CanonicalMarkerGenesCompiler(
-                wmg_tissues=wmg_tissues, wmg_human_genes=wmg_human_genes
-            )
 
-            canonical_marker_genes = convert_dataclass_to_dict_and_strip_nones(
-                marker_gene_compiler.get_processed_asctb_table_entries()
-            )
+            with patch(
+                "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
+                new=mock_get_asctb_master_sheet,
+            ):
+                marker_gene_compiler = CanonicalMarkerGenesCompiler(
+                    wmg_tissues=wmg_tissues, wmg_human_genes=wmg_human_genes
+                )
+
+                canonical_marker_genes = convert_dataclass_to_dict_and_strip_nones(
+                    marker_gene_compiler.get_processed_asctb_table_entries()
+                )
 
             self.assertTrue(compare_dicts(canonical_marker_genes, expected__canonical_marker_genes))
 
