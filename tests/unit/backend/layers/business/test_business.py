@@ -1398,9 +1398,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(version.version_id, published_collection.version_id)
         self.assertNotEqual(version.version_id, new_version.version_id)
 
-    def test_tombstone_then_resurrect_collection_ok(self):
+    def test_tombstone_collection_ok(self):
         """
-        A Collection can be tombstoned and then resurrected/untombstoned
+        A Collection can be tombstoned
         """
         published_collection = self.initialize_published_collection()
 
@@ -1419,6 +1419,17 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         # Verify public Dataset asset files are gone
         assert all([not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
 
+    def test_resurrect_collection_ok(self):
+        """
+        A tombstoned Collection can be resurrected
+        """
+        published_collection = self.initialize_published_collection()
+
+        public_dataset_asset_s3_uris = [
+            f"s3://datasets/{dv.version_id}.{ext}" for ext in ("rds", "h5ad") for dv in published_collection.datasets
+        ]
+
+        self.business_logic.tombstone_collection(published_collection.collection_id)
         self.business_logic.resurrect_collection(published_collection.collection_id)
 
         # The collection is no longer tombstoned
