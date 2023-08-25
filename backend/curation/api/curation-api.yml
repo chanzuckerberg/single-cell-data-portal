@@ -286,8 +286,7 @@ paths:
           in: query
           required: false
           schema:
-            default: "false"
-            type: string
+            type: boolean
       responses:
         "204":
           $ref: "#/components/responses/204"
@@ -389,8 +388,7 @@ paths:
           in: query
           required: false
           schema:
-            default: "false"
-            type: string
+            type: boolean
       responses:
         "202":
           description: Accepted

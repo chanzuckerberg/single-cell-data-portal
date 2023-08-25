@@ -55,15 +55,29 @@ class BusinessLogicInterface:
     ) -> CollectionVersion:
         pass
 
-    def delete_dataset_versions_from_bucket(self, dataset_version_ids: List[str], bucket: str) -> List[str]:
+    def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         pass
 
-    def delete_all_dataset_versions_from_bucket_for_collection(
-        self, collection_id: CollectionId, bucket: str
-    ) -> List[str]:
+    def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
+        pass
+
+    def delete_all_dataset_versions_from_public_bucket_for_collection(self, collection_id: CollectionId) -> List[str]:
+        pass
+
+    def get_unpublished_dataset_versions(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+        """
+        Get all unpublished versions for a Dataset, as determined by the DatasetVersion argument, currently in the
+        database. Generally this will be one Dataset version unless a Dataset is in the midst of being replaced, in
+        which case there will be two DatasetVersion objects associated with the Dataset. It is also possible that
+        through pipeline errors, multiple unpublished DatasetVersionTable rows end up being persisted in the database,
+        in which case this function can be used for cleanup.
+        """
         pass
 
     def delete_collection(self, collection_id: CollectionId) -> None:
+        pass
+
+    def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> None:
         pass
 
     def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
@@ -72,7 +86,7 @@ class BusinessLogicInterface:
     def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
         pass
 
-    def delete_collection_version(self, version_id: CollectionVersionId) -> None:
+    def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:
         pass
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
@@ -94,7 +108,10 @@ class BusinessLogicInterface:
         pass
 
     def remove_dataset_version(
-        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, delete_published: bool
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        delete_published: bool = False,
     ) -> None:
         pass
 

@@ -4,17 +4,17 @@ import logging
 import uuid
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any, Iterable, List, Optional, Tuple, Union
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, delete
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_fixed
 
 from backend.common.corpora_config import CorporaDbConfig
-from backend.layers.business.exceptions import CollectionIsPublishedException
+from backend.layers.business.exceptions import CollectionIsPublishedException, DatasetIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -445,7 +445,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 )
                 yield self._row_to_collection_version(version, canonical)
 
-    def delete_canonical_collection(self, collection_id: CollectionId) -> None:
+    def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
         Deletes (tombstones) a canonical collection.
         """
@@ -507,6 +507,17 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(new_version)
             return CollectionVersionId(new_version_id)
 
+    def delete_unpublished_collection(self, collection_id: CollectionId) -> None:
+        """
+        Delete an unpublished Collection
+        """
+        with self._manage_session() as session:
+            collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()
+            if collection:
+                if collection.originally_published_at:
+                    raise CollectionIsPublishedException(f"Published Collection {collection_id} cannot be deleted")
+                session.delete(collection)
+
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         """
         Deletes a collection version, if it is unpublished.
@@ -517,6 +528,44 @@ class DatabaseProvider(DatabaseProviderInterface):
                 if version.published_at:
                     raise CollectionIsPublishedException(f"Published Collection Version {version_id} cannot be deleted")
                 session.delete(version)
+
+    def delete_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
+        """
+        Delete an unpublished DatasetTable row (and its dependent DatasetVersionTable and DatasetArtifactTable rows)
+        """
+        with self._manage_session() as session:
+            for d in datasets:
+                d_id = d.id if isinstance(d, DatasetId) else d.dataset_id.id
+                dataset_row = session.query(DatasetTable).filter_by(id=d_id).one()
+                if dataset_row.published_at:
+                    raise DatasetIsPublishedException(f"Published Dataset {d_id} cannot be deleted")
+                dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=d_id).all()
+                self._delete_dataset_version_and_artifact_rows(dataset_versions, session)
+                session.delete(dataset_row)
+
+    def delete_dataset_versions(self, dataset_versions: List[Union[DatasetVersionId, DatasetVersion]]) -> None:
+        """
+        Deletes DatasetVersionTable rows.
+        """
+        with self._manage_session() as session:
+            ids = [
+                str(d_v.id) if isinstance(d_v, DatasetVersionId) else str(d_v.version_id.id) for d_v in dataset_versions
+            ]
+            dataset_version_rows = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(ids)).all()
+            self._delete_dataset_version_and_artifact_rows(dataset_version_rows, session)
+
+    def _delete_dataset_version_and_artifact_rows(
+        self, dataset_version_rows: List[DatasetVersionTable], session: Session
+    ) -> None:
+        """
+        Delete DatasetVersionTable rows (and their dependent DatasetArtifactTable rows)
+        """
+        for d_v_row in dataset_version_rows:
+            ids = [str(_id) for _id in d_v_row.artifacts]
+            artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(ids))
+            session.execute(artifact_delete_statement)
+            session.delete(d_v_row)
+        session.flush()
 
     def finalize_collection_version(
         self,
@@ -604,6 +653,22 @@ class DatabaseProvider(DatabaseProviderInterface):
                 if not dataset_exists:
                     return None
             return self._hydrate_dataset_version(dataset_version)
+
+    def get_all_dataset_versions_for_collection(
+        self, collection_id: CollectionId, from_date: Optional[datetime] = datetime.min
+    ) -> List[DatasetVersion]:
+        """
+        Get all Dataset versions -- published and unpublished -- for a canonical Collection
+        """
+        from_date = from_date if from_date else datetime.min
+        with self._manage_session() as session:
+            dataset_versions = (
+                session.query(DatasetVersionTable)
+                .filter(DatasetVersionTable.collection_id == uuid.UUID(collection_id.id))
+                .filter(DatasetVersionTable.created_at >= from_date)
+                .all()
+            )
+            return [self._hydrate_dataset_version(dv) for dv in dataset_versions]
 
     def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         """
@@ -807,12 +872,15 @@ class DatabaseProvider(DatabaseProviderInterface):
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
     ) -> None:
         """
-        Removes a mapping between a collection version and a dataset version
+        Removes a mapping between a collection version and a dataset version.
+
+        :param collection_version_id: the CollectionVersion or the CollectionVersionId
+        :param dataset_version_id: the DatasetVersionId
         """
         with self._manage_session() as session:
             collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
             # TODO: alternatively use postgres `array_remove`
-            updated_datasets = list(collection_version.datasets)
+            updated_datasets: List[uuid.UUID] = list(collection_version.datasets)
             updated_datasets.remove(uuid.UUID(dataset_version_id.id))
             collection_version.datasets = updated_datasets
 
