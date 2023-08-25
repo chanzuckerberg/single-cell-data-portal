@@ -18,6 +18,9 @@ def clean_doi(doi: str) -> str:
         The cleaned DOI string.
     """
     doi = doi.strip()
+    if doi == "No DOI":
+        return ""
+
     if doi != "" and doi[-1] == ".":
         doi = doi[:-1]
     if " " in doi:
@@ -50,27 +53,28 @@ def get_title_and_citation_from_doi(doi: str) -> str:
 
     url = f"https://api.crossref.org/works/{doi}"
 
-    # Send a GET request to the API
-    response = _get_response_from_url(url)
+    # for some reason crossref fails sporadically for valid DOIs
+    for _ in range(5):
+        # Send a GET request to the API
+        response = _get_response_from_url(url)
+        # If the GET request is successful, the status code will be 200
+        if response.status_code == 200:
+            # Get the response data
+            data = response.json()
 
-    # If the GET request is successful, the status code will be 200
-    if response.status_code == 200:
-        # Get the response data
-        data = response.json()
-
-        # Get the title and citation count from the data
-        try:
-            title = data["message"]["title"][0]
-            citation = format_citation_crossref(data["message"])
-        except Exception:
+            # Get the title and citation count from the data
             try:
-                title = data["message"]["items"][0]["title"][0]
-                citation = format_citation_crossref(data["message"]["items"][0])
+                title = data["message"]["title"][0]
+                citation = format_citation_crossref(data["message"])
             except Exception:
-                return doi
-        return f"{title}\n\n - {citation}"
-    else:
-        return doi
+                try:
+                    title = data["message"]["items"][0]["title"][0]
+                    citation = format_citation_crossref(data["message"]["items"][0])
+                except Exception:
+                    return doi
+            return f"{title}\n\n - {citation}"
+
+    return doi
 
 
 def format_citation_dp(message: dict) -> str:

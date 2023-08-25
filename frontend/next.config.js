@@ -38,6 +38,7 @@ const defaultSecureHeaders = {
         HUBSPOT_FORMS_URL,
         PLAUSIBLE_URL,
         configs.API_URL,
+        configs.CELLGUIDE_DATA_URL,
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],

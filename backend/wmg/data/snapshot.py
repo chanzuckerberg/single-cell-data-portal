@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import subprocess
 from dataclasses import dataclass
 from typing import Dict, Optional
 
@@ -123,59 +122,20 @@ def load_snapshot(
     will simply return the cached snapshot if there isn't a newer snapshot id.
     """
     global cached_snapshot
-    if os.getenv("DEPLOYMENT_STAGE") is None:
-        """
-        The CellGuide pipeline invokes `load_snapshot` which currently only works when deployed on
-        AWS infrastructure. This is a hack to allow the CellGuide pipeline to run locally. It is also
-        convenient for development purposes as developers no longer need to manually download and instantiate
-        the WmgSnapshot.
-        """
 
-        logger.info("DEPLOYMENT_STAGE is not set, assuming running locally")
+    should_reload, snapshot_id = _should_reload_snapshot(
+        snapshot_schema_version=snapshot_schema_version,
+        explicit_snapshot_id_to_load=explicit_snapshot_id_to_load,
+        read_versioned_snapshot=read_versioned_snapshot,
+    )
 
-        wmg_bucket_path = os.getenv("WMG_BUCKET_PATH")
-        if wmg_bucket_path is None:
-            raise ValueError("WMG_BUCKET_PATH environment variable must be set when running locally.")
-
-        completed_process = subprocess.run(
-            [
-                "aws",
-                "s3",
-                "cp",
-                f"{wmg_bucket_path}/snapshots/{snapshot_schema_version}/latest_snapshot_identifier",
-                "-",
-            ],
-            capture_output=True,
-            text=True,
-        )
-        latest_snapshot_id = completed_process.stdout.strip()
-        if latest_snapshot_id == "":
-            raise ValueError("latest_snapshot_identifier file failed to be read. Perhaps AWS_PROFILE needs to be set?")
-
-        sync_command = [
-            "aws",
-            "s3",
-            "sync",
-            f"{wmg_bucket_path}/snapshots/{snapshot_schema_version}/{latest_snapshot_id}/",
-            f"{latest_snapshot_id}/",
-        ]
-        completed_process = subprocess.run(sync_command)
-
-        cached_snapshot = _load_local_snapshot(latest_snapshot_id)
-    else:
-        should_reload, snapshot_id = _should_reload_snapshot(
+    if should_reload:
+        cached_snapshot = _load_snapshot(
             snapshot_schema_version=snapshot_schema_version,
-            explicit_snapshot_id_to_load=explicit_snapshot_id_to_load,
+            snapshot_id=snapshot_id,
             read_versioned_snapshot=read_versioned_snapshot,
         )
-
-        if should_reload:
-            cached_snapshot = _load_snapshot(
-                snapshot_schema_version=snapshot_schema_version,
-                snapshot_id=snapshot_id,
-                read_versioned_snapshot=read_versioned_snapshot,
-            )
-            cached_snapshot.build_dataset_metadata_dict()
+        cached_snapshot.build_dataset_metadata_dict()
 
     return cached_snapshot
 
@@ -259,30 +219,6 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
         marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=cell_type_orderings,
-        primary_filter_dimensions=primary_filter_dimensions,
-        dataset_to_gene_ids=dataset_to_gene_ids,
-        filter_relationships=filter_relationships,
-    )
-
-
-def _load_local_snapshot(snapshot_dir_path: str) -> WmgSnapshot:
-    logger.info(f"Loading WMG snapshot from local directory path {snapshot_dir_path}")
-
-    with open(f"{snapshot_dir_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "r") as f:
-        primary_filter_dimensions = json.load(f)
-    with open(f"{snapshot_dir_path}/{DATASET_TO_GENE_IDS_FILENAME}", "r") as f:
-        dataset_to_gene_ids = json.load(f)
-    with open(f"{snapshot_dir_path}/{FILTER_RELATIONSHIPS_FILENAME}", "r") as f:
-        filter_relationships = json.load(f)
-
-    return WmgSnapshot(
-        snapshot_identifier=snapshot_dir_path,
-        expression_summary_cube=tiledb.open(f"{snapshot_dir_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
-        expression_summary_default_cube=tiledb.open(f"{snapshot_dir_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
-        expression_summary_fmg_cube=tiledb.open(f"{snapshot_dir_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
-        marker_genes_cube=tiledb.open(f"{snapshot_dir_path}/{MARKER_GENES_CUBE_NAME}"),
-        cell_counts_cube=tiledb.open(f"{snapshot_dir_path}/{CELL_COUNTS_CUBE_NAME}"),
-        cell_type_orderings=pd.read_json(f"{snapshot_dir_path}/{CELL_TYPE_ORDERINGS_FILENAME}"),
         primary_filter_dimensions=primary_filter_dimensions,
         dataset_to_gene_ids=dataset_to_gene_ids,
         filter_relationships=filter_relationships,
