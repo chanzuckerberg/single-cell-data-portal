@@ -18,13 +18,9 @@ from tests.unit.cellguide_pipeline.constants import (
     CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
 )
+from tests.unit.cellguide_pipeline.mocks import mock_get_asctb_master_sheet
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
-
-
-def mock_get_asctb_master_sheet():
-    with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/asctb_master_sheet.json", "r") as f:
-        return json.load(f)
 
 
 class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
