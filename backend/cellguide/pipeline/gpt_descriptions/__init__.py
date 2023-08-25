@@ -20,4 +20,6 @@ def run(*, output_directory: str):
 
 
 def get_new_gpt_descriptions(ontology_tree: OntologyTreeBuilder) -> dict[str, str]:
-    return generate_new_gpt_descriptions(all_cell_type_ids_in_corpus=ontology_tree.all_cell_type_ids_in_corpus)
+    return generate_new_gpt_descriptions(
+        all_cell_type_ids_to_labels_in_corpus=ontology_tree.all_cell_type_ids_to_labels_in_corpus
+    )
