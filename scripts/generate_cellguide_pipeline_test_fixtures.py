@@ -12,6 +12,7 @@ from backend.cellguide.pipeline.utils import output_json
 from backend.wmg.data.utils import setup_retry_session
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 from tests.unit.cellguide_pipeline.constants import (
+    ASCTB_MASTER_SHEET_FIXTURE_FILENAME,
     CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     CELLTYPE_METADATA_FIXTURE_FILENAME,
@@ -22,7 +23,7 @@ from tests.unit.cellguide_pipeline.constants import (
     TISSUE_METADATA_FIXTURE_FILENAME,
     TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
 )
-from tests.unit.cellguide_pipeline.test_canonical_marker_genes import mock_get_asctb_master_sheet
+from tests.unit.cellguide_pipeline.mocks import mock_get_asctb_master_sheet
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
@@ -59,7 +60,7 @@ def run_cellguide_pipeline():
 
     data = response.json()
     data = {tissue: data[tissue] for tissue in CANONICAL_MARKER_GENE_TEST_TISSUES}
-    output_json(data, f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/asctb_master_sheet.json")
+    output_json(data, f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ASCTB_MASTER_SHEET_FIXTURE_FILENAME}")
 
     with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
         # Get ontology tree data
