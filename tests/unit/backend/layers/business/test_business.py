@@ -1398,18 +1398,34 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(version.version_id, published_collection.version_id)
         self.assertNotEqual(version.version_id, new_version.version_id)
 
-    def test_tombstone_collection_ok(self):
+    def test_tombstone_then_resurrect_collection_ok(self):
         """
-        A collection can be marked as tombstoned using 'tombstone_collection'
+        A Collection can be tombstoned and then resurrected/untombstoned
         """
         published_collection = self.initialize_published_collection()
+
+        public_dataset_asset_s3_uris = [
+            f"s3://datasets/{dv.version_id}.{ext}" for ext in ("rds", "h5ad") for dv in published_collection.datasets
+        ]
+
+        # Verify public Dataset asset files are in place in s3 store
+        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+
         self.business_logic.tombstone_collection(published_collection.collection_id)
 
-        # The collection version canonical collection has tombstoned marked as True
-        collection_version = self.business_logic.get_collection_version(
-            published_collection.version_id, get_tombstoned=True
-        )
-        self.assertTrue(collection_version.canonical_collection.tombstoned)
+        # The collection version canonical collection has tombstoned attribute marked as True
+        collection = self.business_logic.get_canonical_collection(published_collection.collection_id)
+        assert collection.tombstoned is True
+        # Verify public Dataset asset files are gone
+        assert all([not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+
+        self.business_logic.resurrect_collection(published_collection.collection_id)
+
+        # The collection is no longer tombstoned
+        collection_version = self.business_logic.get_canonical_collection(published_collection.collection_id)
+        assert collection_version.tombstoned is False
+        # Verify public Dataset asset files are restored
+        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
 
     def test_publish_version_fails_on_published_collection(self):
         """
