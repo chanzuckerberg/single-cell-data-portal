@@ -219,6 +219,7 @@ module upload_success_lambda {
   lambda_execution_role      = local.lambda_execution_role
   subnets                    = local.subnets
   security_groups            = local.security_groups
+  datasets_bucket            = local.datasets_bucket
 }
 
 module upload_error_lambda {
@@ -256,6 +257,7 @@ module dataset_submissions_lambda {
   deployment_stage           = local.deployment_stage
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
+  datasets_bucket            = local.datasets_bucket
   lambda_execution_role      = aws_iam_role.dataset_submissions_lambda_service_role.arn
   step_function_arn          = module.upload_sfn.step_function_arn
   subnets                    = local.subnets
@@ -294,7 +296,7 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
+data "aws_iam_policy_document" "lambda_step_function_execution_policy_document" {
   statement {
     sid    = "sfn"
     effect = "Allow"
@@ -353,13 +355,15 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
       "arn:aws:s3:::${local.artifact_bucket}/*",
       "arn:aws:s3:::${local.cellxgene_bucket}",
       "arn:aws:s3:::${local.cellxgene_bucket}/*",
+      "arn:aws:s3:::${local.datasets_bucket}",
+      "arn:aws:s3:::${local.datasets_bucket}/*"
     ]
   }
 }
 
 resource "aws_iam_policy" "lambda_step_function_execution_policy" {
   name = "lambda-step-function-execution-policy-${local.custom_stack_name}"
-  policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
+  policy = data.aws_iam_policy_document.lambda_step_function_execution_policy_document.json
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_step_function_execution_policy_attachment" {
