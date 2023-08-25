@@ -24,6 +24,13 @@ from backend.wmg.data.utils import setup_retry_session
 logger = logging.getLogger(__name__)
 
 
+def get_asctb_master_sheet():
+    session = setup_retry_session()
+    asctb_data_response = session.get(ASCTB_MASTER_SHEET_URL)
+    asctb_data_response.raise_for_status()
+    return asctb_data_response.json()
+
+
 class CanonicalMarkerGenesCompiler:
     def __init__(self, *, wmg_tissues: list[str], wmg_human_genes: list[str]):
         """
@@ -36,10 +43,7 @@ class CanonicalMarkerGenesCompiler:
         """
 
         logger.info("Fetching ASCTB data...")
-        session = setup_retry_session()
-        asctb_data_response = session.get(ASCTB_MASTER_SHEET_URL)
-        asctb_data_response.raise_for_status()
-        self.asctb_data = asctb_data_response.json()
+        self.asctb_data = get_asctb_master_sheet()
 
         # WMG tissues have some terms that start with "CL" because they're cell cultures.
         # We filter these out as they are specific to our platform and don't exist in ASCTB.
