@@ -38,6 +38,7 @@ const defaultSecureHeaders = {
         HUBSPOT_FORMS_URL,
         PLAUSIBLE_URL,
         configs.API_URL,
+        configs.CELLGUIDE_DATA_URL,
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -73,7 +74,6 @@ docSiteSecureHeaders.contentSecurityPolicy.directives.frameSrc =
 
 module.exports = {
   compiler: { emotion: true },
-  eslint: { dirs: ["doc-site", "pages", "components", "lib"] },
   async generateBuildId() {
     // Return null to allow next.js to fallback to default behavior
     // if COMMIT_SHA env is missing or empty.

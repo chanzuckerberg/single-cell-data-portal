@@ -21,7 +21,7 @@ const COLLECTION_ROW_WRITE_REVISION_ID =
 const COLLECTIONS_LINK_ID = "collections-link";
 const STATUS_TAG_ID = "status-tag";
 
-describe("Collection Revision", () => {
+describe("Collection Revision @loggedIn", () => {
   skip(
     !isDevStaging,
     "We only seed published collections for revision test in dev and staging"

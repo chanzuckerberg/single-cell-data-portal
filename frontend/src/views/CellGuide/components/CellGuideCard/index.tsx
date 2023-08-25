@@ -26,7 +26,7 @@ import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
-import { useCellTypesById } from "src/common/queries/cellGuide";
+import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 import {
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
@@ -70,7 +70,7 @@ export default function CellGuideCard({
   const cellTypeName = name || "";
   const titleizedCellTypeName = titleize(cellTypeName);
 
-  const cellTypesById = useCellTypesById();
+  const { data: cellTypesById } = useCellTypeMetadata();
 
   const cellType = cellTypesById && cellTypesById[cellTypeId];
 

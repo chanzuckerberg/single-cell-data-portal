@@ -33,9 +33,9 @@ import Table from "../common/Table";
 import { Pagination } from "@mui/material";
 import {
   CanonicalMarkersQueryResponse,
-  EnrichedGenesQueryResponse,
+  ComputationalMarkersQueryResponse,
   useCanonicalMarkers,
-  useEnrichedGenes,
+  useComputationalMarkers,
 } from "src/common/queries/cellGuide";
 import { useComputationalMarkerGenesTableRowsAndFilters } from "./hooks/computational_markers";
 import { useCanonicalMarkerGenesTableRowsAndFilters } from "./hooks/canonical_markers";
@@ -249,11 +249,11 @@ const MarkerGeneTables = ({
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
   const [computationalMarkerGenes, setComputationalMarkerGenes] =
-    useState<EnrichedGenesQueryResponse>([]);
+    useState<ComputationalMarkersQueryResponse>([]);
   const [canonicalMarkerGenes, setCanonicalMarkerGenes] =
     useState<CanonicalMarkersQueryResponse>([]);
 
-  const { data: enrichedGenes } = useEnrichedGenes(cellTypeId);
+  const { data: enrichedGenes } = useComputationalMarkers(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
 
   useEffect(() => {

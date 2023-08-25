@@ -24,7 +24,7 @@ export default function Text({
         textElement.textContent = textContent + "...";
       }
     }
-  }, [name]);
+  }, [name, maxWidth]);
 
   return (
     <text

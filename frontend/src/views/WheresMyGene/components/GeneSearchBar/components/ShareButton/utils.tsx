@@ -73,6 +73,7 @@ export const loadStateFromQueryParams = (
   params: URLSearchParams,
   selectedFilters: State["selectedFilters"],
   dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- removing this file
 ): LoadStateFromURLPayload | null => {
   if (isSSR()) return null;
 
