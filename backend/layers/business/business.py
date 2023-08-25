@@ -16,7 +16,7 @@ from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
     CollectionCreationException,
     CollectionDeleteException,
-    CollectionIsNotTombstonedException,
+    CollectionIsPublicException,
     CollectionIsPublishedException,
     CollectionNotFoundException,
     CollectionPublishException,
@@ -699,7 +699,7 @@ class BusinessLogic(BusinessLogicInterface):
         """
         collection = self.get_canonical_collection(collection_id)
         if not collection.tombstoned:
-            raise CollectionIsNotTombstonedException()
+            raise CollectionIsPublicException()
         all_dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(collection_id)
         for dv in all_dataset_versions:
             for ext in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS):

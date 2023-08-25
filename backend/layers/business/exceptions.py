@@ -127,7 +127,7 @@ class CollectionIsTombstonedException(BusinessException):
     pass
 
 
-class CollectionIsNotTombstonedException(BusinessException):
+class CollectionIsPublicException(BusinessException):
     pass
 
 
