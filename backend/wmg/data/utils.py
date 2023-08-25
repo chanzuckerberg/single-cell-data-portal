@@ -13,6 +13,12 @@ from urllib3.util import Retry
 from backend.wmg.data.constants import CL_PINNED_CONFIG_URL, WMG_PINNED_SCHEMA_VERSION
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 
+API_URLS = {
+    "prod": "https://api.cellxgene.cziscience.com",
+    "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
+    "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
+}
+
 
 def log_func_runtime(func):
     # This decorator function logs the execution time of the function object passed
@@ -158,11 +164,8 @@ def setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502,
 
 def get_datasets_from_curation_api():
     # hardcode to staging backend if deployment is rdev or test
-    API_URL = (
-        "https://api.cellxgene.staging.single-cell.czi.technology"
-        if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
-        else os.getenv("API_URL")
-    )
+    deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
+    API_URL = API_URLS.get(deployment_stage, "https://api.cellxgene.staging.single-cell.czi.technology")
 
     datasets = {}
     if API_URL:
@@ -176,11 +179,8 @@ def get_datasets_from_curation_api():
 
 def get_collections_from_curation_api():
     # hardcode to staging backend if deployment is rdev or test
-    API_URL = (
-        "https://api.cellxgene.staging.single-cell.czi.technology"
-        if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
-        else os.getenv("API_URL")
-    )
+    deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
+    API_URL = API_URLS.get(deployment_stage, "https://api.cellxgene.staging.single-cell.czi.technology")
 
     collections = {}
     if API_URL:
