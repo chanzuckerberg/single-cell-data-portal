@@ -16,6 +16,7 @@ networkx==3.1
 numba==0.57.1
 numpy==1.24.4
 owlready2==0.44
+openai==0.27.7
 packaging==23.1
 pandas==2.0.3
 pronto==2.5.4

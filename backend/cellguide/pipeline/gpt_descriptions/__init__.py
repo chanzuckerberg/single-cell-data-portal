@@ -17,7 +17,6 @@ def run(*, output_directory: str):
     ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
     new_gpt_descriptions = generate_new_gpt_descriptions(ontology_tree=ontology_tree)
     output_json_per_key(new_gpt_descriptions, output_directory)
-    # upload_descriptions_to_s3(new_gpt_descriptions=new_gpt_descriptions)
 
 
 def get_new_gpt_descriptions(ontology_tree: OntologyTreeBuilder) -> dict[str, str]:
