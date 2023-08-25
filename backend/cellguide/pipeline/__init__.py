@@ -8,7 +8,7 @@ from glob import glob
 from backend.cellguide.pipeline.canonical_marker_genes import run as run_canonical_marker_gene_pipeline
 from backend.cellguide.pipeline.computational_marker_genes import run as run_computational_marker_gene_pipeline
 from backend.cellguide.pipeline.config import CellGuideConfig
-from backend.cellguide.pipeline.constants import GPT_OUTPUT_DIRECTORY_FOLDERNAME
+from backend.cellguide.pipeline.constants import GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME
 from backend.cellguide.pipeline.gpt_descriptions import run as run_gpt_description_pipeline
 from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
@@ -41,10 +41,16 @@ def run_cellguide_pipeline():
     run_computational_marker_gene_pipeline(output_directory=output_directory)
 
     # Generate ChatGPT descriptions for any new cell ids
-    run_gpt_description_pipeline(output_directory=GPT_OUTPUT_DIRECTORY_FOLDERNAME)
+    run_gpt_description_pipeline(
+        gpt_output_directory=GPT_OUTPUT_DIRECTORY_FOLDERNAME,
+        gpt_seo_output_directory=GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME,
+    )
 
     upload_cellguide_pipeline_output_to_s3(output_directory=output_directory)
-    upload_gpt_descriptions_to_s3(output_directory=GPT_OUTPUT_DIRECTORY_FOLDERNAME)
+    upload_gpt_descriptions_to_s3(
+        gpt_output_directory=GPT_OUTPUT_DIRECTORY_FOLDERNAME,
+        gpt_seo_output_directory=GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME,
+    )
 
     # invalidate cloudfront distribution to reset cache
     create_invalidation_for_cellguide_data()
@@ -89,15 +95,15 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
     s3_provider.upload_file("404", bucket, "404", {})
 
 
-def upload_gpt_descriptions_to_s3(*, output_directory: str) -> None:
+def upload_gpt_descriptions_to_s3(*, gpt_output_directory: str, gpt_seo_output_directory: str) -> None:
     bucket_name = CellGuideConfig().bucket
     s3_provider = S3Provider()
+    for output_directory in [gpt_output_directory, gpt_seo_output_directory]:
+        # upload to s3
+        s3_provider.sync_directory(src_dir=output_directory, s3_uri=f"s3://{bucket_name}/gpt_descriptions/")
 
-    # upload to s3
-    s3_provider.sync_directory(src_dir=output_directory, s3_uri=f"s3://{bucket_name}/gpt_descriptions/")
-
-    num_descriptions = len(glob(f"{output_directory}/*.json"))
-    logger.info(f"Uploaded {num_descriptions} GPT descriptions to s3://{bucket_name}/gpt_descriptions/")
+        num_descriptions = len(glob(f"{output_directory}/*.json"))
+        logger.info(f"Uploaded {num_descriptions} GPT descriptions to s3://{bucket_name}/gpt_descriptions/")
 
 
 def cleanup(*, output_directory: str):

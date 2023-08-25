@@ -9,6 +9,7 @@ CANONICAL_MARKER_GENES_FOLDERNAME = "canonical_marker_genes"
 COMPUTATIONAL_MARKER_GENES_FOLDERNAME = "computational_marker_genes"
 SOURCE_COLLECTIONS_FOLDERNAME = "source_collections"
 GPT_OUTPUT_DIRECTORY_FOLDERNAME = "gpt_descriptions"
+GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME = "gpt_seo_descriptions"
 
 UBERON_BASIC_PERMANENT_URL_PRONTO = "http://purl.obolibrary.org/obo/uberon.obo"
 

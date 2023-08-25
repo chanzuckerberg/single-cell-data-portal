@@ -7,10 +7,13 @@ logging.basicConfig(level=logging.INFO)
 
 
 def run_pipeline():
-    output_directory = f"gpt_descriptions__{int(time.time())}"
+    gpt_output_directory = f"gpt_descriptions__{int(time.time())}"
+    gpt_seo_output_directory = f"gpt_seo_descriptions__{int(time.time())}"
 
     # Generate computational marker genes from the CZI corpus
-    run_gpt_description_pipeline(output_directory=output_directory)
+    run_gpt_description_pipeline(
+        gpt_output_directory=gpt_output_directory, gpt_seo_output_directory=gpt_seo_output_directory
+    )
 
 
 if __name__ == "__main__":
