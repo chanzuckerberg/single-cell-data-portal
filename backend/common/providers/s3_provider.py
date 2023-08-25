@@ -13,7 +13,6 @@ class S3Provider:
     def __init__(self) -> None:
         self.client = boto3.client("s3")
 
-    @staticmethod
     def upload_file(self, src_file: str, bucket_name: str, dst_file: str, extra_args: dict):
         """
         Uploads the local `src_file` to an S3 object in the `bucket_name` bucket with object key `dst_file`
@@ -55,7 +54,6 @@ class S3Provider:
             check=True,
         )
 
-    @staticmethod
     def does_object_exist(self, bucket_name: str, object_key: str) -> bool:
         """
         Returns True if the object exists in the bucket and is available to download
