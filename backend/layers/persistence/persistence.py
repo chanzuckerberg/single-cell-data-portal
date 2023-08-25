@@ -94,6 +94,8 @@ class DatabaseProvider(DatabaseProviderInterface):
                     session.commit()
                 else:
                     session.expire_all()
+            else:
+                session.flush()
 
         except SQLAlchemyError as e:
             logger.exception(e)
