@@ -84,11 +84,14 @@ class S3Provider(S3ProviderInterface):
 
     def delete_prefix(self, bucket_name: str, prefix: str) -> None:
         print(f"djh bucket is {bucket_name}")
+        logger.info(f"djh bucket is {bucket_name}")
         print(f"djh prefix for delete is {prefix}")
+        logger.info(f"djh prefix for delete is {prefix}")
         if not re.match(ID_REGEX, prefix):
             raise IllegalS3RecursiveDelete("Cannot recursively delete without a valid UUID prefix")
         object_keys = list(self.list_directory(bucket_name, prefix))
         print(f"djh object keys are {object_keys}")
+        logger.info(f"djh object keys are {object_keys}")
         self.delete_files(bucket_name, object_keys)
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
