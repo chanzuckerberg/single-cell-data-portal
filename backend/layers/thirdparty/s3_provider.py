@@ -1,12 +1,14 @@
 import logging
 import os
+import re
 import subprocess
 from typing import Iterable, List, Tuple
 from urllib.parse import urlparse
 
 import boto3
 
-from backend.layers.thirdparty.s3_exceptions import S3DeleteException
+from backend.layers.common.regex import ID_REGEX
+from backend.layers.thirdparty.s3_exceptions import IllegalS3RecursiveDelete, S3DeleteException
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 
 AWS_S3_MAX_ITEMS_PER_BATCH = 1000
@@ -81,7 +83,15 @@ class S3Provider(S3ProviderInterface):
                 raise S3DeleteException(errors)
 
     def delete_prefix(self, bucket_name: str, prefix: str) -> None:
+        print(f"djh bucket is {bucket_name}")
+        logger.info(f"djh bucket is {bucket_name}")
+        print(f"djh prefix for delete is {prefix}")
+        logger.info(f"djh prefix for delete is {prefix}")
+        if not re.search(ID_REGEX, prefix):
+            raise IllegalS3RecursiveDelete("Cannot recursively delete without a valid UUID prefix")
         object_keys = list(self.list_directory(bucket_name, prefix))
+        print(f"djh object keys are {object_keys}")
+        logger.info(f"djh object keys are {object_keys}")
         self.delete_files(bucket_name, object_keys)
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
