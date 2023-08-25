@@ -98,18 +98,22 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
 def upload_gpt_descriptions_to_s3(*, gpt_output_directory: str, gpt_seo_output_directory: str) -> None:
     bucket_name = CellGuideConfig().bucket
     s3_provider = S3Provider()
-    for output_directory in [gpt_output_directory, gpt_seo_output_directory]:
+    for src_directory, dst_directory in zip(
+        [gpt_output_directory, gpt_seo_output_directory],
+        [GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME],
+    ):
         # upload to s3
-        s3_provider.sync_directory(src_dir=output_directory, s3_uri=f"s3://{bucket_name}/gpt_descriptions/")
+        s3_provider.sync_directory(src_dir=src_directory, s3_uri=f"s3://{bucket_name}/{dst_directory}/")
 
-        num_descriptions = len(glob(f"{output_directory}/*.json"))
-        logger.info(f"Uploaded {num_descriptions} GPT descriptions to s3://{bucket_name}/gpt_descriptions/")
+        num_descriptions = len(glob(f"{src_directory}/*.json"))
+        logger.info(f"Uploaded {num_descriptions} GPT descriptions to s3://{bucket_name}/{dst_directory}/")
 
 
 def cleanup(*, output_directory: str):
     logger.info(f"Cleaning up {output_directory} and other CellGuide pipeline outputs")
     shutil.rmtree(output_directory)
     shutil.rmtree(GPT_OUTPUT_DIRECTORY_FOLDERNAME)
+    shutil.rmtree(GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME)
     shutil.rmtree("404")
     shutil.rmtree("latest_snapshot_identifier")
 
