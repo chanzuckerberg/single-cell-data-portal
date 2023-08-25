@@ -93,7 +93,7 @@ class S3Provider(S3ProviderInterface):
         """
         self.client.download_file(bucket_name, object_key, local_filename)
 
-    def resurrect_object(self, bucket_name: str, object_key: str) -> None:
+    def restore_object(self, bucket_name: str, object_key: str) -> None:
         response = self.client.list_object_versions(
             Bucket=bucket_name,
             Prefix=object_key,

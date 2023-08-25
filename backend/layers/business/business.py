@@ -704,7 +704,7 @@ class BusinessLogic(BusinessLogicInterface):
         for dv in all_dataset_versions:
             for ext in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS):
                 object_key = f"{dv.version_id}.{ext}"
-                self.s3_provider.resurrect_object(os.getenv("DATASETS_BUCKET"), object_key)
+                self.s3_provider.restore_object(os.getenv("DATASETS_BUCKET"), object_key)
         self.database_provider.resurrect_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
