@@ -30,8 +30,6 @@ class OpenAIProvider:
             self.model_name = model_name
 
     def generate_gpt_output(self, *, system_role: str, user_role: str, max_retries: int = 10) -> str:
-        logger.info(f"Generating GPT output for system role: {system_role} and user role: {user_role}")
-
         for i in range(max_retries):
             try:
                 result = openai.ChatCompletion.create(

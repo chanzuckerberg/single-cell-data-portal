@@ -30,11 +30,13 @@ def generate_new_gpt_descriptions(all_cell_type_ids_to_labels_in_corpus: dict[st
 
     new_gpt_descriptions: dict[str, str] = {}
     for cell_type_id in all_cell_type_ids_to_labels_in_corpus:
-        object_key = f"gpt_descriptions/{cell_type_id}.json"
+        cell_type_id_filename = cell_type_id.replace(":", "_")
+        object_key = f"gpt_descriptions/{cell_type_id_filename}.json"
         if not s3_provider.does_object_exist(bucket_name=bucket_name, object_key=object_key):
-            logger.info(f"GPT description does not exist yet for {cell_type_id}, generating...")
+            cell_type_label = all_cell_type_ids_to_labels_in_corpus[cell_type_id]
+            logger.info(f"GPT description does not exist yet for {cell_type_id} ({cell_type_label}), generating...")
             description_str = openai_provider.generate_gpt_output(
-                user_role=GPT_CELLTYPE_DESCRIPTION_USER_ROLE(all_cell_type_ids_to_labels_in_corpus[cell_type_id]),
+                user_role=GPT_CELLTYPE_DESCRIPTION_USER_ROLE(cell_type_label),
                 system_role=GPT_CELLTYPE_DESCRIPTION_SYSTEM_ROLE,
             )
             new_gpt_descriptions[cell_type_id] = description_str
@@ -42,3 +44,5 @@ def generate_new_gpt_descriptions(all_cell_type_ids_to_labels_in_corpus: dict[st
 
             # extra safety to avoid rate limiting
             time.sleep(1)
+
+    return new_gpt_descriptions

@@ -3,6 +3,7 @@ import os
 import subprocess
 
 import boto3
+import botocore
 
 AWS_S3_MAX_ITEMS_PER_BATCH = 1000
 
@@ -61,5 +62,9 @@ class S3Provider:
         try:
             self.client.head_object(Bucket=bucket_name, Key=object_key)
             return True
-        except Exception:
-            return False
+        except botocore.exceptions.ClientError as e:
+            error_code = int(e.response["Error"]["Code"])
+            if error_code == 404:
+                return False
+            else:
+                raise
