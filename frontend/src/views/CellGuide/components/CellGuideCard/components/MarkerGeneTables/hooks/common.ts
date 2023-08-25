@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import {
-  useAllOrgansLabelToIdMap,
-  useEnrichedGenes,
+  useComputationalMarkers,
+  useTissueMetadata,
 } from "src/common/queries/cellGuide";
 import { ALL_TISSUES, HOMO_SAPIENS, NO_ORGAN_ID } from "../constants";
 
@@ -12,29 +12,30 @@ export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
   organsMap: Map<string, string>;
   organismsList: string[];
 } {
-  const { data: enrichedGenes } = useEnrichedGenes(cellTypeId);
+  const { data: computationalMarkers } = useComputationalMarkers(cellTypeId);
 
   // get label: ontology-term-id map for all tissues
   // only a subset of the organs in this map will be used
   // to construct the tissue filter list
-  const allOrgansMap = useAllOrgansLabelToIdMap();
-
+  const { data: allOrgansMap } = useTissueMetadata();
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   return useMemo(() => {
     const organisms = new Set<string>([HOMO_SAPIENS]);
     const filteredOrgansMap = new Map<string, string>([
       [ALL_TISSUES, NO_ORGAN_ID],
     ]);
-    let organId: string | undefined;
 
     // 1. construct a label: id map of the tissues in the enriched genes
     // 2. construct a list of unique organisms in the enriched genes
-    if (enrichedGenes) {
-      for (const markerGene of enrichedGenes) {
-        organId = allOrgansMap.get(markerGene.tissue);
-        if (organId) {
-          filteredOrgansMap.set(markerGene.tissue, organId);
-        }
-        organisms.add(markerGene.organism);
+    if (computationalMarkers) {
+      for (const markerGene of computationalMarkers) {
+        organisms.add(markerGene.groupby_dims.organism_ontology_term_label);
+      }
+    }
+
+    if (allOrgansMap) {
+      for (const tissueId in allOrgansMap) {
+        filteredOrgansMap.set(allOrgansMap[tissueId].name, tissueId);
       }
     }
 
@@ -58,5 +59,5 @@ export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
       organsMap: sortedFilteredOrganMap,
       organismsList: sortedOrganismList,
     };
-  }, [enrichedGenes, allOrgansMap]);
+  }, [computationalMarkers, allOrgansMap]);
 }
