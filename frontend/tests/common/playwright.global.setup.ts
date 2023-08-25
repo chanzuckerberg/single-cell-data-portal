@@ -15,7 +15,6 @@ describe("global setup", () => {
     );
 
     const browser = await chromium.launch();
-
     const browserContext = await browser.newContext({
       ...COMMON_PLAYWRIGHT_CONTEXT,
       storageState: featureFlags,
