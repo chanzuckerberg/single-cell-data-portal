@@ -293,8 +293,8 @@ services:
       - backend
     build:
       context: .
-      #      cache_from:
-      #        - "${DOCKER_REPO}corpora-backend:sha-e2cf0570"
+      cache_from:
+        - "${DOCKER_REPO}corpora-backend:branch-main"
       dockerfile: Dockerfile.backend
       args:
         - BUILDKIT_INLINE_CACHE=1
