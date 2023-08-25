@@ -50,10 +50,6 @@ container-functionaltest:
 prod-performance-test:
 	python3 -m unittest discover --start-directory tests/performance --top-level-directory . --verbose
 
-.PHONY: local-backend
-local-backend:
-	$(MAKE) local-server -C ./backend/api_server
-
 .PHONY: e2e
 e2e:
 	$(MAKE) e2e -C ./frontend DEPLOYMENT_STAGE=$(DEPLOYMENT_STAGE)
