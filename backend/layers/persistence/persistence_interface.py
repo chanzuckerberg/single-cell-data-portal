@@ -84,7 +84,7 @@ class DatabaseProviderInterface:
         Deletes (tombstones) a canonical collection.
         """
 
-    def untombstone_collection(self, collection_id: CollectionId) -> None:
+    def resurrect_collection(self, collection_id: CollectionId) -> None:
         """
         Untombstones a canonical collection.
         """
