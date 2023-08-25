@@ -15,11 +15,11 @@ logging.basicConfig(level=logging.INFO)
 def run(*, output_directory: str):
     snapshot = load_snapshot(snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION)
     ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
-    new_gpt_descriptions = generate_new_gpt_descriptions(ontology_tree=ontology_tree)
+    new_gpt_descriptions = get_new_gpt_descriptions(ontology_tree=ontology_tree)
     output_json_per_key(new_gpt_descriptions, output_directory)
 
 
-def get_new_gpt_descriptions(ontology_tree: OntologyTreeBuilder) -> dict[str, str]:
+def get_new_gpt_descriptions(*, ontology_tree: OntologyTreeBuilder) -> dict[str, str]:
     return generate_new_gpt_descriptions(
         all_cell_type_ids_to_labels_in_corpus=ontology_tree.all_cell_type_ids_to_labels_in_corpus
     )
