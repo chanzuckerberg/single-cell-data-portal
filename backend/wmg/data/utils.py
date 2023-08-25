@@ -10,6 +10,7 @@ import yaml
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
+from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 from backend.wmg.data.constants import CL_PINNED_CONFIG_URL, WMG_PINNED_SCHEMA_VERSION
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 
@@ -137,7 +138,7 @@ def depluralize(x):
     return x[:-1] if x[-1] == "s" else x
 
 
-def _setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502, 503, 504), method_whitelist=None):
+def setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502, 503, 504), method_whitelist=None):
     session = requests.Session()
 
     if method_whitelist is None:
@@ -158,15 +159,14 @@ def _setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502
 
 def get_datasets_from_curation_api():
     # hardcode to staging backend if deployment is rdev or test
-    API_URL = (
-        "https://api.cellxgene.staging.single-cell.czi.technology"
-        if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
-        else os.getenv("API_URL")
+    deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
+    API_URL = DEPLOYMENT_STAGE_TO_API_URL.get(
+        deployment_stage, "https://api.cellxgene.staging.single-cell.czi.technology"
     )
 
     datasets = {}
     if API_URL:
-        session = _setup_retry_session()
+        session = setup_retry_session()
         dataset_metadata_url = f"{API_URL}/curation/v1/datasets?schema_version={WMG_PINNED_SCHEMA_VERSION}"
         response = session.get(dataset_metadata_url)
         if response.status_code == 200:
@@ -176,15 +176,14 @@ def get_datasets_from_curation_api():
 
 def get_collections_from_curation_api():
     # hardcode to staging backend if deployment is rdev or test
-    API_URL = (
-        "https://api.cellxgene.staging.single-cell.czi.technology"
-        if os.environ.get("DEPLOYMENT_STAGE") in ["test", "rdev"]
-        else os.getenv("API_URL")
+    deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
+    API_URL = DEPLOYMENT_STAGE_TO_API_URL.get(
+        deployment_stage, "https://api.cellxgene.staging.single-cell.czi.technology"
     )
 
     collections = {}
     if API_URL:
-        session = _setup_retry_session()
+        session = setup_retry_session()
         dataset_metadata_url = f"{API_URL}/curation/v1/collections"
         response = session.get(dataset_metadata_url)
         if response.status_code == 200:
@@ -220,8 +219,9 @@ def get_pinned_ontology_url(name: str):
     Returns:
     str: The URL of the pinned ontology.
     """
-
-    response = requests.get(CL_PINNED_CONFIG_URL)
+    session = setup_retry_session()
+    response = session.get(CL_PINNED_CONFIG_URL)
+    response.raise_for_status()
     decoded_yaml = yaml.safe_load(response.content.decode())
     key = decoded_yaml["CL"]["latest"]
     cl_url = decoded_yaml["CL"]["urls"][key]

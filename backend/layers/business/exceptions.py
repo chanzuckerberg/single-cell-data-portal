@@ -105,7 +105,7 @@ class DatasetIsPublishedException(DatasetUpdateException):
     pass
 
 
-class DatasetIsNotPublishedException(DatasetUpdateException):
+class DatasetIsPrivateException(DatasetUpdateException):
     pass
 
 

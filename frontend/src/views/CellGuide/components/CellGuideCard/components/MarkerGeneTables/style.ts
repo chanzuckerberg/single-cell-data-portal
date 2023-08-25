@@ -1,6 +1,11 @@
-import { CommonThemeProps, fontBodyS, fontBodyXxs } from "@czi-sds/components";
+import {
+  CommonThemeProps,
+  fontBodyS,
+  fontBodyXs,
+  fontBodyXxs,
+} from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { gray200, gray500, primary400 } from "src/common/theme";
+import { gray200, gray400, gray500, primary400 } from "src/common/theme";
 
 const DIVIDER_WIDTH = 2;
 
@@ -57,4 +62,26 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
       `${props.isActive ? primary400(props) : gray200(props)}`};
     transition: background-color 0.3s ease;
   }
+`;
+
+export const MarkerGenePagination = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+export const MarkerGeneInfo = styled.div`
+  ${fontBodyS}
+  color: ${gray500};
+  align-items: flex-start;
+  display: inline-flex;
+`;
+
+export const MarkerGeneTooltipText = styled.div`
+  ${fontBodyXs}
+  font-weight: 500;
+`;
+
+export const MarkerGeneTooltipSubtext = styled.div`
+  ${fontBodyXxs}
+  color: ${gray400};
 `;

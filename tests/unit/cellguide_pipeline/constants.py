@@ -1,0 +1,11 @@
+CELLGUIDE_PIPELINE_FIXTURES_BASEPATH = "tests/unit/cellguide_pipeline/fixtures/"
+
+CANONICAL_MARKER_GENES_FIXTURE_FILENAME = "canonical_marker_genes.json"
+COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME = "computational_marker_genes.json"
+TISSUE_METADATA_FIXTURE_FILENAME = "tissue_metadata.json"
+CELLTYPE_METADATA_FIXTURE_FILENAME = "cell_metadata.json"
+ONTOLOGY_GRAPH_FIXTURE_FILENAME = "ontology_graph.json"
+CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME = "all_states_per_cell_type.json"
+TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME = "all_states_per_tissue.json"
+SOURCE_COLLECTIONS_FIXTURE_FILENAME = "source_collections.json"
+ASCTB_MASTER_SHEET_FIXTURE_FILENAME = "asctb_master_sheet.json"

@@ -1,17 +1,27 @@
 import logging
 
 from backend.cellguide.pipeline.canonical_marker_genes.canonical_markers import CanonicalMarkerGenesCompiler
-from backend.cellguide.pipeline.constants import CANONICAL_MARKER_GENES_FILENAME, HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID
+from backend.cellguide.pipeline.constants import (
+    CANONICAL_MARKER_GENES_FOLDERNAME,
+    HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID,
+)
+from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
-from backend.cellguide.pipeline.utils import output_json
+from backend.cellguide.pipeline.utils import output_json_per_key
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
-from backend.wmg.data.snapshot import load_snapshot
+from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 logger = logging.getLogger(__name__)
 
 
-def run(*, output_directory: str, ontology_tree: OntologyTreeBuilder):
+def run(*, output_directory: str):
     snapshot = load_snapshot(snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION)
+    ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
+    data = get_canonical_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
+    output_json_per_key(data, f"{output_directory}/{CANONICAL_MARKER_GENES_FOLDERNAME}")
+
+
+def get_canonical_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: OntologyTreeBuilder) -> dict:
     wmg_tissues = [
         next(iter(i.keys()))
         for i in snapshot.primary_filter_dimensions["tissue_terms"][HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID]
@@ -29,5 +39,4 @@ def run(*, output_directory: str, ontology_tree: OntologyTreeBuilder):
     logger.info(
         f"Parsed {len(parsed_asctb_table_entries)} cell types in ASCTB, out of which {num_cell_types_in_corpus} are in CellGuide."
     )
-
-    output_json(parsed_asctb_table_entries, f"{output_directory}/{CANONICAL_MARKER_GENES_FILENAME}")
+    return parsed_asctb_table_entries

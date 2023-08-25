@@ -1,3 +1,4 @@
+import copy
 from dataclasses import asdict, is_dataclass
 
 
@@ -9,14 +10,17 @@ def convert_dataclass_to_dict(data):
     ---------
     data - dataclass or dict of dataclasses
     """
-    if is_dataclass(data):
-        data = asdict(data)
+    data_copy = copy.deepcopy(data)
 
-    elif isinstance(data, dict):
-        for key, value in data.items():
+    if is_dataclass(data_copy):
+        data_copy = asdict(data_copy)
+
+    elif isinstance(data_copy, dict):
+        for key, value in data_copy.items():
             if is_dataclass(value):
-                data[key] = asdict(value)
+                data_copy[key] = asdict(value)
             elif isinstance(value, list):
-                data[key] = [asdict(i) for i in value]
-
-    return data
+                data_copy[key] = [asdict(i) if is_dataclass(i) else i for i in value]
+    elif isinstance(data_copy, list):
+        data_copy = [asdict(i) if is_dataclass(i) else i for i in data_copy]
+    return data_copy

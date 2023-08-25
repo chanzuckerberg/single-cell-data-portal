@@ -112,7 +112,7 @@ interface Props<T, Multiple> {
 }
 export default function QuickSelect<
   T extends DefaultMenuSelectOption,
-  Multiple extends boolean | undefined = false
+  Multiple extends boolean | undefined = false,
 >({
   items,
   multiple,

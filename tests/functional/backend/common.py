@@ -41,7 +41,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
             allowed_methods={"DELETE", "GET", "HEAD", "PUT" "POST"},
         )
         cls.session.mount("https://", HTTPAdapter(max_retries=retry_config))
-        token = cls.get_auth_token(cls.config.test_account_username, cls.config.test_account_password)
+        token = cls.get_auth_token(cls.config.functest_account_username, cls.config.functest_account_password)
         cls.curator_cookie = cls.make_cookie(token)
         cls.api = API_URL.get(cls.deployment_stage)
         cls.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"

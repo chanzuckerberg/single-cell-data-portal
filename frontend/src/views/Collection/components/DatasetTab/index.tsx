@@ -40,16 +40,16 @@ const DatasetTab: FC<Props> = ({
 
   const queryClient = useQueryClient();
 
+  const invalidateCollectionQuery = useCallback(() => {
+    queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+  }, [collectionId, queryClient]);
+
   if (isTombstonedCollection(collection)) return null;
 
   const hasWriteAccess = collection?.access_type === ACCESS_TYPE.WRITE;
 
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
-
-  const invalidateCollectionQuery = useCallback(() => {
-    queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
-  }, [collectionId]);
 
   const addNewFile = (mutationFunction = uploadLink, originalId?: string) => {
     return (newFile: UploadingFile) => {

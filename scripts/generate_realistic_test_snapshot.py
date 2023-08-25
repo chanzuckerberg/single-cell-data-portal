@@ -26,7 +26,7 @@ You can run this script from the root directory of single-cell-data-portal:
 python3 scripts/generate_realistic_test_snapshot.py <PATH_TO_LOCAL_SNAPSHOT> tests/unit/backend/wmg/fixtures/realistic-test-snapshot
 """
 
-test_tissue = "UBERON:0002048"
+test_tissues = ["UBERON:0002048", "UBERON:0002113"]  # lung and kidney
 test_organism = "NCBITaxon:9606"
 test_genes = [
     "ENSG00000256480",
@@ -560,10 +560,10 @@ if __name__ == "__main__":
         f"{snapshot}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "r"
     ) as pfd_file:
         print("Subsetting existing snapshot...")
-        es = es_arr.df[(test_genes, test_tissue, test_organism)]
-        esdef = es_def_arr.df[(test_genes, test_tissue, test_organism)]
-        esfmg = esfmg_arr.query(cond=f"gene_ontology_term_id in {test_genes}").df[(test_tissue, test_organism, [])]
-        cc = cc_arr.df[(test_tissue, test_organism)]
+        es = es_arr.df[(test_genes, test_tissues, test_organism)]
+        esdef = es_def_arr.df[(test_genes, test_tissues, test_organism)]
+        esfmg = esfmg_arr.query(cond=f"gene_ontology_term_id in {test_genes}").df[(test_tissues, test_organism, [])]
+        cc = cc_arr.df[(test_tissues, test_organism)]
         filter_relationships = create_filter_relationships_graph(cc)
 
         print("Creating new snapshot...")

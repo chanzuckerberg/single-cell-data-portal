@@ -519,7 +519,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(new_version)
             return CollectionVersionId(new_version_id)
 
-    def delete_collection(self, collection_id: CollectionId) -> None:
+    def delete_unpublished_collection(self, collection_id: CollectionId) -> None:
         """
         Delete an unpublished Collection
         """
@@ -667,12 +667,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             return self._hydrate_dataset_version(dataset_version)
 
     def get_all_dataset_versions_for_collection(
-        self, collection_id: CollectionId, from_date: datetime = datetime.min
+        self, collection_id: CollectionId, from_date: Optional[datetime] = datetime.min
     ) -> List[DatasetVersion]:
         """
         Get all Dataset versions -- published and unpublished -- for a canonical Collection
         """
-        from_date = datetime.min if from_date is None else from_date
+        from_date = from_date if from_date else datetime.min
         with self._manage_session() as session:
             dataset_versions = (
                 session.query(DatasetVersionTable)
@@ -888,7 +888,6 @@ class DatabaseProvider(DatabaseProviderInterface):
 
         :param collection_version_id: the CollectionVersion or the CollectionVersionId
         :param dataset_version_id: the DatasetVersionId
-        :param delete_dv_row: boolean flag - when True, delete DatasetVersion row (and dependent DatasetArtifact rows)
         """
         with self._manage_session() as session:
             collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()

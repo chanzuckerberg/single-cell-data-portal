@@ -190,7 +190,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[new_version_id.id] = collection_version
         return new_version_id
 
-    def delete_collection(self, collection_id: CollectionId) -> None:
+    def delete_unpublished_collection(self, collection_id: CollectionId) -> None:
         collection = self.collections.get(collection_id.id)
         if collection:
             if collection.originally_published_at is not None:
@@ -274,7 +274,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_ids_for_new_collection_version.append(dataset_version.dataset_id.id)
         previous_collection = self.collections.get(collection_id.id)
 
-        dataset_ids_to_tombstone = []
+        dataset_version_ids_to_delete_from_s3 = []
         if previous_collection is None:
             self.collections[collection_id.id] = CanonicalCollection(
                 id=collection_id,
@@ -296,7 +296,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     self.datasets[previous_dataset_id].tombstoned = True
                     for dataset_version in self.datasets_versions.values():
                         if dataset_version.dataset_id == previous_dataset_id:
-                            dataset_ids_to_tombstone.append(dataset_version.dataset_id.id)
+                            dataset_version_ids_to_delete_from_s3.append(dataset_version.version_id.id)
 
             new_collection = copy.deepcopy(previous_collection)
             new_collection.version_id = version_id
@@ -306,7 +306,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[version_id.id].published_at = published_at
         self.collections_versions[version_id.id].schema_version = schema_version
 
-        return dataset_ids_to_tombstone
+        return dataset_version_ids_to_delete_from_s3
 
     # OR
     # def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId) -> None:
@@ -416,6 +416,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         dataset_id = DatasetId()
         version_id = DatasetVersionId()
         collection_version = self.collections_versions[collection_version_id.id]
+        canonical_dataset = CanonicalDataset(dataset_id, None, False, None)
         version = DatasetVersion(
             dataset_id=dataset_id,
             version_id=version_id,
@@ -424,12 +425,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             metadata=None,
             artifacts=[],
             created_at=datetime.utcnow(),
-            canonical_dataset=CanonicalDataset(dataset_id, None, False, None),
+            canonical_dataset=canonical_dataset,
         )
         self.datasets_versions[version_id.id] = version
-        self.datasets[dataset_id.id] = CanonicalDataset(
-            dataset_id=dataset_id, dataset_version_id=None, tombstoned=False, published_at=None
-        )
+        self.datasets[dataset_id.id] = canonical_dataset
         return copy.deepcopy(version)
 
     def add_dataset_to_collection_version_mapping(

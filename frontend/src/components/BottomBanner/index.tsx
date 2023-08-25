@@ -258,7 +258,7 @@ export default function BottomBanner({
       setBottomBannerLastClosedTime(0);
     }
     return show;
-  }, [bottomBannerLastClosedTime]);
+  }, [bottomBannerLastClosedTime, setBottomBannerLastClosedTime]);
 
   if (!showBanner) return null;
 
