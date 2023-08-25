@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -85,6 +86,11 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
     # this is used for custom cloudfront error handling
     upload_404_command = ["aws", "s3", "cp", "404", f"{bucket_path}404", "--quiet"]
     subprocess.run(upload_404_command)
+
+    # cleanup
+    shutil.rmtree(output_directory)
+    shutil.rmtree("404")
+    shutil.rmtree("latest_snapshot_identifier")
 
 
 if __name__ == "__main__":
