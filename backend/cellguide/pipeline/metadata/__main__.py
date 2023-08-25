@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def run_pipeline():
-    output_directory = f"cellguide_pipeline_output__{int(time.time())}"
+    output_directory = f"metadata__{int(time.time())}"
 
     # Generate cell guide cards, synonyms, and descriptions
     run_metadata_pipeline(output_directory=output_directory)

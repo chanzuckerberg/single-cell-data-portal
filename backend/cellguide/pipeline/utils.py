@@ -36,7 +36,8 @@ def output_json_per_key(data, path):
     os.makedirs(os.path.dirname(f"{path}/"), exist_ok=True)
 
     for key in data:
-        output_json(data[key], f"{path}/{key}.json")
+        filename = key.replace(":", "_")
+        output_json(data[key], f"{path}/{filename}.json")
 
 
 def convert_dataclass_to_dict_and_strip_nones(data):

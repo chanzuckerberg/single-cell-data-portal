@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def run_pipeline():
-    output_directory = f"cellguide_pipeline_output__{int(time.time())}"
+    output_directory = f"source_collections__{int(time.time())}"
 
     # Generate source data for each cell type
     run_source_collections_pipeline(output_directory=output_directory)

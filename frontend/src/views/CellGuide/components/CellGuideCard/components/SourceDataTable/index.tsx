@@ -11,7 +11,7 @@ import Table from "../common/Table";
 import Link from "../common/Link";
 import { StyledTag } from "./style";
 import {
-  SourceDataQueryResponseEntry,
+  SourceCollectionsQueryResponseEntry,
   useSourceData,
 } from "src/common/queries/cellGuide";
 import { Pagination } from "@mui/material";
@@ -119,7 +119,7 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
 };
 
 function createTableRow(
-  collection: SourceDataQueryResponseEntry,
+  collection: SourceCollectionsQueryResponseEntry,
   index: number
 ) {
   const tissueNames = collection.tissue.map((tissue) => tissue.label);
