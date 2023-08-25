@@ -77,8 +77,11 @@ oauth/pkcs12/certificate.pfx:
 	# On Linux, the pkcs12 directory gets written to with root permission. Force ownership to our user.
 	sudo chown -R $$(id -u):$$(id -g) $(PWD)/oauth/pkcs12
 
+.PHONY: .env.ecr
 .env.ecr:
 	echo DOCKER_REPO=$$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com/ > .env.ecr;
+	echo "HAPPY_COMMIT=$(shell git rev-parse --verify HEAD)" >> .env.ecr
+	echo "HAPPY_BRANCH=$(shell git branch --show-current)" >> .env.ecr
 
 .PHONY: local-ecr-login
 local-ecr-login:
