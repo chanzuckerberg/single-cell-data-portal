@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class OpenAIProvider:
     def __init__(self, model_name="gpt-4", fallback_model_name="gpt-3.5-turbo") -> None:
-        self.organization = CellGuideConfig().openai_organization_key
+        self.organization = CellGuideConfig().openai_organization_id
         self.api_key = CellGuideConfig().openai_api_key
 
         valid_gpt_models = [
