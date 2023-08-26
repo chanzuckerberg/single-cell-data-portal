@@ -222,7 +222,8 @@ export default function CellGuideCard({
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}
-            tissueName={selectedOrgan}
+            organName={selectedOrgan}
+            organId={selectedOrganId}
             organismName={selectedOrganism}
           />
 

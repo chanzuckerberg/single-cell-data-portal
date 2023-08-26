@@ -1,6 +1,10 @@
 import { useMemo } from "react";
-import { CanonicalMarkersQueryResponse } from "src/common/queries/cellGuide";
-import { HOMO_SAPIENS } from "../constants";
+import {
+  CanonicalMarkersQueryResponse,
+  CanonicalMarkersQueryResponseEntry,
+} from "src/common/queries/cellGuide";
+import { ALL_TISSUES, HOMO_SAPIENS } from "../constants";
+import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
 
 interface CanonicalMarkerGeneTableData {
   symbol: string;
@@ -11,16 +15,6 @@ interface CanonicalMarkerGeneTableData {
     publications: string[];
     numReferences: number;
   };
-}
-
-function _getSortedOrgans(genes: CanonicalMarkersQueryResponse): string[] {
-  const organs = new Set<string>();
-  for (const markerGene of genes) {
-    organs.add(markerGene.tissue);
-  }
-  return Array.from(organs).sort((a, b) => {
-    return a.localeCompare(b);
-  });
 }
 
 function _getPublicationTitlesToIndex(
@@ -74,41 +68,72 @@ function _getReferenceData(
   };
 }
 
+function _passSelectionCriteria({
+  markerGene,
+  allTissuesLabelToIdMap,
+  selectedOrganLabel,
+  selectedOrganId,
+}: {
+  markerGene: CanonicalMarkersQueryResponseEntry;
+  allTissuesLabelToIdMap: Map<string, string>;
+  selectedOrganLabel: string;
+  selectedOrganId: string;
+}): boolean {
+  // There are marker genes tissues labeled as "All Tissues"
+  // so select them only when selectedOrganLabel is "All Tissues"
+  if (selectedOrganLabel === ALL_TISSUES) {
+    return markerGene.tissue === ALL_TISSUES;
+  }
+
+  const tissue_id = allTissuesLabelToIdMap.get(markerGene.tissue);
+
+  if (!tissue_id) {
+    return false;
+  }
+
+  return isTissueIdDescendantOfAncestorTissueId(tissue_id, selectedOrganId);
+}
+
 export function useCanonicalMarkerGenesTableRowsAndFilters({
   genes,
-  selectedOrganism,
-  selectedOrgan,
+  allTissuesLabelToIdMap,
+  selectedOrganismLabel,
+  selectedOrganId,
+  selectedOrganLabel,
 }: {
   genes: CanonicalMarkersQueryResponse;
-  selectedOrganism: string;
-  selectedOrgan: string;
+  allTissuesLabelToIdMap: Map<string, string>;
+  selectedOrganismLabel: string;
+  selectedOrganId: string;
+  selectedOrganLabel: string;
 }): {
   canonicalMarkerGeneTableData: CanonicalMarkerGeneTableData[];
 } {
   return useMemo(() => {
-    if (!genes || selectedOrganism != HOMO_SAPIENS)
+    if (!genes || selectedOrganismLabel != HOMO_SAPIENS)
       return {
         canonicalMarkerGeneTableData: [],
       };
-
-    // get sorted organs
-    const sortedOrgans = _getSortedOrgans(genes);
-    const selectedOrganFilter = !sortedOrgans.includes(selectedOrgan)
-      ? ""
-      : selectedOrgan;
 
     const rows: CanonicalMarkerGeneTableData[] = [];
 
     const publicationTitlesToIndex = _getPublicationTitlesToIndex(
       genes,
-      selectedOrganFilter
+      selectedOrganLabel
     );
 
     for (const markerGene of genes) {
-      const { tissue, publication, publication_titles, symbol, name } =
-        markerGene;
+      if (
+        !_passSelectionCriteria({
+          markerGene: markerGene,
+          allTissuesLabelToIdMap: allTissuesLabelToIdMap,
+          selectedOrganLabel: selectedOrganLabel,
+          selectedOrganId: selectedOrganId,
+        })
+      )
+        continue;
 
-      if (tissue !== selectedOrganFilter) continue;
+      const { publication, publication_titles, symbol, name } = markerGene;
       const referenceData = _getReferenceData(
         publication,
         publication_titles,
@@ -131,5 +156,11 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
     return {
       canonicalMarkerGeneTableData: rows,
     };
-  }, [genes, selectedOrgan, selectedOrganism]);
+  }, [
+    genes,
+    selectedOrganismLabel,
+    selectedOrganLabel,
+    selectedOrganId,
+    allTissuesLabelToIdMap,
+  ]);
 }

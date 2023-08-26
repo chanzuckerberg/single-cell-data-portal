@@ -220,36 +220,13 @@ export const useSourceData = (
   );
 };
 
-/* Tissues for cell type from source data dual mapping tissue name and ontology_term_id */
-export function useSourceCollectionsTissuesLabelToIdDualMap(
-  cellTypeId: string
-): Map<string, string> {
-  const { data: sourceData } = useSourceData(cellTypeId);
-
-  return useMemo(() => {
-    if (!sourceData) return new Map<string, string>();
-
-    const allTissuesMap = new Map<string, string>();
-    sourceData.reduce((acc, curr) => {
-      const { tissue } = curr;
-      for (const t of tissue) {
-        // map tissue label to ontology_term_id and ontology_term_id to tissue label
-        acc.set(t.label, t.ontology_term_id);
-        acc.set(t.ontology_term_id, t.label);
-      }
-      return acc;
-    }, allTissuesMap);
-    return allTissuesMap;
-  }, [sourceData]);
-}
-
 /* ========== enriched_genes ========== */
 export const USE_COMPUTATIONAL_MARKERS_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_COMPUTATIONAL_MARKERS],
   id: "cell-guide-computational-markers-query",
 };
 
-interface ComputationalMarkersQueryResponseEntry {
+export interface ComputationalMarkersQueryResponseEntry {
   me: number;
   pc: number;
   marker_score: number;
@@ -279,7 +256,7 @@ export const USE_CANONICAL_MARKERS_QUERY = {
   id: "cell-guide-canonical-markersquery",
 };
 
-interface CanonicalMarkersQueryResponseEntry {
+export interface CanonicalMarkersQueryResponseEntry {
   tissue: string;
   symbol: string;
   name: string;
@@ -410,30 +387,51 @@ export const fetchTissueMetadata =
     return await response.json();
   };
 
-/* ========== all organs label to id map ========== */
-export function useAllOrgansLabelToIdMap(): Map<string, string> {
+/* ========== Lookup tables for organs ========== */
+export function useAllOrgansLookupTables(): {
+  organLabelToIdMap: Map<string, string>;
+} {
   const { data: allOrgansData } = useTissueMetadata();
   return useMemo(() => {
-    if (!allOrgansData) return new Map<string, string>();
+    if (!allOrgansData) {
+      return {
+        organLabelToIdMap: new Map<string, string>(),
+      };
+    }
 
-    const allOrgansMap = new Map<string, string>();
+    const allOrgansLabelToIdMap = new Map<string, string>();
     for (const organId in allOrgansData) {
       const organData = allOrgansData[organId];
-      allOrgansMap.set(organData.name, organData.id);
+      allOrgansLabelToIdMap.set(organData.name, organData.id);
     }
-    return allOrgansMap;
+    return {
+      organLabelToIdMap: allOrgansLabelToIdMap,
+    };
   }, [allOrgansData]);
 }
 
-/* ========== tissue descendants =========== */
-/* export function useTissueDescendants(): Map<string, string[]> | undefined {
+/* ========== Lookup tables for tissues ========== */
+export function useAllTissuesLookupTables(cellTypeId: string): {
+  allTissuesLabelToIdMap: Map<string, string>;
+} {
+  const { data: sourceData } = useSourceData(cellTypeId);
+
   return useMemo(() => {
-    const tissueDescJsonObj = readJson(
-      "src/components/common/Filter/descendant_mappings/tissue_descendants.json"
-    );
-    return new Map(Object.entries(tissueDescJsonObj));
-  }, []);
-}*/
+    if (!sourceData) {
+      return { allTissuesLabelToIdMap: new Map<string, string>() };
+    }
+
+    const allTissuesLabelToIdLookup = new Map<string, string>();
+
+    for (const source of sourceData) {
+      const tissueList = source.tissue;
+      for (const tissue of tissueList) {
+        allTissuesLabelToIdLookup.set(tissue.label, tissue.ontology_term_id);
+      }
+    }
+    return { allTissuesLabelToIdMap: allTissuesLabelToIdLookup };
+  }, [sourceData]);
+}
 
 /**
  * Mapping from data/response type to properties used for querying

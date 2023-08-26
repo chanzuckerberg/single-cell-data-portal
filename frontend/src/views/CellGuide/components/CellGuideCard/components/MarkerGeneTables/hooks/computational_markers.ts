@@ -1,7 +1,11 @@
 import { useMemo } from "react";
-import { ComputationalMarkersQueryResponse } from "src/common/queries/cellGuide";
+import {
+  ComputationalMarkersQueryResponse,
+  ComputationalMarkersQueryResponseEntry,
+} from "src/common/queries/cellGuide";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import { HOMO_SAPIENS } from "../constants";
+import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
+import { ALL_TISSUES } from "../constants";
 
 interface ComputationalMarkerGeneTableData {
   symbol: string;
@@ -11,51 +15,58 @@ interface ComputationalMarkerGeneTableData {
   pc: string;
 }
 
-function _getSortedOrganisms(
-  genes: ComputationalMarkersQueryResponse
-): string[] {
-  const organisms = new Set<string>();
-  for (const markerGene of genes) {
-    if (markerGene.marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
-    organisms.add(markerGene.groupby_dims.organism_ontology_term_label);
-  }
-  return Array.from(organisms).sort((a, b) => {
-    if (a === HOMO_SAPIENS) return -1;
-    if (b === HOMO_SAPIENS) return 1;
-    return a.localeCompare(b);
-  });
-}
+function _passSelectionCriteria({
+  markerGene,
+  allTissuesLabelToIdMap,
+  selectedOrganismLabel,
+  selectedOrganLabel,
+  selectedOrganId,
+}: {
+  markerGene: ComputationalMarkersQueryResponseEntry;
+  selectedOrganismLabel: string;
+  selectedOrganLabel: string;
+  selectedOrganId: string;
+  allTissuesLabelToIdMap: Map<string, string>;
+}): boolean {
+  const { groupby_dims, marker_score } = markerGene;
 
-function _getSortedOrgans(
-  genes: ComputationalMarkersQueryResponse,
-  selectedOrganismFilter: string
-): string[] {
-  const organs = new Set<string>();
-  for (const markerGene of genes) {
-    if (
-      markerGene.groupby_dims.organism_ontology_term_label !==
-      selectedOrganismFilter
-    )
-      continue;
-    if (markerGene.marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
-    organs.add(
-      markerGene.groupby_dims.tissue_ontology_term_label ?? "All Tissues"
-    );
+  // When groupby_dims.tissue_ontology_term_label is undefined, default to ALL_TISSUES
+  const {
+    organism_ontology_term_label,
+    tissue_ontology_term_label = ALL_TISSUES,
+  } = groupby_dims;
+
+  if (marker_score < FMG_GENE_STRENGTH_THRESHOLD) return false;
+  if (organism_ontology_term_label !== selectedOrganismLabel) return false;
+
+  // filter by tissue
+  //
+  // There are marker genes tissues labeled as "All Tissues" AND there
+  // there are marker genes tissues that are undefined which are re-labeled
+  // as ALL_TISSUES. Select them only when selectedOrganLabel is "All Tissues"
+  if (selectedOrganLabel === ALL_TISSUES) {
+    return tissue_ontology_term_label === ALL_TISSUES;
   }
 
-  return Array.from(organs).sort((a, b) => {
-    return a.localeCompare(b);
-  });
+  const tissue_id = allTissuesLabelToIdMap.get(tissue_ontology_term_label);
+
+  if (!tissue_id) return false;
+
+  return isTissueIdDescendantOfAncestorTissueId(tissue_id, selectedOrganId);
 }
 
 export function useComputationalMarkerGenesTableRowsAndFilters({
   genes,
-  selectedOrganism,
-  selectedOrgan,
+  allTissuesLabelToIdMap,
+  selectedOrganismLabel,
+  selectedOrganLabel,
+  selectedOrganId,
 }: {
   genes: ComputationalMarkersQueryResponse;
-  selectedOrganism: string;
-  selectedOrgan: string;
+  allTissuesLabelToIdMap: Map<string, string>;
+  selectedOrganismLabel: string;
+  selectedOrganLabel: string;
+  selectedOrganId: string;
 }): {
   computationalMarkerGeneTableData: ComputationalMarkerGeneTableData[];
 } {
@@ -65,29 +76,22 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
         computationalMarkerGeneTableData: [],
       };
 
-    // get sorted organisms
-    const sortedOrganisms = _getSortedOrganisms(genes);
-    const selectedOrganismFilter = !sortedOrganisms.includes(selectedOrganism)
-      ? ""
-      : selectedOrganism;
-
-    // get sorted organs
-    const sortedOrgans = _getSortedOrgans(genes, selectedOrganismFilter);
-    const selectedOrganFilter = !sortedOrgans.includes(selectedOrgan)
-      ? ""
-      : selectedOrgan;
-
     const rows: ComputationalMarkerGeneTableData[] = [];
-    for (const markerGene of genes) {
-      const { pc, me, name, symbol, groupby_dims, marker_score } = markerGene;
-      const {
-        organism_ontology_term_label,
-        tissue_ontology_term_label = "All Tissues",
-      } = groupby_dims;
 
-      if (organism_ontology_term_label !== selectedOrganismFilter) continue;
-      if (tissue_ontology_term_label !== selectedOrganFilter) continue;
-      if (marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
+    for (const markerGene of genes) {
+      if (
+        !_passSelectionCriteria({
+          markerGene: markerGene,
+          allTissuesLabelToIdMap: allTissuesLabelToIdMap,
+          selectedOrganismLabel: selectedOrganismLabel,
+          selectedOrganLabel: selectedOrganLabel,
+          selectedOrganId: selectedOrganId,
+        })
+      )
+        continue;
+
+      const { pc, me, name, symbol, marker_score } = markerGene;
+
       rows.push({
         symbol,
         name,
@@ -100,5 +104,11 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
     return {
       computationalMarkerGeneTableData: rows,
     };
-  }, [genes, selectedOrganism, selectedOrgan]);
+  }, [
+    genes,
+    allTissuesLabelToIdMap,
+    selectedOrganismLabel,
+    selectedOrganLabel,
+    selectedOrganId,
+  ]);
 }

@@ -34,6 +34,7 @@ import { Pagination } from "@mui/material";
 import {
   CanonicalMarkersQueryResponse,
   ComputationalMarkersQueryResponse,
+  useAllTissuesLookupTables,
   useCanonicalMarkers,
   useComputationalMarkers,
 } from "src/common/queries/cellGuide";
@@ -235,7 +236,8 @@ interface Props {
   cellTypeId: string;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
   cellTypeName: string;
-  tissueName: string;
+  organName: string;
+  organId: string;
   organismName: string;
 }
 
@@ -243,7 +245,8 @@ const MarkerGeneTables = ({
   cellTypeId,
   cellTypeName,
   setGeneInfoGene,
-  tissueName,
+  organName,
+  organId,
   organismName,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
@@ -255,6 +258,7 @@ const MarkerGeneTables = ({
 
   const { data: enrichedGenes } = useComputationalMarkers(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
+  const { allTissuesLabelToIdMap } = useAllTissuesLookupTables(cellTypeId);
 
   useEffect(() => {
     if (enrichedGenes) {
@@ -273,15 +277,19 @@ const MarkerGeneTables = ({
   const { computationalMarkerGeneTableData } =
     useComputationalMarkerGenesTableRowsAndFilters({
       genes: computationalMarkerGenes,
-      selectedOrgan: tissueName,
-      selectedOrganism: organismName,
+      allTissuesLabelToIdMap: allTissuesLabelToIdMap,
+      selectedOrganLabel: organName,
+      selectedOrganId: organId,
+      selectedOrganismLabel: organismName,
     });
 
   const { canonicalMarkerGeneTableData } =
     useCanonicalMarkerGenesTableRowsAndFilters({
       genes: canonicalMarkerGenes,
-      selectedOrgan: tissueName,
-      selectedOrganism: organismName,
+      allTissuesLabelToIdMap: allTissuesLabelToIdMap,
+      selectedOrganLabel: organName,
+      selectedOrganId: organId,
+      selectedOrganismLabel: organismName,
     });
 
   const tableRows: TableRow[] = useMemo(

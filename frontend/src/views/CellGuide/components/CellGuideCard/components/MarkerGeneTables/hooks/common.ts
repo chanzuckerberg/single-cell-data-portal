@@ -1,12 +1,20 @@
 import { useMemo } from "react";
 import {
   useComputationalMarkers,
-  useAllOrgansLabelToIdMap,
+  useAllOrgansLookupTables,
 } from "src/common/queries/cellGuide";
 import { ALL_TISSUES, HOMO_SAPIENS, NO_ORGAN_ID } from "../constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 
-/* Currently uses ONLY computational marker genes (ie enriched genes)
-   to derive the filter list of tissues and organisms
+/* NOTE: Here "organ" refers to a coarse tissue or system (ex: "eye", "digestive system")
+   whereas, "tissue" refers coarse tissue/system AND granular tissue. That is, "tissue"
+   refers to a superset that contains "organs" 
+   (ex: "retina", "lacrimal gland" are granular tissues that belong to the "eye" organ)
+*/
+
+/* NOTE: Currently uses ONLY computational marker genes to derive the 
+   filter list of organs and organisms. In the future, we might use an
+   independent filter list of organs and organisms.
 */
 export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
   organsMap: Map<string, string>;
@@ -14,10 +22,7 @@ export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
 } {
   const { data: computationalMarkers } = useComputationalMarkers(cellTypeId);
 
-  // get label: ontology-term-id map for all tissues
-  // only a subset of the organs in this map will be used
-  // to construct the tissue filter list
-  const allOrgansMap = useAllOrgansLabelToIdMap();
+  const { organLabelToIdMap } = useAllOrgansLookupTables();
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   return useMemo(() => {
@@ -27,13 +32,15 @@ export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
     ]);
     let organId: string | undefined;
 
-    // 1. construct a label: id map of the tissues in the enriched genes
-    // 2. construct a list of unique organisms in the enriched genes
+    // 1. construct a label to id map of the organs intersected with
+    //    the computational marker genes.
+    // 2. construct a list of unique organisms in the enriched genes.
     if (computationalMarkers) {
       for (const markerGene of computationalMarkers) {
+        if (markerGene.marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
         const organLabel = markerGene.groupby_dims.tissue_ontology_term_label;
-        if (organLabel && allOrgansMap) {
-          organId = allOrgansMap.get(organLabel);
+        if (organLabel && organLabelToIdMap) {
+          organId = organLabelToIdMap.get(organLabel);
           if (organId) {
             filteredOrgansMap.set(organLabel, organId);
           }
@@ -62,5 +69,5 @@ export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
       organsMap: sortedFilteredOrganMap,
       organismsList: sortedOrganismList,
     };
-  }, [computationalMarkers, allOrgansMap]);
+  }, [computationalMarkers, organLabelToIdMap]);
 }
