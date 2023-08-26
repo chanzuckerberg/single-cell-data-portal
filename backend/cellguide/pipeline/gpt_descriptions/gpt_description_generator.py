@@ -9,7 +9,7 @@ from backend.cellguide.pipeline.gpt_descriptions.constants import (
     GPT_CELLTYPE_SEO_DESCRIPTION_USER_ROLE,
 )
 from backend.cellguide.pipeline.providers.openai_provider import OpenAIProvider
-from backend.common.providers.s3_provider import S3Provider
+from backend.cellguide.pipeline.providers.s3_provider import S3Provider
 
 logger = logging.getLogger(__name__)
 

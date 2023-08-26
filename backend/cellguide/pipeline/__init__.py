@@ -12,8 +12,8 @@ from backend.cellguide.pipeline.constants import GPT_OUTPUT_DIRECTORY_FOLDERNAME
 from backend.cellguide.pipeline.gpt_descriptions import run as run_gpt_description_pipeline
 from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
+from backend.cellguide.pipeline.providers.s3_provider import S3Provider
 from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
-from backend.common.providers.s3_provider import S3Provider
 from backend.common.utils.cloudfront import create_invalidation_for_cellguide_data
 
 logger = logging.getLogger(__name__)
