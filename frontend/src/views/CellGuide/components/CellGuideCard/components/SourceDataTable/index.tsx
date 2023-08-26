@@ -17,6 +17,7 @@ import {
 import { Pagination } from "@mui/material";
 
 import { CELL_GUIDE_CARD_SOURCE_DATA_TABLE } from "src/views/CellGuide/components/CellGuideCard/components/SourceDataTable/constants";
+import { useDataSourceFilter } from "./hooks/useDataSourceFilter";
 
 interface TableRow {
   collection: ReactElement;
@@ -35,11 +36,19 @@ const tableColumns: Array<keyof TableRow> = [
 
 interface Props {
   cellTypeId: string;
+  organName: string;
+  organId: string;
+  organismName: string;
 }
 
 const ROWS_PER_PAGE = 10;
 
-const SourceDataTable = ({ cellTypeId }: Props) => {
+const SourceDataTable = ({
+  cellTypeId,
+  organName,
+  organId,
+  organismName,
+}: Props) => {
   const { data: collections } = useSourceData(cellTypeId);
   const [page, setPage] = useState(1);
 
@@ -55,22 +64,16 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
     setPage(1);
   }, [cellTypeId]);
 
+  const filteredCollections = useDataSourceFilter({
+    collections: collections ?? [],
+    selectedOrganismLabel: organismName,
+    selectedOrganLabel: organName,
+    selectedOrganId: organId,
+  });
+
   const tableRows: TableRow[] = useMemo(() => {
-    if (!collections) return [];
-
-    const sortedCollections = collections.sort((a, b) => {
-      const aOrganisms = a.organism.map((organism) => organism.label);
-      const bOrganisms = b.organism.map((organism) => organism.label);
-      if (aOrganisms.length === 0 && bOrganisms.length === 0) return 0;
-      if (aOrganisms.includes("Homo sapiens")) return -1;
-      if (bOrganisms.includes("Homo sapiens")) return 1;
-      const aFirstOrganism = aOrganisms.at(0) ?? "";
-      const bFirstOrganism = bOrganisms.at(0) ?? "";
-      return aFirstOrganism.localeCompare(bFirstOrganism);
-    });
-
-    return sortedCollections.map(createTableRow);
-  }, [collections]);
+    return filteredCollections.map(createTableRow);
+  }, [filteredCollections]);
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
 

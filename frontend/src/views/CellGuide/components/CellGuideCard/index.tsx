@@ -229,7 +229,12 @@ export default function CellGuideCard({
 
           {/* Source Data section */}
           <div ref={sectionRef3} id="section-3" data-testid="section-3" />
-          <SourceDataTable cellTypeId={cellTypeId} />
+          <SourceDataTable
+            cellTypeId={cellTypeId}
+            organName={selectedOrgan}
+            organId={selectedOrganId}
+            organismName={selectedOrganism}
+          />
         </Wrapper>
         {!skinnyMode && (
           <CellGuideCardSidebar
