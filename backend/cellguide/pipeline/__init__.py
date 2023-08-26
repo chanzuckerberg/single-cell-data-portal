@@ -111,11 +111,16 @@ def upload_gpt_descriptions_to_s3(*, gpt_output_directory: str, gpt_seo_output_d
 
 def cleanup(*, output_directory: str):
     logger.info(f"Cleaning up {output_directory} and other CellGuide pipeline outputs")
-    shutil.rmtree(output_directory)
-    shutil.rmtree(GPT_OUTPUT_DIRECTORY_FOLDERNAME)
-    shutil.rmtree(GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME)
-    shutil.rmtree("404")
-    shutil.rmtree("latest_snapshot_identifier")
+    if os.path.exists(output_directory):
+        shutil.rmtree(output_directory)
+    if os.path.exists(GPT_OUTPUT_DIRECTORY_FOLDERNAME):
+        shutil.rmtree(GPT_OUTPUT_DIRECTORY_FOLDERNAME)
+    if os.path.exists(GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME):
+        shutil.rmtree(GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME)
+    if os.path.exists("404"):
+        os.remove("404")
+    if os.path.exists("latest_snapshot_identifier"):
+        os.remove("latest_snapshot_identifier")
 
 
 if __name__ == "__main__":
