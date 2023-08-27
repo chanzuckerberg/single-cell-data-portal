@@ -63,7 +63,9 @@ class DatabaseProviderInterface:
         Retrieves the latest mapped version for a collection
         """
 
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersionWithDatasets]:
+    def get_all_versions_for_collection(
+        self, collection_id: CollectionId, get_tombstoned: bool
+    ) -> List[CollectionVersionWithDatasets]:
         """
         Retrieves all versions for a specific collections, without filtering
         """
@@ -84,7 +86,7 @@ class DatabaseProviderInterface:
         Deletes (tombstones) a canonical collection.
         """
 
-    def resurrect_collection(self, collection_id: CollectionId) -> None:
+    def resurrect_collection(self, collection_id: CollectionId, datasets_to_resurrect: Iterable[str]) -> None:
         """
         Untombstones a canonical collection.
         """

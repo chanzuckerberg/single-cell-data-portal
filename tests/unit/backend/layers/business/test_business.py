@@ -1424,7 +1424,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         A tombstoned Collection can be resurrected
         """
         published_collection = self.initialize_published_collection()
-
+        print("hello")
+        print([(dv.version_id, dv.dataset_id) for dv in published_collection.datasets])
+        print(f"collection id is {published_collection.collection_id}")
         public_dataset_asset_s3_uris = [
             f"s3://datasets/{dv.version_id}.{ext}" for ext in ("rds", "h5ad") for dv in published_collection.datasets
         ]

@@ -4,7 +4,7 @@ import os
 from collections import defaultdict
 from datetime import datetime
 from functools import reduce
-from typing import Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
@@ -218,12 +218,14 @@ class BusinessLogic(BusinessLogicInterface):
         return self.database_provider.get_canonical_collection(collection_id)
 
     def get_all_published_collection_versions_from_canonical(
-        self, collection_id: CollectionId
+        self, collection_id: CollectionId, get_tombstoned: bool = False
     ) -> Iterable[CollectionVersionWithDatasets]:
         """
         Returns all *published* collection versions for a canonical collection
         """
-        all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        all_versions = self.database_provider.get_all_versions_for_collection(
+            collection_id, get_tombstoned=get_tombstoned
+        )
         for c_version in all_versions:
             if c_version.published_at:
                 yield c_version
@@ -700,12 +702,41 @@ class BusinessLogic(BusinessLogicInterface):
         collection = self.get_canonical_collection(collection_id)
         if not collection.tombstoned:
             raise CollectionIsPublicException()
-        all_dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(collection_id)
-        for dv in all_dataset_versions:
+        print(f"in resurrect collection: {collection.tombstoned} {collection.id}")
+        # Individually-tombstoned Datasets must remain tombstoned after resurrecting Collection
+        collection_versions = sorted(
+            self.get_all_published_collection_versions_from_canonical(collection_id, get_tombstoned=True),
+            key=lambda cv: cv.created_at,
+        )
+        print(collection_versions)
+        print(len(list(collection_versions)))
+        [print(dv.version_id, dv.dataset_id) for cv in collection_versions for dv in cv.datasets]
+        dataset_ids_to_version_ids: Dict[str, List[str]] = defaultdict(list)
+        tombstoned_datasets: Set[str] = set()  # Track individually-tombstoned Datasets
+        previous_dataset_ids: Set[str] = set()
+        for cv in collection_versions:
+            [dataset_ids_to_version_ids[dv.dataset_id.id].append(dv.version_id.id) for dv in cv.datasets]
+            current_dataset_ids: Set[str] = {dv.dataset_id.id for dv in cv.datasets}
+            tombstoned_datasets.update(previous_dataset_ids.difference(current_dataset_ids))
+            previous_dataset_ids = current_dataset_ids
+
+        dataset_versions_to_restore: List[str] = []
+        datasets_to_resurrect: List[str] = []
+        for dataset_id, version_ids in dataset_ids_to_version_ids.items():
+            if dataset_id not in tombstoned_datasets:
+                dataset_versions_to_restore.extend(version_ids)
+                datasets_to_resurrect.append(dataset_id)
+
+        print(f"djh {dataset_versions_to_restore}")
+        print(f"djh {datasets_to_resurrect}")
+
+        # Restore s3 public assets
+        for dv_id in dataset_versions_to_restore:
             for ext in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS):
-                object_key = f"{dv.version_id}.{ext}"
+                object_key = f"{dv_id}.{ext}"
                 self.s3_provider.restore_object(os.getenv("DATASETS_BUCKET"), object_key)
-        self.database_provider.resurrect_collection(collection_id)
+        # Reset tombstone values in database
+        self.database_provider.resurrect_collection(collection_id, datasets_to_resurrect)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
         """
