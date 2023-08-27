@@ -65,18 +65,27 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
     the CellGuide snapshot to the corresponding environment's CellGuide data bucket.
     """
     deployment_stage = os.getenv("DEPLOYMENT_STAGE")
+    remote_dev_prefix = os.getenv("REMOTE_DEV_PREFIX")
     s3_provider = S3Provider()
 
     if not deployment_stage:
         logger.warning(f"Not uploading the pipeline output at {output_directory} to S3 as DEPLOYMENT_STAGE is not set.")
         return
 
-    if deployment_stage in ["dev", "staging", "prod"]:
+    if deployment_stage == "rdev" and remote_dev_prefix is None:
+        logger.warning(
+            f"Not uploading the pipeline output at {output_directory} to S3 as REMOTE_DEV_PREFIX is not set when DEPLOYMENT_STAGE is rdev."
+        )
+        return
+    elif deployment_stage == "rdev":
+        bucket = CellGuideConfig().bucket
+        bucket_path = f"s3://{bucket}/{remote_dev_prefix}/"
+    elif deployment_stage in ["dev", "staging", "prod"]:
         bucket = CellGuideConfig().bucket
         bucket_path = f"s3://{bucket}/"
     else:
         logger.warning(
-            f"Invalid DEPLOYMENT_STAGE value: {deployment_stage}. Please set DEPLOYMENT_STAGE to one of dev, staging, or prod"
+            f"Invalid DEPLOYMENT_STAGE value: {deployment_stage}. Please set DEPLOYMENT_STAGE to one of rdev, dev, staging, or prod"
         )
         return
 
