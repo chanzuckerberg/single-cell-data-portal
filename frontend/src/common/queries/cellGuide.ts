@@ -20,11 +20,11 @@ export enum TYPES {
 
 const IS_RDEV = API_URL.includes(".rdev.single-cell.czi.technology");
 
-let REMOTE_DEV_PREFIX = "";
+let CELLGUIDE_DATA_URL_WITH_PREFIX = CELLGUIDE_DATA_URL;
 if (IS_RDEV) {
-  REMOTE_DEV_PREFIX = API_URL.split("//")[1].split("-backend")[0];
+  const REMOTE_DEV_PREFIX = API_URL.split("//")[1].split("-backend")[0];
+  CELLGUIDE_DATA_URL_WITH_PREFIX = `${CELLGUIDE_DATA_URL}/${REMOTE_DEV_PREFIX}`;
 }
-const CELLGUIDE_DATA_URL_WITH_PREFIX = `${CELLGUIDE_DATA_URL}/${REMOTE_DEV_PREFIX}`;
 
 interface CellGuideQuery {
   queryKey: {
