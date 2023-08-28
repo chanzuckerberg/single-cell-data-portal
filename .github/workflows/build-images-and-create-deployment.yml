@@ -120,8 +120,6 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   create_deployment:
-    needs:
-      - push-prod-images
     runs-on: ubuntu-22.04
     steps:
       - name: Generate payload
