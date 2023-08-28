@@ -20,6 +20,7 @@ from backend.layers.business.exceptions import (
     CollectionUpdateException,
     CollectionVersionException,
     DatasetIngestException,
+    DatasetIsTombstonedException,
     DatasetNotFoundException,
     NoPreviousDatasetVersionException,
 )
@@ -1424,9 +1425,6 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         A tombstoned Collection can be resurrected
         """
         published_collection = self.initialize_published_collection()
-        print("hello")
-        print([(dv.version_id, dv.dataset_id) for dv in published_collection.datasets])
-        print(f"collection id is {published_collection.collection_id}")
         public_dataset_asset_s3_uris = [
             f"s3://datasets/{dv.version_id}.{ext}" for ext in ("rds", "h5ad") for dv in published_collection.datasets
         ]
@@ -1435,10 +1433,53 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.business_logic.resurrect_collection(published_collection.collection_id)
 
         # The collection is no longer tombstoned
-        collection_version = self.business_logic.get_canonical_collection(published_collection.collection_id)
-        assert collection_version.tombstoned is False
+        canonical_collection = self.business_logic.get_canonical_collection(published_collection.collection_id)
+        assert canonical_collection.tombstoned is False
         # Verify public Dataset asset files are restored
         assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+
+    def test_resurrect_collection_with_tombstoned_dataset_ok(self):
+        """
+        Individually-tombstoned Datasets should remain tombstoned after resurrection of their parent Collection.
+        """
+        published_collection = self.initialize_published_collection()
+        dataset_to_keep, dataset_to_tombstone = published_collection.datasets
+        public_dataset_asset_s3_uris_kept = [
+            f"s3://datasets/{dataset_to_keep.version_id}.{ext}" for ext in ("rds", "h5ad")
+        ]
+        public_dataset_asset_s3_uris_tombstoned = [
+            f"s3://datasets/{dataset_to_tombstone.version_id}.{ext}" for ext in ("rds", "h5ad")
+        ]
+
+        # Tombstone the Dataset
+        revision = self.business_logic.create_collection_version(published_collection.collection_id)
+        self.business_logic.remove_dataset_version(revision.version_id, dataset_to_tombstone.version_id, True)
+        self.business_logic.publish_collection_version(revision.version_id)
+
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+        self.business_logic.resurrect_collection(published_collection.collection_id)
+
+        # The Collection is no longer tombstoned
+        canonical_collection = self.business_logic.get_canonical_collection(published_collection.collection_id)
+        assert canonical_collection.tombstoned is False
+
+        # Dataset that was kept should not be tombstoned
+        dataset_kept = self.business_logic.get_dataset_version_from_canonical(
+            dataset_to_keep.dataset_id, get_tombstoned=True
+        )
+        assert dataset_kept.canonical_dataset.tombstoned is False
+        # Dataset that was tombstoned should still be tombstoned
+        dataset_is_tombstoned_exception_raised = False
+        try:
+            self.business_logic.get_dataset_version_from_canonical(dataset_to_tombstone.dataset_id, get_tombstoned=True)
+        except DatasetIsTombstonedException:
+            dataset_is_tombstoned_exception_raised = True
+        assert dataset_is_tombstoned_exception_raised
+
+        # Public-access Dataset asset files for kept Dataset are restored
+        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_kept])
+        # Public-access Dataset asset files for tombstoned Dataset are not restored
+        assert all([not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_tombstoned])
 
     def test_publish_version_fails_on_published_collection(self):
         """

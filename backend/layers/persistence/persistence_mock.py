@@ -98,12 +98,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         if update_datasets:
             datasets_to_include = []
             for dataset_version_id in copied_version.datasets:
-                print(f"djh looking for dataset version id {dataset_version_id}")
                 if dataset_version := self.get_dataset_version(dataset_version_id, get_tombstoned=get_tombstoned):
-                    print("djh dataset version exists in store")
                     dataset_version = self._update_dataset_version_with_canonical(dataset_version)
-                    # if not get_tombstoned and dataset_version.canonical_dataset.tombstoned:
-                    #     continue
                     datasets_to_include.append(dataset_version)
             # Replace 'datasets' array of Dataset version ids with 'datasets' array of actual Dataset versions
             copied_version.datasets = datasets_to_include
@@ -254,13 +250,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         versions = []
         for collection_version in self.collections_versions.values():
             if collection_version.collection_id == collection_id:
-                print(f"\nDJH FOUND COLLECTION VERSION {collection_version.datasets}\n")
                 versions.append(
                     self._update_version_with_canonical(
                         collection_version, update_datasets=True, get_tombstoned=get_tombstoned
                     )
                 )
-        print(f"found versions {versions}")
         return versions
 
     def get_collection_version_with_datasets(

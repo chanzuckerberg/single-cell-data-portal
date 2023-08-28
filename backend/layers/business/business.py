@@ -702,15 +702,12 @@ class BusinessLogic(BusinessLogicInterface):
         collection = self.get_canonical_collection(collection_id)
         if not collection.tombstoned:
             raise CollectionIsPublicException()
-        print(f"in resurrect collection: {collection.tombstoned} {collection.id}")
+
         # Individually-tombstoned Datasets must remain tombstoned after resurrecting Collection
         collection_versions = sorted(
             self.get_all_published_collection_versions_from_canonical(collection_id, get_tombstoned=True),
             key=lambda cv: cv.created_at,
         )
-        print(collection_versions)
-        print(len(list(collection_versions)))
-        [print(dv.version_id, dv.dataset_id) for cv in collection_versions for dv in cv.datasets]
         dataset_ids_to_version_ids: Dict[str, List[str]] = defaultdict(list)
         tombstoned_datasets: Set[str] = set()  # Track individually-tombstoned Datasets
         previous_dataset_ids: Set[str] = set()
@@ -727,14 +724,12 @@ class BusinessLogic(BusinessLogicInterface):
                 dataset_versions_to_restore.extend(version_ids)
                 datasets_to_resurrect.append(dataset_id)
 
-        print(f"djh {dataset_versions_to_restore}")
-        print(f"djh {datasets_to_resurrect}")
-
         # Restore s3 public assets
         for dv_id in dataset_versions_to_restore:
             for ext in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS):
                 object_key = f"{dv_id}.{ext}"
                 self.s3_provider.restore_object(os.getenv("DATASETS_BUCKET"), object_key)
+
         # Reset tombstone values in database
         self.database_provider.resurrect_collection(collection_id, datasets_to_resurrect)
 
