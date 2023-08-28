@@ -1,0 +1,650 @@
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).not.toHaveCount(expected) // deep equality
+
+Expected: not 0
+
+Call log:
+  - expect.not.toHaveCount with timeout 10000ms
+  - waiting for locator('canvas')
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).not.toHaveCount(expected) // deep equality
+
+Expected: not 0
+
+Call log:
+  - expect.not.toHaveCount with timeout 10000ms
+  - waiting for locator('canvas')
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).not.toHaveCount(expected) // deep equality
+
+Expected: not 0
+
+Call log:
+  - expect.not.toHaveCount with timeout 10000ms
+  - waiting for locator('canvas')
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).not.toHaveCount(expected) // deep equality
+
+Expected: not 0
+
+Call log:
+  - expect.not.toHaveCount with timeout 10000ms
+  - waiting for locator('canvas')
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect.toBeVisible: Error: strict mode violation: getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive') resolved to 2 elements:
+    1) <div data-testid="cell-type-full-name" class="css-neg…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka getByTestId('cell-type-labels-blood').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+    2) <div class="css-1ndsqr9-CellTypeLabelTooltipStyle et4…>CD4-positive, alpha-beta memory T cell, CD45RO-po…</div> aka locator('#mui-10').getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+
+=========================== logs ===========================
+expect.toBeVisible with timeout 10000ms
+waiting for getByText('CD4-positive, alpha-beta memory T cell, CD45RO-positive')
+============================================================
+⚠️  tryUntil error-----------------END
