@@ -1,0 +1,51 @@
+  pw:api => selectors.setTestIdAttribute started +7s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +43ms
+  pw:api   "commit" event fired +20ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +40ms
+  pw:api => page.waitForResponse started +13ms
+  pw:api => page.goto started +6ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +10ms
+  pw:api   "commit" event fired +225ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +11ms
+  pw:api   navigated to "about:blank" +33ms
+  pw:api <= page.goto succeeded +101ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForResponse succeeded +570ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('logo') +48ms
+  pw:api   locator resolved to <img decoding="async" data-testid="logo" alt="CELLxGE…/> +30ms
+  pw:api attempting click action +13ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +242ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +13ms
+  pw:api   performing click action +35ms
+  pw:api   click action done +51ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +39ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api => expect.toBeVisible started +27ms
+  pw:api   not waiting, "load" event already fired +11ms
+  pw:api expect.toBeVisible with timeout 10000ms +47ms
+  pw:api waiting for getByTestId('laptop-with-cell-data-on-screen') +0ms
+  pw:api   navigated to "https://localhost:3000/" +4s
+  pw:api   locator resolved to <div class="Landing_laptopImg__y8GsM" data-testid="la…>…</div> +860ms
+  pw:api <= expect.toBeVisible succeeded +288ms
+  pw:api taking page screenshot +52ms
+  pw:api   navigated to "about:blank" +30ms
+  pw:api   "networkidle" event fired +600ms
