@@ -4,6 +4,7 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import pathTool from "path";
 import { ROUTES } from "src/common/constants/routes";
+import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
 
@@ -252,6 +253,9 @@ interface Collection {
 
 const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
   const { files, subDirectories } = docPaths;
+  const { data: cellTypeMetadata } = useCellTypeMetadata() || {};
+
+  console.log(cellTypeMetadata);
   return (
     <SitemapLayout>
       <Head>
@@ -271,6 +275,10 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
           </SitemapNavLink>
           <SitemapPageLink href={`#docs`}>
             Docs
+            <DownChevron />
+          </SitemapPageLink>
+          <SitemapPageLink href={`#cellguide`}>
+            CellGuide
             <DownChevron />
           </SitemapPageLink>
           <SitemapNavLink href={ROUTES.PRIVACY}>Privacy</SitemapNavLink>
@@ -335,6 +343,14 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
                 </div>
               </div>
             ))}
+          </SitemapSectionGrid>
+        </SitemapSection>
+        <SitemapSection id="cellguide">
+          <h2>
+            <a href={ROUTES.CELL_GUIDE}>CellGuide</a>
+          </h2>
+          <SitemapSectionGrid>
+            {/* map over cellguide types here */}
           </SitemapSectionGrid>
         </SitemapSection>
       </main>
