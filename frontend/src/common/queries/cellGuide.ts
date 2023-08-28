@@ -18,8 +18,8 @@ export enum TYPES {
   LATEST_SNAPSHOT_IDENTIFIER = "LATEST_SNAPSHOT_IDENTIFIER",
 }
 
+// Suffix the cellguide data url with the remote dev prefix
 const IS_RDEV = API_URL.includes(".rdev.single-cell.czi.technology");
-
 let CELLGUIDE_DATA_URL_WITH_PREFIX = CELLGUIDE_DATA_URL;
 if (IS_RDEV) {
   const REMOTE_DEV_PREFIX = API_URL.split("//")[1].split("-backend")[0];
