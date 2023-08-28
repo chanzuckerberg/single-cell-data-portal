@@ -118,7 +118,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
-
+  # TODO: investigate why push-prod-images is still needed
   push-prod-images:
     needs:
       - build-frontend-backend-images
