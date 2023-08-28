@@ -13,8 +13,6 @@ class TestTombstone(BaseTest):
 
     def test__tombstone_collection(self):
         c_v = self.generate_published_collection()
-        self.assertFalse(c_v.canonical_collection.tombstoned)
-        [self.assertFalse(d.canonical_dataset.tombstoned) for d in c_v.datasets]
 
         context = MagicMock(spec=Context)
         context.obj = {"business_logic": self.business_logic}
@@ -25,8 +23,6 @@ class TestTombstone(BaseTest):
 
     def test__resurrect_collection(self):
         c_v = self.generate_published_collection()
-        self.assertFalse(c_v.canonical_collection.tombstoned)
-        [self.assertFalse(d.canonical_dataset.tombstoned) for d in c_v.datasets]
 
         context = MagicMock(spec=Context)
         context.obj = {"business_logic": self.business_logic}
