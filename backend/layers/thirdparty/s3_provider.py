@@ -1,12 +1,14 @@
 import logging
 import os
+import re
 import subprocess
 from typing import Iterable, List, Tuple
 from urllib.parse import urlparse
 
 import boto3
 
-from backend.layers.thirdparty.s3_exceptions import S3DeleteException
+from backend.layers.common.regex import ID_REGEX
+from backend.layers.thirdparty.s3_exceptions import IllegalS3RecursiveDelete, S3DeleteException
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 
 AWS_S3_MAX_ITEMS_PER_BATCH = 1000
@@ -69,7 +71,6 @@ class S3Provider(S3ProviderInterface):
         """
         for i in range(0, len(object_keys), AWS_S3_MAX_ITEMS_PER_BATCH):
             key_batch = object_keys[i:AWS_S3_MAX_ITEMS_PER_BATCH]
-            logger.info(f"Deleting assets from public-access bucket '{bucket_name}': {key_batch}")
             resp = self.client.delete_objects(
                 Bucket=bucket_name,
                 Delete={"Objects": [{"Key": key} for key in key_batch]},
@@ -79,6 +80,12 @@ class S3Provider(S3ProviderInterface):
             if errors := resp.get("Errors"):
                 logger.info(f"Errors: {errors}")
                 raise S3DeleteException(errors)
+
+    def delete_prefix(self, bucket_name: str, prefix: str) -> None:
+        if not re.search(ID_REGEX, prefix):
+            raise IllegalS3RecursiveDelete("Cannot recursively delete without a valid UUID prefix")
+        object_keys = list(self.list_directory(bucket_name, prefix))
+        self.delete_files(bucket_name, object_keys)
 
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         """

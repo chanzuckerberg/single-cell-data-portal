@@ -813,7 +813,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertIn(published.datasets[0].dataset_id.id, resp_collection["datasets"][0]["explorer_url"])
             self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
             self.assertNotIn("processing_status", resp_collection.keys())
-
         revision = self.generate_revision(published.collection_id)
         with self.subTest("get published with unpublished version and restricted access"):
             resp_collection = _test_responses(

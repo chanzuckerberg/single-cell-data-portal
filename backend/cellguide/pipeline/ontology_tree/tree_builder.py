@@ -92,6 +92,13 @@ class OntologyTreeBuilder:
         self.all_cell_type_ids_in_corpus = self.cell_counts_df_rollup.index.values[
             self.cell_counts_df_rollup.values > 0
         ]
+
+        # used for gpt pipeline
+        # TODO: refactor this module to use the below mapping instead of self.id_to_name
+        self.all_cell_type_ids_to_labels_in_corpus = dict(
+            zip(self.all_cell_type_ids_in_corpus, [self.id_to_name.get(c, c) for c in self.all_cell_type_ids_in_corpus])
+        )
+
         self.all_tissue_ids_in_corpus = list(self.uberon_by_celltype.keys())
         logger.info("Initializing ontology tree data structures by traversing CL ontology...")
         traverse_ontology_result = self._traverse_ontology_with_counting(self.ontology[root_node])

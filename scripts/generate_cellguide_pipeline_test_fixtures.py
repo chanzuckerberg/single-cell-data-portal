@@ -1,15 +1,18 @@
 import os
 import sys
-from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from backend.cellguide.pipeline.canonical_marker_genes import get_canonical_marker_genes
 from backend.cellguide.pipeline.computational_marker_genes import get_computational_marker_genes
+from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL
 from backend.cellguide.pipeline.metadata import get_cell_metadata, get_tissue_metadata
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_data
 from backend.cellguide.pipeline.source_collections import get_source_collections_data
 from backend.cellguide.pipeline.utils import output_json
+from backend.wmg.data.utils import setup_retry_session
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 from tests.unit.cellguide_pipeline.constants import (
+    ASCTB_MASTER_SHEET_FIXTURE_FILENAME,
     CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     CELLTYPE_METADATA_FIXTURE_FILENAME,
@@ -20,12 +23,14 @@ from tests.unit.cellguide_pipeline.constants import (
     TISSUE_METADATA_FIXTURE_FILENAME,
     TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
 )
+from tests.unit.cellguide_pipeline.mocks import mock_get_asctb_master_sheet
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
+CANONICAL_MARKER_GENE_TEST_TISSUES = ["heart", "blood"]
 
 """ ################################# DANGER #######################################
 
@@ -48,7 +53,16 @@ python -m scripts.generate_cellguide_pipeline_test_fixtures
 
 
 def run_cellguide_pipeline():
-    with TemporaryDirectory(), TemporaryDirectory(), load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
+    session = setup_retry_session()
+    response = session.get(ASCTB_MASTER_SHEET_URL)
+    if response.status_code != 200:
+        raise Exception(f"Failed to retrieve ASCT-B master sheet from {ASCTB_MASTER_SHEET_URL}")
+
+    data = response.json()
+    data = {tissue: data[tissue] for tissue in CANONICAL_MARKER_GENE_TEST_TISSUES}
+    output_json(data, f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ASCTB_MASTER_SHEET_FIXTURE_FILENAME}")
+
+    with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
         # Get ontology tree data
         ontology_tree, ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
 
@@ -59,7 +73,11 @@ def run_cellguide_pipeline():
         tissue_metadata = get_tissue_metadata(ontology_tree=ontology_tree)
 
         # Get canonical marker genes
-        canonical_marker_genes = get_canonical_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
+        with patch(
+            "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
+            new=mock_get_asctb_master_sheet,
+        ):
+            canonical_marker_genes = get_canonical_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
 
         # Get source data
         source_collections = get_source_collections_data(ontology_tree=ontology_tree)

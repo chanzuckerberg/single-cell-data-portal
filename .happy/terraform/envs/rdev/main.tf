@@ -14,6 +14,8 @@ module stack {
   batch_container_memory_limit = 28000
   wmg_batch_container_memory_limit = 248000
   wmg_desired_vcpus                = 128
+  cg_desired_vcpus                 = 48
+  cg_batch_container_memory_limit  = 92000
   backend_instance_count       = 1
   frontend_instance_count      = 1
   backend_memory               = 8192
