@@ -465,7 +465,8 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def resurrect_collection(self, collection_id: CollectionId, datasets_to_resurrect: Iterable[str]) -> None:
         """
-        Untombstones a canonical collection.
+        Untombstones a canonical collection and the explicitly-passed list of constituent Dataset ids. Constituent
+        Datasets whose ids are not included in this list will remain tombstoned.
         """
         with self._manage_session() as session:
             canonical_collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()

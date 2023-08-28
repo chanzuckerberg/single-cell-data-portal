@@ -161,6 +161,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     self.datasets[self.datasets_versions[dataset_version.id].dataset_id.id].tombstoned = True
 
     def resurrect_collection(self, collection_id: CollectionId, datasets_to_resurrect: Iterable[str]) -> None:
+        """
+        Untombstones a canonical collection and the explicitly-passed list of constituent Dataset ids. Constituent
+        Datasets whose ids are not included in this list will remain tombstoned.
+        """
         collection = self.collections[collection_id.id]
         collection.tombstoned = False
         # Untombstone Datasets individually as well
