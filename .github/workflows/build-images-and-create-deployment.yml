@@ -119,43 +119,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-  push-prod-images:
-    needs:
-      - build-frontend-backend-images
-      - build-batch-job-images
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Configure AWS Credentials
-        if: ( github.ref == 'refs/heads/prod' )
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        if: ( github.ref == 'refs/heads/prod' )
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - name: Login to Prod ECR
-        if: ( github.ref == 'refs/heads/prod' )
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO_PROD }}
-      - name: push docker images to prod ecr repo
-        if: ( github.ref == 'refs/heads/prod' )
-        shell: bash
-        run: |
-          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
-          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
-          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
-          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
-          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
-          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
-          docker pull ${{ secrets.ECR_REPO }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
-          docker tag ${{ secrets.ECR_REPO }}/dataset-submissions:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
-          docker push ${{ secrets.ECR_REPO_PROD }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
-
   create_deployment:
     needs:
       - push-prod-images
