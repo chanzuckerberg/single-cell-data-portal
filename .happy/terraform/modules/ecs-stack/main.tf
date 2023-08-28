@@ -18,6 +18,8 @@ locals {
   batch_container_memory_limit = var.batch_container_memory_limit
   wmg_batch_container_memory_limit = var.wmg_batch_container_memory_limit
   wmg_desired_vcpus                = var.wmg_desired_vcpus
+  cg_desired_vcpus                = var.cg_desired_vcpus
+  cg_batch_container_memory_limit = var.cg_batch_container_memory_limit
 
   migration_cmd                = ["make", "-C", "/single-cell-data-portal/backend", "db/init_remote_dev"]
   deletion_cmd                 = ["make", "-C", "/single-cell-data-portal/backend", "db/delete_remote_dev"]
@@ -44,9 +46,11 @@ locals {
   lambda_upload_repo              = local.secret["ecrs"]["upload_failures"]["url"]
   lambda_dataset_submissions_repo = local.secret["ecrs"]["dataset_submissions"]["url"]
   wmg_upload_image_repo           = local.secret["ecrs"]["wmg_processing"]["url"]
+  cg_upload_image_repo            = local.secret["ecrs"]["cellguide_pipeline"]["url"]
   batch_role_arn                  = local.secret["batch_queues"]["upload"]["role_arn"]
   job_queue_arn                   = local.secret["batch_queues"]["upload"]["queue_arn"]
   wmg_batch_role_arn              = local.secret["batch_queues"]["wmg"]["role_arn"]
+  cg_batch_role_arn               = local.secret["batch_queues"]["cg"]["role_arn"]
   schema_migration_job_queue_arn  = local.secret["batch_queues"]["schema_migration"]["queue_arn"]
   schema_migration_batch_role_arn = local.secret["batch_queues"]["schema_migration"]["role_arn"]
   external_dns                    = local.secret["external_zone_name"]
@@ -206,6 +210,22 @@ module wmg_batch {
   desired_vcpus                 = local.wmg_desired_vcpus
   batch_container_memory_limit  = var.wmg_batch_container_memory_limit
 }
+
+module cg_batch {
+  source                        = "../cg-batch"
+  image                         = "${local.cg_upload_image_repo}:${local.image_tag}"
+  batch_role_arn                = local.cg_batch_role_arn
+  cmd                           = ""
+  api_url                       = local.backend_url
+  custom_stack_name             = local.custom_stack_name
+  remote_dev_prefix             = local.remote_dev_prefix
+  deployment_stage              = local.deployment_stage
+  artifact_bucket               = local.artifact_bucket
+  wmg_bucket                    = local.wmg_bucket
+  desired_vcpus                 = local.cg_desired_vcpus
+  batch_container_memory_limit  = var.cg_batch_container_memory_limit
+}
+
 
 module upload_success_lambda {
   source                     = "../lambda"
