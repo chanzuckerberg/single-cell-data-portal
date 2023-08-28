@@ -121,8 +121,7 @@ jobs:
 
   create_deployment:
     needs:
-      - build-frontend-backend-images
-      - build-batch-job-images
+      - add-image-tags
     runs-on: ubuntu-22.04
     steps:
       - name: Generate payload
