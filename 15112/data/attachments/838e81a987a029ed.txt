@@ -1,0 +1,37 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +2ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +31ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +34ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +12ms
+  pw:api navigating to "https://localhost:3000/privacy/", waiting until "load" +3ms
+  pw:api   "commit" event fired +1s
+  pw:api   navigated to "https://localhost:3000/privacy" +0ms
+  pw:api   "commit" event fired +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForLoadState succeeded +2ms
+  pw:api   "networkidle" event fired +0ms
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/privacy" +2ms
+  pw:api <= page.goto succeeded +17ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api expect.toBeVisible with timeout 10000ms +6ms
+  pw:api waiting for getByText('Privacy Policy').first() +0ms
+  pw:api   locator resolved to <h1>Privacy Policy</h1> +44ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api => expect.toBeVisible started +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +8ms
+  pw:api waiting for getByTestId('cellxgene-logo') +1ms
+  pw:api   locator resolved to <img decoding="async" alt="CELLxGENE logo" data-nimg=…/> +3ms
+  pw:api <= expect.toBeVisible succeeded +4ms
+  pw:api taking page screenshot +4ms

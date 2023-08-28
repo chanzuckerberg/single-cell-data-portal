@@ -1,0 +1,14 @@
+⚠️  tryUntil error-----------------START
+expect(received).toBeFalsy()
+
+Received: true
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.getAttribute: Page closed
+=========================== logs ===========================
+waiting for locator('[data-zr-dom-id*="zr"]').first()
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+page.waitForTimeout: Target page, context or browser has been closed
+⚠️  tryUntil error-----------------END
