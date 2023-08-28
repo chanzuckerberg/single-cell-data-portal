@@ -16,6 +16,7 @@ RUN pip3 install -r requirements-cellguide-pipeline.txt
 ADD backend/__init__.py backend/__init__.py
 ADD backend/wmg/config.py backend/wmg/config.py
 ADD backend/wmg/data backend/wmg/data
+ADD backend/wmg/api backend/wmg/api
 ADD backend/cellguide/pipeline backend/cellguide/pipeline
 ADD backend/common backend/common
 
