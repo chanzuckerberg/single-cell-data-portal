@@ -1,0 +1,82 @@
+  pw:api => selectors.setTestIdAttribute started +4s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +10ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +68ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +6ms
+  pw:api => browserContext.newPage started +5ms
+  pw:api <= browserContext.newPage succeeded +43ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/cellguide", waiting until "load" +4ms
+  pw:api   "commit" event fired +88ms
+  pw:api   navigated to "https://localhost:3000/cellguide" +1ms
+  pw:api   "commit" event fired +4ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide" +3ms
+  pw:api   navigated to "about:blank" +34ms
+  pw:api <= page.goto succeeded +17ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') to be visible +33ms
+  pw:api   locator resolved to visible <input value="" type="text" role="combobox" autocomplet…/> +51ms
+  pw:api <= locator.waitFor succeeded +7ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +6ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +4ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +32ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +10ms
+  pw:api   "networkidle" event fired +346ms
+  pw:api   click action done +286ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +249ms
+  pw:api => locator.clear started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +58ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +12ms
+  pw:api elementHandle.fill("") +2ms
+  pw:api   waiting for element to be visible, enabled and editable +38ms
+  pw:api   element is visible, enabled and editable +7ms
+  pw:api <= locator.clear succeeded +51ms
+  pw:api => locator.type started +7ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +31ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +4ms
+  pw:api elementHandle.type("neuron") +2ms
+  pw:api <= locator.type succeeded +930ms
+  pw:api => locator.press started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +5ms
+  pw:api   locator resolved to <input type="text" value="neuron" role="combobox" autoc…/> +7ms
+  pw:api elementHandle.press("ArrowDown") +4ms
+  pw:api <= locator.press succeeded +32ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByRole('option').first() +7ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" data-option-index="0…>neuron</li> +11ms
+  pw:api <= locator.textContent succeeded +6ms
+  pw:api => locator.getAttribute started +5ms
+  pw:api waiting for getByRole('option').first() +13ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" data-option-index="0…>neuron</li> +4ms
+  pw:api <= locator.getAttribute succeeded +12ms
+  pw:api => page.waitForURL started +3ms
+  pw:api => locator.press started +5ms
+  pw:api waiting for navigation to "https://localhost:3000/cellguide/CL_0000540" until "load" +3ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +5ms
+  pw:api   locator resolved to <input type="text" value="neuron" role="combobox" autoc…/> +3ms
+  pw:api elementHandle.press("Enter") +3ms
+  pw:api <= locator.press succeeded +79ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +376ms
+  pw:api <= page.waitForURL succeeded +10ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +23ms
+  pw:api taking page screenshot +4ms
+  pw:api   navigated to "about:blank" +364ms
