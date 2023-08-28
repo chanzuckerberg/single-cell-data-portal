@@ -18,6 +18,8 @@ locals {
   batch_container_memory_limit = var.batch_container_memory_limit
   wmg_batch_container_memory_limit = var.wmg_batch_container_memory_limit
   wmg_desired_vcpus                = var.wmg_desired_vcpus
+  cg_desired_vcpus                = var.cg_desired_vcpus
+  cg_batch_container_memory_limit = var.cg_batch_container_memory_limit
 
   migration_cmd                = ["make", "-C", "/single-cell-data-portal/backend", "db/init_remote_dev"]
   deletion_cmd                 = ["make", "-C", "/single-cell-data-portal/backend", "db/delete_remote_dev"]
