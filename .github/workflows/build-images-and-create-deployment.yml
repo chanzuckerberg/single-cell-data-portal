@@ -75,7 +75,7 @@ jobs:
       - name: Docker build, push, and tag
         shell: bash
         run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} upload_failures upload_success dataset_submissions processing wmg_processing
+          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} upload_failures upload_success dataset_submissions processing wmg_processing cellguide_pipeline
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
