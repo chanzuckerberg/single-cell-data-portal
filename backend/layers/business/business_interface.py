@@ -6,6 +6,7 @@ from backend.layers.business.entities import (
     DatasetArtifactDownloadData,
 )
 from backend.layers.common.entities import (
+    CanonicalCollection,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -43,6 +44,14 @@ class BusinessLogicInterface:
         pass
 
     def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+        pass
+
+    def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:
+        pass
+
+    def get_all_published_collection_versions_from_canonical(
+        self, collection_id: CollectionId, get_tombstoned: bool
+    ) -> Iterable[CollectionVersionWithDatasets]:
         pass
 
     def get_collection_version_from_canonical(

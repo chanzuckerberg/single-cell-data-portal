@@ -4,7 +4,7 @@ import os
 from collections import defaultdict
 from datetime import datetime
 from functools import reduce
-from typing import Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
@@ -16,6 +16,7 @@ from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
     CollectionCreationException,
     CollectionDeleteException,
+    CollectionIsPublicException,
     CollectionIsPublishedException,
     CollectionNotFoundException,
     CollectionPublishException,
@@ -217,12 +218,14 @@ class BusinessLogic(BusinessLogicInterface):
         return self.database_provider.get_canonical_collection(collection_id)
 
     def get_all_published_collection_versions_from_canonical(
-        self, collection_id: CollectionId
+        self, collection_id: CollectionId, get_tombstoned: bool = False
     ) -> Iterable[CollectionVersionWithDatasets]:
         """
         Returns all *published* collection versions for a canonical collection
         """
-        all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        all_versions = self.database_provider.get_all_versions_for_collection(
+            collection_id, get_tombstoned=get_tombstoned
+        )
         for c_version in all_versions:
             if c_version.published_at:
                 yield c_version
@@ -691,6 +694,48 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.delete_all_dataset_versions_from_public_bucket_for_collection(collection_id)
         self.database_provider.tombstone_collection(collection_id)
+
+    def resurrect_collection(self, collection_id: CollectionId) -> None:
+        """
+        Resurrect a tombstoned Collection (untombstone Collection and un-delete public s3 assets). Doing so restores
+        accessibility of all previous Collection versions and constituent Datasets **EXCEPT** for Datasets which were
+        tombstoned individually before the Collection was tombstoned as a whole; such Datasets remain tombstoned after
+        resurrection of the Collection. Effectively, this restores the Collection to its most recent state immediately
+        prior to being tombstoned. For admin use only.
+        """
+        collection = self.get_canonical_collection(collection_id)
+        if not collection.tombstoned:
+            raise CollectionIsPublicException()
+
+        # Individually-tombstoned Datasets must remain tombstoned after resurrecting Collection
+        collection_versions = sorted(
+            self.get_all_published_collection_versions_from_canonical(collection_id, get_tombstoned=True),
+            key=lambda cv: cv.created_at,
+        )
+        dataset_ids_to_version_ids: Dict[str, List[str]] = defaultdict(list)
+        tombstoned_datasets: Set[str] = set()  # Track individually-tombstoned Datasets
+        previous_dataset_ids: Set[str] = set()
+        for cv in collection_versions:
+            [dataset_ids_to_version_ids[dv.dataset_id.id].append(dv.version_id.id) for dv in cv.datasets]
+            current_dataset_ids: Set[str] = {dv.dataset_id.id for dv in cv.datasets}
+            tombstoned_datasets.update(previous_dataset_ids.difference(current_dataset_ids))
+            previous_dataset_ids = current_dataset_ids
+
+        dataset_versions_to_restore: List[str] = []
+        datasets_to_resurrect: List[str] = []
+        for dataset_id, version_ids in dataset_ids_to_version_ids.items():
+            if dataset_id not in tombstoned_datasets:
+                dataset_versions_to_restore.extend(version_ids)
+                datasets_to_resurrect.append(dataset_id)
+
+        # Restore s3 public assets
+        for dv_id in dataset_versions_to_restore:
+            for ext in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS):
+                object_key = f"{dv_id}.{ext}"
+                self.s3_provider.restore_object(os.getenv("DATASETS_BUCKET"), object_key)
+
+        # Reset tombstone values in database
+        self.database_provider.resurrect_collection(collection_id, datasets_to_resurrect)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
         """
