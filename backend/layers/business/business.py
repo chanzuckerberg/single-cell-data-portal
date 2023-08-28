@@ -697,7 +697,11 @@ class BusinessLogic(BusinessLogicInterface):
 
     def resurrect_collection(self, collection_id: CollectionId) -> None:
         """
-        Resurrect a tombstoned Collection (untombstone Collection and un-delete public s3 assets). For admin use only.
+        Resurrect a tombstoned Collection (untombstone Collection and un-delete public s3 assets). Doing so restores
+        accessibility of all previous Collection versions and constituent Datasets **EXCEPT** for Datasets which were
+        tombstoned individually before the Collection was tombstoned as a whole; such Datasets remain tombstoned after
+        resurrection of the Collection. Effectively, this restores the Collection to its most recent state immediately
+        prior to being tombstoned. For admin use only.
         """
         collection = self.get_canonical_collection(collection_id)
         if not collection.tombstoned:
