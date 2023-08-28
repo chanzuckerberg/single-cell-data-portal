@@ -28,17 +28,6 @@ const SCRIPT_SRC = [
   WISTIA_URL,
 ];
 
-const IS_RDEV = configs.API_URL.includes(".rdev.single-cell.czi.technology");
-
-// Remove the /env-rdev-cellguide suffix from CELLGUIDE_DATA_URL for connectSrc
-// to allow all requests to the `cellguide.` subdomain.
-let CELLGUIDE_DATA_URL_WITHOUT_RDEV_SUFFIX = configs.CELLGUIDE_DATA_URL;
-if (IS_RDEV) {
-  CELLGUIDE_DATA_URL_WITHOUT_RDEV_SUFFIX = configs.CELLGUIDE_DATA_URL.split("/")
-    .slice(0, -1)
-    .join("/");
-}
-
 const defaultSecureHeaders = {
   contentSecurityPolicy: {
     directives: {
@@ -49,7 +38,7 @@ const defaultSecureHeaders = {
         HUBSPOT_FORMS_URL,
         PLAUSIBLE_URL,
         configs.API_URL,
-        CELLGUIDE_DATA_URL_WITHOUT_RDEV_SUFFIX,
+        configs.CELLGUIDE_DATA_URL,
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],

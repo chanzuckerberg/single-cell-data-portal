@@ -20,10 +20,10 @@ export enum TYPES {
 
 // Suffix the cellguide data url with the remote dev prefix
 const IS_RDEV = API_URL.includes(".rdev.single-cell.czi.technology");
-let CELLGUIDE_DATA_URL_WITH_PREFIX = CELLGUIDE_DATA_URL;
+let CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX = CELLGUIDE_DATA_URL;
 if (IS_RDEV) {
   const REMOTE_DEV_PREFIX = API_URL.split("//")[1].split("-backend")[0];
-  CELLGUIDE_DATA_URL_WITH_PREFIX = `${CELLGUIDE_DATA_URL}/${REMOTE_DEV_PREFIX}`;
+  CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX = `${CELLGUIDE_DATA_URL}/env-rdev-cellguide/${REMOTE_DEV_PREFIX}`;
 }
 
 interface CellGuideQuery {
@@ -97,7 +97,7 @@ export function useCellGuideQuery<T = CellGuideResponse>(
     [queryKeyLatestSnapshotIdentifier],
     ({ signal }) =>
       fetchQuery({
-        url: `${CELLGUIDE_DATA_URL_WITH_PREFIX}/${urlSuffixLatestSnapshotIdentifier.replace(
+        url: `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${urlSuffixLatestSnapshotIdentifier.replace(
           "%s",
           queryId
         )}`,
@@ -119,8 +119,8 @@ export function useCellGuideQuery<T = CellGuideResponse>(
 
   const queryUrlSuffix = urlSuffix.replace("%s", queryId);
   const queryUrl = queryLatestSnapshotIdentifier
-    ? `${CELLGUIDE_DATA_URL_WITH_PREFIX}/${latestSnapshotIdentifier}/${queryUrlSuffix}`
-    : `${CELLGUIDE_DATA_URL_WITH_PREFIX}/${queryUrlSuffix}`;
+    ? `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${latestSnapshotIdentifier}/${queryUrlSuffix}`
+    : `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${queryUrlSuffix}`;
   return useQuery(
     queryId ? [queryKey, queryId, latestSnapshotIdentifier] : [queryKey],
     ({ signal }) =>
@@ -320,7 +320,7 @@ export const fetchGptSeoDescription = async (
 ): Promise<GptSeoDescriptionQueryResponse> => {
   entityId = entityId.replace(":", "_");
   // This function is used server-side to fetch the GPT SEO description.
-  const url = `${CELLGUIDE_DATA_URL_WITH_PREFIX}/${QUERY_MAPPING[
+  const url = `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${QUERY_MAPPING[
     TYPES.GPT_SEO_DESCRIPTION
   ].urlSuffix.replace("%s", entityId)}`;
   const response = await fetch(url);
@@ -377,7 +377,7 @@ export const useTissueMetadata =
 export const fetchTissueMetadata =
   async (): Promise<TissueMetadataQueryResponse> => {
     // This function is used server-side to fetch the GPT SEO description.
-    const latestSnapshotIdentifierUrl = `${CELLGUIDE_DATA_URL_WITH_PREFIX}/${
+    const latestSnapshotIdentifierUrl = `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${
       QUERY_MAPPING[TYPES.LATEST_SNAPSHOT_IDENTIFIER].urlSuffix
     }`;
     const latestSnapshotIdentifierResponse = await fetch(
@@ -385,7 +385,7 @@ export const fetchTissueMetadata =
     );
     const latestSnapshotIdentifier =
       await latestSnapshotIdentifierResponse.text();
-    const url = `${CELLGUIDE_DATA_URL_WITH_PREFIX}/${latestSnapshotIdentifier}/${
+    const url = `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${latestSnapshotIdentifier}/${
       QUERY_MAPPING[TYPES.TISSUE_METADATA].urlSuffix
     }`;
     const response = await fetch(url);
