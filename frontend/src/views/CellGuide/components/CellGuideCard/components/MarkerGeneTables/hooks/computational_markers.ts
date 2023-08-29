@@ -55,7 +55,6 @@ function _applyOrderedSelectionCriteria({
     };
 
   // 2. Filter by tissue
-  //
   // There are marker genes tissues labeled as "All Tissues" AND there
   // there are marker genes tissues that are undefined which are re-labeled
   // as ALL_TISSUES. Select them only when selectedOrganLabel is "All Tissues"

@@ -6,6 +6,8 @@ import {
 import { ALL_TISSUES } from "../../MarkerGeneTables/constants";
 import { filterDescendantsOfAncestorTissueId } from "src/views/CellGuide/common/utils";
 
+// The predicate function used by the filter function to filter the list of
+// SourceCollectionsQueryResponseEntry objects
 function _passSelectionCriteria({
   collection,
   selectedOrganismLabel,
@@ -66,6 +68,10 @@ function _filterCollections({
   return filteredCollections;
 }
 
+// Sorts the list of SourceCollectionsQueryResponseEntry objects by the
+// FIRST organism label in the organism list. The sorting is done alphabetically
+// with the exception that the "Homo sapiens" organism is considered
+// as the lowest comparison value in the collection.
 function _sortCollections(
   collections: SourceCollectionsQueryResponse
 ): SourceCollectionsQueryResponse {
@@ -81,6 +87,7 @@ function _sortCollections(
   });
 }
 
+// Filter and then sort the list of SourceCollectionsQueryResponseEntry objects
 export function useDataSourceFilter({
   collections,
   selectedOrganismLabel,
