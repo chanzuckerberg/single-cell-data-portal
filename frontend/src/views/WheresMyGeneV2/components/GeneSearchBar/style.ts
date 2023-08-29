@@ -1,9 +1,7 @@
 import styled from "@emotion/styled";
 import { fontBodyXxs } from "@czi-sds/components";
 import { gray500 } from "src/common/theme";
-import { autocompleteClasses, menuItemClasses, Popper } from "@mui/material";
-import { Button, ButtonIcon, MenuItem } from "@czi-sds/components";
-import { OFF_WHITE } from "src/common/theme";
+import { Button } from "@czi-sds/components";
 
 export const GENE_SEARCH_BAR_HEIGHT_PX = 32;
 

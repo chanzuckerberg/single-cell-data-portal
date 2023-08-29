@@ -72,8 +72,6 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { InputAdornment, TextField } from "@mui/material";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
-import GeneSearchBar from "../GeneSearchBar";
-import { GENE_SEARCH_BAR_HEIGHT_PX } from "../GeneSearchBar/style";
 
 interface Props {
   className?: string;

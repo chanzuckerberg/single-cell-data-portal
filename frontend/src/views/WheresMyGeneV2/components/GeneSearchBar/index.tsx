@@ -1,10 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import {
-  Autocomplete,
-  AutocompleteProps,
-  DefaultAutocompleteOption,
-  LoadingIndicator,
-} from "@czi-sds/components";
+import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
 import React, {
   ReactChild,
   SyntheticEvent,
@@ -30,9 +25,6 @@ import {
   ActionWrapper,
   AutocompleteWrapper,
   Container,
-  LoadingIndicatorWrapper,
-  StyledAutoComplete,
-  StyledAutocomplete,
   StyledButtonWrapper,
   StyledClearButton,
 } from "./style";
