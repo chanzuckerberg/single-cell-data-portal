@@ -1,3 +1,0 @@
-⚠️  tryUntil error-----------------START
-page.waitForResponse: Page closed
-⚠️  tryUntil error-----------------END
