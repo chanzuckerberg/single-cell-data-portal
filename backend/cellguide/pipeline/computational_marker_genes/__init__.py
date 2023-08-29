@@ -8,7 +8,7 @@ from backend.cellguide.pipeline.utils import output_json_per_key
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def run(*, output_directory: str):

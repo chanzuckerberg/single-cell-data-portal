@@ -8,7 +8,7 @@ from backend.common.logging_config import DATETIME_FORMAT, LOGGED_FIELDS, format
 
 def configure_logging(app_name):
     """https://docs.python.org/3/library/logging.config.html"""
-    gunicorn_logger = logging.getLogger("gunicorn.error")
+    gunicorn_logger: logging.Logger = logging.getLogger("gunicorn.error")
     # The fields to log using the json logger.
     log_format = format_log_string(LOGGED_FIELDS + ["request_id"])
     dictConfig(

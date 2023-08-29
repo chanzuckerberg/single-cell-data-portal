@@ -31,7 +31,7 @@ from scripts.cxg_admin_scripts import (
 )
 
 logging.basicConfig()
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 os.environ["CORPORA_LOCAL_DEV"] = "1"
 

@@ -9,7 +9,7 @@ from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME, VAR_ARRAY_NAM
 from backend.wmg.data.utils import log_func_runtime
 from backend.wmg.pipeline.integrated_corpus.transform import transform_dataset_raw_counts_to_rankit
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @log_func_runtime

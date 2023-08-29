@@ -7,7 +7,7 @@ from scipy.sparse import csc_matrix, csr_matrix
 
 from backend.wmg.pipeline.errors import UnsupportedMatrixTypeError
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 ####################################### PUBLIC FUNCTIONS #########################################
 def remap_anndata_normalized_X_to_raw_X_if_exists(adata: AnnData) -> None:

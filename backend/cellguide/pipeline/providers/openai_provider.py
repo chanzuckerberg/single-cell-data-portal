@@ -5,7 +5,7 @@ import openai
 
 from backend.cellguide.pipeline.config import CellGuideConfig
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class OpenAIProvider:

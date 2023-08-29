@@ -19,7 +19,7 @@ from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
 from backend.wmg.data.snapshot import WmgSnapshot
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 """

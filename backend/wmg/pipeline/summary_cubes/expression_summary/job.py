@@ -23,7 +23,7 @@ from backend.wmg.pipeline.summary_cubes.expression_summary.load import build_in_
 from backend.wmg.pipeline.summary_cubes.expression_summary.transform import transform
 from backend.wmg.pipeline.summary_cubes.extract import extract_var_data
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _load(

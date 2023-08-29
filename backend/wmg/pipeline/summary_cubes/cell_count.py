@@ -20,7 +20,7 @@ from backend.wmg.data.utils import (
     to_dict,
 )
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 

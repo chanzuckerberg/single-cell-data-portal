@@ -4,7 +4,7 @@ import numba as nb
 import numpy as np
 import scipy as sc
 
-logger = logging.getLogger("wmg")
+logger: logging.Logger = logging.getLogger("wmg")
 
 
 @nb.jit

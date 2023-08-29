@@ -25,7 +25,7 @@ from backend.layers.thirdparty.uri_provider import UriProvider
 log_handler = logging.StreamHandler(stream=sys.stdout)
 formatter = jsonlogger.JsonFormatter(LOG_FORMAT, DATETIME_FORMAT)
 log_handler.setFormatter(formatter)
-logger = logging.getLogger()
+logger: logging.Logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.handlers = [log_handler]
 

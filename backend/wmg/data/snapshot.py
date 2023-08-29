@@ -34,7 +34,7 @@ STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 # root directory under which the data artifact exists
 WMG_ROOT_DIR_PATH = STACK_NAME.strip("/") if STACK_NAME else ""
 
-logger = logging.getLogger("wmg")
+logger: logging.Logger = logging.getLogger("wmg")
 
 ###################################### PUBLIC INTERFACE #################################
 

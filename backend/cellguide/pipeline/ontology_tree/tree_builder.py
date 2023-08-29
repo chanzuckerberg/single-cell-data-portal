@@ -16,7 +16,7 @@ from backend.common.utils.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import CL_BASIC_OBO_NAME
 from backend.wmg.data.utils import get_pinned_ontology_url
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 """

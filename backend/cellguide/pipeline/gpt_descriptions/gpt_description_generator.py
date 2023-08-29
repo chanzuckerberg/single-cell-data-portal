@@ -11,7 +11,7 @@ from backend.cellguide.pipeline.gpt_descriptions.constants import (
 from backend.cellguide.pipeline.providers.openai_provider import OpenAIProvider
 from backend.cellguide.pipeline.providers.s3_provider import S3Provider
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def generate_new_gpt_descriptions(all_cell_type_ids_to_labels_in_corpus: dict[str, str]) -> dict[str, str]:

@@ -3,6 +3,7 @@ from typing import List, Literal, Optional, Tuple
 import numpy
 import scanpy
 
+from backend.common.logging_config import logit
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
@@ -18,7 +19,6 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
-from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface

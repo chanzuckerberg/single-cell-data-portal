@@ -7,7 +7,7 @@ import requests
 
 from backend.common.corpora_config import CorporaConfig
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 aws_batch_job_url_fmt_str = (

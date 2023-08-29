@@ -8,7 +8,7 @@ from backend.cellguide.pipeline.metadata.types import CellMetadata, TissueMetada
 from backend.wmg.data.constants import CL_BASIC_OBO_NAME
 from backend.wmg.data.utils import get_pinned_ontology_url
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def generate_cellguide_card_metadata(all_cell_type_ids_in_corpus: list[str]) -> dict[str, CellMetadata]:

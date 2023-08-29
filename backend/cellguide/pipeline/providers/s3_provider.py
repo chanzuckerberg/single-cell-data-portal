@@ -7,7 +7,7 @@ import botocore
 
 AWS_S3_MAX_ITEMS_PER_BATCH = 1000
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class S3Provider:

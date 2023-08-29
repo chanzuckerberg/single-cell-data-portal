@@ -12,7 +12,7 @@ from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, MARKER_GENES_CUBE_N
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
 from backend.wmg.pipeline.summary_cubes.calculate_markers import get_markers
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 

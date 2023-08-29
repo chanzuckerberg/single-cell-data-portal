@@ -24,7 +24,7 @@ from backend.wmg.data.utils import (
 )
 from backend.wmg.pipeline import integrated_corpus, summary_cubes
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 

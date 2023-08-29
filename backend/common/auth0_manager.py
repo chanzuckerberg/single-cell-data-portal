@@ -6,7 +6,7 @@ from requests.packages.urllib3.util import Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Auth0ManagementSession:

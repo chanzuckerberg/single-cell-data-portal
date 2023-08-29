@@ -4,17 +4,20 @@ import os
 from typing import Optional
 
 from backend.common.corpora_config import CorporaConfig
+from backend.common.logging_config import LogSuppressed
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.result_notification import aws_batch_job_url_fmt_str, aws_sfn_url_fmt_str, notify_slack
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
-from backend.layers.processing import logger
+from backend.layers.processing.logging_config import configure_logging
 from backend.portal.api.providers import get_business_logic
 
-logger.configure_logging(level=logging.INFO)
+configure_logging(level=logging.INFO)
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def handle_failure(event: dict, context) -> None:
-    logging.info(event)
+    logger.info(event)
     (
         dataset_id,
         collection_version_id,
@@ -69,7 +72,7 @@ def update_dataset_processing_status_to_failed(dataset_id: str) -> None:
     """
     This functions updates the processing status for a given dataset uuid to failed
     """
-    with logger.LogSuppressed(Exception, message="Failed to update dataset processing status"):
+    with LogSuppressed(Exception, message="Failed to update dataset processing status"):
         # If dataset not in db dont worry about updating its processing status
         get_business_logic().update_dataset_version_status(
             DatasetVersionId(dataset_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
@@ -150,7 +153,7 @@ def trigger_slack_notification(
     aws_region: str,
     execution_arn: str,
 ) -> None:
-    with logger.LogSuppressed(Exception, message="Failed to send slack notification"):
+    with LogSuppressed(Exception, message="Failed to send slack notification"):
         data = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_region, execution_arn
         )
@@ -162,12 +165,12 @@ def trigger_slack_notification(
 def cleanup_artifacts(dataset_id: str) -> None:
     """Clean up artifacts"""
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
-    with logger.LogSuppressed(Exception, message="Failed to clean up artifacts."):
+    with LogSuppressed(Exception, message="Failed to clean up artifacts."):
         artifact_bucket = os.environ["ARTIFACT_BUCKET"]
         delete_many_from_s3(artifact_bucket, object_key + "/")
-    with logger.LogSuppressed(Exception, message="Failed to clean up datasets."):
+    with LogSuppressed(Exception, message="Failed to clean up datasets."):
         datasets_bucket = os.environ["DATASETS_BUCKET"]
         delete_many_from_s3(datasets_bucket, object_key + ".")
-    with logger.LogSuppressed(Exception, message="Failed to clean up cxgs."):
+    with LogSuppressed(Exception, message="Failed to clean up cxgs."):
         cellxgene_bucket = os.environ["CELLXGENE_BUCKET"]
         delete_many_from_s3(cellxgene_bucket, object_key + ".cxg/")

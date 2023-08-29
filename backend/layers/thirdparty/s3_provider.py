@@ -13,7 +13,7 @@ from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 
 AWS_S3_MAX_ITEMS_PER_BATCH = 1000
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class S3Provider(S3ProviderInterface):

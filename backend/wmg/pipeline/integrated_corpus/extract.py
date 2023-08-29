@@ -11,7 +11,7 @@ from scipy import sparse
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 from backend.wmg.data.utils import get_datasets_from_curation_api
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:

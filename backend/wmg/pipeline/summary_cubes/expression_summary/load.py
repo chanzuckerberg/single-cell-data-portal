@@ -5,7 +5,7 @@ import pandas as pd
 
 from backend.wmg.pipeline.summary_cubes.cell_count import remove_accents, return_dataset_dict_w_publications
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def build_in_mem_cube(

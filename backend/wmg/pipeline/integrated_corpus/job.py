@@ -19,7 +19,7 @@ from backend.wmg.pipeline.integrated_corpus.transform import apply_pre_concatena
 from backend.wmg.pipeline.integrated_corpus.validate import should_load_dataset, validate_dataset_properties
 from backend.wmg.pipeline.utils import remap_anndata_normalized_X_to_raw_X_if_exists
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @log_func_runtime

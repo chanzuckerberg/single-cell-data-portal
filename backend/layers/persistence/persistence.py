@@ -47,7 +47,7 @@ from backend.layers.persistence.orm import (
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class DatabaseProvider(DatabaseProviderInterface):

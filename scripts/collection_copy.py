@@ -11,7 +11,7 @@ pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noq
 sys.path.insert(0, pkg_root)  # noqa
 
 logging.basicConfig()
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @click.group()

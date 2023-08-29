@@ -16,7 +16,7 @@ from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.load import build
 from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.transform import transform
 from backend.wmg.pipeline.summary_cubes.extract import extract_var_data
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _load(

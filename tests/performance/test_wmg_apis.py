@@ -13,7 +13,7 @@ from tests.functional.backend.wmg.fixtures import (
 
 # Note that these tests share fixtures and general test paths with the wmg api functional tests
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @unittest.skipIf(os.getenv("DEPLOYMENT_STAGE") != "prod", "this test should only run in prod")

@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def build_in_mem_cube(

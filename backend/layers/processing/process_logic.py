@@ -3,6 +3,7 @@ from datetime import datetime
 from os.path import basename, join
 from typing import Callable, List, Optional
 
+from backend.common.logging_config import logit
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     DatasetConversionStatus,
@@ -12,7 +13,6 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ConversionFailed
-from backend.layers.processing.logger import logit
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -29,7 +29,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     logger: logging
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger("processing")
+        self.logger: logging.Logger = logging.getLogger("processing")
 
     def update_processing_status(
         self,

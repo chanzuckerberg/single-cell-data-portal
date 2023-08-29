@@ -13,7 +13,7 @@ from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
 from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclass

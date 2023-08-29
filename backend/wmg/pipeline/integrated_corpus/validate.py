@@ -8,7 +8,7 @@ from scipy import sparse
 from backend.wmg.data.utils import get_all_dataset_ids
 from backend.wmg.pipeline.integrated_corpus.extract import get_X_raw
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def should_load_dataset(h5ad_path: str, corpus_path: str) -> str:

@@ -24,7 +24,7 @@ from backend.wmg.pipeline.utils import (
     decorate_anndata_with_lowly_covered_cells_to_filter_out,
 )
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def apply_pre_concatenation_filters(anndata_object: anndata.AnnData, min_genes: int = None) -> anndata.AnnData:

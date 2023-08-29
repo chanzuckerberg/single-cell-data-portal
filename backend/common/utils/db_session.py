@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from backend.common.corpora_config import CorporaDbConfig
 from backend.common.utils.exceptions import CorporaException
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class DBSessionMaker:

@@ -21,7 +21,7 @@ from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.wmg.data.ontology_labels import ontology_term_label
 from backend.wmg.data.utils import setup_retry_session
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def get_asctb_master_sheet():

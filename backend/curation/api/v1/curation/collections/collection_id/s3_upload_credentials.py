@@ -15,7 +15,7 @@ from backend.layers.auth.user_info import UserInfo
 
 sts_client = boto3.client("sts")
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 duration = 43200
 
 

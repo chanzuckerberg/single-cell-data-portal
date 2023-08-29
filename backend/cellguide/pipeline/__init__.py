@@ -16,7 +16,7 @@ from backend.cellguide.pipeline.providers.s3_provider import S3Provider
 from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
 from backend.common.utils.cloudfront import create_invalidation_for_cellguide_data
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def run_cellguide_pipeline():

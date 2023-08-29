@@ -20,7 +20,7 @@ wmg_s3_root_dir_path = stack_name.strip("/") if stack_name else ""
 wmg_bucket_name = os.environ.get("WMG_BUCKET")
 wmg_s3_bucket_uri = f"s3://{wmg_bucket_name}"
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 ###################################### PUBLIC FUNCTIONS #################################
 

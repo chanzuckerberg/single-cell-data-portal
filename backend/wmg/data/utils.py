@@ -18,7 +18,7 @@ from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 def log_func_runtime(func):
     # This decorator function logs the execution time of the function object passed
     def wrap_func(*args, **kwargs):
-        logger = logging.getLogger(func.__module__)
+        logger: logging.Logger = logging.getLogger(func.__module__)
         start = time.perf_counter()
         result = func(*args, **kwargs)
         stop = time.perf_counter()
