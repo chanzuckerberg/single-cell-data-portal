@@ -16,9 +16,9 @@ from backend.layers.common.entities import CollectionId
 
 def tombstone_collection(ctx: Context, collection_id: str) -> None:
     """
-    Tombstones the collection specified by uuid.
+    Tombstones the Collection specified by collection_id.
     :param ctx: command context
-    :param collection_id: ID that identifies the collection to tombstone
+    :param collection_id: uuid that identifies the Collection to tombstone
     """
     try:
         validate_uuid_else_forbidden(collection_id)
@@ -38,6 +38,11 @@ def tombstone_collection(ctx: Context, collection_id: str) -> None:
 
 
 def resurrect_collection(ctx: Context, collection_id: str) -> None:
+    """
+    Resurrects the Collection specified by collection_id
+    :param ctx: command context
+    :param collection_id: uuid that identifies the Collection to resurrect
+    """
     try:
         validate_uuid_else_forbidden(collection_id)
     except Exception:
@@ -49,6 +54,7 @@ def resurrect_collection(ctx: Context, collection_id: str) -> None:
     except CollectionIsPublicException:
         logging.error(f"Collection {collection_id} is not tombstoned")
         exit(1)
+    print(f"Successfully resurrected Collection {collection_id}")
 
 
 def tombstone_dataset(ctx, uuid):
