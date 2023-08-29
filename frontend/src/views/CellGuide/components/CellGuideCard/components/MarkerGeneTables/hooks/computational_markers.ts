@@ -77,7 +77,9 @@ function _applyOrderedSelectionCriteria({
       errorCode: selectionCriteriaErrorCode.TissueMismatch,
     };
 
-  // 3. Finally, Filter by marker score
+  // 3. Finally, Filter by marker score. Effectively, this allows us
+  // to identify genes that pass the organism and tissue filter, but
+  // fail the marker score filter.
   if (marker_score < FMG_GENE_STRENGTH_THRESHOLD)
     return {
       pass: false,
@@ -114,7 +116,7 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
       };
 
     const rows: ComputationalMarkerGeneTableData[] = [];
-    let allFilteredByLowMarkerScore = false;
+    let atLeastOneGeneFilteredByLowMarkerScore = false;
 
     for (const markerGene of genes) {
       const { pass, errorCode } = _applyOrderedSelectionCriteria({
@@ -126,24 +128,12 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
       });
 
       if (!pass) {
-        // Because of the ordering of the selection criteria, we can identify whether
-        // the set of genes that pass the organism and tissue filter but entirely fail
-        // the marker score filter.
-        //
-        // ignore genes that that fail the organism or tissue filter
-        if (
-          errorCode === selectionCriteriaErrorCode.OrganismMismatch ||
-          errorCode === selectionCriteriaErrorCode.TissueMismatch
-        ) {
-          continue;
-        }
-
-        // of those genes that pass the organism and tissue filter,
-        // check if they all fail the marker score filter.
-        // This check is done for future proofing - it is possible we
-        // may introduce other filter checks in the future.
-        allFilteredByLowMarkerScore =
+        // Because of the ordering of the selection criteria, we can identify out
+        // of the set of genes that pass the organism and tissue filter, whether
+        // there is AT LEAST one gene that fails the marker score filter.
+        atLeastOneGeneFilteredByLowMarkerScore ||=
           errorCode === selectionCriteriaErrorCode.LowMarkerScore;
+
         continue;
       }
 
@@ -157,6 +147,14 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
         pc: (pc * 100).toFixed(1),
       });
     }
+
+    // If result set is empty, and at least one of the results was filtered by
+    // the low marker score filter, then we set a flag to emphasize the
+    // fact that marker genes that pass the explicit query criteria
+    // (tissue and organism filter in this case) exist, but they are filtered
+    // away by the implicit criteria (marker score filter in this case).
+    const allFilteredByLowMarkerScore =
+      rows.length === 0 && atLeastOneGeneFilteredByLowMarkerScore;
 
     return {
       computationalMarkerGeneTableData: rows,
