@@ -21,11 +21,11 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.processing import logger
+from backend.layers.processing.logging_config import configure_logging
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider, sfn_name_generator
 
-logger.configure_logging(level=logging.INFO)
+configure_logging(level=logging.INFO)
 
 
 class SchemaMigrate(ProcessingLogic):
