@@ -228,15 +228,20 @@ export default function CellGuideCard({
 
           {/* Cell Ontology section */}
           <div ref={sectionRef1} id="section-1" data-testid="section-1" />
-          <FullScreenProvider>
-            <OntologyDagView
-              key={cellTypeId}
-              cellTypeId={cellTypeId}
-              tissueName={selectedOrgan}
-              tissueId={selectedOrganId}
-              skinnyMode={skinnyMode}
-            />
-          </FullScreenProvider>
+          {/* (thuang): Somehow we need a parent <div /> to prevent error:
+          NotFoundError: Failed to execute 'insertBefore' on 'Node'
+         */}
+          <div>
+            <FullScreenProvider>
+              <OntologyDagView
+                key={cellTypeId}
+                cellTypeId={cellTypeId}
+                tissueName={selectedOrgan}
+                tissueId={selectedOrganId}
+                skinnyMode={skinnyMode}
+              />
+            </FullScreenProvider>
+          </div>
 
           {/* Marker Genes section */}
           <div ref={sectionRef2} id="section-2" data-testid="section-2" />
