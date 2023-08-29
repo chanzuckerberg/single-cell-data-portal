@@ -522,7 +522,7 @@ const MarkerGeneTables = ({
                 testId={CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN}
               />
             )}
-            {skinnyMode && (
+            {!skinnyMode && (
               <Link
                 url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"
