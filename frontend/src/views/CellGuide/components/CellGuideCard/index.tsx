@@ -12,6 +12,9 @@ import {
   StyledSynonyms,
   FlexContainer,
   StyledOntologyId,
+  MobileTooltipTitle,
+  MobileTooltipWrapper,
+  MobileTooltipHeader,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -34,6 +37,7 @@ import {
 import CellGuideMobileHeader from "../CellGuideMobileHeader";
 import { Global } from "@emotion/react";
 import { StickySidebarStyle } from "./components/CellGuideCardSidebar/style";
+import { ButtonIcon } from "@czi-sds/components";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -74,6 +78,12 @@ export default function CellGuideCard({
       />
     );
   }, [skinnyMode]);
+
+  // Set the mobile tooltip view content
+  const [tooltipContent, setTooltipContent] = useState<{
+    title: string;
+    element: JSX.Element;
+  } | null>(null);
 
   // cell type id
   const { cellTypeId: cellTypeIdRaw } = router.query;
@@ -153,6 +163,22 @@ export default function CellGuideCard({
         />
       )}
 
+      {skinnyMode && tooltipContent && (
+        <MobileTooltipWrapper>
+          <MobileTooltipHeader>
+            <MobileTooltipTitle>{tooltipContent.title}</MobileTooltipTitle>
+            <ButtonIcon
+              onClick={() => {
+                setTooltipContent(null);
+              }}
+              sdsIcon="xMark"
+              sdsSize="medium"
+            />
+          </MobileTooltipHeader>
+          <div>{tooltipContent.element}</div>
+        </MobileTooltipWrapper>
+      )}
+
       <CellGuideView skinnyMode={skinnyMode}>
         {/* Flex item left */}
         <Wrapper>
@@ -189,6 +215,7 @@ export default function CellGuideCard({
             cellTypeId={cellTypeId}
             cellTypeName={cellTypeName}
             skinnyMode={skinnyMode}
+            setTooltipContent={setTooltipContent}
           />
 
           <FlexContainer>
@@ -217,6 +244,7 @@ export default function CellGuideCard({
           {/* Marker Genes section */}
           <div ref={sectionRef2} id="section-2" data-testid="section-2" />
           <MarkerGeneTables
+            setTooltipContent={setTooltipContent}
             key={cellTypeId}
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
@@ -232,7 +260,10 @@ export default function CellGuideCard({
         {/* Side bar */}
         {!skinnyMode && cellGuideSideBar}
       </CellGuideView>
-      <StyledRightSideBar width={RIGHT_SIDEBAR_WIDTH_PX}>
+      <StyledRightSideBar
+        width={RIGHT_SIDEBAR_WIDTH_PX}
+        skinnyMode={skinnyMode}
+      >
         {geneInfoGene && (
           <GeneInfoSideBar
             geneInfoGene={geneInfoGene}

@@ -2,7 +2,7 @@ import { Tooltip } from "@czi-sds/components";
 
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { TooltipButton, StyledTooltip, StyledIconImage } from "./style";
-import { ReactElement } from "react";
+import { Dispatch, ReactElement, SetStateAction } from "react";
 
 interface Props {
   text: string | ReactElement;
@@ -21,12 +21,21 @@ interface Props {
     | "top";
   dark?: boolean;
   buttonDataTestId?: string;
+  setTooltipContent: Dispatch<
+    SetStateAction<{
+      title: string;
+      element: JSX.Element;
+    } | null>
+  >;
+  title: string;
 }
 const HelpTooltip = ({
   text,
   placement = "right",
   dark,
   buttonDataTestId = "",
+  setTooltipContent,
+  title,
 }: Props) => {
   return (
     <Tooltip
@@ -47,7 +56,15 @@ const HelpTooltip = ({
         sdsType="secondary"
         isAllCaps={false}
       >
-        <StyledIconImage src={questionMarkIcon} />
+        <StyledIconImage
+          onTouchEnd={() => {
+            setTooltipContent({
+              title: title,
+              element: <StyledTooltip>{text}</StyledTooltip>,
+            });
+          }}
+          src={questionMarkIcon}
+        />
       </TooltipButton>
     </Tooltip>
   );

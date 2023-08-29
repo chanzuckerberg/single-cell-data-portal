@@ -49,7 +49,6 @@ export const StyledTooltip = styled(Tooltip)`
 
 export const ChatGptTooltipText = styled.div`
   ${fontBodyXs}
-  color: #FFFFFF;
   font-weight: 500;
 `;
 

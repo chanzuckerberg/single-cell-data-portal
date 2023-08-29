@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   CellGuideCardDescription,
   ChatGptTooltipSubtext,
@@ -27,11 +27,18 @@ interface DescriptionProps {
   cellTypeName: string;
   cellTypeId: string;
   skinnyMode: boolean;
+  setTooltipContent: Dispatch<
+    SetStateAction<{
+      title: string;
+      element: JSX.Element;
+    } | null>
+  >;
 }
 export default function Description({
   cellTypeId,
   cellTypeName,
   skinnyMode,
+  setTooltipContent,
 }: DescriptionProps): JSX.Element {
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
   const [descriptionCl, setDescriptionCl] = useState<string>("");
@@ -57,6 +64,23 @@ export default function Description({
       track(EVENTS.CG_COPY_CELL_TYPE_DESCRIPTION);
     }
   };
+
+  const tooltipContent = (
+    <div>
+      <ChatGptTooltipText>
+        {`This summary on "${cellTypeName}" was generated with ChatGPT, powered by the GPT4 model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below. CZI is currently offering this as a pilot feature and we may update or change this feature at our discretion.`}
+      </ChatGptTooltipText>
+      <br />
+      <ChatGptTooltipSubtext>
+        System role: You are a knowledgeable cell biologist that has
+        professional experience writing and curating accurate and informative
+        descriptions of cell types.
+        <br />
+        <br />
+        {`User role: I am making a knowledge-base about cell types. Each cell type is a term from the Cell Ontology and will have its own page with a detailed description of that cell type and its function. Please write me a description for "${cellTypeName}". Please return only the description and no other dialogue. The description should include information about the cell type's function. The description should be at least three paragraphs long.`}
+      </ChatGptTooltipSubtext>
+    </div>
+  );
 
   return (
     <Wrapper>
@@ -128,26 +152,9 @@ export default function Description({
                   },
                 },
               }}
-              title={
-                <div>
-                  <ChatGptTooltipText>
-                    {`This summary on "${cellTypeName}" was generated with ChatGPT, powered by the GPT4 model. Keep in mind that ChatGPT may occasionally present information that is not entirely accurate. For transparency, the prompts used to generate this summary are shared below. CZI is currently offering this as a pilot feature and we may update or change this feature at our discretion.`}
-                  </ChatGptTooltipText>
-                  <br />
-                  <ChatGptTooltipSubtext>
-                    System role: You are a knowledgeable cell biologist that has
-                    professional experience writing and curating accurate and
-                    informative descriptions of cell types.
-                    <br />
-                    <br />
-                    {`User role: I am making a knowledge-base about cell types. Each cell type is a term from the Cell Ontology and will have its own page with a detailed description of that cell type and its function. Please write me a description for "${cellTypeName}". Please return only the description and no other dialogue. The description should include information about the cell type's function. The description should be at least three paragraphs long.`}
-                  </ChatGptTooltipSubtext>
-                </div>
-              }
+              title={tooltipContent}
             >
               <StyledLink
-                href={"https://platform.openai.com/docs/models/gpt-4"}
-                target="_blank"
                 data-testid={CELL_GUIDE_CARD_GPT_TOOLTIP_LINK}
                 onMouseOver={() => {
                   const id = setTimeout(() => {
@@ -160,6 +167,12 @@ export default function Description({
                     clearTimeout(timerId);
                     setTimerId(null);
                   }
+                }}
+                onTouchEnd={() => {
+                  setTooltipContent({
+                    title: "ChatGPT Descriptions",
+                    element: tooltipContent,
+                  });
                 }}
               >
                 <StyledIconImage src={questionMarkIcon} />

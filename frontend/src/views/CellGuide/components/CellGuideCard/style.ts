@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import {
   CommonThemeProps,
+  fontHeaderXl,
   fontHeaderXxl,
   getSpaces,
   Tag,
@@ -90,10 +91,17 @@ export const SearchBarWrapper = styled.div`
 
 export const StyledRightSideBar = styled(RightSideBar)`
   position: fixed;
-  top: ${HEADER_HEIGHT_PX}px;
   right: 0;
   height: 100vh;
   background-color: white;
+
+  ${(props: { skinnyMode: boolean }) => {
+    return `
+      top: ${
+        props.skinnyMode ? `${HEADER_HEIGHT_PX * 2}px` : `${HEADER_HEIGHT_PX}px`
+      }
+    `;
+  }}
 `;
 
 export const StyledSynonyms = styled(Synonyms)`
@@ -115,4 +123,27 @@ export const MobileSearchTint = styled(StyledDiv)`
 export const FlexContainer = styled.div`
   display: flex;
   flex-direction: column;
+`;
+
+export const MobileTooltipTitle = styled.div`
+  ${fontHeaderXl}
+  font-weight: 600;
+`;
+
+export const MobileTooltipWrapper = styled.div`
+  top: ${HEADER_HEIGHT_PX}px;
+  position: fixed;
+  z-index: 99;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - ${HEADER_HEIGHT_PX}px);
+  padding: ${spacesL}px;
+  gap: ${spacesL}px;
+`;
+
+export const MobileTooltipHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
