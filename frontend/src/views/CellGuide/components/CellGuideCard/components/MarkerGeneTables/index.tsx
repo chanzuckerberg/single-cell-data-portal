@@ -56,6 +56,26 @@ import {
   MARKER_SCORE_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+
+function getEmptyComputationalMarkerGenesTableUIMessageDetail(
+  allFilteredByLowMarkerScore: boolean,
+  markerScoreThreshold: number
+): string {
+  if (allFilteredByLowMarkerScore) {
+    return (
+      "There are no computational marker genes with marker scores above the threshold of " +
+      markerScoreThreshold +
+      "."
+    );
+  }
+
+  return "Computational marker genes for this cell type are unavailable at this time.";
+}
+
+function getEmptyCanonicalMarkerGenesTableUIMessageDetail(): string {
+  return "Canonical marker genes for this cell type are unavailable at this time.";
+}
 
 const ROWS_PER_PAGE = 10;
 
@@ -274,7 +294,7 @@ const MarkerGeneTables = ({
 
   const [page, setPage] = useState(1);
 
-  const { computationalMarkerGeneTableData } =
+  const { computationalMarkerGeneTableData, allFilteredByLowMarkerScore } =
     useComputationalMarkerGenesTableRowsAndFilters({
       genes: computationalMarkerGenes,
       allTissuesLabelToIdMap: allTissuesLabelToIdMap,
@@ -420,8 +440,12 @@ const MarkerGeneTables = ({
         No {activeTable ? "computational" : "canonical"} marker genes
       </TableUnavailableHeader>
       <TableUnavailableDescription>
-        {activeTable ? "Computational" : "Canonical"} marker genes for this cell
-        type are unavailable at this time.
+        {activeTable
+          ? getEmptyComputationalMarkerGenesTableUIMessageDetail(
+              allFilteredByLowMarkerScore,
+              FMG_GENE_STRENGTH_THRESHOLD
+            )
+          : getEmptyCanonicalMarkerGenesTableUIMessageDetail()}
       </TableUnavailableDescription>
     </TableUnavailableContainer>
   );

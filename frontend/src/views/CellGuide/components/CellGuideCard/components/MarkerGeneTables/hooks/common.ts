@@ -4,7 +4,6 @@ import {
   useAllOrgansLookupTables,
 } from "src/common/queries/cellGuide";
 import { ALL_TISSUES, HOMO_SAPIENS, NO_ORGAN_ID } from "../constants";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 
 /* NOTE: Here "organ" refers to a coarse tissue or system (ex: "eye", "digestive system")
    whereas, "tissue" refers coarse tissue/system AND granular tissue. That is, "tissue"
@@ -37,7 +36,6 @@ export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
     // 2. construct a list of unique organisms in the enriched genes.
     if (computationalMarkers) {
       for (const markerGene of computationalMarkers) {
-        if (markerGene.marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
         const organLabel = markerGene.groupby_dims.tissue_ontology_term_label;
         if (organLabel && organLabelToIdMap) {
           organId = organLabelToIdMap.get(organLabel);

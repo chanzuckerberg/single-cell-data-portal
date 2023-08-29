@@ -15,7 +15,18 @@ interface ComputationalMarkerGeneTableData {
   pc: string;
 }
 
-function _passSelectionCriteria({
+enum selectionCriteriaErrorCode {
+  TissueMismatch,
+  OrganismMismatch,
+  LowMarkerScore,
+  Success,
+}
+
+// Apply selection criteria in the following order and short circut when a criteria fails:
+// 1. Tissue
+// 2. Organism
+// 3. Marker score
+function _applyOrderedSelectionCriteria({
   markerGene,
   allTissuesLabelToIdMap,
   selectedOrganismLabel,
@@ -27,7 +38,7 @@ function _passSelectionCriteria({
   selectedOrganLabel: string;
   selectedOrganId: string;
   allTissuesLabelToIdMap: Map<string, string>;
-}): boolean {
+}): { pass: boolean; errorCode: selectionCriteriaErrorCode } {
   const { groupby_dims, marker_score } = markerGene;
 
   // When groupby_dims.tissue_ontology_term_label is undefined, default to ALL_TISSUES
@@ -36,23 +47,47 @@ function _passSelectionCriteria({
     tissue_ontology_term_label = ALL_TISSUES,
   } = groupby_dims;
 
-  if (marker_score < FMG_GENE_STRENGTH_THRESHOLD) return false;
-  if (organism_ontology_term_label !== selectedOrganismLabel) return false;
-
-  // filter by tissue
+  // FIRST filter by tissue
   //
   // There are marker genes tissues labeled as "All Tissues" AND there
   // there are marker genes tissues that are undefined which are re-labeled
   // as ALL_TISSUES. Select them only when selectedOrganLabel is "All Tissues"
+  let pass = false;
+
   if (selectedOrganLabel === ALL_TISSUES) {
-    return tissue_ontology_term_label === ALL_TISSUES;
+    pass = tissue_ontology_term_label === ALL_TISSUES;
+  } else {
+    const tissueId = allTissuesLabelToIdMap.get(tissue_ontology_term_label);
+    pass = Boolean(
+      tissueId &&
+        isTissueIdDescendantOfAncestorTissueId(tissueId, selectedOrganId)
+    );
   }
 
-  const tissue_id = allTissuesLabelToIdMap.get(tissue_ontology_term_label);
+  if (!pass)
+    return {
+      pass: false,
+      errorCode: selectionCriteriaErrorCode.TissueMismatch,
+    };
 
-  if (!tissue_id) return false;
+  // If marker gene passes the tissue filter, then check if it passes the organism filter
+  // and marker score filters
+  if (organism_ontology_term_label !== selectedOrganismLabel)
+    return {
+      pass: false,
+      errorCode: selectionCriteriaErrorCode.OrganismMismatch,
+    };
 
-  return isTissueIdDescendantOfAncestorTissueId(tissue_id, selectedOrganId);
+  if (marker_score < FMG_GENE_STRENGTH_THRESHOLD)
+    return {
+      pass: false,
+      errorCode: selectionCriteriaErrorCode.LowMarkerScore,
+    };
+
+  return {
+    pass: true,
+    errorCode: selectionCriteriaErrorCode.Success,
+  };
 }
 
 export function useComputationalMarkerGenesTableRowsAndFilters({
@@ -69,26 +104,44 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
   selectedOrganId: string;
 }): {
   computationalMarkerGeneTableData: ComputationalMarkerGeneTableData[];
+  allFilteredByLowMarkerScore: boolean;
 } {
   return useMemo(() => {
     if (!genes)
       return {
         computationalMarkerGeneTableData: [],
+        allFilteredByLowMarkerScore: false,
       };
 
     const rows: ComputationalMarkerGeneTableData[] = [];
+    let allFilteredByLowMarkerScore: boolean | undefined = undefined;
 
     for (const markerGene of genes) {
-      if (
-        !_passSelectionCriteria({
-          markerGene: markerGene,
-          allTissuesLabelToIdMap: allTissuesLabelToIdMap,
-          selectedOrganismLabel: selectedOrganismLabel,
-          selectedOrganLabel: selectedOrganLabel,
-          selectedOrganId: selectedOrganId,
-        })
-      )
+      const { pass, errorCode } = _applyOrderedSelectionCriteria({
+        markerGene: markerGene,
+        allTissuesLabelToIdMap: allTissuesLabelToIdMap,
+        selectedOrganismLabel: selectedOrganismLabel,
+        selectedOrganLabel: selectedOrganLabel,
+        selectedOrganId: selectedOrganId,
+      });
+
+      if (!pass) {
+        // Because of the ordering of the selection criteria, we can identify whether
+        // the set of genes that pass the tissue filter entirely fail the low marker score filter.
+        //
+        // ignore genes that that fail the tissue filter
+        if (errorCode === selectionCriteriaErrorCode.TissueMismatch) {
+          continue;
+        }
+
+        // of those genes that pass the tissue filter, check if they all fail the low marker score filter
+        if (allFilteredByLowMarkerScore === undefined) {
+          allFilteredByLowMarkerScore = true;
+        }
+        allFilteredByLowMarkerScore &&=
+          errorCode === selectionCriteriaErrorCode.LowMarkerScore;
         continue;
+      }
 
       const { pc, me, name, symbol, marker_score } = markerGene;
 
@@ -103,6 +156,7 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
 
     return {
       computationalMarkerGeneTableData: rows,
+      allFilteredByLowMarkerScore: allFilteredByLowMarkerScore ?? false,
     };
   }, [
     genes,
