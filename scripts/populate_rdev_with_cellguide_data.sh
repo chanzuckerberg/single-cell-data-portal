@@ -2,8 +2,25 @@
 STACK_NAME=""
 SRC_DEPLOYMENT="staging"
 
+function usage {
+    echo "Usage: $0 [-s|--src_deployment <src_deployment>] <stack_name>"
+    echo "Make sure AWS_PROFILE is set to single-cell-dev prior to running this command."
+    echo ""
+    echo "Populates the specified rdev stack with data."
+    echo ""
+    echo "Options:"
+    echo "  -s, --src_deployment    The source deployment to use. Can be either 'staging' or 'dev'. Default is 'staging'."
+    echo ""
+    echo "Arguments:"
+    echo "  stack_name              The name of the rdev stack to be populated."
+    exit 1
+}
+
 while (( "$#" )); do
   case "$1" in
+    -h|--help)
+      usage
+      ;;
     -s|--src_deployment)
       SRC_DEPLOYMENT="$2"
       if [[ "$SRC_DEPLOYMENT" != "staging" && "$SRC_DEPLOYMENT" != "dev" ]]; then
