@@ -59,6 +59,9 @@ class S3Provider:
         """
         Returns True if the object exists in the bucket and is available to download
         """
+        if "/" in bucket_name:
+            bucket_name, subpath = bucket_name.split("/", 1)
+            object_key = f"{subpath}/{object_key}"
         try:
             self.client.head_object(Bucket=bucket_name, Key=object_key)
             return True
