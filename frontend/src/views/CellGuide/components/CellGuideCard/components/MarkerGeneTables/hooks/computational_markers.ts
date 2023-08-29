@@ -64,9 +64,9 @@ function _applyOrderedSelectionCriteria({
     pass = tissue_ontology_term_label === ALL_TISSUES;
   } else {
     const tissueId = allTissuesLabelToIdMap.get(tissue_ontology_term_label);
-    pass = Boolean(
+    pass = !!(
       tissueId &&
-        isTissueIdDescendantOfAncestorTissueId(tissueId, selectedOrganId)
+      isTissueIdDescendantOfAncestorTissueId(tissueId, selectedOrganId)
     );
   }
 
