@@ -94,13 +94,16 @@ export const StyledRightSideBar = styled(RightSideBar)`
   right: 0;
   height: 100vh;
   background-color: white;
+  z-index: 10; // Must be over mobile cell guide nav bar
+  top: ${HEADER_HEIGHT_PX}px;
 
   ${(props: { skinnyMode: boolean }) => {
-    return `
-      top: ${
-        props.skinnyMode ? `${HEADER_HEIGHT_PX * 2}px` : `${HEADER_HEIGHT_PX}px`
-      }
-    `;
+    if (props.skinnyMode) {
+      return `
+        width: 100vw;
+        height: calc(100vh - ${HEADER_HEIGHT_PX}px);
+      `;
+    }
   }}
 `;
 
