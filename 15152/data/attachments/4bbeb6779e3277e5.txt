@@ -1,2 +1,0 @@
-INFO     root:logger.py:20 Start extract_metadata
-INFO     root:logger.py:22 Complete extract_metadata
