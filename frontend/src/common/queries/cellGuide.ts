@@ -396,15 +396,11 @@ export const fetchTissueMetadata =
   };
 
 /* ========== Lookup tables for organs ========== */
-export function useAllOrgansLookupTables(): {
-  organLabelToIdMap: Map<string, string>;
-} {
+export function useAllOrgansLookupTables(): Map<string, string> {
   const { data: allOrgansData } = useTissueMetadata();
   return useMemo(() => {
     if (!allOrgansData) {
-      return {
-        organLabelToIdMap: new Map<string, string>(),
-      };
+      return new Map<string, string>();
     }
 
     const allOrgansLabelToIdMap = new Map<string, string>();
@@ -412,21 +408,19 @@ export function useAllOrgansLookupTables(): {
       const organData = allOrgansData[organId];
       allOrgansLabelToIdMap.set(organData.name, organData.id);
     }
-    return {
-      organLabelToIdMap: allOrgansLabelToIdMap,
-    };
+    return allOrgansLabelToIdMap;
   }, [allOrgansData]);
 }
 
 /* ========== Lookup tables for tissues ========== */
-export function useAllTissuesLookupTables(cellTypeId: string): {
-  allTissuesLabelToIdMap: Map<string, string>;
-} {
+export function useAllTissuesLookupTables(
+  cellTypeId: string
+): Map<string, string> {
   const { data: sourceData } = useSourceData(cellTypeId);
 
   return useMemo(() => {
     if (!sourceData) {
-      return { allTissuesLabelToIdMap: new Map<string, string>() };
+      return new Map<string, string>();
     }
 
     const allTissuesLabelToIdLookup = new Map<string, string>();
@@ -437,7 +431,7 @@ export function useAllTissuesLookupTables(cellTypeId: string): {
         allTissuesLabelToIdLookup.set(tissue.label, tissue.ontology_term_id);
       }
     }
-    return { allTissuesLabelToIdMap: allTissuesLabelToIdLookup };
+    return allTissuesLabelToIdLookup;
   }, [sourceData]);
 }
 

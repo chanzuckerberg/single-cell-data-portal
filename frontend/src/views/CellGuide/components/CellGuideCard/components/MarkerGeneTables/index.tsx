@@ -59,13 +59,12 @@ import {
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
-  allFilteredByLowMarkerScore: boolean,
-  markerScoreThreshold: number
+  allFilteredByLowMarkerScore: boolean
 ): string {
   if (allFilteredByLowMarkerScore) {
     return (
       "There are no computational marker genes with marker scores above the threshold of " +
-      markerScoreThreshold +
+      FMG_GENE_STRENGTH_THRESHOLD +
       "."
     );
   }
@@ -278,7 +277,7 @@ const MarkerGeneTables = ({
 
   const { data: enrichedGenes } = useComputationalMarkers(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
-  const { allTissuesLabelToIdMap } = useAllTissuesLookupTables(cellTypeId);
+  const allTissuesLabelToIdMap = useAllTissuesLookupTables(cellTypeId);
 
   useEffect(() => {
     if (enrichedGenes) {
@@ -442,8 +441,7 @@ const MarkerGeneTables = ({
       <TableUnavailableDescription>
         {activeTable
           ? getEmptyComputationalMarkerGenesTableUIMessageDetail(
-              allFilteredByLowMarkerScore,
-              FMG_GENE_STRENGTH_THRESHOLD
+              allFilteredByLowMarkerScore
             )
           : getEmptyCanonicalMarkerGenesTableUIMessageDetail()}
       </TableUnavailableDescription>

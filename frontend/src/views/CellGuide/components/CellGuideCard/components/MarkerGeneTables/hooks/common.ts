@@ -21,7 +21,7 @@ export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
 } {
   const { data: computationalMarkers } = useComputationalMarkers(cellTypeId);
 
-  const { organLabelToIdMap } = useAllOrgansLookupTables();
+  const organLabelToIdMap = useAllOrgansLookupTables();
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   return useMemo(() => {

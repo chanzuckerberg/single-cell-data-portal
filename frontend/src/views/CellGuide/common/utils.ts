@@ -24,7 +24,7 @@ export function filterDescendantsOfAncestorTissueId(
   if (moreDescendantTermIds) {
     descendantList.push(...moreDescendantTermIds);
   }
-  const discendantSet = new Set(descendantList);
+  const descendantSet = new Set(descendantList);
 
-  return [...tissueIdList].filter((value) => discendantSet.has(value));
+  return tissueIdList.filter((value) => descendantSet.has(value));
 }

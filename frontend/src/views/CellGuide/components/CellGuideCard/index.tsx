@@ -42,21 +42,6 @@ import {
   NO_ORGAN_ID,
 } from "./components/MarkerGeneTables/constants";
 
-function getDefaultOrganSelection(
-  organs: string[],
-  organsLabelToIdMap: Map<string, string>
-): { defaultOrganLabel: string; defaultOrganId: string } {
-  let organLabel = organs[0];
-  let organId = organsLabelToIdMap.get(organLabel);
-
-  if (!(organLabel && organId)) {
-    organLabel = ALL_TISSUES;
-    organId = NO_ORGAN_ID;
-  }
-
-  return { defaultOrganLabel: organLabel, defaultOrganId: organId };
-}
-
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
 // This is the desired width of the CellGuideCard components right after the sidebar is hidden.
@@ -118,13 +103,8 @@ export default function CellGuideCard({
 
   const uniqueOrgans = Array.from(organsMap.keys());
 
-  const { defaultOrganLabel, defaultOrganId } = getDefaultOrganSelection(
-    uniqueOrgans,
-    organsMap
-  );
-
-  const [selectedOrgan, setSelectedOrgan] = useState(defaultOrganLabel);
-  const [selectedOrganId, setSelectedOrganId] = useState(defaultOrganId);
+  const [selectedOrgan, setSelectedOrgan] = useState(ALL_TISSUES);
+  const [selectedOrganId, setSelectedOrganId] = useState(NO_ORGAN_ID);
 
   const handleChangeOrgan = (event: SelectChangeEvent<unknown>) => {
     setSelectedOrgan(event.target.value as string);
@@ -234,7 +214,7 @@ export default function CellGuideCard({
           <div>
             <FullScreenProvider>
               <OntologyDagView
-                key={cellTypeId}
+                key={`${cellTypeId}-${selectedOrganId}`}
                 cellTypeId={cellTypeId}
                 tissueName={selectedOrgan}
                 tissueId={selectedOrganId}
