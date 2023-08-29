@@ -19,7 +19,6 @@ import {
 import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
 
 import { Label } from "../../style";
-import { StyledButtonIcon } from "../QuickSelect/style";
 import {
   ButtonWrapper,
   DownloadButton,
@@ -69,6 +68,7 @@ import {
   getHeatmapWidth,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
+import { StyledButtonIcon } from "../ShareButton/style";
 
 let heatmapContainerScrollTop: number | undefined;
 
