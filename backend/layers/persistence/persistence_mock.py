@@ -83,7 +83,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return copy.deepcopy(version)
 
     def _update_version_with_canonical(
-        self, version: Union[CollectionVersion, CollectionVersionWithDatasets], update_datasets: bool = False
+        self,
+        version: Union[CollectionVersion, CollectionVersionWithDatasets],
+        update_datasets: bool = False,
+        get_tombstoned: bool = False,
     ):
         """
         Private method that returns a version updated with the canonical collection.
@@ -94,9 +97,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         copied_version = copy.deepcopy(version)
         if update_datasets:
             datasets_to_include = []
-            for dataset_id in copied_version.datasets:
-                if dataset_version := self.get_dataset_version(dataset_id):
+            for dataset_version_id in copied_version.datasets:
+                if dataset_version := self.get_dataset_version(dataset_version_id, get_tombstoned=get_tombstoned):
+                    dataset_version = self._update_dataset_version_with_canonical(dataset_version)
                     datasets_to_include.append(dataset_version)
+            # Replace 'datasets' array of Dataset version ids with 'datasets' array of actual Dataset versions
             copied_version.datasets = datasets_to_include
             # Hack for business logic that uses isinstance
             copied_version.__class__ = CollectionVersionWithDatasets
@@ -154,6 +159,17 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             if collection_version.collection_id == collection.id:
                 for dataset_version in collection_version.datasets:
                     self.datasets[self.datasets_versions[dataset_version.id].dataset_id.id].tombstoned = True
+
+    def resurrect_collection(self, collection_id: CollectionId, datasets_to_resurrect: Iterable[str]) -> None:
+        """
+        Untombstones a canonical collection and the explicitly-passed list of constituent Dataset ids. Constituent
+        Datasets whose ids are not included in this list will remain tombstoned.
+        """
+        collection = self.collections[collection_id.id]
+        collection.tombstoned = False
+        # Untombstone Datasets individually as well
+        for d_id in datasets_to_resurrect:
+            self.datasets[d_id].tombstoned = False
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
@@ -231,12 +247,18 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         if version is not None:
             return self._update_version_with_canonical(version)
 
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> Iterable[CollectionVersionWithDatasets]:
+    def get_all_versions_for_collection(
+        self, collection_id: CollectionId, get_tombstoned: bool = False
+    ) -> Iterable[CollectionVersionWithDatasets]:
         # On a database, will require a secondary index on `collection_id` for an optimized lookup
         versions = []
         for collection_version in self.collections_versions.values():
             if collection_version.collection_id == collection_id:
-                versions.append(self._update_version_with_canonical(collection_version, update_datasets=True))
+                versions.append(
+                    self._update_version_with_canonical(
+                        collection_version, update_datasets=True, get_tombstoned=get_tombstoned
+                    )
+                )
         return versions
 
     def get_collection_version_with_datasets(

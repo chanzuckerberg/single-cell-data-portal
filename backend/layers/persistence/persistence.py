@@ -347,7 +347,9 @@ class DatabaseProvider(DatabaseProviderInterface):
                 collection_version, canonical_collection, dataset_versions
             )
 
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersionWithDatasets]:
+    def get_all_versions_for_collection(
+        self, collection_id: CollectionId, get_tombstoned: bool = False
+    ) -> List[CollectionVersionWithDatasets]:
         """
         Retrieves all versions for a specific collections, without filtering
         """
@@ -357,7 +359,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             versions = list()
             for i in range(len(version_rows)):
                 datasets = self.get_dataset_versions_by_id(
-                    [DatasetVersionId(str(id)) for id in version_rows[i].datasets]
+                    [DatasetVersionId(str(id)) for id in version_rows[i].datasets], get_tombstoned=get_tombstoned
                 )
                 version = self._row_to_collection_version_with_datasets(version_rows[i], canonical_collection, datasets)
                 versions.append(version)
@@ -460,6 +462,20 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
             for dataset in datasets:
                 dataset.tombstone = True
+
+    def resurrect_collection(self, collection_id: CollectionId, datasets_to_resurrect: Iterable[str]) -> None:
+        """
+        Untombstones a canonical collection and the explicitly-passed list of constituent Dataset ids. Constituent
+        Datasets whose ids are not included in this list will remain tombstoned.
+        """
+        with self._manage_session() as session:
+            canonical_collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()
+            if canonical_collection:
+                canonical_collection.tombstone = False
+            # Untombstone Datasets as well
+            datasets = session.query(DatasetTable).filter(DatasetTable.id.in_(datasets_to_resurrect))
+            for dataset in datasets:
+                dataset.tombstone = False
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
