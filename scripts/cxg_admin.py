@@ -7,6 +7,8 @@ import warnings
 
 import click
 
+from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
@@ -72,6 +74,7 @@ def cli(ctx, deployment):
     ctx.obj["business_logic"] = BusinessLogic(
         DatabaseProvider(get_database_uri()), CrossrefProvider(), StepFunctionProvider(), S3Provider(), UriProvider()
     )
+    ctx.obj["cloudfront_provider"] = CloudfrontProvider()
 
 
 # Commands to delete artifacts (collections or datasets)

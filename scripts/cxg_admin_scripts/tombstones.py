@@ -6,6 +6,7 @@ from click import Context
 
 from backend.curation.api.v1.curation.collections.common import validate_uuid_else_forbidden
 from backend.layers.business.exceptions import CollectionIsPublicException
+from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -49,8 +50,10 @@ def resurrect_collection(ctx: Context, collection_id: str) -> None:
         logging.error(f"{collection_id} is not a valid uuid")
         exit(1)
     business_logic: BusinessLogic = ctx.obj["business_logic"]
+    cloudfront_provider: CloudfrontProvider = ctx.obj["cloudfront_provider"]
     try:
         business_logic.resurrect_collection(CollectionId(collection_id))
+        cloudfront_provider.create_invalidation_for_index_paths()
     except CollectionIsPublicException:
         logging.error(f"Collection {collection_id} is not tombstoned")
         exit(1)
