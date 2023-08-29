@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { EnrichedGenesQueryResponse } from "src/common/queries/cellGuide";
+import { ComputationalMarkersQueryResponse } from "src/common/queries/cellGuide";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import { HOMO_SAPIENS, ALL_TISSUES } from "../constants";
 
@@ -11,11 +11,13 @@ interface ComputationalMarkerGeneTableData {
   pc: string;
 }
 
-function _getSortedOrganisms(genes: EnrichedGenesQueryResponse): string[] {
+function _getSortedOrganisms(
+  genes: ComputationalMarkersQueryResponse
+): string[] {
   const organisms = new Set<string>();
   for (const markerGene of genes) {
     if (markerGene.marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
-    organisms.add(markerGene.organism);
+    organisms.add(markerGene.groupby_dims.organism_ontology_term_label);
   }
   return Array.from(organisms).sort((a, b) => {
     if (a === HOMO_SAPIENS) return -1;
@@ -25,14 +27,20 @@ function _getSortedOrganisms(genes: EnrichedGenesQueryResponse): string[] {
 }
 
 function _getSortedOrgans(
-  genes: EnrichedGenesQueryResponse,
+  genes: ComputationalMarkersQueryResponse,
   selectedOrganismFilter: string
 ): string[] {
   const organs = new Set<string>();
   for (const markerGene of genes) {
-    if (markerGene.organism !== selectedOrganismFilter) continue;
+    if (
+      markerGene.groupby_dims.organism_ontology_term_label !==
+      selectedOrganismFilter
+    )
+      continue;
     if (markerGene.marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
-    organs.add(markerGene.tissue);
+    organs.add(
+      markerGene.groupby_dims.tissue_ontology_term_label ?? "All Tissues"
+    );
   }
 
   return Array.from(organs).sort((a, b) => {
@@ -47,7 +55,7 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
   selectedOrganism,
   selectedOrgan,
 }: {
-  genes: EnrichedGenesQueryResponse;
+  genes: ComputationalMarkersQueryResponse;
   selectedOrganism: string;
   selectedOrgan: string;
 }): {
@@ -83,10 +91,14 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
 
     const rows: ComputationalMarkerGeneTableData[] = [];
     for (const markerGene of genes) {
-      const { pc, me, name, symbol, organism, marker_score, tissue } =
-        markerGene;
-      if (organism !== selectedOrganismFilter) continue;
-      if (tissue !== selectedOrganFilter) continue;
+      const { pc, me, name, symbol, groupby_dims, marker_score } = markerGene;
+      const {
+        organism_ontology_term_label,
+        tissue_ontology_term_label = "All Tissues",
+      } = groupby_dims;
+
+      if (organism_ontology_term_label !== selectedOrganismFilter) continue;
+      if (tissue_ontology_term_label !== selectedOrganFilter) continue;
       if (marker_score < FMG_GENE_STRENGTH_THRESHOLD) continue;
       rows.push({
         symbol,

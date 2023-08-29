@@ -219,33 +219,42 @@ describe("Cell Guide", () => {
     test("Cell type search bar filters properly and links to a CellGuideCard", async ({
       page,
     }) => {
-      await goToPage(
-        `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
-        page
+      /**
+       * (thuang): Sometimes the dropdown options don't load, so add a tryUntil
+       * to refresh the page and try again.
+       */
+      await tryUntil(
+        async () => {
+          await goToPage(
+            `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
+            page
+          );
+          const element = getSearchBarLocator(page);
+
+          await waitForElementAndClick(element);
+          await waitForOptionsToLoad(page);
+          // get number of elements with role option in dropdown
+          const numOptionsBefore = await countLocator(page.getByRole("option"));
+          // type in search bar
+          await element.type("acinar cell");
+          // get number of elements with role option in dropdown
+          const numOptionsAfter = await countLocator(page.getByRole("option"));
+          // check that number of elements with role option in dropdown has decreased
+          expect(numOptionsAfter).toBeLessThan(numOptionsBefore);
+          // check that the first element in the dropdown is the one we searched for
+          const firstOption = (await page.getByRole("option").all())[0];
+          const firstOptionText = await firstOption?.textContent();
+          expect(firstOptionText).toBe("acinar cell");
+
+          await Promise.all([
+            // check that the url has changed to the correct CellGuide card
+            page.waitForURL(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000622`), // Acinar cell
+            // click on first element in dropdown
+            firstOption?.click(),
+          ]);
+        },
+        { page }
       );
-      const element = getSearchBarLocator(page);
-
-      await waitForElementAndClick(element);
-      await waitForOptionsToLoad(page);
-      // get number of elements with role option in dropdown
-      const numOptionsBefore = await countLocator(page.getByRole("option"));
-      // type in search bar
-      await element.type("acinar cell");
-      // get number of elements with role option in dropdown
-      const numOptionsAfter = await countLocator(page.getByRole("option"));
-      // check that number of elements with role option in dropdown has decreased
-      expect(numOptionsAfter).toBeLessThan(numOptionsBefore);
-      // check that the first element in the dropdown is the one we searched for
-      const firstOption = (await page.getByRole("option").all())[0];
-      const firstOptionText = await firstOption?.textContent();
-      expect(firstOptionText).toBe("acinar cell");
-
-      await Promise.all([
-        // check that the url has changed to the correct CellGuide card
-        page.waitForURL(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000622`), // Acinar cell
-        // click on first element in dropdown
-        firstOption?.click(),
-      ]);
     });
 
     describe("Canonical Marker Gene Table", () => {
@@ -480,41 +489,51 @@ describe("Cell Guide", () => {
       test("Source data table is displayed with columns and at least one entry displayed", async ({
         page,
       }) => {
-        await goToPage(
-          `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
-          page
-        );
-
-        const tableSelector = `[data-testid='${CELL_GUIDE_CARD_SOURCE_DATA_TABLE}']`;
-
+        /**
+         * (thuang): Sometimes the table doesn't load, so add a tryUntil to refresh
+         * the page and try again.
+         */
         await tryUntil(
           async () => {
-            const columnHeaderElements = await page
-              .locator(`${tableSelector} thead th`)
-              .all();
-
-            // get text content of each column header
-            const columnHeaders = await Promise.all(
-              columnHeaderElements.map(async (element) => {
-                return await element.textContent();
-              })
+            await goToPage(
+              `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
+              page
             );
-            expect(columnHeaders).toEqual([
-              "Collection",
-              "Publication",
-              "Tissue",
-              "Disease",
-              "Organism",
-            ]);
+
+            const tableSelector = `[data-testid='${CELL_GUIDE_CARD_SOURCE_DATA_TABLE}']`;
+
+            await tryUntil(
+              async () => {
+                const columnHeaderElements = await page
+                  .locator(`${tableSelector} thead th`)
+                  .all();
+
+                // get text content of each column header
+                const columnHeaders = await Promise.all(
+                  columnHeaderElements.map(async (element) => {
+                    return await element.textContent();
+                  })
+                );
+
+                expect(columnHeaders).toEqual([
+                  "Collection",
+                  "Publication",
+                  "Tissue",
+                  "Disease",
+                  "Organism",
+                ]);
+              },
+              { page }
+            );
+
+            const rowElements = await page
+              .locator(`${tableSelector} tbody tr`)
+              .all();
+            const rowCount = rowElements.length;
+            expect(rowCount).toBeGreaterThan(1);
           },
           { page }
         );
-
-        const rowElements = await page
-          .locator(`${tableSelector} tbody tr`)
-          .all();
-        const rowCount = rowElements.length;
-        expect(rowCount).toBeGreaterThan(1);
       });
     });
 

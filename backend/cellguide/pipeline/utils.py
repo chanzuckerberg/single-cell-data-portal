@@ -26,6 +26,20 @@ def output_json(data, path):
         json.dump(data, f)
 
 
+def output_json_per_key(data, path):
+    """
+    Output each value in the input data to a separate JSON file.
+    """
+
+    data = convert_dataclass_to_dict_and_strip_nones(data)
+
+    os.makedirs(os.path.dirname(f"{path}/"), exist_ok=True)
+
+    for key in data:
+        filename = key.replace(":", "_")
+        output_json(data[key], f"{path}/{filename}.json")
+
+
 def convert_dataclass_to_dict_and_strip_nones(data):
     """
     A wrapper for dataclass-to-dict conversion that deletes keys with None as values

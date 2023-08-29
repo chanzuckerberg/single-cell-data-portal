@@ -86,11 +86,7 @@ export const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
     return true;
   }
 
-  if (datasetStatus.processing_status === PROCESSING_STATUS.PENDING) {
-    return true;
-  }
-
-  return false;
+  return datasetStatus.processing_status === PROCESSING_STATUS.PENDING;
 };
 
 export function checkIfCancelled(datasetStatus: DatasetUploadStatus): boolean {
@@ -272,9 +268,7 @@ function isConverted(status?: DatasetUploadStatus): 0 | 1 {
 export function hasCXGFile(dataset: Dataset): boolean {
   const deployments = dataset.dataset_deployments;
 
-  if (!deployments || !deployments.length) return false;
-
-  return true;
+  return !(!deployments || !deployments.length);
 }
 
 function successToast(message: string) {

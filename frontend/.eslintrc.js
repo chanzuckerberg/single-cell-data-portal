@@ -54,6 +54,9 @@ module.exports = {
     "react/prop-types": "off",
     // (thuang): We use nested template literals extensively
     "sonarjs/no-nested-template-literals": "off",
+    // React Hooks
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error",
   },
   settings: {
     "mdx/code-blocks": true,

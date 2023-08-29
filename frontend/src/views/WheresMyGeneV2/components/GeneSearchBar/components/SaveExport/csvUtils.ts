@@ -132,10 +132,9 @@ export function csvHeaders({
 
   // Organism
   output.push([
-    `# Organism Filter Value: ${
-      availableOrganisms?.find((organism) => organism.id === selectedOrganismId)
-        ?.name
-    }`,
+    `# Organism Filter Value: ${availableOrganisms?.find(
+      (organism) => organism.id === selectedOrganismId
+    )?.name}`,
   ]);
 
   // Column Names

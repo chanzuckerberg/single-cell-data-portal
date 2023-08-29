@@ -61,7 +61,8 @@ jobs:
       matrix:
         # Only run Chrome for now, since GHA only has 250 workers and will cancel jobs if it runs out
         project: [chromium]
-        shardCurrent: [
+        shardCurrent:
+          [
             1,
             2,
             3,
@@ -82,18 +83,8 @@ jobs:
             18,
             19,
             20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26.
-            27,
-            28,
-            29,
-            30,
           ]
-        shardTotal: [30]
+        shardTotal: [20]
 
     defaults:
       run:

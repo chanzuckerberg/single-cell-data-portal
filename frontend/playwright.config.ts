@@ -9,7 +9,8 @@ import { matchers } from "expect-playwright";
 import fs from "fs";
 import { LOGIN_STATE_FILENAME } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
-import featureFlags from "./tests/common/featureFlags";
+import { getFeatureFlags } from "tests/common/featureFlags";
+import { SKIP_LOGIN } from "tests/common/constants";
 
 /**
  * (thuang): Playwright takes retries as part of the maxFailures count, so we
@@ -218,24 +219,37 @@ function getStorageState(): {
     }>;
   }>;
 } {
-  const storageState = featureFlags;
-
-  if (fs.existsSync(LOGIN_STATE_FILENAME)) {
+  /**
+   * (thuang): Don't login and set `curator` feature flag to `true`,
+   * if `SKIP_LOGIN` is set to `true`.
+   * This way we avoid calling Auth0 and save the Auth0 rate limiting quota
+   */
+  if (!SKIP_LOGIN && fs.existsSync(LOGIN_STATE_FILENAME)) {
     const loginState = JSON.parse(
       fs.readFileSync(LOGIN_STATE_FILENAME, "utf-8")
     );
 
+    const storageState = getFeatureFlags({ curator: true });
     // Merge loginState with featureFlags
-    storageState.cookies = storageState.cookies.concat(loginState.cookies);
-    storageState.origins = storageState.origins.concat(loginState.origins);
+    storageState.cookies = [...storageState.cookies, ...loginState.cookies];
+    storageState.origins = [...storageState.origins, ...loginState.origins];
+
+    return storageState;
   }
 
   // For testing auth tests locally with a manual cookie
   if (process.env.USE_COOKIE === "true") {
+    const storageState = getFeatureFlags({ curator: true });
     storageState.cookies = MANUAL_COOKIE;
+
+    return storageState;
   }
 
-  return storageState;
+  /**
+   * (thuang): By default `curator` feature flag is `false`, so we don't call
+   * Auth0 and save the Auth0 rate limiting quota
+   */
+  return getFeatureFlags();
 }
 
 export default defineConfig(config);

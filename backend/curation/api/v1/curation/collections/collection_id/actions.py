@@ -17,17 +17,17 @@ from backend.layers.common.entities import CollectionId, CollectionLinkType, Lin
 from backend.portal.api.providers import get_business_logic
 
 
-def delete(collection_id: str, token_info: dict, delete_published: str) -> Response:
+def delete(collection_id: str, token_info: dict, delete_published: bool = False) -> Response:
     user_info = UserInfo(token_info)
     collection_version = get_inferred_collection_version(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at:
-        if user_info.is_cxg_admin() and delete_published == "true":
+        if user_info.is_cxg_admin() and delete_published:
             get_business_logic().tombstone_collection(CollectionId(collection_id))
         else:
             raise MethodNotAllowedException(detail="Cannot delete a published collection through API.")
     else:
-        get_business_logic().delete_collection_version(collection_version.version_id)
+        get_business_logic().delete_collection_version(collection_version)
     return make_response("", 204)
 
 
