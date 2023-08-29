@@ -7,8 +7,6 @@ import warnings
 
 import click
 
-from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
-
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
@@ -18,6 +16,7 @@ from backend.common.corpora_config import CorporaDbConfig
 from backend.common.utils.aws import AwsSecret
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
 from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
