@@ -323,24 +323,21 @@ describe("Cell Guide", () => {
             const dropdown = page.getByTestId(
               CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN
             );
-            await waitForElementAndClick(dropdown);
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown"); // selects Brain
-            await dropdown.press("Enter");
 
-            const rowElementsAfter = await page
-              .locator(`${tableSelector} tbody tr`)
-              .all();
-            const rowCountAfter = rowElementsAfter.length;
-            expect(rowCountAfter).toBeGreaterThan(1);
-            expect(rowCountAfter).not.toBe(rowCountBefore);
+            await tryUntil(
+              async () => {
+                await waitForElementAndClick(dropdown);
+                await page.getByRole("option").getByText("brain").click();
+                const rowElementsAfter = await page
+                  .locator(`${tableSelector} tbody tr`)
+                  .all();
+
+                const rowCountAfter = rowElementsAfter.length;
+                expect(rowCountAfter).toBeGreaterThan(1);
+                expect(rowCountAfter).not.toBe(rowCountBefore);
+              },
+              { page }
+            );
           },
           { page }
         );
@@ -359,25 +356,31 @@ describe("Cell Guide", () => {
           .click();
 
         const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
-        const rowElementsBefore = await page
-          .locator(`${tableSelector} tbody tr`)
-          .all();
-        const rowCountBefore = rowElementsBefore.length;
-        expect(rowCountBefore).toBeGreaterThanOrEqual(1);
 
-        const dropdown = page.getByTestId(
-          CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
+        await tryUntil(
+          async () => {
+            const rowElementsBefore = await page
+              .locator(`${tableSelector} tbody tr`)
+              .all();
+            const rowCountBefore = rowElementsBefore.length;
+            expect(rowCountBefore).toBeGreaterThanOrEqual(1);
+
+            const dropdown = page.getByTestId(
+              CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
+            );
+            await waitForElementAndClick(dropdown);
+            await dropdown.press("ArrowDown"); // selects Macaca Mulatta
+            await dropdown.press("Enter");
+
+            const rowElementsAfter = await page
+              .locator(`${tableSelector} tbody tr`)
+              .all();
+            const rowCountAfter = rowElementsAfter.length;
+            expect(rowCountAfter).toBe(0);
+            expect(rowCountAfter).not.toBe(rowCountBefore);
+          },
+          { page }
         );
-        await waitForElementAndClick(dropdown);
-        await dropdown.press("ArrowDown"); // selects Macaca Mulatta
-        await dropdown.press("Enter");
-
-        const rowElementsAfter = await page
-          .locator(`${tableSelector} tbody tr`)
-          .all();
-        const rowCountAfter = rowElementsAfter.length;
-        expect(rowCountAfter).toBe(0);
-        expect(rowCountAfter).not.toBe(rowCountBefore);
       });
     });
 
@@ -929,9 +932,15 @@ describe("Cell Guide", () => {
 async function checkTooltipContent(page: Page, text: string) {
   // check role tooltip is visible
   const tooltipLocator = page.getByRole("tooltip");
-  await tooltipLocator.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-  const tooltipLocatorVisible = await tooltipLocator.isVisible();
-  expect(tooltipLocatorVisible).toBe(true);
+
+  await tryUntil(
+    async () => {
+      await tooltipLocator.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+      const tooltipLocatorVisible = await tooltipLocator.isVisible();
+      expect(tooltipLocatorVisible).toBe(true);
+    },
+    { page }
+  );
 
   // check that tooltip contains text
   const tooltipText = await tooltipLocator.textContent();
