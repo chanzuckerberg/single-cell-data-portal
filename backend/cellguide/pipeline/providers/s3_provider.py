@@ -59,9 +59,17 @@ class S3Provider:
         """
         Returns True if the object exists in the bucket and is available to download
         """
-        if "/" in bucket_name:
+        deployment_stage = os.getenv("DEPLOYMENT_STAGE")
+        remote_dev_prefix = os.getenv("REMOTE_DEV_PREFIX")
+
+        if deployment_stage == "rdev" and remote_dev_prefix is not None:
+            # bucket_name is "cellguide-data-public-dev/env-rdev-cellguide"
+            # so subpath is "env-rdev-cellguide"
             bucket_name, subpath = bucket_name.split("/", 1)
-            object_key = f"{subpath}/{object_key}"
+            object_key = f"{subpath}{remote_dev_prefix}/{object_key}"
+        elif deployment_stage == "rdev":
+            raise ValueError("REMOTE_DEV_PREFIX must be set when DEPLOYMENT_STAGE is rdev")
+
         try:
             self.client.head_object(Bucket=bucket_name, Key=object_key)
             return True
