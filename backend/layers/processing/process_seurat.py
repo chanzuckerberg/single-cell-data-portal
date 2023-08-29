@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 
@@ -88,6 +89,11 @@ class ProcessSeurat(ProcessingLogic):
         Create a Seurat rds file from the AnnData file.
         """
         try:
+            completed_process = subprocess.run(
+                ["Rscript", "-e", "\"installed.packages()[, c('Package', 'Version')]\""], capture_output=True
+            )
+            logging.debug({"stdout": completed_process.stdout, "args": completed_process.args})
+
             subprocess.run(
                 [
                     "Rscript",
