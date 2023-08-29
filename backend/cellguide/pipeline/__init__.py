@@ -102,7 +102,7 @@ def upload_gpt_descriptions_to_s3(*, gpt_output_directory: str, gpt_seo_output_d
         s3_provider.sync_directory(src_dir=src_directory, s3_uri=f"{bucket_path}{dst_directory}/")
 
         num_descriptions = len(glob(f"{src_directory}/*.json"))
-        logger.info(f"Uploaded {num_descriptions} GPT descriptions to s3://{bucket_path}{dst_directory}/")
+        logger.info(f"Uploaded {num_descriptions} GPT descriptions to {bucket_path}{dst_directory}/")
 
 
 def cleanup(*, output_directory: str):
