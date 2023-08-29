@@ -11,14 +11,22 @@ import {
   StyledTitle,
 } from "./style";
 import { MobileSearchTint } from "../CellGuideCard/style";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 interface Props {
   title: string;
   pageNav: JSX.Element | null;
+  openSearch?: boolean; // Used on landing page
+  top?: number; // Used on landing page
 }
 
-const CellGuideMobileHeader = ({ title = "", pageNav }: Props) => {
-  const [searchIsOpen, setSearchIsOpen] = useState(false);
+const CellGuideMobileHeader = ({
+  title = "",
+  pageNav,
+  openSearch = false,
+  top = HEADER_HEIGHT_PX,
+}: Props) => {
+  const [searchIsOpen, setSearchIsOpen] = useState(openSearch);
   const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
 
   const search = (
@@ -75,7 +83,7 @@ const CellGuideMobileHeader = ({ title = "", pageNav }: Props) => {
       {/* Screen tint when mobile search is open */}
       {searchIsOpen && <MobileSearchTint />}
 
-      <MobileHeaderWrapper>
+      <MobileHeaderWrapper top={top}>
         {/* CellGuide Header - First Row */}
         <MobileHeader>{searchIsOpen ? search : navigation}</MobileHeader>
 

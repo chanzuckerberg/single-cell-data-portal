@@ -200,6 +200,7 @@ const MarkerGeneTables = ({
         <StyledHeadCellContent>
           Marker Score
           <HelpTooltip
+            skinnyMode={skinnyMode}
             title="Marker Score"
             setTooltipContent={setTooltipContent}
             dark
@@ -232,6 +233,7 @@ const MarkerGeneTables = ({
       <StyledHeadCellContent>
         Expression Score
         <HelpTooltip
+          skinnyMode={skinnyMode}
           title="Expression Score"
           setTooltipContent={setTooltipContent}
           dark
@@ -256,6 +258,7 @@ const MarkerGeneTables = ({
       <StyledHeadCellContent>
         % of Cells
         <HelpTooltip
+          skinnyMode={skinnyMode}
           title="% of Cells"
           setTooltipContent={setTooltipContent}
           dark
@@ -576,6 +579,7 @@ const MarkerGeneTables = ({
               <MarkerGeneInfo>
                 Source: HuBMAP
                 <HelpTooltip
+                  skinnyMode={skinnyMode}
                   title="Canonical Marker Genes"
                   setTooltipContent={setTooltipContent}
                   dark
@@ -588,6 +592,7 @@ const MarkerGeneTables = ({
               <MarkerGeneInfo>
                 Source: CZI
                 <HelpTooltip
+                  skinnyMode={skinnyMode}
                   title="Computational Marker Genes"
                   setTooltipContent={setTooltipContent}
                   dark

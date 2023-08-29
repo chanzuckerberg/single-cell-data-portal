@@ -30,6 +30,7 @@ import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { useCellTypesById } from "src/common/queries/cellGuide";
 import {
+  SKINNY_MODE_BREAKPOINT_WIDTH,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
@@ -40,9 +41,6 @@ import { StickySidebarStyle } from "./components/CellGuideCardSidebar/style";
 import { ButtonIcon } from "@czi-sds/components";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
-
-// This is the desired width of the CellGuideCard components right after the sidebar is hidden.
-const BREAKPOINT_WIDTH = 960;
 
 interface Props {
   name: string;
@@ -99,7 +97,8 @@ export default function CellGuideCard({
 
   const handleResize = useCallback(() => {
     setSkinnyMode(
-      window.innerWidth < BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
+      window.innerWidth <
+        SKINNY_MODE_BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
     );
   }, []);
 

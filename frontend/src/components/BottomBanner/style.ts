@@ -10,6 +10,7 @@ import {
 } from "@czi-sds/components";
 import Modal from "../common/Modal";
 import { beta100, beta400, error400, gray500 } from "src/common/theme";
+import { SKINNY_MODE_BREAKPOINT_WIDTH } from "src/views/CellGuide/components/CellGuideCard/constants";
 
 export const BOTTOM_BANNER_ID = "bottom-banner";
 
@@ -24,7 +25,7 @@ export const StyledBanner = styled(Banner)`
 
   height: auto;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${SKINNY_MODE_BREAKPOINT_WIDTH}px) {
     padding: 8px 16px;
     box-shadow: 0px 0px 4px 0px rgba(50, 50, 50, 0.75);
   }

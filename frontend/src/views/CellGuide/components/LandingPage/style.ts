@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { fontHeaderXxl } from "@czi-sds/components";
+import { fontHeaderL, fontHeaderXl } from "@czi-sds/components";
+import { SKINNY_MODE_BREAKPOINT_WIDTH } from "../CellGuideCard/constants";
 
 export const Wrapper = styled.div`
   display: flex;
@@ -9,13 +10,20 @@ export const Wrapper = styled.div`
   margin-left: auto;
   margin-right: auto;
 
-  // Adds padding to cell guide landing page
-  @media (max-width: 768px) {
-    width: 90vw;
+  // Mobile landing page styling
+  @media (max-width: ${SKINNY_MODE_BREAKPOINT_WIDTH}px) {
+    max-width: 100vw;
+    padding-left: 24px;
+    padding-right: 24px;
+    margin-top: 16px;
   }
 `;
 
 export const StyledHeader = styled.div`
-  ${fontHeaderXxl}
-  margin-bottom: 24px;
+  ${fontHeaderXl}
+  margin: 0 0 16px 8px;
+
+  @media (max-width: ${SKINNY_MODE_BREAKPOINT_WIDTH}px) {
+    ${fontHeaderL}
+  }
 `;

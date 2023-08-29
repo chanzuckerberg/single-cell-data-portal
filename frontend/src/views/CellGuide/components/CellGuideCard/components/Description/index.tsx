@@ -152,7 +152,7 @@ export default function Description({
                   },
                 },
               }}
-              title={tooltipContent}
+              title={!skinnyMode && tooltipContent}
             >
               <StyledLink
                 data-testid={CELL_GUIDE_CARD_GPT_TOOLTIP_LINK}

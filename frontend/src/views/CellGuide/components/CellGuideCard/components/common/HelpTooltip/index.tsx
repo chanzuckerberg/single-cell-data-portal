@@ -28,6 +28,7 @@ interface Props {
     } | null>
   >;
   title: string;
+  skinnyMode: boolean;
 }
 const HelpTooltip = ({
   text,
@@ -36,6 +37,7 @@ const HelpTooltip = ({
   buttonDataTestId = "",
   setTooltipContent,
   title,
+  skinnyMode = false,
 }: Props) => {
   return (
     <Tooltip
@@ -43,7 +45,7 @@ const HelpTooltip = ({
       placement={placement}
       width="wide"
       arrow
-      title={<StyledTooltip>{text}</StyledTooltip>}
+      title={!skinnyMode && <StyledTooltip>{text}</StyledTooltip>}
       slotProps={{
         tooltip: {
           style: dark ? { maxWidth: 550 } : {}, // Fixes SDS bug where "wide" property doesn't affect dark sdsStyle

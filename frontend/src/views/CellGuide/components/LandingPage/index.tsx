@@ -3,6 +3,9 @@ import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import { StyledHeader, Wrapper } from "./style";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/constants";
+import CellGuideMobileHeader from "../CellGuideMobileHeader";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { throttle } from "lodash";
 
 const TITLE = "CellGuide Cell Types and Cell Tissues - CZ CELLxGENE";
 
@@ -10,8 +13,36 @@ const DESCRIPTION =
   "Explore single-cell transcriptomics data in CellGuide, a comprehensive resource that empowers researchers with deep insights into the intricacies of cell types";
 
 export default function LandingPage(): JSX.Element {
+  // This is for mobile only
+  const [openSearch, setOpenSearch] = useState(false);
+
+  const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
+
+  const handleResize = useCallback(() => {
+    setSkinnyMode(
+      window.innerWidth < 768 // Global nav max width
+    );
+  }, []);
+
+  const throttledHandleResize = useMemo(() => {
+    return throttle(handleResize, 100);
+  }, [handleResize]);
+
+  useEffect(() => {
+    throttledHandleResize();
+    window.addEventListener("resize", throttledHandleResize);
+
+    return () => window.removeEventListener("resize", throttledHandleResize);
+  }, [throttledHandleResize]);
+
   return (
-    <>
+    <div
+      onBlur={() => {
+        if (openSearch) {
+          setOpenSearch(false);
+        }
+      }}
+    >
       <Head>
         <title>{TITLE}</title>
         <meta property="title" key="title" content={TITLE} />
@@ -36,13 +67,35 @@ export default function LandingPage(): JSX.Element {
           content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
         />
       </Head>
+
+      {/* When clicking landing page input box, open the search at the top */}
+      {skinnyMode && openSearch && (
+        <CellGuideMobileHeader
+          title=""
+          pageNav={null}
+          openSearch={true}
+          top={0}
+        />
+      )}
+
       <Wrapper>
         <StyledHeader data-testid={LANDING_PAGE_HEADER}>
-          CellGuide is a comprehensive resource for knowledge about cell types
+          CellGuide is a <br />
+          comprehensive resource for <br />
+          knowledge about cell types
         </StyledHeader>
-        <CellGuideCardSearchBar />
+        <div
+          onClick={() => {
+            if (skinnyMode) {
+              setOpenSearch(true);
+            }
+          }}
+        >
+          {/* Search will open at top of page for mobile */}
+          {!openSearch && <CellGuideCardSearchBar />}
+        </div>
       </Wrapper>
       <CellGuideBottomBanner />
-    </>
+    </div>
   );
 }

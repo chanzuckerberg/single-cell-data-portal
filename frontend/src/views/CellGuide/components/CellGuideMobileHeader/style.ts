@@ -9,12 +9,12 @@ import {
 import styled from "@emotion/styled";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
-export const MobileHeaderWrapper = styled.div`
+export const MobileHeaderWrapper = styled.div<{ top: number }>`
   width: 100vw;
   display: flex;
   flex-direction: column;
   position: sticky;
-  top: ${HEADER_HEIGHT_PX}px;
+  top: ${(props) => props.top}px;
   z-index: 2;
 `;
 

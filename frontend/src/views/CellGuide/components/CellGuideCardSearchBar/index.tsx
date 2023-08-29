@@ -12,6 +12,7 @@ import {
   CELL_GUIDE_CARD_SEARCH_BAR,
   CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT,
 } from "src/views/CellGuide/components/CellGuideCardSearchBar/constants";
+import { SKINNY_MODE_BREAKPOINT_WIDTH } from "../CellGuideCard/constants";
 
 interface Entity {
   id: string;
@@ -77,7 +78,7 @@ export default function CellGuideCardSearchBar({
       <StyledAutocomplete
         // This is used to style the autocomplete dropdown for mobile
         sx={{
-          "@media (max-width: 768px)": {
+          [`@media (max-width: ${SKINNY_MODE_BREAKPOINT_WIDTH}px)`]: {
             "& + .MuiAutocomplete-popper": {
               width: "100% !important",
             },
