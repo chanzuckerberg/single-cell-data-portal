@@ -135,6 +135,8 @@ def load_snapshot(
             snapshot_id=snapshot_id,
             read_versioned_snapshot=read_versioned_snapshot,
         )
+
+    if not hasattr(cached_snapshot, "dataset_dict"):
         cached_snapshot.build_dataset_metadata_dict()
 
     return cached_snapshot
