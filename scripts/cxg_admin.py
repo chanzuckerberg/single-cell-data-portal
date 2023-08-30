@@ -16,6 +16,7 @@ from backend.common.corpora_config import CorporaDbConfig
 from backend.common.utils.aws import AwsSecret
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
 from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
@@ -72,6 +73,7 @@ def cli(ctx, deployment):
     ctx.obj["business_logic"] = BusinessLogic(
         DatabaseProvider(get_database_uri()), CrossrefProvider(), StepFunctionProvider(), S3Provider(), UriProvider()
     )
+    ctx.obj["cloudfront_provider"] = CloudfrontProvider()
 
 
 # Commands to delete artifacts (collections or datasets)

@@ -1,6 +1,10 @@
 import { useMemo } from "react";
-import { CanonicalMarkersQueryResponse } from "src/common/queries/cellGuide";
-import { HOMO_SAPIENS, ALL_TISSUES } from "../constants";
+import {
+  CanonicalMarkersQueryResponse,
+  CanonicalMarkersQueryResponseEntry,
+} from "src/common/queries/cellGuide";
+import { ALL_TISSUES, HOMO_SAPIENS } from "../constants";
+import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
 
 interface CanonicalMarkerGeneTableData {
   symbol: string;
@@ -11,18 +15,6 @@ interface CanonicalMarkerGeneTableData {
     publications: string[];
     numReferences: number;
   };
-}
-
-function _getSortedOrgans(genes: CanonicalMarkersQueryResponse): string[] {
-  const organs = new Set<string>();
-  for (const markerGene of genes) {
-    organs.add(markerGene.tissue);
-  }
-  return Array.from(organs).sort((a, b) => {
-    if (a === ALL_TISSUES) return -1;
-    if (b === ALL_TISSUES) return 1;
-    return a.localeCompare(b);
-  });
 }
 
 function _getPublicationTitlesToIndex(
@@ -76,46 +68,72 @@ function _getReferenceData(
   };
 }
 
+function _passSelectionCriteria({
+  markerGene,
+  allTissuesLabelToIdMap,
+  selectedOrganLabel,
+  selectedOrganId,
+}: {
+  markerGene: CanonicalMarkersQueryResponseEntry;
+  allTissuesLabelToIdMap: Map<string, string>;
+  selectedOrganLabel: string;
+  selectedOrganId: string;
+}): boolean {
+  // There are marker genes tissues labeled as "All Tissues"
+  // so select them only when selectedOrganLabel is "All Tissues"
+  if (selectedOrganLabel === ALL_TISSUES) {
+    return markerGene.tissue === ALL_TISSUES;
+  }
+
+  const tissue_id = allTissuesLabelToIdMap.get(markerGene.tissue);
+
+  if (!tissue_id) {
+    return false;
+  }
+
+  return isTissueIdDescendantOfAncestorTissueId(tissue_id, selectedOrganId);
+}
+
 export function useCanonicalMarkerGenesTableRowsAndFilters({
   genes,
-  selectedOrgan,
+  allTissuesLabelToIdMap,
+  selectedOrganismLabel,
+  selectedOrganId,
+  selectedOrganLabel,
 }: {
   genes: CanonicalMarkersQueryResponse;
-  selectedOrgan: string;
+  allTissuesLabelToIdMap: Map<string, string>;
+  selectedOrganismLabel: string;
+  selectedOrganId: string;
+  selectedOrganLabel: string;
 }): {
-  selectedOrganFilter: string;
   canonicalMarkerGeneTableData: CanonicalMarkerGeneTableData[];
-  uniqueOrgans: string[];
-  uniqueOrganisms: string[];
 } {
   return useMemo(() => {
-    if (!genes)
+    if (!genes || selectedOrganismLabel != HOMO_SAPIENS)
       return {
-        selectedOrganFilter: selectedOrgan,
         canonicalMarkerGeneTableData: [],
-        uniqueOrgans: [],
-        uniqueOrganisms: [],
       };
 
-    // get sorted organs
-    const sortedOrgans = _getSortedOrgans(genes);
-    const selectedOrganFilter =
-      selectedOrgan === "" || !sortedOrgans.includes(selectedOrgan)
-        ? sortedOrgans.at(0) ?? ""
-        : selectedOrgan;
-    const sortedOrganisms = [HOMO_SAPIENS]; // ASCTB tables only report data for humans
-
     const rows: CanonicalMarkerGeneTableData[] = [];
+
     const publicationTitlesToIndex = _getPublicationTitlesToIndex(
       genes,
-      selectedOrganFilter
+      selectedOrganLabel
     );
 
     for (const markerGene of genes) {
-      const { tissue, publication, publication_titles, symbol, name } =
-        markerGene;
+      if (
+        !_passSelectionCriteria({
+          markerGene: markerGene,
+          allTissuesLabelToIdMap: allTissuesLabelToIdMap,
+          selectedOrganLabel: selectedOrganLabel,
+          selectedOrganId: selectedOrganId,
+        })
+      )
+        continue;
 
-      if (tissue !== selectedOrganFilter) continue;
+      const { publication, publication_titles, symbol, name } = markerGene;
       const referenceData = _getReferenceData(
         publication,
         publication_titles,
@@ -136,10 +154,13 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
     }
 
     return {
-      selectedOrganFilter,
       canonicalMarkerGeneTableData: rows,
-      uniqueOrgans: sortedOrgans,
-      uniqueOrganisms: sortedOrganisms,
     };
-  }, [genes, selectedOrgan]);
+  }, [
+    genes,
+    selectedOrganismLabel,
+    selectedOrganLabel,
+    selectedOrganId,
+    allTissuesLabelToIdMap,
+  ]);
 }
