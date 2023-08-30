@@ -4,7 +4,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import InputAdornment from "@mui/material/InputAdornment";
 import { SectionItem, SectionTitle, StyledAutocomplete } from "./style";
 import { ROUTES } from "src/common/constants/routes";
-import { useCellGuide, useTissueCards } from "src/common/queries/cellGuide";
+import {
+  useCellTypeMetadata,
+  useTissueMetadata,
+} from "src/common/queries/cellGuide";
 import { useRouter } from "next/router";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -16,10 +19,11 @@ import { SKINNY_MODE_BREAKPOINT_WIDTH } from "../CellGuideCard/constants";
 
 interface Entity {
   id: string;
-  cell_types?: string[]; // only tissues have cell_types
   label: string;
   synonyms?: string[]; // only cell types (optionally) have synonyms
 }
+
+const TISSUE_PREFIX = "UBERON:";
 
 export default function CellGuideCardSearchBar({
   autoFocus = false,
@@ -27,17 +31,23 @@ export default function CellGuideCardSearchBar({
   autoFocus?: boolean;
 }): JSX.Element {
   const router = useRouter();
-  const { data: tissueData } = useTissueCards();
-  const { data: cellTypes } = useCellGuide();
+  const { data: cellTypes } = useCellTypeMetadata();
+  const { data: tissueData } = useTissueMetadata();
 
   const options: Entity[] = useMemo(() => {
     if (!tissueData || !cellTypes) return [];
     const entities: Entity[] = [];
-    for (const cellType of cellTypes) {
-      entities.push(cellType);
+    for (const cellType in cellTypes) {
+      entities.push({
+        label: cellTypes[cellType].name,
+        ...cellTypes[cellType],
+      });
     }
-    for (const tissue of tissueData) {
-      entities.push(tissue);
+    for (const tissue in tissueData) {
+      entities.push({
+        label: tissueData[tissue].name,
+        ...tissueData[tissue],
+      });
     }
     return entities;
   }, [tissueData, cellTypes]);
@@ -143,8 +153,7 @@ export default function CellGuideCardSearchBar({
               {...props}
               key={entity.id}
               onClick={() => {
-                // Only tissues have cell_types
-                if (!entity.cell_types) {
+                if (!entity.id.startsWith(TISSUE_PREFIX)) {
                   track(EVENTS.CG_SEARCH_CT_TISSUE, {
                     cell_type: entity.label,
                   });
@@ -167,7 +176,7 @@ export default function CellGuideCardSearchBar({
             .filter((option) => {
               const entity = option as Entity;
               const searchTerm = state.inputValue.toLowerCase();
-              // Determine if each item starts with any of the snyonyms
+              // Determine if each item starts with any of the synonyms
               const synonyms = entity.synonyms ?? [];
               const synonymStartsWithSearch = synonyms.some((synonym) =>
                 synonym.toLowerCase().startsWith(searchTerm)

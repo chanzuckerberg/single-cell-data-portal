@@ -9,7 +9,10 @@ import {
   StyledTooltip,
   Wrapper,
 } from "./style";
-import { useDescription, useClDescription } from "src/common/queries/cellGuide";
+import {
+  useGptDescription,
+  useCellTypeMetadata,
+} from "src/common/queries/cellGuide";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
@@ -45,8 +48,9 @@ export default function Description({
 
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For chatgpt hover event
 
-  const { data: rawDescriptionGpt } = useDescription(cellTypeId);
-  const { data: rawDescriptionCl } = useClDescription(cellTypeId);
+  const { data: rawDescriptionGpt } = useGptDescription(cellTypeId);
+  const { data: cellTypesById } = useCellTypeMetadata();
+  const rawDescriptionCl = cellTypesById?.[cellTypeId].clDescription;
 
   useEffect(() => {
     if (rawDescriptionGpt) setDescriptionGpt(rawDescriptionGpt);
@@ -115,10 +119,10 @@ export default function Description({
           {skinnyMode && (
             <div>
               <em>
-                We're still validating ChatGPT descriptions with our Biocurator
-                team. Once a description is validated, we'll add references and
-                a validation icon. If you believe a description is inaccurate,
-                please{" "}
+                We&apos;re still validating ChatGPT descriptions with our
+                Biocurator team. Once a description is validated, we&apos;ll add
+                references and a validation icon. If you believe a description
+                is inaccurate, please{" "}
                 <a
                   href={CELL_GUIDE_CORRECTION_SURVEY_LINK}
                   target="_blank"

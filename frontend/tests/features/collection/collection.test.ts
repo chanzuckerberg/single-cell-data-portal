@@ -32,7 +32,17 @@ type CollectionFormInput = Pick<
 >;
 
 describe("Collection", () => {
-  describe("Logged In Tests", () => {
+  describe("Unit tests", () => {
+    test("dataset order", () => {
+      let lastValue = 1_000_000_000;
+      sortByCellCountDescending(datasets).forEach((dataset) => {
+        expect(dataset.cell_count).toBeLessThanOrEqual(lastValue);
+        lastValue = dataset.cell_count ?? 0;
+      });
+    });
+  });
+
+  describe("Logged In Tests @loggedIn", () => {
     skip(
       !isDevStaging,
       `Currently push-test runs against dev BE, so login doesn't work for local containers.
@@ -64,14 +74,6 @@ describe("Collection", () => {
       );
     });
 
-    test("dataset order", () => {
-      let lastValue = 1_000_000_000;
-      sortByCellCountDescending(datasets).forEach((dataset) => {
-        expect(dataset.cell_count).toBeLessThanOrEqual(lastValue);
-        lastValue = dataset.cell_count ?? 0;
-      });
-    });
-
     describe("Publish a collection", () => {
       describe("when no dataset", () => {
         test("shows disabled publish button", async ({ page }) => {
@@ -92,7 +94,7 @@ describe("Collection", () => {
     });
   });
 
-  describe("Deployed Env Tests", () => {
+  describe("Deployed Env Tests @loggedIn", () => {
     skip(
       !isDevStaging,
       `BE DOI endpoints only work in dev, staging, and prod. And we also only run

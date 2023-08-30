@@ -10,10 +10,14 @@ import {
 import Table from "../common/Table";
 import Link from "../common/Link";
 import { SourceDataTableWrapper, StyledTag } from "./style";
-import { useSourceData } from "src/common/queries/cellGuide";
+import {
+  SourceCollectionsQueryResponseEntry,
+  useSourceData,
+} from "src/common/queries/cellGuide";
 import { Pagination } from "@mui/material";
 
 import { CELL_GUIDE_CARD_SOURCE_DATA_TABLE } from "src/views/CellGuide/components/CellGuideCard/components/SourceDataTable/constants";
+import { useDataSourceFilter } from "./hooks/useDataSourceFilter";
 
 interface TableRow {
   collection: ReactElement;
@@ -32,11 +36,19 @@ const tableColumns: Array<keyof TableRow> = [
 
 interface Props {
   cellTypeId: string;
+  organName: string;
+  organId: string;
+  organismName: string;
 }
 
 const ROWS_PER_PAGE = 10;
 
-const SourceDataTable = ({ cellTypeId }: Props) => {
+const SourceDataTable = ({
+  cellTypeId,
+  organName,
+  organId,
+  organismName,
+}: Props) => {
   const { data: collections } = useSourceData(cellTypeId);
   const [page, setPage] = useState(1);
 
@@ -52,143 +64,16 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
     setPage(1);
   }, [cellTypeId]);
 
-  const tableRows: TableRow[] = useMemo(() => {
-    if (!collections) return [];
-    const rows = [];
-    let index = 0;
-    const sortedCollections = collections.sort((a, b) => {
-      const aOrganisms = a.organism.map((organism) => organism.label);
-      const bOrganisms = b.organism.map((organism) => organism.label);
-      if (aOrganisms.length === 0 && bOrganisms.length === 0) return 0;
-      if (aOrganisms.includes("Homo sapiens")) return -1;
-      if (bOrganisms.includes("Homo sapiens")) return 1;
-      const aFirstOrganism = aOrganisms.at(0) ?? "";
-      const bFirstOrganism = bOrganisms.at(0) ?? "";
-      return aFirstOrganism.localeCompare(bFirstOrganism);
-    });
-    for (const collection of sortedCollections) {
-      const tissueNames = collection.tissue.map((tissue) => tissue.label);
-      const diseaseNames = collection.disease.map((disease) => disease.label);
-      const organismNames = collection.organism.map(
-        (organism) => organism.label
-      );
-      rows.push({
-        collection: (
-          <Link
-            key={`collection-name-${collection.collection_name}-${index}`}
-            label={collection.collection_name}
-            url={collection.collection_url}
-          />
-        ),
-        publication: collection.publication_url ? (
-          <Link
-            key={`publication-url-${collection.publication_title}-${index}`}
-            label={collection.publication_title}
-            url={`https://doi.org/${collection.publication_url}`}
-          />
-        ) : (
-          "No publication"
-        ),
-        tissue:
-          tissueNames.length <= 2 ? (
-            <div>
-              {tissueNames.map((tissue) => {
-                return <div key={`tissue-${tissue}-${index}`}>{tissue}</div>;
-              })}
-            </div>
-          ) : (
-            <Tooltip
-              sdsStyle="light"
-              placement="top"
-              width="wide"
-              leaveDelay={0}
-              title={
-                <div>
-                  {tissueNames.map((tissue) => {
-                    return (
-                      <div key={`tissue-${tissue}-${index}`}>{tissue}</div>
-                    );
-                  })}
-                </div>
-              }
-            >
-              <span>
-                <StyledTag
-                  color="gray"
-                  sdsType="secondary"
-                  label={`${tissueNames.length} tissues`}
-                />
-              </span>
-            </Tooltip>
-          ),
-        disease: (
-          <>
-            <div>
-              {diseaseNames.length <= 2 ? (
-                <div>
-                  {diseaseNames.map((disease) => {
-                    return (
-                      <div key={`disease-${disease}-${index}`}>{disease}</div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <>
-                  {/* If 'normal' exists then have it outside of the overflow tag */}
-                  {diseaseNames.includes("normal") && (
-                    <div key={`disease-normal`}>normal</div>
-                  )}
+  const filteredCollections = useDataSourceFilter({
+    collections: collections ?? [],
+    selectedOrganismLabel: organismName,
+    selectedOrganLabel: organName,
+    selectedOrganId: organId,
+  });
 
-                  <Tooltip
-                    sdsStyle="light"
-                    placement="top"
-                    width="wide"
-                    leaveDelay={0}
-                    title={
-                      <div>
-                        {diseaseNames
-                          .filter((disease) => disease !== "normal")
-                          .map((disease) => {
-                            return (
-                              <div key={`disease-${disease}-${index}`}>
-                                {disease}
-                              </div>
-                            );
-                          })}
-                      </div>
-                    }
-                  >
-                    <span>
-                      <StyledTag
-                        color="gray"
-                        sdsType="secondary"
-                        label={`${
-                          diseaseNames.includes("normal")
-                            ? diseaseNames.length - 1
-                            : diseaseNames.length
-                        } diseases`}
-                      />
-                    </span>
-                  </Tooltip>
-                </>
-              )}
-            </div>
-          </>
-        ),
-        organism: (
-          <div>
-            {organismNames.map((organism) => {
-              return (
-                <div key={`organism-${organism}-${index}`}>{organism}</div>
-              );
-            })}
-          </div>
-        ),
-      });
-      index = index + 1;
-    }
-    return rows;
-  }, [collections]);
+  const tableRows: TableRow[] = useMemo(() => {
+    return filteredCollections.map(createTableRow);
+  }, [filteredCollections]);
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
 
@@ -235,4 +120,112 @@ const SourceDataTable = ({ cellTypeId }: Props) => {
     </SourceDataTableWrapper>
   );
 };
+
+function createTableRow(
+  collection: SourceCollectionsQueryResponseEntry,
+  index: number
+) {
+  const tissueNames = collection.tissue.map((tissue) => tissue.label);
+  const diseaseNames = collection.disease.map((disease) => disease.label);
+  const organismNames = collection.organism.map((organism) => organism.label);
+
+  const tissueContent =
+    tissueNames.length <= 2 ? (
+      tissueNames.map((tissue) => (
+        <div key={`tissue-${tissue}-${index}`}>{tissue}</div>
+      ))
+    ) : (
+      <Tooltip
+        sdsStyle="light"
+        placement="top"
+        width="wide"
+        leaveDelay={0}
+        title={tissueNames.map((tissue) => (
+          <div key={`tissue-${tissue}-${index}`}>{tissue}</div>
+        ))}
+      >
+        <span>
+          <StyledTag
+            color="gray"
+            sdsType="secondary"
+            label={generateTagLabel(tissueNames, "tissue", "tissues")}
+          />
+        </span>
+      </Tooltip>
+    );
+
+  const diseaseContent =
+    diseaseNames.length <= 2 ? (
+      diseaseNames.map((disease) => (
+        <div key={`disease-${disease}-${index}`}>{disease}</div>
+      ))
+    ) : (
+      <>
+        {/* If 'normal' exists then have it outside of the overflow tag */}
+        {diseaseNames.includes("normal") && (
+          <div key={`disease-normal`}>normal</div>
+        )}
+        <Tooltip
+          sdsStyle="light"
+          placement="top"
+          width="wide"
+          leaveDelay={0}
+          title={diseaseNames
+            .filter((disease) => disease !== "normal")
+            .map((disease) => (
+              <div key={`disease-${disease}-${index}`}>{disease}</div>
+            ))}
+        >
+          <span>
+            <StyledTag
+              color="gray"
+              sdsType="secondary"
+              label={generateTagLabel(diseaseNames, "disease", "diseases")}
+            />
+          </span>
+        </Tooltip>
+      </>
+    );
+
+  return {
+    collection: generateLink(
+      `collection-name-${collection.collection_name}-${index}`,
+      collection.collection_name,
+      collection.collection_url
+    ),
+    publication: collection.publication_url
+      ? generateLink(
+          `publication-url-${collection.publication_title}-${index}`,
+          collection.publication_title,
+          `https://doi.org/${collection.publication_url}`
+        )
+      : "No publication",
+    tissue: <div>{tissueContent}</div>,
+    disease: <div>{diseaseContent}</div>,
+    organism: (
+      <div>
+        {organismNames.map((organism) => (
+          <div key={`organism-${organism}-${index}`}>{organism}</div>
+        ))}
+      </div>
+    ),
+  };
+
+  function generateLink(key: string, label: string, url: string) {
+    return <Link key={key} label={label} url={url} />;
+  }
+
+  function generateTagLabel(
+    names: string[],
+    singularLabel: string,
+    pluralLabel: string
+  ) {
+    if (names.includes(singularLabel)) {
+      return singularLabel;
+    } else {
+      return `${names.length} ${pluralLabel}`;
+    }
+  }
+}
+
 export default SourceDataTable;

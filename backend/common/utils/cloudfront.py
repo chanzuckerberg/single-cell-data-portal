@@ -21,6 +21,15 @@ def create_invalidation(paths: List[str]):
     return _create_invalidation(distribution, paths)
 
 
+def create_invalidation_cellguide(paths: List[str]):
+    try:
+        distribution = CorporaCloudfrontConfig().cellguide_distribution_id
+    except RuntimeError:  # Will be raised if the attribute is not found (i.e. in rdev)
+        logging.debug("No Cloudfront distribution found in secrets, will not invalidate")
+        return None
+    return _create_invalidation(distribution, paths)
+
+
 def _create_invalidation(distribution: str, paths: List[str]):
     invalidation_id = str(uuid.uuid4())
     logging.info(f"Requesting invalidation {invalidation_id} for distribution {distribution}")
@@ -39,3 +48,7 @@ def _create_invalidation(distribution: str, paths: List[str]):
 
 def create_invalidation_for_index_paths():
     return create_invalidation(["/dp/v1/datasets/index", "/dp/v1/collections/index"])
+
+
+def create_invalidation_for_cellguide_data():
+    return create_invalidation_cellguide(["/*"])

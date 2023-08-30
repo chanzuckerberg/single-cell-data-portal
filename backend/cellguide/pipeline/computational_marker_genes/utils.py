@@ -5,6 +5,7 @@ import numpy as np
 from numba import njit
 from scipy import stats
 
+from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 from backend.common.utils.rollup import are_cell_types_colinear
 from backend.wmg.data.utils import setup_retry_session
 
@@ -177,9 +178,13 @@ def query_gene_info_for_gene_description(gene_id: str) -> str:
     The name of the gene if the query is successful, otherwise returns the gene ID.
     """
 
-    API_URL = os.getenv("API_URL")
-    if API_URL is None:
-        API_URL = "https://api.cellxgene.staging.single-cell.czi.technology"
+    deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
+    # if deployment stage is rdev, use staging API for this query
+    # otherwise, we run into JSON decode errors because the gene info endpoint
+    # is behind Auth0.
+    API_URL = DEPLOYMENT_STAGE_TO_API_URL.get(
+        deployment_stage, "https://api.cellxgene.staging.single-cell.czi.technology"
+    )
 
     session = setup_retry_session()
     response = session.get(f"{API_URL}/gene_info/v1/gene_info?gene={gene_id}")

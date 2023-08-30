@@ -16,6 +16,7 @@ from backend.common.corpora_config import CorporaDbConfig
 from backend.common.utils.aws import AwsSecret
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
 from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
@@ -72,6 +73,7 @@ def cli(ctx, deployment):
     ctx.obj["business_logic"] = BusinessLogic(
         DatabaseProvider(get_database_uri()), CrossrefProvider(), StepFunctionProvider(), S3Provider(), UriProvider()
     )
+    ctx.obj["cloudfront_provider"] = CloudfrontProvider()
 
 
 # Commands to delete artifacts (collections or datasets)
@@ -105,20 +107,37 @@ def delete_collections(ctx, collection_name):
 
 
 @cli.command()
-@click.argument("id")
+@click.argument("collection_id")
 @click.pass_context
-def tombstone_collection(ctx: click.Context, id: str):
+def tombstone_collection(ctx: click.Context, collection_id: str):
     """
-    Tombstones the collection specified by ID.
+    Tombstones a public Collection specified by collection_id.
     To run:
-        ./scripts/cxg_admin.py --deployment prod tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
+        ./scripts/cxg_admin.py --deployment prod tombstone-collection 01234567-89ab-cdef-0123-456789abcdef
 
     :param ctx: command context
-    :param id: ID that identifies the collection to tombstone
+    :param collection_id: uuid that identifies the Collection to tombstone
     """
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=RuntimeWarning)  # Suppress type-related warnings from db operations
-        tombstones.tombstone_collection(ctx, id)
+        tombstones.tombstone_collection(ctx, collection_id)
+
+
+@cli.command()
+@click.argument("collection_id")
+@click.pass_context
+def resurrect_collection(ctx: click.Context, collection_id: str):
+    """
+    Resurrects a tombstoned Collection specified by collection_id.
+    To run:
+        ./scripts/cxg_admin.py --deployment prod resurrect-collection 01234567-89ab-cdef-0123-456789abcdef
+
+    :param ctx: command context
+    :param collection_id: uuid that identifies the Collection to resurrect
+    """
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)  # Suppress type-related warnings from db operations
+        tombstones.resurrect_collection(ctx, collection_id)
 
 
 @cli.command()

@@ -137,7 +137,7 @@ export function listOntologyTreeIds(
  * @returns Function that returns label of ontology value with the given key, to display in a cell.
  */
 export function ontologyLabelCellAccessorFn<
-  K extends CategoriesKeyOfTypeOntologyArray
+  K extends CategoriesKeyOfTypeOntologyArray,
 >(categoryKey: K): OntologyCellAccessorFn {
   return (categories: Categories) =>
     categories[categoryKey].map((o: Ontology) => o.label);

@@ -1922,7 +1922,7 @@ class TestDataset(BaseAPIPortalTest):
         headers = {"host": "localhost", "Content-Type": "application/json"}
 
         with self.subTest("dataset is public"):
-            test_uri_0 = "some_uri_0"
+            test_uri_0 = "s3://some_bucket/some_key_0.cxg"
 
             public_dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_0)],
@@ -1944,7 +1944,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertEqual(json.loads(response.data), expected_identifiers)
 
         with self.subTest("dataset is private"):
-            test_uri_1 = "some_uri_1"
+            test_uri_1 = "s3://some_bucket/some_key_1.cxg"
 
             private_dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_1)],
@@ -1998,7 +1998,7 @@ class TestDataset(BaseAPIPortalTest):
             return json.loads(response.data)
 
         with self.subTest("Dataset belonging to an unpublished collection"):
-            test_uri = "some_uri_0"
+            test_uri = "s3://some_bucket/some_key_0.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
@@ -2016,7 +2016,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to an unpublished collection, replaced"):
-            test_uri = "some_uri_0"
+            test_uri = "s3://some_bucket/some_key_0.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
@@ -2046,7 +2046,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a published collection"):
-            test_uri = "some_uri_1"
+            test_uri = "s3://some_bucket/some_key_1.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
@@ -2063,7 +2063,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, not replaced"):
-            test_uri = "some_uri_2"
+            test_uri = "s3://some_bucket/some_key_2.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
@@ -2082,7 +2082,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, replaced"):
-            test_uri = "some_uri_1"
+            test_uri = "s3://some_bucket/some_key_1.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
@@ -2122,7 +2122,7 @@ class TestDataset(BaseAPIPortalTest):
             """
             If a dataset appears in multiple collection versions, the most recent one will be returned.
             """
-            test_uri = "some_uri_1"
+            test_uri = "s3://some_bucket/some_key_1.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True

@@ -74,6 +74,8 @@ export const MarkerGenePagination = styled.div`
 export const MarkerGeneInfo = styled.div`
   ${fontBodyS}
   color: ${gray500};
+  align-items: flex-start;
+  display: inline-flex;
 `;
 
 export const MarkerGeneTooltipText = styled.div`

@@ -27,35 +27,41 @@ import SingleCellDataIconActive from "./icons/single-cell-data-active";
 import SingleCellDataIconInactive from "./icons/single-cell-data-inactive";
 import styles from "./index.module.scss";
 
+const ROOT_MARGIN = "-50% 0px -50% 0px";
+
 const LandingPage = (): JSX.Element => {
   const { ref: observerSection1, inView: inView1 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection1 = useRef<HTMLDivElement>(null!);
+  const scrollSection1 = useRef<HTMLDivElement>(null);
 
   const { ref: observerSection2, inView: inView2 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection2 = useRef<HTMLDivElement>(null!);
+  const scrollSection2 = useRef<HTMLDivElement>(null);
 
   const { ref: observerSection3, inView: inView3 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection3 = useRef<HTMLDivElement>(null!);
+  const scrollSection3 = useRef<HTMLDivElement>(null);
 
   const { ref: observerSection4, inView: inView4 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection4 = useRef<HTMLDivElement>(null!);
+  const scrollSection4 = useRef<HTMLDivElement>(null);
 
   const { ref: observerSection5, inView: inView5 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection5 = useRef<HTMLDivElement>(null!);
+  const scrollSection5 = useRef<HTMLDivElement>(null);
 
   const [cellsHeroNum] = useState("45M");
   const [datasetsHeroNum] = useState("842");
   const [cellTypesHeroNum] = useState("682");
+
+  const SUB_HEADING = "13.05.22 - CZ CELLxGENE";
+
+  const CTA_TEXT_EXPLORE_DATASETS = "Explore Datasets";
 
   const publications = [
     {
@@ -77,10 +83,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
@@ -105,10 +111,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
@@ -125,10 +131,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/6f6d381a-7701-4781-935c-db10d30de293",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
@@ -146,10 +152,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/dde06e0f-ab3b-46be-96a2-a8082383c4a1",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
@@ -167,10 +173,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/436154da-bcf1-4130-9c8b-120ff9a888f2",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
