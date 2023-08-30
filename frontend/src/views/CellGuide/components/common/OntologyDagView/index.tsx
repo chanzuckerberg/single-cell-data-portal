@@ -13,10 +13,10 @@ import {
 import { Zoom } from "@visx/zoom";
 import { RectClipPath } from "@visx/clip-path";
 import {
-  InitialCellOntologyTreeStateResponse,
+  CellOntologyTreeStateResponse,
   TissueCountsPerCellType,
   useCellOntologyTree,
-  useCellOntologyTreeState,
+  useCellOntologyTreeStateCellType,
   useCellOntologyTreeStateTissue,
 } from "src/common/queries/cellGuide";
 import {
@@ -52,6 +52,7 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
+  MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 
 interface BaseTreeProps {
@@ -184,50 +185,22 @@ export default function OntologyDagView({
   // other properties like the positions of the nodes.
   const { data: rawTree } = useCellOntologyTree();
 
-  const { data: initialTreeStateCell } = useCellOntologyTreeState(
+  const { data: initialTreeStateCell } = useCellOntologyTreeStateCellType(
     cellTypeId ?? ""
   );
   const { data: initialTreeStateTissue } = useCellOntologyTreeStateTissue(
     tissueId ?? ""
   );
-  // (alec) This now handles the case where the initial tree state for both cell type and tissue is defined. We take the intersection of isExpanded and union of notShownWhenExpanded.
-  const initialTreeState: InitialCellOntologyTreeStateResponse | undefined =
+
+  const initialTreeState: CellOntologyTreeStateResponse | undefined =
     useMemo(() => {
       let initialTreeState;
       if (initialTreeStateCell && initialTreeStateTissue) {
-        // Intersection of isExpandedNodes
-        const isExpandedIntersection =
-          initialTreeStateCell.isExpandedNodes.filter((node) =>
-            initialTreeStateTissue.isExpandedNodes.includes(node)
-          );
-
-        // Union of notShownWhenExpandedNodes
-        const notShownWhenExpandedUnion: {
-          [key: string]: string[];
-        } = { ...initialTreeStateCell.notShownWhenExpandedNodes };
-
-        for (const key of Object.keys(
-          initialTreeStateTissue.notShownWhenExpandedNodes
-        )) {
-          if (notShownWhenExpandedUnion[key]) {
-            // If the key exists in both, merge the arrays and de-duplicate
-            notShownWhenExpandedUnion[key] = Array.from(
-              new Set([
-                ...notShownWhenExpandedUnion[key],
-                ...initialTreeStateTissue.notShownWhenExpandedNodes[key],
-              ])
-            );
-          } else {
-            // If the key exists only in the tissue data, add it to the union
-            notShownWhenExpandedUnion[key] =
-              initialTreeStateTissue.notShownWhenExpandedNodes[key];
-          }
-        }
-
+        // When both cell and tissue tree states are available, inject the tissue tree counts
+        // into the cell tree state.
         initialTreeState = {
-          isExpandedNodes: isExpandedIntersection,
-          notShownWhenExpandedNodes: notShownWhenExpandedUnion,
-          tissueCounts: initialTreeStateTissue.tissueCounts, // Only specified for tissueId
+          ...initialTreeStateCell,
+          tissueCounts: initialTreeStateTissue.tissueCounts,
         };
       } else if (initialTreeStateCell) {
         initialTreeState = initialTreeStateCell;
@@ -260,7 +233,6 @@ export default function OntologyDagView({
     if (!treeData) return null;
     return hierarchy(treeData, (d) => {
       if (d.isExpanded && d.children && initialTreeState) {
-        const newChildren: TreeNodeWithState[] = [];
         const notShownWhenExpandedNodes =
           initialTreeState.notShownWhenExpandedNodes;
         /**
@@ -271,20 +243,27 @@ export default function OntologyDagView({
          * It indicates that all of the children of the node should be shown.
          */
 
-        for (const child of d.children) {
-          if (
+        const hiddenChildren = d.children.filter(
+          (child) =>
+            !d.showAllChildren &&
+            notShownWhenExpandedNodes[d.id]?.includes(child.id)
+        );
+
+        const newChildren = d.children.filter(
+          (child) =>
             d.showAllChildren ||
             !notShownWhenExpandedNodes[d.id]?.includes(child.id)
-          ) {
-            newChildren.push(child);
-          }
-        }
+        );
 
-        const numHiddenChildren = d.children.length - newChildren.length;
-        if (numHiddenChildren > 0) {
+        if (
+          hiddenChildren.length <=
+          MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE
+        ) {
+          newChildren.push(...hiddenChildren);
+        } else if (hiddenChildren.length > 0) {
           newChildren.push({
             id: `dummy-child-${d.id}`,
-            name: `${numHiddenChildren} cell types`,
+            name: `${hiddenChildren.length} cell types`,
             n_cells: 0,
             n_cells_rollup: 0,
             isExpanded: false,
@@ -299,6 +278,7 @@ export default function OntologyDagView({
      * This is a known anti-pattern and will be addressed in later work.
      * See this ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5478
      */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [treeData, triggerRender, initialTreeState]);
 
   // This useEffect is used to set the initial transform matrix when the tree data changes.
@@ -422,13 +402,13 @@ export default function OntologyDagView({
                   <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP}>
                     <b>{tooltipData?.n_cells}</b>
                     {" cells"}
-                    {tissueName ? ` in ${tissueName}` : ""}
+                    {tissueName ? ` in ${tissueName.toLowerCase()}` : ""}
                     {tooltipData?.n_cells !== tooltipData?.n_cells_rollup && (
                       <>
                         <br />
                         <b>{tooltipData?.n_cells_rollup}</b>
                         {" descendant cells"}
-                        {tissueName ? ` in ${tissueName}` : ""}
+                        {tissueName ? ` in ${tissueName.toLowerCase()}` : ""}
                       </>
                     )}
                   </div>

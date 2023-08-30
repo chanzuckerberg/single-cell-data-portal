@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: data-portal
+  annotations:
+    github.com/project-slug: chanzuckerberg/single-cell-data-portal
+    backstage.io/source-location: url:https://github.com/chanzuckerberg/single-cell-data-portal
+    happy_app: "true"
+    happy_directory: .happy
+  links:
+    - url: https://github.com/chanzuckerberg/single-cell-infra
+      title: View Infra Source
+      icon: github
+spec:
+  type: service
+  lifecycle: production
+  owner: group:default/team-sci-sc

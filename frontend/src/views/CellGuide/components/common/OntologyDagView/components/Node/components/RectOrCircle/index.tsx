@@ -10,6 +10,8 @@ import {
 import { StyledRect, StyledCircle } from "./style";
 import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/components/RectOrCircle/constants";
 
+const DUMMY_CHILD = "dummy-child";
+
 interface RectOrCircleProps {
   handleClick?: MouseEventHandler<SVGGElement>;
   isTargetNode: boolean;
@@ -38,19 +40,19 @@ export default function RectOrCircle({
     color = highlightColor;
   }
   const size = node.n_cells === 0 ? smallSize : largeSize;
-  if (node.id.startsWith("dummy-child")) {
+  if (node.id.startsWith(DUMMY_CHILD)) {
     color = primaryColor;
   }
 
-  const onMouseOver = node.id.startsWith("dummy-child")
+  const onMouseOver = node.id.startsWith(DUMMY_CHILD)
     ? undefined
     : (event: React.MouseEvent<SVGElement>) => {
         handleMouseOver(event, node);
       };
-  const onMouseOut = node.name.startsWith("dummy-child")
+  const onMouseOut = node.name.startsWith(DUMMY_CHILD)
     ? undefined
     : handleMouseOut;
-  return node?.children?.length || node.id.startsWith("dummy-child") ? (
+  return node?.children?.length || node.id.startsWith(DUMMY_CHILD) ? (
     <StyledCircle
       data-testid={`${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-${node.id}-has-children-isTargetNode=${isTargetNode}`}
       r={size}

@@ -4,6 +4,8 @@
 const configs = {
   // Dev
   API_URL: "https://api.cellxgene.dev.single-cell.czi.technology",
+  CELLGUIDE_DATA_URL:
+    "https://cellguide.cellxgene.dev.single-cell.czi.technology",
   // Staging
   // API_URL: "https://api.cellxgene.staging.single-cell.czi.technology",
   // Prod

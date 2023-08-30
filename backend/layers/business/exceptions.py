@@ -101,6 +101,14 @@ class DatasetUpdateException(BusinessException):
     pass
 
 
+class DatasetIsPublishedException(DatasetUpdateException):
+    pass
+
+
+class DatasetIsPrivateException(DatasetUpdateException):
+    pass
+
+
 class CollectionPublishException(BusinessException):
     pass
 
@@ -116,6 +124,10 @@ class CollectionDeleteException(BusinessException):
 
 
 class CollectionIsTombstonedException(BusinessException):
+    pass
+
+
+class CollectionIsPublicException(BusinessException):
     pass
 
 
