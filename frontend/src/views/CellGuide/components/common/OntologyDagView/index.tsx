@@ -52,6 +52,7 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
+  MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 
 interface BaseTreeProps {
@@ -232,7 +233,6 @@ export default function OntologyDagView({
     if (!treeData) return null;
     return hierarchy(treeData, (d) => {
       if (d.isExpanded && d.children && initialTreeState) {
-        const newChildren: TreeNodeWithState[] = [];
         const notShownWhenExpandedNodes =
           initialTreeState.notShownWhenExpandedNodes;
         /**
@@ -243,20 +243,27 @@ export default function OntologyDagView({
          * It indicates that all of the children of the node should be shown.
          */
 
-        for (const child of d.children) {
-          if (
+        const hiddenChildren = d.children.filter(
+          (child) =>
+            !d.showAllChildren &&
+            notShownWhenExpandedNodes[d.id]?.includes(child.id)
+        );
+
+        const newChildren = d.children.filter(
+          (child) =>
             d.showAllChildren ||
             !notShownWhenExpandedNodes[d.id]?.includes(child.id)
-          ) {
-            newChildren.push(child);
-          }
-        }
+        );
 
-        const numHiddenChildren = d.children.length - newChildren.length;
-        if (numHiddenChildren > 0) {
+        if (
+          hiddenChildren.length <
+          MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE
+        ) {
+          newChildren.push(...hiddenChildren);
+        } else if (hiddenChildren.length > 0) {
           newChildren.push({
             id: `dummy-child-${d.id}`,
-            name: `${numHiddenChildren} cell types`,
+            name: `${hiddenChildren.length} cell types`,
             n_cells: 0,
             n_cells_rollup: 0,
             isExpanded: false,
