@@ -198,9 +198,7 @@ export default function OntologyDagView({
         // When both cell and tissue tree states are available, inject the tissue tree counts
         // into the cell tree state.
         initialTreeState = {
-          isExpandedNodes: initialTreeStateCell.isExpandedNodes,
-          notShownWhenExpandedNodes:
-            initialTreeStateCell.notShownWhenExpandedNodes,
+          ...initialTreeStateCell.isExpandedNodes,
           tissueCounts: initialTreeStateTissue.tissueCounts,
         };
       } else if (initialTreeStateCell) {
