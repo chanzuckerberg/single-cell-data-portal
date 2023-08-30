@@ -137,10 +137,7 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
       left={Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}
       height={xAxisHeight}
     >
-      {/* seve: temp fix while we wait for chanzuckerberg/sci-components#581 */}
-      {!isSSR() && (
-        <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
-      )}
+      <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
       <XAxisContainer
         data-testid="gene-labels"
         width={heatmapWidth}
