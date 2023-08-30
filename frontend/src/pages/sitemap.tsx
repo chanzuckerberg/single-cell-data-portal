@@ -5,6 +5,7 @@ import Head from "next/head";
 import pathTool from "path";
 import { ROUTES } from "src/common/constants/routes";
 import { useCellTypeMetadata } from "src/common/queries/cellGuide";
+import { useMemo, useState, useEffect } from "react";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
 
@@ -13,6 +14,40 @@ const DownChevron = () => (
     <path
       d="M12.3136 1.00012L6.65674 6.65697L0.999884 1.00012"
       stroke="black"
+      strokeWidth="2"
+    />
+  </svg>
+);
+
+const AccordionOpen = () => (
+  <svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle
+      cx="21"
+      cy="21"
+      r="21"
+      transform="matrix(1 0 0 -1 0 42)"
+      fill="#3867FA"
+    />
+    <path
+      d="M26.6569 22.9999L21 17.343L15.3431 22.9999"
+      stroke="white"
+      strokeWidth="2"
+    />
+  </svg>
+);
+
+const AccordionClosed = () => (
+  <svg viewBox="0 0 42 43" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle
+      cx="21"
+      cy="21.6799"
+      r="20.5512"
+      stroke="#3867FA"
+      strokeWidth="0.897512"
+    />
+    <path
+      d="M26.6569 19.68L21 25.3369L15.3431 19.68"
+      stroke="#3867FA"
       strokeWidth="2"
     />
   </svg>
@@ -179,6 +214,51 @@ const SitemapSectionGrid = styled.div`
   }
 `;
 
+const AccordionTitle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  & h2 {
+    margin: 0;
+  }
+`;
+
+const AccordionContainer = styled.div`
+  background: rgba(248, 249, 254, 1);
+  margin-bottom: 20px;
+  padding: 29px 60px 29px 86px;
+
+  @media (max-width: 768px) {
+    padding: 18px;
+    margin-bottom: 15px;
+  }
+
+  &.open {
+    padding: 43px 60px 50px 86px;
+
+    @media (max-width: 768px) {
+      padding: 22px 18px 40px 18px;
+    }
+  }
+`;
+
+const AccordionIconContainer = styled.div`
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+
+  @media (max-width: 768px) {
+    width: 24px;
+    height: 24px;
+  }
+
+  & svg {
+    width: 100%;
+    height: 100%;
+  }
+`;
+
 interface Directory {
   dirName: string;
   files: Array<string>;
@@ -238,6 +318,7 @@ interface Props {
     subDirectories: [];
   };
   collections: Collection[];
+  cellTypeMetadata: CellTypeMetadata[];
 }
 
 interface Directory {
@@ -251,11 +332,57 @@ interface Collection {
   name: string;
 }
 
+interface CellTypeMetadata {
+  id: string;
+  name: string;
+}
+
 const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
   const { files, subDirectories } = docPaths;
-  const { data: cellTypeMetadata } = useCellTypeMetadata() || {};
 
-  console.log(cellTypeMetadata);
+  const { data: cellTypeMetadata } = useCellTypeMetadata();
+
+  const cellTypes: CellTypeMetadata[] = useMemo(() => {
+    if (!cellTypeMetadata) return [];
+    const entities: CellTypeMetadata[] = [];
+    for (const cellType in cellTypeMetadata) {
+      entities.push({
+        ...cellTypeMetadata[cellType],
+      });
+    }
+    return entities.sort((a, b) =>
+      String(a.name).localeCompare(String(b.name), undefined, {
+        sensitivity: "base",
+      })
+    );
+  }, [cellTypeMetadata]);
+
+  function splitMetadataByInitialLetter(sortedArray: CellTypeMetadata[]) {
+    const result = Object({});
+
+    for (const { name, id } of sortedArray) {
+      const initialLetter = String(name)[0].toUpperCase();
+      if (!result[initialLetter]) {
+        result[initialLetter] = [];
+      }
+      result[initialLetter].push({ name, id });
+    }
+
+    return result;
+  }
+
+  const cellGuideMap = splitMetadataByInitialLetter(cellTypes);
+
+  const cellGuideLetters = Object.keys(cellGuideMap);
+
+  const [cgAccordionsOpen, setCgAccordionsOpen] = useState(Array());
+
+  useEffect(() => {
+    if (window.innerWidth > 768) {
+      setCgAccordionsOpen([cellGuideLetters[0]]);
+    }
+  }, [cellTypes]);
+
   return (
     <SitemapLayout>
       <Head>
@@ -349,9 +476,56 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
           <h2>
             <a href={ROUTES.CELL_GUIDE}>CellGuide</a>
           </h2>
-          <SitemapSectionGrid>
-            {/* map over cellguide types here */}
-          </SitemapSectionGrid>
+          {cellGuideLetters.map((letter, index) => {
+            const open = cgAccordionsOpen.includes(letter);
+
+            return (
+              <AccordionContainer
+                className={open ? "open" : ""}
+                key={`accordionContainer-${index}`}
+              >
+                <AccordionTitle>
+                  <h2>{letter}</h2>
+                  <div
+                    onClick={() => {
+                      let newAccordionState;
+
+                      if (open) {
+                        newAccordionState = cgAccordionsOpen.filter(
+                          (a) => a !== letter
+                        );
+
+                        setCgAccordionsOpen(newAccordionState);
+                      } else {
+                        newAccordionState = [...cgAccordionsOpen, letter];
+
+                        setCgAccordionsOpen(newAccordionState);
+                      }
+                    }}
+                  >
+                    <AccordionIconContainer>
+                      {open ? <AccordionOpen /> : <AccordionClosed />}
+                    </AccordionIconContainer>
+                  </div>
+                </AccordionTitle>
+
+                {open && (
+                  <SitemapSectionGrid>
+                    {cellGuideMap[letter].map(
+                      (item: CellTypeMetadata, index: string) => (
+                        <a
+                          href={`${ROUTES.CELL_GUIDE}/${item.id}`}
+                          key={`cellGuideLink-${index}`}
+                        >
+                          {item.name}
+                        </a>
+                      )
+                    )}
+                  </SitemapSectionGrid>
+                )}
+              </AccordionContainer>
+            );
+          })}
         </SitemapSection>
       </main>
     </SitemapLayout>
