@@ -344,9 +344,8 @@ export function renderYAxis({
   Array.from(
     yAxis?.querySelectorAll("[id='cell-type-label-count']") || []
   ).forEach((labelCount, index) => {
-    const label = labelCount.querySelector(
-      "[id='cell-type-name']"
-    )?.textContent;
+    const label = labelCount.querySelector("[id='cell-type-name']")
+      ?.textContent;
 
     const count = labelCount.querySelector("[id='cell-count']")?.textContent;
 

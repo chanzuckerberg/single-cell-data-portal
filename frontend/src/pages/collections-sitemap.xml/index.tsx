@@ -41,4 +41,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return getServerSideSitemap(context, fields);
 };
 
-export default function Site() {}
+export default function Site() {
+  // intentionally empty, since we're generating xml files
+}

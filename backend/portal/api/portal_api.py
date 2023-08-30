@@ -22,7 +22,6 @@ from backend.layers.business.entities import CollectionMetadataUpdate, Collectio
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
     CollectionCreationException,
-    CollectionDeleteException,
     CollectionIsPublishedException,
     CollectionNotFoundException,
     CollectionPublishException,
@@ -520,16 +519,10 @@ def delete_collection(collection_id: str, token_info: dict):
     if version.published_at:
         raise MethodNotAllowedException("Cannot delete a published Collection through API -- contact CXG Admins")
 
-    if isinstance(resource_id, CollectionVersionId):
-        try:
-            get_business_logic().delete_collection_version(resource_id)
-        except CollectionIsPublishedException:
-            raise ForbiddenHTTPException() from None
-    elif isinstance(resource_id, CollectionId):
-        try:
-            get_business_logic().tombstone_collection(resource_id)
-        except CollectionDeleteException() as e:
-            raise ServerErrorHTTPException(e.errors) from e
+    try:
+        get_business_logic().delete_collection_version(version)
+    except CollectionIsPublishedException:
+        raise ForbiddenHTTPException() from None
 
 
 def update_collection(collection_id: str, body: dict, token_info: dict):

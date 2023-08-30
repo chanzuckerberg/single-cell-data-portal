@@ -26,12 +26,21 @@ import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
-import { useCellTypesById } from "src/common/queries/cellGuide";
+import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 import {
+  CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
+  CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
+import DropdownSelect from "./components/common/DropdownSelect";
+import { SelectChangeEvent } from "@mui/material/Select";
+import { useOrganAndOrganismFilterListForCelltype } from "./components/MarkerGeneTables/hooks/common";
+import {
+  ALL_TISSUES,
+  NO_ORGAN_ID,
+} from "./components/MarkerGeneTables/constants";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -64,7 +73,7 @@ export default function CellGuideCard({
   const cellTypeName = name || "";
   const titleizedCellTypeName = titleize(cellTypeName);
 
-  const cellTypesById = useCellTypesById();
+  const { data: cellTypesById } = useCellTypeMetadata();
 
   const cellType = cellTypesById && cellTypesById[cellTypeId];
 
@@ -88,6 +97,25 @@ export default function CellGuideCard({
   }, [throttledHandleResize]);
 
   const [geneInfoGene, setGeneInfoGene] = useState<Gene["name"] | null>(null);
+
+  const { organismsList, organsMap } =
+    useOrganAndOrganismFilterListForCelltype(cellTypeId);
+
+  const uniqueOrgans = Array.from(organsMap.keys());
+
+  const [selectedOrgan, setSelectedOrgan] = useState(ALL_TISSUES);
+  const [selectedOrganId, setSelectedOrganId] = useState(NO_ORGAN_ID);
+
+  const handleChangeOrgan = (event: SelectChangeEvent<unknown>) => {
+    setSelectedOrgan(event.target.value as string);
+    setSelectedOrganId(organsMap.get(event.target.value as string) ?? "");
+  };
+
+  const [selectedOrganism, setSelectedOrganism] = useState(organismsList[0]);
+
+  const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
+    setSelectedOrganism(event.target.value as string);
+  };
 
   function handleCloseGeneInfoSideBar() {
     setGeneInfoGene(null);
@@ -155,6 +183,20 @@ export default function CellGuideCard({
                 />
               </a>
             </CellGuideCardHeaderInnerWrapper>
+            <CellGuideCardHeaderInnerWrapper>
+              <DropdownSelect
+                handleChange={handleChangeOrganism}
+                options={organismsList}
+                selectedOption={selectedOrganism}
+                testId={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+              />
+              <DropdownSelect
+                handleChange={handleChangeOrgan}
+                options={uniqueOrgans}
+                selectedOption={selectedOrgan}
+                testId={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
+              />
+            </CellGuideCardHeaderInnerWrapper>
           </CellGuideCardHeader>
 
           <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
@@ -166,13 +208,20 @@ export default function CellGuideCard({
 
           {/* Cell Ontology section */}
           <div ref={sectionRef1} id="section-1" data-testid="section-1" />
-          <FullScreenProvider>
-            <OntologyDagView
-              key={cellTypeId}
-              cellTypeId={cellTypeId}
-              skinnyMode={skinnyMode}
-            />
-          </FullScreenProvider>
+          {/* (thuang): Somehow we need a parent <div /> to prevent error:
+          NotFoundError: Failed to execute 'insertBefore' on 'Node'
+         */}
+          <div>
+            <FullScreenProvider>
+              <OntologyDagView
+                key={`${cellTypeId}-${selectedOrganId}`}
+                cellTypeId={cellTypeId}
+                tissueName={selectedOrgan}
+                tissueId={selectedOrganId}
+                skinnyMode={skinnyMode}
+              />
+            </FullScreenProvider>
+          </div>
 
           {/* Marker Genes section */}
           <div ref={sectionRef2} id="section-2" data-testid="section-2" />
@@ -181,11 +230,19 @@ export default function CellGuideCard({
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}
+            organName={selectedOrgan}
+            organId={selectedOrganId}
+            organismName={selectedOrganism}
           />
 
           {/* Source Data section */}
           <div ref={sectionRef3} id="section-3" data-testid="section-3" />
-          <SourceDataTable cellTypeId={cellTypeId} />
+          <SourceDataTable
+            cellTypeId={cellTypeId}
+            organName={selectedOrgan}
+            organId={selectedOrganId}
+            organismName={selectedOrganism}
+          />
         </Wrapper>
         {!skinnyMode && (
           <CellGuideCardSidebar

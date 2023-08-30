@@ -37,7 +37,6 @@ We need the following collection metadata (i.e. details associated with your pub
 Each dataset needs the following information added to a single h5ad (AnnData 0.8) format file:
 
 - **Dataset-level metadata in uns**:
-  - schema_version: `3.0.0`
   - title: title of the individual dataset
   - optional: batch_condition: list of obs fields that define “batches” that a normalization or integration algorithm should be aware of
 - **Data in .X and raw.X**:
@@ -55,7 +54,7 @@ Each dataset needs the following information added to a single h5ad (AnnData 0.8
   - tissue_ontology_term_id: [UBERON](https://www.ebi.ac.uk/ols/ontologies/uberon)
   - cell_type_ontology_term_id: [CL](https://www.ebi.ac.uk/ols/ontologies/cl)
   - assay_ontology_term_id: [EFO](https://www.ebi.ac.uk/ols/ontologies/efo)
-  - suspension_type: `cell`, `nucleus`, or `na`, as corresponding to assay. Use [this table](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#suspension_type) defined in the data schema for guidance. If the assay does not appear in this table, the most appropriate value MUST be selected and the [curation team informed](mailto:cellxgene@chanzuckerberg.com) during submission so that the assay can be added to the table.
+  - suspension_type: `cell`, `nucleus`, or `na`, as corresponding to assay. Use [this table](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#suspension_type) defined in the data schema for guidance. If the assay does not appear in this table, the most appropriate value MUST be selected and the [curation team informed](mailto:cellxgene@chanzuckerberg.com) during submission so that the assay can be added to the table.
 - **Embeddings in obsm**:
   - One or more two-dimensional embeddings, prefixed with 'X\_'
 - **Features in var & raw.var (if present)**:

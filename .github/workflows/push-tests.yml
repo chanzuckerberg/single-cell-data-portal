@@ -32,10 +32,12 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - uses: actions/setup-python@v3
       - name: check backend
         uses: pre-commit/action@v3.0.0
@@ -52,14 +54,45 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-  e2e-test:
+  run-e2e-tests:
     timeout-minutes: 60
+    name: e2e-tests-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # Only run Chrome for now, since GHA only has 250 workers and will cancel jobs if it runs out
+        project: [chromium]
+        shardCurrent:
+          [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+          ]
+        shardTotal: [20]
+
     defaults:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: "16.14.2"
       - name: Configure AWS Credentials
@@ -69,47 +102,63 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - name: Install dependencies
         run: |
-          npm i
+          npm ci
           npx playwright install --with-deps
           cp src/configs/local.js src/configs/configs.js
           npm run dev > dev_server.log 2>&1 &
 
       # Run E2E tests
       - name: Run E2E tests
-        run: |
-          DEBUG=pw:api npm run e2e
+        env:
+          CI: true
+          PROJECT: ${{ matrix.project }}
+          SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
+        run: DEBUG=pw:api npm run e2e-pr
 
-      - name: Upload Artifact
+      - name: Upload FE server logs as an artifact
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: fe-server-logs
+          name: fe-server-logs ${{ matrix.project }} ${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/dev_server.log
           retention-days: 30
 
-      # Upload Playwright report as an artifact
-      - uses: actions/upload-artifact@v3
+      - name: Upload FE test results as an artifact
         if: always()
+        uses: actions/upload-artifact@v3
         with:
-          name: test-results
+          name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
-          retention-days: 30
+          retention-days: 14
+
+      - name: Upload blob report to GitHub Actions Artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: all-blob-reports
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
+          retention-days: 1
+
       # Upload Allure results as an artifact
       - uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
           retention-days: 20
+
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
           happy_version: "0.59.0"
+
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -118,6 +167,69 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
+
+  wait-for-shards:
+    needs: run-e2e-tests # run after shards
+    runs-on: ubuntu-22.04
+    #if: success() # only run when all shards have passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "{success}={true}" >> $GITHUB_OUTPUT
+
+  merge-playwright-reports:
+    # Merge reports after playwright-tests, even if some shards have failed
+    if: always()
+    needs: [run-e2e-tests]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download blob reports from GitHub Actions Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: all-blob-reports
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-reports
+
+      - name: Merge into HTML Report
+        run: npx playwright merge-reports --reporter html ./blob-reports
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v3
+        with:
+          name: html-report--attempt-${{ github.run_attempt }}
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          retention-days: 30
+
+  # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
+  e2e-test:
+    name: e2e-test
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [run-e2e-tests, wait-for-shards]
+    steps:
+      - name: Check result
+        run: |
+          passed="${{ needs.run-e2e-tests.result }}"
+          if [[ $passed == "success" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
 
   backend-unit-test:
     runs-on: ubuntu-22.04
@@ -134,10 +246,10 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
@@ -187,10 +299,10 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
@@ -235,15 +347,15 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
@@ -298,10 +410,10 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
@@ -352,10 +464,10 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
@@ -407,10 +519,10 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
@@ -460,10 +572,10 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v35.8.0
         with:
           files: |
             Dockerfile*
@@ -508,6 +620,7 @@ jobs:
       - backend-wmg-unit-test
       - wmg-processing-unit-test
       - processing-unit-test
+      - cellguide-pipeline-unit-test
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
@@ -522,7 +635,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - uses: actions/download-artifact@v3
         with:
           name: coverage
@@ -548,6 +661,7 @@ jobs:
       - wmg-processing-unit-test
       - processing-unit-test
       - e2e-test
+      - cellguide-pipeline-unit-test
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -565,6 +679,7 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
+          fetch-depth: 2
 
       # Create test results history as an Allure report
       - name: Create test results history as an Allure report

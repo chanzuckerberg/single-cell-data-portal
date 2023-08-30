@@ -1,26 +1,27 @@
 import logging
 
 from backend.cellguide.pipeline.computational_marker_genes.computational_markers import MarkerGenesCalculator
-from backend.cellguide.pipeline.computational_marker_genes.types import ComputationalMarkerGenes
 from backend.cellguide.pipeline.constants import COMPUTATIONAL_MARKER_GENES_FOLDERNAME
+from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
-from backend.cellguide.pipeline.utils import output_json
+from backend.cellguide.pipeline.utils import output_json_per_key
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 logger = logging.getLogger(__name__)
 
 
-def run(*, output_directory: str, ontology_tree: OntologyTreeBuilder):
+def run(*, output_directory: str):
     snapshot = load_snapshot(snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION)
-    marker_genes = get_marker_genes_per_and_across_tissues(
+    ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
+    marker_genes = get_computational_marker_genes(
         snapshot=snapshot,
-        all_cell_types_in_corpus=ontology_tree.all_cell_type_ids_in_corpus,
+        ontology_tree=ontology_tree,
     )
-    output_marker_genes(marker_genes, output_directory)
+    output_json_per_key(marker_genes, f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FOLDERNAME}")
 
 
-def get_marker_genes_per_and_across_tissues(*, snapshot: WmgSnapshot, all_cell_types_in_corpus: list[str]) -> dict:
+def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: OntologyTreeBuilder) -> dict:
     """
     This function calculates the marker genes per tissue and across tissues.
 
@@ -33,6 +34,7 @@ def get_marker_genes_per_and_across_tissues(*, snapshot: WmgSnapshot, all_cell_t
     -------
     dict - A dictionary containing the marker genes per tissue and across tissues keyed by cell type ontology term ID.
     """
+    all_cell_types_in_corpus = ontology_tree.all_cell_type_ids_in_corpus
 
     calculator = MarkerGenesCalculator(
         snapshot=snapshot,
@@ -55,17 +57,3 @@ def get_marker_genes_per_and_across_tissues(*, snapshot: WmgSnapshot, all_cell_t
             marker_genes[key] = marker_genes_per_tissue[key]
 
     return marker_genes
-
-
-def output_marker_genes(marker_genes: dict[str, list[ComputationalMarkerGenes]], output_directory: str):
-    """
-    This function outputs the marker genes to a specified directory. Each cell type will be output to its own JSON file.
-
-    Arguments
-    ---------
-    marker_genes - A dictionary containing the marker genes per tissue and across tissues keyed by cell type ontology term ID.
-    output_directory - The directory where the output files will be saved.
-    """
-
-    for key in marker_genes:
-        output_json(marker_genes[key], f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FOLDERNAME}/{key}.json")

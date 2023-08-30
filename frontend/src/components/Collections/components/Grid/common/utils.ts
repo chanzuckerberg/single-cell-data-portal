@@ -35,8 +35,7 @@ export const aggregateDatasetsMetadata = memoize(function (
     organism: caseInsensitiveSort(unique(result.organism)),
     tissue: caseInsensitiveSort(unique(result.tissue)),
   };
-},
-hashFn);
+}, hashFn);
 
 function hashFn(datasets: Dataset[]): string {
   return datasets.reduce((acc, { id, cell_count }) => {

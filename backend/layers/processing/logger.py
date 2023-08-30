@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from contextlib import suppress
 
@@ -7,7 +8,8 @@ from pythonjsonlogger import jsonlogger
 from backend.common.logging_config import DATETIME_FORMAT, LOG_FORMAT
 
 
-def configure_logging(level=logging.INFO):
+def configure_logging(level=None):
+    level = getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper())
     log_stdout_handler = logging.StreamHandler(stream=sys.stdout)
     formatter = jsonlogger.JsonFormatter(LOG_FORMAT, DATETIME_FORMAT)
     log_stdout_handler.setFormatter(formatter)
