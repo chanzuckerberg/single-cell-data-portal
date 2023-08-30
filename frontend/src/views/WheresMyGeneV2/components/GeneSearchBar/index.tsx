@@ -259,6 +259,6 @@ export default function GeneSearchBar({
   ) {
     if (!dispatch) return;
 
-    dispatch(selectGenes(genes?.map((gene) => gene.name) || []));
+    dispatch(selectGenes(genes?.map((gene) => gene.name) || EMPTY_ARRAY));
   }
 }
