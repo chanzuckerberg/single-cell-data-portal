@@ -209,95 +209,98 @@ const MarkerGeneTables = ({
   const tableColumnNamesEnrichedGenes: Record<
     keyof TableRowEnrichedGenes,
     ReactElement | string
-  > = {
-    symbol: "Symbol",
-    name: "Name",
-    marker_score: (
-      <div>
+  > = useMemo(
+    () => ({
+      symbol: "Symbol",
+      name: "Name",
+      marker_score: (
+        <div>
+          <StyledHeadCellContent>
+            Marker Score
+            <HelpTooltip
+              skinnyMode={skinnyMode}
+              title="Marker Score"
+              setTooltipContent={setTooltipContent}
+              dark
+              buttonDataTestId={MARKER_SCORE_TOOLTIP_TEST_ID}
+              text={
+                <>
+                  Marker score interpretation:
+                  <br />
+                  <MarkerStrengthContainer>
+                    {"Low: <1 | Medium: 1-2 | High: >2"}
+                  </MarkerStrengthContainer>
+                  <br />
+                  <div>
+                    Marker genes are highly and uniquely expressed in the cell
+                    type relative to all other cell types.
+                  </div>
+                  <br />
+                  <div>
+                    <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
+                      Click to read more about the identification method.
+                    </a>
+                  </div>
+                </>
+              }
+            />
+          </StyledHeadCellContent>
+        </div>
+      ),
+      me: (
         <StyledHeadCellContent>
-          Marker Score
+          Expression Score
           <HelpTooltip
             skinnyMode={skinnyMode}
-            title="Marker Score"
+            title="Expression Score"
             setTooltipContent={setTooltipContent}
             dark
-            buttonDataTestId={MARKER_SCORE_TOOLTIP_TEST_ID}
+            buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
             text={
-              <>
-                Marker score interpretation:
-                <br />
-                <MarkerStrengthContainer>
-                  {"Low: <1 | Medium: 1-2 | High: >2"}
-                </MarkerStrengthContainer>
-                <br />
-                <div>
-                  Marker genes are highly and uniquely expressed in the cell
-                  type relative to all other cell types.
-                </div>
-                <br />
-                <div>
-                  <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
-                    Click to read more about the identification method.
-                  </a>
-                </div>
-              </>
+              <div>
+                The expression score is the average{" "}
+                <a
+                  href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  rankit-normalized gene expression
+                </a>{" "}
+                among cells in the cell type that have non-zero values.
+              </div>
             }
           />
         </StyledHeadCellContent>
-      </div>
-    ),
-    me: (
-      <StyledHeadCellContent>
-        Expression Score
-        <HelpTooltip
-          skinnyMode={skinnyMode}
-          title="Expression Score"
-          setTooltipContent={setTooltipContent}
-          dark
-          buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
-          text={
-            <div>
-              The expression score is the average{" "}
-              <a
-                href={ROUTES.WMG_DOCS_DATA_PROCESSING}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                rankit-normalized gene expression
-              </a>{" "}
-              among cells in the cell type that have non-zero values.
-            </div>
-          }
-        />
-      </StyledHeadCellContent>
-    ),
-    pc: (
-      <StyledHeadCellContent>
-        % of Cells
-        <HelpTooltip
-          skinnyMode={skinnyMode}
-          title="% of Cells"
-          setTooltipContent={setTooltipContent}
-          dark
-          buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
-          text={
-            <div>
-              Percentage of cells expressing a gene in the cell type. These
-              numbers are calculated after cells with{" "}
-              <a
-                href={ROUTES.WMG_DOCS_DATA_PROCESSING}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                low coverage and low expression values
-              </a>{" "}
-              have been filtered out.
-            </div>
-          }
-        />
-      </StyledHeadCellContent>
-    ),
-  };
+      ),
+      pc: (
+        <StyledHeadCellContent>
+          % of Cells
+          <HelpTooltip
+            skinnyMode={skinnyMode}
+            title="% of Cells"
+            setTooltipContent={setTooltipContent}
+            dark
+            buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
+            text={
+              <div>
+                Percentage of cells expressing a gene in the cell type. These
+                numbers are calculated after cells with{" "}
+                <a
+                  href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  low coverage and low expression values
+                </a>{" "}
+                have been filtered out.
+              </div>
+            }
+          />
+        </StyledHeadCellContent>
+      ),
+    }),
+    [setTooltipContent, skinnyMode]
+  );
 
   const allTissuesLabelToIdMap = useAllTissuesLookupTables(cellTypeId);
 
@@ -452,7 +455,7 @@ const MarkerGeneTables = ({
           columnIdToName={tableColumnNamesCanonicalGenes}
         />
       ),
-    [activeTable, page, tableRows]
+    [activeTable, page, tableRows, tableColumnNamesEnrichedGenes]
   );
 
   const tableUnavailableComponent = (
