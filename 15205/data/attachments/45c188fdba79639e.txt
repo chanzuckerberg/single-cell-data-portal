@@ -1,0 +1,76 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +10ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +75ms
+  pw:api   "commit" event fired +27ms
+  pw:api   navigated to "https://localhost:3000/" +2ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +14ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +49ms
+  pw:api => page.waitForLoadState started +6ms
+  pw:api => page.goto started +18ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000084", waiting until "load" +10ms
+  pw:api   "commit" event fired +145ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +1ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +5ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +3ms
+  pw:api   navigated to "about:blank" +104ms
+  pw:api <= page.goto succeeded +19ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-canonical-marker-genes-table-selector') +64ms
+  pw:api   "networkidle" event fired +563ms
+  pw:api   locator resolved to <button class="css-1xhv06f-TableSelectorButton e1mdzv35"…>Canonical</button> +690ms
+  pw:api attempting click action +39ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +59ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +214ms
+  pw:api   click action done +20ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +48ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +22ms
+  pw:api => locator.waitFor started +5ms
+  pw:api waiting for getByTestId('cell-guide-card-global-tissue-filter-dropdown') to be visible +26ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-global-tissue-filte…>…</div> +25ms
+  pw:api <= locator.waitFor succeeded +44ms
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-global-tissue-filter-dropdown') +40ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-global-tissue-filte…>…</div> +26ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +36ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +135ms
+  pw:api   click action done +382ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +63ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByRole('option').getByText('brain') +40ms
+  pw:api   locator resolved to <span class="primary-text css-nyjbm4">brain</span> +59ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +51ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +73ms
+  pw:api   click action done +646ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +50ms
+  pw:api <= locator.click succeeded +50ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +18ms
+  pw:api taking page screenshot +24ms
