@@ -231,7 +231,11 @@ jobs:
           PROJECT: ${{ matrix.project }}
           SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
-        run: DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
+        run: |
+          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+            export DEPLOYMENT_STAGE=staging
+          fi
+          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
 
       - name: Upload FE test results as an artifact
         if: always()
