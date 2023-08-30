@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { CELLGUIDE_DATA_URL, API_URL } from "src/configs/configs";
@@ -234,7 +234,7 @@ export const USE_COMPUTATIONAL_MARKERS_QUERY = {
   id: "cell-guide-computational-markers-query",
 };
 
-interface ComputationalMarkersQueryResponseEntry {
+export interface ComputationalMarkersQueryResponseEntry {
   me: number;
   pc: number;
   marker_score: number;
@@ -264,7 +264,7 @@ export const USE_CANONICAL_MARKERS_QUERY = {
   id: "cell-guide-canonical-markersquery",
 };
 
-interface CanonicalMarkersQueryResponseEntry {
+export interface CanonicalMarkersQueryResponseEntry {
   tissue: string;
   symbol: string;
   name: string;
@@ -394,6 +394,46 @@ export const fetchTissueMetadata =
     }
     return await response.json();
   };
+
+/* ========== Lookup tables for organs ========== */
+export function useAllOrgansLookupTables(): Map<string, string> {
+  const { data: allOrgansData } = useTissueMetadata();
+  return useMemo(() => {
+    if (!allOrgansData) {
+      return new Map<string, string>();
+    }
+
+    const allOrgansLabelToIdMap = new Map<string, string>();
+    for (const organId in allOrgansData) {
+      const organData = allOrgansData[organId];
+      allOrgansLabelToIdMap.set(organData.name, organData.id);
+    }
+    return allOrgansLabelToIdMap;
+  }, [allOrgansData]);
+}
+
+/* ========== Lookup tables for tissues ========== */
+export function useAllTissuesLookupTables(
+  cellTypeId: string
+): Map<string, string> {
+  const { data: sourceData } = useSourceData(cellTypeId);
+
+  return useMemo(() => {
+    if (!sourceData) {
+      return new Map<string, string>();
+    }
+
+    const allTissuesLabelToIdLookup = new Map<string, string>();
+
+    for (const source of sourceData) {
+      const tissueList = source.tissue;
+      for (const tissue of tissueList) {
+        allTissuesLabelToIdLookup.set(tissue.label, tissue.ontology_term_id);
+      }
+    }
+    return allTissuesLabelToIdLookup;
+  }, [sourceData]);
+}
 
 /**
  * Mapping from data/response type to properties used for querying

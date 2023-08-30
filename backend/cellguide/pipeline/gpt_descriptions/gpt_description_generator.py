@@ -10,6 +10,7 @@ from backend.cellguide.pipeline.gpt_descriptions.constants import (
 )
 from backend.cellguide.pipeline.providers.openai_provider import OpenAIProvider
 from backend.cellguide.pipeline.providers.s3_provider import S3Provider
+from backend.cellguide.pipeline.utils import get_object_key
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ def generate_new_gpt_descriptions(all_cell_type_ids_to_labels_in_corpus: dict[st
     new_gpt_descriptions: dict[str, str] = {}
     for cell_type_id in all_cell_type_ids_to_labels_in_corpus:
         cell_type_id_filename = cell_type_id.replace(":", "_")
-        object_key = f"{GPT_OUTPUT_DIRECTORY_FOLDERNAME}/{cell_type_id_filename}.json"
+        object_key = get_object_key(object=f"{GPT_OUTPUT_DIRECTORY_FOLDERNAME}/{cell_type_id_filename}.json")
         if not s3_provider.does_object_exist(bucket_name=bucket_name, object_key=object_key):
             cell_type_label = all_cell_type_ids_to_labels_in_corpus[cell_type_id]
             logger.info(f"GPT description does not exist yet for {cell_type_id} ({cell_type_label}), generating...")
@@ -69,7 +70,7 @@ def generate_new_seo_gpt_descriptions(new_gpt_descriptions: dict[str, str]) -> d
     new_gpt_seo_descriptions: dict[str, str] = {}
     for cell_type_id in new_gpt_descriptions:
         cell_type_id_filename = cell_type_id.replace(":", "_")
-        object_key = f"{GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME}/{cell_type_id_filename}.json"
+        object_key = get_object_key(object=f"{GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME}/{cell_type_id_filename}.json")
         if not s3_provider.does_object_exist(bucket_name=bucket_name, object_key=object_key):
             logger.info(f"GPT SEO description does not exist yet for {cell_type_id}, generating...")
             seo_description_str = openai_provider.generate_gpt_output(
