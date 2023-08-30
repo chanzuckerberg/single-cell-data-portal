@@ -1,0 +1,54 @@
+  pw:api => selectors.setTestIdAttribute started +257ms
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +34ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +7ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +30ms
+  pw:api => page.waitForResponse started +2ms
+  pw:api => page.goto started +11ms
+  pw:api navigating to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +4ms
+  pw:api   "commit" event fired +132ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +2ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +4ms
+  pw:api   navigated to "about:blank" +17ms
+  pw:api <= page.goto succeeded +90ms
+  pw:api <= page.waitForResponse succeeded +3s
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('share-button') +25ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" data-testid…>…</button> +39ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not enabled - waiting... +15ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +2s
+  pw:api   element is visible, enabled and stable +467ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +22ms
+  pw:api   click action done +87ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +23ms
+  pw:api => page.evaluate started +2ms
+  pw:api <= page.evaluate succeeded +55ms
+  pw:api => expect.toBeVisible started +6ms
+  pw:api => expect.toBeVisible started +28ms
+  pw:api taking page screenshot +44ms
+  pw:api expect.toBeVisible with timeout 10000ms +7ms
+  pw:api waiting for getByText('A molecular single-cell lung atlas of lethal COVID-19') +0ms
+  pw:api expect.toBeVisible with timeout 10000ms +1ms
+  pw:api waiting for getByText('Immunophenotyping of COVID-19 and influenza highlights the role of type I interferons in development of severe COVID-19') +0ms
+  pw:api   locator resolved to <span class="MuiChip-label MuiChip-labelMedium css-6od…>A molecular single-cell lung atlas of lethal COVI…</span> +18ms
+  pw:api <= expect.toBeVisible succeeded +0ms
+  pw:api   locator resolved to <span class="MuiChip-label MuiChip-labelMedium css-6od…>Immunophenotyping of COVID-19 and influenza highl…</span> +4ms
+  pw:api <= expect.toBeVisible succeeded +0ms
