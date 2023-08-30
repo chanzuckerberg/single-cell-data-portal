@@ -92,6 +92,8 @@ export default function AnimatedNodes({
       data={tree.descendants()}
       keyAccessor={(d: HierarchyPointNode<TreeNodeWithState>) => d.data.id}
       start={(node: HierarchyPointNode<TreeNodeWithState>) => {
+        // when the animation ends, update the start position of the
+        // node to be its current position
         setTimeout(() => handleAnimationEnd(node), duration);
         return node.parent
           ? {
