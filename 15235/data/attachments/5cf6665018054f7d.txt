@@ -1,0 +1,50 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +39ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +77ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000084", waiting until "load" +4ms
+  pw:api   "commit" event fired +107ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +0ms
+  pw:api   "commit" event fired +3ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +3ms
+  pw:api   navigated to "about:blank" +31ms
+  pw:api <= page.goto succeeded +14ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +30ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +979ms
+  pw:api <= locator.waitFor succeeded +67ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +50ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-dummy-child-CL:0000842__0-has-children-isTargetNode=false') +31ms
+  pw:api   locator resolved to <circle r="4" fill="#0073FF" stroke-width="0.5" class="c…></circle> +5ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +14ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +77ms
+  pw:api   click action done +138ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +36ms
+  pw:api <= locator.click succeeded +57ms
+  pw:api => locator.all started +0ms
+  pw:api <= locator.all succeeded +48ms
+  pw:api taking page screenshot +33ms
+  pw:api   "networkidle" event fired +15ms
