@@ -51,6 +51,12 @@ export default function AnimatedNodes({
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
 
+  const handleAnimationEnd = (node: HierarchyPointNode<TreeNodeWithState>) => {
+    // Update the starting position of the node to be its current position
+    node.data.x0 = node.x;
+    node.data.y0 = node.y;
+  };
+
   const { data: cellTypeMetadata } = useCellTypeMetadata() || {};
   const handleMouseOver = (
     event: React.MouseEvent<SVGElement>,
@@ -86,6 +92,7 @@ export default function AnimatedNodes({
       data={tree.descendants()}
       keyAccessor={(d: HierarchyPointNode<TreeNodeWithState>) => d.data.id}
       start={(node: HierarchyPointNode<TreeNodeWithState>) => {
+        setTimeout(() => handleAnimationEnd(node), duration);
         return node.parent
           ? {
               top: node.parent.data.x0 ?? node.parent.x,

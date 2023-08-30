@@ -330,7 +330,7 @@ export default function OntologyDagView({
         setCenteredNodeCoords(true);
       }
     }
-  }, [data, cellTypeId, width, height]);
+  }, [data, cellTypeId, width, height, triggerRender]);
 
   // Hover over node tooltip
   const {
